@@ -110,7 +110,7 @@ export class GitHubStorageService {
   }
 
   // 更新图片信息（如标签、描述等）
-  async updateImageInfo(imageId: string, fileName: string, metadata: any): Promise<void> {
+  async updateImageInfo(imageId: string, fileName: string, metadata: any, oldFileName?: string): Promise<void> {
     try {
       await window.electronAPI.githubUpdateMetadata({
         owner: this.config.owner,
@@ -118,7 +118,8 @@ export class GitHubStorageService {
         path: this.config.path,
         branch: this.config.branch,
         fileName,
-        metadata
+        metadata,
+        oldFileName
       })
     } catch (error) {
       console.error('Update image info failed:', error)

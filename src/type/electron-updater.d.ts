@@ -49,6 +49,7 @@ interface GitHubUpdateMetadataParams {
   branch: string
   fileName: string
   metadata: any
+  oldFileName?: string
 }
 
 // 扩展 Window 接口

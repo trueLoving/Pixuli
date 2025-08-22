@@ -142,7 +142,8 @@ export const useImageStore = create<ImageState>((set, get) => {
           updatedAt: new Date().toISOString()
         }
 
-        await storageService.updateImageInfo(editData.id, image.name, metadata)
+        // 传递旧文件名用于重命名检测
+        await storageService.updateImageInfo(editData.id, image.name, metadata, image.name)
         
         set(state => ({
           images: state.images.map(img => 
