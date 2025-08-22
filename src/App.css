@@ -3,14 +3,23 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
 }
 
 /* 工具类 */
@@ -59,55 +68,43 @@ body {
 
 /* 响应式设计 */
 @media (max-width: 640px) {
-  .max-w-7xl {
-    max-width: 100%;
+  .px-4 {
     padding-left: 1rem;
     padding-right: 1rem;
   }
   
-  .grid {
-    grid-template-columns: repeat(1, 1fr);
+  .py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
 
-  /* 移动端优化 */
-  .text-2xl {
-    font-size: 1.5rem;
+  .text-3xl {
+    font-size: 1.875rem;
   }
 
-  .px-6 {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .text-lg {
+    font-size: 1.125rem;
   }
 
-  .py-3 {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+  .w-20 {
+    width: 5rem;
   }
 
-  .w-16 {
-    width: 3rem;
+  .h-20 {
+    height: 5rem;
   }
 
-  .h-16 {
-    height: 3rem;
+  .w-10 {
+    width: 2.5rem;
   }
 
-  .w-8 {
-    width: 1.5rem;
-  }
-
-  .h-8 {
-    height: 1.5rem;
+  .h-10 {
+    height: 2.5rem;
   }
 }
 
 @media (max-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  /* 平板端优化 */
-  .max-w-7xl {
+  .px-6 {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
@@ -118,20 +115,9 @@ body {
 }
 
 @media (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  /* 小屏幕桌面端优化 */
-  .max-w-7xl {
+  .px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
-  }
-}
-
-@media (min-width: 1025px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -210,11 +196,41 @@ body {
   @apply bg-gray-100 text-gray-700;
 }
 
+/* 全屏布局工具类 */
+.fullscreen-layout {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.fullscreen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 固定高度布局 */
+.fixed-height-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.fixed-height-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
 /* 响应式容器 */
 .container-responsive {
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  height: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
 }
