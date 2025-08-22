@@ -59,16 +59,17 @@ function App() {
 
   if (!githubConfig) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center w-full max-w-md">
-          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Settings className="w-8 h-8 text-blue-600" />
+          <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+            <Settings className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">欢迎使用 Pixuli</h1>
-          <p className="text-gray-600 mb-6">请先配置 GitHub 仓库信息</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 Pixuli</h1>
+          <p className="text-gray-600 mb-8 text-lg">专业的图片管理与存储解决方案</p>
+          <p className="text-gray-500 mb-6 text-base">请先配置 GitHub 仓库信息以开始使用</p>
           <button
             onClick={handleOpenConfigModal}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             配置 GitHub
           </button>
@@ -84,15 +85,15 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex flex-col">
       {/* 顶部导航栏 */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold text-gray-900">Pixuli</h1>
               <div className="text-sm text-gray-500 hidden sm:block">
-                {githubConfig.owner}/{githubConfig.repo}
+                仓库: {githubConfig.owner}/{githubConfig.repo}
               </div>
             </div>
             
@@ -117,91 +118,104 @@ function App() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* 错误提示 */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <p className="text-red-800">{error}</p>
-              <button
-                onClick={clearError}
-                className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 搜索和过滤 */}
-        <div className="mb-6 space-y-4">
-          {/* 搜索框 */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="搜索图片名称或描述..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 标签过滤 */}
-          {allTags.length > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <span className="text-sm text-gray-600">标签过滤:</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {allTags.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      setSelectedTags(prev => 
-                        prev.includes(tag) 
-                          ? prev.filter(t => t !== tag)
-                          : [...prev, tag]
-                      )
-                    }}
-                    className={`px-3 py-1 text-xs rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      selectedTags.includes(tag)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
+      {/* 主内容区域 - 可滚动 */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+          {/* 错误提示 */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <p className="text-red-800">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                >
+                  ×
+                </button>
               </div>
             </div>
           )}
-        </div>
 
-        {/* 图片上传区域 */}
-        <div className="mb-8">
-          <ImageUpload />
-        </div>
+          {/* 搜索和过滤区域 */}
+          <div className="mb-4 space-y-3">
+            {/* 搜索框 */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="搜索图片名称、描述或标签..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              />
+            </div>
 
-        {/* 图片统计 */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-          <h2 className="text-lg font-semibold text-gray-900">
-            图片库 ({filteredImages.length})
-          </h2>
-          {selectedTags.length > 0 && (
-            <button
-              onClick={() => setSelectedTags([])}
-              className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-            >
-              清除过滤
-            </button>
-          )}
-        </div>
+            {/* 标签过滤 */}
+            {allTags.length > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                <div className="flex items-center space-x-2">
+                  <Filter className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">按标签筛选:</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedTags.length > 0 && (
+                    <button
+                      onClick={() => setSelectedTags([])}
+                      className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors"
+                    >
+                      清除筛选 ({selectedTags.length})
+                    </button>
+                  )}
+                  {allTags.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        setSelectedTags(prev => 
+                          prev.includes(tag) 
+                            ? prev.filter(t => t !== tag)
+                            : [...prev, tag]
+                        )
+                      }}
+                      className={`px-3 py-1 text-xs rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        selectedTags.includes(tag)
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-        {/* 图片网格 */}
-        <ImageGrid images={filteredImages} />
-      </div>
+          {/* 图片上传区域 */}
+          <div className="mb-4">
+            <ImageUpload />
+          </div>
+
+          {/* 图片统计和操作区域 */}
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">
+              图片库 ({filteredImages.length} 张图片)
+            </h2>
+            {loading && (
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>正在加载图片...</span>
+              </div>
+            )}
+          </div>
+
+          {/* 图片网格 */}
+          <div className="min-h-0">
+            <ImageGrid images={filteredImages} />
+          </div>
+          
+
+        </div>
+      </main>
 
       {/* GitHub 配置模态框 */}
       <GitHubConfigModal
