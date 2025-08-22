@@ -64,47 +64,7 @@ export default defineConfig(({ command }) => {
         // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
       }),
-      renderer({
-        nodeIntegration: false,
-        resolve: {
-          // 解决 Octokit 依赖中的 Node.js 模块问题
-          alias: {
-            'os': false,
-            'path': false,
-            'fs': false,
-            'crypto': false,
-            'stream': false,
-            'util': false,
-            'buffer': false,
-            'events': false,
-            'url': false,
-            'querystring': false,
-            'http': false,
-            'https': false,
-            'zlib': false,
-            'tty': false,
-            'assert': false,
-            'constants': false,
-            'domain': false,
-            'punycode': false,
-            'string_decoder': false,
-            'timers': false,
-            'vm': false,
-            'child_process': false,
-            'cluster': false,
-            'dgram': false,
-            'dns': false,
-            'http2': false,
-            'net': false,
-            'perf_hooks': false,
-            'readline': false,
-            'repl': false,
-            'tls': false,
-            'v8': false,
-            'worker_threads': false,
-          }
-        }
-      }),
+      renderer(),
     ],
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
