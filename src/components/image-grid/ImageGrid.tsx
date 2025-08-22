@@ -44,26 +44,28 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
 
   if (images.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Tag className="w-8 h-8 text-gray-400" />
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <Tag className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">图片库为空</h3>
+          <p className="text-gray-500">开始上传图片，构建您的专属图片库</p>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">暂无图片</h3>
-        <p className="text-gray-500">上传您的第一张图片开始管理</p>
       </div>
     )
   }
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {images.map((image) => (
           <div
             key={image.id}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
           >
             {/* 图片预览 */}
-            <div className="relative aspect-square bg-gray-100">
+            <div className="relative aspect-square bg-gray-100 flex-shrink-0">
               <img
                 src={image.url}
                 alt={image.name}
@@ -77,21 +79,21 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                   <button
                     onClick={() => handlePreview(image)}
                     className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors"
-                    title="预览"
+                    title="查看大图"
                   >
                     <Eye className="w-4 h-4 text-gray-700" />
                   </button>
                   <button
                     onClick={() => handleEdit(image)}
                     className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors"
-                    title="编辑"
+                    title="编辑信息"
                   >
                     <Edit className="w-4 h-4 text-gray-700" />
                   </button>
                   <button
                     onClick={() => handleDelete(image)}
                     className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors"
-                    title="删除"
+                    title="删除图片"
                   >
                     <Trash2 className="w-4 h-4 text-red-600" />
                   </button>
@@ -144,7 +146,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-600 transition-colors"
-                  title="在 GitHub 中查看"
+                  title="在 GitHub 仓库中查看"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
