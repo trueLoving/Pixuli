@@ -96,7 +96,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-2">
               <Github className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-800">GitHub 配置</h2>
+              <h2 className="text-lg font-semibold text-gray-800">GitHub 仓库配置</h2>
             </div>
             <button
               onClick={onClose}
@@ -112,13 +112,13 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  仓库所有者 <span className="text-red-500">*</span>
+                  GitHub 用户名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.owner}
                   onChange={(e) => handleInputChange('owner', e.target.value)}
-                  placeholder="用户名或组织名"
+                  placeholder="您的 GitHub 用户名或组织名"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -132,7 +132,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                   type="text"
                   value={formData.repo}
                   onChange={(e) => handleInputChange('repo', e.target.value)}
-                  placeholder="仓库名"
+                  placeholder="用于存储图片的仓库名称"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -146,7 +146,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                   type="text"
                   value={formData.branch}
                   onChange={(e) => handleInputChange('branch', e.target.value)}
-                  placeholder="main"
+                  placeholder="通常为 main 或 master"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -160,7 +160,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                   type="text"
                   value={formData.path}
                   onChange={(e) => handleInputChange('path', e.target.value)}
-                  placeholder="images"
+                  placeholder="仓库中存储图片的文件夹路径"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -179,7 +179,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  需要 repo 权限的 Personal Access Token
+                  需要 repo 权限的 Personal Access Token，用于访问您的仓库
                 </p>
               </div>
 
@@ -204,12 +204,12 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
 
             {/* 帮助信息 */}
             <div className="mt-6 p-4 bg-blue-50 rounded-md">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">如何获取 GitHub Token？</h4>
+              <h4 className="text-sm font-medium text-blue-800 mb-2">📋 如何获取 GitHub Token？</h4>
               <ol className="text-xs text-blue-700 space-y-1">
                 <li>1. 访问 GitHub Settings → Developer settings</li>
                 <li>2. 选择 Personal access tokens → Tokens (classic)</li>
                 <li>3. 生成新 token，勾选 repo 权限</li>
-                <li>4. 复制生成的 token</li>
+                <li>4. 复制生成的 token 并粘贴到上方输入框</li>
               </ol>
             </div>
           </div>
