@@ -37,11 +37,23 @@ function App() {
     setShowConfigModal(false)
   }, [])
 
+  // 初始化存储服务
   useEffect(() => {
     if (githubConfig) {
+      // 确保存储服务已初始化
+      const { initializeStorage } = useImageStore.getState()
+      initializeStorage()
       handleLoadImages()
     }
   }, [githubConfig, handleLoadImages])
+
+  // 页面加载时初始化
+  useEffect(() => {
+    const { githubConfig, initializeStorage } = useImageStore.getState()
+    if (githubConfig && !useImageStore.getState().storageService) {
+      initializeStorage()
+    }
+  }, [])
 
   // 过滤图片
   const filteredImages = images.filter(image => {
