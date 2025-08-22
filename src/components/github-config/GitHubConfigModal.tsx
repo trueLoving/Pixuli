@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { GitHubConfig } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { X, Github, Settings, Save } from 'lucide-react'
+import { X, Github, Settings, Save, Trash2 } from 'lucide-react'
 
 interface GitHubConfigModalProps {
   isOpen: boolean
@@ -9,7 +9,7 @@ interface GitHubConfigModalProps {
 }
 
 const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }) => {
-  const { githubConfig, setGitHubConfig } = useImageStore()
+  const { githubConfig, setGitHubConfig, clearGitHubConfig } = useImageStore()
   const [formData, setFormData] = useState<GitHubConfig>({
     owner: githubConfig?.owner || '',
     repo: githubConfig?.repo || '',
@@ -185,6 +185,21 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
 
               {/* 按钮组 */}
               <div className="flex space-x-3 pt-4">
+                {githubConfig && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('确定要清除当前配置吗？这将清除所有已保存的GitHub配置信息。')) {
+                        clearGitHubConfig()
+                        onClose()
+                      }
+                    }}
+                    className="px-4 py-2 border border-red-300 text-red-700 rounded-md hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center space-x-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>清除配置</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={onClose}
