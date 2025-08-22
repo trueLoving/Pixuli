@@ -10,6 +10,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* 工具类 */
@@ -67,17 +68,70 @@ body {
   .grid {
     grid-template-columns: repeat(1, 1fr);
   }
+
+  /* 移动端优化 */
+  .text-2xl {
+    font-size: 1.5rem;
+  }
+
+  .px-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .w-16 {
+    width: 3rem;
+  }
+
+  .h-16 {
+    height: 3rem;
+  }
+
+  .w-8 {
+    width: 1.5rem;
+  }
+
+  .h-8 {
+    height: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* 平板端优化 */
+  .max-w-7xl {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .text-xl {
+    font-size: 1.125rem;
+  }
 }
 
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* 小屏幕桌面端优化 */
+  .max-w-7xl {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -154,4 +208,209 @@ body {
 
 .tag-secondary {
   @apply bg-gray-100 text-gray-700;
+}
+
+/* 响应式容器 */
+.container-responsive {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* 响应式网格 */
+.grid-responsive {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 响应式文本 */
+.text-responsive {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: 1.25rem;
+  }
+}
+
+/* 响应式间距 */
+.space-responsive {
+  margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+  .space-responsive {
+    margin: 1.5rem 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .space-responsive {
+    margin: 2rem 0;
+  }
+}
+
+/* 响应式按钮 */
+.btn-responsive {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .btn-responsive {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .btn-responsive {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+  }
+}
+
+/* 响应式导航 */
+.nav-responsive {
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .nav-responsive {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav-responsive {
+    padding: 1.25rem 2rem;
+  }
+}
+
+/* 响应式模态框 */
+.modal-responsive {
+  width: 90%;
+  max-width: 28rem;
+  margin: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .modal-responsive {
+    width: 80%;
+    max-width: 32rem;
+    margin: 0 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-responsive {
+    width: 70%;
+    max-width: 36rem;
+    margin: 0 2rem;
+  }
+}
+
+/* 响应式图片网格 */
+.image-grid-responsive {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(1, 1fr);
+}
+
+@media (min-width: 640px) {
+  .image-grid-responsive {
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .image-grid-responsive {
+    gap: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .image-grid-responsive {
+    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* 响应式搜索框 */
+.search-responsive {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .search-responsive {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .search-responsive {
+    padding: 1rem 1.25rem;
+    font-size: 1.125rem;
+  }
 }

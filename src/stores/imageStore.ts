@@ -40,13 +40,19 @@ export const useImageStore = create<ImageState>((set, get) => ({
   initializeStorage: () => {
     const { githubConfig } = get()
     if (githubConfig) {
-      const storageService = new GitHubStorageService(githubConfig)
-      set({ storageService })
+      try {
+        const storageService = new GitHubStorageService(githubConfig)
+        set({ storageService })
+      } catch (error) {
+        console.error('Failed to initialize storage service:', error)
+        set({ error: '初始化存储服务失败' })
+      }
     }
   },
 
   loadImages: async () => {
     const { storageService } = get()
+    
     if (!storageService) {
       set({ error: 'GitHub 配置未初始化' })
       return
@@ -57,8 +63,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
       const images = await storageService.getImageList()
       set({ images, loading: false })
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : '加载图片失败'
       set({ 
-        error: error instanceof Error ? error.message : '加载图片失败', 
+        error: errorMsg, 
         loading: false 
       })
     }

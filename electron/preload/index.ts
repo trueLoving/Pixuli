@@ -23,6 +23,15 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   // ...
 })
 
+// --------- Expose GitHub API to the Renderer process ---------
+contextBridge.exposeInMainWorld('electronAPI', {
+  githubUpload: (params: any) => ipcRenderer.invoke('github:upload', params),
+  githubDelete: (params: any) => ipcRenderer.invoke('github:delete', params),
+  githubGetList: (params: any) => ipcRenderer.invoke('github:getList', params),
+  githubUpdateMetadata: (params: any) => ipcRenderer.invoke('github:updateMetadata', params),
+  githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
+})
+
 // --------- Preload scripts loading ---------
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {

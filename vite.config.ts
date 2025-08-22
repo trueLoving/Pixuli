@@ -3,6 +3,7 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import electron from 'vite-plugin-electron/simple'
+import renderer from 'vite-plugin-electron-renderer'
 import pkg from './package.json'
 
 // https://vitejs.dev/config/
@@ -62,6 +63,50 @@ export default defineConfig(({ command }) => {
         // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
         // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
+      }),
+      renderer({
+        nodeIntegration: false,
+        resolve: {
+          // 解决 Octokit 依赖中的 Node.js 模块问题
+          alias: {
+            'os': false,
+            'path': false,
+            'fs': false,
+            'crypto': false,
+            'stream': false,
+            'util': false,
+            'buffer': false,
+            'events': false,
+            'url': false,
+            'querystring': false,
+            'http': false,
+            'https': false,
+            'zlib': false,
+            'tty': false,
+            'assert': false,
+            'constants': false,
+            'domain': false,
+            'punycode': false,
+            'string_decoder': false,
+            'timers': false,
+            'tty': false,
+            'vm': false,
+            'worker_threads': false,
+            'child_process': false,
+            'cluster': false,
+            'dgram': false,
+            'dns': false,
+            'http2': false,
+            'https': false,
+            'net': false,
+            'perf_hooks': false,
+            'readline': false,
+            'repl': false,
+            'tls': false,
+            'v8': false,
+            'worker_threads': false,
+          }
+        }
       }),
     ],
     server: process.env.VSCODE_DEBUG && (() => {
