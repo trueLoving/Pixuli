@@ -39,7 +39,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: 安装 pnpm
         uses: pnpm/action-setup@v2
