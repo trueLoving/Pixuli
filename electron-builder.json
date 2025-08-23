@@ -34,8 +34,11 @@
     "deleteAppDataOnUninstall": false
   },
   "publish": {
-    "provider": "generic",
+    "provider": "github",
+    "owner": "trueLoving",
+    "repo": "Pixuli",
     "channel": "latest",
-    "url": "https://github.com/electron-vite/electron-vite-react/releases/download/v0.9.9/"
+    "releaseType": "release",
+    "asset": "release/${version}/${productName}_${version}.${ext}"
   }
 }
