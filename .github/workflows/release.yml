@@ -23,16 +23,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest]
         include:
           - os: windows-latest
             platform: win
             artifact_name: win
             file_extensions: '.exe'
-          # - os: macos-latest
-          #   platform: mac
-          #   artifact_name: mac
-          #   file_extensions: '.dmg,.zip'
+          - os: macos-latest
+            platform: mac
+            artifact_name: mac
+            file_extensions: '.dmg,.zip'
 
     steps:
       - name: 检出代码
@@ -95,8 +95,8 @@ jobs:
           name: pixuli-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
           path: |
             release/*.exe
-            # release/*.dmg
-            # release/*.zip
+            release/*.dmg
+            release/*.zip
           retention-days: 30
 
   create-release:
@@ -149,7 +149,7 @@ jobs:
             请根据您的操作系统选择相应的安装包：
             
             **Windows**: 下载 `.exe` 文件
-            # **macOS**: 下载 `.dmg` 或 `.zip` 文件
+            **macOS**: 下载 `.dmg` 或 `.zip` 文件
             
             ### 构建信息
             - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
@@ -170,22 +170,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 上传 macOS DMG 包
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #       asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/*.dmg
-      #       asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos.dmg
-      #       asset_content_type: application/octet-stream
+      - name: 上传 macOS DMG 包
+        run: |
+          # 查找 macOS DMG 构建产物
+          find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
+            echo "上传文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 上传 macOS ZIP 包
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #       asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/*.zip
-      #       asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos.zip
-      #       asset_content_type: application/zip 
+      - name: 上传 macOS ZIP 包
+        run: |
+          # 查找 macOS ZIP 构建产物
+          find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.zip" -type f | while read file; do
+            echo "上传文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
