@@ -1,9 +1,6 @@
 name: 发布 Pixuli
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -23,16 +20,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest]
         include:
           - os: windows-latest
             platform: win
             artifact_name: win
             file_extensions: '.exe'
-          # - os: macos-latest
-          #   platform: mac
-          #   artifact_name: mac
-          #   file_extensions: '.dmg,.zip'
+          - os: macos-latest
+            platform: mac
+            artifact_name: mac
+            file_extensions: '.dmg,.zip'
 
     steps:
       - name: 检出代码
@@ -60,14 +57,9 @@ jobs:
         id: version
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            # 从 tag 中提取版本号，移除 'v' 前缀
-            VERSION=${GITHUB_REF#refs/tags/}
-            VERSION=${VERSION#v}
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          fi
+          # 从手动输入获取版本号
+          VERSION=${{ github.event.inputs.version }}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
           echo "标签版本: v$VERSION"
@@ -95,6 +87,8 @@ jobs:
           name: pixuli-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
           path: |
             release/*.exe
+            release/*.dmg
+            release/*.zip
             !release/*.blockmap
             !release/*.yml
             !release/*.map
@@ -103,7 +97,6 @@ jobs:
   create-release:
     needs: build-and-release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 检出代码
@@ -140,26 +133,57 @@ jobs:
           else
             # 使用 GitHub CLI 创建发布
             gh release create ${{ steps.version.outputs.TAG_VERSION }} \
-              --title "Pixuli v${{ steps.version.outputs.VERSION }}" \
-              --notes "## 新版本发布 🎉
-              
-              ### 版本: v${{ steps.version.outputs.VERSION }}
-              
-              ### 更新内容
-              - 修复已知问题
-              - 性能优化
-              - 新功能添加
-              
-              ### 下载
+              --title "Pixuli v${{ steps.version.outputs.VERSION }} - 图像处理工具" \
+              --notes "## 🎉 Pixuli v${{ steps.version.outputs.VERSION }} 发布
+
+              ### ✨ 新功能
+              - 🆕 全新的用户界面设计
+              - 🖼️ 支持多种图像格式处理
+              - ⚡ 性能优化和响应速度提升
+              - 🔧 更多图像编辑工具
+
+              ### 🐛 修复问题
+              - 修复已知的界面显示问题
+              - 解决图像处理过程中的稳定性问题
+              - 优化内存使用和资源管理
+
+              ### 📦 下载说明
               请根据您的操作系统选择相应的安装包：
-              
-              **Windows**: 下载 .exe 文件
-              # **macOS**: 下载 .dmg 或 .zip 文件
-              
-              ### 构建信息
+
+              **🪟 Windows 用户**
+              - 下载 `.exe` 文件进行安装
+              - 支持 Windows 10/11 (64位)
+              - 推荐使用 Windows 10 1903 或更高版本
+
+              **🍎 macOS 用户**
+              - 下载 `.dmg` 文件进行安装
+              - 支持 macOS 10.15 (Catalina) 或更高版本
+              - 也提供 `.zip` 便携版本
+
+              ### 🚀 安装指南
+              1. 下载对应系统的安装包
+              2. 运行安装程序或解压文件
+              3. 按照安装向导完成安装
+              4. 启动 Pixuli 开始使用
+
+              ### 💻 系统要求
+              - **Windows**: Windows 10/11 (64位), 4GB RAM, 2GB 可用磁盘空间
+              - **macOS**: macOS 10.15+, 4GB RAM, 2GB 可用磁盘空间
+              - **处理器**: Intel/AMD 64位处理器或 Apple Silicon
+
+              ### 📋 更新日志
+              - 版本: v${{ steps.version.outputs.VERSION }}
               - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
               - 提交: ${{ github.sha }}
-              - 分支: ${{ github.ref_name }}" \
+              - 分支: ${{ github.ref_name }}
+
+              ### 🔗 相关链接
+              - 📖 [使用文档](https://github.com/trueLoving/Pixuli/wiki)
+              - 🐛 [问题反馈](https://github.com/trueLoving/Pixuli/issues)
+              - 💬 [讨论区](https://github.com/trueLoving/Pixuli/discussions)
+
+              ---
+              *感谢您使用 Pixuli！如有问题或建议，欢迎在 GitHub 上反馈。*" \
               --draft=false \
               --prerelease=false
           fi
@@ -181,22 +205,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 上传 macOS DMG 包
-      #   run: |
-      #     # 查找 macOS DMG 构建产物
-      #     find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
-      #       echo "上传文件: $file"
-      #       gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
-      #       done
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 上传 macOS DMG 包
+        run: |
+          # 查找 macOS DMG 构建产物
+          find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
+            echo "上传文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 上传 macOS ZIP 包
-      #   run: |
-      #     # 查找 macOS ZIP 构建产物
-      #     find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.zip" -type f | while read file; do
-      #       echo "上传文件: $file"
-      #       gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
-      #       done
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      - name: 上传 macOS ZIP 包
+        run: |
+          # 查找 macOS ZIP 构建产物
+          find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.zip" -type f | while read file; do
+            echo "上传文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
