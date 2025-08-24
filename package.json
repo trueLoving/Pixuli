@@ -14,12 +14,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "electron": "wait-on tcp:5173 && cross-env IS_DEV=true electron .",
-    "electron:dev": "concurrently \"npm run dev\" \"npm run electron\"",
-    "electron:build": "npm run build && electron-builder",
-    "dist": "npm run build && electron-builder --publish=never",
-    "dist:win": "npm run build && electron-builder --win --publish=never",
-    "dist:mac": "npm run build && electron-builder --mac --publish=never",
-    "dist:linux": "npm run build && electron-builder --linux --publish=never"
+    "electron:dev": "concurrently \"pnpm run dev\" \"pnpm run electron\"",
+    "electron:build": "pnpm run build && electron-builder",
+    "dist": "pnpm run build && electron-builder --publish=never",
+    "dist:win": "pnpm run build && electron-builder --win --publish=never",
+    "dist:mac": "pnpm run build && electron-builder --mac --publish=never",
+    "dist:linux": "pnpm run build && electron-builder --linux --publish=never"
   },
   "keywords": [
     "electron",
