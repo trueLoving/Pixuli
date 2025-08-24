@@ -133,31 +133,35 @@ jobs:
       - name: 创建发布
         id: create_release
         run: |
-          # 使用 GitHub CLI 创建发布
-          gh release create ${{ steps.version.outputs.TAG_VERSION }} \
-            --title "Pixuli v${{ steps.version.outputs.VERSION }}" \
-            --notes "## 新版本发布 🎉
-            
-            ### 版本: v${{ steps.version.outputs.VERSION }}
-            
-            ### 更新内容
-            - 修复已知问题
-            - 性能优化
-            - 新功能添加
-            
-            ### 下载
-            请根据您的操作系统选择相应的安装包：
-            
-            **Windows**: 下载 .exe 文件
-            **macOS**: 下载 .dmg 或 .zip 文件
-            
-            ### 构建信息
-            - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-            - 提交: ${{ github.sha }}
-            - 分支: ${{ github.ref_name }}" \
-            --draft=false \
-            --prerelease=false \
-            --force
+          # 检查标签是否已存在
+          if gh release view ${{ steps.version.outputs.TAG_VERSION }} >/dev/null 2>&1; then
+            echo "标签 ${{ steps.version.outputs.TAG_VERSION }} 已存在，跳过创建"
+          else
+            # 使用 GitHub CLI 创建发布
+            gh release create ${{ steps.version.outputs.TAG_VERSION }} \
+              --title "Pixuli v${{ steps.version.outputs.VERSION }}" \
+              --notes "## 新版本发布 🎉
+              
+              ### 版本: v${{ steps.version.outputs.VERSION }}
+              
+              ### 更新内容
+              - 修复已知问题
+              - 性能优化
+              - 新功能添加
+              
+              ### 下载
+              请根据您的操作系统选择相应的安装包：
+              
+              **Windows**: 下载 .exe 文件
+              **macOS**: 下载 .dmg 或 .zip 文件
+              
+              ### 构建信息
+              - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+              - 提交: ${{ github.sha }}
+              - 分支: ${{ github.ref_name }}" \
+              --draft=false \
+              --prerelease=false
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
