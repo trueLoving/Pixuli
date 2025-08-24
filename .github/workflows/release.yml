@@ -19,20 +19,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest]
         include:
-          - os: ubuntu-latest
-            platform: linux
-            artifact_name: linux
-            file_extensions: '.AppImage,.deb,.rpm'
           - os: windows-latest
             platform: win
             artifact_name: win
-            file_extensions: '.exe,.msi'
-          - os: macos-latest
-            platform: mac
-            artifact_name: mac
-            file_extensions: '.dmg,.pkg'
+            file_extensions: '.exe'
+          # - os: macos-latest
+          #   platform: mac
+          #   artifact_name: mac
+          #   file_extensions: '.dmg,.zip'
 
     steps:
       - name: 检出代码
@@ -94,8 +90,9 @@ jobs:
         with:
           name: pixuli-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
           path: |
-            release/**/*
-            !release/**/*.blockmap
+            release/*.exe
+            # release/*.dmg
+            # release/*.zip
           retention-days: 30
 
   create-release:
@@ -152,24 +149,13 @@ jobs:
             ### 下载
             请根据您的操作系统选择相应的安装包：
             
-            **Windows**: 下载 `.exe` 或 `.msi` 文件
-            **macOS**: 下载 `.dmg` 或 `.pkg` 文件  
-            **Linux**: 下载 `.AppImage`、`.deb` 或 `.rpm` 文件
+            **Windows**: 下载 `.exe` 文件
+            # **macOS**: 下载 `.dmg` 或 `.zip` 文件
             
             ### 构建信息
             - 构建时间: ${{ github.event.head_commit.timestamp || github.event.schedule }}
             - 提交: ${{ github.sha }}
             - 分支: ${{ github.ref_name }}
-
-      - name: 上传构建产物到 Release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/pixuli-linux-v${{ steps.version.outputs.VERSION }}/**/*
-          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-linux
-          asset_content_type: application/octet-stream
 
       - name: 上传 Windows 构建产物
         uses: actions/upload-release-asset@v1
@@ -177,16 +163,26 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }}/**/*
-          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-windows
+          asset_path: artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }}/*.exe
+          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-windows.exe
           asset_content_type: application/octet-stream
 
-      - name: 上传 macOS 构建产物
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/**/*
-          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos
-          asset_content_type: application/octet-stream 
+      # - name: 上传 macOS DMG 包
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #       asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/*.dmg
+      #       asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos.dmg
+      #       asset_content_type: application/octet-stream
+
+      # - name: 上传 macOS ZIP 包
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #       asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/*.zip
+      #       asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos.zip
+      #       asset_content_type: application/zip 
