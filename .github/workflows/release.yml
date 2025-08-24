@@ -24,12 +24,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             artifact_name: linux
+            file_extensions: '.AppImage,.deb,.rpm'
           - os: windows-latest
             platform: win
             artifact_name: win
+            file_extensions: '.exe,.msi'
           - os: macos-latest
             platform: mac
             artifact_name: mac
+            file_extensions: '.dmg,.pkg'
 
     steps:
       - name: 检出代码
@@ -43,7 +46,7 @@ jobs:
       - name: 安装 pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10
 
       - name: 安装依赖
         run: pnpm install
@@ -56,22 +59,70 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 提取版本号
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # 从 tag 中提取版本号，移除 'v' 前缀
+            VERSION=${GITHUB_REF#refs/tags/}
+            VERSION=${VERSION#v}
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          fi
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
+
+      - name: 重命名构建产物
+        run: |
+          cd release
+          # 为每个文件添加版本号前缀
+          for file in *; do
+            if [ -f "$file" ]; then
+              # 提取文件扩展名
+              extension="${file##*.}"
+              filename="${file%.*}"
+              # 创建带版本号的新文件名
+              new_name="Pixuli-v${{ steps.version.outputs.VERSION }}-${{ matrix.platform }}-$filename.$extension"
+              mv "$file" "$new_name"
+              echo "重命名: $file -> $new_name"
+            fi
+          done
+
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: pixuli-${{ matrix.artifact_name }}-${{ github.ref_name }}
+          name: pixuli-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
           path: |
             release/**/*
             !release/**/*.blockmap
+          retention-days: 30
 
   create-release:
     needs: build-and-release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+
+      - name: 提取版本号
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "TAG_VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # 从 tag 中提取版本号，移除 'v' 前缀
+            VERSION=${GITHUB_REF#refs/tags/}
+            VERSION=${VERSION#v}
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          fi
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
 
       - name: 下载所有构建产物
         uses: actions/download-artifact@v4
@@ -84,14 +135,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Pixuli ${{ github.ref_name }}
+          tag_name: ${{ steps.version.outputs.TAG_VERSION }}
+          release_name: Pixuli v${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
           body: |
             ## 新版本发布 🎉
             
-            ### 版本: ${{ github.ref_name }}
+            ### 版本: v${{ steps.version.outputs.VERSION }}
             
             ### 更新内容
             - 修复已知问题
@@ -101,6 +152,41 @@ jobs:
             ### 下载
             请根据您的操作系统选择相应的安装包：
             
-            **Windows**: 下载 `.exe` 文件
-            **macOS**: 下载 `.dmg` 文件  
-            **Linux**: 下载 `.AppImage` 文件 
+            **Windows**: 下载 `.exe` 或 `.msi` 文件
+            **macOS**: 下载 `.dmg` 或 `.pkg` 文件  
+            **Linux**: 下载 `.AppImage`、`.deb` 或 `.rpm` 文件
+            
+            ### 构建信息
+            - 构建时间: ${{ github.event.head_commit.timestamp || github.event.schedule }}
+            - 提交: ${{ github.sha }}
+            - 分支: ${{ github.ref_name }}
+
+      - name: 上传构建产物到 Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/pixuli-linux-v${{ steps.version.outputs.VERSION }}/**/*
+          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-linux
+          asset_content_type: application/octet-stream
+
+      - name: 上传 Windows 构建产物
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }}/**/*
+          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-windows
+          asset_content_type: application/octet-stream
+
+      - name: 上传 macOS 构建产物
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }}/**/*
+          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-macos
+          asset_content_type: application/octet-stream 
