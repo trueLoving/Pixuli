@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { GitHubConfig } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Github, Settings, Save, Trash2 } from 'lucide-react'
+import { showSuccess, showError, showInfo } from '@/utils/toast'
 
 interface GitHubConfigModalProps {
   isOpen: boolean
@@ -17,7 +18,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
     token: githubConfig?.token || '',
     path: githubConfig?.path || 'images'
   })
-
+  
   // 当模态框打开时，更新表单数据
   useEffect(() => {
     if (isOpen && githubConfig) {
@@ -33,12 +34,27 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setGitHubConfig(formData)
-    onClose()
+    try {
+      setGitHubConfig(formData)
+      showSuccess('GitHub 配置已成功保存！')
+      onClose()
+    } catch (error) {
+      showError(`保存配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
   const handleInputChange = (field: keyof GitHubConfig, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleClearConfig = () => {
+    try {
+      clearGitHubConfig()
+      showSuccess('GitHub 配置已成功清除！')
+      onClose()
+    } catch (error) {
+      showError(`清除配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
   // 阻止背景滚动
@@ -188,12 +204,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                 {githubConfig && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (confirm('确定要清除当前配置吗？这将清除所有已保存的GitHub配置信息。')) {
-                        clearGitHubConfig()
-                        onClose()
-                      }
-                    }}
+                    onClick={handleClearConfig}
                     className="px-4 py-2 border border-red-300 text-red-700 rounded-md hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center space-x-2"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -4,6 +4,7 @@ import { useImageStore } from '@/stores/imageStore'
 import { Eye, Edit, Trash2, Tag, Calendar, X } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad } from '@/hooks'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import './image-grid.css'
 
 interface ImageGridProps {
@@ -24,18 +25,36 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
 
   const handleDelete = useCallback(async (image: ImageItem) => {
     if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
-      await deleteImage(image.id, image.name)
+      const loadingToast = showLoading(`正在删除图片 "${image.name}"...`)
+      try {
+        await deleteImage(image.id, image.name)
+        updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 已成功删除`)
+      } catch (error) {
+        updateLoadingToError(loadingToast, `删除图片 "${image.name}" 失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      }
     }
   }, [deleteImage])
 
   const handleEdit = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowEditModal(true)
+    showInfo(`正在编辑图片 "${image.name}"`)
   }, [])
 
   const handlePreview = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowPreview(true)
+    showInfo(`正在预览图片 "${image.name}"`)
+  }, [])
+
+  const handleEditSuccess = useCallback((image: ImageItem) => {
+    showSuccess(`图片 "${image.name}" 信息已成功更新`)
+    setShowEditModal(false)
+  }, [])
+
+  const handleEditCancel = useCallback(() => {
+    showInfo('已取消编辑')
+    setShowEditModal(false)
   }, [])
 
   const formatFileSize = useCallback((bytes: number) => {
@@ -173,6 +192,8 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
           image={selectedImage}
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
+          onSuccess={handleEditSuccess}
+          onCancel={handleEditCancel}
         />
       )}
 

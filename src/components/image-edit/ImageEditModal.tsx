@@ -2,14 +2,17 @@ import React, { useState } from 'react'
 import { ImageItem, ImageEditData } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Save, Tag, FileText } from 'lucide-react'
+import { showSuccess, showError, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 
 interface ImageEditModalProps {
   image: ImageItem
   isOpen: boolean
   onClose: () => void
+  onSuccess?: (image: ImageItem) => void
+  onCancel?: () => void
 }
 
-const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose }) => {
+const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose, onSuccess, onCancel }) => {
   const { updateImage, loading } = useImageStore()
   const [formData, setFormData] = useState<ImageEditData>({
     id: image.id,
@@ -20,8 +23,27 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateImage(formData)
-    onClose()
+    const loadingToast = showLoading(`正在更新图片 "${image.name}" 信息...`)
+    try {
+      await updateImage(formData)
+      updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 信息已成功更新`)
+      if (onSuccess) {
+        onSuccess(image)
+      } else {
+        onClose()
+      }
+    } catch (error) {
+      updateLoadingToError(loadingToast, `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      onClose()
+    }
+  }
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel()
+    } else {
+      onClose()
+    }
   }
 
   const handleInputChange = (field: keyof ImageEditData, value: string | string[]) => {
@@ -106,7 +128,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose 
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCancel}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
             >
               取消

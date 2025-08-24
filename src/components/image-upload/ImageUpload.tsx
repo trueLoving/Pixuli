@@ -3,12 +3,13 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, Tag, FileText } from 'lucide-react'
 import { ImageUploadData } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 
 const ImageUpload: React.FC = () => {
   const { uploadImage, loading } = useImageStore()
   const [uploadData, setUploadData] = useState<ImageUploadData | null>(null)
   const [showForm, setShowForm] = useState(false)
-
+  
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0]
@@ -19,6 +20,7 @@ const ImageUpload: React.FC = () => {
         tags: []
       })
       setShowForm(true)
+      showInfo(`已选择图片: ${file.name}`)
     }
   }, [])
 
@@ -33,9 +35,15 @@ const ImageUpload: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (uploadData) {
-      await uploadImage(uploadData)
-      setUploadData(null)
-      setShowForm(false)
+      const loadingToast = showLoading(`正在上传图片 "${uploadData.name || uploadData.file.name}"...`)
+      try {
+        await uploadImage(uploadData)
+        updateLoadingToSuccess(loadingToast, `图片 "${uploadData.name || uploadData.file.name}" 上传成功！`)
+        setUploadData(null)
+        setShowForm(false)
+      } catch (error) {
+        updateLoadingToError(loadingToast, `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      }
     }
   }
 
@@ -46,6 +54,7 @@ const ImageUpload: React.FC = () => {
   }
 
   const handleCancel = () => {
+    showInfo('已取消上传')
     setUploadData(null)
     setShowForm(false)
   }

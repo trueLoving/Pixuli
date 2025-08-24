@@ -37,25 +37,26 @@
     "@vitejs/plugin-react": "^4.0.0",
     "concurrently": "^8.0.0",
     "cross-env": "^7.0.0",
+    "electron": "^33.4.11",
     "electron-builder": "^24.0.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
-    "wait-on": "^7.0.0",
-    "electron": "^33.4.11"
+    "wait-on": "^7.0.0"
   },
   "dependencies": {
-    "vite-plugin-electron": "^0.29.0",
-    "vite-plugin-electron-renderer": "^0.14.6",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.24",
     "electron-updater": "6.3.9",
     "lucide-react": "^0.263.1",
     "octokit": "^3.1.2",
+    "postcss": "^8.4.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.6.0",
     "react-image-crop": "^10.1.8",
     "tailwindcss": "^3.3.2",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
     "zustand": "^4.4.1"
   },
   "build": {
@@ -74,11 +75,17 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -86,7 +93,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "${productName}_${version}_${arch}.${ext}"
@@ -95,7 +104,9 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "artifactName": "${productName}_${version}_${arch}.${ext}"

@@ -4,6 +4,7 @@ import { Settings, Upload, RefreshCw, Search, Filter } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageGrid from '@/components/image-grid/ImageGrid'
+import { Toaster } from 'react-hot-toast'
 import './App.css'
 
 function App() {
@@ -234,6 +235,7 @@ function App() {
         isOpen={showConfigModal}
         onClose={handleCloseConfigModal}
       />
+      <Toaster />
     </div>
   )
 }
