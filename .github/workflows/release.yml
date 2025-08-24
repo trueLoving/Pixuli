@@ -148,15 +148,16 @@ jobs:
             ### 下载
             请根据您的操作系统选择相应的安装包：
             
-            **Windows**: 下载 `.exe` 文件
-            **macOS**: 下载 `.dmg` 或 `.zip` 文件
+            **Windows**: 下载 .exe 文件
+            **macOS**: 下载 .dmg 或 .zip 文件
             
             ### 构建信息
             - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
             - 提交: ${{ github.sha }}
             - 分支: ${{ github.ref_name }}" \
             --draft=false \
-            --prerelease=false
+            --prerelease=false \
+            --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
