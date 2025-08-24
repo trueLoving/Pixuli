@@ -95,8 +95,9 @@ jobs:
           name: pixuli-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
           path: |
             release/*.exe
-            # release/*.dmg
-            # release/*.zip
+            !release/*.blockmap
+            !release/*.yml
+            !release/*.map
           retention-days: 30
 
   create-release:
@@ -167,10 +168,15 @@ jobs:
 
       - name: 上传 Windows 构建产物
         run: |
-          # 查找 Windows 构建产物
+          # 查找 Windows 构建产物，只上传主要的应用程序文件
           find artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }} -name "*.exe" -type f | while read file; do
-            echo "上传文件: $file"
-            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+            # 过滤掉重复的文件名，只保留带版本号的文件
+            if [[ "$(basename "$file")" == *"v${{ steps.version.outputs.VERSION }}"* ]]; then
+              echo "上传文件: $file"
+              gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+            else
+              echo "跳过重复文件: $file"
+            fi
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
