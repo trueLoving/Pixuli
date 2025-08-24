@@ -11,6 +11,10 @@ on:
         required: true
         default: '1.0.0'
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   NODE_VERSION: '22'
 
@@ -128,16 +132,11 @@ jobs:
 
       - name: 创建发布
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.version.outputs.TAG_VERSION }}
-          release_name: Pixuli v${{ steps.version.outputs.VERSION }}
-          draft: false
-          prerelease: false
-          body: |
-            ## 新版本发布 🎉
+        run: |
+          # 使用 GitHub CLI 创建发布
+          gh release create ${{ steps.version.outputs.TAG_VERSION }} \
+            --title "Pixuli v${{ steps.version.outputs.VERSION }}" \
+            --notes "## 新版本发布 🎉
             
             ### 版本: v${{ steps.version.outputs.VERSION }}
             
@@ -153,19 +152,23 @@ jobs:
             # **macOS**: 下载 `.dmg` 或 `.zip` 文件
             
             ### 构建信息
-            - 构建时间: ${{ github.event.head_commit.timestamp || github.event.schedule }}
+            - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
             - 提交: ${{ github.sha }}
-            - 分支: ${{ github.ref_name }}
-
-      - name: 上传 Windows 构建产物
-        uses: actions/upload-release-asset@v1
+            - 分支: ${{ github.ref_name }}" \
+            --draft=false \
+            --prerelease=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }}/*.exe
-          asset_name: Pixuli-v${{ steps.version.outputs.VERSION }}-windows.exe
-          asset_content_type: application/octet-stream
+
+      - name: 上传 Windows 构建产物
+        run: |
+          # 查找 Windows 构建产物
+          find artifacts/pixuli-win-v${{ steps.version.outputs.VERSION }} -name "*.exe" -type f | while read file; do
+            echo "上传文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: 上传 macOS DMG 包
       #   uses: actions/upload-release-asset@v1
