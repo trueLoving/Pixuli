@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
@@ -16,6 +16,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [showUrlModal, setShowUrlModal] = useState(false)
   
   // 使用懒加载 Hook
   const { visibleItems: visibleImages, observeElement } = useLazyLoad({
@@ -55,6 +56,25 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
   const handleEditCancel = useCallback(() => {
     showInfo('已取消编辑')
     setShowEditModal(false)
+  }, [])
+
+  const handleViewUrl = useCallback((image: ImageItem) => {
+    setSelectedImage(image)
+    setShowUrlModal(true)
+    showInfo(`查看图片 "${image.name}" 的在线地址`)
+  }, [])
+
+  const handleCopyUrl = useCallback(async (url: string, type: 'url' | 'githubUrl') => {
+    try {
+      await navigator.clipboard.writeText(url)
+      showSuccess(`${type === 'url' ? '图片地址' : 'GitHub地址'}已复制到剪贴板`)
+    } catch (error) {
+      showError('复制失败，请手动复制')
+    }
+  }, [])
+
+  const handleOpenUrl = useCallback((url: string) => {
+    window.open(url, '_blank')
   }, [])
 
   const formatFileSize = useCallback((bytes: number) => {
@@ -117,6 +137,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                     title="预览"
                   >
                     <Eye className="w-4 h-4 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={() => handleViewUrl(image)}
+                    className="image-action-button"
+                    title="查看地址"
+                  >
+                    <Link className="w-4 h-4 text-gray-700" />
                   </button>
                   <button
                     onClick={() => handleEdit(image)}
@@ -219,10 +246,115 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
               {selectedImage.description && (
                 <p className="text-gray-300 mb-2">{selectedImage.description}</p>
               )}
-              <div className="flex items-center justify-center space-x-4 text-sm text-gray-300">
+              <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
                 <span>{selectedImage.width} × {selectedImage.height}</span>
                 {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
                 <span>{formatDate(selectedImage.createdAt)}</span>
+              </div>
+              
+              {/* 在线地址信息 */}
+              <div className="flex items-center justify-center space-x-3">
+                <button
+                  onClick={() => handleCopyUrl(selectedImage.url, 'url')}
+                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center space-x-1"
+                >
+                  <Link className="w-3 h-3" />
+                  <span>复制地址</span>
+                </button>
+                <button
+                  onClick={() => handleOpenUrl(selectedImage.url)}
+                  className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center space-x-1"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>打开地址</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 在线地址模态框 */}
+      {showUrlModal && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="max-w-2xl w-full mx-4 bg-white rounded-lg shadow-xl">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">图片在线地址</h3>
+              <button
+                onClick={() => setShowUrlModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center space-x-2 mb-4">
+                <img
+                  src={selectedImage.url}
+                  alt={selectedImage.name}
+                  className="w-16 h-16 object-cover rounded-lg"
+                />
+                <div>
+                  <h4 className="font-medium text-gray-900">{selectedImage.name}</h4>
+                  <p className="text-sm text-gray-500">{selectedImage.width} × {selectedImage.height}</p>
+                </div>
+              </div>
+
+              {/* 图片访问地址 */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">图片访问地址</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={selectedImage.url}
+                      readOnly
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                    />
+                    <button
+                      onClick={() => handleCopyUrl(selectedImage.url, 'url')}
+                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      复制
+                    </button>
+                    <button
+                      onClick={() => handleOpenUrl(selectedImage.url)}
+                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>打开</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* GitHub 地址 */}
+                {selectedImage.githubUrl && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub 地址</label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={selectedImage.githubUrl}
+                        readOnly
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                      />
+                      <button
+                        onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
+                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        复制
+                      </button>
+                      <button
+                        onClick={() => handleOpenUrl(selectedImage.githubUrl)}
+                        className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        <span>打开</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
