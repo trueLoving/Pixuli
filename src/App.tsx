@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, Upload, RefreshCw, Search, Filter } from 'lucide-react'
+import { Settings, Upload, RefreshCw, Search, Filter, Zap } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageGrid from '@/components/image-grid/ImageGrid'
+import ImageCompression from '@/components/image-upload/ImageCompression'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
 
@@ -18,6 +19,7 @@ function App() {
   } = useImageStore()
   
   const [showConfigModal, setShowConfigModal] = useState(false)
+  const [showCompression, setShowCompression] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
@@ -36,6 +38,16 @@ function App() {
 
   const handleCloseConfigModal = useCallback(() => {
     setShowConfigModal(false)
+  }, [])
+
+  const handleOpenCompression = useCallback(() => {
+    console.log('Opening compression modal, current state:', showCompression)
+    setShowCompression(true)
+    console.log('State set to true, new state:', true)
+  }, [showCompression])
+
+  const handleCloseCompression = useCallback(() => {
+    setShowCompression(false)
   }, [])
 
   // 初始化存储服务
@@ -93,6 +105,11 @@ function App() {
           isOpen={showConfigModal}
           onClose={handleCloseConfigModal}
         />
+
+        {/* 图片压缩模态框 */}
+        {showCompression && (
+          <ImageCompression onClose={handleCloseCompression} />
+        )}
       </div>
     )
   }
@@ -111,6 +128,13 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <button
+                onClick={handleOpenCompression}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title="图片压缩工具"
+              >
+                <Zap className="w-5 h-5" />
+              </button>
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -235,6 +259,12 @@ function App() {
         isOpen={showConfigModal}
         onClose={handleCloseConfigModal}
       />
+
+      {/* 图片压缩模态框 */}
+      {showCompression && (
+        <ImageCompression onClose={handleCloseCompression} />
+      )}
+
       <Toaster />
     </div>
   )
