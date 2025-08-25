@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
 import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
+import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import './image-grid.css'
 
 interface ImageGridProps {
@@ -17,6 +18,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
+  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
   
   // 使用懒加载 Hook
   const { visibleItems: visibleImages, observeElement } = useLazyLoad({
@@ -76,6 +78,31 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
   const handleOpenUrl = useCallback((url: string) => {
     window.open(url, '_blank')
   }, [])
+
+  // 获取图片真实尺寸
+  const fetchImageDimensions = useCallback(async (image: ImageItem) => {
+    if (imageDimensions[image.id]) return // 已经获取过了
+    
+    try {
+      const dimensions = await getImageDimensionsFromUrl(image.url)
+      setImageDimensions(prev => ({
+        ...prev,
+        [image.id]: dimensions
+      }))
+    } catch (error) {
+      console.warn(`Failed to get dimensions for ${image.name}:`, error)
+    }
+  }, [imageDimensions])
+
+  // 当图片变为可见时获取尺寸
+  useEffect(() => {
+    visibleImages.forEach(imageId => {
+      const image = images.find(img => img.id === imageId)
+      if (image && (image.width === 0 || image.height === 0)) {
+        fetchImageDimensions(image)
+      }
+    })
+  }, [visibleImages, images, fetchImageDimensions])
 
   const formatFileSize = useCallback((bytes: number) => {
     if (bytes === 0) return '0 B'
@@ -199,7 +226,18 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                 
                 {/* 图片详情 */}
                 <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>{image.width} × {image.height}</span>
+                  <span>
+                    {(() => {
+                      const dimensions = imageDimensions[image.id]
+                      if (dimensions) {
+                        return `${dimensions.width} × ${dimensions.height}`
+                      } else if (image.width > 0 && image.height > 0) {
+                        return `${image.width} × ${image.height}`
+                      } else {
+                        return '获取中...'
+                      }
+                    })()}
+                  </span>
                   {image.size > 0 && <span>{formatFileSize(image.size)}</span>}
                 </div>
                 
@@ -247,7 +285,18 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                 <p className="text-gray-300 mb-2">{selectedImage.description}</p>
               )}
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
-                <span>{selectedImage.width} × {selectedImage.height}</span>
+                <span>
+                  {(() => {
+                    const dimensions = imageDimensions[selectedImage.id]
+                    if (dimensions) {
+                      return `${dimensions.width} × ${dimensions.height}`
+                    } else if (selectedImage.width > 0 && selectedImage.height > 0) {
+                      return `${selectedImage.width} × ${selectedImage.height}`
+                    } else {
+                      return '获取中...'
+                    }
+                  })()}
+                </span>
                 {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
                 <span>{formatDate(selectedImage.createdAt)}</span>
               </div>
@@ -297,7 +346,18 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                 />
                 <div>
                   <h4 className="font-medium text-gray-900">{selectedImage.name}</h4>
-                  <p className="text-sm text-gray-500">{selectedImage.width} × {selectedImage.height}</p>
+                  <p className="text-sm text-gray-500">
+                    {(() => {
+                      const dimensions = imageDimensions[selectedImage.id]
+                      if (dimensions) {
+                        return `${dimensions.width} × ${dimensions.height}`
+                      } else if (selectedImage.width > 0 && selectedImage.height > 0) {
+                        return `${selectedImage.width} × ${selectedImage.height}`
+                      } else {
+                        return '获取中...'
+                      }
+                    })()}
+                  </p>
                 </div>
               </div>
 

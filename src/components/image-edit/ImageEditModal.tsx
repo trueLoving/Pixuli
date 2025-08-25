@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ImageItem, ImageEditData } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Save, Tag, FileText } from 'lucide-react'
 import { showSuccess, showError, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
+import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 
 interface ImageEditModalProps {
   image: ImageItem
@@ -20,6 +21,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose,
     description: image.description || '',
     tags: image.tags || []
   })
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,6 +52,19 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose,
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // 获取图片真实尺寸
+  useEffect(() => {
+    if (isOpen && image && (image.width === 0 || image.height === 0)) {
+      getImageDimensionsFromUrl(image.url)
+        .then(dimensions => {
+          setImageDimensions(dimensions)
+        })
+        .catch(error => {
+          console.warn(`Failed to get dimensions for ${image.name}:`, error)
+        })
+    }
+  }, [isOpen, image])
+
   if (!isOpen) return null
 
   return (
@@ -78,7 +93,15 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose,
                 {image.name}
               </p>
               <p className="text-xs text-gray-500">
-                尺寸: {image.width} × {image.height}
+                尺寸: {(() => {
+                  if (imageDimensions) {
+                    return `${imageDimensions.width} × ${imageDimensions.height}`
+                  } else if (image.width > 0 && image.height > 0) {
+                    return `${image.width} × ${image.height}`
+                  } else {
+                    return '获取中...'
+                  }
+                })()}
               </p>
             </div>
           </div>
