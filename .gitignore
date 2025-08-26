@@ -28,3 +28,6 @@ release
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# models
+/public/models

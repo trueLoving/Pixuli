@@ -44,6 +44,14 @@
     "wait-on": "^7.0.0"
   },
   "dependencies": {
+    "@llama-node/core": "^0.1.6",
+    "@llama-node/llama-cpp": "^0.1.6",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-layers": "^4.22.0",
     "autoprefixer": "^10.4.14",
     "browser-image-compression": "^2.0.2",
     "electron-updater": "6.3.9",

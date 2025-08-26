@@ -1,14 +1,17 @@
 import React, { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, Image as ImageIcon, Tag, FileText } from 'lucide-react'
+import { Upload, X, Image as ImageIcon, Tag, FileText, Brain } from 'lucide-react'
 import { ImageUploadData } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
+import { AIAnalysis } from './AIAnalysis'
+import { AIAnalysisResult } from '@/type/ai'
 
 const ImageUpload: React.FC = () => {
   const { uploadImage, loading } = useImageStore()
   const [uploadData, setUploadData] = useState<ImageUploadData | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -57,6 +60,42 @@ const ImageUpload: React.FC = () => {
     showInfo('已取消上传')
     setUploadData(null)
     setShowForm(false)
+    setShowAIAnalysis(false)
+  }
+
+  const handleAIAnalysis = () => {
+    setShowAIAnalysis(true)
+  }
+
+  const handleAIAnalysisComplete = (result: AIAnalysisResult) => {
+    if (uploadData) {
+      setUploadData({
+        ...uploadData,
+        tags: result.tags,
+        description: result.description
+      })
+    }
+    setShowAIAnalysis(false)
+    showSuccess('AI 分析结果已应用！')
+  }
+
+  const handleAIAnalysisCancel = () => {
+    setShowAIAnalysis(false)
+  }
+
+  if (showAIAnalysis && uploadData) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <AIAnalysis
+            imageFile={uploadData.file}
+            onAnalysisComplete={handleAIAnalysisComplete}
+            onCancel={handleAIAnalysisCancel}
+            language="zh-CN"
+          />
+        </div>
+      </div>
+    )
   }
 
   if (showForm && uploadData) {
@@ -113,9 +152,19 @@ const ImageUpload: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                标签 <span className="text-gray-400 text-xs">(可选)</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  标签 <span className="text-gray-400 text-xs">(可选)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAIAnalysis}
+                  className="flex items-center gap-2 px-3 py-1 text-sm bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-md hover:from-purple-600 hover:to-blue-600 transition-all duration-200"
+                >
+                  <Brain className="w-4 h-4" />
+                  AI 分析
+                </button>
+              </div>
               <input
                 type="text"
                 value={Array.isArray(uploadData.tags) ? uploadData.tags.join(', ') : ''}

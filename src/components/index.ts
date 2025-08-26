@@ -3,6 +3,10 @@ export { default as GitHubConfigModal } from './github-config/GitHubConfigModal'
 
 // 图片上传相关
 export { default as ImageUpload } from './image-upload/ImageUpload'
+export { AIAnalysis } from './image-upload/AIAnalysis'
+export { AIAnalysisSettings } from './image-upload/AIAnalysisSettings'
+export { GGUFModelSettings } from './image-upload/GGUFModelSettings'
+export { GGUFModelSelector } from './image-upload/GGUFModelSelector'
 
 // 图片网格相关
 export { default as ImageGrid } from './image-grid/ImageGrid'
