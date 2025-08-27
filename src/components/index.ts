@@ -13,7 +13,9 @@ export { default as ImageGrid } from './image-grid/ImageGrid'
 export { default as ImageList } from './image-grid/ImageList'
 export { default as ImageBrowser } from './image-grid/ImageBrowser'
 export { default as ViewToggle } from './image-grid/ViewToggle'
+export { default as ImageSorter } from './image-grid/ImageSorter'
 export type { ViewMode } from './image-grid/ViewToggle'
+export type { SortField, SortOrder } from './image-grid/ImageSorter'
 
 // 图片编辑相关
 export { default as ImageEditModal } from './image-edit/ImageEditModal'
