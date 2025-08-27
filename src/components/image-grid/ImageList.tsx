@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, MoreHorizontal } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, MoreHorizontal, HardDrive } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
-import { getImageDimensionsFromUrl, formatFileSize } from '@/utils/imageUtils'
+import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
+import { formatFileSize } from '@/utils/fileSizeUtils'
 import { compressImage, getAutoCompressionOptions } from '@/utils/imageCompression'
 import './image-list.css'
 
@@ -347,7 +348,12 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
                         }
                       })()}
                     </span>
-                    {image.size > 0 && <span>{formatFileSize(image.size)}</span>}
+                    {image.size > 0 && (
+                      <span className="flex items-center space-x-1">
+                        <HardDrive className="w-3 h-3" />
+                        <span>{formatFileSize(image.size)}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 

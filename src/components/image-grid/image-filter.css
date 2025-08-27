@@ -204,6 +204,69 @@
   color: #374151;
 }
 
+/* 文件大小筛选 */
+.image-filter-size-range {
+  margin-top: 12px;
+}
+
+.image-filter-size-inputs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.image-filter-size-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.image-filter-size-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.image-filter-size-number {
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #374151;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.image-filter-size-number:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.image-filter-size-number::placeholder {
+  color: #9ca3af;
+}
+
+.image-filter-size-unit {
+  font-size: 11px;
+  color: #6b7280;
+  font-family: monospace;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  align-self: flex-start;
+}
+
+.image-filter-size-info {
+  padding: 8px 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
 .image-filter-footer {
   padding-top: 0.75rem;
   border-top: 1px solid #e5e7eb;

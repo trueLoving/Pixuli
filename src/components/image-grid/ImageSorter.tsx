@@ -1,8 +1,8 @@
 import React from 'react'
-import { ArrowUpDown, Calendar, FileText, SortAsc, SortDesc } from 'lucide-react'
+import { ArrowUpDown, Calendar, FileText, SortAsc, SortDesc, HardDrive } from 'lucide-react'
 import './image-sorter.css'
 
-export type SortField = 'createdAt' | 'name'
+export type SortField = 'createdAt' | 'name' | 'size'
 export type SortOrder = 'asc' | 'desc'
 
 interface ImageSorterProps {
@@ -45,6 +45,8 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
         return '上传时间'
       case 'name':
         return '文件名称'
+      case 'size':
+        return '文件大小'
       default:
         return ''
     }
@@ -74,6 +76,17 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
         <FileText className="sort-icon" />
         <span className="sort-label">{getSortLabel('name')}</span>
         {getSortIcon('name')}
+      </button>
+      
+      {/* 文件大小排序 */}
+      <button
+        onClick={() => handleSortChange('size')}
+        className={`sort-button ${currentSort === 'size' ? 'active' : 'inactive'}`}
+        title="按文件大小排序"
+      >
+        <HardDrive className="sort-icon" />
+        <span className="sort-label">{getSortLabel('size')}</span>
+        {getSortIcon('size')}
       </button>
     </div>
   )

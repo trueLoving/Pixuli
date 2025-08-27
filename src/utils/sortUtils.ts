@@ -34,6 +34,11 @@ export function sortImages(
         })
         break
         
+      case 'size':
+        // 按文件大小排序
+        comparison = a.size - b.size
+        break
+        
       default:
         comparison = 0
     }
@@ -67,7 +72,20 @@ export function getSortedImages(
  * @returns 排序描述文本
  */
 export function getSortDescription(sortField: SortField, sortOrder: SortOrder): string {
-  const fieldText = sortField === 'createdAt' ? '上传时间' : '文件名称'
+  let fieldText = ''
+  switch (sortField) {
+    case 'createdAt':
+      fieldText = '上传时间'
+      break
+    case 'name':
+      fieldText = '文件名称'
+      break
+    case 'size':
+      fieldText = '文件大小'
+      break
+    default:
+      fieldText = '未知字段'
+  }
   const orderText = sortOrder === 'asc' ? '升序' : '降序'
   return `按${fieldText}${orderText}排列`
 } 

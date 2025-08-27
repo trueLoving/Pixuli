@@ -8,7 +8,7 @@ import { FilterOptions } from '@/components/image-grid/ImageFilter'
  * @returns 筛选后的图片数组
  */
 export function filterImages(images: ImageItem[], filters: FilterOptions): ImageItem[] {
-  const { searchTerm, selectedTypes, selectedTags } = filters
+  const { searchTerm, selectedTypes, selectedTags, sizeRange } = filters
   
   return images.filter(image => {
     // 搜索词筛选
@@ -141,7 +141,7 @@ export function getTypeColor(type: string): string {
  * @returns 是否匹配
  */
 export function imageMatchesFilters(image: ImageItem, filters: FilterOptions): boolean {
-  const { searchTerm, selectedTypes, selectedTags } = filters
+  const { searchTerm, selectedTypes, selectedTags, sizeRange } = filters
   
   // 搜索词筛选
   if (searchTerm) {
@@ -168,6 +168,14 @@ export function imageMatchesFilters(image: ImageItem, filters: FilterOptions): b
     }
   }
   
+  // 文件大小筛选
+  if (sizeRange.min > 0 && image.size < sizeRange.min) {
+    return false
+  }
+  if (sizeRange.max > 0 && image.size > sizeRange.max) {
+    return false
+  }
+  
   return true
 }
 
@@ -179,7 +187,8 @@ export function createDefaultFilters(): FilterOptions {
   return {
     searchTerm: '',
     selectedTypes: [],
-    selectedTags: []
+    selectedTags: [],
+    sizeRange: { min: 0, max: 0 }
   }
 }
 
@@ -191,5 +200,7 @@ export function createDefaultFilters(): FilterOptions {
 export function isEmptyFilters(filters: FilterOptions): boolean {
   return !filters.searchTerm && 
          filters.selectedTypes.length === 0 && 
-         filters.selectedTags.length === 0
+         filters.selectedTags.length === 0 &&
+         filters.sizeRange.min === 0 && 
+         filters.sizeRange.max === 0
 } 
