@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, Upload, RefreshCw, Search, Filter, Zap } from 'lucide-react'
+import { Settings, Upload, RefreshCw, Search, Filter, Zap, Brain } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageBrowser from '@/components/image-grid/ImageBrowser'
 import ImageCompression from '@/components/image-upload/ImageCompression'
+import AIAnalysisModal from '@/components/image-upload/AIAnalysisModal'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
 
@@ -20,6 +21,7 @@ function App() {
   
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [showCompression, setShowCompression] = useState(false)
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
@@ -48,6 +50,14 @@ function App() {
 
   const handleCloseCompression = useCallback(() => {
     setShowCompression(false)
+  }, [])
+
+  const handleOpenAIAnalysis = useCallback(() => {
+    setShowAIAnalysis(true)
+  }, [])
+
+  const handleCloseAIAnalysis = useCallback(() => {
+    setShowAIAnalysis(false)
   }, [])
 
   // 初始化存储服务
@@ -128,6 +138,13 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <button
+                onClick={handleOpenAIAnalysis}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title="AI 图片分析工具"
+              >
+                <Brain className="w-5 h-5" />
+              </button>
               <button
                 onClick={handleOpenCompression}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -263,6 +280,11 @@ function App() {
       {/* 图片压缩模态框 */}
       {showCompression && (
         <ImageCompression onClose={handleCloseCompression} />
+      )}
+
+      {/* AI分析模态框 */}
+      {showAIAnalysis && (
+        <AIAnalysisModal onClose={handleCloseAIAnalysis} />
       )}
 
       <Toaster />
