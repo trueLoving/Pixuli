@@ -3,7 +3,7 @@ import { useImageStore } from '@/stores/imageStore'
 import { Settings, Upload, RefreshCw, Search, Filter, Zap } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
-import ImageGrid from '@/components/image-grid/ImageGrid'
+import ImageBrowser from '@/components/image-grid/ImageBrowser'
 import ImageCompression from '@/components/image-upload/ImageCompression'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
@@ -245,9 +245,9 @@ function App() {
             )}
           </div>
 
-          {/* 图片网格 */}
+          {/* 图片浏览 */}
           <div className="min-h-0">
-            <ImageGrid images={filteredImages} />
+            <ImageBrowser images={filteredImages} />
           </div>
           
 

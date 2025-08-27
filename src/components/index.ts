@@ -10,6 +10,10 @@ export { GGUFModelSelector } from './image-upload/GGUFModelSelector'
 
 // 图片网格相关
 export { default as ImageGrid } from './image-grid/ImageGrid'
+export { default as ImageList } from './image-grid/ImageList'
+export { default as ImageBrowser } from './image-grid/ImageBrowser'
+export { default as ViewToggle } from './image-grid/ViewToggle'
+export type { ViewMode } from './image-grid/ViewToggle'
 
 // 图片编辑相关
 export { default as ImageEditModal } from './image-edit/ImageEditModal'
