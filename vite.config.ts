@@ -66,6 +66,19 @@ export default defineConfig(({ command }) => {
       }),
       renderer(),
     ],
+    build: {
+      rollupOptions: {
+        external: [
+          '@llama-node/llama-cpp',
+          '@llama-node/core',
+          '@llama-node/llama-cpp.win32-x64-msvc',
+          '@llama-node/llama-cpp.darwin-x64',
+          '@llama-node/llama-cpp.darwin-arm64',
+          '@llama-node/llama-cpp.linux-x64-musl',
+          '@llama-node/llama-cpp.linux-x64-gnu'
+        ]
+      }
+    },
     server: process.env.VSCODE_DEBUG && (() => {
       const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
       return {

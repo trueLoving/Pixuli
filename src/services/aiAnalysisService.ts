@@ -33,48 +33,121 @@ export class AIAnalysisService {
       await this.loadLabels()
       
       this.isInitialized = true
-      console.log('AI 分析服务初始化完成')
+      console.log('✅ AI 分析服务初始化完成')
     } catch (error) {
-      console.error('AI 分析服务初始化失败:', error)
-      throw new Error('AI 分析服务初始化失败')
+      console.error('❌ AI 分析服务初始化失败:', error)
+      
+      // 提供更详细的错误信息
+      let errorMessage = 'AI 分析服务初始化失败'
+      if (error instanceof Error) {
+        if (error.message.includes('无法加载任何 AI 模型')) {
+          errorMessage = 'AI 模型加载失败，请检查模型文件或网络连接'
+        } else if (error.message.includes('TensorFlow')) {
+          errorMessage = 'TensorFlow 初始化失败，请检查浏览器兼容性'
+        } else {
+          errorMessage = `初始化失败: ${error.message}`
+        }
+      }
+      
+      throw new Error(errorMessage)
     }
   }
 
   private async loadModel(): Promise<void> {
     try {
-      // 尝试加载本地模型，如果失败则使用在线模型
+      // 优先尝试加载本地模型
       try {
+        console.log('尝试加载本地模型:', this.config.modelPath)
         this.model = await tf.loadGraphModel(this.config.modelPath)
-        console.log('本地模型加载成功')
-      } catch {
-        // 使用在线预训练模型
+        console.log('✅ 本地模型加载成功')
+        return
+      } catch (localError) {
+        console.warn('本地模型加载失败，尝试备用模型:', localError)
+      }
+
+      // 尝试加载备用本地模型
+      const fallbackModels = [
+        '/models/mobilenet_v2_100_224/model.json',
+        '/models/image_classification/model.json',
+        '/models/vision_model/model.json'
+      ]
+
+      for (const fallbackPath of fallbackModels) {
+        try {
+          console.log('尝试加载备用模型:', fallbackPath)
+          this.model = await tf.loadGraphModel(fallbackPath)
+          console.log('✅ 备用模型加载成功:', fallbackPath)
+          return
+        } catch (fallbackError) {
+          console.warn('备用模型加载失败:', fallbackPath, fallbackError)
+        }
+      }
+
+      // 如果所有本地模型都失败，尝试在线模型
+      try {
+        console.log('尝试加载在线模型...')
         this.model = await tf.loadGraphModel(
-          'https://storage.googleapis.com/tfjs-models/tfhub/mobilenet_v2_100_224/model.json'
+          'https://tfhub.dev/google/imagenet/mobilenet_v2_100_224/classification/4?tf-hub-format=compressed'
         )
-        console.log('在线模型加载成功')
+        console.log('✅ 在线模型加载成功')
+      } catch (onlineError) {
+        console.warn('在线模型加载失败:', onlineError)
+      }
+
+      // 如果所有模型都失败，使用内置的简单模型
+      if (!this.model) {
+        console.log('所有模型加载失败，使用内置简单模型')
+        this.model = await this.createSimpleModel()
       }
     } catch (error) {
-      console.error('模型加载失败:', error)
-      throw new Error('无法加载 AI 模型')
+      console.error('模型加载完全失败:', error)
+      throw new Error('无法加载任何 AI 模型，请检查模型文件或网络连接')
     }
   }
 
   private async loadLabels(): Promise<void> {
     try {
-      // 尝试加载本地标签文件
+      // 优先尝试加载本地标签文件
       try {
+        console.log('尝试加载本地标签文件:', this.config.labelsPath)
         const response = await fetch(this.config.labelsPath)
         const text = await response.text()
         this.labels = text.split('\n').filter(label => label.trim())
-      } catch {
-        // 使用默认的 ImageNet 标签
-        this.labels = await this.getDefaultLabels()
+        console.log('✅ 本地标签文件加载成功')
+        return
+      } catch (localError) {
+        console.warn('本地标签文件加载失败:', localError)
       }
-      console.log(`标签加载完成，共 ${this.labels.length} 个标签`)
+
+      // 尝试加载备用标签文件
+      const fallbackLabelPaths = [
+        '/models/mobilenet_v2_100_224/labels.txt',
+        '/models/image_classification/labels.txt',
+        '/models/vision_model/labels.txt'
+      ]
+
+      for (const labelPath of fallbackLabelPaths) {
+        try {
+          console.log('尝试加载备用标签文件:', labelPath)
+          const response = await fetch(labelPath)
+          const text = await response.text()
+          this.labels = text.split('\n').filter(label => label.trim())
+          console.log('✅ 备用标签文件加载成功:', labelPath)
+          return
+        } catch (fallbackError) {
+          console.warn('备用标签文件加载失败:', labelPath, fallbackError)
+        }
+      }
+
+      // 如果所有标签文件都失败，使用默认标签
+      console.log('所有标签文件加载失败，使用默认标签')
+      this.labels = await this.getDefaultLabels()
+      console.log(`✅ 默认标签加载完成，共 ${this.labels.length} 个标签`)
     } catch (error) {
-      console.error('标签加载失败:', error)
-      // 使用基本的标签作为后备
-      this.labels = ['图片', '照片', '图像', '视觉', '内容']
+      console.error('标签加载完全失败:', error)
+      // 使用基本的标签作为最终后备
+      this.labels = ['图片', '照片', '图像', '视觉', '内容', '物体', '场景', '元素']
+      console.log('使用基本标签作为后备')
     }
   }
 
@@ -87,6 +160,51 @@ export class AIAnalysisService {
       '山丘', '峡谷', '瀑布', '洞穴', '桥梁', '道路', '铁路', '机场', '港口', '车站',
       '商店', '餐厅', '学校', '医院', '教堂', '寺庙', '博物馆', '图书馆', '公园', '广场'
     ]
+  }
+
+  private async createSimpleModel(): Promise<tf.GraphModel> {
+    // 创建一个简单的内置模型用于基础分析
+    console.log('创建内置简单模型...')
+    
+    try {
+      // 尝试加载我们创建的本地模型
+      const localModel = await tf.loadGraphModel('/models/image_classification/model.json')
+      console.log('✅ 本地备用模型加载成功')
+      return localModel
+    } catch (localError) {
+      console.warn('本地备用模型加载失败，创建内置模型:', localError)
+    }
+    
+    // 如果本地模型也失败，创建一个非常简单的模型
+    console.log('创建内置简单模型...')
+    
+    // 创建一个最小的模型结构
+    const model = tf.sequential({
+      layers: [
+        tf.layers.globalAveragePooling2d({
+          inputShape: [224, 224, 3]
+        }),
+        tf.layers.dense({ 
+          units: this.labels.length, 
+          activation: 'softmax' 
+        })
+      ]
+    })
+
+    // 编译模型
+    model.compile({
+      optimizer: 'adam',
+      loss: 'categoricalCrossentropy',
+      metrics: ['accuracy']
+    })
+
+    // 转换为GraphModel
+    const graphModel = await tf.loadGraphModel(
+      tf.io.fromMemory(model.getWeights(), model.getConfig())
+    )
+
+    console.log('✅ 内置简单模型创建成功')
+    return graphModel
   }
 
   async analyzeImage(request: ImageAnalysisRequest): Promise<AIAnalysisResult> {

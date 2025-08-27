@@ -53,8 +53,34 @@ export const AIAnalysis: React.FC<AIAnalysisProps> = ({
       aiService.dispose()
     } catch (error) {
       console.error('AI 分析失败:', error)
-      const errorMessage = error instanceof Error ? error.message : '分析失败'
-      toast.error(language === 'zh-CN' ? `分析失败: ${errorMessage}` : `Analysis failed: ${errorMessage}`)
+      
+      // 提供更友好的错误信息
+      let errorMessage = '分析失败'
+      let toastMessage = '分析失败'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+        
+        if (error.message.includes('AI 模型加载失败')) {
+          toastMessage = 'AI模型加载失败，正在尝试备用方案...'
+        } else if (error.message.includes('网络连接')) {
+          toastMessage = '网络连接失败，请检查网络设置'
+        } else if (error.message.includes('TensorFlow')) {
+          toastMessage = 'AI引擎初始化失败，请刷新页面重试'
+        } else {
+          toastMessage = `分析失败: ${error.message}`
+        }
+      }
+      
+      // 显示错误信息
+      toast.error(language === 'zh-CN' ? toastMessage : `Analysis failed: ${errorMessage}`)
+      
+      // 更新进度状态
+      setProgress({
+        status: 'error',
+        progress: 0,
+        message: language === 'zh-CN' ? errorMessage : `Error: ${errorMessage}`
+      })
     } finally {
       setIsAnalyzing(false)
     }

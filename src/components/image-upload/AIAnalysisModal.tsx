@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react'
-import { Brain, Upload, X, FileText, Tag, Download, RotateCcw } from 'lucide-react'
+import { Brain, Upload, X, FileText, Tag, Download, RotateCcw, Settings } from 'lucide-react'
 import { AIAnalysis } from './AIAnalysis'
 import { AIAnalysisResult } from '@/type/ai'
+import { GGUFWebService } from '@/services/ggufWebService'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
 
 interface AIAnalysisModalProps {
@@ -12,6 +13,16 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showModelSettings, setShowModelSettings] = useState(false)
+  const [modelConfig, setModelConfig] = useState({
+    modelPath: '/models/gguf/Qwen3-4B-Q4_K_M.gguf',
+    threshold: 0.6,
+    maxResults: 8,
+    language: 'zh-CN' as const,
+    contextSize: 2048,
+    threads: 4,
+    gpuLayers: 0
+  })
 
   // 处理文件选择
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,10 +88,56 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ onClose }) => {
   }, [])
 
   // 开始AI分析
-  const handleStartAnalysis = useCallback(() => {
+  const handleStartAnalysis = useCallback(async () => {
     if (!selectedFile) return
     
     setIsAnalyzing(true)
+    
+    try {
+      console.log('🚀 开始使用 GGUF 模型进行AI分析...')
+      
+      // 使用GGUF Web服务进行分析
+      const ggufService = new GGUFWebService(modelConfig)
+      
+      // 执行分析
+      const result = await ggufService.analyzeImageWithProgress(
+        {
+          imageFile: selectedFile,
+          language: 'zh-CN'
+        },
+        (progress: any) => {
+          console.log('📊 分析进度:', progress)
+          // 这里可以更新UI进度显示
+        }
+      )
+      
+      // 设置分析结果
+      setAnalysisResult(result)
+      setIsAnalyzing(false)
+      showSuccess('🎉 GGUF AI 分析完成！')
+      
+      // 清理资源
+      ggufService.dispose()
+      
+    } catch (error) {
+      console.error('❌ GGUF AI 分析失败:', error)
+      setIsAnalyzing(false)
+      
+      let errorMessage = 'GGUF AI 分析失败'
+      if (error instanceof Error) {
+        if (error.message.includes('模型文件不存在')) {
+          errorMessage = 'GGUF 模型文件不存在，请检查 /models/gguf/ 目录'
+        } else if (error.message.includes('llama-node')) {
+          errorMessage = 'llama-node 库加载失败，请检查依赖安装'
+        } else if (error.message.includes('内存')) {
+          errorMessage = '内存不足，请关闭其他应用后重试'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      showError(errorMessage)
+    }
   }, [selectedFile])
 
   // 重新分析
@@ -183,15 +240,69 @@ ${analysisResult.tags?.join(', ') || '无标签'}
                   </div>
                 </div>
                 
-                {/* 分析按钮 */}
-                <div className="pt-4">
+                {/* 模型设置和分析按钮 */}
+                <div className="pt-4 space-y-3">
+                  {/* 模型设置按钮 */}
+                  <button
+                    onClick={() => setShowModelSettings(!showModelSettings)}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>模型设置</span>
+                  </button>
+                  
+                  {/* 模型设置面板 */}
+                  {showModelSettings && (
+                    <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            线程数
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="16"
+                            value={modelConfig.threads}
+                            onChange={(e) => setModelConfig(prev => ({
+                              ...prev,
+                              threads: parseInt(e.target.value) || 4
+                            }))}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">
+                            上下文大小
+                          </label>
+                          <input
+                            type="number"
+                            min="512"
+                            max="8192"
+                            step="512"
+                            value={modelConfig.contextSize}
+                            onChange={(e) => setModelConfig(prev => ({
+                              ...prev,
+                              contextSize: parseInt(e.target.value) || 2048
+                            }))}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                          />
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        当前模型: {modelConfig.modelPath.split('/').pop()}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 分析按钮 */}
                   <button
                     onClick={handleStartAnalysis}
                     disabled={isAnalyzing}
                     className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     <Brain className="w-5 h-5" />
-                    <span>{isAnalyzing ? '分析中...' : '开始 AI 分析'}</span>
+                    <span>{isAnalyzing ? '分析中...' : '开始 GGUF AI 分析'}</span>
                   </button>
                 </div>
 
