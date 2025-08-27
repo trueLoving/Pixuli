@@ -4,7 +4,9 @@ import ImageGrid from './ImageGrid'
 import ImageList from './ImageList'
 import ViewToggle, { ViewMode } from './ViewToggle'
 import ImageSorter, { SortField, SortOrder } from './ImageSorter'
+import ImageFilter, { FilterOptions } from './ImageFilter'
 import { getSortedImages } from '@/utils/sortUtils'
+import { filterImages, createDefaultFilters } from '@/utils/filterUtils'
 
 interface ImageBrowserProps {
   images: ImageItem[]
@@ -15,6 +17,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
   const [currentView, setCurrentView] = useState<ViewMode>('grid')
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt')
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc')
+  const [currentFilters, setCurrentFilters] = useState<FilterOptions>(createDefaultFilters())
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view)
@@ -25,10 +28,15 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
     setCurrentOrder(order)
   }, [])
 
-  // 根据当前排序设置对图片进行排序
-  const sortedImages = useMemo(() => {
-    return getSortedImages(images, currentSort, currentOrder)
-  }, [images, currentSort, currentOrder])
+  const handleFiltersChange = useCallback((filters: FilterOptions) => {
+    setCurrentFilters(filters)
+  }, [])
+
+  // 先筛选，再排序
+  const filteredAndSortedImages = useMemo(() => {
+    const filteredImages = filterImages(images, currentFilters)
+    return getSortedImages(filteredImages, currentSort, currentOrder)
+  }, [images, currentFilters, currentSort, currentOrder])
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -38,6 +46,11 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
           <h2 className="text-xl font-semibold text-gray-900">图片库</h2>
           <span className="text-sm text-gray-500">
             共 {images.length} 张图片
+            {currentFilters.searchTerm || currentFilters.selectedTypes.length > 0 || currentFilters.selectedTags.length > 0 && (
+              <span className="ml-2 text-blue-600">
+                (筛选后: {filteredAndSortedImages.length} 张)
+              </span>
+            )}
           </span>
         </div>
         
@@ -57,12 +70,21 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
         </div>
       </div>
 
+      {/* 筛选区域 */}
+      <div className="mb-6">
+        <ImageFilter
+          images={images}
+          currentFilters={currentFilters}
+          onFiltersChange={handleFiltersChange}
+        />
+      </div>
+
       {/* 内容区域 */}
       <div className="flex-1">
         {currentView === 'grid' ? (
-          <ImageGrid images={sortedImages} />
+          <ImageGrid images={filteredAndSortedImages} />
         ) : (
-          <ImageList images={sortedImages} />
+          <ImageList images={filteredAndSortedImages} />
         )}
       </div>
     </div>
