@@ -66,7 +66,24 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null })
       try {
         const images = await storageService.getImageList()
-        set({ images, loading: false })
+        
+        // 去重：确保每个图片ID只出现一次，如果有重复，保留最新的
+        const uniqueImages = images.reduce((acc: ImageItem[], current) => {
+          const existingIndex = acc.findIndex(img => img.id === current.id)
+          if (existingIndex === -1) {
+            // 新图片，直接添加
+            acc.push(current)
+          } else {
+            // 已存在，比较更新时间，保留最新的
+            const existing = acc[existingIndex]
+            if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
+              acc[existingIndex] = current
+            }
+          }
+          return acc
+        }, [])
+        
+        set({ images: uniqueImages, loading: false })
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : '加载图片失败'
         set({ 
@@ -87,7 +104,10 @@ export const useImageStore = create<ImageState>((set, get) => {
       try {
         const newImage = await storageService.uploadImage(uploadData)
         set(state => ({
-          images: [...state.images, newImage],
+          // 去重：确保不会添加重复ID的图片
+          images: state.images.some(img => img.id === newImage.id) 
+            ? state.images.map(img => img.id === newImage.id ? newImage : img)
+            : [...state.images, newImage],
           loading: false
         }))
       } catch (error) {
@@ -163,7 +183,10 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     addImage: (image: ImageItem) => {
       set(state => ({
-        images: [...state.images, image]
+        // 去重：确保不会添加重复ID的图片
+        images: state.images.some(img => img.id === image.id) 
+          ? state.images.map(img => img.id === image.id ? image : img)
+          : [...state.images, image]
       }))
     },
 

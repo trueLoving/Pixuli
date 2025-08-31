@@ -308,9 +308,9 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
                     </h3>
                     {image.tags.length > 0 && (
                       <div className="flex items-center space-x-1">
-                        {image.tags.slice(0, 2).map((tag) => (
+                        {image.tags.slice(0, 2).map((tag, index) => (
                           <span
-                            key={tag}
+                            key={`${image.id}-tag-${index}`}
                             className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                           >
                             {tag}

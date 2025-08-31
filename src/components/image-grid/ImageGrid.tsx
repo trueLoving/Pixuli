@@ -338,9 +338,9 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
                 {/* 标签 */}
                 {image.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {image.tags.slice(0, 3).map((tag) => (
+                    {image.tags.slice(0, 3).map((tag, index) => (
                       <span
-                        key={tag}
+                        key={`${image.id}-tag-${index}`}
                         className="image-tag bg-blue-100 text-blue-800"
                       >
                         {tag}

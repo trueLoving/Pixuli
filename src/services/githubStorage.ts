@@ -42,7 +42,7 @@ export class GitHubStorageService {
       const imageInfo = await this.getImageInfo(file)
       
       const imageItem: ImageItem = {
-        id: response.sha || Date.now().toString(),
+        id: response.sha || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: fileName,
         url: response.downloadUrl || '',
         githubUrl: response.htmlUrl || '',

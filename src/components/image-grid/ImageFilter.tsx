@@ -234,9 +234,9 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                 图片类型
               </label>
               <div className="image-filter-types">
-                {availableTypes.map(type => (
+                {availableTypes.map((type, index) => (
                   <label
-                    key={type}
+                    key={`filter-type-${index}`}
                     className="image-filter-type-item"
                   >
                     <input
@@ -262,9 +262,9 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                 标签筛选
               </label>
               <div className="image-filter-tags">
-                {availableTags.map(tag => (
+                {availableTags.map((tag, index) => (
                   <label
-                    key={tag}
+                    key={`filter-tag-${index}`}
                     className="image-filter-tag-item"
                   >
                     <input

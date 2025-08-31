@@ -32,9 +32,24 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
     setCurrentFilters(filters)
   }, [])
 
-  // 先筛选，再排序
+  // 先筛选，再排序，并确保没有重复ID
   const filteredAndSortedImages = useMemo(() => {
-    const filteredImages = filterImages(images, currentFilters)
+    // 去重：确保没有重复的图片ID
+    const uniqueImages = images.reduce((acc: ImageItem[], current) => {
+      const existingIndex = acc.findIndex(img => img.id === current.id)
+      if (existingIndex === -1) {
+        acc.push(current)
+      } else {
+        // 如果存在重复ID，保留最新的（基于updatedAt）
+        const existing = acc[existingIndex]
+        if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
+          acc[existingIndex] = current
+        }
+      }
+      return acc
+    }, [])
+    
+    const filteredImages = filterImages(uniqueImages, currentFilters)
     return getSortedImages(filteredImages, currentSort, currentOrder)
   }, [images, currentFilters, currentSort, currentOrder])
 

@@ -220,9 +220,9 @@ function App() {
                       清除筛选 ({selectedTags.length})
                     </button>
                   )}
-                  {allTags.map(tag => (
+                  {allTags.map((tag, index) => (
                     <button
-                      key={tag}
+                      key={`app-tag-${index}`}
                       onClick={() => {
                         setSelectedTags(prev => 
                           prev.includes(tag) 
