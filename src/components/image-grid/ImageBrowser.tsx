@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { ImageItem } from '@/type/image'
 import ImageGrid from './ImageGrid'
 import ImageList from './ImageList'
+import ScrollableImageGrid from './ScrollableImageGrid'
 import ViewToggle, { ViewMode } from './ViewToggle'
 import ImageSorter, { SortField, SortOrder } from './ImageSorter'
 import ImageFilter, { FilterOptions } from './ImageFilter'
@@ -18,6 +19,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt')
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc')
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>(createDefaultFilters())
+
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view)
@@ -70,6 +72,8 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
         </div>
         
         <div className="flex items-center space-x-4">
+
+          
           {/* 排序功能 */}
           <ImageSorter
             currentSort={currentSort}
@@ -97,7 +101,9 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
       {/* 内容区域 */}
       <div className="flex-1">
         {currentView === 'grid' ? (
-          <ImageGrid images={filteredAndSortedImages} />
+          <ScrollableImageGrid 
+            images={filteredAndSortedImages}
+          />
         ) : (
           <ImageList images={filteredAndSortedImages} />
         )}
