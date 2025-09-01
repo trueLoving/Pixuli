@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, MoreHorizontal, HardDrive } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { useLazyLoad } from '@/hooks'
+import { useLazyLoad, useInfiniteScroll } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
@@ -26,11 +26,36 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
   const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set())
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   
+  // 滚动加载配置
+  const pageSize = 20
+  const initialLoadCount = 15
+  
+  // 使用无限滚动Hook
+  const {
+    visibleItems,
+    hasMore,
+    isLoading,
+    loadMore,
+    reset,
+    containerRef,
+    loadingRef
+  } = useInfiniteScroll(images, {
+    pageSize,
+    initialLoadCount,
+    threshold: 0.1,
+    rootMargin: '200px'
+  })
+  
   // 使用懒加载 Hook
   const { visibleItems: visibleImages, observeElement } = useLazyLoad({
     threshold: 0.1,
     rootMargin: '50px'
   })
+
+  // 当图片列表变化时重置滚动状态
+  useEffect(() => {
+    reset()
+  }, [images, reset])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
     if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
@@ -271,184 +296,222 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
         </div>
       </div>
 
-      {/* 列表内容 */}
+            {/* 列表内容 */}
       <div className="image-list-content">
-        {images.map((image) => (
-          <div
-            key={image.id}
-            ref={(el) => el && observeElement(el, image.id)}
-            className="image-list-item bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
-          >
-            {/* 主要行 */}
-            <div className="px-6 py-4">
-              <div className="flex items-center space-x-4">
-                {/* 缩略图 */}
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                    {visibleImages.has(image.id) ? (
-                      <img
-                        src={image.url}
-                        alt={image.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="image-loading-spinner w-6 h-6"></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 基本信息 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">
-                      {image.name}
-                    </h3>
-                    {image.tags.length > 0 && (
-                      <div className="flex items-center space-x-1">
-                        {image.tags.slice(0, 2).map((tag, index) => (
-                          <span
-                            key={`${image.id}-tag-${index}`}
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {image.tags.length > 2 && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            +{image.tags.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    )}
+        <div ref={containerRef} className="h-full overflow-y-auto">
+          {visibleItems.map((image) => (
+            <div
+              key={image.id}
+              ref={(el) => el && observeElement(el, image.id)}
+              className="image-list-item bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
+            >
+              {/* 主要行 */}
+              <div className="px-6 py-4">
+                <div className="flex items-center space-x-4">
+                  {/* 缩略图 */}
+                  <div className="flex-shrink-0">
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                      {visibleImages.has(image.id) ? (
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="image-loading-spinner w-6 h-6"></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {image.description && (
-                    <p className="text-sm text-gray-500 mb-2 line-clamp-2">
-                      {image.description}
-                    </p>
-                  )}
+                  {/* 基本信息 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                        {image.name}
+                      </h3>
+                      {image.tags.length > 0 && (
+                        <div className="flex items-center space-x-1">
+                          {image.tags.slice(0, 2).map((tag, index) => (
+                            <span
+                              key={`${image.id}-tag-${index}`}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {image.tags.length > 2 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              +{image.tags.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex items-center space-x-4 text-xs text-gray-500">
-                    <span className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      {formatDate(image.createdAt)}
-                    </span>
-                    <span>
-                      {(() => {
-                        const dimensions = imageDimensions[image.id]
-                        if (dimensions) {
-                          return `${dimensions.width} × ${dimensions.height}`
-                        } else if (image.width > 0 && image.height > 0) {
-                          return `${image.width} × ${image.height}`
-                        } else {
-                          return '获取中...'
-                        }
-                      })()}
-                    </span>
-                    {image.size > 0 && (
-                      <span className="flex items-center space-x-1">
-                        <HardDrive className="w-3 h-3" />
-                        <span>{formatFileSize(image.size)}</span>
+                    {image.description && (
+                      <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                        {image.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <span className="flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {formatDate(image.createdAt)}
                       </span>
-                    )}
+                      <span>
+                        {(() => {
+                          const dimensions = imageDimensions[image.id]
+                          if (dimensions) {
+                            return `${dimensions.width} × ${dimensions.height}`
+                          } else if (image.width > 0 && image.height > 0) {
+                            return `${image.width} × ${image.height}`
+                          } else {
+                            return '获取中...'
+                          }
+                        })()}
+                      </span>
+                      {image.size > 0 && (
+                        <span className="flex items-center space-x-1">
+                          <HardDrive className="w-3 h-3" />
+                          <span>{formatFileSize(image.size)}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* 操作按钮 */}
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handlePreview(image)}
-                    className="image-list-action-button"
-                    title="预览"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleEdit(image)}
-                    className="image-list-action-button"
-                    title="编辑"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleCompressImage(image)}
-                    disabled={compressingImages.has(image.id)}
-                    className="image-list-action-button"
-                    title="压缩图片"
-                  >
-                    {compressingImages.has(image.id) ? (
-                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Zap className="w-4 h-4" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => toggleRowExpansion(image.id)}
-                    className="image-list-action-button"
-                    title="更多操作"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+                  {/* 操作按钮 */}
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handlePreview(image)}
+                      className="image-list-action-button"
+                      title="预览"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleEdit(image)}
+                      className="image-list-action-button"
+                      title="编辑"
+                      >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleCompressImage(image)}
+                      disabled={compressingImages.has(image.id)}
+                      className="image-list-action-button"
+                      title="压缩图片"
+                    >
+                      {compressingImages.has(image.id) ? (
+                        <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Zap className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => toggleRowExpansion(image.id)}
+                      className="image-list-action-button"
+                      title="更多操作"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* 展开行 - 更多操作和压缩结果 */}
-            {expandedRows.has(image.id) && (
-              <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleViewUrl(image)}
-                      className="image-list-secondary-button"
-                    >
-                      <Link className="w-4 h-4 mr-1" />
-                      查看地址
-                    </button>
-                    <button
-                      onClick={() => handleDelete(image)}
-                      className="image-list-secondary-button text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      删除
-                    </button>
-                  </div>
-
-                  {/* 压缩结果显示 */}
-                  {compressionResults[image.id] && (
-                    <div className="flex items-center space-x-2">
-                      <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                        节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
-                      </div>
+              {/* 展开行 - 更多操作和压缩结果 */}
+              {expandedRows.has(image.id) && (
+                <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
                       <button
-                        onClick={() => handleDownloadCompressed(image)}
-                        className="image-list-secondary-button bg-green-600 text-white hover:bg-green-700"
+                        onClick={() => handleViewUrl(image)}
+                        className="image-list-secondary-button"
                       >
-                        <Download className="w-4 h-4 mr-1" />
-                        下载
+                        <Link className="w-4 h-4 mr-1" />
+                        查看地址
                       </button>
                       <button
-                        onClick={() => handleReplaceWithCompressed(image)}
-                        disabled={replacingImages.has(image.id)}
-                        className="image-list-secondary-button bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                        onClick={() => handleDelete(image)}
+                        className="image-list-secondary-button text-red-600 hover:bg-red-50"
                       >
-                        {replacingImages.has(image.id) ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                        ) : (
-                          <RotateCcw className="w-4 h-4 mr-1" />
-                        )}
-                        替换
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        删除
                       </button>
                     </div>
-                  )}
+
+                    {/* 压缩结果显示 */}
+                    {compressionResults[image.id] && (
+                      <div className="flex items-center space-x-2">
+                        <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                          节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
+                        </div>
+                        <button
+                          onClick={() => handleDownloadCompressed(image)}
+                          className="image-list-secondary-button bg-green-600 text-white hover:bg-green-700"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          下载
+                        </button>
+                        <button
+                          onClick={() => handleReplaceWithCompressed(image)}
+                          disabled={replacingImages.has(image.id)}
+                          className="image-list-secondary-button bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {replacingImages.has(image.id) ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                          ) : (
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                          )}
+                          替换
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          ))}
+
+          {/* 加载更多指示器 */}
+          {hasMore && (
+            <div 
+              ref={loadingRef}
+              className="flex items-center justify-center py-8"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>正在加载更多图片...</span>
+                </div>
+              ) : (
+                <button
+                  onClick={loadMore}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  加载更多
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* 已加载全部提示 */}
+          {!hasMore && visibleItems.length > 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>已加载全部 {visibleItems.length} 张图片</p>
+            </div>
+          )}
+
+          {/* 空状态 */}
+          {visibleItems.length === 0 && !isLoading && (
+            <div className="text-center py-16 text-gray-500">
+              <p>暂无图片</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 编辑模态框 */}
