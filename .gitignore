@@ -151,6 +151,7 @@ dist
 
 #Added by cargo
 
+/wasm/target
 /target
 Cargo.lock
 
