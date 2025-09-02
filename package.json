@@ -1,6 +1,6 @@
 {
   "name": "pixuli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://localhost:5173"
@@ -44,8 +44,6 @@
     "wait-on": "^7.0.0"
   },
   "dependencies": {
-    "@llama-node/core": "^0.1.6",
-    "@llama-node/llama-cpp": "^0.1.6",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-cpu": "^4.22.0",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
