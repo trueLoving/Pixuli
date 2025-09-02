@@ -44,6 +44,7 @@
     "wait-on": "^7.0.0"
   },
   "dependencies": {
+    "pixuli-wasm": "file:./wasm",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-cpu": "^4.22.0",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
