@@ -94,6 +94,23 @@ jobs:
             !release/*.map
           retention-days: 30
 
+  update-version:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 更新版本号
+        run: |
+          echo "VERSION=${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+      - name: 更新 package.json
+        run: |
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
+      - name: 提交版本号更新
+        run: |
+          git add package.json
+          git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }}"
+          git push
+
   create-release:
     needs: build-and-release
     runs-on: ubuntu-latest
