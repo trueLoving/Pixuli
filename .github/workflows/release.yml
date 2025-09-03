@@ -59,7 +59,7 @@ jobs:
       - name: 更新 package.json 版本号
         run: |
           # 更新 package.json 中的版本号
-          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
+          sed -i '' "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
           echo "已更新 package.json 版本号为: ${{ steps.version.outputs.VERSION }}"
           # 显示更新后的版本号
           grep '"version"' package.json
@@ -121,16 +121,10 @@ jobs:
         id: version
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-            echo "TAG_VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            # 从 tag 中提取版本号，移除 'v' 前缀
-            VERSION=${GITHUB_REF#refs/tags/}
-            VERSION=${VERSION#v}
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-            echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
-          fi
+          # 从 workflow_dispatch 输入获取版本号
+          VERSION=${{ github.event.inputs.version }}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
           echo "标签版本: v$VERSION"
 
