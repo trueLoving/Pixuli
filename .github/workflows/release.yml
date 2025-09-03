@@ -72,14 +72,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 提交版本号更新
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json
-          git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }}" || echo "没有版本号变更需要提交"
-          git push || echo "推送失败或没有变更"
-
       - name: 重命名构建产物
         shell: bash
         run: |
@@ -109,8 +101,52 @@ jobs:
             !release/*.map
           retention-days: 30
 
-  create-release:
+  update-version:
     needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 提取版本号
+        id: version
+        shell: bash
+        run: |
+          # 从 workflow_dispatch 输入获取版本号
+          VERSION=${{ github.event.inputs.version }}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
+
+      - name: 更新 package.json 版本号
+        run: |
+          # 更新 package.json 中的版本号
+          sed -i '' "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
+          echo "已更新 package.json 版本号为: ${{ steps.version.outputs.VERSION }}"
+          # 显示更新后的版本号
+          grep '"version"' package.json
+
+      - name: 提交版本号更新
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          # 检查是否有变更需要提交
+          if git diff --quiet package.json; then
+            echo "package.json 没有变更，跳过提交"
+          else
+            # 拉取远程更改
+            git pull origin main --rebase
+            git add package.json
+            git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }}"
+            git push origin main
+            echo "版本号更新已提交并推送"
+          fi
+
+  create-release:
+    needs: [build-and-release, update-version]
     runs-on: ubuntu-latest
 
     steps:
