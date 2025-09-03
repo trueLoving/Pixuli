@@ -29,7 +29,7 @@ jobs:
           - os: macos-latest
             platform: mac
             artifact_name: mac
-            file_extensions: '.dmg,.zip'
+            file_extensions: '.dmg'
 
     steps:
       - name: 检出代码
@@ -45,14 +45,6 @@ jobs:
         with:
           version: 10
 
-      - name: 安装依赖
-        run: pnpm install
-
-      - name: 构建应用
-        run: pnpm run electron:build
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: 提取版本号
         id: version
         shell: bash
@@ -63,6 +55,30 @@ jobs:
           echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
           echo "标签版本: v$VERSION"
+
+      - name: 更新 package.json 版本号
+        run: |
+          # 更新 package.json 中的版本号
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
+          echo "已更新 package.json 版本号为: ${{ steps.version.outputs.VERSION }}"
+          # 显示更新后的版本号
+          grep '"version"' package.json
+
+      - name: 安装依赖
+        run: pnpm install
+
+      - name: 构建应用
+        run: pnpm run electron:build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 提交版本号更新
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add package.json
+          git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }}" || echo "没有版本号变更需要提交"
+          git push || echo "推送失败或没有变更"
 
       - name: 重命名构建产物
         shell: bash
@@ -88,28 +104,10 @@ jobs:
           path: |
             release/*.exe
             release/*.dmg
-            release/*.zip
             !release/*.blockmap
             !release/*.yml
             !release/*.map
           retention-days: 30
-
-  update-version:
-    needs: build-and-release
-    runs-on: ubuntu-latest
-    steps:
-      - name: 更新版本号
-        run: |
-          echo "VERSION=${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
-          echo "TAG_VERSION=v${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
-      - name: 更新 package.json
-        run: |
-          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.VERSION }}\"/g" package.json
-      - name: 提交版本号更新
-        run: |
-          git add package.json
-          git commit -m "chore: update version to ${{ steps.version.outputs.VERSION }}"
-          git push
 
   create-release:
     needs: build-and-release
@@ -164,7 +162,6 @@ jobs:
               **🍎 macOS 用户**
               - 下载 `.dmg` 文件进行安装
               - 支持 macOS 10.15 (Catalina) 或更高版本
-              - 也提供 `.zip` 便携版本
 
               ### 🚀 安装指南
               1. 下载对应系统的安装包
@@ -221,12 +218,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 上传 macOS ZIP 包
-        run: |
-          # 查找 macOS ZIP 构建产物
-          find artifacts/pixuli-mac-v${{ steps.version.outputs.VERSION }} -name "*.zip" -type f | while read file; do
-            echo "上传文件: $file"
-            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+ 
