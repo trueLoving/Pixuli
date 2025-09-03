@@ -18,8 +18,7 @@
     "electron:build": "pnpm run build && electron-builder",
     "dist": "pnpm run build && electron-builder --publish=never",
     "dist:win": "pnpm run build && electron-builder --win --publish=never",
-    "dist:mac": "pnpm run build && electron-builder --mac --publish=never",
-    "dist:linux": "pnpm run build && electron-builder --linux --publish=never"
+    "dist:mac": "pnpm run build && electron-builder --mac --publish=never"
   },
   "keywords": [
     "electron",
@@ -87,31 +86,15 @@
             "x64",
             "arm64"
           ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
         }
-      ]
+      ],
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "artifactName": "${productName}_${version}_${arch}.${ext}"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
           "arch": [
             "x64"
           ]
@@ -138,8 +121,11 @@
       "vPrefixedTagName": true
     },
     "asar": true,
-    "compression": "maximum",
+    "compression": "store",
     "removePackageScripts": true,
-    "removePackageKeywords": true
+    "removePackageKeywords": true,
+    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": false,
+    "npmRebuild": false
   }
 }

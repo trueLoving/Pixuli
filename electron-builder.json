@@ -2,9 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "YourAppID",
   "asar": true,
+  "compression": "store",
   "directories": {
     "output": "release/${version}"
   },
+  "buildDependenciesFromSource": false,
+  "nodeGypRebuild": false,
+  "npmRebuild": false,
   "files": [
     "dist-electron",
     "dist"
@@ -12,9 +16,14 @@
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": [
-      "dmg",
-      "zip"
-    ]
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "category": "public.app-category.graphics-design",
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false
   },
   "win": {
     "artifactName": "${productName}_${version}.${ext}",
