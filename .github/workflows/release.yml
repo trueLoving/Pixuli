@@ -45,6 +45,11 @@ jobs:
         with:
           version: 10
 
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
       - name: 提取版本号
         id: version
         shell: bash
@@ -66,6 +71,21 @@ jobs:
 
       - name: 安装依赖
         run: pnpm install
+
+      - name: 构建 WASM 模块
+        run: |
+          cd wasm
+          # 安装 Node.js 依赖
+          pnpm install
+          # 使用 napi 构建多平台二进制文件（包含 Rust 构建）
+          pnpm run build
+          echo "WASM 模块构建完成"
+
+      - name: 验证 WASM 模块
+        run: |
+          ls -la wasm/*.node
+          echo "WASM 二进制文件列表:"
+          find wasm -name "*.node" -type f
 
       - name: 构建应用
         run: pnpm run electron:build
