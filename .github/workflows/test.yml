@@ -1,0 +1,68 @@
+name: 测试 Pixuli
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: 构建 WASM 模块
+        run: |
+          cd wasm
+          pnpm install
+          pnpm run build
+          echo "WASM 模块构建完成"
+
+      - name: 验证 WASM 模块
+        run: |
+          echo "检查 WASM 二进制文件:"
+          find wasm -name "*.node" -type f || echo "未找到 .node 文件"
+          ls -la wasm/ || echo "wasm 目录不存在"
+
+      - name: 安装应用依赖
+        run: pnpm install
+
+      - name: 构建 Electron 应用
+        run: pnpm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 验证构建产物
+        run: |
+          echo "检查构建产物:"
+          ls -la dist/ || echo "dist 目录不存在"
+          ls -la dist-electron/ || echo "dist-electron 目录不存在"
+          find . -name "*.node" -type f || echo "未找到 .node 文件"
