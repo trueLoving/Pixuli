@@ -75,7 +75,8 @@ export default defineConfig(({ command }) => {
           '@llama-node/llama-cpp.darwin-x64',
           '@llama-node/llama-cpp.darwin-arm64',
           '@llama-node/llama-cpp.linux-x64-musl',
-          '@llama-node/llama-cpp.linux-x64-gnu'
+          '@llama-node/llama-cpp.linux-x64-gnu',
+          'pixuli-wasm'
         ]
       }
     },

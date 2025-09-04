@@ -74,7 +74,8 @@
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "node_modules/pixuli-wasm/**/*"
     ],
     "mac": {
       "category": "public.app-category.graphics-design",

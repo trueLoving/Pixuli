@@ -5,6 +5,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
 import { GitHubService } from './githubService'
+import { plus100 } from 'pixuli-wasm'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -127,3 +128,13 @@ ipcMain.handle('open-win', (_, arg) => {
 
 // Initialize GitHub service
 const githubService = new GitHubService()
+
+// WASM IPC handlers
+ipcMain.handle('wasm:plus100', async (_, input: number) => {
+  try {
+    return plus100(input)
+  } catch (error) {
+    console.error('WASM error:', error)
+    throw error
+  }
+})

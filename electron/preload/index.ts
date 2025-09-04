@@ -32,6 +32,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
 })
 
+// --------- Expose WASM API to the Renderer process ---------
+contextBridge.exposeInMainWorld('wasmAPI', {
+  plus100: (input: number) => ipcRenderer.invoke('wasm:plus100', input),
+})
+
 // --------- Preload scripts loading ---------
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {

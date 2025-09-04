@@ -12,7 +12,8 @@
   "files": [
     "index.d.ts",
     "index.js",
-    "wasi-worker-browser.mjs"
+    "wasi-worker-browser.mjs",
+    "*.node"
   ],
   "napi": {
     "binaryName": "pixuli-wasm",
