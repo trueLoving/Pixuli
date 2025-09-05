@@ -130,23 +130,144 @@ export class GitHubService {
           return []
         }
 
-        const imageItems = []
+        // 筛选出图片文件
+        const imageFiles = response.data.filter(item => this.isImageFile(item.name))
         
-        for (const item of response.data) {
-          if (this.isImageFile(item.name)) {
-            imageItems.push({
-              sha: item.sha,
-              name: item.name,
-              downloadUrl: item.download_url,
-              htmlUrl: item.html_url,
-              width: 0, // 需要额外处理获取图片尺寸
-              height: 0,
-              tags: [],
-              description: '',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            })
+        if (imageFiles.length === 0) {
+          return []
+        }
+
+        // 使用批量方式获取文件时间信息
+        const imageItems = []
+        const defaultDate = new Date().toISOString()
+        const fileTimeMap = new Map<string, string>()
+        
+        try {
+          // 方案1：尝试使用 GraphQL 批量获取
+          const query = `
+            query GetFileHistory($owner: String!, $repo: String!, $branch: String!) {
+              repository(owner: $owner, name: $repo) {
+                ref(qualifiedName: $branch) {
+                  target {
+                    ... on Commit {
+                      history(first: 100) {
+                        nodes {
+                          committedDate
+                          message
+                          additions
+                          deletions
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `
+          
+          const graphqlResponse = await this.octokit.graphql(query, {
+            owner,
+            repo,
+            branch: `refs/heads/${branch}`
+          }) as any
+          
+          const commits = graphqlResponse.repository?.ref?.target?.history?.nodes || []
+           
+          // 获取仓库第一次提交的时间（最后一个提交，因为历史是按时间倒序排列）
+          const firstCommitDate = commits.length > 0 ? commits[commits.length - 1].committedDate : defaultDate
+          
+          // 为每个图片文件分配时间
+          for (const imageFile of imageFiles) {
+            let bestDate = firstCommitDate // 默认使用第一次提交时间
+            
+            // 查找包含此文件名的提交
+            for (const commit of commits) {
+              if (commit.message && commit.message.includes(imageFile.name)) {
+                const commitDate = commit.committedDate
+                if (new Date(commitDate) > new Date(bestDate)) {
+                  bestDate = commitDate
+                }
+              }
+            }
+            
+            fileTimeMap.set(imageFile.name, bestDate)
           }
+        } catch (graphqlError) {
+          console.warn('GraphQL failed, falling back to individual file queries:', graphqlError)
+          
+          // 方案2：降级到逐个文件查询（虽然慢但准确）
+          // 首先获取仓库的第一次提交时间作为默认值
+          let firstCommitDate = defaultDate
+          try {
+            const allCommits = await this.octokit.rest.repos.listCommits({
+              owner,
+              repo,
+              per_page: 1,
+            })
+            
+            if (allCommits.data.length > 0) {
+              // 获取完整的提交历史来找到第一次提交
+              const fullHistory = await this.octokit.rest.repos.listCommits({
+                owner,
+                repo,
+                per_page: 1000, // 获取更多提交以找到第一次提交
+              })
+              
+              if (fullHistory.data.length > 0) {
+                // 最后一个提交是第一次提交
+                const firstCommit = fullHistory.data[fullHistory.data.length - 1]
+                firstCommitDate = firstCommit.commit.committer?.date || 
+                                 firstCommit.commit.author?.date || 
+                                 defaultDate
+              }
+            }
+          } catch (historyError) {
+            console.warn('Failed to get repository history:', historyError)
+          }
+          
+          for (const imageFile of imageFiles) {
+            try {
+              const fileCommits = await this.octokit.rest.repos.listCommits({
+                owner,
+                repo,
+                path: `${path}/${imageFile.name}`,
+                per_page: 1,
+              })
+              
+              if (fileCommits.data.length > 0) {
+                const commit = fileCommits.data[0]
+                const commitDate = commit.commit.committer?.date || 
+                                 commit.commit.author?.date || 
+                                 firstCommitDate
+                fileTimeMap.set(imageFile.name, commitDate)
+              } else {
+                // 如果没有找到该文件的提交记录，使用第一次提交时间
+                fileTimeMap.set(imageFile.name, firstCommitDate)
+              }
+            } catch (fileError) {
+              console.warn(`Failed to get commit for ${imageFile.name}:`, fileError)
+              // 如果获取失败，使用第一次提交时间
+              fileTimeMap.set(imageFile.name, firstCommitDate)
+            }
+          }
+        }
+        
+        // 构建最终结果
+        for (const item of imageFiles) {
+          const lastCommitDate = fileTimeMap.get(item.name) || defaultDate
+          
+          imageItems.push({
+            sha: item.sha,
+            name: item.name,
+            downloadUrl: item.download_url,
+            htmlUrl: item.html_url,
+            width: 0, // 需要额外处理获取图片尺寸
+            height: 0,
+            tags: [],
+            description: '',
+            createdAt: lastCommitDate,
+            updatedAt: lastCommitDate,
+          })
         }
 
         return imageItems
