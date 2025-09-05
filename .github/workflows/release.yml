@@ -95,20 +95,25 @@ jobs:
           pnpm run build
           echo "WASM 模块构建完成"
 
-      - name: 验证 WASM 模块
+      - name: 验证 WASM 模块 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "检查 WASM 二进制文件:"
+          Write-Host "Windows 环境 - 使用 PowerShell 命令:"
+          Get-ChildItem -Path wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+          Write-Host "WASM 二进制文件列表:"
+          Get-ChildItem -Path wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
+
+      - name: 验证 WASM 模块 (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           echo "检查 WASM 二进制文件:"
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            echo "Windows 环境 - 使用 PowerShell 命令:"
-            Get-ChildItem -Path wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
-            echo "WASM 二进制文件列表:"
-            Get-ChildItem -Path wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
-          else
-            echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
-            ls -la wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
-            echo "WASM 二进制文件列表:"
-            find wasm -name "*.node" -type f
-          fi
+          echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
+          ls -la wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
+          echo "WASM 二进制文件列表:"
+          find wasm -name "*.node" -type f
 
       - name: 构建应用
         run: pnpm run electron:build
