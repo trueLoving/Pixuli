@@ -1,10 +1,6 @@
 name: 测试 Pixuli
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -38,6 +34,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          targets: x86_64-pc-windows-msvc, x86_64-apple-darwin, x86_64-unknown-linux-gnu, aarch64-apple-darwin, aarch64-pc-windows-msvc
 
       - name: 构建 WASM 模块
         run: |
@@ -49,8 +46,22 @@ jobs:
       - name: 验证 WASM 模块
         run: |
           echo "检查 WASM 二进制文件:"
-          find wasm -name "*.node" -type f || echo "未找到 .node 文件"
-          ls -la wasm/ || echo "wasm 目录不存在"
+          echo "当前操作系统: $RUNNER_OS"
+          echo "当前工作目录: $(pwd)"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "检查 wasm 目录内容:"
+            Get-ChildItem -Path wasm -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+            echo "搜索 .node 文件:"
+            Get-ChildItem -Path wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
+            if (-not (Get-ChildItem -Path wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue)) {
+              Write-Host "未找到 .node 文件"
+              echo "检查 wasm 目录下的所有文件:"
+              Get-ChildItem -Path wasm -Recurse -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+            }
+          else
+            find wasm -name "*.node" -type f || echo "未找到 .node 文件"
+            ls -la wasm/ || echo "wasm 目录不存在"
+          fi
 
       - name: 安装应用依赖
         run: pnpm install
@@ -63,6 +74,12 @@ jobs:
       - name: 验证构建产物
         run: |
           echo "检查构建产物:"
-          ls -la dist/ || echo "dist 目录不存在"
-          ls -la dist-electron/ || echo "dist-electron 目录不存在"
-          find . -name "*.node" -type f || echo "未找到 .node 文件"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            Get-ChildItem -Path dist -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+            Get-ChildItem -Path dist-electron -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+            Get-ChildItem -Path . -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
+          else
+            ls -la dist/ || echo "dist 目录不存在"
+            ls -la dist-electron/ || echo "dist-electron 目录不存在"
+            find . -name "*.node" -type f || echo "未找到 .node 文件"
+          fi
