@@ -35,6 +35,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // --------- Expose WASM API to the Renderer process ---------
 contextBridge.exposeInMainWorld('wasmAPI', {
   plus100: (input: number) => ipcRenderer.invoke('wasm:plus100', input),
+  compressToWebp: (imageData: number[], options?: any) => ipcRenderer.invoke('wasm:compress-to-webp', imageData, options),
+  batchCompressToWebp: (imagesData: number[][], options?: any) => ipcRenderer.invoke('wasm:batch-compress-to-webp', imagesData, options),
+  getImageInfo: (imageData: number[]) => ipcRenderer.invoke('wasm:get-image-info', imageData),
 })
 
 // --------- Preload scripts loading ---------

@@ -5,7 +5,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
 import { GitHubService } from './githubService'
-import { plus100 } from 'pixuli-wasm'
+import { plus100, compressToWebp, batchCompressToWebp, getImageInfo } from 'pixuli-wasm'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -135,6 +135,36 @@ ipcMain.handle('wasm:plus100', async (_, input: number) => {
     return plus100(input)
   } catch (error) {
     console.error('WASM error:', error)
+    throw error
+  }
+})
+
+// WebP压缩IPC处理器
+ipcMain.handle('wasm:compress-to-webp', async (_, imageData: number[], options?: any) => {
+  try {
+    return await compressToWebp(imageData, options)
+  } catch (error) {
+    console.error('WebP compression error:', error)
+    throw error
+  }
+})
+
+// 批量WebP压缩IPC处理器
+ipcMain.handle('wasm:batch-compress-to-webp', async (_, imagesData: number[][], options?: any) => {
+  try {
+    return await batchCompressToWebp(imagesData, options)
+  } catch (error) {
+    console.error('Batch WebP compression error:', error)
+    throw error
+  }
+})
+
+// 获取图片信息IPC处理器
+ipcMain.handle('wasm:get-image-info', async (_, imageData: number[]) => {
+  try {
+    return await getImageInfo(imageData)
+  } catch (error) {
+    console.error('Get image info error:', error)
     throw error
   }
 })

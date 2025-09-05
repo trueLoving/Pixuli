@@ -7,6 +7,10 @@ import ImageBrowser from '@/components/image-grid/ImageBrowser'
 import ImageCompression from '@/components/image-upload/ImageCompression'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
+// 在开发环境中导入WebP测试
+if (import.meta.env.DEV) {
+  import('@/utils/webpTest')
+}
 
 function App() {
   const { 

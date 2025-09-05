@@ -508,4 +508,7 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.batchCompressToWebp = nativeBinding.batchCompressToWebp
+module.exports.compressToWebp = nativeBinding.compressToWebp
+module.exports.getImageInfo = nativeBinding.getImageInfo
 module.exports.plus100 = nativeBinding.plus100
