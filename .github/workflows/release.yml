@@ -7,6 +7,11 @@ on:
         description: '发布版本 (例如: 1.0.0)'
         required: true
         default: '1.0.0'
+      is-publish:
+        description: '是否进行发布操作'
+        required: false
+        default: 'true'
+        type: boolean
 
 permissions:
   contents: write
@@ -50,6 +55,15 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: 显示发布配置
+        run: |
+          echo "=== 发布配置信息 ==="
+          echo "版本号: ${{ github.event.inputs.version }}"
+          echo "是否发布: ${{ github.event.inputs.is-publish }}"
+          echo "操作系统: ${{ matrix.os }}"
+          echo "平台: ${{ matrix.platform }}"
+          echo "=================="
+
       - name: 提取版本号
         id: version
         shell: bash
@@ -83,9 +97,18 @@ jobs:
 
       - name: 验证 WASM 模块
         run: |
-          ls -la wasm/*.node
-          echo "WASM 二进制文件列表:"
-          find wasm -name "*.node" -type f
+          echo "检查 WASM 二进制文件:"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "Windows 环境 - 使用 PowerShell 命令:"
+            Get-ChildItem -Path wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+            echo "WASM 二进制文件列表:"
+            Get-ChildItem -Path wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
+          else
+            echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
+            ls -la wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
+            echo "WASM 二进制文件列表:"
+            find wasm -name "*.node" -type f
+          fi
 
       - name: 构建应用
         run: pnpm run electron:build
@@ -104,9 +127,22 @@ jobs:
             !release/*.map
           retention-days: 30
 
+  skip-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.is-publish == 'false' }}
+    steps:
+      - name: 跳过发布
+        run: |
+          echo "=== 发布已跳过 ==="
+          echo "is-publish 设置为 false，跳过发布相关操作"
+          echo "构建产物已上传到 artifacts，可在 Actions 页面下载"
+          echo "================"
+
   prepare-release:
     needs: build-and-release
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.is-publish == 'true' }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -204,6 +240,7 @@ jobs:
   update-version-and-publish:
     needs: [build-and-release, prepare-release]
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.is-publish == 'true' }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
