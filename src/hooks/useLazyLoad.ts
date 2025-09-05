@@ -44,7 +44,10 @@ export function useLazyLoad(options: UseLazyLoadOptions = {}): UseLazyLoadReturn
   // 观察元素
   const observeElement = useCallback((element: HTMLElement, id: string) => {
     if (observerRef.current) {
-      element.setAttribute('data-item-id', id)
+      // 只有在没有设置过ID时才设置
+      if (!element.getAttribute('data-item-id')) {
+        element.setAttribute('data-item-id', id)
+      }
       observerRef.current.observe(element)
     }
   }, [])

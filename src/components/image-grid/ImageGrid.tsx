@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, HardDrive } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { useLazyLoad } from '@/hooks'
+import { useInfiniteScroll, useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
@@ -12,24 +12,95 @@ import './image-grid.css'
 
 interface ImageGridProps {
   images: ImageItem[]
+  className?: string
 }
 
-const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
+const ImageGrid: React.FC<ImageGridProps> = ({ 
+  images, 
+  className = ''
+}) => {
+  // 滚动加载配置
+  const pageSize = 20
+  const initialLoadCount = 12
   const { deleteImage } = useImageStore()
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
-  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
   const [compressingImages, setCompressingImages] = useState<Set<string>>(new Set())
   const [compressionResults, setCompressionResults] = useState<Record<string, any>>({})
   const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set())
+  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
+  const fetchingDimensions = useRef<Set<string>>(new Set())
   
+  // 使用无限滚动Hook
+  const {
+    visibleItems,
+    hasMore,
+    isLoading,
+    loadMore,
+    reset,
+    containerRef,
+    loadingRef
+  } = useInfiniteScroll(images, {
+    pageSize,
+    initialLoadCount,
+    threshold: 0.1,
+    rootMargin: '200px'
+  })
+
   // 使用懒加载 Hook
   const { visibleItems: visibleImages, observeElement } = useLazyLoad({
     threshold: 0.1,
     rootMargin: '50px'
   })
+
+  // 当图片列表变化时重置滚动状态（但只在真正需要时）
+  useEffect(() => {
+    // 只有在图片列表从空变为有内容，或者完全清空时才重置
+    if (images.length === 0) {
+      reset()
+    }
+    // 注意：不在这里重置，让 useInfiniteScroll 自己处理初始加载
+  }, [images.length, reset])
+
+  // 获取图片真实尺寸
+  const fetchImageDimensions = useCallback(async (image: ImageItem) => {
+    // 检查是否已经在获取中
+    if (fetchingDimensions.current.has(image.id)) {
+      return
+    }
+    
+    // 标记为正在获取
+    fetchingDimensions.current.add(image.id)
+    
+    try {
+      const dimensions = await getImageDimensionsFromUrl(image.url)
+      
+      // 更新状态
+      setImageDimensions(prev => ({
+        ...prev,
+        [image.id]: dimensions
+      }))
+    } catch (error) {
+      console.warn(`Failed to get dimensions for ${image.name}:`, error)
+    } finally {
+      // 移除获取标记
+      fetchingDimensions.current.delete(image.id)
+    }
+  }, [])
+
+  // 当图片变为可见时获取尺寸
+  useEffect(() => {
+    visibleImages.forEach(imageId => {
+      const image = images.find(img => img.id === imageId)
+      if (image && (image.width === 0 || image.height === 0)) {
+        if (!imageDimensions[image.id] && !fetchingDimensions.current.has(image.id)) {
+          fetchImageDimensions(image)
+        }
+      }
+    })
+  }, [visibleImages, images, imageDimensions, fetchImageDimensions])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
     if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
@@ -84,37 +155,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
     window.open(url, '_blank')
   }, [])
 
-  // 获取图片真实尺寸
-  const fetchImageDimensions = useCallback(async (image: ImageItem) => {
-    if (imageDimensions[image.id]) return // 已经获取过了
-    
-    try {
-      const dimensions = await getImageDimensionsFromUrl(image.url)
-      setImageDimensions(prev => ({
-        ...prev,
-        [image.id]: dimensions
-      }))
-    } catch (error) {
-      console.warn(`Failed to get dimensions for ${image.name}:`, error)
-    }
-  }, [imageDimensions])
-
-  // 当图片变为可见时获取尺寸
-  useEffect(() => {
-    visibleImages.forEach(imageId => {
-      const image = images.find(img => img.id === imageId)
-      if (image && (image.width === 0 || image.height === 0)) {
-        fetchImageDimensions(image)
-      }
-    })
-  }, [visibleImages, images, fetchImageDimensions])
-
-
-
-  const formatDate = useCallback((dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN')
-  }, [])
-
   // 压缩单张图片
   const handleCompressImage = useCallback(async (image: ImageItem) => {
     if (compressingImages.has(image.id)) return
@@ -154,6 +194,21 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
       })
     }
   }, [compressingImages])
+
+  // 下载压缩后的图片
+  const handleDownloadCompressed = useCallback((image: ImageItem) => {
+    const result = compressionResults[image.id]
+    if (!result) {
+      showError('没有找到压缩后的图片')
+      return
+    }
+
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(result.compressedFile)
+    link.download = `compressed_${image.name}`
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }, [compressionResults])
 
   // 重新上传压缩后的图片（覆盖原图）
   const handleReplaceWithCompressed = useCallback(async (image: ImageItem) => {
@@ -199,11 +254,9 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
             showSuccess(`图片 "${image.name}" 已成功替换为压缩版本！`)
           } catch (deleteError) {
             updateLoadingToError(deleteToast, `删除原图失败: ${deleteError instanceof Error ? deleteError.message : '未知错误'}`)
-            showError('压缩版本已上传，但删除原图失败。请手动删除原图。')
           }
         } catch (uploadError) {
           updateLoadingToError(loadingToast, `上传压缩版本失败: ${uploadError instanceof Error ? uploadError.message : '未知错误'}`)
-          throw uploadError // 重新抛出错误，让外层catch处理
         }
       } catch (error) {
         showError(`替换图片失败: ${error instanceof Error ? error.message : '未知错误'}`)
@@ -217,210 +270,238 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
     }
   }, [compressionResults, deleteImage])
 
-  // 下载压缩后的图片
-  const handleDownloadCompressed = useCallback((image: ImageItem) => {
-    const result = compressionResults[image.id]
-    if (!result) return
-    
-    const url = URL.createObjectURL(result.compressedFile)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `compressed_${image.name}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    showSuccess('压缩后的图片已开始下载')
-  }, [compressionResults])
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN')
+  }, [])
 
-  if (images.length === 0) {
+  
+  // 渲染单个图片项
+  const renderImageItem = useCallback((image: ImageItem) => {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <Tag className="w-8 h-8 text-gray-400" />
+      <div
+        key={image.id}
+        ref={(el) => el && observeElement(el, image.id)}
+        className="image-grid-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
+      >
+        {/* 图片预览 - 懒加载 */}
+        <div className="relative aspect-square bg-gray-100 flex-shrink-0">
+          <img
+            src={image.url}
+            alt={image.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+          
+          {/* 操作按钮 */}
+          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handlePreview(image)}
+                className="image-action-button"
+                title="预览"
+              >
+                <Eye className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => handleViewUrl(image)}
+                className="image-action-button"
+                title="查看地址"
+              >
+                <Link className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => handleCompressImage(image)}
+                disabled={compressingImages.has(image.id)}
+                className="image-action-button"
+                title="压缩图片"
+              >
+                {compressingImages.has(image.id) ? (
+                  <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Zap className="w-4 h-4 text-gray-700" />
+                )}
+              </button>
+              <button
+                onClick={() => handleEdit(image)}
+                className="image-action-button"
+                title="编辑"
+              >
+                <Edit className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => handleDelete(image)}
+                className="image-action-button"
+                title="删除"
+              >
+                <Trash2 className="w-4 h-4 text-gray-700" />
+              </button>
+            </div>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">图片库为空</h3>
-          <p className="text-gray-500">开始上传图片，构建您的专属图片库</p>
+        </div>
+        
+        {/* 图片信息 */}
+        <div className="image-info-section p-3 flex-1">
+          <div className="image-info-content">
+            <h3 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+              {image.name}
+            </h3>
+            
+            {image.description && (
+              <p className="text-gray-500 text-xs mb-2 line-clamp-2">
+                {image.description}
+              </p>
+            )}
+          </div>
+          
+          <div className="image-info-footer space-y-1 mt-auto">
+            {/* 标签 */}
+            {image.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {image.tags.slice(0, 3).map((tag, index) => (
+                  <span
+                    key={`${image.id}-tag-${index}`}
+                    className="image-tag bg-blue-100 text-blue-800"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {image.tags.length > 3 && (
+                  <span className="image-tag bg-gray-100 text-gray-600">
+                    +{image.tags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+            
+            {/* 图片详情 */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>
+                {(() => {
+                  const dimensions = imageDimensions[image.id]
+                  if (dimensions) {
+                    return `${dimensions.width} × ${dimensions.height}`
+                  } else if (image.width > 0 && image.height > 0) {
+                    return `${image.width} × ${image.height}`
+                  } else {
+                    return '获取中...'
+                  }
+                })()}
+              </span>
+              {image.size > 0 && (
+                <span className="flex items-center space-x-1">
+                  <HardDrive className="w-3 h-3" />
+                  <span>{formatFileSize(image.size)}</span>
+                </span>
+              )}
+            </div>
+            
+            <div className="flex items-center text-xs text-gray-500">
+              <Calendar className="w-3 h-3 mr-1" />
+              <span>{formatDate(image.createdAt)}</span>
+            </div>
+
+            {/* 压缩结果显示 */}
+            {compressionResults[image.id] && (
+              <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-1 text-green-700">
+                    <Zap className="w-3 h-3" />
+                    <span>压缩完成</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => handleDownloadCompressed(image)}
+                      className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                      title="下载压缩后图片"
+                    >
+                      <Download className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleReplaceWithCompressed(image)}
+                      disabled={replacingImages.has(image.id)}
+                      className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      title="用压缩版本替换原图"
+                    >
+                      {replacingImages.has(image.id) ? (
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <RotateCcw className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="text-xs text-green-600 mt-1">
+                  节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
+                  ({formatFileSize(compressionResults[image.id].originalSize)} → {formatFileSize(compressionResults[image.id].compressedSize)})
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     )
-  }
+  }, [
+    compressingImages,
+    compressionResults,
+    replacingImages,
+    imageDimensions,
+    handlePreview,
+    handleViewUrl,
+    handleCompressImage,
+    handleEdit,
+    handleDelete,
+    handleDownloadCompressed,
+    handleReplaceWithCompressed,
+    formatDate
+  ])
 
   return (
     <>
-      {/* 保持原有的网格布局 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-        {images.map((image) => (
-          <div
-            key={image.id}
-            ref={(el) => el && observeElement(el, image.id)}
-            className="image-grid-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
-          >
-            {/* 图片预览 - 懒加载 */}
-            <div className="relative aspect-square bg-gray-100 flex-shrink-0">
-              {visibleImages.has(image.id) ? (
-                <img
-                  src={image.url}
-                  alt={image.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="image-loading-spinner w-8 h-8"></div>
-                </div>
-              )}
-              
-              {/* 操作按钮 */}
-              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handlePreview(image)}
-                    className="image-action-button"
-                    title="预览"
-                  >
-                    <Eye className="w-4 h-4 text-gray-700" />
-                  </button>
-                  <button
-                    onClick={() => handleViewUrl(image)}
-                    className="image-action-button"
-                    title="查看地址"
-                  >
-                    <Link className="w-4 h-4 text-gray-700" />
-                  </button>
-                  <button
-                    onClick={() => handleCompressImage(image)}
-                    disabled={compressingImages.has(image.id)}
-                    className="image-action-button"
-                    title="压缩图片"
-                  >
-                    {compressingImages.has(image.id) ? (
-                      <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Zap className="w-4 h-4 text-gray-700" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => handleEdit(image)}
-                    className="image-action-button"
-                    title="编辑"
-                  >
-                    <Edit className="w-4 h-4 text-gray-700" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(image)}
-                    className="image-action-button"
-                    title="删除"
-                  >
-                    <Trash2 className="w-4 h-4 text-gray-700" />
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* 图片信息 */}
-            <div className="image-info-section p-3">
-              <div className="image-info-content">
-                <h3 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
-                  {image.name}
-                </h3>
-                
-                {image.description && (
-                  <p className="text-gray-500 text-xs mb-2 line-clamp-2">
-                    {image.description}
-                  </p>
-                )}
-              </div>
-              
-              <div className="image-info-footer space-y-1">
-                {/* 标签 */}
-                {image.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {image.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={`${image.id}-tag-${index}`}
-                        className="image-tag bg-blue-100 text-blue-800"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {image.tags.length > 3 && (
-                      <span className="image-tag bg-gray-100 text-gray-600">
-                        +{image.tags.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-                
-                {/* 图片详情 */}
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>
-                    {(() => {
-                      const dimensions = imageDimensions[image.id]
-                      if (dimensions) {
-                        return `${dimensions.width} × ${dimensions.height}`
-                      } else if (image.width > 0 && image.height > 0) {
-                        return `${image.width} × ${image.height}`
-                      } else {
-                        return '获取中...'
-                      }
-                    })()}
-                  </span>
-                  {image.size > 0 && (
-                    <span className="flex items-center space-x-1">
-                      <HardDrive className="w-3 h-3" />
-                      <span>{formatFileSize(image.size)}</span>
-                    </span>
-                  )}
-                </div>
-                
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  <span>{formatDate(image.createdAt)}</span>
-                </div>
+      {/* 滚动容器 */}
+      <div 
+        ref={containerRef}
+        className={`h-full overflow-y-auto ${className}`}
+      >
+        {/* 图片网格 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
+          {visibleItems.map(renderImageItem)}
+        </div>
 
-                {/* 压缩结果显示 */}
-                {compressionResults[image.id] && (
-                  <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-1 text-green-700">
-                        <Zap className="w-3 h-3" />
-                        <span>压缩完成</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => handleDownloadCompressed(image)}
-                          className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                          title="下载压缩后图片"
-                        >
-                          <Download className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => handleReplaceWithCompressed(image)}
-                          disabled={replacingImages.has(image.id)}
-                          className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                          title="用压缩版本替换原图"
-                        >
-                          {replacingImages.has(image.id) ? (
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <RotateCcw className="w-3 h-3" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-xs text-green-600 mt-1">
-                      节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
-                      ({formatFileSize(compressionResults[image.id].originalSize)} → {formatFileSize(compressionResults[image.id].compressedSize)})
-                    </div>
-                  </div>
-                )}
+        {/* 加载更多指示器 */}
+        {hasMore && (
+          <div 
+            ref={loadingRef}
+            className="flex items-center justify-center py-8"
+          >
+            {isLoading ? (
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>正在加载更多图片...</span>
               </div>
-            </div>
+            ) : (
+              <button
+                onClick={loadMore}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                加载更多
+              </button>
+            )}
           </div>
-        ))}
+        )}
+
+        {/* 已加载全部提示 */}
+        {!hasMore && visibleItems.length > 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>已加载全部 {visibleItems.length} 张图片</p>
+          </div>
+        )}
+
+        {/* 空状态 */}
+        {visibleItems.length === 0 && !isLoading && (
+          <div className="text-center py-16 text-gray-500">
+            <p>暂无图片</p>
+          </div>
+        )}
       </div>
 
       {/* 编辑模态框 */}
@@ -458,16 +539,10 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
               )}
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
                 <span>
-                  {(() => {
-                    const dimensions = imageDimensions[selectedImage.id]
-                    if (dimensions) {
-                      return `${dimensions.width} × ${dimensions.height}`
-                    } else if (selectedImage.width > 0 && selectedImage.height > 0) {
-                      return `${selectedImage.width} × ${selectedImage.height}`
-                    } else {
-                      return '获取中...'
-                    }
-                  })()}
+                  {selectedImage.width > 0 && selectedImage.height > 0 
+                    ? `${selectedImage.width} × ${selectedImage.height}`
+                    : '获取中...'
+                  }
                 </span>
                 {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
                 <span>{formatDate(selectedImage.createdAt)}</span>
@@ -498,95 +573,70 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
       {/* 在线地址模态框 */}
       {showUrlModal && selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="max-w-2xl w-full mx-4 bg-white rounded-lg shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">图片在线地址</h3>
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                图片在线地址
+              </h3>
               <button
                 onClick={() => setShowUrlModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 space-y-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.name}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div>
-                  <h4 className="font-medium text-gray-900">{selectedImage.name}</h4>
-                  <p className="text-sm text-gray-500">
-                    {(() => {
-                      const dimensions = imageDimensions[selectedImage.id]
-                      if (dimensions) {
-                        return `${dimensions.width} × ${dimensions.height}`
-                      } else if (selectedImage.width > 0 && selectedImage.height > 0) {
-                        return `${selectedImage.width} × ${selectedImage.height}`
-                      } else {
-                        return '获取中...'
-                      }
-                    })()}
-                  </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  图片地址
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={selectedImage.url}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                  />
+                  <button
+                    onClick={() => handleCopyUrl(selectedImage.url, 'url')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    复制
+                  </button>
+                  <button
+                    onClick={() => handleOpenUrl(selectedImage.url)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    打开
+                  </button>
                 </div>
               </div>
-
-              {/* 图片访问地址 */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">图片访问地址</label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={selectedImage.url}
-                      readOnly
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                    />
-                    <button
-                      onClick={() => handleCopyUrl(selectedImage.url, 'url')}
-                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      复制
-                    </button>
-                    <button
-                      onClick={() => handleOpenUrl(selectedImage.url)}
-                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span>打开</span>
-                    </button>
-                  </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  GitHub地址
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={selectedImage.githubUrl}
+                    readOnly
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
+                  />
+                  <button
+                    onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    复制
+                  </button>
+                  <button
+                    onClick={() => handleOpenUrl(selectedImage.githubUrl)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    打开
+                  </button>
                 </div>
-
-                {/* GitHub 地址 */}
-                {selectedImage.githubUrl && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub 地址</label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={selectedImage.githubUrl}
-                        readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                      />
-                      <button
-                        onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
-                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        复制
-                      </button>
-                      <button
-                        onClick={() => handleOpenUrl(selectedImage.githubUrl)}
-                        className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        <span>打开</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -596,4 +646,4 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images }) => {
   )
 }
 
-export default ImageGrid 
+export default ImageGrid

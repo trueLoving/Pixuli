@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { ImageItem } from '@/type/image'
 import ImageGrid from './ImageGrid'
 import ImageList from './ImageList'
-import ScrollableImageGrid from './ScrollableImageGrid'
 import ViewToggle, { ViewMode } from './ViewToggle'
 import ImageSorter, { SortField, SortOrder } from './ImageSorter'
 import ImageFilter, { FilterOptions } from './ImageFilter'
@@ -100,13 +99,14 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
 
       {/* 内容区域 */}
       <div className="flex-1">
-        {currentView === 'grid' ? (
-          <ScrollableImageGrid 
+        <div className={currentView === 'grid' ? 'block' : 'hidden'}>
+          <ImageGrid 
             images={filteredAndSortedImages}
           />
-        ) : (
+        </div>
+        <div className={currentView === 'list' ? 'block' : 'hidden'}>
           <ImageList images={filteredAndSortedImages} />
-        )}
+        </div>
       </div>
     </div>
   )

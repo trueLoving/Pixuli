@@ -89,12 +89,12 @@ export class GitHubStorageService {
         branch: this.config.branch
       })
 
-      return response.map((item: any) => ({
+      const images = response.map((item: any) => ({
         id: item.sha,
         name: item.name,
         url: item.downloadUrl || '',
         githubUrl: item.htmlUrl || '',
-        size: 0, // GitHub API 不提供文件大小
+        size: item.size || 0, // 现在从后端获取文件大小
         width: item.width || 0,
         height: item.height || 0,
         type: this.getMimeType(item.name),
@@ -103,6 +103,30 @@ export class GitHubStorageService {
         createdAt: item.createdAt || new Date().toISOString(),
         updatedAt: item.updatedAt || new Date().toISOString(),
       }))
+      
+      // 检查重复ID
+      const idCounts = images.reduce((acc: Record<string, number>, img) => {
+        acc[img.id] = (acc[img.id] || 0) + 1
+        return acc
+      }, {})
+      
+      const duplicateIds = Object.entries(idCounts).filter(([_, count]) => count > 1)
+      if (duplicateIds.length > 0) {
+        console.warn('发现重复的图片ID:', duplicateIds)
+        // 为重复的ID添加后缀以确保唯一性
+        const processedImages = images.map((img, index) => {
+          if (idCounts[img.id] > 1) {
+            return {
+              ...img,
+              id: `${img.id}-${index}`
+            }
+          }
+          return img
+        })
+        return processedImages
+      }
+      
+      return images
     } catch (error) {
       console.error('Get image list failed:', error)
       throw new Error(`获取图片列表失败: ${error}`)

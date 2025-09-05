@@ -131,8 +131,8 @@ export function getImageDimensionsFromUrl(url: string): Promise<ImageDimensions>
     
     img.onload = () => {
       resolve({
-        width: img.width,
-        height: img.height
+        width: img.naturalWidth,  // 使用 naturalWidth 获取真实尺寸
+        height: img.naturalHeight // 使用 naturalHeight 获取真实尺寸
       })
     }
     
@@ -140,6 +140,8 @@ export function getImageDimensionsFromUrl(url: string): Promise<ImageDimensions>
       reject(new Error('图片加载失败'))
     }
     
+    // 设置跨域属性以支持 GitHub 图片
+    img.crossOrigin = 'anonymous'
     img.src = url
   })
 }

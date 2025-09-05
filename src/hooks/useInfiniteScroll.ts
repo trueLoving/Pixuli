@@ -41,16 +41,6 @@ export function useInfiniteScroll(
   // 计算当前应该显示的图片数量
   const currentItemCount = Math.min(currentPage * pageSize, allItems.length)
 
-  // 初始化加载
-  useEffect(() => {
-    if (allItems.length > 0 && visibleItems.length === 0) {
-      const initialItems = allItems.slice(0, initialLoadCount)
-      setVisibleItems(initialItems)
-      setCurrentPage(Math.ceil(initialLoadCount / pageSize))
-      setHasMore(allItems.length > initialLoadCount)
-    }
-  }, [allItems, initialLoadCount, pageSize, visibleItems.length])
-
   // 加载更多图片
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return
@@ -105,10 +95,19 @@ export function useInfiniteScroll(
     }
   }, [hasMore, isLoading, loadMore, threshold, rootMargin])
 
-  // 当allItems变化时重置状态
+  // 当allItems变化时处理初始加载
   useEffect(() => {
-    reset()
-  }, [allItems, reset])
+    if (allItems.length === 0) {
+      // 清空时重置
+      reset()
+    } else if (visibleItems.length === 0) {
+      // 首次加载
+      const initialItems = allItems.slice(0, initialLoadCount)
+      setVisibleItems(initialItems)
+      setCurrentPage(Math.ceil(initialLoadCount / pageSize))
+      setHasMore(allItems.length > initialLoadCount)
+    }
+  }, [allItems, initialLoadCount, pageSize, visibleItems.length, reset])
 
   return {
     visibleItems,

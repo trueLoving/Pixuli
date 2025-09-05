@@ -261,7 +261,8 @@ export class GitHubService {
             name: item.name,
             downloadUrl: item.download_url,
             htmlUrl: item.html_url,
-            width: 0, // 需要额外处理获取图片尺寸
+            size: item.size,
+            width: 0, // 图片尺寸需要前端动态获取
             height: 0,
             tags: [],
             description: '',
