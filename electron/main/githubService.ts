@@ -30,13 +30,37 @@ export class GitHubService {
         const { owner, repo, path, branch, fileName, content, description, tags } = params
         const filePath = `${path}/${fileName}`
         
+        // 首先检查文件是否已存在
+        let existingSha: string | null = null
+        try {
+          const existingFile = await this.octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path: filePath,
+            ref: branch,
+          })
+          
+          if (Array.isArray(existingFile.data)) {
+            // 如果是目录，抛出错误
+            throw new Error('Path is a directory')
+          } else {
+            existingSha = existingFile.data.sha
+          }
+        } catch (error: any) {
+          // 如果文件不存在，existingSha 保持为 null
+          if (error.status !== 404) {
+            console.warn('Error checking existing file:', error.message)
+          }
+        }
+        
         const response = await this.octokit.rest.repos.createOrUpdateFileContents({
           owner,
           repo,
           path: filePath,
-          message: `Add image: ${fileName}`,
+          message: existingSha ? `Update image: ${fileName}` : `Add image: ${fileName}`,
           content,
           branch,
+          ...(existingSha && { sha: existingSha }),
         })
 
         return {

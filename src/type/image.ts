@@ -40,4 +40,19 @@ export interface UploadProgress {
   progress: number
   status: 'uploading' | 'success' | 'error'
   message?: string
+}
+
+export interface MultiImageUploadData {
+  files: File[]
+  name?: string
+  description?: string
+  tags?: string[]
+}
+
+export interface BatchUploadProgress {
+  total: number
+  completed: number
+  failed: number
+  current?: string
+  items: UploadProgress[]
 } 
