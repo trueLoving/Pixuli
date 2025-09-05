@@ -18,7 +18,14 @@ export class WebPCompressionService {
     imageFile: File,
     options?: WebPCompressOptions
   ): Promise<WebPCompressResult> {
+    const startTime = performance.now()
+    
     try {
+      // 检查WASM API是否可用
+      if (!window.wasmAPI || !window.wasmAPI.compressToWebp) {
+        throw new Error('WASM API 不可用，请确保应用已正确初始化')
+      }
+
       // 将File转换为Uint8Array
       const arrayBuffer = await imageFile.arrayBuffer()
       const imageData = new Uint8Array(arrayBuffer)
@@ -26,9 +33,13 @@ export class WebPCompressionService {
       // 调用WASM压缩函数
       const result = await window.wasmAPI.compressToWebp(Array.from(imageData), options)
       
+      const endTime = performance.now()
+      console.log(`WASM WebP 压缩完成: ${(endTime - startTime).toFixed(2)}ms, 压缩率: ${(result.compressionRatio * 100).toFixed(2)}%`)
+      
       return result
     } catch (error) {
-      console.error('WebP compression failed:', error)
+      const endTime = performance.now()
+      console.error(`WebP compression failed after ${(endTime - startTime).toFixed(2)}ms:`, error)
       throw new Error(`WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
@@ -40,7 +51,14 @@ export class WebPCompressionService {
     imageFiles: File[],
     options?: WebPCompressOptions
   ): Promise<WebPCompressResult[]> {
+    const startTime = performance.now()
+    
     try {
+      // 检查WASM API是否可用
+      if (!window.wasmAPI || !window.wasmAPI.batchCompressToWebp) {
+        throw new Error('WASM API 不可用，请确保应用已正确初始化')
+      }
+
       // 将所有File转换为Array<number>
       const imagesData = await Promise.all(
         imageFiles.map(async (file) => {
@@ -52,9 +70,14 @@ export class WebPCompressionService {
       // 调用WASM批量压缩函数
       const results = await window.wasmAPI.batchCompressToWebp(imagesData, options)
       
+      const endTime = performance.now()
+      const avgCompressionRatio = results.reduce((sum, result) => sum + result.compressionRatio, 0) / results.length
+      console.log(`WASM 批量压缩完成: ${(endTime - startTime).toFixed(2)}ms, 平均压缩率: ${(avgCompressionRatio * 100).toFixed(2)}%`)
+      
       return results
     } catch (error) {
-      console.error('Batch WebP compression failed:', error)
+      const endTime = performance.now()
+      console.error(`Batch WebP compression failed after ${(endTime - startTime).toFixed(2)}ms:`, error)
       throw new Error(`批量WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }

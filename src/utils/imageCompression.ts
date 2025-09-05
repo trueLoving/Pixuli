@@ -1,16 +1,9 @@
-import imageCompression from 'browser-image-compression'
 import { WebPCompressionService } from '@/services/webpCompression'
 import { WebPCompressOptions, WebPCompressResult } from '@/types/webp'
 
 export interface CompressionOptions {
-  maxSizeMB: number
-  maxWidthOrHeight: number
-  useWebWorker: boolean
-  fileType?: string
-  initialQuality?: number
-  alwaysKeepResolution?: boolean
-  useWebP?: boolean
-  webpOptions?: WebPCompressOptions
+  quality?: number
+  lossless?: boolean
 }
 
 export interface CompressionResult {
@@ -23,16 +16,12 @@ export interface CompressionResult {
 }
 
 export const DEFAULT_COMPRESSION_OPTIONS: CompressionOptions = {
-  maxSizeMB: 1,
-  maxWidthOrHeight: 1920,
-  useWebWorker: true,
-  initialQuality: 0.8,
-  useWebP: true,
-  webpOptions: { quality: 80 }
+  quality: 80,
+  lossless: false
 }
 
 /**
- * 压缩图片文件
+ * 压缩图片文件（仅使用 WASM WebP 压缩）
  * @param file 原始图片文件
  * @param options 压缩选项
  * @returns Promise<CompressionResult> 压缩结果
@@ -46,43 +35,27 @@ export async function compressImage(
   // 获取原始图片尺寸
   const originalDimensions = await getImageDimensions(file)
   
-  let compressedFile: File
-  let compressedSize: number
-  let compressionRatio: number
-  let compressedDimensions = originalDimensions
-
-  // 如果启用WebP压缩且支持WebP
-  if (finalOptions.useWebP && WebPCompressionService.isWebPSupported()) {
-    try {
-      // 使用WASM WebP压缩
-      const webpResult = await WebPCompressionService.compressImage(file, finalOptions.webpOptions)
-      compressedFile = WebPCompressionService.createCompressedFile(webpResult, file.name)
-      compressedSize = webpResult.compressedSize
-      compressionRatio = webpResult.compressionRatio * 100
-      compressedDimensions = { width: webpResult.width, height: webpResult.height }
-    } catch (error) {
-      console.warn('WebP compression failed, falling back to standard compression:', error)
-      // WebP压缩失败，回退到标准压缩
-      compressedFile = await imageCompression(file, finalOptions)
-      compressedDimensions = await getImageDimensions(compressedFile)
-      compressedSize = compressedFile.size
-      compressionRatio = ((file.size - compressedSize) / file.size) * 100
+  try {
+    // 使用 WASM WebP 压缩
+    const webpOptions: WebPCompressOptions = {
+      quality: finalOptions.quality,
+      lossless: finalOptions.lossless
     }
-  } else {
-    // 使用标准压缩
-    compressedFile = await imageCompression(file, finalOptions)
-    compressedDimensions = await getImageDimensions(compressedFile)
-    compressedSize = compressedFile.size
-    compressionRatio = ((file.size - compressedSize) / file.size) * 100
-  }
-  
-  return {
-    compressedFile,
-    originalSize: file.size,
-    compressedSize,
-    compressionRatio,
-    originalDimensions,
-    compressedDimensions
+    
+    const webpResult = await WebPCompressionService.compressImage(file, webpOptions)
+    const compressedFile = WebPCompressionService.createCompressedFile(webpResult, file.name)
+    
+    return {
+      compressedFile,
+      originalSize: file.size,
+      compressedSize: webpResult.compressedSize,
+      compressionRatio: webpResult.compressionRatio * 100,
+      originalDimensions,
+      compressedDimensions: { width: webpResult.width, height: webpResult.height }
+    }
+  } catch (error) {
+    console.error('WASM WebP compression failed:', error)
+    throw new Error(`图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
   }
 }
 
@@ -106,7 +79,7 @@ async function getImageDimensions(file: File): Promise<{ width: number; height: 
 }
 
 /**
- * 批量压缩图片
+ * 批量压缩图片（仅使用 WASM WebP 压缩）
  * @param files 图片文件数组
  * @param options 压缩选项
  * @returns Promise<CompressionResult[]> 压缩结果数组
@@ -115,28 +88,31 @@ export async function compressImages(
   files: File[],
   options: Partial<CompressionOptions> = {}
 ): Promise<CompressionResult[]> {
-  const results: CompressionResult[] = []
-  
-  for (const file of files) {
-    try {
-      const result = await compressImage(file, options)
-      results.push(result)
-    } catch (error) {
-      console.error(`Failed to compress ${file.name}:`, error)
-      // 如果压缩失败，返回原始文件信息
-      const dimensions = await getImageDimensions(file)
-      results.push({
-        compressedFile: file,
-        originalSize: file.size,
-        compressedSize: file.size,
-        compressionRatio: 0,
-        originalDimensions: dimensions,
-        compressedDimensions: dimensions
-      })
+  try {
+    const finalOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options }
+    const webpOptions: WebPCompressOptions = {
+      quality: finalOptions.quality,
+      lossless: finalOptions.lossless
     }
+    
+    // 使用 WASM 批量压缩
+    const webpResults = await WebPCompressionService.batchCompressImages(files, webpOptions)
+    
+    return webpResults.map((webpResult, index) => {
+      const file = files[index]
+      return {
+        compressedFile: WebPCompressionService.createCompressedFile(webpResult, file.name),
+        originalSize: webpResult.originalSize,
+        compressedSize: webpResult.compressedSize,
+        compressionRatio: webpResult.compressionRatio * 100,
+        originalDimensions: { width: webpResult.width, height: webpResult.height },
+        compressedDimensions: { width: webpResult.width, height: webpResult.height }
+      }
+    })
+  } catch (error) {
+    console.error('Batch WASM WebP compression failed:', error)
+    throw new Error(`批量图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
   }
-  
-  return results
 }
 
 /**
@@ -150,34 +126,26 @@ export function getAutoCompressionOptions(fileSize: number): CompressionOptions 
   if (sizeMB > 10) {
     // 超大文件：高压缩
     return {
-      maxSizeMB: 2,
-      maxWidthOrHeight: 1600,
-      useWebWorker: true,
-      initialQuality: 0.6
+      quality: 60,
+      lossless: false
     }
   } else if (sizeMB > 5) {
     // 大文件：中等压缩
     return {
-      maxSizeMB: 1.5,
-      maxWidthOrHeight: 1920,
-      useWebWorker: true,
-      initialQuality: 0.7
+      quality: 70,
+      lossless: false
     }
   } else if (sizeMB > 2) {
     // 中等文件：轻微压缩
     return {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 2048,
-      useWebWorker: true,
-      initialQuality: 0.8
+      quality: 80,
+      lossless: false
     }
   } else {
     // 小文件：保持原样或轻微压缩
     return {
-      maxSizeMB: 0.8,
-      maxWidthOrHeight: 2560,
-      useWebWorker: true,
-      initialQuality: 0.9
+      quality: 85,
+      lossless: false
     }
   }
 }
@@ -220,74 +188,3 @@ export function getSupportedImageFormats(): string[] {
     'image/bmp'
   ]
 }
-
-/**
- * 使用WASM WebP压缩图片
- * @param file 原始图片文件
- * @param options WebP压缩选项
- * @returns Promise<CompressionResult> 压缩结果
- */
-export async function compressImageToWebP(
-  file: File,
-  options: WebPCompressOptions = { quality: 80 }
-): Promise<CompressionResult> {
-  try {
-    // 获取原始图片尺寸
-    const originalDimensions = await getImageDimensions(file)
-    
-    // 使用WASM WebP压缩
-    const webpResult = await WebPCompressionService.compressImage(file, options)
-    const compressedFile = WebPCompressionService.createCompressedFile(webpResult, file.name)
-    
-    return {
-      compressedFile,
-      originalSize: file.size,
-      compressedSize: webpResult.compressedSize,
-      compressionRatio: webpResult.compressionRatio * 100,
-      originalDimensions,
-      compressedDimensions: { width: webpResult.width, height: webpResult.height }
-    }
-  } catch (error) {
-    console.error('WebP compression failed:', error)
-    throw new Error(`WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
-  }
-}
-
-/**
- * 批量使用WASM WebP压缩图片
- * @param files 图片文件数组
- * @param options WebP压缩选项
- * @returns Promise<CompressionResult[]> 压缩结果数组
- */
-export async function batchCompressImagesToWebP(
-  files: File[],
-  options: WebPCompressOptions = { quality: 80 }
-): Promise<CompressionResult[]> {
-  try {
-    const results: CompressionResult[] = []
-    
-    for (const file of files) {
-      try {
-        const result = await compressImageToWebP(file, options)
-        results.push(result)
-      } catch (error) {
-        console.error(`Failed to compress ${file.name} to WebP:`, error)
-        // 如果WebP压缩失败，返回原始文件信息
-        const dimensions = await getImageDimensions(file)
-        results.push({
-          compressedFile: file,
-          originalSize: file.size,
-          compressedSize: file.size,
-          compressionRatio: 0,
-          originalDimensions: dimensions,
-          compressedDimensions: dimensions
-        })
-      }
-    }
-    
-    return results
-  } catch (error) {
-    console.error('Batch WebP compression failed:', error)
-    throw new Error(`批量WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
-  }
-} 

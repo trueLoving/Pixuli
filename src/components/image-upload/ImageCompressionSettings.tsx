@@ -38,7 +38,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Settings className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-medium text-gray-900">压缩设置</h3>
+          <h3 className="text-lg font-medium text-gray-900">WebP 压缩设置</h3>
         </div>
         <button
           onClick={handleAutoOptimize}
@@ -77,66 +77,39 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
         </div>
       </div>
 
-      {/* 基本设置 */}
+      {/* WebP 压缩设置 */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            最大文件大小 (MB)
+            WebP 压缩质量
           </label>
           <input
             type="range"
-            min="0.1"
-            max="5"
-            step="0.1"
-            value={options.maxSizeMB}
-            onChange={(e) => handleOptionChange('maxSizeMB', parseFloat(e.target.value))}
+            min="10"
+            max="100"
+            step="5"
+            value={options.quality || 80}
+            onChange={(e) => handleOptionChange('quality', parseInt(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0.1 MB</span>
-            <span className="font-medium">{options.maxSizeMB} MB</span>
-            <span>5 MB</span>
+            <span>低质量 (10)</span>
+            <span className="font-medium">{options.quality || 80}%</span>
+            <span>高质量 (100)</span>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            最大宽度/高度 (像素)
-          </label>
+        <div className="flex items-center space-x-3">
           <input
-            type="range"
-            min="800"
-            max="4000"
-            step="100"
-            value={options.maxWidthOrHeight}
-            onChange={(e) => handleOptionChange('maxWidthOrHeight', parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            type="checkbox"
+            id="lossless"
+            checked={options.lossless || false}
+            onChange={(e) => handleOptionChange('lossless', e.target.checked)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
           />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>800px</span>
-            <span className="font-medium">{options.maxWidthOrHeight}px</span>
-            <span>4000px</span>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            图片质量
+          <label htmlFor="lossless" className="text-sm text-gray-700">
+            无损压缩（忽略质量设置）
           </label>
-          <input
-            type="range"
-            min="0.1"
-            max="1"
-            step="0.1"
-            value={options.initialQuality || 0.8}
-            onChange={(e) => handleOptionChange('initialQuality', parseFloat(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>低质量</span>
-            <span className="font-medium">{Math.round((options.initialQuality || 0.8) * 100)}%</span>
-            <span>高质量</span>
-          </div>
         </div>
 
         {/* 高级选项 */}
@@ -159,30 +132,19 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
 
         {showAdvanced && (
           <div className="space-y-3 pt-2 border-t border-gray-200">
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="useWebWorker"
-                checked={options.useWebWorker}
-                onChange={(e) => handleOptionChange('useWebWorker', e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="useWebWorker" className="text-sm text-gray-700">
-                使用 Web Worker (推荐)
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="alwaysKeepResolution"
-                checked={options.alwaysKeepResolution || false}
-                onChange={(e) => handleOptionChange('alwaysKeepResolution', e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="alwaysKeepResolution" className="text-sm text-gray-700">
-                保持原始分辨率
-              </label>
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">WebP 压缩说明：</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• 质量越高，文件越大，但图片质量越好</li>
+                    <li>• 无损压缩保持原始质量，但文件可能较大</li>
+                    <li>• 建议质量范围：60-90</li>
+                    <li>• 大文件建议使用较低质量以获得更好的压缩效果</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -191,15 +153,13 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
       {/* 提示信息 */}
       <div className="mt-4 p-3 bg-blue-50 rounded-lg">
         <div className="flex items-start space-x-2">
-          <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <HardDrive className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">压缩建议:</p>
-            <ul className="space-y-1 text-xs">
-              <li>• 大文件 (&gt;5MB) 建议使用高压缩设置</li>
-              <li>• 小文件 (&lt;1MB) 可以保持较高质量</li>
-              <li>• 使用 Web Worker 可以避免界面卡顿</li>
-              <li>• 压缩后的图片会保持原始格式</li>
-            </ul>
+            <p className="font-medium mb-1">压缩提示：</p>
+            <p className="text-xs">
+              使用 WASM WebP 压缩可以获得更好的压缩效果和更快的处理速度。
+              压缩后的文件将保存为 .webp 格式。
+            </p>
           </div>
         </div>
       </div>
@@ -207,4 +167,4 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
   )
 }
 
-export default ImageCompressionSettings 
+export default ImageCompressionSettings
