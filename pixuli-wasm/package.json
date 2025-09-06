@@ -1,0 +1,41 @@
+{
+  "name": "pixuli-wasm",
+  "version": "1.0.0",
+  "description": "pixuli wasm",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./wasi-worker-browser.mjs": "./wasi-worker-browser.mjs"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "wasi-worker-browser.mjs",
+    "*.node"
+  ],
+  "napi": {
+    "binaryName": "pixuli-wasm",
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "aarch64-apple-darwin",
+      "aarch64-pc-windows-msvc"
+    ]
+  },
+  "engines": {
+    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.0.3",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@10.13.1"
+}

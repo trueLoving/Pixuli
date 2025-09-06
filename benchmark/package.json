@@ -1,0 +1,19 @@
+{
+  "name": "pixuli-wasm-benchmark",
+  "version": "1.0.0",
+  "description": "WASM vs JavaScript 图片压缩性能对比测试",
+  "type": "module",
+  "scripts": {
+    "bench": "tsx src/simple-compression-bench.ts",
+    "bench:detailed": "tsx src/detailed-bench.ts"
+  },
+  "dependencies": {
+    "pixuli-wasm": "workspace:*",
+    "tinybench": "^2.5.0",
+    "browser-image-compression": "^2.0.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
