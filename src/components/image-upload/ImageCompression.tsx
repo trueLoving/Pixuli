@@ -148,32 +148,43 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
 
         <div className="flex h-[calc(90vh-120px)]">
           {/* 左侧：文件选择和设置 */}
-          <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto">
+          <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto flex flex-col">
             {/* 文件选择区域 */}
             {!selectedFile ? (
-              <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onClick={() => document.getElementById('file-input')?.click()}
-              >
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  选择图片文件
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  拖拽图片到此处或点击选择文件
-                </p>
-                <p className="text-sm text-gray-400">
-                  支持 JPG, PNG, GIF, BMP, WebP 等格式，最大 50MB
-                </p>
-                <input
-                  id="file-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
+              <div className="flex-1 flex items-center justify-center">
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-300 cursor-pointer group max-w-md w-full"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onClick={() => document.getElementById('file-input')?.click()}
+                >
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="p-4 bg-blue-100 rounded-full group-hover:bg-blue-200 transition-colors">
+                      <Upload className="w-16 h-16 text-blue-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        选择图片文件
+                      </h3>
+                      <p className="text-gray-600 text-base">
+                        拖拽图片到此处或点击选择文件
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        支持 JPG, PNG, GIF, BMP, WebP 等格式，最大 50MB
+                      </p>
+                    </div>
+                    <button className="mt-6 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                      选择文件
+                    </button>
+                  </div>
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -201,8 +212,8 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
           </div>
 
           {/* 右侧：预览和结果 */}
-          <div className="w-1/2 p-6 overflow-y-auto">
-            {selectedFile && (
+          <div className="w-1/2 p-6 overflow-y-auto flex flex-col">
+            {selectedFile ? (
               <ImageCompressionPreview
                 originalFile={selectedFile}
                 compressionResult={compressionResult}
@@ -210,6 +221,20 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
                 onDownload={handleDownload}
                 onRetry={handleRetry}
               />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <div className="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
+                    <Zap className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    图片预览区域
+                  </h3>
+                  <p className="text-gray-500">
+                    选择图片后，这里将显示预览和压缩结果
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>

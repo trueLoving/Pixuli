@@ -68,6 +68,50 @@
   transform: scale(1.02);
 }
 
+/* 图片压缩弹窗样式优化 */
+.compression-modal-upload-area {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px dashed #d1d5db;
+  background: linear-gradient(135deg, #fafafa 0%, #f9fafb 100%);
+}
+
+.compression-modal-upload-area:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
+}
+
+.compression-modal-upload-area.dragover {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.2);
+}
+
+.compression-modal-upload-icon {
+  transition: all 0.3s ease;
+}
+
+.compression-modal-upload-area:hover .compression-modal-upload-icon {
+  transform: scale(1.1);
+}
+
+.compression-modal-upload-button {
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.compression-modal-upload-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.compression-modal-upload-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* 文件上传进度条 */
 .upload-progress {
   background: #e5e7eb;
