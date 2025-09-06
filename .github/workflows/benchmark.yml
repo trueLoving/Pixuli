@@ -72,29 +72,26 @@ jobs:
           pnpm run build
           echo "WASM 模块构建完成"
 
-      - name: 验证 WASM 模块
+      - name: 验证 WASM 模块 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          echo "验证 WASM 模块..."
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            # Windows 环境
-            if [ -f "pixuli-wasm/pixuli-wasm.win32-x64-msvc.node" ]; then
-              echo "✅ 找到 Windows WASM 模块"
-              ls -la pixuli-wasm/*.node
-            else
-              echo "❌ 未找到 Windows WASM 模块"
-              find pixuli-wasm -name "*.node" -type f
-            fi
-          else
-            # Unix 环境 (macOS/Linux)
-            if [ -f "pixuli-wasm/pixuli-wasm.darwin-x64.node" ] || [ -f "pixuli-wasm/pixuli-wasm.linux-x64-gnu.node" ]; then
-              echo "✅ 找到 Unix WASM 模块"
-              ls -la pixuli-wasm/*.node
-            else
-              echo "❌ 未找到 Unix WASM 模块"
-              find pixuli-wasm -name "*.node" -type f
-            fi
-          fi
+          Write-Host "检查 WASM 二进制文件:"
+          Write-Host "Windows 环境 - 使用 PowerShell 命令:"
+          Get-ChildItem -Path pixuli-wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+          Write-Host "WASM 二进制文件列表:"
+          Get-ChildItem -Path pixuli-wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
 
+      - name: 验证 WASM 模块 (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "检查 WASM 二进制文件:"
+          echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
+          ls -la pixuli-wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
+          echo "WASM 二进制文件列表:"
+          find pixuli-wasm -name "*.node" -type f
+·
       - name: 测试 WASM 模块功能
         run: |
           echo "测试 WASM 模块基本功能..."
@@ -156,13 +153,17 @@ jobs:
           echo "📄 测试报告已生成:"
           cat benchmark-report.md
 
+
       - name: 上传测试报告
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-report-${{ github.event.inputs.platform }}-${{ github.event.inputs.test-type }}
           path: |
             benchmark-report.md
-            benchmark/
+            benchmark/src/
+            benchmark/package.json
+            benchmark/README.md
+            benchmark/tsconfig.json
           retention-days: 30
 
       - name: 测试完成通知
