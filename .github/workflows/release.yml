@@ -88,7 +88,7 @@ jobs:
 
       - name: 构建 WASM 模块
         run: |
-          cd wasm
+          cd pixuli-wasm
           # 安装 Node.js 依赖
           pnpm install
           # 使用 napi 构建多平台二进制文件（包含 Rust 构建）

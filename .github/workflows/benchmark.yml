@@ -91,7 +91,7 @@ jobs:
           ls -la pixuli-wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
           echo "WASM 二进制文件列表:"
           find pixuli-wasm -name "*.node" -type f
-·
+
       - name: 测试 WASM 模块功能
         run: |
           echo "测试 WASM 模块基本功能..."
