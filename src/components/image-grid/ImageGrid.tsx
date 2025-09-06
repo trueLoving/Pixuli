@@ -1,13 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, HardDrive, Loader2 } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useInfiniteScroll, useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
-import { compressImage, getAutoCompressionOptions } from '@/utils/imageCompression'
 import './image-grid.css'
 
 interface ImageGridProps {
@@ -27,9 +26,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
-  const [compressingImages, setCompressingImages] = useState<Set<string>>(new Set())
-  const [compressionResults, setCompressionResults] = useState<Record<string, any>>({})
-  const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set())
   const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
   const fetchingDimensions = useRef<Set<string>>(new Set())
   
@@ -155,124 +151,11 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     window.open(url, '_blank')
   }, [])
 
-  // 压缩单张图片
-  const handleCompressImage = useCallback(async (image: ImageItem) => {
-    if (compressingImages.has(image.id)) return
-    
-    setCompressingImages(prev => new Set(prev).add(image.id))
-    
-    try {
-      // 从URL获取图片文件
-      const response = await fetch(image.url)
-      const blob = await response.blob()
-      const file = new File([blob], image.name, { type: blob.type })
-      
-      // 获取自动压缩选项
-      const options = getAutoCompressionOptions(file.size)
-      
-      // 执行压缩
-      const result = await compressImage(file, options)
-      
-      // 保存压缩结果
-      setCompressionResults(prev => ({
-        ...prev,
-        [image.id]: result
-      }))
-      
-      if (result.compressionRatio > 0) {
-        showSuccess(`图片 "${image.name}" 压缩成功！节省了 ${result.compressionRatio.toFixed(1)}% 的空间`)
-      } else {
-        showInfo(`图片 "${image.name}" 已经是最优大小`)
-      }
-    } catch (error) {
-      showError(`压缩图片 "${image.name}" 失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    } finally {
-      setCompressingImages(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(image.id)
-        return newSet
-      })
-    }
-  }, [compressingImages])
-
-  // 下载压缩后的图片
-  const handleDownloadCompressed = useCallback((image: ImageItem) => {
-    const result = compressionResults[image.id]
-    if (!result) {
-      showError('没有找到压缩后的图片')
-      return
-    }
-
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(result.compressedFile)
-    link.download = `compressed_${image.name}`
-    link.click()
-    URL.revokeObjectURL(link.href)
-  }, [compressionResults])
-
-  // 重新上传压缩后的图片（覆盖原图）
-  const handleReplaceWithCompressed = useCallback(async (image: ImageItem) => {
-    const result = compressionResults[image.id]
-    if (!result) {
-      showError('没有找到压缩后的图片')
-      return
-    }
-
-    if (confirm(`确定要用压缩后的图片替换原图 "${image.name}" 吗？\n\n原图大小: ${formatFileSize(result.originalSize)}\n压缩后大小: ${formatFileSize(result.compressedSize)}\n节省空间: ${result.compressionRatio.toFixed(1)}%`)) {
-      setReplacingImages(prev => new Set(prev).add(image.id))
-      
-      try {
-        // 创建新的上传数据
-        const uploadData = {
-          file: result.compressedFile,
-          name: image.name,
-          description: image.description || '',
-          tags: image.tags || []
-        }
-        
-        // 先上传压缩版本，确保成功后再删除原图
-        const { uploadImage } = useImageStore.getState()
-        const loadingToast = showLoading(`正在上传压缩版本 "${image.name}"...`)
-        
-        try {
-          await uploadImage(uploadData)
-          updateLoadingToSuccess(loadingToast, `压缩版本上传成功！`)
-          
-          // 上传成功后，删除原图
-          const deleteToast = showLoading(`正在删除原图 "${image.name}"...`)
-          try {
-            await deleteImage(image.id, image.name)
-            updateLoadingToSuccess(deleteToast, `原图删除成功！`)
-            
-            // 清理压缩结果
-            setCompressionResults(prev => {
-              const newResults = { ...prev }
-              delete newResults[image.id]
-              return newResults
-            })
-            
-            showSuccess(`图片 "${image.name}" 已成功替换为压缩版本！`)
-          } catch (deleteError) {
-            updateLoadingToError(deleteToast, `删除原图失败: ${deleteError instanceof Error ? deleteError.message : '未知错误'}`)
-          }
-        } catch (uploadError) {
-          updateLoadingToError(loadingToast, `上传压缩版本失败: ${uploadError instanceof Error ? uploadError.message : '未知错误'}`)
-        }
-      } catch (error) {
-        showError(`替换图片失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      } finally {
-        setReplacingImages(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(image.id)
-          return newSet
-        })
-      }
-    }
-  }, [compressionResults, deleteImage])
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN')
   }, [])
+
 
   
   // 渲染单个图片项
@@ -308,18 +191,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                 title="查看地址"
               >
                 <Link className="w-4 h-4 text-gray-700" />
-              </button>
-              <button
-                onClick={() => handleCompressImage(image)}
-                disabled={compressingImages.has(image.id)}
-                className="image-action-button"
-                title="压缩图片"
-              >
-                {compressingImages.has(image.id) ? (
-                  <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <Zap className="w-4 h-4 text-gray-700" />
-                )}
               </button>
               <button
                 onClick={() => handleEdit(image)}
@@ -400,58 +271,16 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               <span>{formatDate(image.createdAt)}</span>
             </div>
 
-            {/* 压缩结果显示 */}
-            {compressionResults[image.id] && (
-              <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-1 text-green-700">
-                    <Zap className="w-3 h-3" />
-                    <span>压缩完成</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <button
-                      onClick={() => handleDownloadCompressed(image)}
-                      className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                      title="下载压缩后图片"
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => handleReplaceWithCompressed(image)}
-                      disabled={replacingImages.has(image.id)}
-                      className="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                      title="用压缩版本替换原图"
-                    >
-                      {replacingImages.has(image.id) ? (
-                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <RotateCcw className="w-3 h-3" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div className="text-xs text-green-600 mt-1">
-                  节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
-                  ({formatFileSize(compressionResults[image.id].originalSize)} → {formatFileSize(compressionResults[image.id].compressedSize)})
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
     )
   }, [
-    compressingImages,
-    compressionResults,
-    replacingImages,
     imageDimensions,
     handlePreview,
     handleViewUrl,
-    handleCompressImage,
     handleEdit,
     handleDelete,
-    handleDownloadCompressed,
-    handleReplaceWithCompressed,
     formatDate
   ])
 
@@ -642,6 +471,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
           </div>
         </div>
       )}
+
     </>
   )
 }

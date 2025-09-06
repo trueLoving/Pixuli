@@ -1,14 +1,6 @@
 import { WebPCompressOptions, WebPCompressResult } from '@/types/webp'
 
-declare global {
-  interface Window {
-    wasmAPI: {
-      compressToWebp: (imageData: number[], options?: WebPCompressOptions) => Promise<WebPCompressResult>
-      batchCompressToWebp: (imagesData: number[][], options?: WebPCompressOptions) => Promise<WebPCompressResult[]>
-      getImageInfo: (imageData: number[]) => Promise<string>
-    }
-  }
-}
+// 移除重复的类型声明，使用 electron.d.ts 中的定义
 
 export class WebPCompressionService {
   /**

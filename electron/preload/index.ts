@@ -40,6 +40,27 @@ contextBridge.exposeInMainWorld('wasmAPI', {
   getImageInfo: (imageData: number[]) => ipcRenderer.invoke('wasm:get-image-info', imageData),
 })
 
+// --------- Expose AI API to the Renderer process ---------
+contextBridge.exposeInMainWorld('aiAPI', {
+  analyzeImage: (request: any) => ipcRenderer.invoke('ai:analyze-image', request),
+  analyzeImageWithTensorFlow: (request: any) => ipcRenderer.invoke('ai:analyze-image-tensorflow', request),
+  getModels: () => ipcRenderer.invoke('ai:get-models'),
+  addModel: (config: any) => ipcRenderer.invoke('ai:add-model', config),
+  removeModel: (modelId: string) => ipcRenderer.invoke('ai:remove-model', modelId),
+  updateModel: (modelId: string, updates: any) => ipcRenderer.invoke('ai:update-model', modelId, updates),
+  checkModel: (modelId: string) => ipcRenderer.invoke('ai:check-model', modelId),
+  downloadTensorFlowModel: (modelId: string, modelUrl: string) => ipcRenderer.invoke('ai:download-tensorflow-model', modelId, modelUrl),
+  selectModelFile: () => ipcRenderer.invoke('ai:select-model-file'),
+})
+
+// --------- Expose Model Download API to the Renderer process ---------
+contextBridge.exposeInMainWorld('modelAPI', {
+  downloadModel: (modelId: string) => ipcRenderer.invoke('model:download', modelId),
+  getDownloadProgress: (modelId: string) => ipcRenderer.invoke('model:download-progress', modelId),
+  getAvailableModels: () => ipcRenderer.invoke('model:available-models'),
+  checkDownloaded: (modelId: string) => ipcRenderer.invoke('model:check-downloaded', modelId),
+})
+
 // --------- Preload scripts loading ---------
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
   return new Promise(resolve => {

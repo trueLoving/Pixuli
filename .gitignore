@@ -29,9 +29,6 @@ release
 /playwright-report/
 /playwright/.cache/
 
-# models
-/public/models
-
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/node
@@ -164,3 +161,7 @@ Cargo.lock
 !.yarn/sdks
 !.yarn/versions
 /npm
+
+
+# models
+/models

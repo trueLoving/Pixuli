@@ -1,13 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { ImageItem } from '@/type/image'
 import { useImageStore } from '@/stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, Zap, Download, RotateCcw, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad, useInfiniteScroll } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
-import { compressImage, getAutoCompressionOptions } from '@/utils/imageCompression'
 import './image-list.css'
 
 interface ImageListProps {
@@ -21,9 +20,6 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
   const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
-  const [compressingImages, setCompressingImages] = useState<Set<string>>(new Set())
-  const [compressionResults, setCompressionResults] = useState<Record<string, any>>({})
-  const [replacingImages, setReplacingImages] = useState<Set<string>>(new Set())
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   
   // 滚动加载配置
@@ -151,124 +147,6 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
     return new Date(dateString).toLocaleDateString('zh-CN')
   }, [])
 
-  // 压缩单张图片
-  const handleCompressImage = useCallback(async (image: ImageItem) => {
-    if (compressingImages.has(image.id)) return
-    
-    setCompressingImages(prev => new Set(prev).add(image.id))
-    
-    try {
-      // 从URL获取图片文件
-      const response = await fetch(image.url)
-      const blob = await response.blob()
-      const file = new File([blob], image.name, { type: blob.type })
-      
-      // 获取自动压缩选项
-      const options = getAutoCompressionOptions(file.size)
-      
-      // 执行压缩
-      const result = await compressImage(file, options)
-      
-      // 保存压缩结果
-      setCompressionResults(prev => ({
-        ...prev,
-        [image.id]: result
-      }))
-      
-      if (result.compressionRatio > 0) {
-        showSuccess(`图片 "${image.name}" 压缩成功！节省了 ${result.compressionRatio.toFixed(1)}% 的空间`)
-      } else {
-        showInfo(`图片 "${image.name}" 已经是最优大小`)
-      }
-    } catch (error) {
-      showError(`压缩图片 "${image.name}" 失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    } finally {
-      setCompressingImages(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(image.id)
-        return newSet
-      })
-    }
-  }, [compressingImages])
-
-  // 重新上传压缩后的图片（覆盖原图）
-  const handleReplaceWithCompressed = useCallback(async (image: ImageItem) => {
-    const result = compressionResults[image.id]
-    if (!result) {
-      showError('没有找到压缩后的图片')
-      return
-    }
-
-    if (confirm(`确定要用压缩后的图片替换原图 "${image.name}" 吗？\n\n原图大小: ${formatFileSize(result.originalSize)}\n压缩后大小: ${formatFileSize(result.compressedSize)}\n节省空间: ${result.compressionRatio.toFixed(1)}%`)) {
-      setReplacingImages(prev => new Set(prev).add(image.id))
-      
-      try {
-        // 创建新的上传数据
-        const uploadData = {
-          file: result.compressedFile,
-          name: image.name,
-          description: image.description || '',
-          tags: image.tags || []
-        }
-        
-        // 先上传压缩版本，确保成功后再删除原图
-        const { uploadImage } = useImageStore.getState()
-        const loadingToast = showLoading(`正在上传压缩版本 "${image.name}"...`)
-        
-        try {
-          await uploadImage(uploadData)
-          updateLoadingToSuccess(loadingToast, `压缩版本上传成功！`)
-          
-          // 上传成功后，删除原图
-          const deleteToast = showLoading(`正在删除原图 "${image.name}"...`)
-          try {
-            await deleteImage(image.id, image.name)
-            updateLoadingToSuccess(deleteToast, `原图删除成功！`)
-            
-            // 清理压缩结果
-            setCompressionResults(prev => {
-              const newResults = { ...prev }
-              delete newResults[image.id]
-              return newResults
-            })
-            
-            showSuccess(`图片 "${image.name}" 已成功替换为压缩版本！`)
-          } catch (deleteError) {
-            updateLoadingToError(deleteToast, `删除原图失败: ${deleteError instanceof Error ? deleteError.message : '未知错误'}`)
-            showError('压缩版本已上传，但删除原图失败。请手动删除原图。')
-          }
-        } catch (uploadError) {
-          updateLoadingToError(loadingToast, `上传压缩版本失败: ${uploadError instanceof Error ? uploadError.message : '未知错误'}`)
-          throw uploadError // 重新抛出错误，让外层catch处理
-        }
-      } catch (error) {
-        showError(`替换图片失败: ${error instanceof Error ? error.message : '未知错误'}`)
-      } finally {
-        setReplacingImages(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(image.id)
-          return newSet
-        })
-      }
-    }
-  }, [compressionResults, deleteImage])
-
-  // 下载压缩后的图片
-  const handleDownloadCompressed = useCallback((image: ImageItem) => {
-    const result = compressionResults[image.id]
-    if (!result) return
-    
-    const url = URL.createObjectURL(result.compressedFile)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `compressed_${image.name}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    showSuccess('压缩后的图片已开始下载')
-  }, [compressionResults])
 
   if (images.length === 0) {
     return (
@@ -400,18 +278,6 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleCompressImage(image)}
-                      disabled={compressingImages.has(image.id)}
-                      className="image-list-action-button"
-                      title="压缩图片"
-                    >
-                      {compressingImages.has(image.id) ? (
-                        <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <Zap className="w-4 h-4" />
-                      )}
-                    </button>
-                    <button
                       onClick={() => toggleRowExpansion(image.id)}
                       className="image-list-action-button"
                       title="更多操作"
@@ -443,33 +309,6 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
                       </button>
                     </div>
 
-                    {/* 压缩结果显示 */}
-                    {compressionResults[image.id] && (
-                      <div className="flex items-center space-x-2">
-                        <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                          节省 {compressionResults[image.id].compressionRatio.toFixed(1)}% 空间
-                        </div>
-                        <button
-                          onClick={() => handleDownloadCompressed(image)}
-                          className="image-list-secondary-button bg-green-600 text-white hover:bg-green-700"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          下载
-                        </button>
-                        <button
-                          onClick={() => handleReplaceWithCompressed(image)}
-                          disabled={replacingImages.has(image.id)}
-                          className="image-list-secondary-button bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
-                        >
-                          {replacingImages.has(image.id) ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                          ) : (
-                            <RotateCcw className="w-4 h-4 mr-1" />
-                          )}
-                          替换
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

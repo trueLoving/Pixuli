@@ -5,6 +5,8 @@ import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
 import { GitHubService } from './githubService'
+import { aiService } from './aiService'
+import { modelDownloadService } from './modelDownloadService'
 import { plus100, compressToWebp, batchCompressToWebp, getImageInfo } from 'pixuli-wasm'
 
 const require = createRequire(import.meta.url)
@@ -129,6 +131,9 @@ ipcMain.handle('open-win', (_, arg) => {
 // Initialize GitHub service
 const githubService = new GitHubService()
 
+// Initialize AI service and add default models
+aiService.addDefaultModels()
+
 // WASM IPC handlers
 ipcMain.handle('wasm:plus100', async (_, input: number) => {
   try {
@@ -168,3 +173,23 @@ ipcMain.handle('wasm:get-image-info', async (_, imageData: number[]) => {
     throw error
   }
 })
+
+// Initialize AI service and add default models
+aiService.addDefaultModels()
+
+// AI IPC handlers
+ipcMain.handle('ai:analyze-image', async (_, request) => aiService.analyzeImage(request))
+ipcMain.handle('ai:analyze-image-tensorflow', async (_, request) => aiService.analyzeImageWithTensorFlow(request))
+ipcMain.handle('ai:get-models', async () => aiService.getModels())
+ipcMain.handle('ai:add-model', async (_, config) => aiService.addModel(config))
+ipcMain.handle('ai:remove-model', async (_, modelId) => aiService.removeModel(modelId))
+ipcMain.handle('ai:update-model', async (_, modelId, updates) => aiService.updateModel(modelId, updates))
+ipcMain.handle('ai:check-model', async (_, modelId) => aiService.checkModel(modelId))
+ipcMain.handle('ai:download-tensorflow-model', async (_, modelId, modelUrl) => aiService.downloadTensorFlowModel(modelId, modelUrl))
+ipcMain.handle('ai:select-model-file', async () => aiService.selectModelFile())
+
+// Model Download IPC handlers
+ipcMain.handle('model:download', async (_, modelId) => modelDownloadService.downloadModel(modelId))
+ipcMain.handle('model:download-progress', async (_, modelId) => modelDownloadService.getDownloadProgress(modelId))
+ipcMain.handle('model:available-models', async () => modelDownloadService.getAvailableModels())
+ipcMain.handle('model:check-downloaded', async (_, modelId) => modelDownloadService.checkDownloaded(modelId))

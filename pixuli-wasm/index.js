@@ -508,7 +508,14 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.AIModelType = nativeBinding.AIModelType
+module.exports.analyzeImageWithAi = nativeBinding.analyzeImageWithAi
+module.exports.analyzeImageWithTensorflow = nativeBinding.analyzeImageWithTensorflow
+module.exports.batchAnalyzeImagesWithAi = nativeBinding.batchAnalyzeImagesWithAi
 module.exports.batchCompressToWebp = nativeBinding.batchCompressToWebp
+module.exports.checkModelAvailability = nativeBinding.checkModelAvailability
 module.exports.compressToWebp = nativeBinding.compressToWebp
+module.exports.downloadTensorflowModel = nativeBinding.downloadTensorflowModel
 module.exports.getImageInfo = nativeBinding.getImageInfo
+module.exports.getSupportedModels = nativeBinding.getSupportedModels
 module.exports.plus100 = nativeBinding.plus100
