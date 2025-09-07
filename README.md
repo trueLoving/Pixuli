@@ -104,6 +104,21 @@ graph LR
     A --> G[文件系统]
 ```
 
+## 📚 文档
+
+### AI 模型支持
+- 📖 [AI 模型文档总览](./docs/README.md) - 完整的 AI 模型支持指南
+- 🚀 [快速开始指南](./docs/QUICK_START.md) - 5分钟上手 AI 图片分析
+- 🔧 [模型支持文档](./docs/AI_MODELS.md) - 支持的模型类型和下载地址
+- 💻 [模型开发指南](./docs/MODEL_DEVELOPMENT.md) - 自定义模型开发
+
+### 支持的 AI 模型类型
+- **TensorFlow Lite** (`.tflite`) - 轻量级，推荐首选 ⭐⭐⭐⭐⭐
+- **ONNX** (`.onnx`) - 跨平台兼容，生态丰富 ⭐⭐⭐⭐
+- **TensorFlow** (`.pb`, `.json`, `.bin`) - 功能强大 ⭐⭐⭐
+- **本地 LLM** - 语义理解，隐私保护 ⭐⭐⭐
+- **远程 API** - 高精度，无需本地资源 ⭐⭐
+
 ## 🚀 快速开始
 
 ### 环境要求
@@ -126,6 +141,14 @@ pnpm run dev
 pnpm run build
 pnpm run electron:build
 ```
+
+### AI 功能快速体验
+1. 启动应用后点击 "AI 分析" 按钮
+2. 点击齿轮图标进入模型管理
+3. 下载推荐的 "MobileNet V2 Lite" 模型 (4MB)
+4. 上传图片开始 AI 分析
+
+> 📖 详细使用说明请参考 [快速开始指南](./docs/QUICK_START.md)
 
 ## 🤝 贡献指南
 
