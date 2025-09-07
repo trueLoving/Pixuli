@@ -511,6 +511,7 @@ module.exports = nativeBinding
 module.exports.AIModelType = nativeBinding.AIModelType
 module.exports.analyzeImageWithAi = nativeBinding.analyzeImageWithAi
 module.exports.analyzeImageWithTensorflow = nativeBinding.analyzeImageWithTensorflow
+module.exports.analyzeImageWithTensorflowLite = nativeBinding.analyzeImageWithTensorflowLite
 module.exports.batchAnalyzeImagesWithAi = nativeBinding.batchAnalyzeImagesWithAi
 module.exports.batchCompressToWebp = nativeBinding.batchCompressToWebp
 module.exports.checkModelAvailability = nativeBinding.checkModelAvailability

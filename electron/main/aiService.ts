@@ -2,7 +2,7 @@ import { ipcMain, dialog, app } from 'electron'
 import * as path from 'path'
 import * as fs from 'fs'
 import { promisify } from 'util'
-import { analyzeImageWithAi, analyzeImageWithTensorflow, downloadTensorflowModel } from 'pixuli-wasm'
+import { analyzeImageWithAi, analyzeImageWithTensorflow, analyzeImageWithTensorflowLite, downloadTensorflowModel } from 'pixuli-wasm'
 
 const readFile = promisify(fs.readFile)
 const writeFile = promisify(fs.writeFile)
@@ -12,7 +12,7 @@ const mkdir = promisify(fs.mkdir)
 export interface AIModelConfig {
   id: string
   name: string
-  type: 'tensorflow' | 'onnx' | 'local-llm' | 'remote-api'
+  type: 'tensorflow' | 'tensorflow-lite' | 'onnx' | 'local-llm' | 'remote-api'
   path?: string
   apiEndpoint?: string
   apiKey?: string
@@ -73,6 +73,7 @@ class AIService {
     this.modelsDir = path.join(app.getPath('userData'), 'models')
     this.configFile = path.join(app.getPath('userData'), 'ai-models.json')
     this.initializeService()
+    this.registerIpcHandlers()
   }
 
   private async initializeService() {
@@ -117,6 +118,32 @@ class AIService {
         return await this.analyzeImage(request)
       } catch (error) {
         console.error('Image analysis failed:', error)
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      }
+    })
+
+    // TensorFlow 图片分析
+    ipcMain.handle('ai:analyze-image-tensorflow', async (event, request: ImageAnalysisRequest): Promise<ImageAnalysisResponse> => {
+      try {
+        return await this.analyzeImageWithTensorFlow(request)
+      } catch (error) {
+        console.error('TensorFlow analysis failed:', error)
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        }
+      }
+    })
+
+    // TensorFlow Lite 图片分析
+    ipcMain.handle('ai:analyze-image-tensorflow-lite', async (event, request: ImageAnalysisRequest): Promise<ImageAnalysisResponse> => {
+      try {
+        return await this.analyzeImageWithTensorFlowLite(request)
+      } catch (error) {
+        console.error('TensorFlow Lite analysis failed:', error)
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error'
@@ -205,22 +232,30 @@ class AIService {
     // 选择模型文件
     ipcMain.handle('ai:select-model-file', async () => {
       try {
+        console.log('Opening file selection dialog for AI models')
         const result = await dialog.showOpenDialog({
           title: '选择 AI 模型文件',
           filters: [
-            { name: 'TensorFlow 模型', extensions: ['json', 'bin'] },
+            { name: 'TensorFlow Lite 模型', extensions: ['tflite'] },
+            { name: 'TensorFlow 模型', extensions: ['pb', 'json', 'bin'] },
             { name: 'ONNX 模型', extensions: ['onnx'] },
             { name: '所有文件', extensions: ['*'] }
           ],
-          properties: ['openFile']
+          properties: ['openFile'],
+          defaultPath: process.env.HOME || process.env.USERPROFILE || '/'
         })
 
+        console.log('File selection result:', result)
         if (!result.canceled && result.filePaths.length > 0) {
-          return { success: true, filePath: result.filePaths[0] }
+          const selectedFile = result.filePaths[0]
+          console.log('Selected file:', selectedFile)
+          return { success: true, filePath: selectedFile }
         }
         
+        console.log('No file selected or dialog canceled')
         return { success: false, error: 'No file selected' }
       } catch (error) {
+        console.error('File selection error:', error)
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
       }
     })
@@ -302,12 +337,14 @@ class AIService {
     switch (type) {
       case 'tensorflow':
         return 0 // AIModelType.TensorFlow
+      case 'tensorflow-lite':
+        return 1 // AIModelType.TensorFlowLite
       case 'onnx':
-        return 1 // AIModelType.ONNX
+        return 2 // AIModelType.ONNX
       case 'local-llm':
-        return 2 // AIModelType.LocalLLM
+        return 3 // AIModelType.LocalLLM
       case 'remote-api':
-        return 3 // AIModelType.RemoteAPI
+        return 4 // AIModelType.RemoteAPI
       default:
         return 0
     }
@@ -320,33 +357,17 @@ class AIService {
 
   // 添加默认模型配置
   public async addDefaultModels() {
+    // 只添加实际可用的内置模型，不添加需要下载的模型
     const defaultModels: AIModelConfig[] = [
+      // 通用AI分析模型（内置，无需文件）
       {
-        id: 'mobilenet-v2',
-        name: 'MobileNet V2',
+        id: 'builtin-general',
+        name: '通用图片分析',
         type: 'tensorflow',
         enabled: true,
-        description: '轻量级图像分类模型',
+        description: '内置通用图片分析模型，无需下载',
         version: '1.0.0',
-        size: 14 * 1024 * 1024 // 14MB
-      },
-      {
-        id: 'yolov5',
-        name: 'YOLOv5',
-        type: 'onnx',
-        enabled: false,
-        description: '目标检测模型',
-        version: '6.0',
-        size: 28 * 1024 * 1024 // 28MB
-      },
-      {
-        id: 'clip',
-        name: 'CLIP',
-        type: 'onnx',
-        enabled: false,
-        description: '图像-文本理解模型',
-        version: '1.0',
-        size: 500 * 1024 * 1024 // 500MB
+        size: 0 // 内置模型，无文件大小
       }
     ]
 
@@ -389,15 +410,96 @@ class AIService {
     }
   }
 
+  // 使用 TensorFlow Lite 模型分析图片
+  async analyzeImageWithTensorFlowLite(request: ImageAnalysisRequest): Promise<ImageAnalysisResponse> {
+    try {
+      const modelConfig = this.models.get(request.modelId || '')
+      if (!modelConfig) {
+        return {
+          success: false,
+          error: 'Model not found'
+        }
+      }
+
+      // 如果没有模型路径，使用通用AI分析
+      if (!modelConfig.path) {
+        return await this.analyzeImage(request)
+      }
+
+      // 检查模型文件是否存在
+      if (!fs.existsSync(modelConfig.path)) {
+        console.warn(`Model file not found: ${modelConfig.path}, falling back to general analysis`)
+        return await this.analyzeImage(request)
+      }
+
+      const result = analyzeImageWithTensorflowLite(
+        Array.from(request.imageData),
+        modelConfig.path
+      )
+
+      return {
+        success: true,
+        result: {
+          imageType: result.imageType,
+          tags: result.tags,
+          description: result.description,
+          confidence: result.confidence,
+          objects: result.objects.map((obj: any) => ({
+            name: obj.name,
+            confidence: obj.confidence,
+            bbox: {
+              x: obj.bbox.x,
+              y: obj.bbox.y,
+              width: obj.bbox.width,
+              height: obj.bbox.height
+            },
+            category: obj.category
+          })),
+          colors: result.colors.map((color: any) => ({
+            name: color.name,
+            rgb: color.rgb,
+            percentage: color.percentage,
+            hex: color.hex
+          })),
+          sceneType: result.sceneType,
+          analysisTime: result.analysisTime,
+          modelUsed: result.modelUsed
+        }
+      }
+    } catch (error) {
+      console.error('TensorFlow Lite analysis failed:', error)
+      // 如果TensorFlow Lite分析失败，回退到通用分析
+      try {
+        return await this.analyzeImage(request)
+      } catch (fallbackError) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Analysis failed'
+        }
+      }
+    }
+  }
+
   // 使用 TensorFlow 模型分析图片
   async analyzeImageWithTensorFlow(request: ImageAnalysisRequest): Promise<ImageAnalysisResponse> {
     try {
       const modelConfig = this.models.get(request.modelId || '')
-      if (!modelConfig || !modelConfig.path) {
+      if (!modelConfig) {
         return {
           success: false,
-          error: 'Model not found or path not specified'
+          error: 'Model not found'
         }
+      }
+
+      // 如果没有模型路径，使用通用AI分析
+      if (!modelConfig.path) {
+        return await this.analyzeImage(request)
+      }
+
+      // 检查模型文件是否存在
+      if (!fs.existsSync(modelConfig.path)) {
+        console.warn(`Model file not found: ${modelConfig.path}, falling back to general analysis`)
+        return await this.analyzeImage(request)
       }
 
       const result = analyzeImageWithTensorflow(
@@ -436,9 +538,14 @@ class AIService {
       }
     } catch (error) {
       console.error('TensorFlow analysis failed:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Analysis failed'
+      // 如果TensorFlow分析失败，回退到通用分析
+      try {
+        return await this.analyzeImage(request)
+      } catch (fallbackError) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Analysis failed'
+        }
       }
     }
   }
@@ -513,13 +620,15 @@ class AIService {
     try {
       const { dialog } = await import('electron')
       const result = await dialog.showOpenDialog({
-        title: '选择模型文件',
+        title: '选择 AI 模型文件',
         filters: [
+          { name: 'TensorFlow Lite 模型', extensions: ['tflite'] },
+          { name: 'TensorFlow 模型', extensions: ['pb', 'json', 'bin'] },
           { name: 'ONNX 模型', extensions: ['onnx'] },
-          { name: 'TensorFlow 模型', extensions: ['pb', 'tflite'] },
           { name: '所有文件', extensions: ['*'] }
         ],
-        properties: ['openFile']
+        properties: ['openFile'],
+        defaultPath: process.env.HOME || process.env.USERPROFILE || '/'
       })
 
       if (result.canceled || !result.filePaths.length) {

@@ -12,77 +12,25 @@ const mkdir = promisify(fs.mkdir)
 
 // 预定义的模型下载配置
 const MODEL_DOWNLOADS = {
-  // TensorFlow 模型
-  'mobilenet-v2': {
-    name: 'MobileNet V2',
-    type: 'tensorflow',
-    url: 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json',
+  // 只保留实际可用的模型，移除无法正常工作的模型
+  
+  // TensorFlow Lite 模型（推荐）
+  'mobilenet-v2-lite': {
+    name: 'MobileNet V2 Lite',
+    type: 'tensorflow-lite',
+    url: 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v2_1.0_224.tflite',
     files: [
       {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/model.json',
-        filename: 'model.json'
-      },
-      {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v2_1.0_224/group1-shard1of1.bin',
-        filename: 'group1-shard1of1.bin'
+        url: 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v2_1.0_224.tflite',
+        filename: 'mobilenet_v2_1.0_224.tflite'
       }
     ],
-    description: '轻量级图像分类模型',
+    description: '轻量级 TensorFlow Lite 图像分类模型',
     version: '1.0.0',
-    size: 14 * 1024 * 1024 // 14MB
-  },
-  'resnet50': {
-    name: 'ResNet50',
-    type: 'tensorflow',
-    url: 'https://storage.googleapis.com/tfjs-models/tfjs/resnet50_v1_50/model.json',
-    files: [
-      {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/resnet50_v1_50/model.json',
-        filename: 'model.json'
-      },
-      {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/resnet50_v1_50/group1-shard1of1.bin',
-        filename: 'group1-shard1of1.bin'
-      }
-    ],
-    description: '深度残差网络图像分类',
-    version: '1.0.0',
-    size: 25 * 1024 * 1024 // 25MB
-  },
-  'coco-ssd': {
-    name: 'COCO-SSD',
-    type: 'tensorflow',
-    url: 'https://storage.googleapis.com/tfjs-models/tfjs/coco-ssd-mobilenet_v1/model.json',
-    files: [
-      {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/coco-ssd-mobilenet_v1/model.json',
-        filename: 'model.json'
-      },
-      {
-        url: 'https://storage.googleapis.com/tfjs-models/tfjs/coco-ssd-mobilenet_v1/group1-shard1of1.bin',
-        filename: 'group1-shard1of1.bin'
-      }
-    ],
-    description: 'COCO 数据集目标检测模型',
-    version: '1.0.0',
-    size: 18 * 1024 * 1024 // 18MB
+    size: 4 * 1024 * 1024 // 4MB
   },
 
-  // ONNX 模型
-  'yolov5s': {
-    name: 'YOLOv5s',
-    type: 'onnx',
-    url: 'https://github.com/ultralytics/yolov5/releases/download/v6.0/yolov5s.onnx',
-    files: [
-      {
-        url: 'https://github.com/ultralytics/yolov5/releases/download/v6.0/yolov5s.onnx',
-        filename: 'yolov5s.onnx'
-      }
-    ],
-    description: 'YOLOv5 小模型，目标检测',
-    version: '6.0',
-    size: 28 * 1024 * 1024 // 28MB
-  },
+  // ONNX 模型（轻量级）- 使用备用URL
   'yolov8n': {
     name: 'YOLOv8n',
     type: 'onnx',
@@ -98,27 +46,32 @@ const MODEL_DOWNLOADS = {
     size: 6 * 1024 * 1024 // 6MB
   },
 
-  // 远程 API 模型（免费）
+  // 备用模型（更小的文件用于测试）
+  'test-model': {
+    name: '测试模型',
+    type: 'tensorflow-lite',
+    url: 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v1_1.0_224.tflite',
+    files: [
+      {
+        url: 'https://storage.googleapis.com/download.tensorflow.org/models/tflite/mobilenet_v1_1.0_224.tflite',
+        filename: 'mobilenet_v1_1.0_224.tflite'
+      }
+    ],
+    description: '测试用的小型模型',
+    version: '1.0.0',
+    size: 1 * 1024 * 1024 // 1MB
+  },
+
+  // 远程 API 模型（免费，但需要 API 密钥）
   'huggingface-clip': {
     name: 'Hugging Face CLIP',
     type: 'remote-api',
     url: 'https://api-inference.huggingface.co/models/openai/clip-vit-base-patch32',
     files: [],
-    description: '免费的 CLIP 图像理解 API',
+    description: '免费的 CLIP 图像理解 API（需要 API 密钥）',
     version: '1.0.0',
     size: 0, // API 调用，无本地文件
     apiEndpoint: 'https://api-inference.huggingface.co/models/openai/clip-vit-base-patch32',
-    requiresKey: true
-  },
-  'huggingface-blip': {
-    name: 'Hugging Face BLIP',
-    type: 'remote-api',
-    url: 'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base',
-    files: [],
-    description: '免费的图像描述生成 API',
-    version: '1.0.0',
-    size: 0, // API 调用，无本地文件
-    apiEndpoint: 'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base',
     requiresKey: true
   }
 }
@@ -216,10 +169,29 @@ class ModelDownloadService {
         const file = modelConfig.files[i]
         const filePath = path.join(modelDir, file.filename)
         
-        await this.downloadFile(file.url, filePath, (progress) => {
-          const totalProgress = ((i + progress) / modelConfig.files.length) * 100
-          this.downloadProgress.set(modelId, totalProgress)
-        })
+        // 添加重试机制
+        let retryCount = 0
+        const maxRetries = 3
+        
+        while (retryCount < maxRetries) {
+          try {
+            await this.downloadFileWithRetry(file.url, filePath, (progress) => {
+              const totalProgress = ((i + progress) / modelConfig.files.length) * 100
+              this.downloadProgress.set(modelId, totalProgress)
+            })
+            break // 下载成功，跳出重试循环
+          } catch (error) {
+            retryCount++
+            console.log(`Download attempt ${retryCount} failed for ${file.filename}:`, error)
+            
+            if (retryCount >= maxRetries) {
+              throw new Error(`下载失败，已重试 ${maxRetries} 次: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            }
+            
+            // 等待一段时间后重试
+            await new Promise(resolve => setTimeout(resolve, 2000 * retryCount))
+          }
+        }
       }
 
       this.downloadProgress.delete(modelId)
@@ -235,11 +207,20 @@ class ModelDownloadService {
     }
   }
 
-  private downloadFile(url: string, filePath: string, onProgress?: (progress: number) => void): Promise<void> {
+  private async downloadFileWithRetry(url: string, filePath: string, onProgress?: (progress: number) => void): Promise<void> {
     return new Promise((resolve, reject) => {
       const client = url.startsWith('https:') ? https : http
       
-      client.get(url, (response) => {
+      const options = {
+        timeout: 60000, // 60秒超时
+        headers: {
+          'User-Agent': 'Pixuli/1.0.0',
+          'Accept': '*/*',
+          'Connection': 'keep-alive'
+        }
+      }
+      
+      const request = client.get(url, options, (response) => {
         if (response.statusCode !== 200) {
           reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`))
           return
@@ -271,8 +252,73 @@ class ModelDownloadService {
         writeStream.on('error', (error) => {
           reject(error)
         })
-      }).on('error', (error) => {
+      })
+
+      request.on('error', (error) => {
         reject(error)
+      })
+
+      request.on('timeout', () => {
+        request.destroy()
+        reject(new Error('Download timeout'))
+      })
+    })
+  }
+
+  private downloadFile(url: string, filePath: string, onProgress?: (progress: number) => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const client = url.startsWith('https:') ? https : http
+      
+      const options = {
+        timeout: 30000, // 30秒超时
+        headers: {
+          'User-Agent': 'Pixuli/1.0.0',
+          'Accept': '*/*',
+          'Connection': 'keep-alive'
+        }
+      }
+      
+      const request = client.get(url, options, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`))
+          return
+        }
+
+        const totalSize = parseInt(response.headers['content-length'] || '0', 10)
+        let downloadedSize = 0
+
+        const writeStream = createWriteStream(filePath)
+        
+        response.on('data', (chunk) => {
+          downloadedSize += chunk.length
+          if (onProgress && totalSize > 0) {
+            onProgress(downloadedSize / totalSize)
+          }
+        })
+
+        response.on('end', () => {
+          writeStream.close()
+          resolve()
+        })
+
+        response.on('error', (error) => {
+          writeStream.close()
+          fs.unlink(filePath, () => {}) // 删除部分下载的文件
+          reject(error)
+        })
+
+        writeStream.on('error', (error) => {
+          reject(error)
+        })
+      })
+
+      request.on('error', (error) => {
+        reject(error)
+      })
+
+      request.on('timeout', () => {
+        request.destroy()
+        reject(new Error('Download timeout'))
       })
     })
   }
@@ -297,7 +343,7 @@ class ModelDownloadService {
     return Object.entries(MODEL_DOWNLOADS).map(([id, config]) => ({
       id,
       name: config.name,
-      type: config.type as 'tensorflow' | 'onnx' | 'local-llm' | 'remote-api',
+      type: config.type as 'tensorflow' | 'tensorflow-lite' | 'onnx' | 'local-llm' | 'remote-api',
       url: config.url,
       description: config.description,
       version: config.version,

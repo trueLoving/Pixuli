@@ -307,7 +307,12 @@ function App() {
         isOpen={showAIModelManager}
         onClose={handleCloseAIModelManager}
         onModelUpdate={() => {
-          // 可以在这里刷新模型列表
+          // 刷新AI分析模态框中的模型列表
+          if (showAIAnalysis) {
+            // 触发AI分析模态框重新加载模型
+            const event = new CustomEvent('modelListUpdated')
+            window.dispatchEvent(event)
+          }
         }}
       />
 

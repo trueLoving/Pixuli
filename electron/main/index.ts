@@ -177,16 +177,7 @@ ipcMain.handle('wasm:get-image-info', async (_, imageData: number[]) => {
 // Initialize AI service and add default models
 aiService.addDefaultModels()
 
-// AI IPC handlers
-ipcMain.handle('ai:analyze-image', async (_, request) => aiService.analyzeImage(request))
-ipcMain.handle('ai:analyze-image-tensorflow', async (_, request) => aiService.analyzeImageWithTensorFlow(request))
-ipcMain.handle('ai:get-models', async () => aiService.getModels())
-ipcMain.handle('ai:add-model', async (_, config) => aiService.addModel(config))
-ipcMain.handle('ai:remove-model', async (_, modelId) => aiService.removeModel(modelId))
-ipcMain.handle('ai:update-model', async (_, modelId, updates) => aiService.updateModel(modelId, updates))
-ipcMain.handle('ai:check-model', async (_, modelId) => aiService.checkModel(modelId))
-ipcMain.handle('ai:download-tensorflow-model', async (_, modelId, modelUrl) => aiService.downloadTensorFlowModel(modelId, modelUrl))
-ipcMain.handle('ai:select-model-file', async () => aiService.selectModelFile())
+// AI IPC handlers are registered in AIService constructor
 
 // Model Download IPC handlers
 ipcMain.handle('model:download', async (_, modelId) => modelDownloadService.downloadModel(modelId))

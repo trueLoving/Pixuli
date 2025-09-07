@@ -208,9 +208,15 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
 
   const handleSelectFile = async () => {
     try {
+      console.log('Selecting file for model type:', newModel.type)
       const result = await window.aiAPI.selectModelFile()
+      console.log('File selection result:', result)
       if (result.success && result.filePath) {
         setNewModel({ ...newModel, path: result.filePath })
+        console.log('File selected:', result.filePath)
+      } else {
+        console.error('File selection failed:', result.error)
+        setError(result.error || '选择文件失败')
       }
     } catch (error) {
       console.error('Select file failed:', error)
@@ -299,6 +305,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                   onChange={(e) => setNewModel({...newModel, type: e.target.value as any})}
                 >
                   <option value="tensorflow">TensorFlow</option>
+                  <option value="tensorflow-lite">TensorFlow Lite</option>
                   <option value="onnx">ONNX</option>
                   <option value="local-llm">本地 LLM</option>
                   <option value="remote-api">远程 API</option>
@@ -315,7 +322,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                 />
               </div>
 
-              {(newModel.type === 'tensorflow' || newModel.type === 'onnx' || newModel.type === 'local-llm') && (
+              {(newModel.type === 'tensorflow' || newModel.type === 'tensorflow-lite' || newModel.type === 'onnx' || newModel.type === 'local-llm') && (
                 <div className="form-group">
                   <label>模型文件路径:</label>
                   <div className="file-input-group">

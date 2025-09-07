@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('wasmAPI', {
 contextBridge.exposeInMainWorld('aiAPI', {
   analyzeImage: (request: any) => ipcRenderer.invoke('ai:analyze-image', request),
   analyzeImageWithTensorFlow: (request: any) => ipcRenderer.invoke('ai:analyze-image-tensorflow', request),
+  analyzeImageWithTensorFlowLite: (request: any) => ipcRenderer.invoke('ai:analyze-image-tensorflow-lite', request),
   getModels: () => ipcRenderer.invoke('ai:get-models'),
   addModel: (config: any) => ipcRenderer.invoke('ai:add-model', config),
   removeModel: (modelId: string) => ipcRenderer.invoke('ai:remove-model', modelId),
@@ -59,6 +60,11 @@ contextBridge.exposeInMainWorld('modelAPI', {
   getDownloadProgress: (modelId: string) => ipcRenderer.invoke('model:download-progress', modelId),
   getAvailableModels: () => ipcRenderer.invoke('model:available-models'),
   checkDownloaded: (modelId: string) => ipcRenderer.invoke('model:check-downloaded', modelId),
+})
+
+// --------- Expose Buffer API to the Renderer process ---------
+contextBridge.exposeInMainWorld('Buffer', {
+  from: (data: ArrayBuffer) => Buffer.from(data),
 })
 
 // --------- Preload scripts loading ---------

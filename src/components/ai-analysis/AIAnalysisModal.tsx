@@ -45,15 +45,36 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     }
   }, [isOpen])
 
+  // 监听模型更新事件
+  useEffect(() => {
+    const handleModelUpdate = () => {
+      console.log('Model list updated, reloading models...')
+      loadModels()
+    }
+
+    window.addEventListener('modelListUpdated', handleModelUpdate)
+    
+    return () => {
+      window.removeEventListener('modelListUpdated', handleModelUpdate)
+    }
+  }, [])
+
   const loadModels = async () => {
     try {
       const modelList = await window.aiAPI.getModels()
       setModels(modelList)
       
-      // 选择第一个启用的模型
+      // 选择第一个启用的模型，如果没有启用的模型则选择第一个
       const enabledModel = modelList.find(m => m.enabled)
       if (enabledModel) {
         setSelectedModel(enabledModel.id)
+        console.log('Selected enabled model:', enabledModel.name)
+      } else if (modelList.length > 0) {
+        setSelectedModel(modelList[0].id)
+        console.log('Selected first available model:', modelList[0].name)
+      } else {
+        setSelectedModel('')
+        console.log('No models available')
       }
     } catch (error) {
       console.error('Failed to load models:', error)
@@ -157,6 +178,13 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       if (modelConfig?.type === 'tensorflow') {
         // 使用 TensorFlow 模型分析
         result = await window.aiAPI.analyzeImageWithTensorFlow({
+          imageData: buffer,
+          modelId: selectedModel,
+          config
+        })
+      } else if (modelConfig?.type === 'tensorflow-lite') {
+        // 使用 TensorFlow Lite 模型分析
+        result = await window.aiAPI.analyzeImageWithTensorFlowLite({
           imageData: buffer,
           modelId: selectedModel,
           config

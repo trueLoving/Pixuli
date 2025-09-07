@@ -24,6 +24,7 @@ export interface WasmAPI {
 export interface AIAPI {
   analyzeImage: (request: ImageAnalysisRequest) => Promise<ImageAnalysisResponse>
   analyzeImageWithTensorFlow: (request: ImageAnalysisRequest) => Promise<ImageAnalysisResponse>
+  analyzeImageWithTensorFlowLite: (request: ImageAnalysisRequest) => Promise<ImageAnalysisResponse>
   getModels: () => Promise<AIModelConfig[]>
   addModel: (config: AIModelConfig) => Promise<{ success: boolean; error?: string }>
   removeModel: (modelId: string) => Promise<{ success: boolean; error?: string }>
@@ -45,7 +46,7 @@ export interface ModelAPI {
 export interface AvailableModel {
   id: string
   name: string
-  type: 'tensorflow' | 'onnx' | 'local-llm' | 'remote-api'
+  type: 'tensorflow' | 'tensorflow-lite' | 'onnx' | 'local-llm' | 'remote-api'
   url: string
   description: string
   version: string
@@ -56,7 +57,7 @@ export interface AvailableModel {
 export interface AIModelConfig {
   id: string
   name: string
-  type: 'tensorflow' | 'onnx' | 'local-llm' | 'remote-api'
+  type: 'tensorflow' | 'tensorflow-lite' | 'onnx' | 'local-llm' | 'remote-api'
   path?: string
   apiEndpoint?: string
   apiKey?: string

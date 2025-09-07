@@ -19,9 +19,10 @@ export interface AiAnalysisConfig {
 /** AI 模型类型 */
 export declare const enum AIModelType {
   TensorFlow = 0,
-  ONNX = 1,
-  LocalLLM = 2,
-  RemoteAPI = 3
+  TensorFlowLite = 1,
+  ONNX = 2,
+  LocalLLM = 3,
+  RemoteAPI = 4
 }
 
 /** 分析图片内容（使用 AI 模型） */
@@ -29,6 +30,9 @@ export declare function analyzeImageWithAi(imageData: Array<number>, config: AiA
 
 /** 使用 TensorFlow 模型分析图片 */
 export declare function analyzeImageWithTensorflow(imageData: Array<number>, modelPath: string): ImageAnalysisResult
+
+/** 使用 TensorFlow Lite 模型分析图片 */
+export declare function analyzeImageWithTensorflowLite(imageData: Array<number>, modelPath: string): ImageAnalysisResult
 
 /** 批量分析图片 */
 export declare function batchAnalyzeImagesWithAi(imagesData: Array<Array<number>>, config: AiAnalysisConfig): Array<ImageAnalysisResult>
