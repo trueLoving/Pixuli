@@ -1,5 +1,5 @@
 import { ImageItem } from '@/type/image'
-import { FilterOptions } from '@/components/image-grid/ImageFilter'
+import { FilterOptions } from '@/components/image-browser/ImageFilter'
 
 /**
  * 根据筛选条件过滤图片数组

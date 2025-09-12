@@ -1,0 +1,214 @@
+/* ImageBrowser 组件样式 */
+
+/* 主容器样式 */
+.image-browser {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 工具栏样式 */
+.image-browser-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+.image-browser-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-browser-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.image-browser-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.image-browser-filter-count {
+  margin-left: 0.5rem;
+  color: #2563eb;
+}
+
+.image-browser-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 筛选区域样式 */
+.image-browser-filter-section {
+  margin-bottom: 1.5rem;
+}
+
+/* 内容区域样式 */
+.image-browser-content {
+  flex: 1;
+}
+
+.image-browser-view {
+  display: block;
+}
+
+.image-browser-view.hidden {
+  display: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .image-browser-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .image-browser-header {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .image-browser-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .image-browser-toolbar {
+    padding: 0 0.5rem;
+  }
+  
+  .image-browser-title {
+    font-size: 1.125rem;
+  }
+  
+  .image-browser-controls {
+    gap: 0.5rem;
+  }
+}
+
+/* 加载状态样式 */
+.image-browser-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.image-browser-loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 空状态样式 */
+.image-browser-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.image-browser-empty-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.image-browser-empty-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.image-browser-empty-description {
+  font-size: 0.875rem;
+  max-width: 24rem;
+}
+
+/* 工具提示样式 */
+.image-browser-tooltip {
+  position: relative;
+}
+
+.image-browser-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 50;
+  margin-bottom: 0.25rem;
+}
+
+.image-browser-tooltip:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 50;
+}
+
+/* 过渡动画 */
+.image-browser-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* 焦点样式 */
+.image-browser-focusable:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* 无障碍支持 */
+@media (prefers-reduced-motion: reduce) {
+  .image-browser-transition,
+  .image-browser-loading-spinner {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .image-browser-title {
+    color: #000000;
+  }
+  
+  .image-browser-count {
+    color: #404040;
+  }
+  
+  .image-browser-filter-count {
+    color: #0000ff;
+  }
+}

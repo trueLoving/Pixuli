@@ -7,7 +7,7 @@ import { useLazyLoad, useInfiniteScroll } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
-import './image-list.css'
+import './ImageList.css'
 
 interface ImageListProps {
   images: ImageItem[]

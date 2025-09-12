@@ -7,6 +7,7 @@ import ImageSorter, { SortField, SortOrder } from './ImageSorter'
 import ImageFilter, { FilterOptions } from './ImageFilter'
 import { getSortedImages } from '@/utils/sortUtils'
 import { filterImages, createDefaultFilters } from '@/utils/filterUtils'
+import './ImageBrowser.css'
 
 interface ImageBrowserProps {
   images: ImageItem[]
@@ -55,24 +56,22 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
   }, [images, currentFilters, currentSort, currentOrder])
 
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div className={`image-browser ${className}`}>
       {/* 工具栏 */}
-      <div className="flex items-center justify-between mb-6 px-4">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-xl font-semibold text-gray-900">图片库</h2>
-          <span className="text-sm text-gray-500">
+      <div className="image-browser-toolbar">
+        <div className="image-browser-header">
+          <h2 className="image-browser-title">图片库</h2>
+          <span className="image-browser-count">
             共 {images.length} 张图片
             {currentFilters.searchTerm || currentFilters.selectedTypes.length > 0 || currentFilters.selectedTags.length > 0 && (
-              <span className="ml-2 text-blue-600">
+              <span className="image-browser-filter-count">
                 (筛选后: {filteredAndSortedImages.length} 张)
               </span>
             )}
           </span>
         </div>
         
-        <div className="flex items-center space-x-4">
-
-          
+        <div className="image-browser-controls">
           {/* 排序功能 */}
           <ImageSorter
             currentSort={currentSort}
@@ -89,7 +88,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
       </div>
 
       {/* 筛选区域 */}
-      <div className="mb-6">
+      <div className="image-browser-filter-section">
         <ImageFilter
           images={images}
           currentFilters={currentFilters}
@@ -98,13 +97,13 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1">
-        <div className={currentView === 'grid' ? 'block' : 'hidden'}>
+      <div className="image-browser-content">
+        <div className={`image-browser-view ${currentView === 'grid' ? '' : 'hidden'}`}>
           <ImageGrid 
             images={filteredAndSortedImages}
           />
         </div>
-        <div className={currentView === 'list' ? 'block' : 'hidden'}>
+        <div className={`image-browser-view ${currentView === 'list' ? '' : 'hidden'}`}>
           <ImageList images={filteredAndSortedImages} />
         </div>
       </div>

@@ -1,15 +1,15 @@
 /* 网格布局样式 */
-.image-grid-container {
+.image-browser-container {
   width: 100%;
 }
 
 /* 图片项样式 */
-.image-grid-item {
+.image-browser-item {
   transition: all 0.2s ease-in-out;
   height: 100%;
 }
 
-.image-grid-item:hover {
+.image-browser-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
@@ -99,38 +99,38 @@
 }
 
 /* 性能优化样式 */
-.image-grid-item {
+.image-browser-item {
   contain: layout style paint;
   will-change: transform;
 }
 
 /* 响应式网格布局优化 */
 @media (min-width: 640px) {
-  .image-grid-item {
+  .image-browser-item {
     min-height: 320px;
   }
 }
 
 @media (min-width: 768px) {
-  .image-grid-item {
+  .image-browser-item {
     min-height: 340px;
   }
 }
 
 @media (min-width: 1024px) {
-  .image-grid-item {
+  .image-browser-item {
     min-height: 360px;
   }
 }
 
 @media (min-width: 1280px) {
-  .image-grid-item {
+  .image-browser-item {
     min-height: 380px;
   }
 }
 
 @media (min-width: 1536px) {
-  .image-grid-item {
+  .image-browser-item {
     min-height: 400px;
   }
 } 

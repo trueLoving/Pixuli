@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { Search, Filter, X, Image as ImageIcon, HardDrive } from 'lucide-react'
 import { ImageItem } from '@/type/image'
 import { formatFileSize } from '@/utils/fileSizeUtils'
-import './image-filter.css'
+import './ImageFilter.css'
 
 export interface FilterOptions {
   searchTerm: string

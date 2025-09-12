@@ -7,7 +7,7 @@ import { useInfiniteScroll, useLazyLoad } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
-import './image-grid.css'
+import './ImageGrid.css'
 
 interface ImageGridProps {
   images: ImageItem[]
@@ -169,7 +169,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       <div
         key={image.id}
         ref={(el) => el && observeElement(el, image.id)}
-        className="image-grid-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
+        className="image-browser-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
       >
         {/* 图片预览 - 懒加载 */}
         <div className="relative aspect-square bg-gray-100 flex-shrink-0">

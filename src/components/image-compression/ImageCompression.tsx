@@ -10,6 +10,7 @@ import {
 import ImageCompressionSettings from './ImageCompressionSettings'
 import ImageCompressionPreview from './ImageCompressionPreview'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
+import './ImageCompression.css'
 
 interface ImageCompressionProps {
   onClose: () => void

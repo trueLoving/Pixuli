@@ -382,29 +382,29 @@ body {
   }
 }
 
-/* 响应式图片网格 */
-.image-grid-responsive {
+/* 响应式图片浏览器 */
+.image-browser-responsive {
   display: grid;
   gap: 0.75rem;
   grid-template-columns: repeat(1, 1fr);
 }
 
 @media (min-width: 640px) {
-  .image-grid-responsive {
+  .image-browser-responsive {
     gap: 1rem;
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 768px) {
-  .image-grid-responsive {
+  .image-browser-responsive {
     gap: 1.25rem;
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .image-grid-responsive {
+  .image-browser-responsive {
     gap: 1.5rem;
     grid-template-columns: repeat(4, 1fr);
   }
