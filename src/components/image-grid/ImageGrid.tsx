@@ -90,8 +90,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   useEffect(() => {
     visibleImages.forEach(imageId => {
       const image = images.find(img => img.id === imageId)
-      if (image && (image.width === 0 || image.height === 0)) {
-        if (!imageDimensions[image.id] && !fetchingDimensions.current.has(image.id)) {
+      if (image) {
+        // 如果图片尺寸数据不存在或者为0，或者还没有获取过真实尺寸，则获取尺寸
+        const hasValidDimensions = image.width > 0 && image.height > 0
+        const hasCachedDimensions = imageDimensions[image.id]
+        const isCurrentlyFetching = fetchingDimensions.current.has(image.id)
+        
+        if (!hasCachedDimensions && !isCurrentlyFetching) {
           fetchImageDimensions(image)
         }
       }
@@ -249,12 +254,20 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               <span>
                 {(() => {
                   const dimensions = imageDimensions[image.id]
+                  const isCurrentlyFetching = fetchingDimensions.current.has(image.id)
+                  
                   if (dimensions) {
+                    // 优先显示获取到的真实尺寸
                     return `${dimensions.width} × ${dimensions.height}`
                   } else if (image.width > 0 && image.height > 0) {
+                    // 如果有存储的尺寸且不在获取中，显示存储的尺寸
                     return `${image.width} × ${image.height}`
-                  } else {
+                  } else if (isCurrentlyFetching) {
+                    // 正在获取中
                     return '获取中...'
+                  } else {
+                    // 没有尺寸数据
+                    return '尺寸未知'
                   }
                 })()}
               </span>
@@ -281,7 +294,8 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     handleViewUrl,
     handleEdit,
     handleDelete,
-    formatDate
+    formatDate,
+    observeElement
   ])
 
   return (
@@ -368,10 +382,24 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               )}
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
                 <span>
-                  {selectedImage.width > 0 && selectedImage.height > 0 
-                    ? `${selectedImage.width} × ${selectedImage.height}`
-                    : '获取中...'
-                  }
+                  {(() => {
+                    const dimensions = imageDimensions[selectedImage.id]
+                    const isCurrentlyFetching = fetchingDimensions.current.has(selectedImage.id)
+                    
+                    if (dimensions) {
+                      // 优先显示获取到的真实尺寸
+                      return `${dimensions.width} × ${dimensions.height}`
+                    } else if (selectedImage.width > 0 && selectedImage.height > 0) {
+                      // 显示存储的尺寸
+                      return `${selectedImage.width} × ${selectedImage.height}`
+                    } else if (isCurrentlyFetching) {
+                      // 正在获取中
+                      return '获取中...'
+                    } else {
+                      // 没有尺寸数据
+                      return '尺寸未知'
+                    }
+                  })()}
                 </span>
                 {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
                 <span>{formatDate(selectedImage.createdAt)}</span>
