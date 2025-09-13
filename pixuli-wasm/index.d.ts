@@ -42,9 +42,13 @@ export declare function batchCompressToWebp(imagesData: Array<Array<number>>, op
 
 /** 边界框 */
 export interface BoundingBox {
+  /** X坐标 */
   x: number
+  /** Y坐标 */
   y: number
+  /** 宽度 */
   width: number
+  /** 高度 */
   height: number
 }
 
@@ -55,7 +59,7 @@ export declare function checkModelAvailability(modelPath: string): boolean
 export interface ColorInfo {
   /** 颜色名称 */
   name: string
-  /** RGB 值 */
+  /** RGB值 */
   rgb: [number, number, number]
   /** 占比 */
   percentage: number
@@ -70,9 +74,9 @@ export declare function compressToWebp(imageData: Array<number>, options?: WebPC
 export interface DetectedObject {
   /** 物体名称 */
   name: string
-  /** 置信度 */
+  /** 置信度 (0-1) */
   confidence: number
-  /** 边界框坐标 */
+  /** 边界框 */
   bbox: BoundingBox
   /** 类别 */
   category: string
@@ -91,15 +95,15 @@ export declare function getSupportedModels(): Array<string>
 export interface ImageAnalysisResult {
   /** 图片类型/格式 */
   imageType: string
-  /** 检测到的标签 */
+  /** 标签列表 */
   tags: Array<string>
   /** 图片描述 */
   description: string
-  /** 置信度分数 */
+  /** 置信度 (0-1) */
   confidence: number
   /** 检测到的物体 */
   objects: Array<DetectedObject>
-  /** 颜色分析 */
+  /** 主要颜色 */
   colors: Array<ColorInfo>
   /** 场景类型 */
   sceneType: string
@@ -109,6 +113,7 @@ export interface ImageAnalysisResult {
   modelUsed: string
 }
 
+/** 简单的加法函数，用于测试WASM接口 */
 export declare function plus100(input: number): number
 
 /** WebP压缩配置 */

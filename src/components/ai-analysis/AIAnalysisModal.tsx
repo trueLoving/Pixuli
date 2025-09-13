@@ -388,68 +388,132 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
 
           {analysisResult && analysisResult.success && analysisResult.result && (
             <div className="analysis-result">
-              <h3>分析结果</h3>
-              
-              <div className="result-section">
-                <h4>基本信息</h4>
-                <p><strong>图片类型:</strong> {analysisResult.result.imageType}</p>
-                <p><strong>场景类型:</strong> {analysisResult.result.sceneType}</p>
-                <p><strong>置信度:</strong> {(analysisResult.result.confidence * 100).toFixed(1)}%</p>
-                <p><strong>分析时间:</strong> {analysisResult.result.analysisTime.toFixed(0)}ms</p>
-                <p><strong>使用模型:</strong> {analysisResult.result.modelUsed}</p>
+              <div className="result-header">
+                <h3>🧠 AI 分析结果</h3>
+                <div className="analysis-stats">
+                  <span className="confidence-badge">
+                    置信度: {(analysisResult.result.confidence * 100).toFixed(1)}%
+                  </span>
+                  <span className="time-badge">
+                    {analysisResult.result.analysisTime.toFixed(0)}ms
+                  </span>
+                </div>
               </div>
 
-              <div className="result-section">
-                <h4>描述</h4>
-                <p>{analysisResult.result.description}</p>
+              {/* 图片描述 - 突出显示 */}
+              <div className="result-section featured-description">
+                <h4>📝 智能描述</h4>
+                <div className="description-content">
+                  <p>{analysisResult.result.description}</p>
+                </div>
               </div>
 
+              {/* 标签云 - 改进样式 */}
               <div className="result-section">
-                <h4>标签</h4>
-                <div className="tags">
+                <h4>🏷️ 智能标签</h4>
+                <div className="enhanced-tags">
                   {analysisResult.result.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
+                    <span 
+                      key={index} 
+                      className={`enhanced-tag ${index < 3 ? 'primary-tag' : 'secondary-tag'}`}
+                    >
+                      {tag}
+                    </span>
                   ))}
                 </div>
               </div>
 
+              {/* 基本信息 - 简化布局 */}
+              <div className="result-section basic-info">
+                <h4>📊 图像信息</h4>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">格式</span>
+                    <span className="info-value">{analysisResult.result.imageType}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">场景</span>
+                    <span className="info-value">{analysisResult.result.sceneType}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">模型</span>
+                    <span className="info-value">{analysisResult.result.modelUsed}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 检测对象 - 卡片式布局 */}
               {analysisResult.result.objects.length > 0 && (
                 <div className="result-section">
-                  <h4>检测到的物体</h4>
-                  <div className="objects">
+                  <h4>🎯 检测对象</h4>
+                  <div className="objects-grid">
                     {analysisResult.result.objects.map((obj, index) => (
-                      <div key={index} className="object-item">
-                        <span className="object-name">{obj.name}</span>
-                        <span className="object-confidence">
-                          {(obj.confidence * 100).toFixed(1)}%
-                        </span>
-                        <span className="object-category">{obj.category}</span>
+                      <div key={index} className="object-card">
+                        <div className="object-header">
+                          <span className="object-name">{obj.name}</span>
+                          <span className="object-confidence">
+                            {(obj.confidence * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="object-category">{obj.category}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* 颜色分析 - 视觉化改进 */}
               {analysisResult.result.colors.length > 0 && (
                 <div className="result-section">
-                  <h4>主要颜色</h4>
-                  <div className="colors">
+                  <h4>🎨 色彩分析</h4>
+                  <div className="colors-palette">
                     {analysisResult.result.colors.map((color, index) => (
-                      <div key={index} className="color-item">
+                      <div key={index} className="color-card">
                         <div 
-                          className="color-swatch"
+                          className="color-swatch-large"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <span className="color-name">{color.name}</span>
-                        <span className="color-percentage">
-                          {(color.percentage * 100).toFixed(1)}%
-                        </span>
-                        <span className="color-hex">{color.hex}</span>
+                        <div className="color-info">
+                          <div className="color-name">{color.name}</div>
+                          <div className="color-details">
+                            <span className="color-percentage">
+                              {(color.percentage * 100).toFixed(1)}%
+                            </span>
+                            <span className="color-hex">{color.hex}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* 操作按钮 */}
+              <div className="result-actions">
+                <button 
+                  className="action-button primary"
+                  onClick={() => {
+                    // 复制分析结果到剪贴板
+                    if (analysisResult.result) {
+                      const summary = `图片描述: ${analysisResult.result.description}\n标签: ${analysisResult.result.tags.join(', ')}`;
+                      navigator.clipboard.writeText(summary);
+                    }
+                  }}
+                >
+                  📋 复制结果
+                </button>
+                <button 
+                  className="action-button secondary"
+                  onClick={() => {
+                    // 应用到图片元数据（如果有回调）
+                    if (onAnalysisComplete) {
+                      onAnalysisComplete(analysisResult);
+                    }
+                  }}
+                >
+                  ✅ 应用到图片
+                </button>
+              </div>
             </div>
           )}
         </div>
