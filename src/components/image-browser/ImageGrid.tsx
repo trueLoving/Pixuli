@@ -127,9 +127,22 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     showInfo(`正在预览图片 "${image.name}"`)
   }, [])
 
-  const handleEditSuccess = useCallback((image: ImageItem) => {
-    showSuccess(`图片 "${image.name}" 信息已成功更新`)
+  const handleEditSuccess = useCallback((updatedImage: ImageItem) => {
+    showSuccess(`图片 "${updatedImage.name}" 信息已成功更新`)
+    // 更新选中的图片数据
+    setSelectedImage(updatedImage)
     setShowEditModal(false)
+    
+    // 添加小延迟后刷新显示（确保异步更新完成）
+    setTimeout(() => {
+      // 强制重新渲染，这会触发组件重新从 images prop 中获取最新数据
+      setSelectedImage(prev => {
+        if (prev && prev.id === updatedImage.id) {
+          return updatedImage
+        }
+        return prev
+      })
+    }, 100)
   }, [])
 
   const handleEditCancel = useCallback(() => {

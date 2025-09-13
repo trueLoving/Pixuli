@@ -14,7 +14,7 @@ interface ImageEditModalProps {
 }
 
 const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose, onSuccess, onCancel }) => {
-  const { updateImage, loading } = useImageStore()
+  const { updateImage, loading, images } = useImageStore()
   const [formData, setFormData] = useState<ImageEditData>({
     id: image.id,
     name: image.name,
@@ -30,7 +30,23 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose,
       await updateImage(formData)
       updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 信息已成功更新`)
       if (onSuccess) {
-        onSuccess(image)
+        // 从 store 中获取更新后的图片数据
+        const newFileName = formData.name || image.name
+        const updatedImage = images.find(img => img.id === newFileName || img.id === image.id)
+        if (updatedImage) {
+          onSuccess(updatedImage)
+        } else {
+          // 如果没找到，使用手动构建的数据作为备选
+          const fallbackImage = {
+            ...image,
+            id: newFileName,
+            name: newFileName,
+            description: formData.description || image.description,
+            tags: formData.tags || image.tags,
+            updatedAt: new Date().toISOString()
+          }
+          onSuccess(fallbackImage)
+        }
       } else {
         onClose()
       }

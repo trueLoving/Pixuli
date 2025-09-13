@@ -252,9 +252,68 @@ export class GitHubService {
           }
         }
         
+        // 批量获取 metadata 文件以提高性能
+        const metadataMap = new Map<string, any>()
+        
+        try {
+          // 获取 .metadata 目录中的所有文件
+          const metadataResponse = await this.octokit!.rest.repos.getContent({
+            owner,
+            repo,
+            path: `${path}/.metadata`,
+            ref: branch,
+          })
+          
+          if (Array.isArray(metadataResponse.data)) {
+            // 批量获取所有 metadata 文件内容
+            const metadataPromises = metadataResponse.data
+              .filter(file => file.name.endsWith('.json'))
+              .map(async (file) => {
+                try {
+                  const fileResponse = await this.octokit!.rest.repos.getContent({
+                    owner,
+                    repo,
+                    path: file.path,
+                    ref: branch,
+                  })
+                  
+                  if (!Array.isArray(fileResponse.data) && 'content' in fileResponse.data) {
+                    const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf8')
+                    const metadata = JSON.parse(content)
+                    // 从文件名提取图片名（去掉 .json 后缀）
+                    const imageName = file.name.replace('.json', '')
+                    metadataMap.set(imageName, metadata)
+                  }
+                } catch (error) {
+                  console.warn(`Failed to load metadata for ${file.name}:`, error)
+                }
+              })
+            
+            await Promise.all(metadataPromises)
+          }
+        } catch (metadataError) {
+          console.log('No .metadata directory found or failed to access, using defaults')
+        }
+        
         // 构建最终结果
         for (const item of imageFiles) {
           const lastCommitDate = fileTimeMap.get(item.name) || defaultDate
+          
+          // 从 metadataMap 中获取对应的 metadata
+          const parsedMetadata = metadataMap.get(item.name)
+          const metadata = parsedMetadata ? {
+            width: parsedMetadata.width || 0,
+            height: parsedMetadata.height || 0,
+            tags: Array.isArray(parsedMetadata.tags) ? parsedMetadata.tags : [],
+            description: parsedMetadata.description || '',
+            updatedAt: parsedMetadata.updatedAt || lastCommitDate
+          } : {
+            width: 0,
+            height: 0,
+            tags: [] as string[],
+            description: '',
+            updatedAt: lastCommitDate
+          }
           
           imageItems.push({
             sha: item.sha,
@@ -262,12 +321,12 @@ export class GitHubService {
             downloadUrl: item.download_url,
             htmlUrl: item.html_url,
             size: item.size,
-            width: 0, // 图片尺寸需要前端动态获取
-            height: 0,
-            tags: [],
-            description: '',
+            width: metadata.width,
+            height: metadata.height,
+            tags: metadata.tags,
+            description: metadata.description,
             createdAt: lastCommitDate,
-            updatedAt: lastCommitDate,
+            updatedAt: metadata.updatedAt,
           })
         }
 
@@ -297,14 +356,41 @@ export class GitHubService {
         const metadataPath = `${path}/.metadata/${metadataFileName}`
         const metadataContent = JSON.stringify(metadata, null, 2)
 
-        await this.octokit.rest.repos.createOrUpdateFileContents({
+        // 先尝试获取文件的当前 SHA，如果文件存在则更新，否则创建
+        let fileSha: string | undefined = undefined
+        try {
+          const fileResponse = await this.octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path: metadataPath,
+            ref: branch,
+          })
+          
+          if ('sha' in fileResponse.data) {
+            fileSha = fileResponse.data.sha
+          }
+        } catch (error: any) {
+          // 如果文件不存在（404错误），则是创建新文件，不需要 SHA
+          if (error.status !== 404) {
+            throw error
+          }
+        }
+
+        const updateParams: any = {
           owner,
           repo,
           path: metadataPath,
           message: `Update metadata for: ${metadata.name}`,
           content: Buffer.from(metadataContent).toString('base64'),
           branch,
-        })
+        }
+
+        // 如果文件存在，添加 SHA 参数
+        if (fileSha) {
+          updateParams.sha = fileSha
+        }
+
+        await this.octokit.rest.repos.createOrUpdateFileContents(updateParams)
       } catch (error) {
         console.error('GitHub update metadata failed:', error)
         throw error
@@ -338,17 +424,44 @@ export class GitHubService {
         throw new Error('无法获取文件内容')
       }
 
-      // 2. 上传到新文件名
-      await this.octokit!.rest.repos.createOrUpdateFileContents({
+      // 2. 检查新文件是否已存在，如果存在则获取其 SHA
+      let newFileSha: string | undefined = undefined
+      try {
+        const newFileInfo = await this.octokit!.rest.repos.getContent({
+          owner,
+          repo,
+          path: newFilePath,
+          ref: branch,
+        })
+        
+        if (!Array.isArray(newFileInfo.data)) {
+          newFileSha = (newFileInfo.data as any).sha
+        }
+      } catch (error: any) {
+        // 如果新文件不存在（404错误），则正常创建
+        if (error.status !== 404) {
+          throw error
+        }
+      }
+
+      // 3. 上传到新文件名
+      const createParams: any = {
         owner,
         repo,
         path: newFilePath,
         message: `Rename file: ${oldFileName} → ${newFileName}`,
         content: fileContent,
         branch,
-      })
+      }
 
-      // 3. 删除原文件
+      // 如果新文件已存在，添加 SHA 参数
+      if (newFileSha) {
+        createParams.sha = newFileSha
+      }
+
+      await this.octokit!.rest.repos.createOrUpdateFileContents(createParams)
+
+      // 4. 删除原文件
       await this.octokit!.rest.repos.deleteFile({
         owner,
         repo,
@@ -358,7 +471,7 @@ export class GitHubService {
         branch,
       })
 
-      // 4. 删除旧的metadata文件（如果存在）
+      // 5. 删除旧的metadata文件（如果存在）
       try {
         const oldMetadataPath = `${path}/.metadata/${oldFileName}.json`
         const oldMetadataInfo = await this.octokit!.rest.repos.getContent({
