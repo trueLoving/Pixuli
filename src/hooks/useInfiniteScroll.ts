@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { ImageItem } from '@/type/image'
+import { ImageItem } from '@/types/image'
 
 interface UseInfiniteScrollOptions {
   pageSize?: number

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react'
-import { ImageItem } from '@/type/image'
+import { ImageItem } from '@/types/image'
 import ImageGrid from './ImageGrid'
 import ImageList from './ImageList'
 import ViewToggle, { ViewMode } from './ViewToggle'

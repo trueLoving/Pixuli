@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Search, Filter, X, Image as ImageIcon, HardDrive } from 'lucide-react'
-import { ImageItem } from '@/type/image'
+import { ImageItem } from '@/types/image'
 import { formatFileSize } from '@/utils/fileSizeUtils'
 import './ImageFilter.css'
 

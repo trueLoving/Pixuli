@@ -1,10 +1,12 @@
+import { GitHubUploadParams, GitHubUploadResponse, GitHubDeleteParams, GitHubGetListParams, GitHubUpdateMetadataParams } from './image'
+
 // Electron API 类型定义
 export interface ElectronAPI {
-  githubUpload: (params: any) => Promise<any>
-  githubDelete: (params: any) => Promise<any>
-  githubGetList: (params: any) => Promise<any>
-  githubUpdateMetadata: (params: any) => Promise<any>
-  githubSetAuth: (token: string) => Promise<any>
+  githubUpload: (params: GitHubUploadParams) => Promise<GitHubUploadResponse>
+  githubDelete: (params: GitHubDeleteParams) => Promise<void>
+  githubGetList: (params: GitHubGetListParams) => Promise<any[]>
+  githubUpdateMetadata: (params: GitHubUpdateMetadataParams) => Promise<void>
+  githubSetAuth: (token: string) => Promise<{ success: boolean; error?: string }>
 }
 
 // Buffer API 类型定义

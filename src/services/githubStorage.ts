@@ -1,4 +1,4 @@
-import { ImageItem, GitHubConfig, ImageUploadData } from '@/type/image'
+import { ImageItem, GitHubConfig, ImageUploadData } from '@/types/image'
 
 export class GitHubStorageService {
   private config: GitHubConfig

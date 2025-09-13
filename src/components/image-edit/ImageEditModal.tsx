@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ImageItem, ImageEditData } from '@/type/image'
+import { ImageItem, ImageEditData } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Save, Tag, FileText } from 'lucide-react'
 import { showSuccess, showError, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'

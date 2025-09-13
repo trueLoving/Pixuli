@@ -1,4 +1,4 @@
-import { GitHubConfig } from '@/type/image'
+import { GitHubConfig } from '@/types/image'
 
 // 默认 GitHub 配置
 export const DEFAULT_GITHUB_CONFIG: Partial<GitHubConfig> = {

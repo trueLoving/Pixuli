@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@/type/image'
+import { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@/types/image'
 import { GitHubStorageService } from '@/services/githubStorage'
 import { loadGitHubConfig, saveGitHubConfig } from '@/config/github'
 

@@ -1,4 +1,4 @@
-import { ImageItem } from '@/type/image'
+import { ImageItem } from '@/types/image'
 import { FilterOptions } from '@/components/image-browser/ImageFilter'
 
 /**
