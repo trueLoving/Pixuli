@@ -30,10 +30,10 @@
   "author": "Pixuli Team",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^24.3.0",
+    "@types/node": "^22.18.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^5.0.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^8.0.0",
     "cross-env": "^7.0.0",
     "electron": "^33.4.11",
