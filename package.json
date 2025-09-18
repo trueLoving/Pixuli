@@ -33,7 +33,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.0.0",
+    "@vitejs/plugin-react": "^5.0.1",
     "concurrently": "^8.0.0",
     "cross-env": "^7.0.0",
     "electron": "^33.4.11",
