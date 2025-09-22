@@ -178,9 +178,4 @@ ipcMain.handle('wasm:get-image-info', async (_, imageData: number[]) => {
 aiService.addDefaultModels()
 
 // AI IPC handlers are registered in AIService constructor
-
-// Model Download IPC handlers
-ipcMain.handle('model:download', async (_, modelId) => modelDownloadService.downloadModel(modelId))
-ipcMain.handle('model:download-progress', async (_, modelId) => modelDownloadService.getDownloadProgress(modelId))
-ipcMain.handle('model:available-models', async () => modelDownloadService.getAvailableModels())
-ipcMain.handle('model:check-downloaded', async (_, modelId) => modelDownloadService.checkDownloaded(modelId))
+// Model Download IPC handlers are registered in ModelDownloadService constructor
