@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, Zap } from 'lucide-react'
+import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageBrowser from '@/components/image-browser/ImageBrowser'
 import ImageCompression from '@/components/image-compression/ImageCompression'
+import { ImageFormatConversion } from '@/components/image-format-conversion'
 // 暂时隐藏 AI 分析功能
 // import AIModelManager from '@/components/ai-analysis/AIModelManager'
 // import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
@@ -23,6 +24,7 @@ function App() {
   
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [showCompression, setShowCompression] = useState(false)
+  const [showFormatConversion, setShowFormatConversion] = useState(false)
   // 暂时隐藏 AI 分析功能
   // const [showAIModelManager, setShowAIModelManager] = useState(false)
   // const [showAIAnalysis, setShowAIAnalysis] = useState(false)
@@ -54,6 +56,14 @@ function App() {
 
   const handleCloseCompression = useCallback(() => {
     setShowCompression(false)
+  }, [])
+
+  const handleOpenFormatConversion = useCallback(() => {
+    setShowFormatConversion(true)
+  }, [])
+
+  const handleCloseFormatConversion = useCallback(() => {
+    setShowFormatConversion(false)
   }, [])
 
   // 暂时隐藏 AI 分析功能
@@ -157,6 +167,13 @@ function App() {
                 title="图片压缩工具"
               >
                 <Zap className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleOpenFormatConversion}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title="图片格式转换"
+              >
+                <ArrowRightLeft className="w-5 h-5" />
               </button>
               {/* 暂时隐藏 AI 图片分析功能 */}
               {/* <button
@@ -294,6 +311,11 @@ function App() {
       {/* 图片压缩模态框 */}
       {showCompression && (
         <ImageCompression onClose={handleCloseCompression} />
+      )}
+
+      {/* 图片格式转换模态框 */}
+      {showFormatConversion && (
+        <ImageFormatConversion onClose={handleCloseFormatConversion} />
       )}
 
       {/* 暂时隐藏 AI 分析功能 */}

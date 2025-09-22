@@ -10,11 +10,13 @@ use napi_derive::napi;
 pub mod webp;
 pub mod image;
 pub mod ai;
+pub mod format_conversion;
 
 // 重新导出主要功能
 pub use webp::*;
 pub use image::*;
 pub use ai::*;
+pub use format_conversion::*;
 
 /// 简单的加法函数，用于测试WASM接口
 #[napi]

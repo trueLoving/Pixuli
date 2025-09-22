@@ -40,6 +40,9 @@ export declare function batchAnalyzeImagesWithAi(imagesData: Array<Array<number>
 /** 批量压缩图片为WebP格式 */
 export declare function batchCompressToWebp(imagesData: Array<Array<number>>, options?: WebPCompressOptions | undefined | null): Array<WebPCompressResult>
 
+/** 批量转换图片格式 */
+export declare function batchConvertImageFormat(imagesData: Array<Array<number>>, options: FormatConversionOptions): Array<FormatConversionResult>
+
 /** 边界框 */
 export interface BoundingBox {
   /** X坐标 */
@@ -70,6 +73,9 @@ export interface ColorInfo {
 /** 压缩图片为WebP格式 */
 export declare function compressToWebp(imageData: Array<number>, options?: WebPCompressOptions | undefined | null): WebPCompressResult
 
+/** 转换图片格式 */
+export declare function convertImageFormat(imageData: Array<number>, options: FormatConversionOptions): FormatConversionResult
+
 /** 检测到的物体 */
 export interface DetectedObject {
   /** 物体名称 */
@@ -84,6 +90,26 @@ export interface DetectedObject {
 
 /** 下载 TensorFlow 模型 */
 export declare function downloadTensorflowModel(modelName: string, modelUrl: string): string
+
+export interface FormatConversionOptions {
+  targetFormat: string
+  quality?: number
+  preserveTransparency?: boolean
+  lossless?: boolean
+  colorSpace?: string
+  resize?: ResizeOptions
+}
+
+export interface FormatConversionResult {
+  data: Array<number>
+  originalSize: number
+  convertedSize: number
+  width: number
+  height: number
+  originalWidth: number
+  originalHeight: number
+  conversionTime: number
+}
 
 /** 获取图片信息 */
 export declare function getImageInfo(imageData: Array<number>): string
@@ -115,6 +141,12 @@ export interface ImageAnalysisResult {
 
 /** 简单的加法函数，用于测试WASM接口 */
 export declare function plus100(input: number): number
+
+export interface ResizeOptions {
+  width?: number
+  height?: number
+  maintainAspectRatio?: boolean
+}
 
 /** WebP压缩配置 */
 export interface WebPCompressOptions {

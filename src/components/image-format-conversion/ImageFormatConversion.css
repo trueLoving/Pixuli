@@ -1,0 +1,157 @@
+/* 图片格式转换组件样式 */
+
+.image-format-conversion {
+  /* 主容器样式 */
+}
+
+.format-option {
+  @apply p-3 border border-gray-200 rounded-lg cursor-pointer transition-all duration-200 hover:border-blue-400 hover:bg-blue-50;
+}
+
+.format-option.selected {
+  @apply border-blue-500 bg-blue-50 ring-2 ring-blue-200;
+}
+
+.format-option.disabled {
+  @apply opacity-50 cursor-not-allowed hover:border-gray-200 hover:bg-transparent;
+}
+
+.format-icon {
+  @apply w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm;
+}
+
+.format-icon.jpeg {
+  @apply bg-gradient-to-r from-yellow-400 to-orange-500;
+}
+
+.format-icon.png {
+  @apply bg-gradient-to-r from-blue-400 to-blue-600;
+}
+
+.format-icon.webp {
+  @apply bg-gradient-to-r from-green-400 to-green-600;
+}
+
+.format-icon.gif {
+  @apply bg-gradient-to-r from-purple-400 to-purple-600;
+}
+
+.format-icon.bmp {
+  @apply bg-gradient-to-r from-gray-400 to-gray-600;
+}
+
+.format-icon.tiff {
+  @apply bg-gradient-to-r from-indigo-400 to-indigo-600;
+}
+
+.quality-slider {
+  @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+}
+
+.quality-slider::-webkit-slider-thumb {
+  @apply appearance-none w-5 h-5 bg-blue-600 rounded-full cursor-pointer;
+}
+
+.quality-slider::-moz-range-thumb {
+  @apply w-5 h-5 bg-blue-600 rounded-full cursor-pointer border-0;
+}
+
+.conversion-stats {
+  @apply grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg;
+}
+
+.stat-item {
+  @apply text-center;
+}
+
+.stat-value {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.stat-label {
+  @apply text-sm text-gray-600;
+}
+
+.size-change.positive {
+  @apply text-red-600;
+}
+
+.size-change.negative {
+  @apply text-green-600;
+}
+
+.size-change.neutral {
+  @apply text-gray-600;
+}
+
+.preview-image {
+  @apply w-full h-48 object-contain bg-gray-100 rounded-lg border border-gray-200;
+}
+
+.conversion-progress {
+  @apply w-full bg-gray-200 rounded-full h-2;
+}
+
+.conversion-progress-bar {
+  @apply bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .conversion-stats {
+    @apply grid-cols-1 gap-2;
+  }
+  
+  .preview-image {
+    @apply h-32;
+  }
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* 加载动画 */
+.converting-spinner {
+  @apply inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin;
+}
+
+/* 成功状态 */
+.success-state {
+  @apply text-green-600 bg-green-50 border-green-200;
+}
+
+/* 错误状态 */
+.error-state {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+/* 警告状态 */
+.warning-state {
+  @apply text-yellow-600 bg-yellow-50 border-yellow-200;
+}

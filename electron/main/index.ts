@@ -7,7 +7,7 @@ import { update } from './update'
 import { GitHubService } from './githubService'
 import { aiService } from './aiService'
 import { modelDownloadService } from './modelDownloadService'
-import { plus100, compressToWebp, batchCompressToWebp, getImageInfo } from 'pixuli-wasm'
+import { plus100, compressToWebp, batchCompressToWebp, getImageInfo, convertImageFormat, batchConvertImageFormat } from 'pixuli-wasm'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -170,6 +170,26 @@ ipcMain.handle('wasm:get-image-info', async (_, imageData: number[]) => {
     return await getImageInfo(imageData)
   } catch (error) {
     console.error('Get image info error:', error)
+    throw error
+  }
+})
+
+// 图片格式转换IPC处理器
+ipcMain.handle('wasm:convert-image-format', async (_, imageData: number[], options: any) => {
+  try {
+    return await convertImageFormat(imageData, options)
+  } catch (error) {
+    console.error('Image format conversion error:', error)
+    throw error
+  }
+})
+
+// 批量图片格式转换IPC处理器
+ipcMain.handle('wasm:batch-convert-image-format', async (_, imagesData: number[][], options: any) => {
+  try {
+    return await batchConvertImageFormat(imagesData, options)
+  } catch (error) {
+    console.error('Batch image format conversion error:', error)
     throw error
   }
 })

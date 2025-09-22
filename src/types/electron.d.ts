@@ -20,6 +20,8 @@ export interface WasmAPI {
   compressToWebp: (imageData: number[], options?: any) => Promise<any>
   batchCompressToWebp: (imagesData: number[][], options?: any) => Promise<any[]>
   getImageInfo: (imageData: number[]) => Promise<string>
+  convertImageFormat: (imageData: number[], options: any) => Promise<any>
+  batchConvertImageFormat: (imagesData: number[][], options: any) => Promise<any[]>
 }
 
 // AI API 类型定义

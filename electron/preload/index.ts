@@ -38,6 +38,8 @@ contextBridge.exposeInMainWorld('wasmAPI', {
   compressToWebp: (imageData: number[], options?: any) => ipcRenderer.invoke('wasm:compress-to-webp', imageData, options),
   batchCompressToWebp: (imagesData: number[][], options?: any) => ipcRenderer.invoke('wasm:batch-compress-to-webp', imagesData, options),
   getImageInfo: (imageData: number[]) => ipcRenderer.invoke('wasm:get-image-info', imageData),
+  convertImageFormat: (imageData: number[], options: any) => ipcRenderer.invoke('wasm:convert-image-format', imageData, options),
+  batchConvertImageFormat: (imagesData: number[][], options: any) => ipcRenderer.invoke('wasm:batch-convert-image-format', imagesData, options),
 })
 
 // --------- Expose AI API to the Renderer process ---------
