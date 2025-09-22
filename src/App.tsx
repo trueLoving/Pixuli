@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft } from 'lucide-react'
+import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft, Brain } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageBrowser from '@/components/image-browser/ImageBrowser'
 import ImageCompression from '@/components/image-compression/ImageCompression'
 import { ImageFormatConversion } from '@/components/image-format-conversion'
-// 暂时隐藏 AI 分析功能
-// import AIModelManager from '@/components/ai-analysis/AIModelManager'
-// import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
+import AIModelManager from '@/components/ai-analysis/AIModelManager'
+import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
 
@@ -25,9 +24,8 @@ function App() {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [showCompression, setShowCompression] = useState(false)
   const [showFormatConversion, setShowFormatConversion] = useState(false)
-  // 暂时隐藏 AI 分析功能
-  // const [showAIModelManager, setShowAIModelManager] = useState(false)
-  // const [showAIAnalysis, setShowAIAnalysis] = useState(false)
+  const [showAIModelManager, setShowAIModelManager] = useState(false)
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
@@ -66,22 +64,21 @@ function App() {
     setShowFormatConversion(false)
   }, [])
 
-  // 暂时隐藏 AI 分析功能
-  // const handleOpenAIModelManager = useCallback(() => {
-  //   setShowAIModelManager(true)
-  // }, [])
+  const handleOpenAIModelManager = useCallback(() => {
+    setShowAIModelManager(true)
+  }, [])
 
-  // const handleCloseAIModelManager = useCallback(() => {
-  //   setShowAIModelManager(false)
-  // }, [])
+  const handleCloseAIModelManager = useCallback(() => {
+    setShowAIModelManager(false)
+  }, [])
 
-  // const handleOpenAIAnalysis = useCallback(() => {
-  //   setShowAIAnalysis(true)
-  // }, [])
+  const handleOpenAIAnalysis = useCallback(() => {
+    setShowAIAnalysis(true)
+  }, [])
 
-  // const handleCloseAIAnalysis = useCallback(() => {
-  //   setShowAIAnalysis(false)
-  // }, [])
+  const handleCloseAIAnalysis = useCallback(() => {
+    setShowAIAnalysis(false)
+  }, [])
 
   // 初始化存储服务
   useEffect(() => {
@@ -175,14 +172,13 @@ function App() {
               >
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
-              {/* 暂时隐藏 AI 图片分析功能 */}
-              {/* <button
+              <button
                 onClick={handleOpenAIAnalysis}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title="AI 图片分析"
               >
                 <Brain className="w-5 h-5" />
-              </button> */}
+              </button>
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -318,19 +314,18 @@ function App() {
         <ImageFormatConversion onClose={handleCloseFormatConversion} />
       )}
 
-      {/* 暂时隐藏 AI 分析功能 */}
       {/* AI 分析模态框 */}
-      {/* <AIAnalysisModal
+      <AIAnalysisModal
         isOpen={showAIAnalysis}
         onClose={handleCloseAIAnalysis}
         onAnalysisComplete={(result) => {
           console.log('AI 分析完成:', result)
         }}
         onOpenModelManager={handleOpenAIModelManager}
-      /> */}
+      />
 
       {/* AI 模型管理模态框 */}
-      {/* <AIModelManager
+      <AIModelManager
         isOpen={showAIModelManager}
         onClose={handleCloseAIModelManager}
         onModelUpdate={() => {
@@ -341,7 +336,7 @@ function App() {
             window.dispatchEvent(event)
           }
         }}
-      /> */}
+      />
 
       <Toaster />
     </div>
