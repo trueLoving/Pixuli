@@ -2,8 +2,7 @@
 
 use crate::ai::types::*;
 use napi::Error as NapiError;
-use base64;
-use std::collections::HashMap;
+use base64::{Engine as _, engine::general_purpose};
 
 /// TensorFlow 模型处理器
 pub struct TensorFlowHandler {
@@ -15,8 +14,11 @@ impl TensorFlowHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
         Self { model_path, use_gpu }
     }
+}
 
-    pub async fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
+#[async_trait::async_trait]
+impl ModelHandler for TensorFlowHandler {
+    async fn analyze_image(&self, _image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
         // TODO: 实现 TensorFlow 模型推理
         // 这里应该加载 TensorFlow 模型并进行推理
         let start_time = std::time::Instant::now();
@@ -48,8 +50,11 @@ impl TensorFlowLiteHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
         Self { model_path, use_gpu }
     }
+}
 
-    pub async fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
+#[async_trait::async_trait]
+impl ModelHandler for TensorFlowLiteHandler {
+    async fn analyze_image(&self, _image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
         // TODO: 实现 TensorFlow Lite 模型推理
         let start_time = std::time::Instant::now();
         
@@ -80,8 +85,11 @@ impl ONNXHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
         Self { model_path, use_gpu }
     }
+}
 
-    pub async fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
+#[async_trait::async_trait]
+impl ModelHandler for ONNXHandler {
+    async fn analyze_image(&self, _image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
         // TODO: 实现 ONNX 模型推理
         let start_time = std::time::Instant::now();
         
@@ -111,19 +119,20 @@ impl LocalLLMHandler {
     pub fn new(config: LocalLLMConfig) -> Self {
         Self { config }
     }
+}
 
-    pub async fn analyze_image(&self, image_data: &[u8], prompt: Option<String>) -> Result<ImageAnalysisResult, NapiError> {
+#[async_trait::async_trait]
+impl ModelHandler for LocalLLMHandler {
+    async fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
         // TODO: 实现本地 LLM 推理（Llama 等）
         let start_time = std::time::Instant::now();
         
         // 将图片转换为 base64 或使用视觉模型
-        let base64_image = base64::encode(image_data);
+        let _base64_image = general_purpose::STANDARD.encode(image_data);
         
         // 构建提示词
-        let system_prompt = "你是一个专业的图像分析助手，请详细分析图片内容。";
-        let user_prompt = prompt.unwrap_or_else(|| {
-            format!("请分析这张图片，包括：1. 图片内容描述 2. 主要物体 3. 颜色分析 4. 场景类型")
-        });
+        let _system_prompt = "你是一个专业的图像分析助手，请详细分析图片内容。";
+        let _user_prompt = "请分析这张图片，包括：1. 图片内容描述 2. 主要物体 3. 颜色分析 4. 场景类型";
         
         // TODO: 调用本地 LLM API
         // 这里应该与本地运行的 Llama 或其他 LLM 服务通信
@@ -153,20 +162,23 @@ impl RemoteAPIHandler {
     pub fn new(config: RemoteAPIConfig) -> Self {
         Self { config }
     }
+}
 
-    pub async fn analyze_image(&self, image_data: &[u8], prompt: Option<String>) -> Result<ImageAnalysisResult, NapiError> {
+#[async_trait::async_trait]
+impl ModelHandler for RemoteAPIHandler {
+    async fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
         let start_time = std::time::Instant::now();
         
         // 将图片转换为 base64
-        let base64_image = base64::encode(image_data);
+        let _base64_image = general_purpose::STANDARD.encode(image_data);
         
         // 根据不同的 API 类型构建请求
-        let request_body = match self.config.api_type {
-            RemoteAPIType::OpenAI => self.build_openai_request(&base64_image, prompt),
-            RemoteAPIType::Qwen => self.build_qwen_request(&base64_image, prompt),
-            RemoteAPIType::Claude => self.build_claude_request(&base64_image, prompt),
-            RemoteAPIType::Gemini => self.build_gemini_request(&base64_image, prompt),
-            RemoteAPIType::Custom => self.build_custom_request(&base64_image, prompt),
+        let _request_body = match self.config.api_type {
+            RemoteAPIType::OpenAI => self.build_openai_request(&_base64_image, None),
+            RemoteAPIType::Qwen => self.build_qwen_request(&_base64_image, None),
+            RemoteAPIType::Claude => self.build_claude_request(&_base64_image, None),
+            RemoteAPIType::Gemini => self.build_gemini_request(&_base64_image, None),
+            RemoteAPIType::Custom => self.build_custom_request(&_base64_image, None),
         };
 
         // TODO: 发送 HTTP 请求到远程 API
@@ -186,8 +198,10 @@ impl RemoteAPIHandler {
             model_used: format!("Remote API ({})", self.config.model_name),
         })
     }
+}
 
-    fn build_openai_request(&self, base64_image: &str, prompt: Option<String>) -> String {
+impl RemoteAPIHandler {
+    fn build_openai_request(&self, base64_image: &str, _prompt: Option<String>) -> String {
         // 构建 OpenAI Vision API 请求
         format!(r#"{{
             "model": "{}",
@@ -211,12 +225,12 @@ impl RemoteAPIHandler {
             "max_tokens": 1000
         }}"#, 
             self.config.model_name,
-            prompt.unwrap_or_else(|| "请分析这张图片".to_string()),
+            "请分析这张图片".to_string(),
             base64_image
         )
     }
 
-    fn build_qwen_request(&self, base64_image: &str, prompt: Option<String>) -> String {
+    fn build_qwen_request(&self, base64_image: &str, _prompt: Option<String>) -> String {
         // 构建 Qwen 多模态 API 请求
         format!(r#"{{
             "model": "{}",
@@ -241,12 +255,12 @@ impl RemoteAPIHandler {
             }}
         }}"#, 
             self.config.model_name,
-            prompt.unwrap_or_else(|| "请分析这张图片".to_string()),
+            "请分析这张图片".to_string(),
             base64_image
         )
     }
 
-    fn build_claude_request(&self, base64_image: &str, prompt: Option<String>) -> String {
+    fn build_claude_request(&self, base64_image: &str, _prompt: Option<String>) -> String {
         // 构建 Claude 3 Vision API 请求
         format!(r#"{{
             "model": "{}",
@@ -272,12 +286,12 @@ impl RemoteAPIHandler {
             ]
         }}"#, 
             self.config.model_name,
-            prompt.unwrap_or_else(|| "请分析这张图片".to_string()),
+            "请分析这张图片".to_string(),
             base64_image
         )
     }
 
-    fn build_gemini_request(&self, base64_image: &str, prompt: Option<String>) -> String {
+    fn build_gemini_request(&self, base64_image: &str, _prompt: Option<String>) -> String {
         // 构建 Gemini Vision API 请求
         format!(r#"{{
             "contents": [
@@ -296,12 +310,12 @@ impl RemoteAPIHandler {
                 }}
             ]
         }}"#, 
-            prompt.unwrap_or_else(|| "请分析这张图片".to_string()),
+            "请分析这张图片".to_string(),
             base64_image
         )
     }
 
-    fn build_custom_request(&self, base64_image: &str, prompt: Option<String>) -> String {
+    fn build_custom_request(&self, base64_image: &str, _prompt: Option<String>) -> String {
         // 构建自定义 API 请求
         format!(r#"{{
             "image": "{}",
@@ -309,7 +323,7 @@ impl RemoteAPIHandler {
             "model": "{}"
         }}"#, 
             base64_image,
-            prompt.unwrap_or_else(|| "请分析这张图片".to_string()),
+            "请分析这张图片".to_string(),
             self.config.model_name
         )
     }
@@ -362,8 +376,9 @@ impl ModelFactory {
                     .ok_or_else(|| NapiError::new(napi::Status::InvalidArg, "Remote API endpoint is required"))?;
                 let api_key = config.api_key.as_ref()
                     .ok_or_else(|| NapiError::new(napi::Status::InvalidArg, "API key is required"))?;
+                let default_model = "gpt-4-vision-preview".to_string();
                 let model_name = config.model_name.as_ref()
-                    .unwrap_or(&"gpt-4-vision-preview".to_string());
+                    .unwrap_or(&default_model);
                 
                 let api_config = RemoteAPIConfig {
                     api_type: RemoteAPIType::OpenAI, // 默认使用 OpenAI

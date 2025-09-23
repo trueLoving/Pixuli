@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// AI 模型类型
 #[napi]
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum AIModelType {
   TensorFlow,
   TensorFlowLite,
