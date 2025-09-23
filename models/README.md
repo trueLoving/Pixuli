@@ -4,40 +4,49 @@
 
 ## 支持的模型类型
 
-Pixuli 支持以下 5 种 AI 模型类型：
+Pixuli 支持以下 5 种 AI 模型类型，每种都有专门的处理器：
 
 ### 1. TensorFlow 模型 (`tensorflow`)
 - **类型标识**: `tensorflow`
-- **文件格式**: `.onnx` 文件
+- **文件格式**: `.pb`, `.pbtxt`, `.json`, `.bin`, `.ckpt`, `.h5`, `.savedmodel`
 - **用途**: 图像分类和目标检测
-- **特点**: 功能强大，支持复杂模型
+- **特点**: 功能强大，支持复杂模型，GPU 加速
 - **推荐场景**: 需要高精度分析的场景
+- **处理器**: `TensorFlowHandler`
 
 ### 2. TensorFlow Lite 模型 (`tensorflow-lite`)
 - **类型标识**: `tensorflow-lite`
-- **文件格式**: `.tflite` 文件
+- **文件格式**: `.tflite`
 - **用途**: 轻量级图像分类
 - **特点**: 体积小，运行速度快，适合移动端
 - **推荐场景**: 快速分析和资源受限环境
+- **处理器**: `TensorFlowLiteHandler`
 
 ### 3. ONNX 模型 (`onnx`)
 - **类型标识**: `onnx`
-- **文件格式**: `.onnx` 文件
+- **文件格式**: `.onnx`, `.ort`
 - **用途**: 跨平台模型推理
 - **特点**: 跨框架兼容性好，性能优化
 - **推荐场景**: 需要跨平台部署的场景
+- **处理器**: `ONNXHandler`
 
 ### 4. 本地大语言模型 (`local-llm`)
 - **类型标识**: `local-llm`
-- **用途**: 本地运行的大语言模型
-- **特点**: 完全本地化，无需网络连接
+- **支持模型**: Llama, Mistral, 其他本地 LLM
+- **用途**: 本地运行的大语言模型进行图像分析
+- **特点**: 完全本地化，无需网络连接，支持自定义提示词
 - **推荐场景**: 隐私敏感或离线环境
+- **处理器**: `LocalLLMHandler`
+- **配置选项**: 上下文长度、批处理大小、线程数
 
 ### 5. 远程 API 模型 (`remote-api`)
 - **类型标识**: `remote-api`
-- **用途**: 调用远程 AI 服务
-- **特点**: 无需本地存储，功能强大
+- **支持服务**: OpenAI, Qwen, Claude, Gemini, 自定义 API
+- **用途**: 调用远程 AI 服务进行图像分析
+- **特点**: 无需本地存储，功能强大，支持多种 API 格式
 - **推荐场景**: 需要最新 AI 能力或本地资源不足
+- **处理器**: `RemoteAPIHandler`
+- **配置选项**: API 端点、密钥、模型名称、自定义头部
 
 ## 内置模型
 
@@ -103,11 +112,17 @@ interface AIModelConfig {
 ```typescript
 interface AIAnalysisConfig {
   model_type: AIModelType      // 模型类型枚举
-  model_path?: string          // 模型路径
-  api_endpoint?: string        // API 端点
+  model_path?: string          // 模型路径（本地模型）
+  api_endpoint?: string        // API 端点（远程模型）
   api_key?: string            // API 密钥
   use_gpu?: boolean           // 是否使用 GPU
   confidence_threshold?: number // 置信度阈值
+  model_name?: string         // 模型名称（用于识别）
+  max_tokens?: number         // 最大输出长度（LLM）
+  temperature?: number        // 温度参数（LLM）
+  system_prompt?: string      // 系统提示词（LLM）
+  user_prompt?: string        // 用户提示词（LLM）
+  timeout?: number           // 超时时间（秒）
 }
 ```
 
@@ -172,6 +187,72 @@ const available = await checkModelAvailability(modelPath)
 
 // 获取支持的模型列表
 const models = await getSupportedModels()
+```
+
+### 4. 使用示例
+
+#### TensorFlow 模型
+```typescript
+const config = {
+  model_type: 'tensorflow',
+  model_path: '/path/to/model.pb',
+  use_gpu: true,
+  confidence_threshold: 0.8
+}
+```
+
+#### TensorFlow Lite 模型
+```typescript
+const config = {
+  model_type: 'tensorflow-lite',
+  model_path: '/path/to/model.tflite',
+  use_gpu: false,
+  confidence_threshold: 0.7
+}
+```
+
+#### ONNX 模型
+```typescript
+const config = {
+  model_type: 'onnx',
+  model_path: '/path/to/model.onnx',
+  use_gpu: true,
+  confidence_threshold: 0.75
+}
+```
+
+#### 本地 LLM 模型
+```typescript
+const config = {
+  model_type: 'local-llm',
+  model_path: '/path/to/llama-model.gguf',
+  model_name: 'llama-7b',
+  system_prompt: '你是一个专业的图像分析助手',
+  user_prompt: '请详细分析这张图片的内容',
+  max_tokens: 1000,
+  temperature: 0.7
+}
+```
+
+#### 远程 API 模型
+```typescript
+// OpenAI
+const config = {
+  model_type: 'remote-api',
+  api_endpoint: 'https://api.openai.com/v1/chat/completions',
+  api_key: 'your-api-key',
+  model_name: 'gpt-4-vision-preview',
+  user_prompt: '请分析这张图片'
+}
+
+// Qwen
+const config = {
+  model_type: 'remote-api',
+  api_endpoint: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
+  api_key: 'your-api-key',
+  model_name: 'qwen-vl-plus',
+  user_prompt: '请分析这张图片'
+}
 ```
 
 ## 模型存储位置

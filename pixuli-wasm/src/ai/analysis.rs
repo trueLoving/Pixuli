@@ -6,11 +6,12 @@ use image::{DynamicImage, GenericImageView};
 use crate::ai::types::*;
 use crate::ai::color::*;
 use crate::ai::detection::*;
+use crate::ai::model_handlers::*;
 use crate::image::{detect_image_format, analyze_dominant_colors};
 
 /// 分析图片内容（使用 AI 模型）
 #[napi]
-pub fn analyze_image_with_ai(
+pub async fn analyze_image_with_ai(
   image_data: Vec<u8>,
   config: AIAnalysisConfig,
 ) -> Result<ImageAnalysisResult, NapiError> {
@@ -68,26 +69,11 @@ pub fn analyze_image_with_ai(
   }
   
   // 根据模型类型进行 AI 分析
-  let model_used = match config.model_type {
-    AIModelType::TensorFlow => {
-      // 这里应该调用 TensorFlow.js 模型
-      "TensorFlow".to_string()
-    },
-    AIModelType::TensorFlowLite => {
-      // 这里应该调用 TensorFlow Lite 模型
-      "TensorFlow Lite".to_string()
-    },
-    AIModelType::ONNX => {
-      // 这里应该调用 ONNX 模型
-      "ONNX".to_string()
-    },
-    AIModelType::LocalLLM => {
-      // 这里应该调用本地 LLM 模型
-      "LocalLLM".to_string()
-    },
-    AIModelType::RemoteAPI => {
-      // 这里应该调用远程 API
-      "RemoteAPI".to_string()
+  let model_result = match config.model_type {
+    AIModelType::TensorFlow | AIModelType::TensorFlowLite | AIModelType::ONNX | AIModelType::LocalLLM | AIModelType::RemoteAPI => {
+      // 使用新的模型处理器
+      let handler = ModelFactory::create_handler(&config)?;
+      handler.analyze_image(&image_data).await?
     },
   };
   
@@ -95,31 +81,40 @@ pub fn analyze_image_with_ai(
   let detected_objects = detect_objects_from_features(width, height, aspect_ratio, &colors, &scene_type);
   objects.extend(detected_objects);
   
+  // 合并模型分析结果
+  tags.extend(model_result.tags);
+  if !model_result.description.is_empty() {
+    description.push_str("。");
+    description.push_str(&model_result.description);
+  }
+  objects.extend(model_result.objects);
+  colors.extend(model_result.colors);
+  
   let analysis_time = start_time.elapsed().as_millis() as f64;
   
   Ok(ImageAnalysisResult {
     image_type,
     tags,
     description,
-    confidence: 0.85,
+    confidence: model_result.confidence,
     objects,
     colors,
-    scene_type,
+    scene_type: if !model_result.scene_type.is_empty() { model_result.scene_type } else { scene_type },
     analysis_time,
-    model_used,
+    model_used: model_result.model_used,
   })
 }
 
 /// 批量分析图片
 #[napi]
-pub fn batch_analyze_images_with_ai(
+pub async fn batch_analyze_images_with_ai(
   images_data: Vec<Vec<u8>>,
   config: AIAnalysisConfig,
 ) -> Result<Vec<ImageAnalysisResult>, NapiError> {
   let mut results = Vec::new();
   
   for image_data in images_data {
-    match analyze_image_with_ai(image_data, config.clone()) {
+    match analyze_image_with_ai(image_data, config.clone()).await {
       Ok(result) => results.push(result),
       Err(e) => return Err(NapiError::new(napi::Status::GenericFailure, format!("Batch analysis failed: {}", e))),
     }

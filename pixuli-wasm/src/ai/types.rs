@@ -30,6 +30,18 @@ pub struct AIAnalysisConfig {
   pub use_gpu: Option<bool>,
   /// 置信度阈值
   pub confidence_threshold: Option<f64>,
+  /// 模型名称（用于识别）
+  pub model_name: Option<String>,
+  /// 最大输出长度（LLM）
+  pub max_tokens: Option<u32>,
+  /// 温度参数（LLM）
+  pub temperature: Option<f64>,
+  /// 系统提示词（LLM）
+  pub system_prompt: Option<String>,
+  /// 用户提示词（LLM）
+  pub user_prompt: Option<String>,
+  /// 超时时间（秒）
+  pub timeout: Option<u32>,
 }
 
 /// 图片分析结果
@@ -96,4 +108,49 @@ pub struct ColorInfo {
   pub percentage: f64,
   /// 十六进制值
   pub hex: String,
+}
+
+/// 远程 API 服务类型
+#[napi]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub enum RemoteAPIType {
+  OpenAI,
+  Qwen,
+  Claude,
+  Gemini,
+  Custom,
+}
+
+/// 远程 API 配置
+#[napi(object)]
+#[derive(Clone, Serialize, Deserialize)]
+pub struct RemoteAPIConfig {
+  /// API 类型
+  pub api_type: RemoteAPIType,
+  /// API 端点
+  pub endpoint: String,
+  /// API 密钥
+  pub api_key: String,
+  /// 模型名称
+  pub model_name: String,
+  /// 版本
+  pub version: Option<String>,
+  /// 额外头部信息
+  pub headers: Option<std::collections::HashMap<String, String>>,
+}
+
+/// 本地 LLM 配置
+#[napi(object)]
+#[derive(Clone, Serialize, Deserialize)]
+pub struct LocalLLMConfig {
+  /// 模型路径
+  pub model_path: String,
+  /// 模型类型（llama, mistral, etc.）
+  pub model_type: String,
+  /// 上下文长度
+  pub context_length: Option<u32>,
+  /// 批处理大小
+  pub batch_size: Option<u32>,
+  /// 线程数
+  pub threads: Option<u32>,
 }

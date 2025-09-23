@@ -7,6 +7,7 @@ pub mod analysis;
 pub mod color;
 pub mod detection;
 pub mod tensorflow;
+pub mod model_handlers;
 
 // 重新导出主要类型和函数
 pub use types::*;
@@ -14,3 +15,4 @@ pub use analysis::*;
 pub use color::*;
 pub use detection::*;
 pub use tensorflow::*;
+pub use model_handlers::*;
