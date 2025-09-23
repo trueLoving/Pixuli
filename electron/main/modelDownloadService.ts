@@ -98,6 +98,8 @@ class ModelDownloadService {
   }
 
   private registerIpcHandlers() {
+    // 注释掉下载相关功能，改为手动导入模型
+    /*
     // 下载模型
     ipcMain.handle('model:download', async (event, modelId: string) => {
       try {
@@ -150,8 +152,11 @@ class ModelDownloadService {
         return { downloaded: false, error: error instanceof Error ? error.message : 'Unknown error' }
       }
     })
+    */
   }
 
+  // 注释掉下载模型功能，改为手动导入
+  /*
   public async downloadModel(modelId: string) {
     const modelConfig = MODEL_DOWNLOADS[modelId as keyof typeof MODEL_DOWNLOADS]
     if (!modelConfig) {
@@ -206,6 +211,7 @@ class ModelDownloadService {
       throw error
     }
   }
+  */
 
   private async downloadFileWithRetry(url: string, filePath: string, onProgress?: (progress: number) => void): Promise<void> {
     return new Promise((resolve, reject) => {

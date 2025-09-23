@@ -86,6 +86,9 @@ class AIService {
 
     // 加载模型配置
     await this.loadModelConfigs()
+    
+    // 添加默认内置模型
+    await this.addDefaultModels()
   }
 
   private async loadModelConfigs() {
@@ -357,15 +360,14 @@ class AIService {
 
   // 添加默认模型配置
   public async addDefaultModels() {
-    // 只添加实际可用的内置模型，不添加需要下载的模型
+    // 只添加通用AI分析模型（内置，无需文件）
     const defaultModels: AIModelConfig[] = [
-      // 通用AI分析模型（内置，无需文件）
       {
         id: 'builtin-general',
         name: '通用图片分析',
         type: 'tensorflow',
         enabled: true,
-        description: '内置通用图片分析模型，无需下载',
+        description: '内置通用图片分析模型，基于图像特征分析',
         version: '1.0.0',
         size: 0 // 内置模型，无文件大小
       }

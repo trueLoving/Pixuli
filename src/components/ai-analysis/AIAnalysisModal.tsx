@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { ImageAnalysisResponse, AIModelConfig, AvailableModel } from '../../types/electron'
-import { Upload, X, Brain, Download, Settings, Play, Loader2, Cog } from 'lucide-react'
+import { ImageAnalysisResponse, AIModelConfig } from '../../types/electron'
+import { Upload, X, Brain, Settings, Play, Cog, Loader2 } from 'lucide-react'
 import './AIAnalysisModal.css'
 
 
@@ -18,10 +18,8 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
   onOpenModelManager
 }) => {
   const [models, setModels] = useState<AIModelConfig[]>([])
-  const [availableModels, setAvailableModels] = useState<AvailableModel[]>([])
   const [selectedModel, setSelectedModel] = useState<string>('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<ImageAnalysisResponse | null>(null)
   const [error, setError] = useState<string>('')
   const [uploadedImage, setUploadedImage] = useState<{
@@ -35,13 +33,11 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     useGpu: false,
     confidenceThreshold: 0.5
   })
-  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (isOpen) {
       loadModels()
-      loadAvailableModels()
     }
   }, [isOpen])
 
@@ -82,6 +78,8 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     }
   }
 
+  // 注释掉下载相关功能
+  /*
   const loadAvailableModels = async () => {
     try {
       const available = await window.modelAPI.getAvailableModels()
@@ -90,6 +88,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       console.error('Failed to load available models:', error)
     }
   }
+  */
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -118,6 +117,8 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     reader.readAsDataURL(file)
   }
 
+  // 注释掉下载模型功能
+  /*
   const handleDownloadModel = async (modelId: string) => {
     setIsDownloading(true)
     setDownloadProgress(prev => ({ ...prev, [modelId]: 0 }))
@@ -158,6 +159,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       setDownloadProgress(prev => ({ ...prev, [modelId]: 0 }))
     }
   }
+  */
 
   const handleAnalyze = async () => {
     if (!uploadedImage || !selectedModel) return
@@ -303,7 +305,8 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
               </select>
             </div>
 
-            {/* 可下载模型列表 */}
+            {/* 注释掉下载模型列表，改为手动导入 */}
+            {/*
             <div className="config-section">
               <label>下载新模型:</label>
               <div className="available-models">
@@ -333,6 +336,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
                 ))}
               </div>
             </div>
+            */}
 
             <div className="config-section">
               <label>

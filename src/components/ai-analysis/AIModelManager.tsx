@@ -14,14 +14,10 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
   onModelUpdate
 }) => {
   const [models, setModels] = useState<AIModelConfig[]>([])
-  const [availableModels, setAvailableModels] = useState<AvailableModel[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>('')
   const [showAddForm, setShowAddForm] = useState(false)
-  const [showDownloadForm, setShowDownloadForm] = useState(false)
   const [editingModel, setEditingModel] = useState<AIModelConfig | null>(null)
-  const [downloadingModels, setDownloadingModels] = useState<Set<string>>(new Set())
-  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({})
 
   const [newModel, setNewModel] = useState<Partial<AIModelConfig>>({
     name: '',
@@ -33,27 +29,8 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
   useEffect(() => {
     if (isOpen) {
       loadModels()
-      loadAvailableModels()
     }
   }, [isOpen])
-
-  // 轮询下载进度
-  useEffect(() => {
-    if (downloadingModels.size > 0) {
-      const interval = setInterval(() => {
-        downloadingModels.forEach(modelId => {
-          window.modelAPI.getDownloadProgress(modelId).then(result => {
-            setDownloadProgress(prev => ({
-              ...prev,
-              [modelId]: result.progress
-            }))
-          })
-        })
-      }, 500)
-
-      return () => clearInterval(interval)
-    }
-  }, [downloadingModels])
 
   const loadModels = async () => {
     setLoading(true)
@@ -69,6 +46,8 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
     }
   }
 
+  // 注释掉下载相关功能
+  /*
   const loadAvailableModels = async () => {
     try {
       const availableList = await window.modelAPI.getAvailableModels()
@@ -122,6 +101,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
       })
     }
   }
+  */
 
   const handleAddModel = async () => {
     if (!newModel.name || !newModel.type) {
@@ -236,11 +216,16 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
   const getModelTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       'tensorflow': 'TensorFlow',
+      'tensorflow-lite': 'TensorFlow Lite',
       'onnx': 'ONNX',
       'local-llm': '本地 LLM',
       'remote-api': '远程 API'
     }
     return labels[type] || type
+  }
+
+  const isBuiltinModel = (modelId: string) => {
+    return modelId.startsWith('builtin-')
   }
 
   if (!isOpen) return null
@@ -267,13 +252,6 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
               disabled={loading}
             >
               添加模型
-            </button>
-            <button 
-              className="download-model-button"
-              onClick={() => setShowDownloadForm(true)}
-              disabled={loading}
-            >
-              下载模型
             </button>
             <button 
               className="refresh-button"
@@ -394,7 +372,12 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                 {models.map(model => (
                   <div key={model.id} className="model-card">
                     <div className="model-header">
-                      <h4>{model.name}</h4>
+                      <h4>
+                        {model.name}
+                        {isBuiltinModel(model.id) && (
+                          <span className="builtin-badge">内置</span>
+                        )}
+                      </h4>
                       <div className="model-status">
                         <span className={`status-badge ${model.enabled ? 'enabled' : 'disabled'}`}>
                           {model.enabled ? '已启用' : '已禁用'}
@@ -419,13 +402,15 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                       >
                         {model.enabled ? '禁用' : '启用'}
                       </button>
-                      <button
-                        className="remove-button"
-                        onClick={() => handleRemoveModel(model.id)}
-                        disabled={loading}
-                      >
-                        删除
-                      </button>
+                      {!isBuiltinModel(model.id) && (
+                        <button
+                          className="remove-button"
+                          onClick={() => handleRemoveModel(model.id)}
+                          disabled={loading}
+                        >
+                          删除
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -433,6 +418,8 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
             )}
           </div>
 
+          {/* 注释掉下载表单，改为手动导入模型 */}
+          {/*
           {showDownloadForm && (
             <div className="download-model-form">
               <h3>下载预训练模型</h3>
@@ -492,6 +479,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
               </div>
             </div>
           )}
+          */}
         </div>
       </div>
     </div>
