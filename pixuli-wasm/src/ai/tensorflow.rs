@@ -9,7 +9,7 @@ use crate::ai::types::*;
 
 /// TensorFlow 模型分析器
 struct TensorFlowAnalyzer {
-  model_path: String,
+  _model_path: String,
   labels: Vec<String>,
 }
 
@@ -40,7 +40,7 @@ impl TensorFlowAnalyzer {
     };
 
     Ok(TensorFlowAnalyzer {
-      model_path,
+      _model_path: model_path,
       labels,
     })
   }
@@ -72,7 +72,6 @@ impl TensorFlowAnalyzer {
     // 解析结果
     let mut tags = Vec::new();
     let mut objects = Vec::new();
-    let mut description = String::new();
     
     for (i, &confidence) in predictions.iter().enumerate() {
       if confidence > 0.1 && i < self.labels.len() {
@@ -91,12 +90,12 @@ impl TensorFlowAnalyzer {
     }
 
     // 生成描述
-    if !objects.is_empty() {
+    let description = if !objects.is_empty() {
       let object_names: Vec<String> = objects.iter().map(|o| o.name.clone()).collect();
-      description = format!("图片中包含: {}", object_names.join(", "));
+      format!("图片中包含: {}", object_names.join(", "))
     } else {
-      description = "未检测到明显的物体".to_string();
-    }
+      "未检测到明显的物体".to_string()
+    };
 
     // 分析颜色
     let color_tuples = crate::image::analyze_dominant_colors(&img);
@@ -130,8 +129,8 @@ impl TensorFlowAnalyzer {
 
 /// TensorFlow Lite 分析器
 struct TensorFlowLiteAnalyzer {
-  model_path: String,
-  labels: Vec<String>,
+  _model_path: String,
+  _labels: Vec<String>,
 }
 
 impl TensorFlowLiteAnalyzer {
@@ -156,8 +155,8 @@ impl TensorFlowLiteAnalyzer {
     };
 
     Ok(TensorFlowLiteAnalyzer {
-      model_path,
-      labels,
+      _model_path: model_path,
+      _labels: labels,
     })
   }
 
@@ -170,7 +169,6 @@ impl TensorFlowLiteAnalyzer {
     
     let (width, height) = img.dimensions();
     let mut tags = Vec::new();
-    let mut description = String::new();
     let mut objects = Vec::new();
     let mut colors = Vec::new();
     let aspect_ratio = width as f64 / height as f64;
@@ -186,7 +184,7 @@ impl TensorFlowLiteAnalyzer {
       tags.push("高分辨率".to_string());
     }
     
-    description = "TensorFlow Lite 模型分析的图片".to_string();
+    let description = "TensorFlow Lite 模型分析的图片".to_string();
     
     // 分析主要颜色
     let color_tuples = crate::image::analyze_dominant_colors(&img);

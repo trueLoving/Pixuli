@@ -163,13 +163,14 @@ mod tests {
     use image::{ImageBuffer, RgbImage, Rgb};
 
     /// 生成测试图片
+    #[allow(deprecated)]
     fn generate_test_image(width: u32, height: u32) -> Vec<u8> {
         let img: RgbImage = ImageBuffer::from_fn(width, height, |x, y| {
             Rgb([(x * 255 / width) as u8, (y * 255 / height) as u8, 128])
         });
         
         let mut buffer = Vec::new();
-        let mut encoder = image::codecs::png::PngEncoder::new(&mut buffer);
+        let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
         encoder.encode(&img, width, height, image::ColorType::Rgb8).unwrap();
         buffer
     }

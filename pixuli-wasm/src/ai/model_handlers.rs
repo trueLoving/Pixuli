@@ -6,13 +6,13 @@ use base64::{Engine as _, engine::general_purpose};
 
 /// TensorFlow 模型处理器
 pub struct TensorFlowHandler {
-    model_path: String,
-    use_gpu: bool,
+    _model_path: String,
+    _use_gpu: bool,
 }
 
 impl TensorFlowHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
-        Self { model_path, use_gpu }
+        Self { _model_path: model_path, _use_gpu: use_gpu }
     }
 }
 
@@ -42,13 +42,13 @@ impl ModelHandler for TensorFlowHandler {
 
 /// TensorFlow Lite 模型处理器
 pub struct TensorFlowLiteHandler {
-    model_path: String,
-    use_gpu: bool,
+    _model_path: String,
+    _use_gpu: bool,
 }
 
 impl TensorFlowLiteHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
-        Self { model_path, use_gpu }
+        Self { _model_path: model_path, _use_gpu: use_gpu }
     }
 }
 
@@ -77,13 +77,13 @@ impl ModelHandler for TensorFlowLiteHandler {
 
 /// ONNX 模型处理器
 pub struct ONNXHandler {
-    model_path: String,
-    use_gpu: bool,
+    _model_path: String,
+    _use_gpu: bool,
 }
 
 impl ONNXHandler {
     pub fn new(model_path: String, use_gpu: bool) -> Self {
-        Self { model_path, use_gpu }
+        Self { _model_path: model_path, _use_gpu: use_gpu }
     }
 }
 

@@ -136,6 +136,7 @@ fn convert_to_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, NapiError
 }
 
 /// 转换为 PNG 格式
+#[allow(deprecated)]
 fn convert_to_png(img: &DynamicImage, preserve_transparency: bool) -> Result<Vec<u8>, NapiError> {
     let mut buffer = Vec::new();
     

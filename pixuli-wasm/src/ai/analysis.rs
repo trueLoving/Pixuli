@@ -31,13 +31,12 @@ pub fn analyze_image_with_ai(
   let mut description = String::new();
   let mut objects = Vec::new();
   let mut colors = Vec::new();
-  let mut scene_type = String::new();
   
   // 分析图片尺寸和比例
   let aspect_ratio = width as f64 / height as f64;
   let (dimension_tags, primary_scene) = analyze_aspect_ratio(aspect_ratio, width, height);
   tags.extend(dimension_tags);
-  scene_type = primary_scene;
+  let scene_type = primary_scene;
   
   // 分析图片格式和特征
   let (format_tags, format_description) = analyze_image_format(&image_type, &img);
