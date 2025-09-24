@@ -1,6 +1,6 @@
 
 [package]
-authors = ["LongYinan <lynweklm@gmail.com>"]
+authors = ["Star Sky"]
 edition = "2021"
 name = "pixuli_wasm"
 version = "0.1.0"
@@ -22,6 +22,10 @@ reqwest = { version = "0.11", features = ["json"] }
 
 [build-dependencies]
 napi-build = "2"
+
+[dev-dependencies]
+tempfile = "3.0"
+image = { version = "0.24", features = ["jpeg", "png", "gif", "bmp", "tiff"] }
 
 [profile.release]
 lto = true

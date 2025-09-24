@@ -23,3 +23,11 @@ pub use format_conversion::*;
 pub fn plus_100(input: u32) -> u32 {
   input + 100
 }
+
+mod test {
+  #[test]
+  fn test_plus_100_function(){
+    let result = crate::plus_100(50);
+    assert_eq!(result, 150);
+  }
+}
