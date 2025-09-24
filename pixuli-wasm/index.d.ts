@@ -14,6 +14,18 @@ export interface AiAnalysisConfig {
   useGpu?: boolean
   /** 置信度阈值 */
   confidenceThreshold?: number
+  /** 模型名称（用于识别） */
+  modelName?: string
+  /** 最大输出长度（LLM） */
+  maxTokens?: number
+  /** 温度参数（LLM） */
+  temperature?: number
+  /** 系统提示词（LLM） */
+  systemPrompt?: string
+  /** 用户提示词（LLM） */
+  userPrompt?: string
+  /** 超时时间（秒） */
+  timeout?: number
 }
 
 /** AI 模型类型 */
@@ -91,28 +103,50 @@ export interface DetectedObject {
 /** 下载 TensorFlow 模型 */
 export declare function downloadTensorflowModel(modelName: string, modelUrl: string): string
 
+/** 格式转换选项 */
 export interface FormatConversionOptions {
+  /** 目标格式 */
   targetFormat: string
+  /** 压缩质量 (1-100) */
   quality?: number
+  /** 是否保持透明度 */
   preserveTransparency?: boolean
+  /** 是否无损转换 */
   lossless?: boolean
+  /** 颜色空间 */
   colorSpace?: string
+  /** 尺寸调整选项 */
   resize?: ResizeOptions
 }
 
+/** 格式转换结果 */
 export interface FormatConversionResult {
+  /** 转换后的数据 */
   data: Array<number>
+  /** 原始大小 */
   originalSize: number
+  /** 转换后大小 */
   convertedSize: number
+  /** 转换后宽度 */
   width: number
+  /** 转换后高度 */
   height: number
+  /** 原始宽度 */
   originalWidth: number
+  /** 原始高度 */
   originalHeight: number
+  /** 转换时间 (毫秒) */
   conversionTime: number
 }
 
+/** 获取格式的详细信息 */
+export declare function getFormatInfo(formatStr: string): string
+
 /** 获取图片信息 */
 export declare function getImageInfo(imageData: Array<number>): string
+
+/** 获取支持的图片格式列表 */
+export declare function getSupportedFormats(): Array<string>
 
 /** 获取支持的模型列表 */
 export declare function getSupportedModels(): Array<string>
@@ -139,12 +173,55 @@ export interface ImageAnalysisResult {
   modelUsed: string
 }
 
+/** 本地 LLM 配置 */
+export interface LocalLlmConfig {
+  /** 模型路径 */
+  modelPath: string
+  /** 模型类型（llama, mistral, etc.） */
+  modelType: string
+  /** 上下文长度 */
+  contextLength?: number
+  /** 批处理大小 */
+  batchSize?: number
+  /** 线程数 */
+  threads?: number
+}
+
 /** 简单的加法函数，用于测试WASM接口 */
 export declare function plus100(input: number): number
 
+/** 远程 API 配置 */
+export interface RemoteApiConfig {
+  /** API 类型 */
+  apiType: RemoteAPIType
+  /** API 端点 */
+  endpoint: string
+  /** API 密钥 */
+  apiKey: string
+  /** 模型名称 */
+  modelName: string
+  /** 版本 */
+  version?: string
+  /** 额外头部信息 */
+  headers?: Record<string, string>
+}
+
+/** 远程 API 服务类型 */
+export declare const enum RemoteAPIType {
+  OpenAI = 0,
+  Qwen = 1,
+  Claude = 2,
+  Gemini = 3,
+  Custom = 4
+}
+
+/** 尺寸调整选项 */
 export interface ResizeOptions {
+  /** 目标宽度 */
   width?: number
+  /** 目标高度 */
   height?: number
+  /** 是否保持宽高比 */
   maintainAspectRatio?: boolean
 }
 
