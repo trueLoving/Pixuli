@@ -35,7 +35,7 @@ export function useLazyLoad(options: UseLazyLoadOptions = {}): UseLazyLoadReturn
     )
 
     return () => {
-      if (observerRef.current) {
+      if (observerRef.current && typeof observerRef.current.disconnect === 'function') {
         observerRef.current.disconnect()
       }
     }
@@ -43,18 +43,19 @@ export function useLazyLoad(options: UseLazyLoadOptions = {}): UseLazyLoadReturn
 
   // 观察元素
   const observeElement = useCallback((element: HTMLElement, id: string) => {
-    if (observerRef.current) {
-      // 只有在没有设置过ID时才设置
-      if (!element.getAttribute('data-item-id')) {
-        element.setAttribute('data-item-id', id)
-      }
+    // 只有在没有设置过ID时才设置
+    if (!element.getAttribute('data-item-id')) {
+      element.setAttribute('data-item-id', id)
+    }
+    
+    if (observerRef.current && typeof observerRef.current.observe === 'function') {
       observerRef.current.observe(element)
     }
   }, [])
 
   // 取消观察元素
   const unobserveElement = useCallback((element: HTMLElement) => {
-    if (observerRef.current) {
+    if (observerRef.current && typeof observerRef.current.unobserve === 'function') {
       observerRef.current.unobserve(element)
     }
   }, [])

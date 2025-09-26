@@ -34,6 +34,11 @@ export function useVirtualScroll<T>(
       return { startIndex: 0, endIndex: 0, totalHeight: 0 }
     }
 
+    // 处理零高度的情况
+    if (itemHeight === 0) {
+      return { startIndex: 0, endIndex: items.length - 1, totalHeight: 0 }
+    }
+
     const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - bufferSize)
     const endIndex = Math.min(
       items.length - 1,

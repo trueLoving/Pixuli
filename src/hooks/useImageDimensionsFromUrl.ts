@@ -69,7 +69,10 @@ export function useImageDimensionsFromUrl(
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取图片尺寸失败'
       setError(errorMessage)
-      console.warn(`Failed to get dimensions for ${imageUrl}:`, err)
+      // 只在非测试环境中输出警告
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn(`Failed to get dimensions for ${imageUrl}:`, err)
+      }
     } finally {
       setLoading(false)
     }
