@@ -11,9 +11,17 @@ import './ImageList.css'
 
 interface ImageListProps {
   images: ImageItem[]
+  selectedImageIndex?: number
+  onImageSelect?: (index: number) => void
+  onPreviewImage?: (image: ImageItem) => void
 }
 
-const ImageList: React.FC<ImageListProps> = ({ images }) => {
+const ImageList: React.FC<ImageListProps> = ({ 
+  images, 
+  selectedImageIndex = -1,
+  onImageSelect,
+  onPreviewImage
+}) => {
   const { deleteImage } = useImageStore()
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -75,7 +83,25 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
     setSelectedImage(image)
     setShowPreview(true)
     showInfo(`正在预览图片 "${image.name}"`)
-  }, [])
+    // 同时调用外部回调
+    onPreviewImage?.(image)
+  }, [onPreviewImage])
+
+  // 监听预览事件（仅列表视图）
+  useEffect(() => {
+    const handlePreviewEvent = (event: CustomEvent) => {
+      const { image, viewMode } = event.detail
+      // 只在列表视图模式下响应
+      if (viewMode === 'list' && image && images.find(img => img.id === image.id)) {
+        handlePreview(image)
+      }
+    }
+
+    window.addEventListener('previewImage', handlePreviewEvent as EventListener)
+    return () => {
+      window.removeEventListener('previewImage', handlePreviewEvent as EventListener)
+    }
+  }, [handlePreview, images])
 
   const handleEditSuccess = useCallback((image: ImageItem) => {
     showSuccess(`图片 "${image.name}" 信息已成功更新`)
@@ -177,11 +203,19 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
             {/* 列表内容 */}
       <div className="image-list-content">
         <div ref={containerRef} className="h-full overflow-y-auto">
-          {visibleItems.map((image) => (
+          {visibleItems.map((image, index) => {
+            const isSelected = selectedImageIndex === index
+            return (
             <div
               key={image.id}
               ref={(el) => el && observeElement(el, image.id)}
-              className="image-list-item bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
+              data-image-index={index}
+              onClick={() => onImageSelect?.(index)}
+              className={`image-list-item bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
+                isSelected 
+                  ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-200' 
+                  : ''
+              }`}
             >
               {/* 主要行 */}
               <div className="px-6 py-4">
@@ -313,7 +347,8 @@ const ImageList: React.FC<ImageListProps> = ({ images }) => {
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
 
           {/* 加载更多指示器 */}
           {hasMore && (

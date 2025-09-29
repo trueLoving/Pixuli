@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Zap, Upload, Download, Settings, X } from 'lucide-react'
 import { 
   CompressionOptions, 
@@ -10,6 +10,7 @@ import {
 import ImageCompressionSettings from './ImageCompressionSettings'
 import ImageCompressionPreview from './ImageCompressionPreview'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 import './ImageCompression.css'
 
 interface ImageCompressionProps {
@@ -129,6 +130,9 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
       showInfo('已应用自动优化设置')
     }
   }, [selectedFile])
+
+  // 键盘支持
+  useEscapeKey(onClose)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">

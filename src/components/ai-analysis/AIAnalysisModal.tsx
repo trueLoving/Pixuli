@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ImageAnalysisResponse, AIModelConfig } from '../../types/electron'
 import { Upload, X, Brain, Settings, Play, Cog, Loader2 } from 'lucide-react'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 import './AIAnalysisModal.css'
 
 
@@ -222,6 +223,9 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
+
+  // 键盘支持
+  useEscapeKey(onClose)
 
   if (!isOpen) return null
 

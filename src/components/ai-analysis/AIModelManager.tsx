@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { AIModelConfig, AvailableModel } from '../../types/electron'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 import './AIModelManager.css'
 
 interface AIModelManagerProps {
@@ -227,6 +228,9 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
   const isBuiltinModel = (modelId: string) => {
     return modelId.startsWith('builtin-')
   }
+
+  // 键盘支持
+  useEscapeKey(onClose)
 
   if (!isOpen) return null
 

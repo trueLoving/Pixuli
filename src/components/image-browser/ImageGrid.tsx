@@ -12,11 +12,17 @@ import './ImageGrid.css'
 interface ImageGridProps {
   images: ImageItem[]
   className?: string
+  selectedImageIndex?: number
+  onImageSelect?: (index: number) => void
+  onPreviewImage?: (image: ImageItem) => void
 }
 
 const ImageGrid: React.FC<ImageGridProps> = ({ 
   images, 
-  className = ''
+  className = '',
+  selectedImageIndex = -1,
+  onImageSelect,
+  onPreviewImage
 }) => {
   // 滚动加载配置
   const pageSize = 20
@@ -125,7 +131,25 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     setSelectedImage(image)
     setShowPreview(true)
     showInfo(`正在预览图片 "${image.name}"`)
-  }, [])
+    // 同时调用外部回调
+    onPreviewImage?.(image)
+  }, [onPreviewImage])
+
+  // 监听预览事件（仅网格视图）
+  useEffect(() => {
+    const handlePreviewEvent = (event: CustomEvent) => {
+      const { image, viewMode } = event.detail
+      // 只在网格视图模式下响应
+      if (viewMode === 'grid' && image && images.find(img => img.id === image.id)) {
+        handlePreview(image)
+      }
+    }
+
+    window.addEventListener('previewImage', handlePreviewEvent as EventListener)
+    return () => {
+      window.removeEventListener('previewImage', handlePreviewEvent as EventListener)
+    }
+  }, [handlePreview, images])
 
   const handleEditSuccess = useCallback((updatedImage: ImageItem) => {
     showSuccess(`图片 "${updatedImage.name}" 信息已成功更新`)
@@ -177,24 +201,45 @@ const ImageGrid: React.FC<ImageGridProps> = ({
 
   
   // 渲染单个图片项
-  const renderImageItem = useCallback((image: ImageItem) => {
+  const renderImageItem = useCallback((image: ImageItem, index: number) => {
+    const isSelected = selectedImageIndex === index
+    
     return (
       <div
         key={image.id}
         ref={(el) => el && observeElement(el, image.id)}
-        className="image-browser-item bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col"
+        data-image-index={index}
+        onClick={() => onImageSelect?.(index)}
+        className={`image-browser-item bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col cursor-pointer ${
+          isSelected 
+            ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg scale-105' 
+            : 'border-gray-200'
+        }`}
       >
         {/* 图片预览 - 懒加载 */}
         <div className="relative aspect-square bg-gray-100 flex-shrink-0">
+          {/* 选中指示器 */}
+          {isSelected && (
+            <div className="absolute top-2 right-2 z-10 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+              ✓
+            </div>
+          )}
           <img
             src={image.url}
             alt={image.name}
             className="w-full h-full object-cover"
             loading="lazy"
+            onClick={(e) => {
+              e.stopPropagation()
+              onImageSelect?.(index)
+            }}
           />
           
           {/* 操作按钮 */}
-          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex space-x-2">
               <button
                 onClick={() => handlePreview(image)}
@@ -229,7 +274,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         </div>
         
         {/* 图片信息 */}
-        <div className="image-info-section p-3 flex-1">
+        <div 
+          className="image-info-section p-3 flex-1"
+          onClick={(e) => {
+            e.stopPropagation()
+            onImageSelect?.(index)
+          }}
+        >
           <div className="image-info-content">
             <h3 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
               {image.name}
@@ -320,7 +371,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       >
         {/* 图片网格 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
-          {visibleItems.map(renderImageItem)}
+          {visibleItems.map((image, index) => renderImageItem(image, index))}
         </div>
 
         {/* 加载更多指示器 */}

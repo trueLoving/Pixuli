@@ -3,6 +3,7 @@ import { GitHubConfig } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Github, Settings, Save, Trash2 } from 'lucide-react'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 
 interface GitHubConfigModalProps {
   isOpen: boolean
@@ -70,22 +71,8 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
     }
   }, [isOpen])
 
-  // 添加键盘事件处理
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen, onClose])
+  // 键盘支持
+  useEscapeKey(onClose)
 
   // 如果模态框未打开，不渲染任何内容
   if (!isOpen) {

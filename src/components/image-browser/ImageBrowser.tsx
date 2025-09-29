@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { ImageItem } from '@/types/image'
 import ImageGrid from './ImageGrid'
 import ImageList from './ImageList'
@@ -7,6 +7,8 @@ import ImageSorter, { SortField, SortOrder } from './ImageSorter'
 import ImageFilter, { FilterOptions } from './ImageFilter'
 import { getSortedImages } from '@/utils/sortUtils'
 import { filterImages, createDefaultFilters } from '@/utils/filterUtils'
+import { useArrowKeys, useKeyboard } from '@/hooks/useKeyboard'
+import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/utils/keyboardShortcuts'
 import './ImageBrowser.css'
 
 interface ImageBrowserProps {
@@ -19,6 +21,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt')
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc')
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>(createDefaultFilters())
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
 
 
   const handleViewChange = useCallback((view: ViewMode) => {
@@ -54,6 +57,164 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
     const filteredImages = filterImages(uniqueImages, currentFilters)
     return getSortedImages(filteredImages, currentSort, currentOrder)
   }, [images, currentFilters, currentSort, currentOrder])
+
+  // 预览选中的图片
+  const handlePreviewSelectedImage = useCallback(() => {
+    if (selectedImageIndex >= 0 && selectedImageIndex < filteredAndSortedImages.length) {
+      const selectedImage = filteredAndSortedImages[selectedImageIndex]
+      // 发送预览事件，包含当前视图模式
+      const event = new CustomEvent('previewImage', { 
+        detail: { 
+          image: selectedImage, 
+          viewMode: currentView 
+        } 
+      })
+      window.dispatchEvent(event)
+    }
+  }, [selectedImageIndex, filteredAndSortedImages, currentView])
+
+  // 获取网格视图的列数
+  const getGridColumnsPerRow = useCallback(() => {
+    // 根据屏幕宽度动态计算列数
+    const screenWidth = window.innerWidth
+    if (screenWidth >= 1536) return 6 // 2xl: 6列
+    if (screenWidth >= 1280) return 5 // xl: 5列
+    if (screenWidth >= 1024) return 4 // lg: 4列
+    if (screenWidth >= 768) return 3  // md: 3列
+    if (screenWidth >= 640) return 2  // sm: 2列
+    return 1 // 默认1列
+  }, [])
+
+  // 键盘导航功能
+  const navigateImages = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    if (filteredAndSortedImages.length === 0) return
+
+    let newIndex = selectedImageIndex
+    const totalImages = filteredAndSortedImages.length
+
+    switch (direction) {
+      case 'up':
+        if (currentView === 'grid') {
+          // 网格视图：向上移动一行
+          const colsPerRow = getGridColumnsPerRow()
+          newIndex = Math.max(0, selectedImageIndex - colsPerRow)
+        } else {
+          // 列表视图：上一个
+          newIndex = Math.max(0, selectedImageIndex - 1)
+        }
+        break
+      case 'down':
+        if (currentView === 'grid') {
+          // 网格视图：向下移动一行
+          const colsPerRow = getGridColumnsPerRow()
+          newIndex = Math.min(totalImages - 1, selectedImageIndex + colsPerRow)
+        } else {
+          // 列表视图：下一个
+          newIndex = Math.min(totalImages - 1, selectedImageIndex + 1)
+        }
+        break
+      case 'left':
+        if (currentView === 'grid') {
+          // 网格视图：向左移动
+          newIndex = Math.max(0, selectedImageIndex - 1)
+        }
+        break
+      case 'right':
+        if (currentView === 'grid') {
+          // 网格视图：向右移动
+          newIndex = Math.min(totalImages - 1, selectedImageIndex + 1)
+        }
+        break
+    }
+
+    setSelectedImageIndex(newIndex)
+    
+    // 滚动到选中的图片
+    const selectedElement = document.querySelector(`[data-image-index="${newIndex}"]`)
+    if (selectedElement) {
+      selectedElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [selectedImageIndex, filteredAndSortedImages.length, currentView, getGridColumnsPerRow])
+
+  // 键盘快捷键注册
+  useEffect(() => {
+    const shortcuts = [
+      {
+        key: COMMON_SHORTCUTS.ARROW_UP,
+        description: '选择上一张图片',
+        action: () => navigateImages('up'),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      },
+      {
+        key: COMMON_SHORTCUTS.ARROW_DOWN,
+        description: '选择下一张图片',
+        action: () => navigateImages('down'),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      },
+      {
+        key: COMMON_SHORTCUTS.ARROW_LEFT,
+        description: '选择左侧图片',
+        action: () => navigateImages('left'),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      },
+      {
+        key: COMMON_SHORTCUTS.ARROW_RIGHT,
+        description: '选择右侧图片',
+        action: () => navigateImages('right'),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      },
+       {
+         key: COMMON_SHORTCUTS.ENTER,
+         description: '打开选中的图片',
+         action: handlePreviewSelectedImage,
+         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+       },
+      {
+        key: COMMON_SHORTCUTS.V,
+        ctrlKey: true,
+        description: '切换视图模式',
+        action: () => {
+          setCurrentView(prev => prev === 'grid' ? 'list' : 'grid')
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      }
+    ]
+
+    keyboardManager.registerBatch(shortcuts)
+
+    return () => {
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
+    }
+   }, [navigateImages, handlePreviewSelectedImage, selectedImageIndex, filteredAndSortedImages.length])
+
+  // 当图片列表变化时，重置选中索引
+  useEffect(() => {
+    if (filteredAndSortedImages.length > 0) {
+      // 如果当前选中索引超出范围，重置为0
+      if (selectedImageIndex >= filteredAndSortedImages.length) {
+        setSelectedImageIndex(0)
+      }
+      // 如果当前没有选中任何图片（-1），选中第一张
+      else if (selectedImageIndex < 0) {
+        setSelectedImageIndex(0)
+      }
+    } else {
+      // 如果没有图片，重置为-1
+      setSelectedImageIndex(-1)
+    }
+  }, [filteredAndSortedImages.length, selectedImageIndex])
+
+  // 监听来自主应用的视图切换事件
+  useEffect(() => {
+    const handleToggleViewMode = () => {
+      setCurrentView(prev => prev === 'grid' ? 'list' : 'grid')
+    }
+
+    window.addEventListener('toggleViewMode', handleToggleViewMode)
+    return () => {
+      window.removeEventListener('toggleViewMode', handleToggleViewMode)
+    }
+  }, [])
 
   return (
     <div className={`image-browser ${className}`}>
@@ -101,13 +262,20 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
         <div className={`image-browser-view ${currentView === 'grid' ? '' : 'hidden'}`}>
           <ImageGrid 
             images={filteredAndSortedImages}
+            selectedImageIndex={selectedImageIndex}
+            onImageSelect={setSelectedImageIndex}
           />
         </div>
         <div className={`image-browser-view ${currentView === 'list' ? '' : 'hidden'}`}>
-          <ImageList images={filteredAndSortedImages} />
-        </div>
-      </div>
-    </div>
+          <ImageList 
+            images={filteredAndSortedImages}
+            selectedImageIndex={selectedImageIndex}
+            onImageSelect={setSelectedImageIndex}
+          />
+         </div>
+       </div>
+
+     </div>
   )
 }
 

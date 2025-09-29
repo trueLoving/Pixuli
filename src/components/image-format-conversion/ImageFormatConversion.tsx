@@ -12,6 +12,7 @@ import { FormatConversionService } from '@/services/formatConversion'
 import ImageFormatConversionSettings from './ImageFormatConversionSettings'
 import ImageFormatConversionPreview from './ImageFormatConversionPreview'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 import './ImageFormatConversion.css'
 
 interface ImageFormatConversionProps {
@@ -147,6 +148,9 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }
       showInfo('已应用自动优化设置')
     }
   }, [selectedFile, conversionOptions.targetFormat])
+
+  // 键盘支持
+  useEscapeKey(onClose)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">

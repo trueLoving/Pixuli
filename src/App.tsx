@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft, Brain } from 'lucide-react'
+import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft, Brain, HelpCircle } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
 import ImageBrowser from '@/components/image-browser/ImageBrowser'
@@ -8,7 +8,9 @@ import ImageCompression from '@/components/image-compression/ImageCompression'
 import { ImageFormatConversion } from '@/components/image-format-conversion'
 import AIModelManager from '@/components/ai-analysis/AIModelManager'
 import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
+import KeyboardHelpModal from '@/components/keyboard-help/KeyboardHelpModal'
 import { Toaster } from 'react-hot-toast'
+import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/utils/keyboardShortcuts'
 import './App.css'
 
 function App() {
@@ -28,6 +30,7 @@ function App() {
   const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -80,6 +83,14 @@ function App() {
     setShowAIAnalysis(false)
   }, [])
 
+  const handleOpenKeyboardHelp = useCallback(() => {
+    setShowKeyboardHelp(true)
+  }, [])
+
+  const handleCloseKeyboardHelp = useCallback(() => {
+    setShowKeyboardHelp(false)
+  }, [])
+
   // 初始化存储服务
   useEffect(() => {
     if (githubConfig) {
@@ -97,6 +108,106 @@ function App() {
       initializeStorage()
     }
   }, [])
+
+  // 注册键盘快捷键
+  useEffect(() => {
+    const shortcuts = [
+      // 通用快捷键
+      {
+        key: COMMON_SHORTCUTS.ESCAPE,
+        description: '关闭当前模态框',
+        action: () => {
+          if (showConfigModal) handleCloseConfigModal()
+          else if (showCompression) handleCloseCompression()
+          else if (showFormatConversion) handleCloseFormatConversion()
+          else if (showAIModelManager) handleCloseAIModelManager()
+          else if (showAIAnalysis) handleCloseAIAnalysis()
+          else if (showKeyboardHelp) handleCloseKeyboardHelp()
+        },
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      {
+        key: COMMON_SHORTCUTS.F1,
+        description: '显示键盘快捷键帮助',
+        action: handleOpenKeyboardHelp,
+        category: SHORTCUT_CATEGORIES.HELP
+      },
+      {
+        key: COMMON_SHORTCUTS.F5,
+        description: '刷新图片列表',
+        action: handleLoadImages,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      
+      // 功能快捷键
+      {
+        key: COMMON_SHORTCUTS.C,
+        ctrlKey: true,
+        description: '打开图片压缩工具',
+        action: handleOpenCompression,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      {
+        key: COMMON_SHORTCUTS.F,
+        ctrlKey: true,
+        description: '打开图片格式转换',
+        action: handleOpenFormatConversion,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      {
+        key: COMMON_SHORTCUTS.A,
+        ctrlKey: true,
+        description: '打开AI图片分析',
+        action: handleOpenAIAnalysis,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      {
+        key: COMMON_SHORTCUTS.COMMA,
+        ctrlKey: true,
+        description: '打开GitHub配置',
+        action: handleOpenConfigModal,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      
+      // 搜索快捷键
+      {
+        key: COMMON_SHORTCUTS.SLASH,
+        description: '聚焦搜索框',
+        action: () => {
+          const searchInput = document.querySelector('input[placeholder*="搜索"]') as HTMLInputElement
+          if (searchInput) {
+            searchInput.focus()
+            searchInput.select()
+          }
+        },
+        category: SHORTCUT_CATEGORIES.SEARCH
+      },
+      {
+        key: COMMON_SHORTCUTS.V,
+        ctrlKey: true,
+        description: '切换视图模式',
+        action: () => {
+          // 触发图片浏览器的视图切换
+          const event = new CustomEvent('toggleViewMode')
+          window.dispatchEvent(event)
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
+      }
+    ]
+
+    keyboardManager.registerBatch(shortcuts)
+
+    return () => {
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
+    }
+  }, [
+    showConfigModal, showCompression, showFormatConversion, 
+    showAIModelManager, showAIAnalysis, showKeyboardHelp,
+    handleCloseConfigModal, handleCloseCompression, handleCloseFormatConversion,
+    handleCloseAIModelManager, handleCloseAIAnalysis, handleCloseKeyboardHelp,
+    handleOpenKeyboardHelp, handleLoadImages, handleOpenCompression,
+    handleOpenFormatConversion, handleOpenAIAnalysis, handleOpenConfigModal
+  ])
 
   // 过滤图片
   const filteredImages = images.filter(image => {
@@ -161,28 +272,28 @@ function App() {
               <button
                 onClick={handleOpenCompression}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="图片压缩工具"
+                title="图片压缩工具 (Ctrl+C)"
               >
                 <Zap className="w-5 h-5" />
               </button>
               <button
                 onClick={handleOpenFormatConversion}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="图片格式转换"
+                title="图片格式转换 (Ctrl+F)"
               >
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={handleOpenAIAnalysis}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="AI 图片分析"
+                title="AI 图片分析 (Ctrl+A)"
               >
                 <Brain className="w-5 h-5" />
               </button>
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="GitHub 配置"
+                title="GitHub 配置 (Ctrl+,)"
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -190,9 +301,16 @@ function App() {
                 onClick={handleLoadImages}
                 disabled={loading}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="刷新图片"
+                title="刷新图片 (F5)"
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={handleOpenKeyboardHelp}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title="键盘快捷键帮助 (F1)"
+              >
+                <HelpCircle className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -336,6 +454,12 @@ function App() {
             window.dispatchEvent(event)
           }
         }}
+      />
+
+      {/* 键盘快捷键帮助模态框 */}
+      <KeyboardHelpModal
+        isOpen={showKeyboardHelp}
+        onClose={handleCloseKeyboardHelp}
       />
 
       <Toaster />
