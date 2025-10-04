@@ -10,6 +10,7 @@
   "main": "dist-electron/main/index.js",
   "homepage": "./",
   "scripts": {
+    "website":"pnpm run --filter website dev",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

@@ -1,3 +1,4 @@
 packages:
   - 'benchmark'
   - 'pixuli-wasm'
+  - "website"
