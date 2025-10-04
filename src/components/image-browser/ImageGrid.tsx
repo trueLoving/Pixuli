@@ -3,7 +3,7 @@ import { ImageItem } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
 import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { useInfiniteScroll, useLazyLoad } from '@/hooks'
+import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
@@ -14,15 +14,13 @@ interface ImageGridProps {
   className?: string
   selectedImageIndex?: number
   onImageSelect?: (index: number) => void
-  onPreviewImage?: (image: ImageItem) => void
 }
 
 const ImageGrid: React.FC<ImageGridProps> = ({ 
   images, 
   className = '',
   selectedImageIndex = -1,
-  onImageSelect,
-  onPreviewImage
+  onImageSelect
 }) => {
   // 滚动加载配置
   const pageSize = 20
@@ -131,9 +129,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     setSelectedImage(image)
     setShowPreview(true)
     showInfo(`正在预览图片 "${image.name}"`)
-    // 同时调用外部回调
-    onPreviewImage?.(image)
-  }, [onPreviewImage])
+  }, [])
 
   // 监听预览事件（仅网格视图）
   useEffect(() => {
@@ -173,6 +169,15 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     showInfo('已取消编辑')
     setShowEditModal(false)
   }, [])
+
+  // ESC 键关闭预览和URL模态框
+  useEscapeKey(() => {
+    if (showPreview) {
+      setShowPreview(false)
+    } else if (showUrlModal) {
+      setShowUrlModal(false)
+    }
+  }, showPreview || showUrlModal)
 
   const handleViewUrl = useCallback((image: ImageItem) => {
     setSelectedImage(image)
@@ -359,7 +364,9 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     handleEdit,
     handleDelete,
     formatDate,
-    observeElement
+    observeElement,
+    selectedImageIndex,
+    onImageSelect
   ])
 
   return (

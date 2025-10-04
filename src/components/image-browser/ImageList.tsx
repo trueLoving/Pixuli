@@ -3,7 +3,7 @@ import { ImageItem } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
 import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { useLazyLoad, useInfiniteScroll } from '@/hooks'
+import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '@/hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
 import { formatFileSize } from '@/utils/fileSizeUtils'
@@ -13,14 +13,12 @@ interface ImageListProps {
   images: ImageItem[]
   selectedImageIndex?: number
   onImageSelect?: (index: number) => void
-  onPreviewImage?: (image: ImageItem) => void
 }
 
 const ImageList: React.FC<ImageListProps> = ({ 
   images, 
   selectedImageIndex = -1,
-  onImageSelect,
-  onPreviewImage
+  onImageSelect
 }) => {
   const { deleteImage } = useImageStore()
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
@@ -83,9 +81,7 @@ const ImageList: React.FC<ImageListProps> = ({
     setSelectedImage(image)
     setShowPreview(true)
     showInfo(`正在预览图片 "${image.name}"`)
-    // 同时调用外部回调
-    onPreviewImage?.(image)
-  }, [onPreviewImage])
+  }, [])
 
   // 监听预览事件（仅列表视图）
   useEffect(() => {
@@ -112,6 +108,15 @@ const ImageList: React.FC<ImageListProps> = ({
     showInfo('已取消编辑')
     setShowEditModal(false)
   }, [])
+
+  // ESC 键关闭预览和URL模态框
+  useEscapeKey(() => {
+    if (showPreview) {
+      setShowPreview(false)
+    } else if (showUrlModal) {
+      setShowUrlModal(false)
+    }
+  }, showPreview || showUrlModal)
 
   const handleViewUrl = useCallback((image: ImageItem) => {
     setSelectedImage(image)
@@ -173,6 +178,176 @@ const ImageList: React.FC<ImageListProps> = ({
     return new Date(dateString).toLocaleDateString('zh-CN')
   }, [])
 
+  // 渲染单个图片项的函数
+  const renderImageItem = useCallback((image: ImageItem, index: number) => {
+    const isSelected = selectedImageIndex === index
+    
+    return (
+      <div
+        key={image.id}
+        ref={(el) => el && observeElement(el, image.id)}
+        data-image-index={index}
+        onClick={() => onImageSelect?.(index)}
+        className={`image-list-item transition-all duration-200 cursor-pointer ${
+          isSelected 
+            ? 'bg-blue-100 border-l-4 border-l-blue-600 border-b border-b-blue-300 shadow-md transform scale-[1.02] ring-2 ring-blue-400' 
+            : 'bg-white border-b border-gray-100 hover:bg-gray-50'
+        }`}
+      >
+        {/* 主要行 */}
+        <div className="px-6 py-4">
+          <div className="flex items-center space-x-4">
+            {/* 缩略图 */}
+            <div className="flex-shrink-0 relative">
+              <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                {visibleImages.has(image.id) ? (
+                  <img
+                    src={image.url}
+                    alt={image.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="image-loading-spinner w-6 h-6"></div>
+                  </div>
+                )}
+              </div>
+              {/* 选中指示器 */}
+              {isSelected && (
+                <div className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+                  ✓
+                </div>
+              )}
+            </div>
+
+            {/* 基本信息 */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-3 mb-2">
+                <h3 className={`text-sm font-medium truncate ${
+                  isSelected ? 'text-blue-900 font-semibold' : 'text-gray-900'
+                }`}>
+                  {image.name}
+                  {isSelected && <span className="ml-2 text-blue-600 text-xs">已选中</span>}
+                </h3>
+                {image.tags.length > 0 && (
+                  <div className="flex items-center space-x-1">
+                    {image.tags.slice(0, 2).map((tag, index) => (
+                      <span
+                        key={`${image.id}-tag-${index}`}
+                        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {image.tags.length > 2 && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        +{image.tags.length - 2}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {image.description && (
+                <p className="text-sm text-gray-500 mb-2 line-clamp-2">
+                  {image.description}
+                </p>
+              )}
+
+              <div className="flex items-center space-x-4 text-xs text-gray-500">
+                <span className="flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {formatDate(image.createdAt)}
+                </span>
+                <span>
+                  {(() => {
+                    const dimensions = imageDimensions[image.id]
+                    if (dimensions) {
+                      return `${dimensions.width} × ${dimensions.height}`
+                    } else if (image.width > 0 && image.height > 0) {
+                      return `${image.width} × ${image.height}`
+                    } else {
+                      return '获取中...'
+                    }
+                  })()}
+                </span>
+                {image.size > 0 && (
+                  <span className="flex items-center space-x-1">
+                    <HardDrive className="w-3 h-3" />
+                    <span>{formatFileSize(image.size)}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handlePreview(image)}
+                className="image-list-action-button"
+                title="预览"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleEdit(image)}
+                className="image-list-action-button"
+                title="编辑"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => toggleRowExpansion(image.id)}
+                className="image-list-action-button"
+                title="更多操作"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 展开行 - 更多操作和压缩结果 */}
+        {expandedRows.has(image.id) && (
+          <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => handleViewUrl(image)}
+                  className="image-list-secondary-button"
+                >
+                  <Link className="w-4 h-4 mr-1" />
+                  查看地址
+                </button>
+                <button
+                  onClick={() => handleDelete(image)}
+                  className="image-list-secondary-button text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }, [
+    selectedImageIndex,
+    onImageSelect,
+    observeElement,
+    visibleImages,
+    formatDate,
+    imageDimensions,
+    handlePreview,
+    handleEdit,
+    toggleRowExpansion,
+    expandedRows,
+    handleViewUrl,
+    handleDelete
+  ])
+
 
   if (images.length === 0) {
     return (
@@ -203,152 +378,7 @@ const ImageList: React.FC<ImageListProps> = ({
             {/* 列表内容 */}
       <div className="image-list-content">
         <div ref={containerRef} className="h-full overflow-y-auto">
-          {visibleItems.map((image, index) => {
-            const isSelected = selectedImageIndex === index
-            return (
-            <div
-              key={image.id}
-              ref={(el) => el && observeElement(el, image.id)}
-              data-image-index={index}
-              onClick={() => onImageSelect?.(index)}
-              className={`image-list-item bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
-                isSelected 
-                  ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-200' 
-                  : ''
-              }`}
-            >
-              {/* 主要行 */}
-              <div className="px-6 py-4">
-                <div className="flex items-center space-x-4">
-                  {/* 缩略图 */}
-                  <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                      {visibleImages.has(image.id) ? (
-                        <img
-                          src={image.url}
-                          alt={image.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="image-loading-spinner w-6 h-6"></div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 基本信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
-                        {image.name}
-                      </h3>
-                      {image.tags.length > 0 && (
-                        <div className="flex items-center space-x-1">
-                          {image.tags.slice(0, 2).map((tag, index) => (
-                            <span
-                              key={`${image.id}-tag-${index}`}
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                          {image.tags.length > 2 && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                              +{image.tags.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {image.description && (
-                      <p className="text-sm text-gray-500 mb-2 line-clamp-2">
-                        {image.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <span className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {formatDate(image.createdAt)}
-                      </span>
-                      <span>
-                        {(() => {
-                          const dimensions = imageDimensions[image.id]
-                          if (dimensions) {
-                            return `${dimensions.width} × ${dimensions.height}`
-                          } else if (image.width > 0 && image.height > 0) {
-                            return `${image.width} × ${image.height}`
-                          } else {
-                            return '获取中...'
-                          }
-                        })()}
-                      </span>
-                      {image.size > 0 && (
-                        <span className="flex items-center space-x-1">
-                          <HardDrive className="w-3 h-3" />
-                          <span>{formatFileSize(image.size)}</span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 操作按钮 */}
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handlePreview(image)}
-                      className="image-list-action-button"
-                      title="预览"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleEdit(image)}
-                      className="image-list-action-button"
-                      title="编辑"
-                      >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => toggleRowExpansion(image.id)}
-                      className="image-list-action-button"
-                      title="更多操作"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 展开行 - 更多操作和压缩结果 */}
-              {expandedRows.has(image.id) && (
-                <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleViewUrl(image)}
-                        className="image-list-secondary-button"
-                      >
-                        <Link className="w-4 h-4 mr-1" />
-                        查看地址
-                      </button>
-                      <button
-                        onClick={() => handleDelete(image)}
-                        className="image-list-secondary-button text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        删除
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              )}
-            </div>
-            )
-          })}
+          {visibleItems.map((image, index) => renderImageItem(image, index))}
 
           {/* 加载更多指示器 */}
           {hasMore && (

@@ -4,6 +4,7 @@ import { useImageStore } from '@/stores/imageStore'
 import { X, Save, Tag, FileText } from 'lucide-react'
 import { showSuccess, showError, showLoading, updateLoadingToSuccess, updateLoadingToError } from '@/utils/toast'
 import { getImageDimensionsFromUrl } from '@/utils/imageUtils'
+import { useEscapeKey } from '@/hooks'
 
 interface ImageEditModalProps {
   image: ImageItem
@@ -22,6 +23,11 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({ image, isOpen, onClose,
     tags: image.tags || []
   })
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null)
+
+  // ESC 键关闭编辑模态框
+  useEscapeKey(() => {
+    onClose()
+  }, isOpen)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
