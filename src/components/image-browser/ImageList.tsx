@@ -56,6 +56,7 @@ const ImageList: React.FC<ImageListProps> = ({
 
   // 当图片列表变化时重置滚动状态
   useEffect(() => {
+    // 确保搜索和过滤变化时重置滚动状态
     reset()
   }, [images, reset])
 

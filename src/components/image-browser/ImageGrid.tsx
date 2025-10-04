@@ -55,14 +55,11 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     rootMargin: '50px'
   })
 
-  // 当图片列表变化时重置滚动状态（但只在真正需要时）
+  // 当图片列表变化时重置滚动状态
   useEffect(() => {
-    // 只有在图片列表从空变为有内容，或者完全清空时才重置
-    if (images.length === 0) {
-      reset()
-    }
-    // 注意：不在这里重置，让 useInfiniteScroll 自己处理初始加载
-  }, [images.length, reset])
+    // 当图片列表发生变化时，重置滚动状态确保正确同步
+    reset()
+  }, [images, reset])
 
   // 获取图片真实尺寸
   const fetchImageDimensions = useCallback(async (image: ImageItem) => {
