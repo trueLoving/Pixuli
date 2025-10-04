@@ -283,13 +283,14 @@ function App() {
               >
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
+              {/* 发现有问题，先暂时注释掉，等思路梳理清楚功能稳定后再恢复
               <button
                 onClick={handleOpenAIAnalysis}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title="AI 图片分析 (Ctrl+A)"
               >
                 <Brain className="w-5 h-5" />
-              </button>
+              </button> */}
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
