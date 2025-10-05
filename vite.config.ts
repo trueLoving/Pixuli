@@ -67,6 +67,9 @@ export default defineConfig(({ command }) => {
       renderer(),
     ],
     build: {
+      target: 'esnext',
+      minify: 'esbuild',
+      sourcemap: false,
       rollupOptions: {
         external: [
           '@llama-node/llama-cpp',
@@ -77,7 +80,31 @@ export default defineConfig(({ command }) => {
           '@llama-node/llama-cpp.linux-x64-musl',
           '@llama-node/llama-cpp.linux-x64-gnu',
           'pixuli-wasm'
-        ]
+        ],
+        output: {
+          manualChunks: (id) => {
+            // 核心依赖
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor'
+            }
+            // UI组件
+            if (id.includes('lucide-react') || id.includes('react-hot-toast')) {
+              return 'ui'
+            }
+            // 状态管理
+            if (id.includes('zustand')) {
+              return 'state'
+            }
+            // TensorFlow (可选)
+            if (id.includes('@tensorflow')) {
+              return 'tensorflow'
+            }
+            // 其他第三方库
+            if (id.includes('node_modules')) {
+              return 'vendor'
+            }
+          }
+        }
       }
     },
     server: process.env.VSCODE_DEBUG && (() => {

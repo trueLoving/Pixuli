@@ -54,12 +54,6 @@
     "wait-on": "^8.0.4"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^4.22.0",
-    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
-    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
-    "@tensorflow/tfjs-converter": "^4.22.0",
-    "@tensorflow/tfjs-core": "^4.22.0",
-    "@tensorflow/tfjs-layers": "^4.22.0",
     "autoprefixer": "^10.4.14",
     "electron-updater": "6.3.9",
     "lucide-react": "^0.263.1",
@@ -76,6 +70,14 @@
     "vite-plugin-electron-renderer": "^0.14.6",
     "zustand": "^4.4.1"
   },
+  "optionalDependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-layers": "^4.22.0"
+  },
   "build": {
     "appId": "com.pixuli.app",
     "productName": "Pixuli",
@@ -85,8 +87,23 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "node_modules/pixuli-wasm/**/*"
+      "node_modules/pixuli-wasm/index.js",
+      "node_modules/pixuli-wasm/index.d.ts", 
+      "node_modules/pixuli-wasm/package.json",
+      "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
     ],
+    "asarUnpack": [
+      "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+    ],
+    "asar": true,
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
+    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": false,
+    "npmRebuild": false,
+    "extraResources": [],
+    "extraFiles": [],
     "mac": {
       "category": "public.app-category.graphics-design",
       "artifactName": "${productName}_${version}_${arch}.${ext}",
@@ -100,7 +117,8 @@
         }
       ],
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "compression": "maximum"
     },
     "win": {
       "target": [
@@ -130,13 +148,6 @@
       "releaseType": "release",
       "private": false,
       "vPrefixedTagName": true
-    },
-    "asar": true,
-    "compression": "store",
-    "removePackageScripts": true,
-    "removePackageKeywords": true,
-    "buildDependenciesFromSource": false,
-    "nodeGypRebuild": false,
-    "npmRebuild": false
+    }
   }
 }
