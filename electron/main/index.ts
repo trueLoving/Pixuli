@@ -106,6 +106,28 @@ function createMenu() {
           }
         }
       ]
+    },
+    {
+      label: '帮助',
+      submenu: [
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Option+I' : 'Ctrl+Shift+I',
+          click: () => {
+            if (win) {
+              win.webContents.toggleDevTools()
+            }
+          }
+        },
+        {
+          label: 'Open Process Explorer',
+          click: () => {
+            if (win) {
+              win.webContents.openDevTools({ mode: 'detach' })
+            }
+          }
+        }
+      ]
     }
   ]
 

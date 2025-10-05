@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@/types/image'
 import { GitHubStorageService } from '@/services/githubStorage'
-import { loadGitHubConfig, saveGitHubConfig } from '@/config/github'
+import { loadGitHubConfig, saveGitHubConfig, clearGitHubConfig } from '@/config/github'
 
 interface ImageState {
   images: ImageItem[]
@@ -70,6 +70,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null })
       try {
         const images = await storageService.getImageList()
+        
         
         // 去重：确保每个图片ID只出现一次，如果有重复，保留最新的
         const uniqueImages = images.reduce((acc: ImageItem[], current) => {
@@ -325,14 +326,12 @@ export const useImageStore = create<ImageState>((set, get) => {
   },
 
   clearGitHubConfig: () => {
-    import('@/config/github').then(({ clearGitHubConfig }) => {
-      clearGitHubConfig()
-      set({ 
-        githubConfig: null, 
-        storageService: null, 
-        images: [],
-        error: null 
-      })
+    clearGitHubConfig()
+    set({ 
+      githubConfig: null, 
+      storageService: null, 
+      images: [],
+      error: null 
     })
   },
   }
