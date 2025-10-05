@@ -146,7 +146,7 @@ describe('useImageDimensionsFromUrl', () => {
       })
       
       // 然后设置为null
-      rerender({ url: null })
+      rerender({ url: null as string | null })
       
       expect(result.current.dimensions).toBeNull()
       expect(result.current.loading).toBe(false)

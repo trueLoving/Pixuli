@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -11,6 +11,14 @@ import { plus100, compressToWebp, batchCompressToWebp, getImageInfo, convertImag
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+// 获取版本信息
+const packageJson = require('../../package.json')
+const APP_VERSION = packageJson.version
+const APP_NAME = packageJson.productName || packageJson.name
+
+// 设置应用名称
+app.setName(APP_NAME)
 
 // The built directory structure
 //
@@ -47,9 +55,67 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.js')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
+// 显示关于对话框
+function showAboutDialog() {
+  const aboutInfo = `
+${APP_NAME}
+版本: ${APP_VERSION}
+构建日期: ${new Date().toISOString().split('T')[0]}
+Electron: ${process.versions.electron}
+Chromium: ${process.versions.chrome}
+Node.js: ${process.versions.node}
+V8: ${process.versions.v8}
+操作系统: ${os.type()} ${os.arch()} ${os.release()}
+  `.trim()
+
+  dialog.showMessageBox(win!, {
+    type: 'info',
+    title: `About ${APP_NAME}`,
+    message: APP_NAME,
+    detail: aboutInfo,
+    buttons: ['OK', 'Copy'],
+    defaultId: 0,
+    cancelId: 0,
+    icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico')
+  }).then((result) => {
+    if (result.response === 1) {
+      // Copy button clicked
+      require('electron').clipboard.writeText(aboutInfo)
+    }
+  })
+}
+
+// 创建自定义菜单
+function createMenu() {
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: APP_NAME,
+      submenu: [
+        {
+          label: `About ${APP_NAME}`,
+          click: () => {
+            showAboutDialog()
+          }
+        },
+        { type: 'separator' },
+        {
+          label: '退出',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          click: () => {
+            app.quit()
+          }
+        }
+      ]
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
+
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: `${APP_NAME} - 智能图片管理工具 v${APP_VERSION}`,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
@@ -62,7 +128,8 @@ async function createWindow() {
     },
   })
 
-  win.setMenu(null)
+  // 设置自定义菜单
+  createMenu()
 
   if (VITE_DEV_SERVER_URL) { // #298
     win.loadURL(VITE_DEV_SERVER_URL)

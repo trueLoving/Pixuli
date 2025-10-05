@@ -81,8 +81,8 @@ describe('imageUtils', () => {
       global.Image = class {
         width = 0
         height = 0
-        onload = null
-        onerror = null
+        onload: (() => void) | null = null
+        onerror: (() => void) | null = null
 
         constructor() {
           setTimeout(() => {

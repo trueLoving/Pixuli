@@ -23,5 +23,13 @@
     },
   },
   "include": ["src", "electron"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**/*",
+    "src/test/**/*",
+    "**/*.test.*",
+    "**/__tests__/**"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
