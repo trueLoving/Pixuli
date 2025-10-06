@@ -1,0 +1,69 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.pixuli.app",
+  "productName": "Pixuli",
+  "asar": true,
+  "compression": "maximum",
+  "directories": {
+    "output": "release"
+  },
+  "buildDependenciesFromSource": false,
+  "nodeGypRebuild": false,
+  "npmRebuild": false,
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "node_modules/pixuli-wasm/index.js",
+    "node_modules/pixuli-wasm/index.d.ts", 
+    "node_modules/pixuli-wasm/package.json",
+    "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+  ],
+  "asarUnpack": [
+    "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+  ],
+  "mac": {
+    "category": "public.app-category.graphics-design",
+    "artifactName": "${productName}_${version}_${arch}.${ext}",
+    "target": [
+      {
+        "target": "dmg",
+        "arch": [
+          "x64",
+          "arm64"
+        ]
+      }
+    ],
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "compression": "maximum"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}_${version}_${arch}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Pixuli"
+  },
+  "publish": {
+    "provider": "github",
+    "owner": "trueLoving",
+    "repo": "pixuli",
+    "channel": "latest",
+    "releaseType": "release",
+    "private": false,
+    "vPrefixedTagName": true
+  }
+}

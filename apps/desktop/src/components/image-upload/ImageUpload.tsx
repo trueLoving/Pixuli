@@ -47,7 +47,10 @@ const ImageUpload: React.FC = () => {
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg']
     },
-    multiple: true // 始终允许多选，根据文件数量决定处理方式
+    multiple: true, // 始终允许多选，根据文件数量决定处理方式
+    onDragEnter: () => {},
+    onDragOver: () => {},
+    onDragLeave: () => {}
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -312,7 +315,7 @@ const ImageUpload: React.FC = () => {
           : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
       }`}
     >
-      <input {...getInputProps()} />
+      <input {...getInputProps({})} />
       <div className="flex flex-col items-center space-y-3">
         <div className={`p-3 rounded-full ${
           isDragActive ? 'bg-blue-100' : 'bg-gray-100'

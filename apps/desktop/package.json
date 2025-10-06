@@ -1,0 +1,152 @@
+{
+  "name": "pixuli-desktop",
+  "productName":"Pixuli",
+  "version": "1.1.0",
+  "debug": {
+    "env": {
+      "VITE_DEV_SERVER_URL": "http://localhost:5173"
+    }
+  },
+  "description": "Pixuli Desktop - 智能图片管理桌面应用",
+  "main": "dist-electron/main/index.js",
+  "homepage": "./",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "electron": "wait-on tcp:5173 && cross-env IS_DEV=true electron .",
+    "electron:dev": "concurrently \"pnpm run dev\" \"pnpm run electron\"",
+    "electron:build": "pnpm run build && electron-builder",
+    "dist": "pnpm run build && electron-builder --publish=never",
+    "dist:win": "pnpm run build && electron-builder --win --publish=never",
+    "dist:mac": "pnpm run build && electron-builder --mac --publish=never",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "electron",
+    "vite",
+    "react",
+    "typescript",
+    "图片管理"
+  ],
+  "author": "Pixuli Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.18.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0",
+    "electron": "^33.4.11",
+    "electron-builder": "^24.0.0",
+    "jsdom": "^27.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^3.2.4",
+    "wait-on": "^8.0.4"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.14",
+    "electron-updater": "6.3.9",
+    "lucide-react": "^0.263.1",
+    "octokit": "^3.1.2",
+    "pixuli-wasm": "workspace:*",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.6.0",
+    "react-image-crop": "^10.1.8",
+    "tailwindcss": "^3.3.2",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "zustand": "^4.4.1"
+  },
+  "optionalDependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-layers": "^4.22.0"
+  },
+  "build": {
+    "appId": "com.pixuli.app",
+    "productName": "Pixuli",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "node_modules/pixuli-wasm/index.js",
+      "node_modules/pixuli-wasm/index.d.ts", 
+      "node_modules/pixuli-wasm/package.json",
+      "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+    ],
+    "asarUnpack": [
+      "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+    ],
+    "asar": true,
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
+    "buildDependenciesFromSource": false,
+    "nodeGypRebuild": false,
+    "npmRebuild": false,
+    "extraResources": [],
+    "extraFiles": [],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "artifactName": "${productName}_${version}_${arch}.${ext}",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "compression": "maximum"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}_${version}_${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pixuli"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "trueLoving",
+      "repo": "pixuli",
+      "channel": "latest",
+      "releaseType": "release",
+      "private": false,
+      "vPrefixedTagName": true
+    }
+  }
+}

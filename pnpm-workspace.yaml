@@ -2,3 +2,5 @@ packages:
   - 'benchmark'
   - 'pixuli-wasm'
   - "website"
+  - "apps/desktop"
+  - "apps/web"
