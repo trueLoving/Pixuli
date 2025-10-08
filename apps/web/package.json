@@ -7,19 +7,45 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
     "preview": "vite preview"
   },
+  "keywords": [
+    "vite",
+    "react",
+    "typescript",
+    "图片管理",
+    "web"
+  ],
+  "author": "Pixuli Team",
+  "license": "MIT",
   "dependencies": {
-   "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "autoprefixer": "^10.4.14",
+    "lucide-react": "^0.263.1",
+    "octokit": "^3.1.2",
+    "pixuli-wasm": "workspace:*",
+    "postcss": "^8.4.24",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.6.0",
+    "react-image-crop": "^10.1.8",
+    "tailwindcss": "^3.3.2",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
+    "@types/node": "^22.18.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react-swc": "^4.1.0",
-    "typescript": "~5.9.3",
-    "vite": "^7.1.7"
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-layers": "^4.22.0"
   }
 }
