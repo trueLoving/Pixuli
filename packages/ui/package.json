@@ -1,0 +1,41 @@
+{
+  "name": "pixuli-ui",
+  "version": "1.0.0",
+  "description": "Pixuli UI",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.6.0",
+    "react-image-crop": "^10.1.8",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "tsup": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "tailwindcss": "^3.3.2",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24"
+  },
+  "author": "starsky",
+  "license": "MIT"
+}

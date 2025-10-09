@@ -1,6 +1,7 @@
 packages:
   - 'benchmark'
   - 'pixuli-wasm'
+  - 'packages/ui'
   - "website"
   - "apps/desktop"
   - "apps/web"
