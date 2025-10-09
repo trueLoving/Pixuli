@@ -1,9 +1,14 @@
-import type { 
-  FormatConversionOptions, 
-  FormatConversionResult, 
+import type {
+  FormatConversionOptions,
+  FormatConversionResult,
   ImageFormat
 } from '@/types/formatConversion'
-import { getFormatInfo, supportsTransparency, supportsLossless } from '@/types/formatConversion'
+
+import {
+  getFormatInfo,
+  supportsTransparency,
+  supportsLossless
+} from '@/types/formatConversion'
 
 export class FormatConversionService {
   /**
@@ -14,26 +19,29 @@ export class FormatConversionService {
     options: FormatConversionOptions
   ): Promise<FormatConversionResult> {
     const startTime = performance.now()
-    
+
     try {
       // 获取原始图片信息
       const originalFormat = this.getImageFormat(imageFile)
       const originalDimensions = await this.getImageDimensions(imageFile)
-      
+
       // 验证转换选项
       this.validateConversionOptions(originalFormat, options)
-      
-      // 使用 Canvas API 进行格式转换
-      const convertedFile = await this.convertWithCanvas(imageFile, options)
-      
+
+      // 使用Canvas API进行格式转换
+      const result = await this.convertImageWithCanvas(imageFile, options)
+
       const endTime = performance.now()
       const conversionTime = endTime - startTime
-      
+
+      // 创建转换后的File对象
+      const convertedFile = this.createConvertedFile(result.data, imageFile.name, options.targetFormat)
+
       const sizeChange = convertedFile.size - imageFile.size
       const sizeChangeRatio = (sizeChange / imageFile.size) * 100
-      
+
       console.log(`图片格式转换完成: ${conversionTime.toFixed(2)}ms, 格式: ${originalFormat} -> ${options.targetFormat}`)
-      
+
       return {
         convertedFile,
         originalSize: imageFile.size,
@@ -43,7 +51,7 @@ export class FormatConversionService {
         originalFormat,
         targetFormat: options.targetFormat,
         originalDimensions,
-        convertedDimensions: originalDimensions, // Canvas 转换保持原始尺寸
+        convertedDimensions: { width: result.width, height: result.height },
         conversionTime
       }
     } catch (error) {
@@ -54,37 +62,12 @@ export class FormatConversionService {
   }
 
   /**
-   * 批量转换图片格式
+   * 使用Canvas API转换图片格式
    */
-  static async batchConvertImages(
-    imageFiles: File[],
-    options: FormatConversionOptions
-  ): Promise<FormatConversionResult[]> {
-    const startTime = performance.now()
-    
-    try {
-      const results = await Promise.all(
-        imageFiles.map(file => this.convertImage(file, options))
-      )
-      
-      const endTime = performance.now()
-      console.log(`批量图片格式转换完成: ${(endTime - startTime).toFixed(2)}ms`)
-      
-      return results
-    } catch (error) {
-      const endTime = performance.now()
-      console.error(`批量图片格式转换失败 after ${(endTime - startTime).toFixed(2)}ms:`, error)
-      throw new Error(`批量图片格式转换失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
-
-  /**
-   * 使用 Canvas API 转换图片格式
-   */
-  private static async convertWithCanvas(
+  private static async convertImageWithCanvas(
     imageFile: File,
     options: FormatConversionOptions
-  ): Promise<File> {
+  ): Promise<{ data: number[]; width: number; height: number }> {
     return new Promise((resolve, reject) => {
       const img = new Image()
       img.onload = () => {
@@ -93,32 +76,17 @@ export class FormatConversionService {
           const ctx = canvas.getContext('2d')
           
           if (!ctx) {
-            reject(new Error('无法创建 Canvas 上下文'))
+            reject(new Error('无法获取Canvas上下文'))
             return
           }
 
           // 设置画布尺寸
-          canvas.width = img.width
-          canvas.height = img.height
-
-          // 如果需要调整尺寸
-          if (options.resize) {
-            const { width, height, maintainAspectRatio } = options.resize
-            if (width && height) {
-              canvas.width = width
-              canvas.height = height
-            } else if (width && maintainAspectRatio) {
-              canvas.width = width
-              canvas.height = (img.height * width) / img.width
-            } else if (height && maintainAspectRatio) {
-              canvas.height = height
-              canvas.width = (img.width * height) / img.height
-            }
-          }
-
+          canvas.width = img.naturalWidth
+          canvas.height = img.naturalHeight
+          
           // 绘制图片
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-
+          ctx.drawImage(img, 0, 0)
+          
           // 转换为目标格式
           const formatInfo = getFormatInfo(options.targetFormat)
           if (!formatInfo) {
@@ -126,29 +94,29 @@ export class FormatConversionService {
             return
           }
 
-          let mimeType = formatInfo.mimeType
-          let quality = options.quality || 0.8
-
-          // 处理特殊格式
-          if (options.targetFormat === 'jpeg') {
-            // JPEG 不支持透明度，需要填充白色背景
-            if (options.preserveTransparency) {
-              ctx.globalCompositeOperation = 'destination-over'
-              ctx.fillStyle = '#ffffff'
-              ctx.fillRect(0, 0, canvas.width, canvas.height)
-            }
-            quality = Math.max(0.1, Math.min(1, quality / 100))
-          }
-
+          const mimeType = formatInfo.mimeType
+          const quality = options.quality ? options.quality / 100 : 0.8
+          
           canvas.toBlob(
             (blob) => {
-              if (blob) {
-                const fileName = this.generateFileName(imageFile.name, options.targetFormat)
-                const file = new File([blob], fileName, { type: mimeType })
-                resolve(file)
-              } else {
-                reject(new Error('Canvas 转换失败'))
+              if (!blob) {
+                reject(new Error('格式转换失败'))
+                return
               }
+              
+              // 将Blob转换为ArrayBuffer，然后转换为number[]
+              const reader = new FileReader()
+              reader.onload = () => {
+                const arrayBuffer = reader.result as ArrayBuffer
+                const uint8Array = new Uint8Array(arrayBuffer)
+                resolve({
+                  data: Array.from(uint8Array),
+                  width: img.naturalWidth,
+                  height: img.naturalHeight
+                })
+              }
+              reader.onerror = () => reject(new Error('读取转换数据失败'))
+              reader.readAsArrayBuffer(blob)
             },
             mimeType,
             quality
@@ -160,6 +128,32 @@ export class FormatConversionService {
       img.onerror = () => reject(new Error('图片加载失败'))
       img.src = URL.createObjectURL(imageFile)
     })
+  }
+
+  /**
+   * 批量转换图片格式
+   */
+  static async batchConvertImages(
+    imageFiles: File[],
+    options: FormatConversionOptions
+  ): Promise<FormatConversionResult[]> {
+    const startTime = performance.now()
+
+    try {
+      // 并行处理所有图片
+      const results = await Promise.all(
+        imageFiles.map(file => this.convertImage(file, options))
+      )
+
+      const endTime = performance.now()
+      console.log(`批量图片格式转换完成: ${(endTime - startTime).toFixed(2)}ms`)
+
+      return results
+    } catch (error) {
+      const endTime = performance.now()
+      console.error(`批量图片格式转换失败 after ${(endTime - startTime).toFixed(2)}ms:`, error)
+      throw new Error(`批量图片格式转换失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
   /**
@@ -198,17 +192,17 @@ export class FormatConversionService {
    */
   private static validateConversionOptions(_originalFormat: string, options: FormatConversionOptions): void {
     const targetFormat = options.targetFormat
-    
+
     // 检查是否支持透明度
     if (options.preserveTransparency && !supportsTransparency(targetFormat)) {
       throw new Error(`${targetFormat.toUpperCase()} 格式不支持透明度`)
     }
-    
+
     // 检查是否支持无损压缩
     if (options.lossless && !supportsLossless(targetFormat)) {
       throw new Error(`${targetFormat.toUpperCase()} 格式不支持无损压缩`)
     }
-    
+
     // 检查质量设置
     if (options.quality !== undefined && (options.quality < 1 || options.quality > 100)) {
       throw new Error('质量设置必须在 1-100 之间')
@@ -216,13 +210,25 @@ export class FormatConversionService {
   }
 
   /**
-   * 生成新文件名
+   * 创建转换后的File对象
    */
-  private static generateFileName(originalFileName: string, targetFormat: ImageFormat): string {
-    const nameWithoutExt = originalFileName.replace(/\.[^/.]+$/, '')
+  private static createConvertedFile(
+    data: number[],
+    originalFileName: string,
+    targetFormat: ImageFormat
+  ): File {
     const formatInfo = getFormatInfo(targetFormat)
-    const extension = formatInfo?.extensions[0] || '.jpg'
-    return `${nameWithoutExt}${extension}`
+    if (!formatInfo) {
+      throw new Error(`不支持的格式: ${targetFormat}`)
+    }
+
+    // 生成新文件名
+    const nameWithoutExt = originalFileName.replace(/\.[^/.]+$/, '')
+    const newFileName = `${nameWithoutExt}.${formatInfo.extensions[0].slice(1)}`
+
+    // 将Array<number>转换为Uint8Array，然后转换为ArrayBuffer
+    const uint8Array = new Uint8Array(data)
+    return new File([uint8Array], newFileName, { type: formatInfo.mimeType })
   }
 
   /**
@@ -233,14 +239,15 @@ export class FormatConversionService {
     targetFormat: ImageFormat
   ): Partial<FormatConversionOptions> {
     const fileSizeMB = file.size / (1024 * 1024)
-    
+    const originalFormat = this.getImageFormat(file)
+
     // 基础选项
     const options: Partial<FormatConversionOptions> = {
       targetFormat,
       preserveTransparency: supportsTransparency(targetFormat),
       lossless: false
     }
-    
+
     // 根据文件大小和质量要求调整设置
     if (fileSizeMB > 10) {
       // 大文件：优先压缩
@@ -255,14 +262,13 @@ export class FormatConversionService {
       // 很小文件：高质量
       options.quality = 85
     }
-    
+
     // 如果原格式和目标格式相同，使用无损转换
-    const originalFormat = this.getImageFormat(file)
     if (originalFormat === targetFormat && supportsLossless(targetFormat)) {
       options.lossless = true
       delete options.quality
     }
-    
+
     return options
   }
 
@@ -272,7 +278,8 @@ export class FormatConversionService {
   static isFormatConversionSupported(): boolean {
     try {
       const canvas = document.createElement('canvas')
-      return !!(canvas.getContext('2d') && canvas.toBlob)
+      const ctx = canvas.getContext('2d')
+      return !!(ctx && canvas.toBlob)
     } catch (error) {
       return false
     }
@@ -282,6 +289,6 @@ export class FormatConversionService {
    * 获取支持的转换格式
    */
   static getSupportedFormats(): ImageFormat[] {
-    return ['jpeg', 'png', 'webp']
+    return ['jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff']
   }
 }

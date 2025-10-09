@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter } from 'lucide-react'
+import { Settings, RefreshCw, Search, Filter, HelpCircle } from 'lucide-react'
 import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
 import ImageUpload from '@/components/image-upload/ImageUpload'
+import ImageBrowser from '@/components/image-browser/ImageBrowser'
+import KeyboardHelpModal from '@/components/keyboard-help/KeyboardHelpModal'
 import { Toaster } from 'react-hot-toast'
 import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/utils/keyboardShortcuts'
 import './App.css'
@@ -18,8 +20,14 @@ function App() {
   } = useImageStore()
   
   const [showConfigModal, setShowConfigModal] = useState(false)
+  // 暂时禁用压缩、转换和AI分析功能
+  // const [showCompression, setShowCompression] = useState(false)
+  // const [showFormatConversion, setShowFormatConversion] = useState(false)
+  // const [showAIModelManager, setShowAIModelManager] = useState(false)
+  // const [showAIAnalysis, setShowAIAnalysis] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -36,6 +44,41 @@ function App() {
 
   const handleCloseConfigModal = useCallback(() => {
     setShowConfigModal(false)
+  }, [])
+
+  // 暂时禁用压缩、转换和AI分析功能
+  // const handleOpenCompression = useCallback(() => {
+  //   console.log('Opening compression modal, current state:', showCompression)
+  //   setShowCompression(true)
+  //   console.log('State set to true, new state:', true)
+  // }, [showCompression])
+
+  // const handleCloseCompression = useCallback(() => {
+  //   setShowCompression(false)
+  // }, [])
+
+  // const handleOpenFormatConversion = useCallback(() => {
+  //   setShowFormatConversion(true)
+  // }, [])
+
+  // const handleCloseFormatConversion = useCallback(() => {
+  //   setShowFormatConversion(false)
+  // }, [])
+
+  // const handleOpenAIAnalysis = useCallback(() => {
+  //   setShowAIAnalysis(true)
+  // }, [])
+
+  // const handleCloseAIAnalysis = useCallback(() => {
+  //   setShowAIAnalysis(false)
+  // }, [])
+
+  const handleOpenKeyboardHelp = useCallback(() => {
+    setShowKeyboardHelp(true)
+  }, [])
+
+  const handleCloseKeyboardHelp = useCallback(() => {
+    setShowKeyboardHelp(false)
   }, [])
 
   // 初始化存储服务
@@ -65,21 +108,54 @@ function App() {
         description: '关闭当前模态框',
         action: () => {
           if (showConfigModal) handleCloseConfigModal()
+          // else if (showCompression) handleCloseCompression()
+          // else if (showFormatConversion) handleCloseFormatConversion()
+          // else if (showAIModelManager) handleCloseAIModelManager()
+          // else if (showAIAnalysis) handleCloseAIAnalysis()
+          else if (showKeyboardHelp) handleCloseKeyboardHelp()
         },
         category: SHORTCUT_CATEGORIES.GENERAL
       },
       {
         key: COMMON_SHORTCUTS.F1,
         description: '显示键盘快捷键帮助',
-        action: () => {
-          // TODO: 实现键盘帮助
-        },
+        action: handleOpenKeyboardHelp,
         category: SHORTCUT_CATEGORIES.HELP
       },
       {
         key: COMMON_SHORTCUTS.F5,
         description: '刷新图片列表',
         action: handleLoadImages,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+      
+      // 功能快捷键 - 暂时禁用
+      // {
+      //   key: COMMON_SHORTCUTS.C,
+      //   ctrlKey: true,
+      //   description: '打开图片压缩工具',
+      //   action: handleOpenCompression,
+      //   category: SHORTCUT_CATEGORIES.GENERAL
+      // },
+      // {
+      //   key: COMMON_SHORTCUTS.F,
+      //   ctrlKey: true,
+      //   description: '打开图片格式转换',
+      //   action: handleOpenFormatConversion,
+      //   category: SHORTCUT_CATEGORIES.GENERAL
+      // },
+      // {
+      //   key: COMMON_SHORTCUTS.A,
+      //   ctrlKey: true,
+      //   description: '打开AI图片分析',
+      //   action: handleOpenAIAnalysis,
+      //   category: SHORTCUT_CATEGORIES.GENERAL
+      // },
+      {
+        key: COMMON_SHORTCUTS.COMMA,
+        ctrlKey: true,
+        description: '打开GitHub配置',
+        action: handleOpenConfigModal,
         category: SHORTCUT_CATEGORIES.GENERAL
       },
       
@@ -96,14 +172,16 @@ function App() {
         },
         category: SHORTCUT_CATEGORIES.SEARCH
       },
-      
-      // 配置快捷键
       {
-        key: COMMON_SHORTCUTS.COMMA,
+        key: COMMON_SHORTCUTS.V,
         ctrlKey: true,
-        description: '打开GitHub配置',
-        action: handleOpenConfigModal,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        description: '切换视图模式',
+        action: () => {
+          // 触发图片浏览器的视图切换
+          const event = new CustomEvent('toggleViewMode')
+          window.dispatchEvent(event)
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
       }
     ]
 
@@ -113,10 +191,9 @@ function App() {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
     }
   }, [
-    showConfigModal,
-    handleCloseConfigModal,
-    handleOpenConfigModal,
-    handleLoadImages
+    showConfigModal, showKeyboardHelp,
+    handleCloseConfigModal, handleCloseKeyboardHelp,
+    handleOpenKeyboardHelp, handleLoadImages, handleOpenConfigModal
   ])
 
   // 过滤图片
@@ -188,6 +265,13 @@ function App() {
                 title="刷新图片 (F5)"
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              <button
+                onClick={handleOpenKeyboardHelp}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title="键盘快捷键帮助 (F1)"
+              >
+                <HelpCircle className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -284,63 +368,12 @@ function App() {
             )}
           </div>
 
-          {/* 图片浏览 - 简单网格布局 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredImages.map((image) => (
-              <div key={image.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                  <img
-                    src={image.url}
-                    alt={image.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-3">
-                  <h3 className="text-sm font-medium text-gray-900 truncate" title={image.name}>
-                    {image.name}
-                  </h3>
-                  {image.description && (
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2" title={image.description}>
-                      {image.description}
-                    </p>
-                  )}
-                  {image.tags && image.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {image.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {image.tags.length > 3 && (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
-                          +{image.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+          {/* 图片浏览 */}
+          <div className="min-h-0">
+            <ImageBrowser images={filteredImages} />
           </div>
+          
 
-          {filteredImages.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">没有找到图片</h3>
-              <p className="text-gray-500">
-                {searchTerm || selectedTags.length > 0 
-                  ? '尝试调整搜索条件或筛选器' 
-                  : '上传您的第一张图片开始使用'
-                }
-              </p>
-            </div>
-          )}
         </div>
       </main>
 
@@ -348,6 +381,12 @@ function App() {
       <GitHubConfigModal
         isOpen={showConfigModal}
         onClose={handleCloseConfigModal}
+      />
+
+      {/* 键盘快捷键帮助模态框 */}
+      <KeyboardHelpModal
+        isOpen={showKeyboardHelp}
+        onClose={handleCloseKeyboardHelp}
       />
 
       <Toaster />

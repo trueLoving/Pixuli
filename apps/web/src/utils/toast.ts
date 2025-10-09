@@ -1,32 +1,114 @@
-/**
- * Toast 通知工具
- */
-
 import toast from 'react-hot-toast'
 
-export const showToast = {
-  success: (message: string) => toast.success(message),
-  error: (message: string) => toast.error(message),
-  loading: (message: string) => toast.loading(message),
-  info: (message: string) => toast(message),
-  custom: (message: string, options?: any) => toast.custom(message, options),
-  dismiss: (toastId?: string) => toast.dismiss(toastId),
-  remove: (toastId?: string) => toast.remove(toastId),
+// 成功消息提示
+export const showSuccess = (message: string) => {
+  toast.success(message, {
+    duration: 3000,
+    position: 'top-right',
+    style: {
+      background: '#10b981',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
 }
 
-export const TOAST_MESSAGES = {
-  UPLOAD_SUCCESS: '图片上传成功',
-  UPLOAD_ERROR: '图片上传失败',
-  DELETE_SUCCESS: '图片删除成功',
-  DELETE_ERROR: '图片删除失败',
-  UPDATE_SUCCESS: '图片信息更新成功',
-  UPDATE_ERROR: '图片信息更新失败',
-  CONFIG_SAVED: '配置保存成功',
-  CONFIG_ERROR: '配置保存失败',
-  COMPRESSION_SUCCESS: '图片压缩完成',
-  COMPRESSION_ERROR: '图片压缩失败',
-  CONVERSION_SUCCESS: '格式转换完成',
-  CONVERSION_ERROR: '格式转换失败',
-  LOADING_IMAGES: '正在加载图片...',
-  LOADING_ERROR: '加载图片失败',
-} as const
+// 错误消息提示
+export const showError = (message: string) => {
+  toast.error(message, {
+    duration: 4000,
+    position: 'top-right',
+    style: {
+      background: '#ef4444',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+}
+
+// 警告消息提示
+export const showWarning = (message: string) => {
+  toast(message, {
+    duration: 3000,
+    position: 'top-right',
+    icon: '⚠️',
+    style: {
+      background: '#f59e0b',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+}
+
+// 信息消息提示
+export const showInfo = (message: string) => {
+  toast(message, {
+    duration: 3000,
+    position: 'top-right',
+    icon: 'ℹ️',
+    style: {
+      background: '#3b82f6',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+}
+
+// 加载中消息提示
+export const showLoading = (message: string) => {
+  return toast.loading(message, {
+    position: 'top-right',
+    style: {
+      background: '#6b7280',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+}
+
+// 更新加载中消息为成功
+export const updateLoadingToSuccess = (toastId: string, message: string) => {
+  toast.success(message, {
+    id: toastId,
+    duration: 3000,
+    style: {
+      background: '#10b981',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+}
+
+// 更新加载中消息为错误
+export const updateLoadingToError = (toastId: string, message: string) => {
+  toast.error(message, {
+    id: toastId,
+    duration: 4000,
+    style: {
+      background: '#ef4444',
+      color: '#fff',
+      fontSize: '14px',
+      padding: '12px 16px',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+    },
+  })
+} 

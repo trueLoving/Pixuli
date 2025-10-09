@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import type { GitHubConfig } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
 import { X, Github, Save, Trash2 } from 'lucide-react'
-import { showToast } from '@/utils/toast'
+import { showSuccess, showError } from '@/utils/toast'
+import { useEscapeKey } from '@/hooks/useKeyboard'
 
 interface GitHubConfigModalProps {
   isOpen: boolean
@@ -36,10 +37,10 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
     e.preventDefault()
     try {
       setGitHubConfig(formData)
-      showToast.success('GitHub 配置已成功保存！')
+      showSuccess('GitHub 配置已成功保存！')
       onClose()
     } catch (error) {
-      showToast.error(`保存配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      showError(`保存配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
 
@@ -50,10 +51,10 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
   const handleClearConfig = () => {
     try {
       clearGitHubConfig()
-      showToast.success('GitHub 配置已成功清除！')
+      showSuccess('GitHub 配置已成功清除！')
       onClose()
     } catch (error) {
-      showToast.error(`清除配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      showError(`清除配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
 
@@ -71,21 +72,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
   }, [isOpen])
 
   // 键盘支持
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, onClose])
+  useEscapeKey(onClose)
 
   // 如果模态框未打开，不渲染任何内容
   if (!isOpen) {
@@ -245,4 +232,4 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
   )
 }
 
-export default GitHubConfigModal
+export default GitHubConfigModal 

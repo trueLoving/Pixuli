@@ -1,71 +1,91 @@
-/**
- * 图片排序工具
- */
-
 import type { ImageItem } from '@/types/image'
+import type { SortField, SortOrder } from '@/components/image-browser/ImageSorter'
 
-export type SortField = 'name' | 'size' | 'createdAt' | 'updatedAt' | 'width' | 'height'
-export type SortOrder = 'asc' | 'desc'
-
-export interface SortOptions {
-  field: SortField
-  order: SortOrder
-}
-
-export function sortImages(images: ImageItem[], options: SortOptions): ImageItem[] {
-  return [...images].sort((a, b) => {
-    let aValue: any
-    let bValue: any
-
-    switch (options.field) {
-      case 'name':
-        aValue = a.name.toLowerCase()
-        bValue = b.name.toLowerCase()
-        break
-      case 'size':
-        aValue = a.size
-        bValue = b.size
-        break
+/**
+ * 对图片数组进行排序
+ * @param images 图片数组
+ * @param sortField 排序字段
+ * @param sortOrder 排序顺序
+ * @returns 排序后的图片数组
+ */
+export function sortImages(
+  images: ImageItem[], 
+  sortField: SortField, 
+  sortOrder: SortOrder
+): ImageItem[] {
+  const sortedImages = [...images]
+  
+  sortedImages.sort((a, b) => {
+    let comparison = 0
+    
+    switch (sortField) {
       case 'createdAt':
-        aValue = new Date(a.createdAt).getTime()
-        bValue = new Date(b.createdAt).getTime()
+        // 按创建时间排序
+        const dateA = new Date(a.createdAt).getTime()
+        const dateB = new Date(b.createdAt).getTime()
+        comparison = dateA - dateB
         break
-      case 'updatedAt':
-        aValue = new Date(a.updatedAt).getTime()
-        bValue = new Date(b.updatedAt).getTime()
+        
+      case 'name':
+        // 按名称排序（忽略大小写）
+        comparison = a.name.localeCompare(b.name, 'zh-CN', { 
+          sensitivity: 'base',
+          numeric: true 
+        })
         break
-      case 'width':
-        aValue = a.width
-        bValue = b.width
+        
+      case 'size':
+        // 按文件大小排序
+        comparison = a.size - b.size
         break
-      case 'height':
-        aValue = a.height
-        bValue = b.height
-        break
+        
       default:
-        return 0
+        comparison = 0
     }
-
-    if (aValue < bValue) {
-      return options.order === 'asc' ? -1 : 1
-    }
-    if (aValue > bValue) {
-      return options.order === 'asc' ? 1 : -1
-    }
-    return 0
+    
+    // 根据排序顺序返回结果
+    return sortOrder === 'asc' ? comparison : -comparison
   })
+  
+  return sortedImages
 }
 
-export const DEFAULT_SORT_OPTIONS: SortOptions = {
-  field: 'createdAt',
-  order: 'desc'
+/**
+ * 获取排序后的图片数组（包含默认排序）
+ * @param images 原始图片数组
+ * @param sortField 排序字段
+ * @param sortOrder 排序顺序
+ * @returns 排序后的图片数组
+ */
+export function getSortedImages(
+  images: ImageItem[], 
+  sortField: SortField = 'createdAt', 
+  sortOrder: SortOrder = 'desc'
+): ImageItem[] {
+  return sortImages(images, sortField, sortOrder)
 }
 
-export const SORT_FIELD_OPTIONS = [
-  { value: 'name', label: '名称' },
-  { value: 'size', label: '文件大小' },
-  { value: 'createdAt', label: '创建时间' },
-  { value: 'updatedAt', label: '更新时间' },
-  { value: 'width', label: '宽度' },
-  { value: 'height', label: '高度' },
-] as const
+/**
+ * 获取排序描述文本
+ * @param sortField 排序字段
+ * @param sortOrder 排序顺序
+ * @returns 排序描述文本
+ */
+export function getSortDescription(sortField: SortField, sortOrder: SortOrder): string {
+  let fieldText = ''
+  switch (sortField) {
+    case 'createdAt':
+      fieldText = '上传时间'
+      break
+    case 'name':
+      fieldText = '文件名称'
+      break
+    case 'size':
+      fieldText = '文件大小'
+      break
+    default:
+      fieldText = '未知字段'
+  }
+  const orderText = sortOrder === 'asc' ? '升序' : '降序'
+  return `按${fieldText}${orderText}排列`
+} 

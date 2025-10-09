@@ -305,8 +305,8 @@ await octokit.rest.repos.createOrUpdateFileContents({
 | 图片浏览 | ✅ | ✅ | 功能一致 |
 | 搜索过滤 | ✅ | ✅ | 功能一致 |
 | 键盘快捷键 | ✅ | ✅ | 功能一致 |
-| WebP 压缩 | ✅ (WASM) | ✅ (Canvas) | 实现方式不同 |
-| 格式转换 | ✅ (WASM) | ✅ (Canvas) | 实现方式不同 |
+| WebP 压缩 | ✅ (Canvas) | ✅ (Canvas) | 实现方式相同 |
+| 格式转换 | ✅ (Canvas) | ✅ (Canvas) | 实现方式相同 |
 | AI 分析 | ✅ | ❌ | Web 端暂不支持 |
 | 模型管理 | ✅ | ❌ | Web 端暂不支持 |
 

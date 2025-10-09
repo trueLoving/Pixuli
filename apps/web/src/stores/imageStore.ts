@@ -71,6 +71,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       try {
         const images = await storageService.getImageList()
         
+        
         // 去重：确保每个图片ID只出现一次，如果有重复，保留最新的
         const uniqueImages = images.reduce((acc: ImageItem[], current) => {
           const existingIndex = acc.findIndex(img => img.id === current.id)
@@ -133,7 +134,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       const total = files.length
       let completed = 0
       let failed = 0
-      const items: UploadProgress[] = files.map((_file, index) => ({
+      const items: UploadProgress[] = files.map((file, index) => ({
         id: `${Date.now()}-${index}`,
         progress: 0,
         status: 'uploading' as const,
@@ -316,22 +317,22 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ error })
     },
 
-    clearError: () => {
-      set({ error: null })
-    },
+      clearError: () => {
+    set({ error: null })
+  },
 
-    setBatchUploadProgress: (progress: BatchUploadProgress | null) => {
-      set({ batchUploadProgress: progress })
-    },
+  setBatchUploadProgress: (progress: BatchUploadProgress | null) => {
+    set({ batchUploadProgress: progress })
+  },
 
-    clearGitHubConfig: () => {
-      clearGitHubConfig()
-      set({ 
-        githubConfig: null, 
-        storageService: null, 
-        images: [],
-        error: null 
-      })
-    },
+  clearGitHubConfig: () => {
+    clearGitHubConfig()
+    set({ 
+      githubConfig: null, 
+      storageService: null, 
+      images: [],
+      error: null 
+    })
+  },
   }
-})
+}) 

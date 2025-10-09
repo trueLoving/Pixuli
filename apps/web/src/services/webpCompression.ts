@@ -11,20 +11,22 @@ export class WebPCompressionService {
     const startTime = performance.now()
     
     try {
-      // 使用 Canvas API 进行 WebP 压缩
-      const compressedFile = await this.compressWithCanvas(imageFile, options)
+      // 检查浏览器是否支持WebP
+      if (!this.isWebPSupported()) {
+        throw new Error('浏览器不支持WebP格式')
+      }
+
+      // 使用Canvas API进行WebP压缩
+      const result = await this.compressImageWithCanvas(imageFile, options)
       
       const endTime = performance.now()
-      const compressionRatio = (compressedFile.size / imageFile.size)
-      
+      const compressionRatio = result.compressedSize / imageFile.size
       console.log(`WebP 压缩完成: ${(endTime - startTime).toFixed(2)}ms, 压缩率: ${(compressionRatio * 100).toFixed(2)}%`)
       
       return {
-        data: await this.fileToArray(compressedFile),
-        originalSize: imageFile.size,
-        compressedSize: compressedFile.size,
+        ...result,
         compressionRatio,
-        fileName: compressedFile.name
+        originalSize: imageFile.size
       }
     } catch (error) {
       const endTime = performance.now()
@@ -34,38 +36,12 @@ export class WebPCompressionService {
   }
 
   /**
-   * 批量压缩图片为WebP格式
+   * 使用Canvas API压缩图片
    */
-  static async batchCompressImages(
-    imageFiles: File[],
-    options?: WebPCompressOptions
-  ): Promise<WebPCompressResult[]> {
-    const startTime = performance.now()
-    
-    try {
-      const results = await Promise.all(
-        imageFiles.map(file => this.compressImage(file, options))
-      )
-      
-      const endTime = performance.now()
-      const avgCompressionRatio = results.reduce((sum, result) => sum + result.compressionRatio, 0) / results.length
-      console.log(`批量压缩完成: ${(endTime - startTime).toFixed(2)}ms, 平均压缩率: ${(avgCompressionRatio * 100).toFixed(2)}%`)
-      
-      return results
-    } catch (error) {
-      const endTime = performance.now()
-      console.error(`Batch WebP compression failed after ${(endTime - startTime).toFixed(2)}ms:`, error)
-      throw new Error(`批量WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
-
-  /**
-   * 使用 Canvas API 进行 WebP 压缩
-   */
-  private static async compressWithCanvas(
+  private static async compressImageWithCanvas(
     imageFile: File,
     options?: WebPCompressOptions
-  ): Promise<File> {
+  ): Promise<{ data: number[]; compressedSize: number; width: number; height: number }> {
     return new Promise((resolve, reject) => {
       const img = new Image()
       img.onload = () => {
@@ -74,28 +50,40 @@ export class WebPCompressionService {
           const ctx = canvas.getContext('2d')
           
           if (!ctx) {
-            reject(new Error('无法创建 Canvas 上下文'))
+            reject(new Error('无法获取Canvas上下文'))
             return
           }
 
-          canvas.width = img.width
-          canvas.height = img.height
-
+          // 设置画布尺寸
+          canvas.width = img.naturalWidth
+          canvas.height = img.naturalHeight
+          
           // 绘制图片
           ctx.drawImage(img, 0, 0)
-
-          // 设置压缩质量
-          const quality = options?.quality ? Math.max(0.1, Math.min(1, options.quality / 100)) : 0.8
-
+          
+          // 压缩为WebP格式
+          const quality = options?.quality || 0.8
           canvas.toBlob(
             (blob) => {
-              if (blob) {
-                const fileName = this.generateWebPFileName(imageFile.name)
-                const file = new File([blob], fileName, { type: 'image/webp' })
-                resolve(file)
-              } else {
-                reject(new Error('Canvas 转换失败'))
+              if (!blob) {
+                reject(new Error('压缩失败'))
+                return
               }
+              
+              // 将Blob转换为ArrayBuffer，然后转换为number[]
+              const reader = new FileReader()
+              reader.onload = () => {
+                const arrayBuffer = reader.result as ArrayBuffer
+                const uint8Array = new Uint8Array(arrayBuffer)
+                resolve({
+                  data: Array.from(uint8Array),
+                  compressedSize: blob.size,
+                  width: img.naturalWidth,
+                  height: img.naturalHeight
+                })
+              }
+              reader.onerror = () => reject(new Error('读取压缩数据失败'))
+              reader.readAsArrayBuffer(blob)
             },
             'image/webp',
             quality
@@ -110,19 +98,68 @@ export class WebPCompressionService {
   }
 
   /**
-   * 将 File 转换为 number[]
+   * 批量压缩图片为WebP格式
    */
-  private static async fileToArray(file: File): Promise<number[]> {
-    const arrayBuffer = await file.arrayBuffer()
-    return Array.from(new Uint8Array(arrayBuffer))
+  static async batchCompressImages(
+    imageFiles: File[],
+    options?: WebPCompressOptions
+  ): Promise<WebPCompressResult[]> {
+    const startTime = performance.now()
+    
+    try {
+      // 检查浏览器是否支持WebP
+      if (!this.isWebPSupported()) {
+        throw new Error('浏览器不支持WebP格式')
+      }
+
+      // 并行处理所有图片
+      const results = await Promise.all(
+        imageFiles.map(file => this.compressImage(file, options))
+      )
+      
+      const endTime = performance.now()
+      const avgCompressionRatio = results.reduce((sum, result) => sum + result.compressionRatio, 0) / results.length
+      console.log(`批量WebP压缩完成: ${(endTime - startTime).toFixed(2)}ms, 平均压缩率: ${(avgCompressionRatio * 100).toFixed(2)}%`)
+      
+      return results
+    } catch (error) {
+      const endTime = performance.now()
+      console.error(`Batch WebP compression failed after ${(endTime - startTime).toFixed(2)}ms:`, error)
+      throw new Error(`批量WebP压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
   /**
-   * 生成 WebP 文件名
+   * 获取图片信息
    */
-  private static generateWebPFileName(originalFileName: string): string {
-    const nameWithoutExt = originalFileName.replace(/\.[^/.]+$/, '')
-    return `${nameWithoutExt}.webp`
+  static async getImageInfo(imageFile: File): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        resolve({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          type: imageFile.type,
+          size: imageFile.size,
+          name: imageFile.name
+        })
+      }
+      img.onerror = () => reject(new Error('图片加载失败'))
+      img.src = URL.createObjectURL(imageFile)
+    })
+  }
+
+  /**
+   * 创建压缩后的File对象
+   */
+  static createCompressedFile(
+    result: WebPCompressResult,
+    originalFileName: string
+  ): File {
+    const webpFileName = originalFileName.replace(/\.[^/.]+$/, '.webp')
+    // 将Array<number>转换为Uint8Array，然后转换为ArrayBuffer
+    const uint8Array = new Uint8Array(result.data)
+    return new File([uint8Array], webpFileName, { type: 'image/webp' })
   }
 
   /**

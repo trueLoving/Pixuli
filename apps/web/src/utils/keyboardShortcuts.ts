@@ -48,7 +48,22 @@ export class KeyboardShortcutManager {
     }
     
     const category = this.categories.get(shortcut.category)!
-    category.shortcuts.push(shortcut)
+    if (!category.shortcuts.find(s => this.generateKey(s) === key)) {
+      category.shortcuts.push(shortcut)
+    }
+  }
+
+  /**
+   * 注销快捷键
+   */
+  unregister(shortcut: KeyboardShortcut): void {
+    const key = this.generateKey(shortcut)
+    this.shortcuts.delete(key)
+    
+    const category = this.categories.get(shortcut.category)
+    if (category) {
+      category.shortcuts = category.shortcuts.filter(s => this.generateKey(s) !== key)
+    }
   }
 
   /**
@@ -59,28 +74,14 @@ export class KeyboardShortcutManager {
   }
 
   /**
-   * 注销快捷键
-   */
-  unregister(shortcut: KeyboardShortcut): void {
-    const key = this.generateKey(shortcut)
-    this.shortcuts.delete(key)
-    
-    // 从分类中移除
-    const category = this.categories.get(shortcut.category)
-    if (category) {
-      category.shortcuts = category.shortcuts.filter(s => s !== shortcut)
-    }
-  }
-
-  /**
-   * 启用/禁用快捷键
+   * 启用/禁用快捷键系统
    */
   setEnabled(enabled: boolean): void {
     this.isEnabled = enabled
   }
 
   /**
-   * 获取所有快捷键分类
+   * 获取所有分类
    */
   getCategories(): KeyboardShortcutCategory[] {
     return Array.from(this.categories.values())
@@ -90,12 +91,11 @@ export class KeyboardShortcutManager {
    * 获取指定分类的快捷键
    */
   getShortcutsByCategory(category: string): KeyboardShortcut[] {
-    const cat = this.categories.get(category)
-    return cat ? cat.shortcuts : []
+    return this.categories.get(category)?.shortcuts || []
   }
 
   /**
-   * 生成快捷键的唯一键
+   * 生成快捷键的唯一标识
    */
   private generateKey(shortcut: KeyboardShortcut): string {
     const modifiers = []
@@ -113,12 +113,10 @@ export class KeyboardShortcutManager {
   private bindGlobalKeydown(): void {
     const handleKeydown = (event: KeyboardEvent) => {
       if (!this.isEnabled) return
-      
-      // 检查是否在输入框中
+
+      // 如果焦点在输入框、文本区域或可编辑元素上，跳过快捷键
       const target = event.target as HTMLElement
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true') {
-        return
-      }
+      if (this.isEditableElement(target)) return
 
       const key = this.generateKey({
         key: event.key,
@@ -134,12 +132,27 @@ export class KeyboardShortcutManager {
       const shortcut = this.shortcuts.get(key)
       if (shortcut && shortcut.enabled !== false) {
         event.preventDefault()
+        event.stopPropagation()
         shortcut.action()
       }
     }
 
     document.addEventListener('keydown', handleKeydown)
     this.eventListeners.add(handleKeydown)
+  }
+
+  /**
+   * 检查是否为可编辑元素
+   */
+  private isEditableElement(element: HTMLElement): boolean {
+    const tagName = element.tagName.toLowerCase()
+    const editableTags = ['input', 'textarea', 'select']
+    
+    if (editableTags.includes(tagName)) return true
+    if (element.contentEditable === 'true') return true
+    if (element.getAttribute('role') === 'textbox') return true
+    
+    return false
   }
 
   /**
@@ -155,21 +168,20 @@ export class KeyboardShortcutManager {
   }
 }
 
-// 创建全局实例
+// 全局快捷键管理器实例
 export const keyboardManager = new KeyboardShortcutManager()
 
-// 常用快捷键常量
+// 常用快捷键定义
 export const COMMON_SHORTCUTS = {
+  // 通用快捷键
   ESCAPE: 'Escape',
   ENTER: 'Enter',
   SPACE: ' ',
-  DELETE: 'Delete',
-  BACKSPACE: 'Backspace',
-  ARROW_UP: 'ArrowUp',
-  ARROW_DOWN: 'ArrowDown',
-  ARROW_LEFT: 'ArrowLeft',
-  ARROW_RIGHT: 'ArrowRight',
   TAB: 'Tab',
+  BACKSPACE: 'Backspace',
+  DELETE: 'Delete',
+  
+  // 功能键
   F1: 'F1',
   F2: 'F2',
   F3: 'F3',
@@ -182,6 +194,14 @@ export const COMMON_SHORTCUTS = {
   F10: 'F10',
   F11: 'F11',
   F12: 'F12',
+  
+  // 方向键
+  ARROW_UP: 'ArrowUp',
+  ARROW_DOWN: 'ArrowDown',
+  ARROW_LEFT: 'ArrowLeft',
+  ARROW_RIGHT: 'ArrowRight',
+  
+  // 字母和数字
   A: 'a',
   B: 'b',
   C: 'c',
@@ -208,17 +228,8 @@ export const COMMON_SHORTCUTS = {
   X: 'x',
   Y: 'y',
   Z: 'z',
-  COMMA: ',',
-  PERIOD: '.',
-  SLASH: '/',
-  BACKSLASH: '\\',
-  SEMICOLON: ';',
-  QUOTE: "'",
-  BRACKET_LEFT: '[',
-  BRACKET_RIGHT: ']',
-  MINUS: '-',
-  EQUAL: '=',
-  BACKTICK: '`',
+  
+  // 数字
   DIGIT_0: '0',
   DIGIT_1: '1',
   DIGIT_2: '2',
@@ -229,15 +240,19 @@ export const COMMON_SHORTCUTS = {
   DIGIT_7: '7',
   DIGIT_8: '8',
   DIGIT_9: '9',
+  
+  // 特殊字符
+  SLASH: '/',
+  COMMA: ',',
 } as const
 
 // 快捷键分类
 export const SHORTCUT_CATEGORIES = {
   GENERAL: '通用',
   NAVIGATION: '导航',
-  EDITING: '编辑',
-  VIEW: '视图',
-  SEARCH: '搜索',
+  MODAL: '模态框',
   IMAGE_BROWSER: '图片浏览',
-  HELP: '帮助',
+  IMAGE_EDIT: '图片编辑',
+  SEARCH: '搜索',
+  HELP: '帮助'
 } as const

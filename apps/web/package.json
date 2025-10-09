@@ -22,7 +22,6 @@
     "autoprefixer": "^10.4.14",
     "lucide-react": "^0.263.1",
     "octokit": "^3.1.2",
-    "pixuli-wasm": "workspace:*",
     "postcss": "^8.4.24",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -41,11 +40,6 @@
     "vite": "^5.0.0"
   },
   "optionalDependencies": {
-    "@tensorflow/tfjs": "^4.22.0",
-    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
-    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
-    "@tensorflow/tfjs-converter": "^4.22.0",
-    "@tensorflow/tfjs-core": "^4.22.0",
-    "@tensorflow/tfjs-layers": "^4.22.0"
+   
   }
 }
