@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { GitHubConfig } from '@/types/image'
 import { useImageStore } from '@/stores/imageStore'
-import { X, Github, Settings, Save, Trash2 } from 'lucide-react'
+import { X, Github, Settings, Save, Trash2, Download, Upload } from 'lucide-react'
 import { showSuccess, showError, showInfo } from '@/utils/toast'
 import { useEscapeKey } from '@/hooks/useKeyboard'
 
@@ -56,6 +56,77 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
     } catch (error) {
       showError(`清除配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
+  }
+
+  // 导出配置
+  const handleExportConfig = () => {
+    try {
+      if (!githubConfig) {
+        showError('没有可导出的配置')
+        return
+      }
+
+      const configData = {
+        version: '1.0',
+        platform: 'desktop',
+        timestamp: new Date().toISOString(),
+        config: githubConfig
+      }
+
+      const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `pixuli-github-config-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      showSuccess('GitHub 配置已成功导出！')
+    } catch (error) {
+      showError(`导出配置失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
+  }
+
+  // 导入配置
+  const handleImportConfig = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string
+          const configData = JSON.parse(content)
+
+          // 验证配置格式
+          if (!configData.config || !configData.config.owner || !configData.config.repo || !configData.config.token) {
+            showError('配置文件格式不正确')
+            return
+          }
+
+          // 更新表单数据
+          setFormData({
+            owner: configData.config.owner || '',
+            repo: configData.config.repo || '',
+            branch: configData.config.branch || 'main',
+            token: configData.config.token || '',
+            path: configData.config.path || 'images'
+          })
+
+          showSuccess('GitHub 配置已成功导入！')
+        } catch (error) {
+          showError(`导入配置失败: ${error instanceof Error ? error.message : '文件格式错误'}`)
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
   }
 
   // 阻止背景滚动
@@ -186,8 +257,30 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
                 </p>
               </div>
 
-              {/* 按钮组 */}
-              <div className="flex space-x-3 pt-4">
+              {/* 导入导出按钮组 */}
+              <div className="flex space-x-2 pt-4">
+                <button
+                  type="button"
+                  onClick={handleImportConfig}
+                  className="px-3 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center space-x-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>导入</span>
+                </button>
+                {githubConfig && (
+                  <button
+                    type="button"
+                    onClick={handleExportConfig}
+                    className="px-3 py-2 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center space-x-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>导出</span>
+                  </button>
+                )}
+              </div>
+
+              {/* 主要按钮组 */}
+              <div className="flex space-x-3 pt-2">
                 {githubConfig && (
                   <button
                     type="button"
@@ -216,14 +309,26 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({ isOpen, onClose }
             </form>
 
             {/* 帮助信息 */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-md">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">📋 如何获取 GitHub Token？</h4>
-              <ol className="text-xs text-blue-700 space-y-1">
-                <li>1. 访问 GitHub Settings → Developer settings</li>
-                <li>2. 选择 Personal access tokens → Tokens (classic)</li>
-                <li>3. 生成新 token，勾选 repo 权限</li>
-                <li>4. 复制生成的 token 并粘贴到上方输入框</li>
-              </ol>
+            <div className="mt-6 space-y-4">
+              <div className="p-4 bg-blue-50 rounded-md">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">📋 如何获取 GitHub Token？</h4>
+                <ol className="text-xs text-blue-700 space-y-1">
+                  <li>1. 访问 GitHub Settings → Developer settings</li>
+                  <li>2. 选择 Personal access tokens → Tokens (classic)</li>
+                  <li>3. 生成新 token，勾选 repo 权限</li>
+                  <li>4. 复制生成的 token 并粘贴到上方输入框</li>
+                </ol>
+              </div>
+              
+              <div className="p-4 bg-green-50 rounded-md">
+                <h4 className="text-sm font-medium text-green-800 mb-2">🔄 配置导入导出</h4>
+                <ul className="text-xs text-green-700 space-y-1">
+                  <li>• <strong>导出</strong>：将当前配置保存为 JSON 文件</li>
+                  <li>• <strong>导入</strong>：从 JSON 文件加载配置</li>
+                  <li>• <strong>跨平台</strong>：支持桌面端和 Web 端配置互导</li>
+                  <li>• <strong>备份</strong>：建议定期导出配置作为备份</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
