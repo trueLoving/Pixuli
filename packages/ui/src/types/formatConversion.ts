@@ -171,7 +171,7 @@ export function supportsLossless(format: ImageFormat): boolean {
  * @param file 文件对象
  * @returns 是否为图片文件
  */
-export function isImageFile(file: File): boolean {
+export function isImageFileType(file: File): boolean {
   return file.type.startsWith('image/')
 }
 

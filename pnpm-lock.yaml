@@ -138,6 +138,9 @@ importers:
       octokit:
         specifier: ^3.1.2
         version: 3.2.2
+      pixuli-ui:
+        specifier: workspace:*
+        version: link:../../packages/ui
       postcss:
         specifier: ^8.4.24
         version: 8.5.6

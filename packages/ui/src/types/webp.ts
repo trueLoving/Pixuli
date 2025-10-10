@@ -20,7 +20,7 @@ export interface WebPCompressResult {
   height: number
 }
 
-export interface ImageInfo {
+export interface WebPImageInfo {
   width: number
   height: number
   format: string
