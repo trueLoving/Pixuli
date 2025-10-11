@@ -13,9 +13,20 @@ import './ImageBrowser.css'
 interface ImageBrowserProps {
   images: ImageItem[]
   className?: string
+  onDeleteImage?: (id: string, name: string) => Promise<void>
+  onUpdateImage?: (data: any) => Promise<void>
+  getImageDimensionsFromUrl?: (url: string) => Promise<{ width: number; height: number }>
+  formatFileSize?: (size: number) => string
 }
 
-const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) => {
+const ImageBrowser: React.FC<ImageBrowserProps> = ({ 
+  images, 
+  className = '',
+  onDeleteImage,
+  onUpdateImage,
+  getImageDimensionsFromUrl,
+  formatFileSize
+}) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid')
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt')
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc')
@@ -315,6 +326,10 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
             images={filteredAndSortedImages}
             selectedImageIndex={selectedImageIndex}
             onImageSelect={handleImageSelect}
+            onDeleteImage={onDeleteImage}
+            onUpdateImage={onUpdateImage}
+            getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+            formatFileSize={formatFileSize}
           />
         </div>
         <div className={`image-browser-view ${currentView === 'list' ? '' : 'hidden'}`}>
@@ -322,6 +337,10 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({ images, className = '' }) =
             images={filteredAndSortedImages}
             selectedImageIndex={selectedImageIndex}
             onImageSelect={handleImageSelect}
+            onDeleteImage={onDeleteImage}
+            onUpdateImage={onUpdateImage}
+            getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+            formatFileSize={formatFileSize}
           />
          </div>
        </div>

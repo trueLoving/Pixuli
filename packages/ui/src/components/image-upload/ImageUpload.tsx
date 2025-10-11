@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
-import { ImageUploadData, MultiImageUploadData, BatchUploadProgress } from '../../types/image'
+import type { ImageUploadData, MultiImageUploadData, BatchUploadProgress } from '../../types/image'
 import { showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
 
 interface ImageUploadProps {

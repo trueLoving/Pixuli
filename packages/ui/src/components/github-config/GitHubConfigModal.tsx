@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { GitHubConfig } from '../../types/image'
+import type { GitHubConfig } from '../../types/image'
 import { X, Github, Save, Trash2, Download, Upload } from 'lucide-react'
 import { showSuccess, showError } from '../../utils/toast'
 

@@ -22,9 +22,6 @@ importers:
       octokit:
         specifier: ^3.1.2
         version: 3.2.2
-      pixuli-ui:
-        specifier: workspace:*
-        version: link:../../packages/ui
       pixuli-wasm:
         specifier: workspace:*
         version: link:../../pixuli-wasm
@@ -138,9 +135,6 @@ importers:
       octokit:
         specifier: ^3.1.2
         version: 3.2.2
-      pixuli-ui:
-        specifier: workspace:*
-        version: link:../../packages/ui
       postcss:
         specifier: ^8.4.24
         version: 8.5.6
@@ -150,15 +144,9 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
-      react-dropzone:
-        specifier: ^14.2.3
-        version: 14.3.8(react@18.3.1)
       react-hot-toast:
         specifier: ^2.6.0
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-image-crop:
-        specifier: ^10.1.8
-        version: 10.1.8(react@18.3.1)
       tailwindcss:
         specifier: ^3.3.2
         version: 3.4.17

@@ -45,4 +45,4 @@ const ViewToggle: React.FC<ViewToggleProps> = ({
   )
 }
 
-export default ViewToggle
+export default ViewToggle 

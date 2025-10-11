@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { ImageItem } from '../../types/image'
-import { Eye, Edit, Trash2, Calendar, X, Link, ExternalLink, HardDrive } from 'lucide-react'
+// import { useImageStore } from '../../stores/imageStore'
+import { Eye, Edit, Trash2, Calendar, X, Link, ExternalLink, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError, showSuccess, showError } from '../../utils/toast'
+import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '../../hooks'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
 import './ImageGrid.css'
 
 interface ImageGridProps {
@@ -26,40 +28,87 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   getImageDimensionsFromUrl,
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`
 }) => {
+  // 滚动加载配置
+  const pageSize = 20
+  const initialLoadCount = 12
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
-  const [imageDimensions, _setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
+  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
   const fetchingDimensions = useRef<Set<string>>(new Set())
+  
+  // 使用无限滚动Hook
+  const {
+    visibleItems,
+    hasMore,
+    isLoading,
+    loadMore,
+    reset,
+    containerRef,
+    loadingRef
+  } = useInfiniteScroll(images, {
+    pageSize,
+    initialLoadCount,
+    threshold: 0.1,
+    rootMargin: '200px'
+  })
+
+  // 使用懒加载 Hook
+  const { visibleItems: visibleImages, observeElement } = useLazyLoad({
+    threshold: 0.1,
+    rootMargin: '50px'
+  })
+
+  // 当图片列表变化时重置滚动状态
+  useEffect(() => {
+    // 当图片列表发生变化时，重置滚动状态确保正确同步
+    reset()
+  }, [images, reset])
 
   // 获取图片真实尺寸
-  // const fetchImageDimensions = useCallback(async (image: ImageItem) => {
-  //   if (!getImageDimensionsFromUrl) return
+  const fetchImageDimensions = useCallback(async (image: ImageItem) => {
+    if (!getImageDimensionsFromUrl) return
     
-  //   // 检查是否已经在获取中
-  //   if (fetchingDimensions.current.has(image.id)) {
-  //     return
-  //   }
+    // 检查是否已经在获取中
+    if (fetchingDimensions.current.has(image.id)) {
+      return
+    }
     
-  //   // 标记为正在获取
-  //   fetchingDimensions.current.add(image.id)
+    // 标记为正在获取
+    fetchingDimensions.current.add(image.id)
     
-  //   try {
-  //     const dimensions = await getImageDimensionsFromUrl(image.url)
+    try {
+      const dimensions = await getImageDimensionsFromUrl(image.url)
       
-  //     // 更新状态
-  //     setImageDimensions(prev => ({
-  //       ...prev,
-  //       [image.id]: dimensions
-  //     }))
-  //   } catch (error) {
-  //     console.warn(`Failed to get dimensions for ${image.name}:`, error)
-  //   } finally {
-  //     // 移除获取标记
-  //     fetchingDimensions.current.delete(image.id)
-  //   }
-  // }, [getImageDimensionsFromUrl])
+      // 更新状态
+      setImageDimensions(prev => ({
+        ...prev,
+        [image.id]: dimensions
+      }))
+    } catch (error) {
+      console.warn(`Failed to get dimensions for ${image.name}:`, error)
+    } finally {
+      // 移除获取标记
+      fetchingDimensions.current.delete(image.id)
+    }
+  }, [getImageDimensionsFromUrl])
+
+  // 当图片变为可见时获取尺寸
+  useEffect(() => {
+    visibleImages.forEach(imageId => {
+      const image = images.find(img => img.id === imageId)
+      if (image) {
+        // 如果图片尺寸数据不存在或者为0，或者还没有获取过真实尺寸，则获取尺寸
+        const hasCachedDimensions = imageDimensions[image.id]
+        const isCurrentlyFetching = fetchingDimensions.current.has(image.id)
+        
+        if (!hasCachedDimensions && !isCurrentlyFetching) {
+          fetchImageDimensions(image)
+        }
+      }
+    })
+  }, [visibleImages, images, imageDimensions, fetchImageDimensions])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
     if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
@@ -127,25 +176,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   }, [])
 
   // ESC 键关闭预览和URL模态框
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (showPreview) {
-          setShowPreview(false)
-        } else if (showUrlModal) {
-          setShowUrlModal(false)
-        }
-      }
+  useEscapeKey(() => {
+    if (showPreview) {
+      setShowPreview(false)
+    } else if (showUrlModal) {
+      setShowUrlModal(false)
     }
-
-    if (showPreview || showUrlModal) {
-      document.addEventListener('keydown', handleEscape)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [showPreview, showUrlModal])
+  }, showPreview || showUrlModal)
 
   const handleViewUrl = useCallback((image: ImageItem) => {
     setSelectedImage(image)
@@ -166,10 +203,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     window.open(url, '_blank')
   }, [])
 
+
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN')
   }, [])
 
+
+  
   // 渲染单个图片项
   const renderImageItem = useCallback((image: ImageItem, index: number) => {
     const isSelected = selectedImageIndex === index
@@ -177,6 +217,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     return (
       <div
         key={image.id}
+        ref={(el) => el && observeElement(el, image.id)}
         data-image-index={index}
         onClick={() => onImageSelect?.(index)}
         className={`image-browser-item bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col cursor-pointer ${
@@ -185,7 +226,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
             : 'border-gray-200'
         }`}
       >
-        {/* 图片预览 */}
+        {/* 图片预览 - 懒加载 */}
         <div className="relative aspect-square bg-gray-100 flex-shrink-0">
           {/* 选中指示器 */}
           {isSelected && (
@@ -328,22 +369,54 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     handleEdit,
     handleDelete,
     formatDate,
+    observeElement,
     selectedImageIndex,
-    onImageSelect,
-    formatFileSize
+    onImageSelect
   ])
 
   return (
     <>
       {/* 滚动容器 */}
-      <div className={`h-full overflow-y-auto ${className}`}>
+      <div 
+        ref={containerRef}
+        className={`h-full overflow-y-auto ${className}`}
+      >
         {/* 图片网格 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
-          {images.map((image, index) => renderImageItem(image, index))}
+          {visibleItems.map((image, index) => renderImageItem(image, index))}
         </div>
 
+        {/* 加载更多指示器 */}
+        {hasMore && (
+          <div 
+            ref={loadingRef}
+            className="flex items-center justify-center py-8"
+          >
+            {isLoading ? (
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>正在加载更多图片...</span>
+              </div>
+            ) : (
+              <button
+                onClick={loadMore}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                加载更多
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 已加载全部提示 */}
+        {!hasMore && visibleItems.length > 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <p>已加载全部 {visibleItems.length} 张图片</p>
+          </div>
+        )}
+
         {/* 空状态 */}
-        {images.length === 0 && (
+        {visibleItems.length === 0 && !isLoading && (
           <div className="text-center py-16 text-gray-500">
             <p>暂无图片</p>
           </div>

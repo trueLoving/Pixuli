@@ -1,4 +1,4 @@
-import type { ImageItem, GitHubConfig, ImageUploadData } from '@/types/image'
+import type { ImageItem, GitHubConfig, ImageUploadData } from '@packages/ui/src'
 
 export class GitHubStorageService {
   private config: GitHubConfig
@@ -120,39 +120,34 @@ export class GitHubStorageService {
         this.isImageFile(item.name) && item.type === 'file'
       )
 
-      const images = await Promise.all(
-        imageFiles.map(async (item: any) => {
-          // 获取图片尺寸信息
-          const imageInfo = await this.getImageInfoFromUrl(item.download_url)
-          
-          return {
-            id: item.sha,
-            name: item.name,
-            url: item.download_url || '',
-            githubUrl: item.html_url || '',
-            size: item.size || 0,
-            width: imageInfo.width,
-            height: imageInfo.height,
-            type: this.getMimeType(item.name),
-            tags: [], // GitHub API 不直接支持标签，需要从文件名或描述中解析
-            description: '', // GitHub API 不直接支持描述，需要从commit消息中解析
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-        })
-      )
+      const images = imageFiles.map((item: any) => {
+        return {
+          id: item.sha,
+          name: item.name,
+          url: item.download_url || '',
+          githubUrl: item.html_url || '',
+          size: item.size || 0,
+          width: 0, // 初始设为0，后续通过懒加载获取
+          height: 0, // 初始设为0，后续通过懒加载获取
+          type: this.getMimeType(item.name),
+          tags: [], // GitHub API 不直接支持标签，需要从文件名或描述中解析
+          description: '', // GitHub API 不直接支持描述，需要从commit消息中解析
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      })
       
       // 检查重复ID
-      const idCounts = images.reduce((acc: Record<string, number>, img) => {
+      const idCounts = images.reduce((acc: Record<string, number>, img: ImageItem) => {
         acc[img.id] = (acc[img.id] || 0) + 1
         return acc
       }, {})
       
-      const duplicateIds = Object.entries(idCounts).filter(([_, count]) => count > 1)
+      const duplicateIds = Object.entries(idCounts).filter(([_, count]) => (count as number) > 1)
       if (duplicateIds.length > 0) {
         console.warn('发现重复的图片ID:', duplicateIds)
         // 为重复的ID添加后缀以确保唯一性
-        const processedImages = images.map((img, index) => {
+        const processedImages = images.map((img: ImageItem, index: number) => {
           if (idCounts[img.id] > 1) {
             return {
               ...img,
@@ -217,24 +212,6 @@ export class GitHubStorageService {
     }
   }
 
-  // 辅助方法：从URL获取图片信息
-  private async getImageInfoFromUrl(url: string): Promise<{ width: number; height: number }> {
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => {
-        resolve({
-          width: img.naturalWidth || img.width,
-          height: img.naturalHeight || img.height,
-        })
-      }
-      img.onerror = () => {
-        // 如果加载失败，返回默认尺寸
-        resolve({ width: 0, height: 0 })
-      }
-      img.src = url
-    })
-  }
 
   // 辅助方法：文件转 base64
   private async fileToBase64(file: File): Promise<string> {

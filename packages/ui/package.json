@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Pixuli UI",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist",

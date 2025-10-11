@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@/types/image'
+import type { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@packages/ui/src'
 import { GitHubStorageService } from '@/services/githubStorage'
 import { loadGitHubConfig, saveGitHubConfig, clearGitHubConfig } from '@/config/github'
 
@@ -134,7 +134,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       const total = files.length
       let completed = 0
       let failed = 0
-      const items: UploadProgress[] = files.map((file, index) => ({
+      const items: UploadProgress[] = files.map((_, index) => ({
         id: `${Date.now()}-${index}`,
         progress: 0,
         status: 'uploading' as const,

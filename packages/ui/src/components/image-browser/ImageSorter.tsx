@@ -92,4 +92,4 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   )
 }
 
-export default ImageSorter
+export default ImageSorter 

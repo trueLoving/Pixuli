@@ -8,9 +8,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      "@packages": path.resolve(__dirname, '../../packages'),
     },
   },
   server: {
-    port: 3000,
+    port: 5500,
   },
 })

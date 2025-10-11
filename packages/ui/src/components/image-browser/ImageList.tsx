@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { ImageItem } from '../../types/image'
-import { Eye, Edit, Trash2, Calendar, X, Link, ExternalLink, MoreHorizontal, HardDrive,Tag } from 'lucide-react'
+// import { useImageStore } from '../../stores/imageStore'
+import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
-import { showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError, showSuccess, showError } from '../../utils/toast'
+import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '../../hooks'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
 import './ImageList.css'
 
 interface ImageListProps {
   images: ImageItem[]
+  className?: string
   selectedImageIndex?: number
   onImageSelect?: (index: number) => void
   onDeleteImage?: (id: string, name: string) => Promise<void>
@@ -28,8 +31,40 @@ const ImageList: React.FC<ImageListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
-  const [imageDimensions, _setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
+  const [imageDimensions, setImageDimensions] = useState<Record<string, { width: number; height: number }>>({})
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  
+  // 滚动加载配置
+  const pageSize = 20
+  const initialLoadCount = 15
+  
+  // 使用无限滚动Hook
+  const {
+    visibleItems,
+    hasMore,
+    isLoading,
+    loadMore,
+    reset,
+    containerRef,
+    loadingRef
+  } = useInfiniteScroll(images, {
+    pageSize,
+    initialLoadCount,
+    threshold: 0.1,
+    rootMargin: '200px'
+  })
+  
+  // 使用懒加载 Hook
+  const { visibleItems: visibleImages, observeElement } = useLazyLoad({
+    threshold: 0.1,
+    rootMargin: '50px'
+  })
+
+  // 当图片列表变化时重置滚动状态
+  useEffect(() => {
+    // 确保搜索和过滤变化时重置滚动状态
+    reset()
+  }, [images, reset])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
     if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
@@ -84,25 +119,13 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [])
 
   // ESC 键关闭预览和URL模态框
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (showPreview) {
-          setShowPreview(false)
-        } else if (showUrlModal) {
-          setShowUrlModal(false)
-        }
-      }
+  useEscapeKey(() => {
+    if (showPreview) {
+      setShowPreview(false)
+    } else if (showUrlModal) {
+      setShowUrlModal(false)
     }
-
-    if (showPreview || showUrlModal) {
-      document.addEventListener('keydown', handleEscape)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [showPreview, showUrlModal])
+  }, showPreview || showUrlModal)
 
   const handleViewUrl = useCallback((image: ImageItem) => {
     setSelectedImage(image)
@@ -136,19 +159,29 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [])
 
   // 获取图片真实尺寸
-  // const fetchImageDimensions = useCallback(async (image: ImageItem) => {
-  //   if (!getImageDimensionsFromUrl || imageDimensions[image.id]) return // 已经获取过了
+  const fetchImageDimensions = useCallback(async (image: ImageItem) => {
+    if (!getImageDimensionsFromUrl) return
     
-  //   try {
-  //     const dimensions = await getImageDimensionsFromUrl(image.url)
-  //     setImageDimensions(prev => ({
-  //       ...prev,
-  //       [image.id]: dimensions
-  //     }))
-  //   } catch (error) {
-  //     console.warn(`Failed to get dimensions for ${image.name}:`, error)
-  //   }
-  // }, [imageDimensions, getImageDimensionsFromUrl])
+    try {
+      const dimensions = await getImageDimensionsFromUrl(image.url)
+      setImageDimensions(prev => ({
+        ...prev,
+        [image.id]: dimensions
+      }))
+    } catch (error) {
+      console.warn(`Failed to get dimensions for ${image.name}:`, error)
+    }
+  }, [getImageDimensionsFromUrl])
+
+  // 当图片变为可见时获取尺寸
+  useEffect(() => {
+    visibleImages.forEach(imageId => {
+      const image = images.find(img => img.id === imageId)
+      if (image && (image.width === 0 || image.height === 0)) {
+        fetchImageDimensions(image)
+      }
+    })
+  }, [visibleImages, images, fetchImageDimensions])
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN')
@@ -161,6 +194,7 @@ const ImageList: React.FC<ImageListProps> = ({
     return (
       <div
         key={image.id}
+        ref={(el) => el && observeElement(el, image.id)}
         data-image-index={index}
         onClick={() => onImageSelect?.(index)}
         className={`image-list-item transition-all duration-200 cursor-pointer ${
@@ -175,12 +209,18 @@ const ImageList: React.FC<ImageListProps> = ({
             {/* 缩略图 */}
             <div className="flex-shrink-0 relative">
               <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                <img
-                  src={image.url}
-                  alt={image.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                {visibleImages.has(image.id) ? (
+                  <img
+                    src={image.url}
+                    alt={image.name}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="image-loading-spinner w-6 h-6"></div>
+                  </div>
+                )}
               </div>
               {/* 选中指示器 */}
               {isSelected && (
@@ -305,6 +345,8 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [
     selectedImageIndex,
     onImageSelect,
+    observeElement,
+    visibleImages,
     formatDate,
     imageDimensions,
     handlePreview,
@@ -312,9 +354,9 @@ const ImageList: React.FC<ImageListProps> = ({
     toggleRowExpansion,
     expandedRows,
     handleViewUrl,
-    handleDelete,
-    formatFileSize
+    handleDelete
   ])
+
 
   if (images.length === 0) {
     return (
@@ -342,13 +384,42 @@ const ImageList: React.FC<ImageListProps> = ({
         </div>
       </div>
 
-      {/* 列表内容 */}
+            {/* 列表内容 */}
       <div className="image-list-content">
-        <div className="h-full overflow-y-auto">
-          {images.map((image, index) => renderImageItem(image, index))}
+        <div ref={containerRef} className="h-full overflow-y-auto">
+          {visibleItems.map((image, index) => renderImageItem(image, index))}
+
+          {/* 加载更多指示器 */}
+          {hasMore && (
+            <div 
+              ref={loadingRef}
+              className="flex items-center justify-center py-8"
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>正在加载更多图片...</span>
+                </div>
+              ) : (
+                <button
+                  onClick={loadMore}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  加载更多
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* 已加载全部提示 */}
+          {!hasMore && visibleItems.length > 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <p>已加载全部 {visibleItems.length} 张图片</p>
+            </div>
+          )}
 
           {/* 空状态 */}
-          {images.length === 0 && (
+          {visibleItems.length === 0 && !isLoading && (
             <div className="text-center py-16 text-gray-500">
               <p>暂无图片</p>
             </div>
@@ -531,4 +602,4 @@ const ImageList: React.FC<ImageListProps> = ({
   )
 }
 
-export default ImageList
+export default ImageList 
