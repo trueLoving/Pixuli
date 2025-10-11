@@ -1,0 +1,6 @@
+{
+  // Rust 配置
+  "rust-analyzer.linkedProjects": [
+    "packages/wasm/Cargo.toml"
+  ]
+}

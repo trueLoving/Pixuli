@@ -1,0 +1,6 @@
+{
+  "recommendations": [
+    // Rust 开发
+    "rust-lang.rust-analyzer",
+  ]
+}
