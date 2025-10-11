@@ -9,14 +9,31 @@ const __dirname = path.dirname(__filename)
 
 // 使用现有的测试图片文件
 function getTestImageData(): number[] {
-  // 尝试使用项目中的 favicon.ico
-  const faviconPath = path.join(__dirname, '../../public/favicon.ico')
-  if (fs.existsSync(faviconPath)) {
-    const data = fs.readFileSync(faviconPath)
+  // 尝试使用测试图片目录中的 PNG 图片
+  const testImagePath = path.join(__dirname, '../test-images/test-image.png')
+  if (fs.existsSync(testImagePath)) {
+    const data = fs.readFileSync(testImagePath)
+    console.log(`✅ 使用测试 PNG 图片: ${testImagePath}`)
     return Array.from(data)
   }
   
-  // 如果找不到 favicon，创建一个简单的测试数据
+  // 尝试使用测试图片目录中的 ICO 图片
+  const testIcoPath = path.join(__dirname, '../test-images/test-image.ico')
+  if (fs.existsSync(testIcoPath)) {
+    const data = fs.readFileSync(testIcoPath)
+    console.log(`✅ 使用测试 ICO 图片: ${testIcoPath}`)
+    return Array.from(data)
+  }
+  
+  // 尝试使用项目中的 favicon.ico
+  const faviconPath = path.join(__dirname, '../../apps/desktop/public/favicon.ico')
+  if (fs.existsSync(faviconPath)) {
+    const data = fs.readFileSync(faviconPath)
+    console.log(`✅ 使用 favicon: ${faviconPath}`)
+    return Array.from(data)
+  }
+  
+  // 如果找不到图片，创建一个简单的测试数据
   console.log('⚠️ 未找到测试图片，使用模拟数据')
   return createMockImageData()
 }
@@ -110,12 +127,14 @@ async function runSimpleBenchmark() {
 
   // 分析性能提升
   const results = bench.table()
-  const wasmResult = results.find(r => r.name === 'WASM WebP 压缩')
-  const jsResult = results.find(r => r.name === 'JavaScript 压缩')
-  
-  if (wasmResult && jsResult) {
-    const speedImprovement = ((jsResult.mean - wasmResult.mean) / jsResult.mean * 100).toFixed(2)
-    console.log(`\n⚡ WASM 比 JavaScript 快 ${speedImprovement}%`)
+  if (results && results.length > 0) {
+    const wasmResult = results.find(r => r?.name === 'WASM WebP 压缩')
+    const jsResult = results.find(r => r?.name === 'JavaScript 压缩')
+    
+    if (wasmResult && jsResult && typeof wasmResult.mean === 'number' && typeof jsResult.mean === 'number') {
+      const speedImprovement = ((jsResult.mean - wasmResult.mean) / jsResult.mean * 100).toFixed(2)
+      console.log(`\n⚡ WASM 比 JavaScript 快 ${speedImprovement}%`)
+    }
   }
 
   // 压缩效果对比

@@ -9,13 +9,32 @@ const __dirname = path.dirname(__filename)
 
 // 获取测试图片数据
 function getTestImageData(): number[] {
-  const faviconPath = path.join(__dirname, '../../public/favicon.ico')
+  // 尝试使用测试图片目录中的 PNG 图片
+  const testImagePath = path.join(__dirname, '../test-images/test-image.png')
+  if (fs.existsSync(testImagePath)) {
+    const data = fs.readFileSync(testImagePath)
+    console.log(`✅ 使用测试 PNG 图片: ${testImagePath}`)
+    return Array.from(data)
+  }
+  
+  // 尝试使用测试图片目录中的 ICO 图片
+  const testIcoPath = path.join(__dirname, '../test-images/test-image.ico')
+  if (fs.existsSync(testIcoPath)) {
+    const data = fs.readFileSync(testIcoPath)
+    console.log(`✅ 使用测试 ICO 图片: ${testIcoPath}`)
+    return Array.from(data)
+  }
+  
+  // 尝试使用项目中的 favicon.ico
+  const faviconPath = path.join(__dirname, '../../apps/desktop/public/favicon.ico')
   if (fs.existsSync(faviconPath)) {
     const data = fs.readFileSync(faviconPath)
+    console.log(`✅ 使用 favicon: ${faviconPath}`)
     return Array.from(data)
   }
   
   // 创建模拟数据
+  console.log('⚠️ 未找到测试图片，使用模拟数据')
   const data = new Array(10000)
   for (let i = 0; i < data.length; i++) {
     data[i] = Math.floor(Math.random() * 256)
@@ -78,12 +97,14 @@ async function runDetailedBenchmark() {
 
   // 分析性能提升
   const singleResults = singleBench.table()
-  const wasmSingle = singleResults.find(r => r.name === 'WASM WebP 压缩')
-  const jsSingle = singleResults.find(r => r.name === 'JavaScript 压缩')
-  
-  if (wasmSingle && jsSingle) {
-    const speedImprovement = ((jsSingle.mean - wasmSingle.mean) / jsSingle.mean * 100).toFixed(2)
-    console.log(`⚡ WASM 比 JavaScript 快 ${speedImprovement}%\n`)
+  if (singleResults && singleResults.length > 0) {
+    const wasmSingle = singleResults.find(r => r?.name === 'WASM WebP 压缩')
+    const jsSingle = singleResults.find(r => r?.name === 'JavaScript 压缩')
+    
+    if (wasmSingle && jsSingle && typeof wasmSingle.mean === 'number' && typeof jsSingle.mean === 'number') {
+      const speedImprovement = ((jsSingle.mean - wasmSingle.mean) / jsSingle.mean * 100).toFixed(2)
+      console.log(`⚡ WASM 比 JavaScript 快 ${speedImprovement}%\n`)
+    }
   }
 
   // 2. 不同质量设置性能对比
@@ -136,12 +157,14 @@ async function runDetailedBenchmark() {
 
     // 分析批量压缩性能
     const batchResults = batchBench.table()
-    const wasmBatch = batchResults.find(r => r.name && r.name.includes('WASM'))
-    const jsBatch = batchResults.find(r => r.name && r.name.includes('JavaScript'))
-    
-    if (wasmBatch && jsBatch) {
-      const batchSpeedImprovement = ((jsBatch.mean - wasmBatch.mean) / jsBatch.mean * 100).toFixed(2)
-      console.log(`⚡ WASM 批量压缩比 JavaScript 快 ${batchSpeedImprovement}%`)
+    if (batchResults && batchResults.length > 0) {
+      const wasmBatch = batchResults.find(r => r?.name && typeof r.name === 'string' && r.name.includes('WASM'))
+      const jsBatch = batchResults.find(r => r?.name && typeof r.name === 'string' && r.name.includes('JavaScript'))
+      
+      if (wasmBatch && jsBatch && typeof wasmBatch.mean === 'number' && typeof jsBatch.mean === 'number') {
+        const batchSpeedImprovement = ((jsBatch.mean - wasmBatch.mean) / jsBatch.mean * 100).toFixed(2)
+        console.log(`⚡ WASM 批量压缩比 JavaScript 快 ${batchSpeedImprovement}%`)
+      }
     }
   }
 
@@ -182,7 +205,10 @@ async function runDetailedBenchmark() {
   // 6. 稳定性测试
   console.log('\n🔄 6. 稳定性测试 (连续运行 100 次)')
   
-  const stabilityResults = {
+  const stabilityResults: {
+    wasm: { times: number[], errors: number },
+    js: { times: number[], errors: number }
+  } = {
     wasm: { times: [], errors: 0 },
     js: { times: [], errors: 0 }
   }
@@ -215,10 +241,16 @@ async function runDetailedBenchmark() {
 
   // 7. 最终总结
   console.log('\n📊 7. 最终测试总结')
-  console.log('=' * 60)
+  console.log('='.repeat(60))
   
   console.log('✅ WASM WebP 压缩优势:')
-  console.log(`   - 处理速度: 比 JavaScript 快 ${((jsSingle?.mean || 0 - wasmSingle?.mean || 0) / (jsSingle?.mean || 1) * 100).toFixed(2)}%`)
+  const finalSingleResults = singleBench.table()
+  const wasmSingle = finalSingleResults?.find(r => r?.name === 'WASM WebP 压缩')
+  const jsSingle = finalSingleResults?.find(r => r?.name === 'JavaScript 压缩')
+  
+  if (wasmSingle && jsSingle && typeof wasmSingle.mean === 'number' && typeof jsSingle.mean === 'number') {
+    console.log(`   - 处理速度: 比 JavaScript 快 ${((jsSingle.mean - wasmSingle.mean) / jsSingle.mean * 100).toFixed(2)}%`)
+  }
   console.log(`   - 压缩效果: 比 JavaScript 好 ${compressionImprovement}%`)
   console.log(`   - 稳定性: 100 次测试中错误 ${stabilityResults.wasm.errors} 次`)
   console.log(`   - 支持质量范围: 0-100`)
