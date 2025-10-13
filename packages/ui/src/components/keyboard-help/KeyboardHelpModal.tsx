@@ -114,12 +114,24 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
           {/* 使用提示 */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="font-medium text-blue-900 mb-2">使用提示</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• 快捷键在输入框、文本区域等可编辑元素中不会生效</li>
-              <li>• 按 F1 键可以随时打开此帮助界面</li>
-              <li>• 按 Esc 键可以关闭当前打开的模态框</li>
-              <li>• 按 / 键可以快速聚焦到搜索框</li>
-            </ul>
+            <div className="text-sm text-blue-800 space-y-1">
+              <div className="flex items-start">
+                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                <span>快捷键在输入框、文本区域等可编辑元素中不会生效</span>
+              </div>
+              <div className="flex items-start">
+                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                <span>按 F1 键可以随时打开此帮助界面</span>
+              </div>
+              <div className="flex items-start">
+                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                <span>按 Esc 键可以关闭当前打开的模态框</span>
+              </div>
+              <div className="flex items-start">
+                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                <span>按 / 键可以快速聚焦到搜索框</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
