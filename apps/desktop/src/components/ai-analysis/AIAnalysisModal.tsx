@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { ImageAnalysisResponse, AIModelConfig } from '../../types/electron'
-import { Upload, X, Brain, Settings, Play, Cog, Loader2 } from 'lucide-react'
-import { useEscapeKey } from '@/hooks/useKeyboard'
+import { useEscapeKey } from '@packages/ui/src'
+import { Cog, Loader2, Play, Upload, X } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AIModelConfig, ImageAnalysisResponse } from '../../types/electron'
 import './AIAnalysisModal.css'
-
 
 interface AIAnalysisModalProps {
   isOpen: boolean

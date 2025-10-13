@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { AIModelConfig, AvailableModel } from '../../types/electron'
-import { useEscapeKey } from '@/hooks/useKeyboard'
+import { useEscapeKey } from '@packages/ui/src'
+import React, { useEffect, useState } from 'react'
+import { AIModelConfig } from '../../types/electron'
 import './AIModelManager.css'
 
 interface AIModelManagerProps {

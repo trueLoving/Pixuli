@@ -1,16 +1,22 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, Zap, ArrowRightLeft, Brain, HelpCircle } from 'lucide-react'
-import GitHubConfigModal from '@/components/github-config/GitHubConfigModal'
-import ImageUpload from '@/components/image-upload/ImageUpload'
-import ImageBrowser from '@/components/image-browser/ImageBrowser'
-import ImageCompression from '@/components/image-compression/ImageCompression'
-import { ImageFormatConversion } from '@/components/image-format-conversion'
-import AIModelManager from '@/components/ai-analysis/AIModelManager'
 import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
-import KeyboardHelpModal from '@/components/keyboard-help/KeyboardHelpModal'
+import AIModelManager from '@/components/ai-analysis/AIModelManager'
+import ImageCompression from '@/components/image-compression/ImageCompression'
+import ImageFormatConversion from '@/components/image-format-conversion/ImageFormatConversion'
+import { useImageStore } from '@/stores/imageStore'
+import {
+  COMMON_SHORTCUTS,
+  GitHubConfigModal,
+  ImageBrowser,
+  ImageUpload,
+  KeyboardHelpModal,
+  SHORTCUT_CATEGORIES,
+  formatFileSize,
+  getImageDimensionsFromUrl,
+  keyboardManager
+} from '@packages/ui/src'
+import { ArrowRightLeft, Filter, HelpCircle, RefreshCw, Search, Settings, Zap } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
-import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/utils/keyboardShortcuts'
 import './App.css'
 
 function App() {
@@ -20,7 +26,14 @@ function App() {
     error, 
     githubConfig, 
     loadImages, 
-    clearError 
+    clearError,
+    setGitHubConfig,
+    clearGitHubConfig,
+    uploadImage,
+    uploadMultipleImages,
+    batchUploadProgress,
+    deleteImage,
+    updateImage
   } = useImageStore()
   
   const [showConfigModal, setShowConfigModal] = useState(false)
@@ -31,6 +44,39 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+
+  // 键盘快捷键分类数据
+  const keyboardCategories = [
+    {
+      name: '通用操作',
+      shortcuts: [
+        { description: '关闭当前模态框', key: 'Escape' },
+        { description: '显示键盘快捷键帮助', key: 'F1' },
+        { description: '刷新图片列表', key: 'F5' },
+        { description: '打开GitHub配置', key: ',', ctrlKey: true },
+        { description: '聚焦搜索框', key: '/' },
+        { description: '切换视图模式', key: 'V', ctrlKey: true }
+      ]
+    },
+    {
+      name: '功能操作',
+      shortcuts: [
+        { description: '打开图片压缩工具', key: 'C', ctrlKey: true },
+        { description: '打开图片格式转换', key: 'F', ctrlKey: true },
+        { description: '打开AI图片分析', key: 'A', ctrlKey: true }
+      ]
+    },
+    {
+      name: '图片浏览',
+      shortcuts: [
+        { description: '选择上一张图片', key: 'ArrowUp' },
+        { description: '选择下一张图片', key: 'ArrowDown' },
+        { description: '选择左侧图片', key: 'ArrowLeft' },
+        { description: '选择右侧图片', key: 'ArrowRight' },
+        { description: '打开选中的图片', key: 'Enter' }
+      ]
+    }
+  ]
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -90,6 +136,25 @@ function App() {
   const handleCloseKeyboardHelp = useCallback(() => {
     setShowKeyboardHelp(false)
   }, [])
+
+  const handleSaveConfig = useCallback((config: any) => {
+    setGitHubConfig(config)
+    setShowConfigModal(false)
+  }, [setGitHubConfig])
+
+  const handleClearConfig = useCallback(() => {
+    clearGitHubConfig()
+    setShowConfigModal(false)
+  }, [clearGitHubConfig])
+
+  // CRUD 操作回调函数
+  const handleDeleteImage = useCallback(async (imageId: string, fileName: string) => {
+    await deleteImage(imageId, fileName)
+  }, [deleteImage])
+
+  const handleUpdateImage = useCallback(async (data: any) => {
+    await updateImage(data)
+  }, [updateImage])
 
   // 初始化存储服务
   useEffect(() => {
@@ -245,6 +310,9 @@ function App() {
         <GitHubConfigModal
           isOpen={showConfigModal}
           onClose={handleCloseConfigModal}
+          githubConfig={githubConfig}
+          onSaveConfig={handleSaveConfig}
+          onClearConfig={handleClearConfig}
         />
 
         {/* 图片压缩模态框 */}
@@ -392,7 +460,12 @@ function App() {
 
           {/* 图片上传区域 */}
           <div className="mb-4">
-            <ImageUpload />
+            <ImageUpload 
+              onUploadImage={uploadImage}
+              onUploadMultipleImages={uploadMultipleImages}
+              loading={loading}
+              batchUploadProgress={batchUploadProgress}
+            />
           </div>
 
           {/* 图片统计和操作区域 */}
@@ -410,7 +483,13 @@ function App() {
 
           {/* 图片浏览 */}
           <div className="min-h-0">
-            <ImageBrowser images={filteredImages} />
+            <ImageBrowser 
+              images={filteredImages}
+              onDeleteImage={handleDeleteImage}
+              onUpdateImage={handleUpdateImage}
+              getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+              formatFileSize={formatFileSize}
+            />
           </div>
           
 
@@ -421,6 +500,9 @@ function App() {
       <GitHubConfigModal
         isOpen={showConfigModal}
         onClose={handleCloseConfigModal}
+        githubConfig={githubConfig}
+        onSaveConfig={handleSaveConfig}
+        onClearConfig={handleClearConfig}
       />
 
       {/* 图片压缩模态框 */}
@@ -461,6 +543,7 @@ function App() {
       <KeyboardHelpModal
         isOpen={showKeyboardHelp}
         onClose={handleCloseKeyboardHelp}
+        categories={keyboardCategories}
       />
 
       <Toaster />

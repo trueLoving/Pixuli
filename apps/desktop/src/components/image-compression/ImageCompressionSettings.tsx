@@ -1,6 +1,6 @@
+import { CompressionOptions, formatFileSize, getAutoCompressionOptions } from '@/utils/imageCompression'
+import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react'
 import React, { useState } from 'react'
-import { Settings, Info, Zap, FileImage, HardDrive } from 'lucide-react'
-import { CompressionOptions, getAutoCompressionOptions, formatFileSize } from '@/utils/imageCompression'
 
 interface ImageCompressionSettingsProps {
   file: File

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { Eye, Download, RotateCcw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { CompressionResult, formatFileSize } from '@/utils/imageCompression'
+import { AlertCircle, CheckCircle, Download, Eye, Loader2, RotateCcw } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 
 interface ImageCompressionPreviewProps {
   originalFile: File

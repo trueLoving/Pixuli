@@ -19,11 +19,7 @@
     "electron:build": "pnpm run build && electron-builder",
     "dist": "pnpm run build && electron-builder --publish=never",
     "dist:win": "pnpm run build && electron-builder --win --publish=never",
-    "dist:mac": "pnpm run build && electron-builder --mac --publish=never",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "dist:mac": "pnpm run build && electron-builder --mac --publish=never"
   },
   "keywords": [
     "electron",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Eye, Download, RefreshCw, FileImage, Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Eye, Download, RefreshCw, Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { FormatConversionResult } from '@/types/formatConversion'
 
 interface ImageFormatConversionPreviewProps {

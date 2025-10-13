@@ -1,13 +1,13 @@
-import React, { useState } from 'react'
-import { Settings, Zap, Info } from 'lucide-react'
-import { 
-  FormatConversionOptions, 
-  SUPPORTED_FORMATS, 
-  getFormatInfo,
-  supportsTransparency,
-  supportsLossless 
-} from '@/types/formatConversion'
 import { FormatConversionService } from '@/services/formatConversion'
+import {
+  FormatConversionOptions,
+  SUPPORTED_FORMATS,
+  getFormatInfo,
+  supportsLossless,
+  supportsTransparency
+} from '@/types/formatConversion'
+import { Info, Settings, Zap } from 'lucide-react'
+import React, { useState } from 'react'
 
 interface ImageFormatConversionSettingsProps {
   file: File

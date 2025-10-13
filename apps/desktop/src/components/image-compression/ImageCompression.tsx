@@ -1,17 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { Zap, Upload, Download, Settings, X } from 'lucide-react'
-import { 
-  CompressionOptions, 
-  DEFAULT_COMPRESSION_OPTIONS, 
-  compressImage, 
+import {
+  CompressionOptions,
+  DEFAULT_COMPRESSION_OPTIONS,
+  compressImage,
   getAutoCompressionOptions,
-  isImageFile 
+  isImageFile
 } from '@/utils/imageCompression'
-import ImageCompressionSettings from './ImageCompressionSettings'
-import ImageCompressionPreview from './ImageCompressionPreview'
-import { showSuccess, showError, showInfo } from '@/utils/toast'
-import { useEscapeKey } from '@/hooks/useKeyboard'
+import { showError, showInfo, showSuccess, useEscapeKey } from '@packages/ui/src'
+import { Upload, X, Zap } from 'lucide-react'
+import React, { useCallback, useState } from 'react'
 import './ImageCompression.css'
+import ImageCompressionPreview from './ImageCompressionPreview'
+import ImageCompressionSettings from './ImageCompressionSettings'
 
 interface ImageCompressionProps {
   onClose: () => void
