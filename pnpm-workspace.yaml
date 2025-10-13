@@ -2,5 +2,5 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'benchmark'  
-  - "website"
+  - "docs"
   

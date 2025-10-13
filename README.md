@@ -27,6 +27,12 @@
 
 **Pixuli** 是一款现代化的跨平台图片管理桌面应用，基于 Electron + React + TypeScript + Rust 构建。
 
+## 🎮 在线演示
+
+体验 Pixuli 的核心功能，无需安装即可使用：
+
+**[🚀 Playground 演示环境](https://pixuli-web.vercel.app/)**
+
 ## ✨ 主要功能
 
 ```mermaid

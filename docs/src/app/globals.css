@@ -1,3 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MDX 自定义样式 */
+@layer components {
+  /* 代码块语法高亮 */
+  .code-block {
+    @apply relative overflow-hidden rounded-lg border border-gray-700;
+  }
+  
+  .code-block-header {
+    @apply flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700;
+  }
+  
+  .code-block-title {
+    @apply text-sm text-gray-300 font-medium;
+  }
+  
+  .code-block-actions {
+    @apply flex items-center space-x-2;
+  }
+  
+  .code-block-action {
+    @apply p-1 text-gray-400 hover:text-gray-200 transition-colors;
+  }
+  
+  /* 列表计数器样式 */
+  ol.counter-reset {
+    counter-reset: list-counter;
+  }
+  
+  ol.counter-reset li {
+    counter-increment: list-counter;
+  }
+  
+  ol.counter-reset li::before {
+    content: counter(list-counter) ".";
+    @apply absolute left-0 top-0 text-blue-500 font-bold;
+  }
+  
+  /* 表格增强样式 */
+  .table-container {
+    @apply overflow-x-auto mb-8 shadow-lg rounded-lg border border-gray-200;
+  }
+  
+  .table-container table {
+    @apply min-w-full border-collapse bg-white;
+  }
+  
+  .table-container thead {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white;
+  }
+  
+  .table-container tbody tr {
+    @apply hover:bg-gray-50 transition-colors duration-200;
+  }
+  
+  .table-container tbody tr:nth-child(even) {
+    @apply bg-gray-25;
+  }
+  
+  /* 引用块增强样式 */
+  .blockquote-enhanced {
+    @apply border-l-4 border-blue-500 pl-6 py-4 mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-700 italic rounded-r-lg shadow-sm relative;
+  }
+  
+  .blockquote-enhanced::before {
+    content: '"';
+    @apply absolute top-4 left-2 text-blue-400 text-2xl font-bold;
+  }
+  
+  /* 标题增强样式 */
+  .heading-enhanced {
+    @apply relative;
+  }
+  
+  .heading-enhanced::before {
+    content: '';
+    @apply absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600 rounded-full;
+  }
+  
+  /* 链接增强样式 */
+  .link-enhanced {
+    @apply text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2 transition-all duration-200 hover:decoration-blue-400 font-medium;
+  }
+  
+  /* 代码增强样式 */
+  .code-enhanced {
+    @apply bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-sm font-mono border border-gray-200;
+  }
+  
+  /* 强调文本增强样式 */
+  .strong-enhanced {
+    @apply font-bold text-gray-900 bg-yellow-100 px-1 rounded;
+  }
+  
+  .em-enhanced {
+    @apply italic text-gray-800 bg-blue-50 px-1 rounded;
+  }
+  
+  /* 图片增强样式 */
+  .image-enhanced {
+    @apply max-w-full h-auto rounded-lg shadow-lg border border-gray-200 mx-auto;
+  }
+  
+  .image-caption {
+    @apply text-sm text-gray-500 mt-2 italic text-center;
+  }
+  
+  /* 分割线增强样式 */
+  .divider-enhanced {
+    @apply my-12 flex items-center justify-center;
+  }
+  
+  .divider-line {
+    @apply flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent;
+  }
+  
+  .divider-dot {
+    @apply mx-4 w-2 h-2 bg-blue-500 rounded-full;
+  }
+  
+  /* 详情和摘要样式 */
+  .details-enhanced {
+    @apply mb-6 border border-gray-200 rounded-lg shadow-sm;
+  }
+  
+  .summary-enhanced {
+    @apply px-4 py-3 bg-gray-50 cursor-pointer font-semibold text-gray-800 hover:bg-gray-100 transition-colors duration-200 rounded-t-lg;
+  }
+  
+  /* 进度条样式 */
+  .progress-enhanced {
+    @apply w-full bg-gray-200 rounded-full h-2 mb-4;
+  }
+  
+  .progress-bar {
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300;
+  }
+  
+  /* 计量器样式 */
+  .meter-enhanced {
+    @apply mb-4;
+  }
+  
+  .meter-labels {
+    @apply flex justify-between text-sm text-gray-600 mb-1;
+  }
+  
+  .meter-bar {
+    @apply w-full bg-gray-200 rounded-full h-3;
+  }
+  
+  .meter-fill {
+    @apply bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-300;
+  }
+  
+  /* 键盘按键样式 */
+  .kbd-enhanced {
+    @apply bg-gray-100 border border-gray-300 rounded px-2 py-1 text-sm font-mono shadow-sm;
+  }
+  
+  /* 标记文本样式 */
+  .mark-enhanced {
+    @apply bg-yellow-200 text-gray-900 px-1 rounded;
+  }
+  
+  /* 删除线样式 */
+  .del-enhanced {
+    @apply line-through text-gray-500 bg-red-50 px-1 rounded;
+  }
+  
+  /* 脚注样式 */
+  .sup-enhanced {
+    @apply text-blue-600 font-medium text-xs;
+  }
+  
+  /* 下标样式 */
+  .sub-enhanced {
+    @apply text-gray-600 font-medium text-xs;
+  }
+  
+  /* 小文本样式 */
+  .small-enhanced {
+    @apply text-sm text-gray-500;
+  }
+  
+  /* 大文本样式 */
+  .big-enhanced {
+    @apply text-lg text-gray-800;
+  }
+  
+  /* 地址样式 */
+  .address-enhanced {
+    @apply not-italic text-gray-600 border-l-2 border-gray-300 pl-4 py-2 bg-gray-50 rounded-r;
+  }
+  
+  /* 时间样式 */
+  .time-enhanced {
+    @apply text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded;
+  }
+}
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -47,12 +251,48 @@ body {
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+}
+
+.logo-link {
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .logo {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover .logo {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.logo-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
 }
 
 .logo-text {
@@ -62,6 +302,29 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    line-height: 1;
+    transition: all 0.3s ease;
+}
+
+.logo-subtitle {
+    font-size: 12px;
+    color: #718096;
+    font-weight: 500;
+    line-height: 1;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.logo-link:hover .logo-text {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-link:hover .logo-subtitle {
+    color: #4a5568;
+    opacity: 1;
 }
 
 .nav-menu {
@@ -325,6 +588,31 @@ body {
 .feature-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+}
+
+.feature-links {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.feature-link {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.feature-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .feature-icon {
@@ -607,6 +895,31 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .nav-container {
+        padding: 0 15px;
+    }
+    
+    .logo-link {
+        padding: 6px 10px;
+    }
+    
+    .logo-container {
+        gap: 8px;
+    }
+    
+    .logo {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .logo-text {
+        font-size: 20px;
+    }
+    
+    .logo-subtitle {
+        font-size: 10px;
+    }
+    
     .nav-menu {
         position: fixed;
         left: -100%;
@@ -675,6 +988,31 @@ body {
 @media (max-width: 480px) {
     .container {
         padding: 0 15px;
+    }
+    
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .logo-link {
+        padding: 4px 8px;
+    }
+    
+    .logo-container {
+        gap: 6px;
+    }
+    
+    .logo {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .logo-text {
+        font-size: 18px;
+    }
+    
+    .logo-subtitle {
+        font-size: 9px;
     }
 
     .hero {
