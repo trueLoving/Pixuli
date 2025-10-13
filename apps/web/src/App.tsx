@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, HelpCircle } from 'lucide-react'
+import { Settings, RefreshCw, Search, Filter, HelpCircle, Play } from 'lucide-react'
 import { 
   GitHubConfigModal,
   ImageUpload,
@@ -13,6 +13,7 @@ import {
   formatFileSize
 } from '@packages/ui/src'
 import { Toaster } from 'react-hot-toast'
+import { isDemoEnvironment, setDemoMode, getDemoConfig, getAppConfig } from '@/utils/env'
 import './App.css'
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [isDemoMode, setIsDemoMode] = useState(false)
 
   // 键盘快捷键分类数据
   const keyboardCategories = [
@@ -122,6 +124,12 @@ function App() {
     if (githubConfig && !useImageStore.getState().storageService) {
       initializeStorage()
     }
+  }, [])
+
+  // 检测演示环境
+  useEffect(() => {
+    const demoMode = isDemoEnvironment()
+    setIsDemoMode(demoMode)
   }, [])
 
   // 注册键盘快捷键
@@ -216,8 +224,50 @@ function App() {
           <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
             <Settings className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 Pixuli</h1>
-          <p className="text-gray-600 mb-8 text-lg">专业的图片管理与存储解决方案</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 {getAppConfig().name}</h1>
+          <p className="text-gray-600 mb-8 text-lg">{getAppConfig().description}</p>
+          
+          {isDemoMode && (
+            <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <Play className="w-5 h-5 text-purple-600" />
+                <h3 className="text-lg font-semibold text-purple-800">演示环境</h3>
+              </div>
+              <p className="text-purple-700 text-sm mb-3">
+                您正在使用演示环境，可以下载预配置的演示配置文件快速体验 Pixuli 的各项功能。
+              </p>
+              <div className="flex justify-center space-x-3">
+                <button
+                  onClick={() => {
+                    const demoConfig = getDemoConfig()
+                    const blob = new Blob([JSON.stringify(demoConfig, null, 2)], { type: 'application/json' })
+                    const url = URL.createObjectURL(blob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = 'pixuli-github-config-demo.json'
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    URL.revokeObjectURL(url)
+                  }}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                >
+                  <Play className="w-4 h-4" />
+                  <span>下载演示配置</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setDemoMode(false)
+                    setIsDemoMode(false)
+                  }}
+                  className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+                >
+                  退出演示模式
+                </button>
+              </div>
+            </div>
+          )}
+          
           <p className="text-gray-500 mb-6 text-base">请先配置 GitHub 仓库信息以开始使用</p>
           <button
             onClick={handleOpenConfigModal}
@@ -246,10 +296,16 @@ function App() {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">Pixuli</h1>
+              <h1 className="text-xl font-bold text-gray-900">{getAppConfig().name}</h1>
               <div className="text-sm text-gray-500 hidden sm:block">
                 仓库: {githubConfig.owner}/{githubConfig.repo}
               </div>
+              {isDemoMode && (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                  <Play className="w-3 h-3" />
+                  <span>演示环境</span>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center space-x-3">

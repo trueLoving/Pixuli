@@ -73,6 +73,14 @@ export class GitHubStorageService {
         updatedAt: new Date().toISOString(),
       }
 
+      // 创建元数据文件
+      try {
+        await this.updateImageMetadata(fileName, imageItem)
+      } catch (error) {
+        console.warn('Failed to create metadata file:', error)
+        // 不抛出错误，因为图片已经上传成功
+      }
+
       return imageItem
     } catch (error) {
       console.error('Upload image failed:', error)
@@ -102,9 +110,45 @@ export class GitHubStorageService {
           })
         }
       )
+
+      // 删除对应的元数据文件
+      try {
+        await this.deleteImageMetadata(fileName)
+      } catch (error) {
+        console.warn('Failed to delete metadata file:', error)
+        // 不抛出错误，因为图片已经删除成功
+      }
     } catch (error) {
       console.error('Delete image failed:', error)
       throw new Error(`删除图片失败: ${error}`)
+    }
+  }
+
+  // 删除图片元数据文件
+  private async deleteImageMetadata(fileName: string): Promise<void> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName)
+      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
+      
+      // 获取元数据文件的SHA
+      const metadataFileInfo = await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+      )
+      
+      // 删除元数据文件
+      await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
+        {
+          method: 'DELETE',
+          body: JSON.stringify({
+            message: `Delete metadata for image: ${fileName}`,
+            sha: metadataFileInfo.sha,
+            branch: this.config.branch
+          })
+        }
+      )
+    } catch (error) {
+      throw new Error(`Failed to delete metadata for ${fileName}: ${error}`)
     }
   }
 
@@ -120,22 +164,31 @@ export class GitHubStorageService {
         this.isImageFile(item.name) && item.type === 'file'
       )
 
-      const images = imageFiles.map((item: any) => {
+      const images = await Promise.all(imageFiles.map(async (item: any) => {
+        // 尝试从元数据文件获取详细信息
+        let metadata = null
+        try {
+          metadata = await this.getImageMetadata(item.name)
+        } catch (error) {
+          // 元数据文件不存在，使用默认值
+          console.debug(`No metadata found for ${item.name}`)
+        }
+
         return {
-          id: item.sha,
-          name: item.name,
+          id: metadata?.id || item.sha,
+          name: metadata?.name || item.name,
           url: item.download_url || '',
           githubUrl: item.html_url || '',
           size: item.size || 0,
-          width: 0, // 初始设为0，后续通过懒加载获取
-          height: 0, // 初始设为0，后续通过懒加载获取
+          width: metadata?.width || 0, // 初始设为0，后续通过懒加载获取
+          height: metadata?.height || 0, // 初始设为0，后续通过懒加载获取
           type: this.getMimeType(item.name),
-          tags: [], // GitHub API 不直接支持标签，需要从文件名或描述中解析
-          description: '', // GitHub API 不直接支持描述，需要从commit消息中解析
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          tags: metadata?.tags || [], // 从元数据文件获取标签
+          description: metadata?.description || '', // 从元数据文件获取描述
+          createdAt: metadata?.createdAt || new Date().toISOString(),
+          updatedAt: metadata?.updatedAt || new Date().toISOString(),
         }
-      })
+      }))
       
       // 检查重复ID
       const idCounts = images.reduce((acc: Record<string, number>, img: ImageItem) => {
@@ -167,9 +220,9 @@ export class GitHubStorageService {
   }
 
   // 更新图片信息（如标签、描述等）
-  async updateImageInfo(_imageId: string, fileName: string, _metadata: any, oldFileName?: string): Promise<void> {
+  async updateImageInfo(_imageId: string, fileName: string, metadata: any, oldFileName?: string): Promise<void> {
     try {
-      // GitHub API 不支持直接更新元数据，需要通过重命名文件来实现
+      // TODO: 处理文件名重命名（得要想一个更好的办法来处理这种情况，这种操作不常用，但是得考虑）
       if (oldFileName && oldFileName !== fileName) {
         const oldFilePath = `${this.config.path}/${oldFileName}`
         const newFilePath = `${this.config.path}/${fileName}`
@@ -206,9 +259,88 @@ export class GitHubStorageService {
           }
         )
       }
+
+      // 更新元数据文件
+      await this.updateImageMetadata(fileName, metadata)
     } catch (error) {
       console.error('Update image info failed:', error)
       throw new Error(`更新图片信息失败: ${error}`)
+    }
+  }
+
+  // 更新图片元数据文件
+  private async updateImageMetadata(fileName: string, metadata: any): Promise<void> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName)
+      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
+      
+      // 构建元数据内容
+      const metadataContent = {
+        id: metadata.id || fileName,
+        name: metadata.name || fileName,
+        description: metadata.description || '',
+        tags: metadata.tags || [],
+        updatedAt: metadata.updatedAt || new Date().toISOString(),
+        createdAt: metadata.createdAt || new Date().toISOString()
+      }
+
+      // 将元数据转换为 base64
+      const jsonString = JSON.stringify(metadataContent, null, 2)
+      const base64Content = btoa(unescape(encodeURIComponent(jsonString)))
+
+      // 检查元数据文件是否已存在
+      let existingSha: string | undefined
+      try {
+        const existingFile = await this.makeGitHubRequest(
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+        )
+        existingSha = existingFile.sha
+      } catch (error) {
+        // 文件不存在，这是正常的
+        existingSha = undefined
+      }
+
+      // 创建或更新元数据文件
+      await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            message: `Update metadata for image: ${fileName}`,
+            content: base64Content,
+            sha: existingSha,
+            branch: this.config.branch
+          })
+        }
+      )
+    } catch (error) {
+      console.error('Update image metadata failed:', error)
+      throw new Error(`更新图片元数据失败: ${error}`)
+    }
+  }
+
+  // 获取元数据文件名
+  private getMetadataFileName(fileName: string): string {
+    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'))
+    const extension = fileName.substring(fileName.lastIndexOf('.'))
+    return `${nameWithoutExt}.metadata${extension}.json`
+  }
+
+  // 获取图片元数据
+  private async getImageMetadata(fileName: string): Promise<any> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName)
+      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
+      
+      const response = await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+      )
+      
+      // 解码 base64 内容
+      const metadataContent = decodeURIComponent(escape(atob(response.content)))
+      return JSON.parse(metadataContent)
+    } catch (error) {
+      throw new Error(`Failed to get metadata for ${fileName}: ${error}`)
     }
   }
 

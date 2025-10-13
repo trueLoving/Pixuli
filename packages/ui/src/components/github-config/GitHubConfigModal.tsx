@@ -137,6 +137,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
     input.click()
   }
 
+
   // 阻止背景滚动
   useEffect(() => {
     if (isOpen) {
