@@ -1,0 +1,189 @@
+/* 图片预览模态框样式 */
+.image-preview-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.image-preview-modal-container {
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-preview-modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.image-preview-modal-close {
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  z-index: 10;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-preview-modal-close:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.image-preview-modal-image {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.image-preview-modal-info {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: white;
+  width: 100%;
+  max-width: 600px;
+}
+
+.image-preview-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  word-break: break-word;
+}
+
+.image-preview-modal-description {
+  color: #d1d5db;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.image-preview-modal-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  color: #d1d5db;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.image-preview-modal-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.image-preview-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.image-preview-modal-action-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.image-preview-modal-action-button-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.image-preview-modal-action-button-primary:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.image-preview-modal-action-button-secondary {
+  background-color: #059669;
+  color: white;
+}
+
+.image-preview-modal-action-button-secondary:hover {
+  background-color: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .image-preview-modal-container {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 1rem;
+  }
+  
+  .image-preview-modal-image {
+    max-height: 50vh;
+  }
+  
+  .image-preview-modal-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .image-preview-modal-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  
+  .image-preview-modal-action-button {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .image-preview-modal-close {
+    top: -0.5rem;
+    right: -0.5rem;
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-preview-modal-container {
+    padding: 0.5rem;
+  }
+  
+  .image-preview-modal-image {
+    max-height: 40vh;
+  }
+  
+  .image-preview-modal-title {
+    font-size: 1.125rem;
+  }
+  
+  .image-preview-modal-details {
+    font-size: 0.8rem;
+  }
+}

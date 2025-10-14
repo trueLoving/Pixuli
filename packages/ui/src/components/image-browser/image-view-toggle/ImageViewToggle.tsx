@@ -1,6 +1,6 @@
 import React from 'react'
 import { Grid, List } from 'lucide-react'
-import { defaultTranslate } from '../../locales/defaultTranslate'
+import { defaultTranslate } from '../../../locales/defaultTranslate'
 
 export type ViewMode = 'grid' | 'list'
 

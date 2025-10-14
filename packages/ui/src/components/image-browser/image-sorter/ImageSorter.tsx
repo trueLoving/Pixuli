@@ -1,6 +1,6 @@
 import React from 'react'
 import { ArrowUpDown, Calendar, FileText, SortAsc, SortDesc, HardDrive } from 'lucide-react'
-import { defaultTranslate } from '../../locales/defaultTranslate'
+import { defaultTranslate } from '../../../locales/defaultTranslate'
 import './ImageSorter.css'
 
 export type SortField = 'createdAt' | 'name' | 'size'

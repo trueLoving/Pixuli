@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { ImageItem } from '../../types/image'
-import ImageGrid from './ImageGrid'
-import ImageList from './ImageList'
-import ViewToggle, { ViewMode } from './ViewToggle'
-import ImageSorter, { SortField, SortOrder } from './ImageSorter'
-import ImageFilter, { FilterOptions } from './ImageFilter'
+import ImageGrid from './image-grid/ImageGrid'
+import ImageList from './image-list/ImageList'
+import ViewToggle, { ViewMode } from './image-view-toggle/ImageViewToggle'
+import ImageSorter, { SortField, SortOrder } from './image-sorter/ImageSorter'
+import ImageFilter, { FilterOptions } from './image-filter/ImageFilter'
 import { getSortedImages } from '../../utils/sortUtils'
 import { filterImages, createDefaultFilters } from '../../utils/filterUtils'
 import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '../../utils/keyboardShortcuts'
@@ -226,7 +226,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       {
         key: COMMON_SHORTCUTS.V,
         ctrlKey: true,
-        description: '切换视图模式',
+        description: translate('keyboard.shortcuts.toggleView'),
         action: () => {
           setCurrentView(prev => prev === 'grid' ? 'list' : 'grid')
         },
@@ -320,7 +320,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       {/* 筛选区域 */}
       <div className="image-browser-filter-section">
         <ImageFilter
-        t={translate}
+          t={translate}
           images={images}
           currentFilters={currentFilters}
           onFiltersChange={handleFiltersChange}

@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { Search, Filter, X, Image as ImageIcon, HardDrive } from 'lucide-react'
-import { ImageItem } from '../../types/image'
-import { formatFileSize } from '../../utils/fileSizeUtils'
-import { defaultTranslate } from '../../locales/defaultTranslate'
+import { ImageItem } from '../../../types/image'
+import { formatFileSize } from '../../../utils/fileSizeUtils'
+import { defaultTranslate } from '../../../locales/defaultTranslate'
 import './ImageFilter.css'
 
 export interface FilterOptions {
@@ -194,7 +194,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
               onClick={handleClearAll}
               className="image-filter-clear"
             >
-              清除筛选
+              {translate('image.filter.clearFilter')}
             </button>
           )}
           
@@ -218,7 +218,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           {/* 搜索筛选 */}
           <div className="image-filter-section">
             <label className="image-filter-label">
-              搜索图片
+              {translate('image.filter.searchImages')}
             </label>
             <div className="image-filter-search">
               <Search className="image-filter-search-icon" />
@@ -290,18 +290,18 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
             <div className="image-filter-section">
               <label className="image-filter-label">
                 <HardDrive className="w-4 h-4 mr-2" />
-                文件大小范围
+                {translate('image.filter.fileSizeRange')}
               </label>
               <div className="image-filter-size-range">
                 <div className="image-filter-size-inputs">
                   <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">最小</label>
+                    <label className="image-filter-size-label">{translate('image.filter.minSize')}</label>
                     <input
                       type="number"
                       min="0"
                       max={fileSizeRange.max}
                       step="1024"
-                      placeholder="最小大小 (字节)"
+                      placeholder={translate('image.filter.minSizePlaceholder')}
                       value={currentFilters.sizeRange.min || ''}
                       onChange={(e) => {
                         const min = parseInt(e.target.value) || 0
@@ -314,13 +314,13 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                     </span>
                   </div>
                   <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">最大</label>
+                    <label className="image-filter-size-label">{translate('image.filter.maxSize')}</label>
                     <input
                       type="number"
                       min="1024"
                       max={fileSizeRange.max}
                       step="1024"
-                      placeholder="最大大小 (字节)"
+                      placeholder={translate('image.filter.maxSizePlaceholder')}
                       value={currentFilters.sizeRange.max || ''}
                       onChange={(e) => {
                         const max = parseInt(e.target.value) || 0
@@ -335,7 +335,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                 </div>
                 <div className="image-filter-size-info">
                   <span className="text-xs text-gray-500">
-                    当前范围: {formatFileSize(fileSizeRange.min)} - {formatFileSize(fileSizeRange.max)}
+                    {translate('image.filter.currentRange')}: {formatFileSize(fileSizeRange.min)} - {formatFileSize(fileSizeRange.max)}
                   </span>
                 </div>
               </div>
@@ -345,15 +345,15 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           {/* 筛选结果统计 */}
           <div className="image-filter-footer">
             <span>
-              显示 {filterStats.filtered} 张图片
-              {filterStats.hasFilters && ` (共 ${filterStats.total} 张)`}
+              {translate('image.filter.showingImagesCount').replace('{count}', filterStats.filtered.toString())}
+              {filterStats.hasFilters && translate('image.filter.totalImagesCount').replace('{count}', filterStats.total.toString())}
             </span>
             {filterStats.hasFilters && (
               <button
                 onClick={handleClearAll}
                 className="image-filter-reset"
               >
-                重置筛选
+                {translate('image.filter.resetFilter')}
               </button>
             )}
           </div>

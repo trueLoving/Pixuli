@@ -5,6 +5,10 @@
     "welcome": "Welcome to Pixuli",
     "description": "Please configure GitHub repository information to get started",
     "configureGitHub": "Configure GitHub",
+    "repository": "Repository",
+    "imageLibrary": "Image Library",
+    "images": "images",
+    "loadingImages": "Loading images...",
     "demoMode": {
       "title": "Demo Mode",
       "description": "You are using the demo environment. You can download pre-configured demo configuration files to quickly experience all features of Pixuli.",
@@ -121,6 +125,7 @@
       "collapse": "Collapse Filter",
       "expand": "Expand Filter",
       "searchPlaceholder": "Search image names, descriptions or tags...",
+      "searchImages": "Search Images",
       "imageType": "Image Type",
       "tags": "Tag Filter",
       "fileSizeRange": "File Size Range",
@@ -131,6 +136,8 @@
       "currentRange": "Current range",
       "showingImages": "Showing",
       "totalImages": "images",
+      "showingImagesCount": "Showing {count} images",
+      "totalImagesCount": "({count} total)",
       "resetFilter": "Reset Filter",
       "clearFilter": "Clear Filter"
     },

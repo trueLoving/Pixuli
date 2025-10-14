@@ -5,6 +5,10 @@
     "welcome": "欢迎使用 Pixuli",
     "description": "请先配置 GitHub 仓库信息以开始使用",
     "configureGitHub": "配置 GitHub",
+    "repository": "仓库",
+    "imageLibrary": "图片库",
+    "images": "张图片",
+    "loadingImages": "正在加载图片...",
     "demoMode": {
       "title": "演示模式",
       "description": "您正在使用演示环境，可以下载预配置的演示配置文件快速体验 Pixuli 的各项功能。",
@@ -121,6 +125,7 @@
       "collapse": "收起筛选",
       "expand": "展开筛选",
       "searchPlaceholder": "搜索图片名称、描述或标签...",
+      "searchImages": "搜索图片",
       "imageType": "图片类型",
       "tags": "标签筛选",
       "fileSizeRange": "文件大小范围",
@@ -131,6 +136,8 @@
       "currentRange": "当前范围",
       "showingImages": "显示",
       "totalImages": "张图片",
+      "showingImagesCount": "显示 {count} 张图片",
+      "totalImagesCount": "(共 {count} 张)",
       "resetFilter": "重置筛选",
       "clearFilter": "清除筛选"
     },

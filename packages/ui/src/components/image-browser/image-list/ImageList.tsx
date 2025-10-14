@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { ImageItem } from '../../types/image'
-// import { useImageStore } from '../../stores/imageStore'
-import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
-import ImageEditModal from '../image-edit/ImageEditModal'
-import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '../../hooks'
-import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
-import { defaultTranslate } from '../../locales/defaultTranslate'
+import { ImageItem } from '../../../types/image'
+import { Eye, Edit, Trash2, Tag, Calendar, Link, MoreHorizontal, HardDrive, Loader2 } from 'lucide-react'
+import ImageEditModal from '../components/image-edit/ImageEditModal'
+import ImagePreviewModal from '../components/image-preview/ImagePreviewModal'
+import ImageUrlModal from '../components/image-url/ImageUrlModal'
+import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '../../../hooks'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../../utils/toast'
+import { defaultTranslate } from '../../../locales/defaultTranslate'
 import './ImageList.css'
 
 interface ImageListProps {
@@ -446,163 +447,27 @@ const ImageList: React.FC<ImageListProps> = ({
       )}
 
       {/* 预览模态框 */}
-      {showPreview && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="max-w-4xl max-h-full p-4">
-            <div className="relative">
-              <button
-                onClick={() => setShowPreview(false)}
-                className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.name}
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-            </div>
-            <div className="mt-4 text-center text-white">
-              <h3 className="text-lg font-medium mb-2">{selectedImage.name}</h3>
-              {selectedImage.description && (
-                <p className="text-gray-300 mb-2">{selectedImage.description}</p>
-              )}
-              <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
-                <span>
-                  {(() => {
-                    const dimensions = imageDimensions[selectedImage.id]
-                    if (dimensions) {
-                      return `${dimensions.width} × ${dimensions.height}`
-                    } else if (selectedImage.width > 0 && selectedImage.height > 0) {
-                      return `${selectedImage.width} × ${selectedImage.height}`
-                    } else {
-                      return translate('image.list.gettingDimensions')
-                    }
-                  })()}
-                </span>
-                {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
-                <span>{formatDate(selectedImage.createdAt)}</span>
-              </div>
-              
-              {/* 在线地址信息 */}
-              <div className="flex items-center justify-center space-x-3">
-                <button
-                  onClick={() => handleCopyUrl(selectedImage.url, 'url')}
-                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center space-x-1"
-                >
-                  <Link className="w-3 h-3" />
-                  <span>{translate('image.list.copyUrl')}</span>
-                </button>
-                <button
-                  onClick={() => handleOpenUrl(selectedImage.url)}
-                  className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center space-x-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  <span>{translate('image.list.openUrl')}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImagePreviewModal
+        image={selectedImage}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        imageDimensions={imageDimensions}
+        formatFileSize={formatFileSize}
+        onCopyUrl={handleCopyUrl}
+        onOpenUrl={handleOpenUrl}
+        t={translate}
+      />
 
       {/* 在线地址模态框 */}
-      {showUrlModal && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="max-w-2xl w-full mx-4 bg-white rounded-lg shadow-xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">{translate('image.list.imageUrlTitle')}</h3>
-              <button
-                onClick={() => setShowUrlModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="flex items-center space-x-2 mb-4">
-                <img
-                  src={selectedImage.url}
-                  alt={selectedImage.name}
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-                <div>
-                  <h4 className="font-medium text-gray-900">{selectedImage.name}</h4>
-                  <p className="text-sm text-gray-500">
-                    {(() => {
-                      const dimensions = imageDimensions[selectedImage.id]
-                      if (dimensions) {
-                        return `${dimensions.width} × ${dimensions.height}`
-                      } else if (selectedImage.width > 0 && selectedImage.height > 0) {
-                        return `${selectedImage.width} × ${selectedImage.height}`
-                      } else {
-                        return translate('image.list.gettingDimensions')
-                      }
-                    })()}
-                  </p>
-                </div>
-              </div>
-
-              {/* 图片访问地址 */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{translate('image.list.imageAccessUrl')}</label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={selectedImage.url}
-                      readOnly
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                    />
-                    <button
-                      onClick={() => handleCopyUrl(selectedImage.url, 'url')}
-                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      {translate('image.list.copy')}
-                    </button>
-                    <button
-                      onClick={() => handleOpenUrl(selectedImage.url)}
-                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span>{translate('image.list.open')}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* GitHub 地址 */}
-                {selectedImage.githubUrl && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">{translate('image.list.githubUrl')}</label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={selectedImage.githubUrl}
-                        readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                      />
-                      <button
-                        onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
-                        className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                      >
-                        {translate('image.list.copy')}
-                      </button>
-                      <button
-                        onClick={() => handleOpenUrl(selectedImage.githubUrl)}
-                        className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        <span>{translate('image.list.open')}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImageUrlModal
+        image={selectedImage}
+        isOpen={showUrlModal}
+        onClose={() => setShowUrlModal(false)}
+        imageDimensions={imageDimensions}
+        onCopyUrl={handleCopyUrl}
+        onOpenUrl={handleOpenUrl}
+        t={translate}
+      />
     </>
   )
 }

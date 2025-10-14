@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { ImageItem } from '../../types/image'
-import { Eye, Edit, Trash2, Calendar, X, Link, ExternalLink, HardDrive, Loader2 } from 'lucide-react'
-import ImageEditModal from '../image-edit/ImageEditModal'
-import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '../../hooks'
-import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
-import { defaultTranslate } from '../../locales/defaultTranslate'
+import { ImageItem } from '../../../types/image'
+import { Eye, Edit, Trash2, Calendar, Link, HardDrive, Loader2 } from 'lucide-react'
+import ImageEditModal from '../components/image-edit/ImageEditModal'
+import ImagePreviewModal from '../components/image-preview/ImagePreviewModal'
+import ImageUrlModal from '../components/image-url/ImageUrlModal'
+import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '../../../hooks'
+import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../../utils/toast'
+import { defaultTranslate } from '../../../locales/defaultTranslate'
 import './ImageGrid.css'
 
 interface ImageGridProps {
@@ -442,146 +444,27 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       )}
 
       {/* 预览模态框 */}
-      {showPreview && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="max-w-4xl max-h-full p-4">
-            <div className="relative">
-              <button
-                onClick={() => setShowPreview(false)}
-                className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-75 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.name}
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
-            </div>
-            <div className="mt-4 text-center text-white">
-              <h3 className="text-lg font-medium mb-2">{selectedImage.name}</h3>
-              {selectedImage.description && (
-                <p className="text-gray-300 mb-2">{selectedImage.description}</p>
-              )}
-              <div className="flex items-center justify-center space-x-4 text-sm text-gray-300 mb-3">
-                <span>
-                  {(() => {
-                    const dimensions = imageDimensions[selectedImage.id]
-                    const isCurrentlyFetching = fetchingDimensions.current.has(selectedImage.id)
-                    
-                    if (dimensions) {
-                      // 优先显示获取到的真实尺寸
-                      return `${dimensions.width} × ${dimensions.height}`
-                    } else if (selectedImage.width > 0 && selectedImage.height > 0) {
-                      // 显示存储的尺寸
-                      return `${selectedImage.width} × ${selectedImage.height}`
-                    } else if (isCurrentlyFetching) {
-                      // 正在获取中
-                      return translate('image.grid.gettingDimensions')
-                    } else {
-                      // 没有尺寸数据
-                      return translate('image.grid.dimensionsUnknown')
-                    }
-                  })()}
-                </span>
-                {selectedImage.size > 0 && <span>{formatFileSize(selectedImage.size)}</span>}
-                <span>{formatDate(selectedImage.createdAt)}</span>
-              </div>
-              
-              {/* 在线地址信息 */}
-              <div className="flex items-center justify-center space-x-3">
-                <button
-                  onClick={() => handleCopyUrl(selectedImage.url, 'url')}
-                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center space-x-1"
-                >
-                  <Link className="w-3 h-3" />
-                  <span>{translate('image.grid.copyUrl')}</span>
-                </button>
-                <button
-                  onClick={() => handleOpenUrl(selectedImage.url)}
-                  className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center space-x-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  <span>{translate('image.grid.openUrl')}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImagePreviewModal
+        image={selectedImage}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        imageDimensions={imageDimensions}
+        formatFileSize={formatFileSize}
+        onCopyUrl={handleCopyUrl}
+        onOpenUrl={handleOpenUrl}
+        t={translate}
+      />
 
       {/* 在线地址模态框 */}
-      {showUrlModal && selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                {translate('image.grid.imageUrlTitle')}
-              </h3>
-              <button
-                onClick={() => setShowUrlModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  图片地址
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={selectedImage.url}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                  />
-                  <button
-                    onClick={() => handleCopyUrl(selectedImage.url, 'url')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    {translate('image.grid.copy')}
-                  </button>
-                  <button
-                    onClick={() => handleOpenUrl(selectedImage.url)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    {translate('image.grid.open')}
-                  </button>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  GitHub地址
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={selectedImage.githubUrl}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
-                  />
-                  <button
-                    onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    {translate('image.grid.copy')}
-                  </button>
-                  <button
-                    onClick={() => handleOpenUrl(selectedImage.githubUrl)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                  >
-                    {translate('image.grid.open')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImageUrlModal
+        image={selectedImage}
+        isOpen={showUrlModal}
+        onClose={() => setShowUrlModal(false)}
+        imageDimensions={imageDimensions}
+        onCopyUrl={handleCopyUrl}
+        onOpenUrl={handleOpenUrl}
+        t={translate}
+      />
 
     </>
   )

@@ -14,7 +14,7 @@ import {
   formatFileSize
 } from '@packages/ui/src'
 import { Toaster } from 'react-hot-toast'
-import { isDemoEnvironment, setDemoMode, getDemoConfig, getAppConfig } from '@/utils/env'
+import { isDemoEnvironment, setDemoMode, getDemoConfig } from '@/utils/env'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { useI18n } from './hooks/useI18n'
 import './App.css'
@@ -142,7 +142,7 @@ function App() {
       // 通用快捷键
       {
         key: COMMON_SHORTCUTS.ESCAPE,
-        description: '关闭当前模态框',
+        description: t('keyboard.shortcuts.closeModal'),
         action: () => {
           if (showConfigModal) handleCloseConfigModal()
           else if (showKeyboardHelp) handleCloseKeyboardHelp()
@@ -151,13 +151,13 @@ function App() {
       },
       {
         key: COMMON_SHORTCUTS.F1,
-        description: '显示键盘快捷键帮助',
+        description: t('keyboard.shortcuts.showHelp'),
         action: handleOpenKeyboardHelp,
         category: SHORTCUT_CATEGORIES.HELP
       },
       {
         key: COMMON_SHORTCUTS.F5,
-        description: '刷新图片列表',
+        description: t('keyboard.shortcuts.refresh'),
         action: handleLoadImages,
         category: SHORTCUT_CATEGORIES.GENERAL
       },
@@ -165,7 +165,7 @@ function App() {
       {
         key: COMMON_SHORTCUTS.COMMA,
         ctrlKey: true,
-        description: '打开GitHub配置',
+        description: t('keyboard.shortcuts.openConfig'),
         action: handleOpenConfigModal,
         category: SHORTCUT_CATEGORIES.GENERAL
       },
@@ -173,9 +173,10 @@ function App() {
       // 搜索快捷键
       {
         key: COMMON_SHORTCUTS.SLASH,
-        description: '聚焦搜索框',
+        description: t('keyboard.shortcuts.focusSearch'),
         action: () => {
-          const searchInput = document.querySelector('input[placeholder*="搜索"]') as HTMLInputElement
+          // 使用更通用的选择器来查找搜索输入框
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement
           if (searchInput) {
             searchInput.focus()
             searchInput.select()
@@ -186,7 +187,7 @@ function App() {
       {
         key: COMMON_SHORTCUTS.V,
         ctrlKey: true,
-        description: '切换视图模式',
+        description: t('keyboard.shortcuts.toggleView'),
         action: () => {
           // 触发图片浏览器的视图切换
           const event = new CustomEvent('toggleViewMode')
@@ -228,17 +229,17 @@ function App() {
           <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
             <Settings className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 {getAppConfig().name}</h1>
-          <p className="text-gray-600 mb-8 text-lg">{getAppConfig().description}</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('app.welcome')}</h1>
+          <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
           
           {isDemoMode && (
             <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
                 <Play className="w-5 h-5 text-purple-600" />
-                <h3 className="text-lg font-semibold text-purple-800">演示环境</h3>
+              <h3 className="text-lg font-semibold text-purple-800">{t('app.demoMode.title')}</h3>
               </div>
               <p className="text-purple-700 text-sm mb-3">
-                您正在使用演示环境，可以下载预配置的演示配置文件快速体验 Pixuli 的各项功能。
+                {t('app.demoMode.description')}
               </p>
               <div className="flex justify-center space-x-3">
                 <button
@@ -257,7 +258,7 @@ function App() {
                   className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
                 >
                   <Play className="w-4 h-4" />
-                  <span>下载演示配置</span>
+                  <span>{t('app.demoMode.downloadDemo')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -272,12 +273,12 @@ function App() {
             </div>
           )}
           
-          <p className="text-gray-500 mb-6 text-base">请先配置 GitHub 仓库信息以开始使用</p>
+          <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
           <button
             onClick={handleOpenConfigModal}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            配置 GitHub
+            {t('app.configureGitHub')}
           </button>
         </div>
 
@@ -301,14 +302,14 @@ function App() {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">{getAppConfig().name}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{t('app.title')}</h1>
               <div className="text-sm text-gray-500 hidden sm:block">
-                仓库: {githubConfig.owner}/{githubConfig.repo}
+                {t('app.repository')}: {githubConfig.owner}/{githubConfig.repo}
               </div>
               {isDemoMode && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                   <Play className="w-3 h-3" />
-                  <span>演示环境</span>
+                  <span>{t('app.demoMode.title')}</span>
                 </div>
               )}
             </div>
@@ -318,7 +319,7 @@ function App() {
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="GitHub 配置 (Ctrl+,)"
+                title={`${t('navigation.settings')} (Ctrl+,)`}
               >
                 <Settings className="w-5 h-5" />
               </button>
@@ -326,14 +327,14 @@ function App() {
                 onClick={handleLoadImages}
                 disabled={loading}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="刷新图片 (F5)"
+                title={`${t('navigation.refresh')} (F5)`}
               >
                 <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
               </button>
               <button
                 onClick={handleOpenKeyboardHelp}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="键盘快捷键帮助 (F1)"
+                title={`${t('navigation.help')} (F1)`}
               >
                 <HelpCircle className="w-5 h-5" />
               </button>
@@ -384,12 +385,12 @@ function App() {
           {/* 图片统计和操作区域 */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              图片库 ({filteredImages.length} 张图片)
+              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')})
             </h2>
             {loading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>正在加载图片...</span>
+                <span>{t('app.loadingImages')}</span>
               </div>
             )}
           </div>
