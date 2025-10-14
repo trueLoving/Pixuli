@@ -5,6 +5,7 @@ import { Eye, Edit, Trash2, Tag, Calendar, X, Link, ExternalLink, MoreHorizontal
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '../../hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 import './ImageList.css'
 
 interface ImageListProps {
@@ -16,6 +17,7 @@ interface ImageListProps {
   onUpdateImage?: (data: any) => Promise<void>
   getImageDimensionsFromUrl?: (url: string) => Promise<{ width: number; height: number }>
   formatFileSize?: (size: number) => string
+  t?: (key: string) => string
 }
 
 const ImageList: React.FC<ImageListProps> = ({ 
@@ -25,8 +27,11 @@ const ImageList: React.FC<ImageListProps> = ({
   onDeleteImage,
   onUpdateImage,
   getImageDimensionsFromUrl,
-  formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`
+  formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
@@ -67,29 +72,29 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [images, reset])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
-    if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
+    if (confirm(`${translate('image.list.confirmDelete')} "${image.name}" ${translate('common.confirm')}？`)) {
       if (onDeleteImage) {
-        const loadingToast = showLoading(`正在删除图片 "${image.name}"...`)
+        const loadingToast = showLoading(`${translate('image.list.deleting')} "${image.name}"...`)
         try {
           await onDeleteImage(image.id, image.name)
-          updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 已成功删除`)
+          updateLoadingToSuccess(loadingToast, `${translate('image.list.deleteSuccess')} "${image.name}" ${translate('image.list.deleted')}`)
         } catch (error) {
-          updateLoadingToError(loadingToast, `删除图片 "${image.name}" 失败: ${error instanceof Error ? error.message : '未知错误'}`)
+          updateLoadingToError(loadingToast, `${translate('image.list.deleteFailed')} "${image.name}" ${translate('image.list.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`)
         }
       }
     }
-  }, [onDeleteImage])
+  }, [onDeleteImage, translate])
 
   const handleEdit = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowEditModal(true)
-    showInfo(`正在编辑图片 "${image.name}"`)
+    showInfo(`${translate('image.list.editing')} "${image.name}"`)
   }, [])
 
   const handlePreview = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowPreview(true)
-    showInfo(`正在预览图片 "${image.name}"`)
+    showInfo(`${translate('image.list.previewing')} "${image.name}"`)
   }, [])
 
   // 监听预览事件（仅列表视图）
@@ -114,7 +119,7 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [])
 
   const handleEditCancel = useCallback(() => {
-    showInfo('已取消编辑')
+    showInfo(translate('image.list.editCancelled'))
     setShowEditModal(false)
   }, [])
 
@@ -237,7 +242,7 @@ const ImageList: React.FC<ImageListProps> = ({
                   isSelected ? 'text-blue-900 font-semibold' : 'text-gray-900'
                 }`}>
                   {image.name}
-                  {isSelected && <span className="ml-2 text-blue-600 text-xs">已选中</span>}
+                  {isSelected && <span className="ml-2 text-blue-600 text-xs">{translate('image.list.selected')}</span>}
                 </h3>
                 {image.tags.length > 0 && (
                   <div className="flex items-center space-x-1">
@@ -277,7 +282,7 @@ const ImageList: React.FC<ImageListProps> = ({
                     } else if (image.width > 0 && image.height > 0) {
                       return `${image.width} × ${image.height}`
                     } else {
-                      return '获取中...'
+                      return translate('image.list.gettingDimensions')
                     }
                   })()}
                 </span>
@@ -295,21 +300,21 @@ const ImageList: React.FC<ImageListProps> = ({
               <button
                 onClick={() => handlePreview(image)}
                 className="image-list-action-button"
-                title="预览"
+                title={translate('image.list.preview')}
               >
                 <Eye className="w-4 h-4" />
               </button>
               <button
                 onClick={() => handleEdit(image)}
                 className="image-list-action-button"
-                title="编辑"
+                title={translate('image.list.edit')}
               >
                 <Edit className="w-4 h-4" />
               </button>
               <button
                 onClick={() => toggleRowExpansion(image.id)}
                 className="image-list-action-button"
-                title="更多操作"
+                title={translate('image.list.moreActions')}
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -327,14 +332,14 @@ const ImageList: React.FC<ImageListProps> = ({
                   className="image-list-secondary-button"
                 >
                   <Link className="w-4 h-4 mr-1" />
-                  查看地址
+                  {translate('image.list.viewUrl')}
                 </button>
                 <button
                   onClick={() => handleDelete(image)}
                   className="image-list-secondary-button text-red-600 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  删除
+                  {translate('image.list.delete')}
                 </button>
               </div>
             </div>
@@ -365,8 +370,8 @@ const ImageList: React.FC<ImageListProps> = ({
           <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Tag className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">图片库为空</h3>
-          <p className="text-gray-500">开始上传图片，构建您的专属图片库</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{translate('image.list.emptyTitle')}</h3>
+          <p className="text-gray-500">{translate('image.list.emptyDescription')}</p>
         </div>
       </div>
     )
@@ -398,14 +403,14 @@ const ImageList: React.FC<ImageListProps> = ({
               {isLoading ? (
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>正在加载更多图片...</span>
+                  <span>{translate('image.list.loadingMore')}</span>
                 </div>
               ) : (
                 <button
                   onClick={loadMore}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  加载更多
+                  {translate('image.list.loadMore')}
                 </button>
               )}
             </div>
@@ -471,7 +476,7 @@ const ImageList: React.FC<ImageListProps> = ({
                     } else if (selectedImage.width > 0 && selectedImage.height > 0) {
                       return `${selectedImage.width} × ${selectedImage.height}`
                     } else {
-                      return '获取中...'
+                      return translate('image.list.gettingDimensions')
                     }
                   })()}
                 </span>
@@ -486,14 +491,14 @@ const ImageList: React.FC<ImageListProps> = ({
                   className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center space-x-1"
                 >
                   <Link className="w-3 h-3" />
-                  <span>复制地址</span>
+                  <span>{translate('image.list.copyUrl')}</span>
                 </button>
                 <button
                   onClick={() => handleOpenUrl(selectedImage.url)}
                   className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center space-x-1"
                 >
                   <ExternalLink className="w-3 h-3" />
-                  <span>打开地址</span>
+                  <span>{translate('image.list.openUrl')}</span>
                 </button>
               </div>
             </div>
@@ -506,7 +511,7 @@ const ImageList: React.FC<ImageListProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="max-w-2xl w-full mx-4 bg-white rounded-lg shadow-xl">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">图片在线地址</h3>
+              <h3 className="text-lg font-medium text-gray-900">{translate('image.list.imageUrlTitle')}</h3>
               <button
                 onClick={() => setShowUrlModal(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -532,7 +537,7 @@ const ImageList: React.FC<ImageListProps> = ({
                       } else if (selectedImage.width > 0 && selectedImage.height > 0) {
                         return `${selectedImage.width} × ${selectedImage.height}`
                       } else {
-                        return '获取中...'
+                        return translate('image.list.gettingDimensions')
                       }
                     })()}
                   </p>
@@ -542,7 +547,7 @@ const ImageList: React.FC<ImageListProps> = ({
               {/* 图片访问地址 */}
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">图片访问地址</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{translate('image.list.imageAccessUrl')}</label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
@@ -554,14 +559,14 @@ const ImageList: React.FC<ImageListProps> = ({
                       onClick={() => handleCopyUrl(selectedImage.url, 'url')}
                       className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                     >
-                      复制
+                      {translate('image.list.copy')}
                     </button>
                     <button
                       onClick={() => handleOpenUrl(selectedImage.url)}
                       className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
                     >
                       <ExternalLink className="w-4 h-4" />
-                      <span>打开</span>
+                      <span>{translate('image.list.open')}</span>
                     </button>
                   </div>
                 </div>
@@ -569,7 +574,7 @@ const ImageList: React.FC<ImageListProps> = ({
                 {/* GitHub 地址 */}
                 {selectedImage.githubUrl && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">GitHub 地址</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{translate('image.list.githubUrl')}</label>
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
@@ -581,14 +586,14 @@ const ImageList: React.FC<ImageListProps> = ({
                         onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
                         className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                       >
-                        复制
+                        {translate('image.list.copy')}
                       </button>
                       <button
                         onClick={() => handleOpenUrl(selectedImage.githubUrl)}
                         className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors flex items-center space-x-1"
                       >
                         <ExternalLink className="w-4 h-4" />
-                        <span>打开</span>
+                        <span>{translate('image.list.open')}</span>
                       </button>
                     </div>
                   </div>

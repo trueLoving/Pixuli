@@ -1,5 +1,6 @@
 import React from 'react'
-import { X, Keyboard, Command, Search, RefreshCw, Zap } from 'lucide-react'
+import { X, Keyboard, Command, RefreshCw, Zap } from 'lucide-react'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 
 interface KeyboardShortcut {
   description: string
@@ -19,25 +20,23 @@ interface KeyboardHelpModalProps {
   isOpen: boolean
   onClose: () => void
   categories: ShortcutCategory[]
+  t?: (key: string) => string
 }
 
-const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, categories }) => {
+const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, categories, t }) => {
   if (!isOpen) return null
+
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
 
   const getCategoryIcon = (categoryName: string) => {
     switch (categoryName) {
-      case '通用操作':
+      case translate('keyboard.categories.general'):
         return <Command className="w-5 h-5" />
-      case '搜索':
-        return <Search className="w-5 h-5" />
-      case '帮助':
-        return <Keyboard className="w-5 h-5" />
-      case '模态框':
-        return <X className="w-5 h-5" />
-      case '图片浏览':
-        return <RefreshCw className="w-5 h-5" />
-      case '图片编辑':
+      case translate('keyboard.categories.features'):
         return <Zap className="w-5 h-5" />
+      case translate('keyboard.categories.browsing'):
+        return <RefreshCw className="w-5 h-5" />
       default:
         return <Command className="w-5 h-5" />
     }
@@ -63,8 +62,8 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
               <Keyboard className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">键盘快捷键</h2>
-              <p className="text-sm text-gray-500">使用键盘快速操作 Pixuli</p>
+              <h2 className="text-xl font-bold text-gray-900">{translate('keyboard.title')}</h2>
+              <p className="text-sm text-gray-500">{translate('keyboard.subtitle')}</p>
             </div>
           </div>
           <button
@@ -113,23 +112,23 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
 
           {/* 使用提示 */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-2">使用提示</h4>
+            <h4 className="font-medium text-blue-900 mb-2">{translate('keyboard.usageTips.title')}</h4>
             <div className="text-sm text-blue-800 space-y-1">
               <div className="flex items-start">
                 <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                <span>快捷键在输入框、文本区域等可编辑元素中不会生效</span>
+                <span>{translate('keyboard.usageTips.tip1')}</span>
               </div>
               <div className="flex items-start">
                 <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                <span>按 F1 键可以随时打开此帮助界面</span>
+                <span>{translate('keyboard.usageTips.tip2')}</span>
               </div>
               <div className="flex items-start">
                 <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                <span>按 Esc 键可以关闭当前打开的模态框</span>
+                <span>{translate('keyboard.usageTips.tip3')}</span>
               </div>
               <div className="flex items-start">
                 <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
-                <span>按 / 键可以快速聚焦到搜索框</span>
+                <span>{translate('keyboard.usageTips.tip4')}</span>
               </div>
             </div>
           </div>

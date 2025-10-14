@@ -1,0 +1,58 @@
+/* ImageSearch 组件样式 */
+.image-search {
+  /* 搜索框样式 */
+  .search-input {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .search-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* 标签按钮样式 */
+  .tag-button {
+    transition: all 0.2s ease-in-out;
+    user-select: none;
+  }
+
+  .tag-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .tag-button:active {
+    transform: translateY(0);
+  }
+
+  /* 清除筛选按钮样式 */
+  .clear-filters-button {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .clear-filters-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 640px) {
+    .search-input {
+      font-size: 0.875rem;
+      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    }
+  }
+
+  @media (min-width: 641px) {
+    .search-input {
+      font-size: 1rem;
+      padding: 0.875rem 1rem 0.875rem 2.75rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .search-input {
+      font-size: 1.125rem;
+      padding: 1rem 1.25rem 1rem 3rem;
+    }
+  }
+}

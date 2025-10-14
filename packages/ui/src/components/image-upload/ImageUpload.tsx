@@ -3,20 +3,25 @@ import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import type { ImageUploadData, MultiImageUploadData, BatchUploadProgress } from '../../types/image'
 import { showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 
 interface ImageUploadProps {
   onUploadImage: (data: ImageUploadData) => Promise<void>
   onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>
   loading: boolean
   batchUploadProgress?: BatchUploadProgress | null
+  t?: (key: string) => string
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
   onUploadImage,
   onUploadMultipleImages,
   loading,
-  batchUploadProgress
+  batchUploadProgress,
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const [uploadData, setUploadData] = useState<ImageUploadData | null>(null)
   const [multiUploadData, setMultiUploadData] = useState<MultiImageUploadData | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -35,7 +40,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         })
         setIsMultiple(false)
         setShowForm(true)
-        showInfo(`已选择图片: ${file.name}`)
+        showInfo(`${translate('image.upload.selectedSingle')}: ${file.name}`)
       } else {
         // 多张图片上传
         setMultiUploadData({
@@ -46,7 +51,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         })
         setIsMultiple(true)
         setShowForm(true)
-        showInfo(`已选择 ${acceptedFiles.length} 张图片`)
+        showInfo(`${translate('image.upload.selectedMultiple')} ${acceptedFiles.length} 张图片`)
       }
     }
   }, [])
@@ -65,14 +70,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (uploadData) {
-      const loadingToast = showLoading(`正在上传图片 "${uploadData.name || uploadData.file.name}"...`)
+      const loadingToast = showLoading(`${translate('image.upload.uploadingSingle')} "${uploadData.name || uploadData.file.name}"...`)
       try {
         await onUploadImage(uploadData)
-        updateLoadingToSuccess(loadingToast, `图片 "${uploadData.name || uploadData.file.name}" 上传成功！`)
+        updateLoadingToSuccess(loadingToast, `${translate('image.upload.uploadSuccessSingle')} "${uploadData.name || uploadData.file.name}" 上传成功！`)
         setUploadData(null)
         setShowForm(false)
       } catch (error) {
-        updateLoadingToError(loadingToast, `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`)
+        updateLoadingToError(loadingToast, `${translate('image.upload.uploadFailed')}: ${error instanceof Error ? error.message : '未知错误'}`)
       }
     }
   }
@@ -86,15 +91,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleMultiSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (multiUploadData) {
-      const loadingToast = showLoading(`正在批量上传 ${multiUploadData.files.length} 张图片...`)
+      const loadingToast = showLoading(`${translate('image.upload.uploadingMultiple')} ${multiUploadData.files.length} 张图片...`)
       try {
         await onUploadMultipleImages(multiUploadData)
-        updateLoadingToSuccess(loadingToast, `成功上传 ${multiUploadData.files.length} 张图片！`)
+        updateLoadingToSuccess(loadingToast, `${translate('image.upload.uploadSuccessMultiple')} ${multiUploadData.files.length} 张图片！`)
         setMultiUploadData(null)
         setShowForm(false)
         setIsMultiple(false)
       } catch (error) {
-        updateLoadingToError(loadingToast, `批量上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
+        updateLoadingToError(loadingToast, `${translate('image.upload.uploadFailedMultiple')}: ${error instanceof Error ? error.message : '未知错误'}`)
       }
     }
   }
@@ -106,7 +111,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   const handleCancel = () => {
-    showInfo('已取消上传')
+    showInfo(translate('image.upload.cancelled'))
     setUploadData(null)
     setMultiUploadData(null)
     setShowForm(false)
@@ -119,7 +124,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">批量上传进度</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{translate('image.upload.batchProgress')}</h2>
             <div className="text-sm text-gray-500">
               {batchUploadProgress.completed + batchUploadProgress.failed} / {batchUploadProgress.total}
             </div>
@@ -128,7 +133,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           {/* 总体进度 */}
           <div className="mb-6">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>总体进度</span>
+              <span>{translate('image.upload.overallProgress')}</span>
               <span>{Math.round(((batchUploadProgress.completed + batchUploadProgress.failed) / batchUploadProgress.total) * 100)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -138,8 +143,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               />
             </div>
             <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>成功: {batchUploadProgress.completed}</span>
-              <span>失败: {batchUploadProgress.failed}</span>
+              <span>{translate('image.upload.success')}: {batchUploadProgress.completed}</span>
+              <span>{translate('image.upload.failed')}: {batchUploadProgress.failed}</span>
             </div>
           </div>
 
@@ -148,7 +153,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <div className="mb-4 p-3 bg-blue-50 rounded-lg">
               <div className="flex items-center space-x-2">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                <span className="text-sm text-blue-800">正在上传: {batchUploadProgress.current}</span>
+                <span className="text-sm text-blue-800">{translate('image.upload.uploadingCurrent')}: {batchUploadProgress.current}</span>
               </div>
             </div>
           )}
@@ -164,7 +169,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {multiUploadData?.files[index]?.name || `文件 ${index + 1}`}
+                    {multiUploadData?.files[index]?.name || `${translate('image.upload.file')} ${index + 1}`}
                   </p>
                   <p className="text-xs text-gray-500">{item.message}</p>
                 </div>
@@ -191,7 +196,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           }`}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
-              {isMultipleUpload ? `批量上传图片 (${files.length} 张)` : '添加新图片'}
+              {isMultipleUpload ? `${translate('image.upload.batchUploadTitle')} (${files.length} 张)` : translate('image.upload.addNewImage')}
             </h2>
             <button
               onClick={handleCancel}
@@ -221,7 +226,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {isMultipleUpload ? '图片名称前缀' : '图片名称'} <span className="text-gray-400 text-xs">(可选)</span>
+                {isMultipleUpload ? translate('image.upload.namePrefix') : translate('image.upload.imageName')} <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
               </label>
               <input
                 type="text"
@@ -231,8 +236,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   : handleInputChange('name', e.target.value)
                 }
                 placeholder={isMultipleUpload
-                  ? "为所有图片添加统一的前缀名称"
-                  : "为图片起个好名字，便于搜索和管理"
+                  ? translate('image.upload.namePrefixPlaceholder')
+                  : translate('image.upload.imageNamePlaceholder')
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -240,7 +245,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                图片描述 <span className="text-gray-400 text-xs">(可选)</span>
+                图片描述 <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
               </label>
               <textarea
                 value={currentData?.description || ''}
@@ -249,8 +254,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   : handleInputChange('description', e.target.value)
                 }
                 placeholder={isMultipleUpload
-                  ? "为所有图片添加统一的描述信息"
-                  : "描述图片内容、用途或相关信息"
+                  ? translate('image.upload.descriptionPlaceholderMultiple')
+                  : translate('image.upload.descriptionPlaceholder')
                 }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
@@ -259,7 +264,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                标签 <span className="text-gray-400 text-xs">(可选)</span>
+                标签 <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
               </label>
               <input
                 type="text"
@@ -271,8 +276,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                     : handleInputChange('tags', tags)
                 }}
                 placeholder={isMultipleUpload
-                  ? "为所有图片添加统一的标签，用逗号分隔"
-                  : "添加标签，用逗号分隔，便于分类和搜索"
+                  ? translate('image.upload.tagsPlaceholderMultiple')
+                  : translate('image.upload.tagsPlaceholder')
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -294,13 +299,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>上传中...</span>
+                    <span>{translate('image.upload.uploading')}</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4" />
                     <span>
-                      {isMultipleUpload ? `批量上传 (${files.length} 张)` : '上传'}
+                      {isMultipleUpload ? `${translate('image.upload.batchUploadButton')} (${files.length} 张)` : translate('image.upload.uploadButton')}
                     </span>
                   </>
                 )}
@@ -330,10 +335,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         <div>
           <p className={`text-lg font-medium ${isDragActive ? 'text-blue-700' : 'text-gray-700'
             }`}>
-            {isDragActive ? '释放文件以上传' : '拖拽图片到此处或点击选择'}
+            {isDragActive ? translate('image.upload.dragActive') : translate('image.upload.dragInactive')}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            支持 JPG, PNG, GIF, BMP, WebP, SVG 等主流图片格式 • 可同时选择多张图片
+            {translate('image.upload.supportedFormats')}
           </p>
         </div>
       </div>

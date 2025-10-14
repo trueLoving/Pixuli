@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, Search, Filter, HelpCircle, Play } from 'lucide-react'
+import { Settings, RefreshCw, HelpCircle, Play } from 'lucide-react'
 import { 
   GitHubConfigModal,
   ImageUpload,
   ImageBrowser,
+  ImageSearch,
   KeyboardHelpModal,
   keyboardManager,
   COMMON_SHORTCUTS,
@@ -14,9 +15,12 @@ import {
 } from '@packages/ui/src'
 import { Toaster } from 'react-hot-toast'
 import { isDemoEnvironment, setDemoMode, getDemoConfig, getAppConfig } from '@/utils/env'
+import LanguageSwitcher from './components/LanguageSwitcher'
+import { useI18n } from './hooks/useI18n'
 import './App.css'
 
 function App() {
+  const { t } = useI18n()
   const { 
     images, 
     loading, 
@@ -42,24 +46,24 @@ function App() {
   // 键盘快捷键分类数据
   const keyboardCategories = [
     {
-      name: '通用操作',
+      name: t('keyboard.categories.general'),
       shortcuts: [
-        { description: '关闭当前模态框', key: 'Escape' },
-        { description: '显示键盘快捷键帮助', key: 'F1' },
-        { description: '刷新图片列表', key: 'F5' },
-        { description: '打开GitHub配置', key: ',', ctrlKey: true },
-        { description: '聚焦搜索框', key: '/' },
-        { description: '切换视图模式', key: 'V', ctrlKey: true }
+        { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
+        { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
+        { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
+        { description: t('keyboard.shortcuts.openConfig'), key: ',', ctrlKey: true },
+        { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
+        { description: t('keyboard.shortcuts.toggleView'), key: 'V', ctrlKey: true }
       ]
     },
     {
-      name: '图片浏览',
+      name: t('keyboard.categories.browsing'),
       shortcuts: [
-        { description: '选择上一张图片', key: 'ArrowUp' },
-        { description: '选择下一张图片', key: 'ArrowDown' },
-        { description: '选择左侧图片', key: 'ArrowLeft' },
-        { description: '选择右侧图片', key: 'ArrowRight' },
-        { description: '打开选中的图片', key: 'Enter' }
+        { description: t('keyboard.shortcuts.selectUp'), key: 'ArrowUp' },
+        { description: t('keyboard.shortcuts.selectDown'), key: 'ArrowDown' },
+        { description: t('keyboard.shortcuts.selectLeft'), key: 'ArrowLeft' },
+        { description: t('keyboard.shortcuts.selectRight'), key: 'ArrowRight' },
+        { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' }
       ]
     }
   ]
@@ -284,6 +288,7 @@ function App() {
           githubConfig={githubConfig}
           onSaveConfig={handleSaveConfig}
           onClearConfig={handleClearConfig}
+          t={t}
         />
       </div>
     )
@@ -309,6 +314,7 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-3">
+              <LanguageSwitcher />
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -355,62 +361,19 @@ function App() {
           )}
 
           {/* 搜索和过滤区域 */}
-          <div className="mb-4 space-y-3">
-            {/* 搜索框 */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="搜索图片名称、描述或标签..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-              />
-            </div>
-
-            {/* 标签过滤 */}
-            {allTags.length > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                <div className="flex items-center space-x-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">按标签筛选:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {selectedTags.length > 0 && (
-                    <button
-                      onClick={() => setSelectedTags([])}
-                      className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors"
-                    >
-                      清除筛选 ({selectedTags.length})
-                    </button>
-                  )}
-                  {allTags.map((tag, index) => (
-                    <button
-                      key={`app-tag-${index}`}
-                      onClick={() => {
-                        setSelectedTags(prev => 
-                          prev.includes(tag) 
-                            ? prev.filter(t => t !== tag)
-                            : [...prev, tag]
-                        )
-                      }}
-                      className={`px-3 py-1 text-xs rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        selectedTags.includes(tag)
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+          <ImageSearch
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            allTags={allTags}
+            t={t}
+          />
 
           {/* 图片上传区域 */}
           <div className="mb-4">
             <ImageUpload 
+              t={t}
               onUploadImage={uploadImage}
               onUploadMultipleImages={uploadMultipleImages}
               loading={loading}
@@ -434,6 +397,7 @@ function App() {
           {/* 图片浏览 */}
           <div className="min-h-0">
             <ImageBrowser 
+              t={t}
               images={filteredImages}
               onDeleteImage={handleDeleteImage}
               onUpdateImage={handleUpdateImage}
@@ -453,6 +417,7 @@ function App() {
         githubConfig={githubConfig}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
+        t={t}
       />
 
       {/* 键盘快捷键帮助模态框 */}
@@ -460,6 +425,7 @@ function App() {
         isOpen={showKeyboardHelp}
         onClose={handleCloseKeyboardHelp}
         categories={keyboardCategories}
+        t={t}
       />
 
       <Toaster />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { ImageItem, ImageEditData } from '../../types/image'
 import { X, Save } from 'lucide-react'
 import { showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 
 interface ImageEditModalProps {
   image: ImageItem
@@ -12,6 +13,7 @@ interface ImageEditModalProps {
   onCancel?: () => void
   loading?: boolean
   getImageDimensionsFromUrl?: (url: string) => Promise<{ width: number; height: number }>
+  t?: (key: string) => string
 }
 
 const ImageEditModal: React.FC<ImageEditModalProps> = ({ 
@@ -22,8 +24,11 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   onSuccess, 
   onCancel,
   loading = false,
-  getImageDimensionsFromUrl
+  getImageDimensionsFromUrl,
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const [formData, setFormData] = useState<ImageEditData>({
     id: image.id,
     name: image.name,
@@ -51,10 +56,10 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const loadingToast = showLoading(`正在更新图片 "${image.name}" 信息...`)
+    const loadingToast = showLoading(`${translate('image.edit.updating')} "${image.name}" ${translate('common.info')}...`)
     try {
       await onUpdateImage(formData)
-      updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 信息已成功更新`)
+      updateLoadingToSuccess(loadingToast, `${translate('image.edit.updateSuccess')} "${image.name}" ${translate('common.info')}${translate('messages.configSaved')}`)
       if (onSuccess) {
         // 构建更新后的图片数据
         const updatedImage = {
@@ -70,7 +75,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
         onClose()
       }
     } catch (error) {
-      updateLoadingToError(loadingToast, `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      updateLoadingToError(loadingToast, `${translate('image.edit.updateFailed')}: ${error instanceof Error ? error.message : translate('common.error')}`)
       onClose()
     }
   }
@@ -106,7 +111,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">编辑图片信息</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{translate('image.edit.title')}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -128,13 +133,13 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
                 {image.name}
               </p>
               <p className="text-xs text-gray-500">
-                尺寸: {(() => {
+                {translate('image.edit.dimensions')}: {(() => {
                   if (imageDimensions) {
                     return `${imageDimensions.width} × ${imageDimensions.height}`
                   } else if (image.width > 0 && image.height > 0) {
                     return `${image.width} × ${image.height}`
                   } else {
-                    return '获取中...'
+                    return translate('image.edit.gettingDimensions')
                   }
                 })()}
               </p>
@@ -143,25 +148,25 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              图片名称 <span className="text-gray-400 text-xs">(可选)</span>
+              {translate('image.edit.imageName')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
             </label>
             <input
               type="text"
               value={formData.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="为图片起个好名字，便于搜索和管理"
+              placeholder={translate('image.edit.namePlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              图片描述 <span className="text-gray-400 text-xs">(可选)</span>
+              {translate('image.edit.imageDescription')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
             </label>
             <textarea
               value={formData.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="描述图片内容、用途或相关信息"
+              placeholder={translate('image.edit.descriptionPlaceholder')}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -169,17 +174,17 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              标签 <span className="text-gray-400 text-xs">(可选)</span>
+              {translate('image.edit.tags')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
             </label>
             <input
               type="text"
               value={formData.tags?.join(', ') || ''}
               onChange={(e) => handleInputChange('tags', e.target.value.split(',').map(tag => tag.trim()).filter(Boolean))}
-              placeholder="添加标签，用逗号分隔，便于分类和搜索"
+              placeholder={translate('image.edit.tagsPlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-gray-500 mt-1">
-              例如：风景, 自然, 山水, 摄影
+              {translate('image.edit.tagsExample')}
             </p>
           </div>
 
@@ -189,7 +194,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
               onClick={handleCancel}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              取消
+              {translate('common.cancel')}
             </button>
             <button
               type="submit"
@@ -197,7 +202,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
             >
               <Save className="w-4 h-4" />
-              <span>{loading ? '保存中...' : '保存更改'}</span>
+              <span>{loading ? translate('image.edit.saving') : translate('image.edit.saveChanges')}</span>
             </button>
           </div>
         </form>

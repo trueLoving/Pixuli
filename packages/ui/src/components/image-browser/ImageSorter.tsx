@@ -1,5 +1,6 @@
 import React from 'react'
 import { ArrowUpDown, Calendar, FileText, SortAsc, SortDesc, HardDrive } from 'lucide-react'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 import './ImageSorter.css'
 
 export type SortField = 'createdAt' | 'name' | 'size'
@@ -10,14 +11,18 @@ interface ImageSorterProps {
   currentOrder: SortOrder
   onSortChange: (field: SortField, order: SortOrder) => void
   className?: string
+  t?: (key: string) => string
 }
 
 const ImageSorter: React.FC<ImageSorterProps> = ({ 
   currentSort, 
   currentOrder, 
   onSortChange, 
-  className = '' 
+  className = '',
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const handleSortChange = (field: SortField) => {
     let newOrder: SortOrder = 'asc'
     
@@ -42,11 +47,11 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   const getSortLabel = (field: SortField) => {
     switch (field) {
       case 'createdAt':
-        return '上传时间'
+        return translate('image.sorter.createdAt')
       case 'name':
-        return '文件名称'
+        return translate('image.sorter.name')
       case 'size':
-        return '文件大小'
+        return translate('image.sorter.size')
       default:
         return ''
     }
@@ -54,13 +59,13 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <span className="text-sm text-gray-600 mr-2">排序:</span>
+      <span className="text-sm text-gray-600 mr-2">{translate('image.sorter.label')}:</span>
       
       {/* 时间排序 */}
       <button
         onClick={() => handleSortChange('createdAt')}
         className={`sort-button ${currentSort === 'createdAt' ? 'active' : 'inactive'}`}
-        title="按上传时间排序"
+        title={translate('image.sorter.sortByCreatedAt')}
       >
         <Calendar className="sort-icon" />
         <span className="sort-label">{getSortLabel('createdAt')}</span>
@@ -71,7 +76,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
       <button
         onClick={() => handleSortChange('name')}
         className={`sort-button ${currentSort === 'name' ? 'active' : 'inactive'}`}
-        title="按文件名称排序"
+        title={translate('image.sorter.sortByName')}
       >
         <FileText className="sort-icon" />
         <span className="sort-label">{getSortLabel('name')}</span>
@@ -82,7 +87,7 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
       <button
         onClick={() => handleSortChange('size')}
         className={`sort-button ${currentSort === 'size' ? 'active' : 'inactive'}`}
-        title="按文件大小排序"
+        title={translate('image.sorter.sortBySize')}
       >
         <HardDrive className="sort-icon" />
         <span className="sort-label">{getSortLabel('size')}</span>

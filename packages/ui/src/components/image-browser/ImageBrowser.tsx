@@ -8,6 +8,7 @@ import ImageFilter, { FilterOptions } from './ImageFilter'
 import { getSortedImages } from '../../utils/sortUtils'
 import { filterImages, createDefaultFilters } from '../../utils/filterUtils'
 import { keyboardManager, COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '../../utils/keyboardShortcuts'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 import './ImageBrowser.css'
 
 interface ImageBrowserProps {
@@ -17,6 +18,7 @@ interface ImageBrowserProps {
   onUpdateImage?: (data: any) => Promise<void>
   getImageDimensionsFromUrl?: (url: string) => Promise<{ width: number; height: number }>
   formatFileSize?: (size: number) => string
+  t?: (key: string) => string
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({ 
@@ -25,8 +27,11 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onDeleteImage,
   onUpdateImage,
   getImageDimensionsFromUrl,
-  formatFileSize
+  formatFileSize,
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const [currentView, setCurrentView] = useState<ViewMode>('grid')
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt')
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc')
@@ -190,31 +195,31 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     const shortcuts = [
       {
         key: COMMON_SHORTCUTS.ARROW_UP,
-        description: '选择上一张图片',
+        description: translate('keyboard.shortcuts.selectUp'),
         action: () => navigateImages('up'),
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
       },
       {
         key: COMMON_SHORTCUTS.ARROW_DOWN,
-        description: '选择下一张图片',
+        description: translate('keyboard.shortcuts.selectDown'),
         action: () => navigateImages('down'),
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
       },
       {
         key: COMMON_SHORTCUTS.ARROW_LEFT,
-        description: '选择左侧图片',
+        description: translate('keyboard.shortcuts.selectLeft'),
         action: () => navigateImages('left'),
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
       },
       {
         key: COMMON_SHORTCUTS.ARROW_RIGHT,
-        description: '选择右侧图片',
+        description: translate('keyboard.shortcuts.selectRight'),
         action: () => navigateImages('right'),
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
       },
        {
          key: COMMON_SHORTCUTS.ENTER,
-         description: '打开选中的图片',
+         description: translate('keyboard.shortcuts.openSelected'),
          action: handlePreviewSelectedImage,
          category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
        },
@@ -283,7 +288,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       {/* 工具栏 */}
       <div className="image-browser-toolbar">
         <div className="image-browser-header">
-          <h2 className="image-browser-title">图片库</h2>
+          <h2 className="image-browser-title">{translate('image.browse')}</h2>
           <span className="image-browser-count">
             共 {images.length} 张图片
             {currentFilters.searchTerm || currentFilters.selectedTypes.length > 0 || currentFilters.selectedTags.length > 0 && (
@@ -297,6 +302,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         <div className="image-browser-controls">
           {/* 排序功能 */}
           <ImageSorter
+          t={translate}
             currentSort={currentSort}
             currentOrder={currentOrder}
             onSortChange={handleSortChange}
@@ -304,6 +310,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           
           {/* 视图切换 */}
           <ViewToggle
+            t={translate}
             currentView={currentView}
             onViewChange={handleViewChange}
           />
@@ -313,6 +320,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       {/* 筛选区域 */}
       <div className="image-browser-filter-section">
         <ImageFilter
+        t={translate}
           images={images}
           currentFilters={currentFilters}
           onFiltersChange={handleFiltersChange}
@@ -323,6 +331,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       <div className="image-browser-content">
         <div className={`image-browser-view ${currentView === 'grid' ? '' : 'hidden'}`}>
           <ImageGrid 
+            t={translate}
             images={filteredAndSortedImages}
             selectedImageIndex={selectedImageIndex}
             onImageSelect={handleImageSelect}
@@ -334,6 +343,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         </div>
         <div className={`image-browser-view ${currentView === 'list' ? '' : 'hidden'}`}>
           <ImageList 
+            t={translate}
             images={filteredAndSortedImages}
             selectedImageIndex={selectedImageIndex}
             onImageSelect={handleImageSelect}

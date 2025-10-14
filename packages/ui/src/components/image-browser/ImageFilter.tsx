@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { Search, Filter, X, Image as ImageIcon, HardDrive } from 'lucide-react'
 import { ImageItem } from '../../types/image'
 import { formatFileSize } from '../../utils/fileSizeUtils'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 import './ImageFilter.css'
 
 export interface FilterOptions {
@@ -19,14 +20,18 @@ interface ImageFilterProps {
   currentFilters: FilterOptions
   onFiltersChange: (filters: FilterOptions) => void
   className?: string
+  t?: (key: string) => string
 }
 
 const ImageFilter: React.FC<ImageFilterProps> = ({ 
   images, 
   currentFilters, 
   onFiltersChange, 
-  className = '' 
+  className = '',
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   const [isExpanded, setIsExpanded] = useState(false)
 
   // 获取所有可用的图片类型
@@ -175,7 +180,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
       <div className="image-filter-header">
         <div className="image-filter-title">
           <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-medium text-gray-900">图片筛选</h3>
+          <h3 className="text-lg font-medium text-gray-900">{translate('image.filter.title')}</h3>
           {filterStats.hasFilters && (
             <span className="image-filter-stats">
               {filterStats.filtered}/{filterStats.total}
@@ -196,7 +201,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="image-filter-toggle"
-            title={isExpanded ? '收起筛选' : '展开筛选'}
+            title={isExpanded ? translate('image.filter.collapse') : translate('image.filter.expand')}
           >
             {isExpanded ? (
               <X className="w-4 h-4" />
@@ -219,7 +224,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
               <Search className="image-filter-search-icon" />
               <input
                 type="text"
-                placeholder="搜索图片名称、描述或标签..."
+                placeholder={translate('image.filter.searchPlaceholder')}
                 value={currentFilters.searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="image-filter-input"
@@ -231,7 +236,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           {availableTypes.length > 0 && (
             <div className="image-filter-section">
               <label className="image-filter-label">
-                图片类型
+                {translate('image.filter.imageType')}
               </label>
               <div className="image-filter-types">
                 {availableTypes.map((type, index) => (
@@ -259,7 +264,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           {availableTags.length > 0 && (
             <div className="image-filter-section">
               <label className="image-filter-label">
-                标签筛选
+                {translate('image.filter.tags')}
               </label>
               <div className="image-filter-tags">
                 {availableTags.map((tag, index) => (

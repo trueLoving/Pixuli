@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { ImageItem } from '../../types/image'
-// import { useImageStore } from '../../stores/imageStore'
 import { Eye, Edit, Trash2, Calendar, X, Link, ExternalLink, HardDrive, Loader2 } from 'lucide-react'
 import ImageEditModal from '../image-edit/ImageEditModal'
 import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '../../hooks'
 import { showSuccess, showError, showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
+import { defaultTranslate } from '../../locales/defaultTranslate'
 import './ImageGrid.css'
 
 interface ImageGridProps {
@@ -16,6 +16,7 @@ interface ImageGridProps {
   onUpdateImage?: (data: any) => Promise<void>
   getImageDimensionsFromUrl?: (url: string) => Promise<{ width: number; height: number }>
   formatFileSize?: (size: number) => string
+  t?: (key: string) => string
 }
 
 const ImageGrid: React.FC<ImageGridProps> = ({ 
@@ -26,8 +27,11 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   onDeleteImage,
   onUpdateImage,
   getImageDimensionsFromUrl,
-  formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`
+  formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
+  t
 }) => {
+  // 使用传入的翻译函数或默认中文翻译函数
+  const translate = t || defaultTranslate
   // 滚动加载配置
   const pageSize = 20
   const initialLoadCount = 12
@@ -111,29 +115,29 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   }, [visibleImages, images, imageDimensions, fetchImageDimensions])
 
   const handleDelete = useCallback(async (image: ImageItem) => {
-    if (confirm(`确定要删除图片 "${image.name}" 吗？`)) {
+    if (confirm(`${translate('image.grid.confirmDelete')} "${image.name}" ${translate('common.confirm')}？`)) {
       if (onDeleteImage) {
-        const loadingToast = showLoading(`正在删除图片 "${image.name}"...`)
+        const loadingToast = showLoading(`${translate('image.grid.deleting')} "${image.name}"...`)
         try {
           await onDeleteImage(image.id, image.name)
-          updateLoadingToSuccess(loadingToast, `图片 "${image.name}" 已成功删除`)
+          updateLoadingToSuccess(loadingToast, `${translate('image.grid.deleteSuccess')} "${image.name}" ${translate('image.grid.deleted')}`)
         } catch (error) {
-          updateLoadingToError(loadingToast, `删除图片 "${image.name}" 失败: ${error instanceof Error ? error.message : '未知错误'}`)
+          updateLoadingToError(loadingToast, `${translate('image.grid.deleteFailed')} "${image.name}" ${translate('image.grid.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`)
         }
       }
     }
-  }, [onDeleteImage])
+  }, [onDeleteImage, translate])
 
   const handleEdit = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowEditModal(true)
-    showInfo(`正在编辑图片 "${image.name}"`)
+    showInfo(`${translate('image.grid.editing')} "${image.name}"`)
   }, [])
 
   const handlePreview = useCallback((image: ImageItem) => {
     setSelectedImage(image)
     setShowPreview(true)
-    showInfo(`正在预览图片 "${image.name}"`)
+    showInfo(`${translate('image.grid.previewing')} "${image.name}"`)
   }, [])
 
   // 监听预览事件（仅网格视图）
@@ -171,7 +175,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   }, [])
 
   const handleEditCancel = useCallback(() => {
-    showInfo('已取消编辑')
+    showInfo(translate('image.grid.editCancelled'))
     setShowEditModal(false)
   }, [])
 
@@ -193,9 +197,9 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   const handleCopyUrl = useCallback(async (url: string, type: 'url' | 'githubUrl') => {
     try {
       await navigator.clipboard.writeText(url)
-      showSuccess(`${type === 'url' ? '图片地址' : 'GitHub地址'}已复制到剪贴板`)
+      showSuccess(`${type === 'url' ? translate('image.grid.imageUrlCopied') : translate('image.grid.githubUrlCopied')}${translate('image.grid.copiedToClipboard')}`)
     } catch (error) {
-      showError('复制失败，请手动复制')
+      showError(translate('image.grid.copyFailed'))
     }
   }, [])
 
@@ -254,7 +258,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               <button
                 onClick={() => handlePreview(image)}
                 className="image-action-button"
-                title="预览"
+                title={translate('image.grid.preview')}
               >
                 <Eye className="w-4 h-4 text-gray-700" />
               </button>
@@ -268,14 +272,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               <button
                 onClick={() => handleEdit(image)}
                 className="image-action-button"
-                title="编辑"
+                title={translate('image.grid.edit')}
               >
                 <Edit className="w-4 h-4 text-gray-700" />
               </button>
               <button
                 onClick={() => handleDelete(image)}
                 className="image-action-button"
-                title="删除"
+                title={translate('image.grid.delete')}
               >
                 <Trash2 className="w-4 h-4 text-gray-700" />
               </button>
@@ -338,10 +342,10 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                     return `${image.width} × ${image.height}`
                   } else if (isCurrentlyFetching) {
                     // 正在获取中
-                    return '获取中...'
+                    return translate('image.grid.gettingDimensions')
                   } else {
                     // 没有尺寸数据
-                    return '尺寸未知'
+                    return translate('image.grid.dimensionsUnknown')
                   }
                 })()}
               </span>
@@ -395,14 +399,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({
             {isLoading ? (
               <div className="flex items-center space-x-2 text-gray-600">
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>正在加载更多图片...</span>
+                <span>{translate('image.grid.loadingMore')}</span>
               </div>
             ) : (
               <button
                 onClick={loadMore}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                加载更多
+                {translate('image.grid.loadMore')}
               </button>
             )}
           </div>
@@ -411,14 +415,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         {/* 已加载全部提示 */}
         {!hasMore && visibleItems.length > 0 && (
           <div className="text-center py-8 text-gray-500">
-            <p>已加载全部 {visibleItems.length} 张图片</p>
+            <p>{translate('image.grid.allLoaded')} {visibleItems.length} {translate('image.grid.images')}</p>
           </div>
         )}
 
         {/* 空状态 */}
         {visibleItems.length === 0 && !isLoading && (
           <div className="text-center py-16 text-gray-500">
-            <p>暂无图片</p>
+            <p>{translate('image.grid.noImages')}</p>
           </div>
         )}
       </div>
@@ -426,6 +430,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       {/* 编辑模态框 */}
       {showEditModal && selectedImage && onUpdateImage && (
         <ImageEditModal
+          t={translate}
           image={selectedImage}
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
@@ -472,10 +477,10 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                       return `${selectedImage.width} × ${selectedImage.height}`
                     } else if (isCurrentlyFetching) {
                       // 正在获取中
-                      return '获取中...'
+                      return translate('image.grid.gettingDimensions')
                     } else {
                       // 没有尺寸数据
-                      return '尺寸未知'
+                      return translate('image.grid.dimensionsUnknown')
                     }
                   })()}
                 </span>
@@ -490,14 +495,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                   className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors flex items-center space-x-1"
                 >
                   <Link className="w-3 h-3" />
-                  <span>复制地址</span>
+                  <span>{translate('image.grid.copyUrl')}</span>
                 </button>
                 <button
                   onClick={() => handleOpenUrl(selectedImage.url)}
                   className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors flex items-center space-x-1"
                 >
                   <ExternalLink className="w-3 h-3" />
-                  <span>打开地址</span>
+                  <span>{translate('image.grid.openUrl')}</span>
                 </button>
               </div>
             </div>
@@ -511,7 +516,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">
-                图片在线地址
+                {translate('image.grid.imageUrlTitle')}
               </h3>
               <button
                 onClick={() => setShowUrlModal(false)}
@@ -537,13 +542,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                     onClick={() => handleCopyUrl(selectedImage.url, 'url')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
-                    复制
+                    {translate('image.grid.copy')}
                   </button>
                   <button
                     onClick={() => handleOpenUrl(selectedImage.url)}
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                   >
-                    打开
+                    {translate('image.grid.open')}
                   </button>
                 </div>
               </div>
@@ -563,13 +568,13 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                     onClick={() => handleCopyUrl(selectedImage.githubUrl, 'githubUrl')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
-                    复制
+                    {translate('image.grid.copy')}
                   </button>
                   <button
                     onClick={() => handleOpenUrl(selectedImage.githubUrl)}
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                   >
-                    打开
+                    {translate('image.grid.open')}
                   </button>
                 </div>
               </div>
