@@ -21,6 +21,45 @@ import { ImageBrowser } from '@packages/ui/src'
 
 ## 🧩 组件列表
 
+### 主题系统组件
+
+#### ThemeProvider
+主题提供者组件，用于包装整个应用并提供主题上下文。**组件库不管理主题状态，只负责响应应用层传入的主题变化。**
+
+```tsx
+interface ThemeProviderProps {
+  children: ReactNode
+  currentTheme?: Theme
+  themeMode?: ThemeMode
+  onThemeChange?: (themeName: string) => void
+  onModeChange?: (mode: ThemeMode) => void
+  availableThemes?: Theme[]
+}
+```
+
+**特性:**
+- 纯响应式设计，不管理内部状态
+- 支持浅色、深色、蓝色、绿色等多种预设主题
+- 主题状态由应用层管理
+- 完整的TypeScript类型支持
+
+#### ThemeToggle
+主题切换组件，提供多种样式变体。
+
+```tsx
+interface ThemeToggleProps {
+  className?: string
+  showLabel?: boolean
+  variant?: 'button' | 'dropdown' | 'compact'
+}
+```
+
+**特性:**
+- 三种样式变体：按钮、下拉菜单、紧凑样式
+- 支持主题模式切换（浅色/深色/自动）
+- 支持预设主题选择
+- 响应式设计
+
 ### 图片浏览器组件
 
 #### ImageBrowser
@@ -195,6 +234,36 @@ interface KeyboardHelpModalProps {
 
 ## 🎣 Hooks
 
+### 主题相关 Hooks
+
+#### useThemeContext
+获取主题上下文信息。
+
+```tsx
+const { 
+  currentTheme, 
+  themeMode, 
+  setThemeMode, 
+  setTheme, 
+  availableThemes 
+} = useThemeContext()
+```
+
+#### useThemeToggle
+便捷的主题切换Hook。
+
+```tsx
+const { 
+  themeMode, 
+  toggleTheme, 
+  cycleThemes, 
+  setThemeMode, 
+  setTheme 
+} = useThemeToggle()
+```
+
+**注意：** 这些Hook只提供便捷的切换方法，实际的主题状态管理由应用层负责。
+
 ### 性能优化 Hooks
 
 #### useInfiniteScroll
@@ -313,7 +382,67 @@ const {
 - `showInfo(message: string)`: 显示信息消息
 - `showLoading(message: string)`: 显示加载消息
 
+#### themeUtils
+- `applyThemeToDOM(theme: Theme)`: 应用主题到DOM
+- `initializeDefaultTheme()`: 初始化默认主题
+
 ## 📝 类型定义
+
+### 主题类型
+
+```tsx
+type ThemeMode = 'light' | 'dark' | 'auto'
+
+interface ThemeColors {
+  background: {
+    primary: string
+    secondary: string
+    tertiary: string
+  }
+  text: {
+    primary: string
+    secondary: string
+    tertiary: string
+    inverse: string
+  }
+  border: {
+    primary: string
+    secondary: string
+    focus: string
+  }
+  status: {
+    success: string
+    warning: string
+    error: string
+    info: string
+  }
+  interactive: {
+    primary: string
+    primaryHover: string
+    secondary: string
+    secondaryHover: string
+    disabled: string
+  }
+  shadow: {
+    sm: string
+    md: string
+    lg: string
+  }
+}
+
+interface Theme {
+  name: string
+  colors: ThemeColors
+}
+
+interface ThemeContextType {
+  currentTheme: Theme
+  themeMode: ThemeMode
+  setThemeMode: (mode: ThemeMode) => void
+  setTheme: (themeName: string) => void
+  availableThemes: Theme[]
+}
+```
 
 ### 核心类型
 
@@ -356,6 +485,70 @@ interface ImageEditData {
 ```
 
 ## 🚀 使用示例
+
+### 主题系统使用
+
+**重要：组件库不管理主题状态，主题状态由应用层管理。**
+
+```tsx
+import React, { useState, useEffect } from 'react'
+import { ThemeProvider, ThemeToggle, ImageBrowser, applyThemeToDOM, themes } from '@packages/ui/src'
+import '@packages/ui/dist/index.css'
+
+function App() {
+  // 应用层管理主题状态
+  const [currentTheme, setCurrentTheme] = useState(themes.light)
+  const [themeMode, setThemeMode] = useState('light')
+  const [availableThemes] = useState(Object.values(themes))
+
+  // 应用层处理主题切换
+  const handleThemeChange = (themeName: string) => {
+    const theme = availableThemes.find(t => t.name === themeName)
+    if (theme) {
+      setCurrentTheme(theme)
+      // 应用层可以在这里添加持久化逻辑
+      localStorage.setItem('selectedTheme', themeName)
+    }
+  }
+
+  // 应用层处理模式切换
+  const handleModeChange = (mode: string) => {
+    setThemeMode(mode)
+    // 应用层可以在这里添加持久化逻辑
+    localStorage.setItem('themeMode', mode)
+  }
+
+  // 应用层初始化主题
+  useEffect(() => {
+    applyThemeToDOM(currentTheme)
+  }, [currentTheme])
+
+  return (
+    <ThemeProvider
+      currentTheme={currentTheme}
+      themeMode={themeMode}
+      onThemeChange={handleThemeChange}
+      onModeChange={handleModeChange}
+      availableThemes={availableThemes}
+    >
+      <div className="min-h-screen bg-theme-background-primary text-theme-text-primary">
+        <header className="p-4 border-b border-theme-border-primary">
+          <h1 className="text-2xl font-bold">我的应用</h1>
+          <ThemeToggle variant="dropdown" />
+        </header>
+        
+        <main className="p-4">
+          <ImageBrowser 
+            images={images}
+            onDeleteImage={handleDeleteImage}
+            onUpdateImage={handleUpdateImage}
+          />
+        </main>
+      </div>
+    </ThemeProvider>
+  )
+}
+```
 
 ### 基本使用
 
@@ -415,6 +608,65 @@ import './custom-styles.css'
 - 组件样式文件位于 `src/components/*/ComponentName.css`
 - 支持通过 `className` prop 添加自定义样式
 - 使用 CSS 变量进行主题定制
+
+### 主题定制
+
+主题系统使用 CSS 自定义属性，你可以在样式中直接使用这些变量：
+
+```css
+.my-component {
+  background-color: var(--theme-background-primary);
+  color: var(--theme-text-primary);
+  border: 1px solid var(--theme-border-primary);
+  box-shadow: var(--theme-shadow-md);
+}
+
+.my-button {
+  background-color: var(--theme-interactive-primary);
+  color: var(--theme-text-inverse);
+}
+
+.my-button:hover {
+  background-color: var(--theme-interactive-primaryHover);
+}
+```
+
+### Tailwind CSS 集成
+
+如果你使用 Tailwind CSS，可以使用预定义的主题类：
+
+```tsx
+<div className="bg-theme-background-primary text-theme-text-primary">
+  <button className="bg-theme-interactive-primary text-theme-text-inverse hover:bg-theme-interactive-primary-hover">
+    主题按钮
+  </button>
+</div>
+```
+
+### 可用的 CSS 变量
+
+- `--theme-background-primary` - 主背景色
+- `--theme-background-secondary` - 次背景色
+- `--theme-background-tertiary` - 第三背景色
+- `--theme-text-primary` - 主文本色
+- `--theme-text-secondary` - 次文本色
+- `--theme-text-tertiary` - 第三文本色
+- `--theme-text-inverse` - 反色文本
+- `--theme-border-primary` - 主边框色
+- `--theme-border-secondary` - 次边框色
+- `--theme-border-focus` - 焦点边框色
+- `--theme-status-success` - 成功状态色
+- `--theme-status-warning` - 警告状态色
+- `--theme-status-error` - 错误状态色
+- `--theme-status-info` - 信息状态色
+- `--theme-interactive-primary` - 主交互色
+- `--theme-interactive-primaryHover` - 主交互悬停色
+- `--theme-interactive-secondary` - 次交互色
+- `--theme-interactive-secondaryHover` - 次交互悬停色
+- `--theme-interactive-disabled` - 禁用交互色
+- `--theme-shadow-sm` - 小阴影
+- `--theme-shadow-md` - 中阴影
+- `--theme-shadow-lg` - 大阴影
 
 ## 📄 许可证
 

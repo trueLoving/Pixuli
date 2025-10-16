@@ -14,10 +14,32 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.image-filter-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.image-filter-title-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.image-filter-title-text {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.image-filter-toggle-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.image-filter-size-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+.image-filter-size-info-text {
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .image-filter-stats {

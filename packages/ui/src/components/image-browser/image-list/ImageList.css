@@ -13,18 +13,355 @@
 
 .image-list-item {
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
 }
 
-.image-list-item:hover {
+.image-list-item.unselected {
+  background-color: white;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.image-list-item.unselected:hover {
+  background-color: #f9fafb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.image-list-item.selected {
+  background-color: #dbeafe;
+  border-left: 4px solid #2563eb;
+  border-bottom: 1px solid #93c5fd;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+  outline: 2px solid #60a5fa;
+}
+
 .image-list-action-button {
-  @apply p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200;
+  padding: 0.5rem;
+  color: #6b7280;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.image-list-action-button:hover {
+  color: #111827;
+  background-color: #f3f4f6;
 }
 
 .image-list-secondary-button {
-  @apply inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 transition-all duration-200;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.image-list-secondary-button:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* 列表项内容样式 */
+.image-list-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-list-info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.image-list-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-list-title.unselected {
+  color: #111827;
+}
+
+.image-list-title.selected {
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.image-list-selected-indicator {
+  margin-left: 0.5rem;
+  color: #2563eb;
+  font-size: 0.75rem;
+}
+
+.image-list-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.image-list-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.image-list-tag-primary {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.image-list-tag-secondary {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.image-list-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.image-list-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.image-list-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.image-list-meta-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.image-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-list-button-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+}
+
+.image-list-expanded {
+  padding: 0.75rem 1.5rem;
+  background-color: #f9fafb;
+  border-top: 1px solid #f3f4f6;
+}
+
+.image-list-expanded-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.image-list-expanded-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.image-list-delete-button {
+  color: #dc2626;
+}
+
+.image-list-delete-button:hover {
+  background-color: #fef2f2;
+}
+
+/* 空状态样式 */
+.image-list-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-list-empty-content {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.image-list-empty-icon {
+  margin: 0 auto 1rem;
+  width: 4rem;
+  height: 4rem;
+  background-color: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-list-empty-icon-svg {
+  width: 2rem;
+  height: 2rem;
+  color: #9ca3af;
+}
+
+.image-list-empty-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.image-list-empty-description {
+  color: #6b7280;
+}
+
+/* 头部样式 */
+.image-list-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.image-list-header-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.image-list-header-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* 加载状态样式 */
+.image-list-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.image-list-loading-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+}
+
+.image-list-loading-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  animation: spin 1s linear infinite;
+}
+
+.image-list-load-more-button {
+  padding: 0.75rem 1.5rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.image-list-load-more-button:hover {
+  background-color: #1d4ed8;
+}
+
+.image-list-all-loaded {
+  text-align: center;
+  padding: 2rem 0;
+  color: #6b7280;
+}
+
+.image-list-no-images {
+  text-align: center;
+  padding: 4rem 0;
+  color: #6b7280;
+}
+
+/* 缩略图样式 */
+.image-list-main-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-list-thumbnail-container {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.image-list-thumbnail {
+  width: 4rem;
+  height: 4rem;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.image-list-thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-list-thumbnail-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-list-selected-badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.image-list-action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.image-list-scroll-container {
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* 加载动画 */

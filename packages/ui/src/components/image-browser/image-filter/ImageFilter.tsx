@@ -179,8 +179,8 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
       {/* 筛选头部 */}
       <div className="image-filter-header">
         <div className="image-filter-title">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-medium text-gray-900">{translate('image.filter.title')}</h3>
+          <Filter className="image-filter-title-icon" />
+          <h3 className="image-filter-title-text">{translate('image.filter.title')}</h3>
           {filterStats.hasFilters && (
             <span className="image-filter-stats">
               {filterStats.filtered}/{filterStats.total}
@@ -204,9 +204,9 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
             title={isExpanded ? translate('image.filter.collapse') : translate('image.filter.expand')}
           >
             {isExpanded ? (
-              <X className="w-4 h-4" />
+              <X className="image-filter-toggle-icon" />
             ) : (
-              <Filter className="w-4 h-4" />
+              <Filter className="image-filter-toggle-icon" />
             )}
           </button>
         </div>
@@ -289,7 +289,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
           {fileSizeRange.max > 0 && (
             <div className="image-filter-section">
               <label className="image-filter-label">
-                <HardDrive className="w-4 h-4 mr-2" />
+                <HardDrive className="image-filter-size-icon" />
                 {translate('image.filter.fileSizeRange')}
               </label>
               <div className="image-filter-size-range">
@@ -334,7 +334,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                   </div>
                 </div>
                 <div className="image-filter-size-info">
-                  <span className="text-xs text-gray-500">
+                  <span className="image-filter-size-info-text">
                     {translate('image.filter.currentRange')}: {formatFileSize(fileSizeRange.min)} - {formatFileSize(fileSizeRange.max)}
                   </span>
                 </div>

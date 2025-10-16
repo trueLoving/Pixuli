@@ -1,6 +1,7 @@
 import React from 'react'
 import { X, Keyboard, Command, RefreshCw, Zap } from 'lucide-react'
 import { defaultTranslate } from '../../locales/defaultTranslate'
+import './KeyboardHelpModal.css'
 
 interface KeyboardShortcut {
   description: string
@@ -32,13 +33,13 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
   const getCategoryIcon = (categoryName: string) => {
     switch (categoryName) {
       case translate('keyboard.categories.general'):
-        return <Command className="w-5 h-5" />
+        return <Command className="keyboard-help-category-icon" />
       case translate('keyboard.categories.features'):
-        return <Zap className="w-5 h-5" />
+        return <Zap className="keyboard-help-category-icon" />
       case translate('keyboard.categories.browsing'):
-        return <RefreshCw className="w-5 h-5" />
+        return <RefreshCw className="keyboard-help-category-icon" />
       default:
-        return <Command className="w-5 h-5" />
+        return <Command className="keyboard-help-category-icon" />
     }
   }
 
@@ -53,52 +54,52 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="keyboard-help-modal-overlay">
+      <div className="keyboard-help-modal-content">
         {/* 头部 */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Keyboard className="w-6 h-6 text-blue-600" />
+        <div className="keyboard-help-modal-header">
+          <div className="keyboard-help-modal-title-section">
+            <div className="keyboard-help-modal-icon-container">
+              <Keyboard className="keyboard-help-modal-icon" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{translate('keyboard.title')}</h2>
-              <p className="text-sm text-gray-500">{translate('keyboard.subtitle')}</p>
+              <h2 className="keyboard-help-modal-title-text">{translate('keyboard.title')}</h2>
+              <p className="keyboard-help-modal-subtitle">{translate('keyboard.subtitle')}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+            className="keyboard-help-modal-close"
           >
-            <X className="w-6 h-6" />
+            <X className="keyboard-help-modal-close-icon" />
           </button>
         </div>
 
         {/* 内容区域 */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div className="space-y-6">
+        <div className="keyboard-help-modal-body">
+          <div className="keyboard-help-categories">
             {categories.map((category) => (
-              <div key={category.name} className="space-y-3">
-                <div className="flex items-center space-x-2 pb-2 border-b border-gray-100">
+              <div key={category.name} className="keyboard-help-category">
+                <div className="keyboard-help-category-header">
                   {getCategoryIcon(category.name)}
-                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                  <h3 className="keyboard-help-category-title">{category.name}</h3>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="keyboard-help-shortcuts-grid">
                   {category.shortcuts.map((shortcut, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="keyboard-help-shortcut-item"
                     >
-                      <span className="text-sm text-gray-700">{shortcut.description}</span>
-                      <div className="flex items-center space-x-1">
+                      <span className="keyboard-help-shortcut-description">{shortcut.description}</span>
+                      <div className="keyboard-help-shortcut-keys">
                         {formatShortcut(shortcut).split(' + ').map((part, partIndex) => (
                           <React.Fragment key={partIndex}>
-                            <kbd className="px-2 py-1 text-xs font-mono bg-white border border-gray-300 rounded shadow-sm">
+                            <kbd className="keyboard-help-key">
                               {part}
                             </kbd>
                             {partIndex < formatShortcut(shortcut).split(' + ').length - 1 && (
-                              <span className="text-gray-400">+</span>
+                              <span className="keyboard-help-key-separator">+</span>
                             )}
                           </React.Fragment>
                         ))}
@@ -111,23 +112,23 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({ isOpen, onClose, 
           </div>
 
           {/* 使用提示 */}
-          <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-2">{translate('keyboard.usageTips.title')}</h4>
-            <div className="text-sm text-blue-800 space-y-1">
-              <div className="flex items-start">
-                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+          <div className="keyboard-help-tips">
+            <h4 className="keyboard-help-tips-title">{translate('keyboard.usageTips.title')}</h4>
+            <div className="keyboard-help-tips-content">
+              <div className="keyboard-help-tip-item">
+                <span className="keyboard-help-tip-bullet"></span>
                 <span>{translate('keyboard.usageTips.tip1')}</span>
               </div>
-              <div className="flex items-start">
-                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              <div className="keyboard-help-tip-item">
+                <span className="keyboard-help-tip-bullet"></span>
                 <span>{translate('keyboard.usageTips.tip2')}</span>
               </div>
-              <div className="flex items-start">
-                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              <div className="keyboard-help-tip-item">
+                <span className="keyboard-help-tip-bullet"></span>
                 <span>{translate('keyboard.usageTips.tip3')}</span>
               </div>
-              <div className="flex items-start">
-                <span className="inline-block w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+              <div className="keyboard-help-tip-item">
+                <span className="keyboard-help-tip-bullet"></span>
                 <span>{translate('keyboard.usageTips.tip4')}</span>
               </div>
             </div>

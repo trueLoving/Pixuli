@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { defaultTranslate } from '../../locales/defaultTranslate'
 import type { GitHubConfig } from '../../types/image'
 import { showError, showSuccess } from '../../utils/toast'
+import './GitHubConfigModal.css'
 
 interface GitHubConfigModalProps {
   isOpen: boolean
@@ -182,200 +183,212 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
     <>
       {/* 背景遮罩 */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="github-config-modal-overlay"
         onClick={onClose}
         style={{ zIndex: 9998 }}
       />
       
       {/* 模态框内容 */}
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="github-config-modal-container"
         style={{ zIndex: 9999 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="github-config-modal-content">
           {/* 头部 */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <div className="flex items-center space-x-2">
-              <Github className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-800">{translate('github.config.title')}</h2>
+          <div className="github-config-modal-header">
+            <div className="github-config-modal-title">
+              <Github className="github-config-modal-title-icon" />
+              <h2 className="github-config-modal-title-text">{translate('github.config.title')}</h2>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+              className="github-config-modal-close"
               aria-label="关闭"
             >
-              <X className="w-5 h-5" />
+              <X className="github-config-modal-close-icon" />
             </button>
           </div>
 
           {/* 表单内容 */}
-          <div className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {translate('github.config.username')} <span className="text-red-500">{translate('github.config.required')}</span>
+          <div className="github-config-modal-body">
+            <form onSubmit={handleSubmit} className="github-config-form">
+              <div className="github-config-form-group">
+                <label className="github-config-form-label">
+                  {translate('github.config.username')} <span className="github-config-form-required">{translate('github.config.required')}</span>
                 </label>
                 <input
                   type="text"
                   value={formData.owner}
                   onChange={(e) => handleInputChange('owner', e.target.value)}
                   placeholder={translate('github.config.usernamePlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="github-config-form-input"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {translate('github.config.repository')} <span className="text-red-500">{translate('github.config.required')}</span>
+              <div className="github-config-form-group">
+                <label className="github-config-form-label">
+                  {translate('github.config.repository')} <span className="github-config-form-required">{translate('github.config.required')}</span>
                 </label>
                 <input
                   type="text"
                   value={formData.repo}
                   onChange={(e) => handleInputChange('repo', e.target.value)}
                   placeholder={translate('github.config.repositoryPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="github-config-form-input"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {translate('github.config.branch')} <span className="text-red-500">{translate('github.config.required')}</span>
+              <div className="github-config-form-group">
+                <label className="github-config-form-label">
+                  {translate('github.config.branch')} <span className="github-config-form-required">{translate('github.config.required')}</span>
                 </label>
                 <input
                   type="text"
                   value={formData.branch}
                   onChange={(e) => handleInputChange('branch', e.target.value)}
                   placeholder={translate('github.config.branchPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="github-config-form-input"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {translate('github.config.path')} <span className="text-red-500">{translate('github.config.required')}</span>
+              <div className="github-config-form-group">
+                <label className="github-config-form-label">
+                  {translate('github.config.path')} <span className="github-config-form-required">{translate('github.config.required')}</span>
                 </label>
                 <input
                   type="text"
                   value={formData.path}
                   onChange={(e) => handleInputChange('path', e.target.value)}
                   placeholder={translate('github.config.pathPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="github-config-form-input"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {translate('github.config.token')} <span className="text-red-500">{translate('github.config.required')}</span>
+              <div className="github-config-form-group">
+                <label className="github-config-form-label">
+                  {translate('github.config.token')} <span className="github-config-form-required">{translate('github.config.required')}</span>
                 </label>
                 <input
                   type="password"
                   value={formData.token}
                   onChange={(e) => handleInputChange('token', e.target.value)}
                   placeholder={translate('github.config.tokenPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="github-config-form-input"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="github-config-form-description">
                   {translate('github.config.tokenDescription')}
                 </p>
               </div>
 
               {/* 导入导出按钮组 */}
-              <div className="flex justify-center space-x-3 pt-4">
+              <div className="github-config-button-group">
                 <button
                   type="button"
                   onClick={handleImportConfig}
-                  className="px-4 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center space-x-2"
+                  className="github-config-button github-config-button-success"
                 >
-                  <Upload className="w-4 h-4" />
+                  <Upload className="github-config-button-icon" />
                   <span>{translate('github.config.import')}</span>
                 </button>
                 {githubConfig && (
                   <button
                     type="button"
                     onClick={handleExportConfig}
-                    className="px-4 py-2 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center space-x-2"
+                    className="github-config-button github-config-button-info"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="github-config-button-icon" />
                     <span>{translate('github.config.export')}</span>
                   </button>
                 )}
               </div>
 
               {/* 主要按钮组 */}
-              <div className="flex justify-center space-x-3 pt-2">
+              <div className="github-config-button-group">
                 {githubConfig && (
                   <button
                     type="button"
                     onClick={handleClearConfig}
-                    className="px-4 py-2 border border-red-300 text-red-700 rounded-md hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center space-x-2"
+                    className="github-config-button github-config-button-danger"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="github-config-button-icon" />
                     <span>{translate('github.config.clearConfig')}</span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="github-config-button github-config-button-secondary"
                 >
                   {translate('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="github-config-button github-config-button-primary"
                 >
-                  <Save className="w-4 h-4" />
+                  <Save className="github-config-button-icon" />
                   <span>{translate('github.config.saveConfig')}</span>
                 </button>
               </div>
             </form>
 
             {/* 帮助信息 */}
-            <div className="mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="github-config-help-section">
+              <div className="github-config-help-grid">
                 {/* 如何获取 GitHub Token */}
-                <div className="p-4 bg-blue-50 rounded-md">
-                  <h4 className="text-sm font-medium text-blue-800 mb-3">{translate('github.help.tokenGuide.title')}</h4>
-                  <ol className="text-xs text-blue-700 space-y-1">
-                    <li>{translate('github.help.tokenGuide.step1')}</li>
-                    <li>{translate('github.help.tokenGuide.step2')}</li>
-                    <li>{translate('github.help.tokenGuide.step3')}</li>
-                    <li>{translate('github.help.tokenGuide.step4')}</li>
+                <div className="github-config-help-card github-config-help-card-blue">
+                  <h4 className="github-config-help-title github-config-help-title-blue">{translate('github.help.tokenGuide.title')}</h4>
+                  <ol className="github-config-help-list github-config-help-list-blue">
+                    <li className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
+                      <span>{translate('github.help.tokenGuide.step1')}</span>
+                    </li>
+                    <li className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
+                      <span>{translate('github.help.tokenGuide.step2')}</span>
+                    </li>
+                    <li className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
+                      <span>{translate('github.help.tokenGuide.step3')}</span>
+                    </li>
+                    <li className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
+                      <span>{translate('github.help.tokenGuide.step4')}</span>
+                    </li>
                   </ol>
                 </div>
                 
                 {/* 配置导入导出 */}
-                <div className="p-4 bg-green-50 rounded-md">
-                  <h4 className="text-sm font-medium text-green-800 mb-3">{translate('github.help.importExport.title')}</h4>
-                  <div className="text-xs text-green-700 space-y-1">
-                    <div className="flex items-start">
-                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                <div className="github-config-help-card github-config-help-card-green">
+                  <h4 className="github-config-help-title github-config-help-title-green">{translate('github.help.importExport.title')}</h4>
+                  <div className="github-config-help-list github-config-help-list-green">
+                    <div className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
                       <div>
-                        <strong>{translate('github.help.importExport.export')}</strong>
+                        <strong className="github-config-help-text">{translate('github.help.importExport.export')}</strong>
                       </div>
                     </div>
-                    <div className="flex items-start">
-                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                    <div className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
                       <div>
-                        <strong>{translate('github.help.importExport.import')}</strong>
+                        <strong className="github-config-help-text">{translate('github.help.importExport.import')}</strong>
                       </div>
                     </div>
-                    <div className="flex items-start">
-                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                    <div className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
                       <div>
-                        <strong>{translate('github.help.importExport.crossPlatform')}</strong>
+                        <strong className="github-config-help-text">{translate('github.help.importExport.crossPlatform')}</strong>
                       </div>
                     </div>
-                    <div className="flex items-start">
-                      <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                    <div className="github-config-help-item">
+                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
                       <div>
-                        <strong>{translate('github.help.importExport.backup')}</strong>
+                        <strong className="github-config-help-text">{translate('github.help.importExport.backup')}</strong>
                       </div>
                     </div>
                   </div>

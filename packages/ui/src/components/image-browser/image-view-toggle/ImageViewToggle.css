@@ -1,0 +1,47 @@
+/* 视图切换组件样式 */
+.image-view-toggle-container {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+}
+
+.image-view-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.image-view-toggle-button.active {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.image-view-toggle-button.inactive {
+  color: #6b7280;
+}
+
+.image-view-toggle-button.inactive:hover {
+  color: #111827;
+  background-color: #f9fafb;
+}
+
+.image-view-toggle-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.image-view-toggle-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}

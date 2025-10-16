@@ -304,15 +304,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.0
         version: 18.3.7(@types/react@18.3.23)
-      autoprefixer:
-        specifier: ^10.4.14
-        version: 10.4.21(postcss@8.5.6)
-      postcss:
-        specifier: ^8.4.24
-        version: 8.5.6
-      tailwindcss:
-        specifier: ^3.3.2
-        version: 3.4.17
       tsup:
         specifier: ^7.0.0
         version: 7.3.0(postcss@8.5.6)(typescript@5.9.3)

@@ -3,6 +3,7 @@ import type { ImageItem, ImageEditData } from '../../../../types/image'
 import { X, Save } from 'lucide-react'
 import { showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../../../utils/toast'
 import { defaultTranslate } from '../../../../locales/defaultTranslate'
+import './ImageEditModal.css'
 
 interface ImageEditModalProps {
   image: ImageItem
@@ -108,31 +109,31 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">{translate('image.edit.title')}</h2>
+    <div className="image-edit-modal-overlay">
+      <div className="image-edit-modal-content">
+        <div className="image-edit-modal-header">
+          <h2 className="image-edit-modal-title">{translate('image.edit.title')}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="image-edit-modal-close"
           >
-            <X className="w-5 h-5" />
+            <X className="image-edit-modal-close-icon" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
           {/* 图片预览 */}
-          <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+          <div className="image-edit-file-info">
             <img
               src={image.url}
               alt={image.name}
-              className="w-16 h-16 object-cover rounded"
+              className="image-edit-file-thumbnail"
             />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+            <div className="image-edit-file-details">
+              <p className="image-edit-file-name">
                 {image.name}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="image-edit-file-size">
                 {translate('image.edit.dimensions')}: {(() => {
                   if (imageDimensions) {
                     return `${imageDimensions.width} × ${imageDimensions.height}`
@@ -146,62 +147,62 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {translate('image.edit.imageName')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
+          <div className="image-edit-form-group">
+            <label className="image-edit-form-label">
+              {translate('image.edit.imageName')} <span className="image-edit-form-optional">{translate('image.edit.optional')}</span>
             </label>
             <input
               type="text"
               value={formData.name || ''}
               onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder={translate('image.edit.namePlaceholder')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="image-edit-form-input"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {translate('image.edit.imageDescription')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
+          <div className="image-edit-form-group">
+            <label className="image-edit-form-label">
+              {translate('image.edit.imageDescription')} <span className="image-edit-form-optional">{translate('image.edit.optional')}</span>
             </label>
             <textarea
               value={formData.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder={translate('image.edit.descriptionPlaceholder')}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="image-edit-form-textarea"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {translate('image.edit.tags')} <span className="text-gray-400 text-xs">{translate('image.edit.optional')}</span>
+          <div className="image-edit-form-group">
+            <label className="image-edit-form-label">
+              {translate('image.edit.tags')} <span className="image-edit-form-optional">{translate('image.edit.optional')}</span>
             </label>
             <input
               type="text"
               value={formData.tags?.join(', ') || ''}
               onChange={(e) => handleInputChange('tags', e.target.value.split(',').map(tag => tag.trim()).filter(Boolean))}
               placeholder={translate('image.edit.tagsPlaceholder')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="image-edit-form-input"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="image-edit-form-description">
               {translate('image.edit.tagsExample')}
             </p>
           </div>
 
-          <div className="flex space-x-3 pt-4">
+          <div className="image-edit-button-group">
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              className="image-edit-button image-edit-button-secondary"
             >
               {translate('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+              className="image-edit-button image-edit-button-primary"
             >
-              <Save className="w-4 h-4" />
+              <Save className="image-edit-button-icon" />
               <span>{loading ? translate('image.edit.saving') : translate('image.edit.saveChanges')}</span>
             </button>
           </div>

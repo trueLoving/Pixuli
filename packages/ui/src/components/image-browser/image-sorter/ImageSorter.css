@@ -5,6 +5,12 @@
   gap: 0.5rem;
 }
 
+.image-sorter-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-right: 0.5rem;
+}
+
 .sort-button {
   display: flex;
   align-items: center;
@@ -116,4 +122,9 @@
 .sort-status.active {
   color: #1d4ed8;
   font-weight: 500;
+}
+
+.image-sorter-icon {
+  width: 1rem;
+  height: 1rem;
 } 

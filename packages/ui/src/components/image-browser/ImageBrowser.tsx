@@ -329,7 +329,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
 
       {/* 内容区域 */}
       <div className="image-browser-content">
-        <div className={`image-browser-view ${currentView === 'grid' ? '' : 'hidden'}`}>
+        <div className={`image-browser-view ${currentView === 'grid' ? 'visible' : 'hidden'}`}>
           <ImageGrid 
             t={translate}
             images={filteredAndSortedImages}
@@ -341,7 +341,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             formatFileSize={formatFileSize}
           />
         </div>
-        <div className={`image-browser-view ${currentView === 'list' ? '' : 'hidden'}`}>
+        <div className={`image-browser-view ${currentView === 'list' ? 'visible' : 'hidden'}`}>
           <ImageList 
             t={translate}
             images={filteredAndSortedImages}

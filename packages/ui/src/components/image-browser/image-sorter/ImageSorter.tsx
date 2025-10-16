@@ -36,12 +36,12 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
 
   const getSortIcon = (field: SortField) => {
     if (field !== currentSort) {
-      return <ArrowUpDown className="w-4 h-4" />
+      return <ArrowUpDown className="image-sorter-icon" />
     }
     
     return currentOrder === 'asc' ? 
-      <SortAsc className="w-4 h-4" /> : 
-      <SortDesc className="w-4 h-4" />
+      <SortAsc className="image-sorter-icon" /> : 
+      <SortDesc className="image-sorter-icon" />
   }
 
   const getSortLabel = (field: SortField) => {
@@ -58,8 +58,8 @@ const ImageSorter: React.FC<ImageSorterProps> = ({
   }
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      <span className="text-sm text-gray-600 mr-2">{translate('image.sorter.label')}:</span>
+    <div className={`image-sorter-container ${className}`}>
+      <span className="image-sorter-label">{translate('image.sorter.label')}:</span>
       
       {/* 时间排序 */}
       <button

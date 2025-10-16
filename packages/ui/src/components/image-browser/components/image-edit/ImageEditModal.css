@@ -1,0 +1,209 @@
+/* 图片编辑模态框样式 */
+.image-edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.image-edit-modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 1rem;
+}
+
+.image-edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.image-edit-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.image-edit-modal-close {
+  color: #9ca3af;
+  transition: color 0.2s ease-in-out;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.image-edit-modal-close:hover {
+  color: #6b7280;
+}
+
+.image-edit-modal-close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.image-edit-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.image-edit-file-thumbnail {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.image-edit-file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-edit-file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-edit-file-size {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.image-edit-form-group {
+  margin-bottom: 1rem;
+}
+
+.image-edit-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.image-edit-form-optional {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.image-edit-form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.image-edit-form-input:focus {
+  ring: 2px;
+  ring-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.image-edit-form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  resize: none;
+}
+
+.image-edit-form-textarea:focus {
+  ring: 2px;
+  ring-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.image-edit-form-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.image-edit-button-group {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+.image-edit-button {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.image-edit-button-secondary {
+  border: 1px solid #d1d5db;
+  color: #374151;
+  background-color: transparent;
+}
+
+.image-edit-button-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.image-edit-button-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.image-edit-button-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.image-edit-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-edit-button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .image-edit-modal-content {
+    margin: 0 0.5rem;
+    padding: 1rem;
+  }
+  
+  .image-edit-button-group {
+    flex-direction: column;
+  }
+  
+  .image-edit-button {
+    width: 100%;
+  }
+}

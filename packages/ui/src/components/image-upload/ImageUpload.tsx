@@ -4,6 +4,7 @@ import { Upload, X, Image as ImageIcon, CheckCircle, AlertCircle, Loader2 } from
 import type { ImageUploadData, MultiImageUploadData, BatchUploadProgress } from '../../types/image'
 import { showInfo, showLoading, updateLoadingToSuccess, updateLoadingToError } from '../../utils/toast'
 import { defaultTranslate } from '../../locales/defaultTranslate'
+import './ImageUpload.css'
 
 interface ImageUploadProps {
   onUploadImage: (data: ImageUploadData) => Promise<void>
@@ -121,28 +122,28 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   // 批量上传进度显示
   if (batchUploadProgress) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">{translate('image.upload.batchProgress')}</h2>
-            <div className="text-sm text-gray-500">
+      <div className="image-upload-progress-modal">
+        <div className="image-upload-progress-content">
+          <div className="image-upload-progress-header">
+            <h2 className="image-upload-progress-title">{translate('image.upload.batchProgress')}</h2>
+            <div className="image-upload-progress-count">
               {batchUploadProgress.completed + batchUploadProgress.failed} / {batchUploadProgress.total}
             </div>
           </div>
 
           {/* 总体进度 */}
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className="image-upload-progress-overall">
+            <div className="image-upload-progress-overall-header">
               <span>{translate('image.upload.overallProgress')}</span>
               <span>{Math.round(((batchUploadProgress.completed + batchUploadProgress.failed) / batchUploadProgress.total) * 100)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="image-upload-progress-bar">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="image-upload-progress-bar-fill"
                 style={{ width: `${((batchUploadProgress.completed + batchUploadProgress.failed) / batchUploadProgress.total) * 100}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
+            <div className="image-upload-progress-stats">
               <span>{translate('image.upload.success')}: {batchUploadProgress.completed}</span>
               <span>{translate('image.upload.failed')}: {batchUploadProgress.failed}</span>
             </div>
@@ -150,30 +151,30 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
           {/* 当前上传文件 */}
           {batchUploadProgress.current && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                <span className="text-sm text-blue-800">{translate('image.upload.uploadingCurrent')}: {batchUploadProgress.current}</span>
+            <div className="image-upload-progress-current">
+              <div className="image-upload-progress-current-content">
+                <Loader2 className="image-upload-progress-current-spinner" />
+                <span className="image-upload-progress-current-text">{translate('image.upload.uploadingCurrent')}: {batchUploadProgress.current}</span>
               </div>
             </div>
           )}
 
           {/* 文件列表 */}
-          <div className="space-y-2 max-h-60 overflow-y-auto">
+          <div className="image-upload-progress-list">
             {batchUploadProgress.items.map((item, index) => (
-              <div key={item.id} className="flex items-center space-x-3 p-2 rounded-lg bg-gray-50">
-                <div className="flex-shrink-0">
-                  {item.status === 'success' && <CheckCircle className="w-5 h-5 text-green-500" />}
-                  {item.status === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
-                  {item.status === 'uploading' && <Loader2 className="w-5 h-5 animate-spin text-blue-500" />}
+              <div key={item.id} className="image-upload-progress-item">
+                <div className="image-upload-progress-item-icon">
+                  {item.status === 'success' && <CheckCircle className="image-upload-progress-item-icon success" />}
+                  {item.status === 'error' && <AlertCircle className="image-upload-progress-item-icon error" />}
+                  {item.status === 'uploading' && <Loader2 className="image-upload-progress-item-icon uploading" />}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                <div className="image-upload-progress-item-info">
+                  <p className="image-upload-progress-item-name">
                     {multiUploadData?.files[index]?.name || `${translate('image.upload.file')} ${index + 1}`}
                   </p>
-                  <p className="text-xs text-gray-500">{item.message}</p>
+                  <p className="image-upload-progress-item-message">{item.message}</p>
                 </div>
-                <div className="text-xs text-gray-400">
+                <div className="image-upload-progress-item-progress">
                   {item.progress}%
                 </div>
               </div>
@@ -191,32 +192,31 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const currentData = isMultipleUpload ? multiUploadData : uploadData
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className={`bg-white rounded-lg p-6 w-full mx-4 max-h-[90vh] overflow-y-auto ${isMultipleUpload ? 'max-w-2xl' : 'max-w-md'
-          }`}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">
+      <div className="image-upload-modal-overlay">
+        <div className={`image-upload-modal-content ${isMultipleUpload ? 'multiple' : 'single'}`}>
+          <div className="image-upload-modal-header">
+            <h2 className="image-upload-modal-title">
               {isMultipleUpload ? `${translate('image.upload.batchUploadTitle')} (${files.length} 张)` : translate('image.upload.addNewImage')}
             </h2>
             <button
               onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+              className="image-upload-modal-close"
             >
-              <X className="w-5 h-5" />
+              <X className="image-upload-modal-close-icon" />
             </button>
           </div>
 
-          <form onSubmit={isMultipleUpload ? handleMultiSubmit : handleSubmit} className="space-y-4">
+          <form onSubmit={isMultipleUpload ? handleMultiSubmit : handleSubmit} className="image-upload-form">
             {/* 文件列表 */}
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="image-upload-file-list">
               {files.map((file, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <ImageIcon className="w-6 h-6 text-gray-400" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                <div key={index} className="image-upload-file-item">
+                  <ImageIcon className="image-upload-file-icon" />
+                  <div className="image-upload-file-info">
+                    <p className="image-upload-file-name">
                       {file.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="image-upload-file-size">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
@@ -224,9 +224,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               ))}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {isMultipleUpload ? translate('image.upload.namePrefix') : translate('image.upload.imageName')} <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
+            <div className="image-upload-form-group">
+              <label className="image-upload-form-label">
+                {isMultipleUpload ? translate('image.upload.namePrefix') : translate('image.upload.imageName')} <span className="image-upload-form-optional">{translate('image.upload.optional')}</span>
               </label>
               <input
                 type="text"
@@ -239,13 +239,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   ? translate('image.upload.namePrefixPlaceholder')
                   : translate('image.upload.imageNamePlaceholder')
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="image-upload-form-input"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                图片描述 <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
+            <div className="image-upload-form-group">
+              <label className="image-upload-form-label">
+                图片描述 <span className="image-upload-form-optional">{translate('image.upload.optional')}</span>
               </label>
               <textarea
                 value={currentData?.description || ''}
@@ -258,13 +258,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   : translate('image.upload.descriptionPlaceholder')
                 }
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                className="image-upload-form-textarea"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                标签 <span className="text-gray-400 text-xs">{translate('image.upload.optional')}</span>
+            <div className="image-upload-form-group">
+              <label className="image-upload-form-label">
+                标签 <span className="image-upload-form-optional">{translate('image.upload.optional')}</span>
               </label>
               <input
                 type="text"
@@ -279,31 +279,31 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   ? translate('image.upload.tagsPlaceholderMultiple')
                   : translate('image.upload.tagsPlaceholder')
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="image-upload-form-input"
               />
             </div>
 
-            <div className="flex space-x-3 pt-4">
+            <div className="image-upload-button-group">
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="image-upload-button image-upload-button-secondary"
               >
                 取消
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="image-upload-button image-upload-button-primary"
               >
                 {loading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="image-upload-spinner"></div>
                     <span>{translate('image.upload.uploading')}</span>
                   </>
                 ) : (
                   <>
-                    <Upload className="w-4 h-4" />
+                    <Upload className="image-upload-button-icon" />
                     <span>
                       {isMultipleUpload ? `${translate('image.upload.batchUploadButton')} (${files.length} 张)` : translate('image.upload.uploadButton')}
                     </span>
@@ -320,24 +320,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer ${isDragActive
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-        }`}
+      className={`image-upload-dropzone ${isDragActive ? 'active' : 'inactive'}`}
     >
       <input {...getInputProps({})} />
-      <div className="flex flex-col items-center space-y-3">
-        <div className={`p-3 rounded-full ${isDragActive ? 'bg-blue-100' : 'bg-gray-100'
-          }`}>
-          <Upload className={`w-6 h-6 ${isDragActive ? 'text-blue-600' : 'text-gray-400'
-            }`} />
+      <div className="image-upload-content">
+        <div className={`image-upload-icon-container ${isDragActive ? 'active' : 'inactive'}`}>
+          <Upload className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`} />
         </div>
         <div>
-          <p className={`text-lg font-medium ${isDragActive ? 'text-blue-700' : 'text-gray-700'
-            }`}>
+          <p className={`image-upload-text ${isDragActive ? 'active' : 'inactive'}`}>
             {isDragActive ? translate('image.upload.dragActive') : translate('image.upload.dragInactive')}
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="image-upload-description">
             {translate('image.upload.supportedFormats')}
           </p>
         </div>

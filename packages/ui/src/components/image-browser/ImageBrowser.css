@@ -57,6 +57,10 @@
   display: block;
 }
 
+.image-browser-view.visible {
+  display: block;
+}
+
 .image-browser-view.hidden {
   display: none;
 }

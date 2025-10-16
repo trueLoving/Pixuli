@@ -1,0 +1,310 @@
+/* GitHub 配置模态框样式 */
+.github-config-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+.github-config-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.github-config-modal-content {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.github-config-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.github-config-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.github-config-modal-title-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.github-config-modal-title-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.github-config-modal-close {
+  color: #9ca3af;
+  transition: all 0.2s ease-in-out;
+  padding: 0.25rem;
+  border-radius: 9999px;
+}
+
+.github-config-modal-close:hover {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.github-config-modal-close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.github-config-modal-body {
+  padding: 1.5rem;
+}
+
+.github-config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.github-config-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.github-config-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.github-config-form-required {
+  color: #ef4444;
+}
+
+.github-config-form-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.github-config-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.github-config-form-description {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.github-config-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+.github-config-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: 1px solid;
+}
+
+.github-config-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px;
+}
+
+.github-config-button-primary {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.github-config-button-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.github-config-button-primary:focus {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.github-config-button-secondary {
+  background-color: white;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.github-config-button-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.github-config-button-secondary:focus {
+  box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.1);
+}
+
+.github-config-button-success {
+  background-color: white;
+  color: #059669;
+  border-color: #86efac;
+}
+
+.github-config-button-success:hover {
+  background-color: #f0fdf4;
+}
+
+.github-config-button-success:focus {
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
+}
+
+.github-config-button-info {
+  background-color: white;
+  color: #2563eb;
+  border-color: #93c5fd;
+}
+
+.github-config-button-info:hover {
+  background-color: #eff6ff;
+}
+
+.github-config-button-info:focus {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.github-config-button-danger {
+  background-color: white;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.github-config-button-danger:hover {
+  background-color: #fef2f2;
+}
+
+.github-config-button-danger:focus {
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
+}
+
+.github-config-button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.github-config-help-section {
+  margin-top: 1.5rem;
+}
+
+.github-config-help-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .github-config-help-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.github-config-help-card {
+  padding: 1rem;
+  border-radius: 0.375rem;
+}
+
+.github-config-help-card-blue {
+  background-color: #eff6ff;
+}
+
+.github-config-help-card-green {
+  background-color: #f0fdf4;
+}
+
+.github-config-help-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.github-config-help-title-blue {
+  color: #1e40af;
+}
+
+.github-config-help-title-green {
+  color: #166534;
+}
+
+.github-config-help-list {
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.github-config-help-list-blue {
+  color: #1d4ed8;
+}
+
+.github-config-help-list-green {
+  color: #15803d;
+}
+
+.github-config-help-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.github-config-help-bullet {
+  display: inline-block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  margin-top: 0.375rem;
+  flex-shrink: 0;
+}
+
+.github-config-help-bullet-blue {
+  background-color: #60a5fa;
+}
+
+.github-config-help-bullet-green {
+  background-color: #4ade80;
+}
+
+.github-config-help-text {
+  font-weight: 500;
+}

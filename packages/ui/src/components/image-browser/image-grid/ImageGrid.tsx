@@ -226,24 +226,20 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         ref={(el) => el && observeElement(el, image.id)}
         data-image-index={index}
         onClick={() => onImageSelect?.(index)}
-        className={`image-browser-item bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-all duration-200 hover:scale-105 flex flex-col cursor-pointer ${
-          isSelected 
-            ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg scale-105' 
-            : 'border-gray-200'
-        }`}
+        className={`image-browser-item ${isSelected ? 'selected' : 'unselected'}`}
       >
         {/* 图片预览 - 懒加载 */}
-        <div className="relative aspect-square bg-gray-100 flex-shrink-0">
+        <div className="image-grid-preview">
           {/* 选中指示器 */}
           {isSelected && (
-            <div className="absolute top-2 right-2 z-10 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg">
+            <div className="image-grid-selected-indicator">
               ✓
             </div>
           )}
           <img
             src={image.url}
             alt={image.name}
-            className="w-full h-full object-cover"
+            className="image-grid-image"
             loading="lazy"
             onClick={(e) => {
               e.stopPropagation()
@@ -253,37 +249,37 @@ const ImageGrid: React.FC<ImageGridProps> = ({
           
           {/* 操作按钮 */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100"
+            className="image-grid-overlay"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex space-x-2">
+            <div className="image-grid-actions">
               <button
                 onClick={() => handlePreview(image)}
                 className="image-action-button"
                 title={translate('image.grid.preview')}
               >
-                <Eye className="w-4 h-4 text-gray-700" />
+                <Eye className="image-action-icon" />
               </button>
               <button
                 onClick={() => handleViewUrl(image)}
                 className="image-action-button"
                 title="查看地址"
               >
-                <Link className="w-4 h-4 text-gray-700" />
+                <Link className="image-action-icon" />
               </button>
               <button
                 onClick={() => handleEdit(image)}
                 className="image-action-button"
                 title={translate('image.grid.edit')}
               >
-                <Edit className="w-4 h-4 text-gray-700" />
+                <Edit className="image-action-icon" />
               </button>
               <button
                 onClick={() => handleDelete(image)}
                 className="image-action-button"
                 title={translate('image.grid.delete')}
               >
-                <Trash2 className="w-4 h-4 text-gray-700" />
+                <Trash2 className="image-action-icon" />
               </button>
             </div>
           </div>
@@ -291,38 +287,38 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         
         {/* 图片信息 */}
         <div 
-          className="image-info-section p-3 flex-1"
+          className="image-info-section"
           onClick={(e) => {
             e.stopPropagation()
             onImageSelect?.(index)
           }}
         >
           <div className="image-info-content">
-            <h3 className="font-medium text-gray-900 text-sm mb-2 line-clamp-2">
+            <h3 className="image-grid-title">
               {image.name}
             </h3>
             
             {image.description && (
-              <p className="text-gray-500 text-xs mb-2 line-clamp-2">
+              <p className="image-grid-description">
                 {image.description}
               </p>
             )}
           </div>
           
-          <div className="image-info-footer space-y-1 mt-auto">
+          <div className="image-info-footer">
             {/* 标签 */}
             {image.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
+              <div className="image-grid-tags">
                 {image.tags.slice(0, 3).map((tag, index) => (
                   <span
                     key={`${image.id}-tag-${index}`}
-                    className="image-tag bg-blue-100 text-blue-800"
+                    className="image-tag image-tag-primary"
                   >
                     {tag}
                   </span>
                 ))}
                 {image.tags.length > 3 && (
-                  <span className="image-tag bg-gray-100 text-gray-600">
+                  <span className="image-tag image-tag-secondary">
                     +{image.tags.length - 3}
                   </span>
                 )}
@@ -330,40 +326,35 @@ const ImageGrid: React.FC<ImageGridProps> = ({
             )}
             
             {/* 图片详情 */}
-            <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>
+            <div className="image-grid-meta">
+              <span className="image-grid-dimensions">
                 {(() => {
                   const dimensions = imageDimensions[image.id]
                   const isCurrentlyFetching = fetchingDimensions.current.has(image.id)
                   
                   if (dimensions) {
-                    // 优先显示获取到的真实尺寸
                     return `${dimensions.width} × ${dimensions.height}`
                   } else if (image.width > 0 && image.height > 0) {
-                    // 如果有存储的尺寸且不在获取中，显示存储的尺寸
                     return `${image.width} × ${image.height}`
                   } else if (isCurrentlyFetching) {
-                    // 正在获取中
                     return translate('image.grid.gettingDimensions')
                   } else {
-                    // 没有尺寸数据
                     return translate('image.grid.dimensionsUnknown')
                   }
                 })()}
               </span>
               {image.size > 0 && (
-                <span className="flex items-center space-x-1">
-                  <HardDrive className="w-3 h-3" />
+                <span className="image-grid-size">
+                  <HardDrive className="image-grid-meta-icon" />
                   <span>{formatFileSize(image.size)}</span>
                 </span>
               )}
             </div>
             
-            <div className="flex items-center text-xs text-gray-500">
-              <Calendar className="w-3 h-3 mr-1" />
+            <div className="image-grid-date">
+              <Calendar className="image-grid-meta-icon" />
               <span>{formatDate(image.createdAt)}</span>
             </div>
-
           </div>
         </div>
       </div>
@@ -385,10 +376,10 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       {/* 滚动容器 */}
       <div 
         ref={containerRef}
-        className={`h-full overflow-y-auto ${className}`}
+        className={`image-grid-container ${className}`}
       >
         {/* 图片网格 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 p-4">
+        <div className="image-grid">
           {visibleItems.map((image, index) => renderImageItem(image, index))}
         </div>
 
@@ -396,17 +387,17 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         {hasMore && (
           <div 
             ref={loadingRef}
-            className="flex items-center justify-center py-8"
+            className="image-grid-loading"
           >
             {isLoading ? (
-              <div className="flex items-center space-x-2 text-gray-600">
-                <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="image-grid-loading-content">
+                <Loader2 className="image-grid-loading-spinner" />
                 <span>{translate('image.grid.loadingMore')}</span>
               </div>
             ) : (
               <button
                 onClick={loadMore}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="image-grid-load-more-button"
               >
                 {translate('image.grid.loadMore')}
               </button>
@@ -416,14 +407,14 @@ const ImageGrid: React.FC<ImageGridProps> = ({
 
         {/* 已加载全部提示 */}
         {!hasMore && visibleItems.length > 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="image-grid-all-loaded">
             <p>{translate('image.grid.allLoaded')} {visibleItems.length} {translate('image.grid.images')}</p>
           </div>
         )}
 
         {/* 空状态 */}
         {visibleItems.length === 0 && !isLoading && (
-          <div className="text-center py-16 text-gray-500">
+          <div className="image-grid-empty">
             <p>{translate('image.grid.noImages')}</p>
           </div>
         )}
