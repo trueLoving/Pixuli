@@ -6,15 +6,18 @@
     --pixuli-ui-theme-background-primary: #ffffff;
     --pixuli-ui-theme-background-secondary: #f8fafc;
     --pixuli-ui-theme-background-tertiary: #f1f5f9;
+    --pixuli-ui-theme-background-quaternary: #e2e8f0;
 
     --pixuli-ui-theme-text-primary: #111827;
     --pixuli-ui-theme-text-secondary: #6b7280;
     --pixuli-ui-theme-text-tertiary: #9ca3af;
     --pixuli-ui-theme-text-inverse: #ffffff;
+    --pixuli-ui-theme-text-disabled: #d1d5db;
 
     --pixuli-ui-theme-border-primary: #e5e7eb;
     --pixuli-ui-theme-border-secondary: #d1d5db;
     --pixuli-ui-theme-border-focus: #3b82f6;
+    --pixuli-ui-theme-border-disabled: #f3f4f6;
 
     --pixuli-ui-theme-status-success: #10b981;
     --pixuli-ui-theme-status-warning: #f59e0b;
@@ -23,13 +26,23 @@
 
     --pixuli-ui-theme-interactive-primary: #3b82f6;
     --pixuli-ui-theme-interactive-primaryHover: #2563eb;
+    --pixuli-ui-theme-interactive-primaryActive: #1d4ed8;
     --pixuli-ui-theme-interactive-secondary: #6b7280;
     --pixuli-ui-theme-interactive-secondaryHover: #4b5563;
+    --pixuli-ui-theme-interactive-secondaryActive: #374151;
     --pixuli-ui-theme-interactive-disabled: #d1d5db;
 
     --pixuli-ui-theme-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --pixuli-ui-theme-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --pixuli-ui-theme-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --pixuli-ui-theme-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+    --pixuli-ui-theme-surface-primary: #ffffff;
+    --pixuli-ui-theme-surface-secondary: #f8fafc;
+    --pixuli-ui-theme-surface-tertiary: #f1f5f9;
+
+    --pixuli-ui-theme-accent-primary: #3b82f6;
+    --pixuli-ui-theme-accent-secondary: #8b5cf6;
 }
 
 /* 深色主题 */
@@ -127,10 +140,10 @@
 
 /* 主题过渡动画 */
 * {
-    transition: background-color 0.2s ease-in-out,
-        border-color 0.2s ease-in-out,
-        color 0.2s ease-in-out,
-        box-shadow 0.2s ease-in-out;
+    transition: background-color var(--theme-transition-duration, 0.2s) ease-in-out,
+        border-color var(--theme-transition-duration, 0.2s) ease-in-out,
+        color var(--theme-transition-duration, 0.2s) ease-in-out,
+        box-shadow var(--theme-transition-duration, 0.2s) ease-in-out;
 }
 
 /* 主题Provider容器 */

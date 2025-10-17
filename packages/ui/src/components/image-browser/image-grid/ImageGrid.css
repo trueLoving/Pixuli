@@ -7,9 +7,9 @@
 .image-browser-item {
   transition: all 0.2s ease-in-out;
   height: 100%;
-  background-color: white;
+  background-color: var(--pixuli-ui-theme-background-primary);
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--pixuli-ui-theme-shadow-sm);
   border: 1px solid;
   overflow: hidden;
   cursor: pointer;
@@ -18,18 +18,18 @@
 }
 
 .image-browser-item.unselected {
-  border-color: #e5e7eb;
+  border-color: var(--pixuli-ui-theme-border-primary);
 }
 
 .image-browser-item.unselected:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--pixuli-ui-theme-shadow-lg);
 }
 
 .image-browser-item.selected {
-  border-color: #3b82f6;
-  outline: 2px solid #93c5fd;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: var(--pixuli-ui-theme-interactive-primary);
+  outline: 2px solid var(--pixuli-ui-theme-border-focus);
+  box-shadow: var(--pixuli-ui-theme-shadow-md);
   transform: scale(1.05);
 }
 
@@ -37,7 +37,7 @@
 .image-grid-preview {
   position: relative;
   aspect-ratio: 1;
-  background-color: #f3f4f6;
+  background-color: var(--pixuli-ui-theme-background-secondary);
   flex-shrink: 0;
 }
 
@@ -46,8 +46,8 @@
   top: 0.5rem;
   right: 0.5rem;
   z-index: 10;
-  background-color: #3b82f6;
-  color: white;
+  background-color: var(--pixuli-ui-theme-interactive-primary);
+  color: var(--pixuli-ui-theme-text-inverse);
   border-radius: 50%;
   width: 1.5rem;
   height: 1.5rem;
@@ -56,7 +56,7 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: bold;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--pixuli-ui-theme-shadow-sm);
 }
 
 .image-grid-image {
@@ -92,7 +92,7 @@
 .image-action-icon {
   width: 1rem;
   height: 1rem;
-  color: #374151;
+  color: var(--pixuli-ui-theme-text-primary);
 }
 
 /* 图片信息区域样式 */
@@ -111,7 +111,7 @@
 
 .image-grid-title {
   font-weight: 500;
-  color: #111827;
+  color: var(--pixuli-ui-theme-text-primary);
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
   display: -webkit-box;
@@ -121,7 +121,7 @@
 }
 
 .image-grid-description {
-  color: #6b7280;
+  color: var(--pixuli-ui-theme-text-secondary);
   font-size: 0.75rem;
   margin-bottom: 0.5rem;
   display: -webkit-box;

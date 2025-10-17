@@ -24,17 +24,17 @@
 .image-browser-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--pixuli-ui-theme-text-primary);
 }
 
 .image-browser-count {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--pixuli-ui-theme-text-secondary);
 }
 
 .image-browser-filter-count {
   margin-left: 0.5rem;
-  color: #2563eb;
+  color: var(--pixuli-ui-theme-interactive-primary);
 }
 
 .image-browser-controls {

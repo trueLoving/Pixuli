@@ -1,20 +1,17 @@
 import React, { useState } from 'react'
 import { Sun, Moon, Monitor, Palette } from 'lucide-react'
-import { useThemeToggle } from './ThemeProvider'
-import './ThemeToggle.css'
+import { useAppTheme } from '../hooks/useAppTheme'
 
-interface ThemeToggleProps {
+interface AppThemeToggleProps {
+  variant?: 'button' | 'compact' | 'dropdown'
   className?: string
-  showLabel?: boolean
-  variant?: 'button' | 'dropdown' | 'compact'
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({
-  className = '',
-  showLabel = true,
-  variant = 'button'
+export const AppThemeToggle: React.FC<AppThemeToggleProps> = ({
+  variant = 'compact',
+  className = ''
 }) => {
-  const { themeMode, toggleTheme, setTheme, availableThemes } = useThemeToggle()
+  const { themeMode, currentTheme, setThemeMode, setTheme, availableThemes } = useAppTheme()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   
   const getThemeIcon = (mode: string) => {
@@ -43,17 +40,27 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     }
   }
   
-  const handleThemeSelect = (themeName: string) => {
-    setTheme(themeName)
+  const toggleThemeMode = () => {
+    if (themeMode === 'light') {
+      setThemeMode('dark')
+    } else if (themeMode === 'dark') {
+      setThemeMode('auto')
+    } else {
+      setThemeMode('light')
+    }
+  }
+  
+  const handleThemeSelect = (themeId: string) => {
+    setTheme(themeId)
     setIsDropdownOpen(false)
   }
   
   if (variant === 'compact') {
     return (
       <button
-        className={`theme-toggle-compact ${className}`}
-        onClick={toggleTheme}
-        title={`当前主题: ${getThemeLabel(themeMode)}`}
+        className={`app-theme-toggle-compact ${className}`}
+        onClick={toggleThemeMode}
+        title={`当前主题: ${currentTheme.name} (${getThemeLabel(themeMode)})`}
         aria-label={`切换到${getThemeLabel(themeMode === 'light' ? 'dark' : themeMode === 'dark' ? 'auto' : 'light')}主题`}
       >
         {getThemeIcon(themeMode)}
@@ -63,58 +70,58 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   
   if (variant === 'dropdown') {
     return (
-      <div className={`theme-toggle-dropdown ${className}`}>
+      <div className={`app-theme-toggle-dropdown ${className}`}>
         <button
-          className="theme-toggle-dropdown-button"
+          className="app-theme-toggle-dropdown-button"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           aria-expanded={isDropdownOpen}
           aria-haspopup="true"
         >
           {getThemeIcon(themeMode)}
-          {showLabel && <span>{getThemeLabel(themeMode)}</span>}
+          <span>{getThemeLabel(themeMode)}</span>
         </button>
         
         {isDropdownOpen && (
-          <div className="theme-toggle-dropdown-menu">
-            <div className="theme-toggle-dropdown-header">
+          <div className="app-theme-toggle-dropdown-menu">
+            <div className="app-theme-toggle-dropdown-header">
               <span>选择主题</span>
             </div>
             
-            <div className="theme-toggle-dropdown-group">
-              <div className="theme-toggle-dropdown-label">模式</div>
+            <div className="app-theme-toggle-dropdown-group">
+              <div className="app-theme-toggle-dropdown-label">模式</div>
               <button
-                className={`theme-toggle-dropdown-item ${themeMode === 'light' ? 'active' : ''}`}
-                onClick={() => handleThemeSelect('light')}
+                className={`app-theme-toggle-dropdown-item ${themeMode === 'light' ? 'active' : ''}`}
+                onClick={() => setThemeMode('light')}
               >
                 <Sun size={14} />
                 <span>浅色</span>
               </button>
               <button
-                className={`theme-toggle-dropdown-item ${themeMode === 'dark' ? 'active' : ''}`}
-                onClick={() => handleThemeSelect('dark')}
+                className={`app-theme-toggle-dropdown-item ${themeMode === 'dark' ? 'active' : ''}`}
+                onClick={() => setThemeMode('dark')}
               >
                 <Moon size={14} />
                 <span>深色</span>
               </button>
               <button
-                className={`theme-toggle-dropdown-item ${themeMode === 'auto' ? 'active' : ''}`}
-                onClick={() => handleThemeSelect('auto')}
+                className={`app-theme-toggle-dropdown-item ${themeMode === 'auto' ? 'active' : ''}`}
+                onClick={() => setThemeMode('auto')}
               >
                 <Monitor size={14} />
                 <span>自动</span>
               </button>
             </div>
             
-            <div className="theme-toggle-dropdown-group">
-              <div className="theme-toggle-dropdown-label">主题</div>
-              {availableThemes.map((theme: any) => (
+            <div className="app-theme-toggle-dropdown-group">
+              <div className="app-theme-toggle-dropdown-label">主题</div>
+              {availableThemes.map((theme) => (
                 <button
-                  key={theme.name}
-                  className="theme-toggle-dropdown-item"
-                  onClick={() => handleThemeSelect(theme.name)}
+                  key={theme.id}
+                  className={`app-theme-toggle-dropdown-item ${currentTheme.id === theme.id ? 'active' : ''}`}
+                  onClick={() => handleThemeSelect(theme.id)}
                 >
                   <div 
-                    className="theme-toggle-color-preview"
+                    className="app-theme-toggle-color-preview"
                     style={{ backgroundColor: theme.colors.interactive.primary }}
                   />
                   <span>{theme.name}</span>
@@ -127,7 +134,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
         {/* 点击外部关闭下拉菜单 */}
         {isDropdownOpen && (
           <div 
-            className="theme-toggle-dropdown-overlay"
+            className="app-theme-toggle-dropdown-overlay"
             onClick={() => setIsDropdownOpen(false)}
           />
         )}
@@ -138,15 +145,15 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   // 默认按钮样式
   return (
     <button
-      className={`theme-toggle-button ${className}`}
-      onClick={toggleTheme}
-      title={`当前主题: ${getThemeLabel(themeMode)}`}
+      className={`app-theme-toggle-button ${className}`}
+      onClick={toggleThemeMode}
+      title={`当前主题: ${currentTheme.name} (${getThemeLabel(themeMode)})`}
       aria-label={`切换到${getThemeLabel(themeMode === 'light' ? 'dark' : themeMode === 'dark' ? 'auto' : 'light')}主题`}
     >
       {getThemeIcon(themeMode)}
-      {showLabel && <span>{getThemeLabel(themeMode)}</span>}
+      <span>{getThemeLabel(themeMode)}</span>
     </button>
   )
 }
 
-export default ThemeToggle
+export default AppThemeToggle

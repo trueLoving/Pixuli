@@ -37,17 +37,17 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--app-theme-background-secondary, #f1f1f1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--app-theme-border-secondary, #c1c1c1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--app-theme-text-tertiary, #a8a8a8);
 }
 
 /* 动画 */
@@ -139,8 +139,8 @@ body {
 
 /* 拖拽状态 */
 .drag-over {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
+  border-color: var(--app-theme-interactive-primary);
+  background-color: var(--app-theme-background-secondary);
 }
 
 /* 按钮状态 */

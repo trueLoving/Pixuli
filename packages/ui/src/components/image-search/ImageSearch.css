@@ -19,7 +19,7 @@
   transform: translateY(-50%);
   width: 1.25rem;
   height: 1.25rem;
-  color: #9ca3af;
+  color: var(--pixuli-ui-theme-text-tertiary);
 }
 
 .image-search-input {

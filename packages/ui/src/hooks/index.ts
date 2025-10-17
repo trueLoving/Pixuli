@@ -14,4 +14,4 @@ export {
   isEditableElement,
   getKeyboardTarget,
   shouldIgnoreKeyboardEvent
-} from './useKeyboard' 
+} from './useKeyboard'

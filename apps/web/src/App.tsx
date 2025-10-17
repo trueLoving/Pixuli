@@ -13,6 +13,9 @@ import {
   getImageDimensionsFromUrl,
   formatFileSize
 } from '@packages/ui/src'
+import { AppThemeProvider } from './hooks/useAppTheme'
+import AppThemeToggle from './components/AppThemeToggle'
+import './components/AppThemeToggle.css'
 import { Toaster } from 'react-hot-toast'
 import { isDemoEnvironment, setDemoMode, getDemoConfig } from '@/utils/env'
 import LanguageSwitcher from './components/LanguageSwitcher'
@@ -224,124 +227,128 @@ function App() {
 
   if (!githubConfig) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center w-full max-w-md">
-          <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-            <Settings className="w-10 h-10 text-blue-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('app.welcome')}</h1>
-          <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
-          
-          {isDemoMode && (
-            <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Play className="w-5 h-5 text-purple-600" />
-              <h3 className="text-lg font-semibold text-purple-800">{t('app.demoMode.title')}</h3>
-              </div>
-              <p className="text-purple-700 text-sm mb-3">
-                {t('app.demoMode.description')}
-              </p>
-              <div className="flex justify-center space-x-3">
-                <button
-                  onClick={() => {
-                    const demoConfig = getDemoConfig()
-                    const blob = new Blob([JSON.stringify(demoConfig, null, 2)], { type: 'application/json' })
-                    const url = URL.createObjectURL(blob)
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = 'pixuli-github-config-demo.json'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    URL.revokeObjectURL(url)
-                  }}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>{t('app.demoMode.downloadDemo')}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setDemoMode(false)
-                    setIsDemoMode(false)
-                  }}
-                  className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
-                >
-                  退出演示模式
-                </button>
-              </div>
+      <AppThemeProvider>
+        <div className="h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--app-theme-background-primary)' }}>
+          <div className="text-center w-full max-w-md">
+            <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+              <Settings className="w-10 h-10 text-blue-600" />
             </div>
-          )}
-          
-          <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
-          <button
-            onClick={handleOpenConfigModal}
-            className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            {t('app.configureGitHub')}
-          </button>
-        </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('app.welcome')}</h1>
+            <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
+            
+            {isDemoMode && (
+              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Play className="w-5 h-5 text-purple-600" />
+                <h3 className="text-lg font-semibold text-purple-800">{t('app.demoMode.title')}</h3>
+                </div>
+                <p className="text-purple-700 text-sm mb-3">
+                  {t('app.demoMode.description')}
+                </p>
+                <div className="flex justify-center space-x-3">
+                  <button
+                    onClick={() => {
+                      const demoConfig = getDemoConfig()
+                      const blob = new Blob([JSON.stringify(demoConfig, null, 2)], { type: 'application/json' })
+                      const url = URL.createObjectURL(blob)
+                      const link = document.createElement('a')
+                      link.href = url
+                      link.download = 'pixuli-github-config-demo.json'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                      URL.revokeObjectURL(url)
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>{t('app.demoMode.downloadDemo')}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDemoMode(false)
+                      setIsDemoMode(false)
+                    }}
+                    className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+                  >
+                    退出演示模式
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
+            <button
+              onClick={handleOpenConfigModal}
+              className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {t('app.configureGitHub')}
+            </button>
+          </div>
 
-        {/* GitHub 配置模态框 */}
-        <GitHubConfigModal
-          isOpen={showConfigModal}
-          onClose={handleCloseConfigModal}
-          githubConfig={githubConfig}
-          onSaveConfig={handleSaveConfig}
-          onClearConfig={handleClearConfig}
-          t={t}
-        />
-      </div>
+          {/* GitHub 配置模态框 */}
+          <GitHubConfigModal
+            isOpen={showConfigModal}
+            onClose={handleCloseConfigModal}
+            githubConfig={githubConfig}
+            onSaveConfig={handleSaveConfig}
+            onClearConfig={handleClearConfig}
+            t={t}
+          />
+        </div>
+      </AppThemeProvider>
     )
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col">
-      {/* 顶部导航栏 */}
-      <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">{t('app.title')}</h1>
-              <div className="text-sm text-gray-500 hidden sm:block">
-                {t('app.repository')}: {githubConfig.owner}/{githubConfig.repo}
-              </div>
-              {isDemoMode && (
-                <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                  <Play className="w-3 h-3" />
-                  <span>{t('app.demoMode.title')}</span>
+    <AppThemeProvider>
+      <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--app-theme-background-primary)' }}>
+        {/* 顶部导航栏 */}
+        <header className="shadow-sm border-b flex-shrink-0" style={{ backgroundColor: 'var(--app-theme-background-secondary)', borderColor: 'var(--app-theme-border-primary)' }}>
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-4">
+                <h1 className="text-xl font-bold text-gray-900">{t('app.title')}</h1>
+                <div className="text-sm text-gray-500 hidden sm:block">
+                  {t('app.repository')}: {githubConfig.owner}/{githubConfig.repo}
                 </div>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <LanguageSwitcher />
-              <button
-                onClick={handleOpenConfigModal}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.settings')} (Ctrl+,)`}
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleLoadImages}
-                disabled={loading}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.refresh')} (F5)`}
-              >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-              <button
-                onClick={handleOpenKeyboardHelp}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.help')} (F1)`}
-              >
-                <HelpCircle className="w-5 h-5" />
-              </button>
+                {isDemoMode && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                    <Play className="w-3 h-3" />
+                    <span>{t('app.demoMode.title')}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <AppThemeToggle variant="compact" />
+                <LanguageSwitcher />
+                <button
+                  onClick={handleOpenConfigModal}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  title={`${t('navigation.settings')} (Ctrl+,)`}
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleLoadImages}
+                  disabled={loading}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  title={`${t('navigation.refresh')} (F5)`}
+                >
+                  <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                </button>
+                <button
+                  onClick={handleOpenKeyboardHelp}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  title={`${t('navigation.help')} (F1)`}
+                >
+                  <HelpCircle className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       {/* 主内容区域 - 可滚动 */}
       <main className="flex-1 overflow-y-auto">
@@ -430,7 +437,8 @@ function App() {
       />
 
       <Toaster />
-    </div>
+      </div>
+    </AppThemeProvider>
   )
 }
 

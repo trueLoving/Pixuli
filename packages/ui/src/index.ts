@@ -15,19 +15,12 @@ export * from './utils/sortUtils'
 // Hooks 导出
 export * from './hooks'
 
-// 主题工具函数导出
-export { applyThemeToDOM, initializeDefaultTheme } from './utils/themeUtils'
-
 // 组件导出
 export { default as GitHubConfigModal } from './components/github-config/GitHubConfigModal'
 export { default as KeyboardHelpModal } from './components/keyboard-help/KeyboardHelpModal'
 export { default as ImageUpload } from './components/image-upload/ImageUpload'
-export { ImageBrowser, ImageGrid, ImageList, ImageFilter, ImageSorter, ImagePreviewModal, ImageUrlModal, ImageEditModal } from './components/image-browser'
 export { default as ImageSearch } from './components/image-search/ImageSearch'
-
-// 主题组件导出
-export { ThemeProvider, useThemeContext, useThemeToggle } from './components/theme/ThemeProvider'
-export { ThemeToggle } from './components/theme/ThemeToggle'
+export { ImageBrowser, ImageGrid, ImageList, ImageFilter, ImageSorter, ImagePreviewModal, ImageUrlModal, ImageEditModal } from './components/image-browser'
 
 // 语言包导出
 export { default as zhCN } from './locales/zh-CN.json'

@@ -1,0 +1,237 @@
+/* 应用主题切换按钮样式 */
+
+/* 紧凑样式 */
+.app-theme-toggle-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--app-theme-background-secondary);
+  border: 1px solid var(--app-theme-border-primary);
+  border-radius: 0.375rem;
+  color: var(--app-theme-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.app-theme-toggle-compact:hover {
+  background: var(--app-theme-background-tertiary);
+  border-color: var(--app-theme-border-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--app-theme-shadow-sm);
+}
+
+.app-theme-toggle-compact:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.app-theme-toggle-compact:focus {
+  outline: 2px solid var(--app-theme-border-focus);
+  outline-offset: 2px;
+}
+
+/* 按钮样式 */
+.app-theme-toggle-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--app-theme-background-secondary);
+  border: 1px solid var(--app-theme-border-primary);
+  border-radius: 0.375rem;
+  color: var(--app-theme-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.app-theme-toggle-button:hover {
+  background: var(--app-theme-background-tertiary);
+  border-color: var(--app-theme-border-secondary);
+  transform: translateY(-1px);
+  box-shadow: var(--app-theme-shadow-sm);
+}
+
+.app-theme-toggle-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.app-theme-toggle-button:focus {
+  outline: 2px solid var(--app-theme-border-focus);
+  outline-offset: 2px;
+}
+
+/* 下拉菜单样式 */
+.app-theme-toggle-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.app-theme-toggle-dropdown-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--app-theme-background-secondary);
+  border: 1px solid var(--app-theme-border-primary);
+  border-radius: 0.375rem;
+  color: var(--app-theme-text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.app-theme-toggle-dropdown-button:hover {
+  background: var(--app-theme-background-tertiary);
+  border-color: var(--app-theme-border-secondary);
+}
+
+.app-theme-toggle-dropdown-button:focus {
+  outline: 2px solid var(--app-theme-border-focus);
+  outline-offset: 2px;
+}
+
+.app-theme-toggle-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.25rem;
+  min-width: 12rem;
+  background: var(--app-theme-background-primary);
+  border: 1px solid var(--app-theme-border-primary);
+  border-radius: 0.5rem;
+  box-shadow: var(--app-theme-shadow-lg);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.app-theme-toggle-dropdown-header {
+  padding: 0.75rem 1rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--app-theme-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.app-theme-toggle-dropdown-group {
+  padding: 0.5rem 0;
+}
+
+.app-theme-toggle-dropdown-label {
+  padding: 0.25rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--app-theme-text-secondary);
+}
+
+.app-theme-toggle-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--app-theme-text-primary);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.app-theme-toggle-dropdown-item:hover {
+  background: var(--app-theme-background-secondary);
+}
+
+.app-theme-toggle-dropdown-item.active {
+  background: var(--app-theme-interactive-primary);
+  color: var(--app-theme-text-inverse);
+}
+
+.app-theme-toggle-dropdown-item.active:hover {
+  background: var(--app-theme-interactive-primaryHover);
+}
+
+.app-theme-toggle-color-preview {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1px solid var(--app-theme-border-primary);
+  flex-shrink: 0;
+}
+
+.app-theme-toggle-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .app-theme-toggle-dropdown-menu {
+    right: -1rem;
+    min-width: 14rem;
+  }
+  
+  .app-theme-toggle-button span,
+  .app-theme-toggle-dropdown-button span {
+    display: none;
+  }
+  
+  .app-theme-toggle-button,
+  .app-theme-toggle-dropdown-button {
+    padding: 0.5rem;
+  }
+}
+
+/* 动画效果 */
+.app-theme-toggle-dropdown-menu {
+  animation: themeDropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes themeDropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 无障碍支持 */
+@media (prefers-reduced-motion: reduce) {
+  .app-theme-toggle-compact,
+  .app-theme-toggle-button,
+  .app-theme-toggle-dropdown-button,
+  .app-theme-toggle-dropdown-item {
+    transition: none;
+  }
+  
+  .app-theme-toggle-dropdown-menu {
+    animation: none;
+  }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .app-theme-toggle-compact,
+  .app-theme-toggle-button,
+  .app-theme-toggle-dropdown-button {
+    border-width: 2px;
+  }
+  
+  .app-theme-toggle-dropdown-item.active {
+    border: 2px solid var(--app-theme-text-inverse);
+  }
+}
