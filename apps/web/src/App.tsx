@@ -14,7 +14,7 @@ import {
   formatFileSize
 } from '@packages/ui/src'
 import { AppThemeProvider } from './hooks/useAppTheme'
-import AppThemeToggle from './components/AppThemeToggle'
+// import AppThemeToggle from './components/AppThemeToggle'
 import './components/AppThemeToggle.css'
 import { Toaster } from 'react-hot-toast'
 import { isDemoEnvironment, setDemoMode, getDemoConfig } from '@/utils/env'
@@ -321,7 +321,7 @@ function App() {
               </div>
               
               <div className="flex items-center space-x-3">
-                <AppThemeToggle variant="compact" />
+                {/* <AppThemeToggle variant="compact" /> */}
                 <LanguageSwitcher />
                 <button
                   onClick={handleOpenConfigModal}
