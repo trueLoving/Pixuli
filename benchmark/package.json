@@ -1,5 +1,5 @@
 {
-  "name": "pixuli-wasm-benchmark",
+  "name": "pixuli-benchmark",
   "version": "1.0.0",
   "description": "WASM vs JavaScript 图片压缩性能对比测试",
   "type": "module",

@@ -67,9 +67,8 @@ jobs:
 
       - name: 构建 WASM 模块
         run: |
-          cd pixuli-wasm
           pnpm install
-          pnpm run build
+          pnpm run build:wasm
           echo "WASM 模块构建完成"
 
       - name: 验证 WASM 模块 (Windows)
@@ -78,9 +77,9 @@ jobs:
         run: |
           Write-Host "检查 WASM 二进制文件:"
           Write-Host "Windows 环境 - 使用 PowerShell 命令:"
-          Get-ChildItem -Path pixuli-wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
+          Get-ChildItem -Path packages/wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
           Write-Host "WASM 二进制文件列表:"
-          Get-ChildItem -Path pixuli-wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
+          Get-ChildItem -Path packages/wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
 
       - name: 验证 WASM 模块 (Unix)
         if: runner.os != 'Windows'
@@ -88,14 +87,14 @@ jobs:
         run: |
           echo "检查 WASM 二进制文件:"
           echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
-          ls -la pixuli-wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
+          ls -la packages/wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
           echo "WASM 二进制文件列表:"
-          find pixuli-wasm -name "*.node" -type f
+          find packages/wasm -name "*.node" -type f
 
       - name: 测试 WASM 模块功能
         run: |
           echo "测试 WASM 模块基本功能..."
-          cd pixuli-wasm
+          cd packages/wasm
           node -e "
             try {
               const wasm = require('./index.js');
@@ -115,7 +114,6 @@ jobs:
         run: |
           echo "🚀 开始简化基准测试..."
           cd benchmark
-          pnpm install
           pnpm run bench
 
       - name: 运行详细基准测试
@@ -123,7 +121,6 @@ jobs:
         run: |
           echo "🚀 开始详细基准测试..."
           cd benchmark
-          pnpm install
           pnpm run bench:detailed
 
       - name: 生成测试报告

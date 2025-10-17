@@ -510,6 +510,7 @@ if (!nativeBinding) {
 module.exports = nativeBinding
 module.exports.AIModelType = nativeBinding.AIModelType
 module.exports.analyzeImageWithAi = nativeBinding.analyzeImageWithAi
+module.exports.analyzeImageWithOnnx = nativeBinding.analyzeImageWithOnnx
 module.exports.analyzeImageWithTensorflow = nativeBinding.analyzeImageWithTensorflow
 module.exports.analyzeImageWithTensorflowLite = nativeBinding.analyzeImageWithTensorflowLite
 module.exports.batchAnalyzeImagesWithAi = nativeBinding.batchAnalyzeImagesWithAi
@@ -523,5 +524,6 @@ module.exports.getFormatInfo = nativeBinding.getFormatInfo
 module.exports.getImageInfo = nativeBinding.getImageInfo
 module.exports.getSupportedFormats = nativeBinding.getSupportedFormats
 module.exports.getSupportedModels = nativeBinding.getSupportedModels
+module.exports.initializeOnnxModel = nativeBinding.initializeOnnxModel
 module.exports.plus100 = nativeBinding.plus100
 module.exports.RemoteAPIType = nativeBinding.RemoteAPIType

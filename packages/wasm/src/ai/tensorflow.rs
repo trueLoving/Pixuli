@@ -6,7 +6,6 @@ use std::path::Path;
 use std::fs;
 use image::GenericImageView;
 use crate::ai::types::*;
-use crate::ai::model_handlers::ModelHandler;
 
 /// TensorFlow 模型分析器
 struct TensorFlowAnalyzer {
@@ -46,11 +45,11 @@ impl TensorFlowAnalyzer {
     })
   }
 
-  fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
+  fn analyze_image(&self, _image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
     let start_time = std::time::Instant::now();
     
     // 加载和预处理图片
-    let img = image::load_from_memory(image_data)
+    let img = image::load_from_memory(_image_data)
       .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
     
     // 调整图片大小到模型输入尺寸 (224x224 for MobileNet)
@@ -110,7 +109,7 @@ impl TensorFlowAnalyzer {
     let analysis_time = start_time.elapsed().as_millis() as f64;
     
     Ok(ImageAnalysisResult {
-      image_type: crate::image::detect_image_format(image_data),
+      image_type: crate::image::detect_image_format(_image_data),
       tags,
       description,
       confidence: 0.8,
@@ -161,11 +160,11 @@ impl TensorFlowLiteAnalyzer {
     })
   }
 
-  fn analyze_image(&self, image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
+  fn analyze_image(&self, _image_data: &[u8]) -> Result<ImageAnalysisResult, NapiError> {
     let start_time = std::time::Instant::now();
     
     // 加载和预处理图片
-    let img = image::load_from_memory(image_data)
+    let img = image::load_from_memory(_image_data)
       .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
     
     let (width, height) = img.dimensions();
@@ -216,7 +215,7 @@ impl TensorFlowLiteAnalyzer {
     let analysis_time = start_time.elapsed().as_millis() as f64;
     
     Ok(ImageAnalysisResult {
-      image_type: crate::image::detect_image_format(image_data),
+      image_type: crate::image::detect_image_format(_image_data),
       tags,
       description,
       confidence: 0.85,
@@ -232,9 +231,9 @@ impl TensorFlowLiteAnalyzer {
 /// 使用 ONNX 模型分析图片（替代 TensorFlow）
 #[napi]
 pub fn analyze_image_with_onnx(
-  image_data: Vec<u8>,
-  model_path: String,
-  use_gpu: Option<bool>,
+  _image_data: Vec<u8>,
+  _model_path: String,
+  _use_gpu: Option<bool>,
 ) -> Result<ImageAnalysisResult, NapiError> {
   // 暂时使用模拟实现，因为异步 API 有兼容性问题
   let start_time = std::time::Instant::now();
@@ -268,13 +267,13 @@ pub fn analyze_image_with_tensorflow(
 /// 使用 TensorFlow Lite 模型分析图片（暂时使用模拟实现）
 #[napi]
 pub fn analyze_image_with_tensorflow_lite(
-  image_data: Vec<u8>,
-  model_path: String,
-  use_gpu: Option<bool>,
+  _image_data: Vec<u8>,
+  _model_path: String,
+  _use_gpu: Option<bool>,
 ) -> Result<ImageAnalysisResult, NapiError> {
-  let handler = crate::ai::model_handlers::TensorFlowLiteHandler::new(
-    model_path,
-    use_gpu.unwrap_or(false)
+  let _handler = crate::ai::model_handlers::TensorFlowLiteHandler::new(
+    _model_path,
+    _use_gpu.unwrap_or(false)
   );
   
   // 分析图片（使用模拟实现）
@@ -299,7 +298,7 @@ pub fn analyze_image_with_tensorflow_lite(
 #[napi]
 pub fn initialize_onnx_model(
   model_path: String,
-  use_gpu: Option<bool>,
+  _use_gpu: Option<bool>,
 ) -> Result<String, NapiError> {
   // 暂时使用模拟实现
   Ok(format!("ONNX model initialization simulated for: {}", model_path))

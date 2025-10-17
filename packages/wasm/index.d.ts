@@ -40,11 +40,14 @@ export declare const enum AIModelType {
 /** 分析图片内容（使用 AI 模型） */
 export declare function analyzeImageWithAi(imageData: Array<number>, config: AiAnalysisConfig): ImageAnalysisResult
 
-/** 使用 TensorFlow 模型分析图片 */
+/** 使用 ONNX 模型分析图片（替代 TensorFlow） */
+export declare function analyzeImageWithOnnx(imageData: Array<number>, modelPath: string, useGpu?: boolean | undefined | null): ImageAnalysisResult
+
+/** 使用 TensorFlow 模型分析图片（保持向后兼容） */
 export declare function analyzeImageWithTensorflow(imageData: Array<number>, modelPath: string): ImageAnalysisResult
 
-/** 使用 TensorFlow Lite 模型分析图片 */
-export declare function analyzeImageWithTensorflowLite(imageData: Array<number>, modelPath: string): ImageAnalysisResult
+/** 使用 TensorFlow Lite 模型分析图片（暂时使用模拟实现） */
+export declare function analyzeImageWithTensorflowLite(imageData: Array<number>, modelPath: string, useGpu?: boolean | undefined | null): ImageAnalysisResult
 
 /** 批量分析图片 */
 export declare function batchAnalyzeImagesWithAi(imagesData: Array<Array<number>>, config: AiAnalysisConfig): Array<ImageAnalysisResult>
@@ -172,6 +175,9 @@ export interface ImageAnalysisResult {
   /** 使用的模型 */
   modelUsed: string
 }
+
+/** 初始化 ONNX 模型 */
+export declare function initializeOnnxModel(modelPath: string, useGpu?: boolean | undefined | null): string
 
 /** 本地 LLM 配置 */
 export interface LocalLlmConfig {

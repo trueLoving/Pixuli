@@ -20,7 +20,7 @@ async-trait = "0.1"
 tokio = { version = "1.0", features = ["full"] }
 reqwest = { version = "0.11", features = ["json"] }
 ort = "1.16"
-tflite = "0.7"
+ndarray = "0.15"
 
 [build-dependencies]
 napi-build = "2"

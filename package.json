@@ -4,14 +4,11 @@
   "description": "Pixuli - 智能图片管理应用 Monorepo",
   "private": true,
   "scripts": {
-    "dev": "pnpm run --filter pixuli-desktop dev",
-    "build": "pnpm run --filter pixuli-desktop build",
-    "electron:dev": "pnpm run --filter pixuli-desktop electron:dev",
-    "electron:build": "pnpm run --filter pixuli-desktop electron:build",
-    "dist": "pnpm run --filter pixuli-desktop dist",
-    "dist:win": "pnpm run --filter pixuli-desktop dist:win",
-    "dist:mac": "pnpm run --filter pixuli-desktop dist:mac",
-    "website": "pnpm run --filter website dev"
+    "build:wasm":"pnpm run --filter pixuli-wasm build",
+    "dev:web": "pnpm run --filter pixuli-web dev",
+    "build:web": "pnpm run --filter pixuli-web build",
+    "dev:desktop": "pnpm run --filter pixuli-desktop dev",
+    "build:desktop": "pnpm run --filter pixuli-desktop electron:build"
   },
   "keywords": [
     "monorepo",
