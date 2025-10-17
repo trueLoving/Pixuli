@@ -178,6 +178,7 @@ function requireNative() {
       try {
         return require('./pixuli-wasm.darwin-x64.node')
       } catch (e) {
+        console.log(';222', e)
         loadErrors.push(e)
       }
       try {

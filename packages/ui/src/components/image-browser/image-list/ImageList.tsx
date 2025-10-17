@@ -34,6 +34,7 @@ const ImageList: React.FC<ImageListProps> = ({
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
+  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
@@ -93,10 +94,12 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [])
 
   const handlePreview = useCallback((image: ImageItem) => {
+    const imageIndex = images.findIndex(img => img.id === image.id)
     setSelectedImage(image)
+    setPreviewImageIndex(imageIndex)
     setShowPreview(true)
     showInfo(`${translate('image.list.previewing')} "${image.name}"`)
-  }, [])
+  }, [images])
 
   // 监听预览事件（仅列表视图）
   useEffect(() => {
@@ -151,6 +154,15 @@ const ImageList: React.FC<ImageListProps> = ({
   const handleOpenUrl = useCallback((url: string) => {
     window.open(url, '_blank')
   }, [])
+
+  // 预览导航处理
+  const handlePreviewNavigate = useCallback((newIndex: number) => {
+    if (newIndex >= 0 && newIndex < images.length) {
+      const newImage = images[newIndex]
+      setSelectedImage(newImage)
+      setPreviewImageIndex(newIndex)
+    }
+  }, [images])
 
   const toggleRowExpansion = useCallback((imageId: string) => {
     setExpandedRows(prev => {
@@ -441,8 +453,11 @@ const ImageList: React.FC<ImageListProps> = ({
       {/* 预览模态框 */}
       <ImagePreviewModal
         image={selectedImage}
+        images={images}
+        currentIndex={previewImageIndex}
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
+        onNavigate={handlePreviewNavigate}
         imageDimensions={imageDimensions}
         formatFileSize={formatFileSize}
         onCopyUrl={handleCopyUrl}

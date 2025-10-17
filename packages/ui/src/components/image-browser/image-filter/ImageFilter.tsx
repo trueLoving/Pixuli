@@ -179,7 +179,6 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
       {/* 筛选头部 */}
       <div className="image-filter-header">
         <div className="image-filter-title">
-          <Filter className="image-filter-title-icon" />
           <h3 className="image-filter-title-text">{translate('image.filter.title')}</h3>
           {filterStats.hasFilters && (
             <span className="image-filter-stats">

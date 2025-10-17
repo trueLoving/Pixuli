@@ -38,6 +38,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   const pageSize = 20
   const initialLoadCount = 12
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null)
+  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showUrlModal, setShowUrlModal] = useState(false)
@@ -137,10 +138,12 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   }, [])
 
   const handlePreview = useCallback((image: ImageItem) => {
+    const imageIndex = images.findIndex(img => img.id === image.id)
     setSelectedImage(image)
+    setPreviewImageIndex(imageIndex)
     setShowPreview(true)
     showInfo(`${translate('image.grid.previewing')} "${image.name}"`)
-  }, [])
+  }, [images])
 
   // 监听预览事件（仅网格视图）
   useEffect(() => {
@@ -208,6 +211,15 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   const handleOpenUrl = useCallback((url: string) => {
     window.open(url, '_blank')
   }, [])
+
+  // 预览导航处理
+  const handlePreviewNavigate = useCallback((newIndex: number) => {
+    if (newIndex >= 0 && newIndex < images.length) {
+      const newImage = images[newIndex]
+      setSelectedImage(newImage)
+      setPreviewImageIndex(newIndex)
+    }
+  }, [images])
 
 
   const formatDate = useCallback((dateString: string) => {
@@ -437,8 +449,11 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       {/* 预览模态框 */}
       <ImagePreviewModal
         image={selectedImage}
+        images={images}
+        currentIndex={previewImageIndex}
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
+        onNavigate={handlePreviewNavigate}
         imageDimensions={imageDimensions}
         formatFileSize={formatFileSize}
         onCopyUrl={handleCopyUrl}
