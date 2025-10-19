@@ -210,191 +210,180 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
             </button>
           </div>
 
+          {/* 操作按钮 */}
+          <div className="github-config-modal-actions">
+            <div className="github-config-modal-actions-left">
+              <button
+                onClick={handleImportConfig}
+                className="github-config-modal-action-button"
+                title={translate('github.help.importExport.import')}
+              >
+                <Upload className="w-4 h-4" />
+                <span>{translate('github.config.import')}</span>
+              </button>
+              {githubConfig && (
+                <button
+                  onClick={handleExportConfig}
+                  className="github-config-modal-action-button"
+                  title={translate('github.help.importExport.export')}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{translate('github.config.export')}</span>
+                </button>
+              )}
+            </div>
+            <div className="github-config-modal-actions-right">
+              {githubConfig && (
+                <button
+                  onClick={handleClearConfig}
+                  className="github-config-modal-action-button github-config-modal-action-button-danger"
+                  title={translate('github.config.clearConfig')}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{translate('github.config.clearConfig')}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* 表单内容 */}
           <div className="github-config-modal-body">
             <form onSubmit={handleSubmit} className="github-config-form">
-              <div className="github-config-form-group">
-                <label className="github-config-form-label">
-                  {translate('github.config.username')} <span className="github-config-form-required">{translate('github.config.required')}</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.owner}
-                  onChange={(e) => handleInputChange('owner', e.target.value)}
-                  placeholder={translate('github.config.usernamePlaceholder')}
-                  className="github-config-form-input"
-                  required
-                />
+              {/* GitHub 配置 */}
+              <div className="github-config-form-section">
+                <h3 className="github-config-form-section-title">
+                  GitHub {translate('storage.configuration')}
+                </h3>
+                
+                <div className="github-config-form-row">
+                  <div className="github-config-form-group">
+                    <label className="github-config-form-label">
+                      {translate('github.config.username')} <span className="github-config-form-required">{translate('github.config.required')}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.owner}
+                      onChange={(e) => handleInputChange('owner', e.target.value)}
+                      placeholder={translate('github.config.usernamePlaceholder')}
+                      className="github-config-form-input"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="github-config-form-group">
+                    <label className="github-config-form-label">
+                      {translate('github.config.repository')} <span className="github-config-form-required">{translate('github.config.required')}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.repo}
+                      onChange={(e) => handleInputChange('repo', e.target.value)}
+                      placeholder={translate('github.config.repositoryPlaceholder')}
+                      className="github-config-form-input"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="github-config-form-row">
+                  <div className="github-config-form-group">
+                    <label className="github-config-form-label">
+                      {translate('github.config.branch')} <span className="github-config-form-required">{translate('github.config.required')}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.branch}
+                      onChange={(e) => handleInputChange('branch', e.target.value)}
+                      placeholder={translate('github.config.branchPlaceholder')}
+                      className="github-config-form-input"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="github-config-form-group">
+                    <label className="github-config-form-label">
+                      {translate('github.config.path')} <span className="github-config-form-required">{translate('github.config.required')}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.path}
+                      onChange={(e) => handleInputChange('path', e.target.value)}
+                      placeholder={translate('github.config.pathPlaceholder')}
+                      className="github-config-form-input"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="github-config-form-group">
+                  <label className="github-config-form-label">
+                    {translate('github.config.token')} <span className="github-config-form-required">{translate('github.config.required')}</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.token}
+                    onChange={(e) => handleInputChange('token', e.target.value)}
+                    placeholder={translate('github.config.tokenPlaceholder')}
+                    className="github-config-form-input"
+                    required
+                  />
+                  <p className="github-config-form-description">
+                    {translate('github.config.tokenDescription')}
+                  </p>
+                </div>
               </div>
 
-              <div className="github-config-form-group">
-                <label className="github-config-form-label">
-                  {translate('github.config.repository')} <span className="github-config-form-required">{translate('github.config.required')}</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.repo}
-                  onChange={(e) => handleInputChange('repo', e.target.value)}
-                  placeholder={translate('github.config.repositoryPlaceholder')}
-                  className="github-config-form-input"
-                  required
-                />
+              {/* 帮助信息 */}
+              <div className="github-config-form-section">
+                <h3 className="github-config-form-section-title">
+                  {translate('github.help.title')}
+                </h3>
+                
+                <div className="github-config-help">
+                  <div className="github-config-help-item">
+                    <h4 className="github-config-help-item-title">
+                      📋 {translate('github.help.tokenGuide.title')}
+                    </h4>
+                    <ul className="github-config-help-item-list">
+                      <li>{translate('github.help.tokenGuide.step1')}</li>
+                      <li>{translate('github.help.tokenGuide.step2')}</li>
+                      <li>{translate('github.help.tokenGuide.step3')}</li>
+                      <li>{translate('github.help.tokenGuide.step4')}</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="github-config-help-item">
+                    <h4 className="github-config-help-item-title">
+                      🔄 {translate('github.help.importExport.title')}
+                    </h4>
+                    <ul className="github-config-help-item-list">
+                      <li>{translate('github.help.importExport.export')}</li>
+                      <li>{translate('github.help.importExport.import')}</li>
+                      <li>{translate('github.help.importExport.crossPlatform')}</li>
+                      <li>{translate('github.help.importExport.backup')}</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
-              <div className="github-config-form-group">
-                <label className="github-config-form-label">
-                  {translate('github.config.branch')} <span className="github-config-form-required">{translate('github.config.required')}</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.branch}
-                  onChange={(e) => handleInputChange('branch', e.target.value)}
-                  placeholder={translate('github.config.branchPlaceholder')}
-                  className="github-config-form-input"
-                  required
-                />
-              </div>
-
-              <div className="github-config-form-group">
-                <label className="github-config-form-label">
-                  {translate('github.config.path')} <span className="github-config-form-required">{translate('github.config.required')}</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.path}
-                  onChange={(e) => handleInputChange('path', e.target.value)}
-                  placeholder={translate('github.config.pathPlaceholder')}
-                  className="github-config-form-input"
-                  required
-                />
-              </div>
-
-              <div className="github-config-form-group">
-                <label className="github-config-form-label">
-                  {translate('github.config.token')} <span className="github-config-form-required">{translate('github.config.required')}</span>
-                </label>
-                <input
-                  type="password"
-                  value={formData.token}
-                  onChange={(e) => handleInputChange('token', e.target.value)}
-                  placeholder={translate('github.config.tokenPlaceholder')}
-                  className="github-config-form-input"
-                  required
-                />
-                <p className="github-config-form-description">
-                  {translate('github.config.tokenDescription')}
-                </p>
-              </div>
-
-              {/* 导入导出按钮组 */}
-              <div className="github-config-button-group">
-                <button
-                  type="button"
-                  onClick={handleImportConfig}
-                  className="github-config-button github-config-button-success"
-                >
-                  <Upload className="github-config-button-icon" />
-                  <span>{translate('github.config.import')}</span>
-                </button>
-                {githubConfig && (
-                  <button
-                    type="button"
-                    onClick={handleExportConfig}
-                    className="github-config-button github-config-button-info"
-                  >
-                    <Download className="github-config-button-icon" />
-                    <span>{translate('github.config.export')}</span>
-                  </button>
-                )}
-              </div>
-
-              {/* 主要按钮组 */}
-              <div className="github-config-button-group">
-                {githubConfig && (
-                  <button
-                    type="button"
-                    onClick={handleClearConfig}
-                    className="github-config-button github-config-button-danger"
-                  >
-                    <Trash2 className="github-config-button-icon" />
-                    <span>{translate('github.config.clearConfig')}</span>
-                  </button>
-                )}
+              {/* 表单操作 */}
+              <div className="github-config-form-actions">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="github-config-button github-config-button-secondary"
+                  className="github-config-form-cancel-button"
                 >
                   {translate('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="github-config-button github-config-button-primary"
+                  className="github-config-form-save-button"
                 >
-                  <Save className="github-config-button-icon" />
+                  <Save className="w-4 h-4" />
                   <span>{translate('github.config.saveConfig')}</span>
                 </button>
               </div>
             </form>
-
-            {/* 帮助信息 */}
-            <div className="github-config-help-section">
-              <div className="github-config-help-grid">
-                {/* 如何获取 GitHub Token */}
-                <div className="github-config-help-card github-config-help-card-blue">
-                  <h4 className="github-config-help-title github-config-help-title-blue">{translate('github.help.tokenGuide.title')}</h4>
-                  <ol className="github-config-help-list github-config-help-list-blue">
-                    <li className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
-                      <span>{translate('github.help.tokenGuide.step1')}</span>
-                    </li>
-                    <li className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
-                      <span>{translate('github.help.tokenGuide.step2')}</span>
-                    </li>
-                    <li className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
-                      <span>{translate('github.help.tokenGuide.step3')}</span>
-                    </li>
-                    <li className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-blue"></span>
-                      <span>{translate('github.help.tokenGuide.step4')}</span>
-                    </li>
-                  </ol>
-                </div>
-                
-                {/* 配置导入导出 */}
-                <div className="github-config-help-card github-config-help-card-green">
-                  <h4 className="github-config-help-title github-config-help-title-green">{translate('github.help.importExport.title')}</h4>
-                  <div className="github-config-help-list github-config-help-list-green">
-                    <div className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
-                      <div>
-                        <strong className="github-config-help-text">{translate('github.help.importExport.export')}</strong>
-                      </div>
-                    </div>
-                    <div className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
-                      <div>
-                        <strong className="github-config-help-text">{translate('github.help.importExport.import')}</strong>
-                      </div>
-                    </div>
-                    <div className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
-                      <div>
-                        <strong className="github-config-help-text">{translate('github.help.importExport.crossPlatform')}</strong>
-                      </div>
-                    </div>
-                    <div className="github-config-help-item">
-                      <span className="github-config-help-bullet github-config-help-bullet-green"></span>
-                      <div>
-                        <strong className="github-config-help-text">{translate('github.help.importExport.backup')}</strong>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

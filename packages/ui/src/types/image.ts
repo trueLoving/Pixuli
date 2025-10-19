@@ -27,6 +27,14 @@ export interface ImageEditData {
   tags?: string[]
 }
 
+export interface UpyunConfig {
+  operator: string
+  password: string
+  bucket: string
+  domain: string
+  path: string
+}
+
 export interface GitHubConfig {
   owner: string
   repo: string

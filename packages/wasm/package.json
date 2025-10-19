@@ -12,6 +12,7 @@
   "files": [
     "index.d.ts",
     "index.js",
+    "libonnxruntime.1.16.0.dylib",
     "wasi-worker-browser.mjs",
     "*.node"
   ],
