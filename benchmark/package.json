@@ -4,9 +4,9 @@
   "description": "WASM vs JavaScript 图片压缩性能对比测试",
   "type": "module",
   "scripts": {
-    "all":"pnpm run bench && pnpm run bench:detailed",
-    "bench": "tsx src/simple-compression-bench.ts",
-    "bench:detailed": "tsx src/detailed-bench.ts"
+    "benchmark":"pnpm run benchmark:simple && pnpm run benchmark:detailed",
+    "benchmark:simple": "tsx src/simple-compression-bench.ts",
+    "benchmark:detailed": "tsx src/detailed-bench.ts"
   },
   "dependencies": {
     "pixuli-wasm": "workspace:*",

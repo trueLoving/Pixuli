@@ -2,12 +2,12 @@
 
 > Pixuli 官方文档网站，提供完整的产品介绍、使用教程和技术文档
 
-这是 Pixuli 项目的官方文档网站，使用 Next.js 15+ App Router 和 MDX 构建，提供现代化的文档阅读体验。
+这是 Pixuli 项目的官方文档网站，使用 Next.js 15+ App Router 和 React 构建，提供现代化的文档阅读体验。
 
 ## 🌟 项目特色
 
 - **现代化设计** - 基于 Next.js 15+ 和 Tailwind CSS
-- **MDX 支持** - 支持 Markdown 和 React 组件混合
+- **纯 React 组件** - 使用 TypeScript 和 React 组件构建
 - **响应式布局** - 完美适配桌面和移动设备
 - **SEO 优化** - 完整的元数据和 Open Graph 支持
 - **键盘导航** - 完整的键盘快捷键支持
@@ -24,11 +24,8 @@
 ### 安装依赖
 
 ```bash
-# 使用 pnpm (推荐)
+# 使用 pnpm
 pnpm install
-
-# 或使用 npm
-npm install
 ```
 
 ### 开发模式
@@ -36,9 +33,6 @@ npm install
 ```bash
 # 启动开发服务器
 pnpm dev
-
-# 或使用 npm
-npm run dev
 ```
 
 访问 [http://localhost:3001](http://localhost:3001) 查看网站。
@@ -48,9 +42,6 @@ npm run dev
 ```bash
 # 构建静态文件
 pnpm build
-
-# 或使用 npm
-npm run build
 ```
 
 ## 📁 项目结构
@@ -63,14 +54,13 @@ docs/
 │   │   ├── layout.tsx         # 根布局
 │   │   ├── globals.css        # 全局样式
 │   │   ├── tutorial/          # 使用教程
-│   │   │   └── page.mdx
+│   │   │   └── page.tsx
 │   │   ├── keyboard/          # 键盘功能
-│   │   │   └── page.mdx
+│   │   │   └── page.tsx
 │   │   └── products/          # 产品矩阵
-│   │       └── page.mdx
-│   ├── components/            # React 组件
-│   │   └── Navigation.tsx     # 导航组件
-│   └── mdx-components.tsx     # MDX 组件样式
+│   │       └── page.tsx
+│   └── components/            # React 组件
+│       └── Navigation.tsx     # 导航组件
 ├── public/                    # 静态资源
 │   └── images/               # 图片资源
 ├── next.config.ts            # Next.js 配置
@@ -91,53 +81,52 @@ docs/
 - **@tailwindcss/typography** - 排版插件
 - **Font Awesome 6.4.0** - 图标库
 
-### 内容管理
-- **@next/mdx** - MDX 支持
-- **@mdx-js/react** - MDX React 组件
-- **remark-gfm** - GitHub 风格 Markdown
-- **rehype-highlight** - 代码高亮
+### 构建工具
+- **Turbopack** - Next.js 15 的快速构建工具
+- **PostCSS** - CSS 后处理器
+- **Autoprefixer** - CSS 前缀自动添加
 
 ## 📝 内容管理
 
 ### 添加新页面
 
 1. 在 `src/app/` 目录下创建新的文件夹
-2. 添加 `page.mdx` 文件
+2. 添加 `page.tsx` 文件
 3. 在 `Navigation.tsx` 中添加导航链接
 
 示例：
 ```bash
 mkdir src/app/new-page
-echo "# 新页面" > src/app/new-page/page.mdx
+echo "export default function NewPage() { return <div>新页面</div>; }" > src/app/new-page/page.tsx
 ```
 
-### MDX 组件样式
+### 页面组件结构
 
-所有 MDX 元素都有自定义样式，定义在 `src/mdx-components.tsx` 中：
+所有页面都使用 React 函数组件：
 
-- **标题** - 渐变色彩、边框装饰
-- **段落** - 优化的行间距
-- **列表** - 自定义项目符号
-- **代码块** - 语法高亮、窗口装饰
-- **表格** - 渐变表头、悬停效果
-- **引用** - 左侧边框、背景渐变
-
-### 自定义样式
-
-全局样式定义在 `src/app/globals.css` 中：
-
-```css
-/* 自定义 MDX 样式 */
-@layer components {
-  .heading-enhanced {
-    @apply relative;
-  }
-  
-  .code-enhanced {
-    @apply bg-gray-100 text-gray-800 px-2 py-1 rounded-md;
-  }
+```tsx
+export default function PageName() {
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="prose prose-lg max-w-none">
+        <h1>页面标题</h1>
+        <p>页面内容...</p>
+      </div>
+    </div>
+  );
 }
 ```
+
+### 样式系统
+
+使用 Tailwind CSS 的 prose 类进行内容排版：
+
+- **标题** - 自动样式和间距
+- **段落** - 优化的行间距
+- **列表** - 自定义项目符号
+- **代码块** - 语法高亮
+- **表格** - 响应式表格样式
+- **引用** - 左侧边框样式
 
 ## 🔧 开发指南
 
@@ -168,6 +157,7 @@ echo "# 新页面" > src/app/new-page/page.mdx
 - 遵循 ESLint 规则
 - 使用 Prettier 格式化代码
 - 组件使用函数式组件和 Hooks
+- 使用 Tailwind CSS 进行样式管理
 
 ### 提交规范
 
@@ -243,12 +233,12 @@ gh-pages -d .next
 export const metadata: Metadata = {
   title: "Pixuli - 智能图片管理应用",
   description: "现代化的跨平台图片管理桌面应用",
-  keywords: "图片管理,AI图片分析,桌面应用",
+  keywords: "图片管理,图片处理,桌面应用",
   openGraph: {
     type: "website",
     url: "https://pixuli-docs.vercel.app/",
     title: "Pixuli - 智能图片管理应用",
-    description: "AI驱动的智能图片分析和管理",
+    description: "智能图片处理和管理",
   },
 };
 ```
@@ -271,10 +261,10 @@ pnpm install
 pnpm build
 ```
 
-#### 2. MDX 样式不生效
-- 检查 `mdx-components.tsx` 是否正确导出
-- 确认 `useMDXComponents` 函数实现
-- 验证 Tailwind CSS 配置
+#### 2. 样式不生效
+- 检查 Tailwind CSS 配置
+- 确认 `globals.css` 正确导入
+- 验证 Tailwind 类名拼写
 
 #### 3. 图片加载失败
 - 检查 `public/images/` 目录
@@ -336,14 +326,9 @@ pnpm dev --port 3002
 
 - **项目主页**: [https://github.com/trueLoving/Pixuli](https://github.com/trueLoving/Pixuli)
 - **在线文档**: [https://pixuli-docs.vercel.app](https://pixuli-docs.vercel.app)
+- **Web 版应用**: [https://pixuli-web.vercel.app](https://pixuli-web.vercel.app)
 - **问题反馈**: [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
 - **功能建议**: [GitHub Discussions](https://github.com/trueLoving/Pixuli/discussions)
-
-## 📞 联系我们
-
-- **邮箱**: contact@pixuli.app
-- **GitHub**: [@trueLoving](https://github.com/trueLoving)
-- **Twitter**: [@PixuliApp](https://twitter.com/PixuliApp)
 
 ---
 

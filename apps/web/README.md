@@ -349,7 +349,7 @@ await octokit.rest.repos.createOrUpdateFileContents({
 | 配置导入导出 | ✅ | ✅ | 功能一致 |
 | 图片编辑 | ✅ | ✅ | 功能一致 |
 | 图片预览 | ✅ | ✅ | 功能一致 |
-| AI 分析 | ✅ | ❌ | Web 端暂不支持 |
+| AI 分析 | ❌ | ❌ | Web 端暂不支持 |
 | 模型管理 | ✅ | ❌ | Web 端暂不支持 |
 
 ## 📄 许可证

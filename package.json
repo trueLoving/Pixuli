@@ -1,6 +1,5 @@
 {
   "name": "pixuli",
-  "version": "1.1.0",
   "description": "Pixuli - 智能图片管理应用 Monorepo",
   "private": true,
   "scripts": {
@@ -8,7 +7,12 @@
     "dev:web": "pnpm run --filter pixuli-web dev",
     "build:web": "pnpm run --filter pixuli-web build",
     "dev:desktop": "pnpm run --filter pixuli-desktop dev",
-    "build:desktop": "pnpm run --filter pixuli-desktop electron:build"
+    "build:desktop": "pnpm run --filter pixuli-desktop build",
+    "docs:dev": "pnpm run --filter pixuli-docs dev",
+    "docs:build": "pnpm run --filter pixuli-docs build",
+    "benchmark":"pnpm run --filter pixuli-benchmark benchmark",
+    "lint":"echo 'todo'",
+    "test":"echo 'todo'"
   },
   "keywords": [
     "monorepo",

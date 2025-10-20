@@ -114,14 +114,14 @@ jobs:
         run: |
           echo "🚀 开始简化基准测试..."
           cd benchmark
-          pnpm run bench
+          pnpm run benchmark:simple
 
       - name: 运行详细基准测试
         if: ${{ github.event.inputs.test-type == 'detailed' || github.event.inputs.test-type == 'all' }}
         run: |
           echo "🚀 开始详细基准测试..."
           cd benchmark
-          pnpm run bench:detailed
+          pnpm run benchmark:detailed
 
       - name: 生成测试报告
         run: |

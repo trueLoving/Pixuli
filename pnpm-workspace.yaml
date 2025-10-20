@@ -3,4 +3,5 @@ packages:
   - 'packages/*'
   - 'benchmark'  
   - "docs"
+  - "server"
   

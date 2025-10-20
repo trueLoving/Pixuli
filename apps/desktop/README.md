@@ -13,8 +13,7 @@
 graph TB
     A[Pixuli Desktop] --> B[图片管理]
     A --> C[图片处理]
-    A --> D[AI 分析]
-    A --> E[云端存储]
+    A --> D[云端存储]
     
     B --> B1[智能浏览]
     B --> B2[拖拽上传]
@@ -28,57 +27,14 @@ graph TB
     C --> C4[尺寸调整]
     C --> C5[质量控制]
     
-    D --> D1[内容识别]
-    D --> D2[智能标签]
-    D --> D3[颜色分析]
-    D --> D4[多模型支持]
-    
-    E --> E1[GitHub 集成]
-    E --> E2[版本控制]
-    E --> E3[团队协作]
+    D --> D1[GitHub 集成]
+    D --> D2[版本控制]
+    D --> D3[团队协作]
     
     style A fill:#e3f2fd
     style B fill:#e8f5e8
     style C fill:#fff3e0
-    style D fill:#fce4ec
-    style E fill:#f3e5f5
-```
-
-## ✨ 主要功能
-
-```mermaid
-graph TB
-    A[Pixuli 智能图片管理] --> B[图片管理]
-    A --> C[图片处理]
-    A --> D[AI 分析]
-    A --> E[云端存储]
-    
-    B --> B1[智能浏览]
-    B --> B2[拖拽上传]
-    B --> B3[标签系统]
-    B --> B4[搜索功能]
-    B --> B5[元数据编辑]
-    
-    C --> C1[WebP 压缩]
-    C --> C2[格式转换]
-    C --> C3[批量处理]
-    C --> C4[尺寸调整]
-    C --> C5[质量控制]
-    
-    D --> D1[内容识别]
-    D --> D2[智能标签]
-    D --> D3[颜色分析]
-    D --> D4[多模型支持]
-    
-    E --> E1[GitHub 集成]
-    E --> E2[版本控制]
-    E --> E3[团队协作]
-    
-    style A fill:#e3f2fd
-    style B fill:#e8f5e8
-    style C fill:#fff3e0
-    style D fill:#fce4ec
-    style E fill:#f3e5f5
+    style D fill:#f3e5f5
 ```
 
 ## 🛠️ 技术架构
@@ -96,29 +52,19 @@ graph TB
         E[React 组件]
         F[状态管理 Zustand]
         G[UI 组件库]
-        H[路由管理]
+        H[国际化 i18n]
     end
     
     subgraph "业务逻辑层"
         I[图片管理服务]
-        J[AI 分析服务]
-        K[图片处理服务]
-        L[GitHub 存储服务]
-    end
-    
-    subgraph "AI 模型层"
-        M[TensorFlow 处理器]
-        N[TensorFlow Lite 处理器]
-        O[ONNX 处理器]
-        P[本地 LLM 处理器]
-        Q[远程 API 处理器]
+        J[图片处理服务]
+        K[GitHub 存储服务]
     end
     
     subgraph "核心模块"
-        R[pixuli-wasm]
-        S[图片处理引擎]
-        T[AI 分析引擎]
-        U[格式转换引擎]
+        L[pixuli-wasm]
+        M[图片处理引擎]
+        N[格式转换引擎]
     end
     
     A --> B
@@ -127,24 +73,12 @@ graph TB
     E --> G
     E --> H
     
-    I --> R
+    I --> L
     J --> M
-    J --> N
-    J --> O
-    J --> P
-    J --> Q
-    K --> S
-    L --> U
+    K --> N
     
-    M --> T
-    N --> T
-    O --> T
-    P --> T
-    Q --> T
-    
-    R --> S
-    R --> T
-    R --> U
+    L --> M
+    L --> N
     
     A --> C
     A --> D
@@ -153,17 +87,8 @@ graph TB
     style B fill:#e8f5e8
     style E fill:#fff3e0
     style I fill:#fce4ec
-    style R fill:#f3e5f5
+    style L fill:#f3e5f5
 ```
-
-## 🤖 AI 模型支持
-
-支持 5 种 AI 模型类型：
-- **TensorFlow** (`.pb`, `.pbtxt`, `.json`, `.bin`, `.ckpt`, `.h5`)
-- **TensorFlow Lite** (`.tflite`)
-- **ONNX** (`.onnx`, `.ort`)
-- **本地 LLM** (Llama、Mistral 等)
-- **远程 API** (OpenAI、Qwen、Claude、Gemini 等)
 
 ## 🚀 快速开始
 
@@ -181,22 +106,14 @@ cd pixuli
 # 安装所有依赖
 pnpm install
 
-# 开发模式
-pnpm run dev
+# 构建 wasm 模块
+pnpm run build:wasm
 
-# 构建应用
-pnpm run build
+# 桌面端：开发模式
+pnpm run dev:desktop
 
-# Electron 开发模式
-pnpm run electron:dev
-
-# 构建 Electron 应用
-pnpm run electron:build
-
-# 分发应用
-pnpm run dist
-pnpm run dist:mac
-pnpm run dist:win
+# 桌面端：应用构建
+pnpm run build:desktop
 ```
 
 ### 桌面应用特性
@@ -212,26 +129,61 @@ pnpm run dist:win
 **支持平台**：
 - 🍎 macOS (x64, ARM64)
 - 🪟 Windows (x64)
-- 🐧 Linux (x64)
 
 ## 📦 项目结构
 
 ```
 apps/desktop/
-├── src/                    # 源代码
-│   ├── components/         # React 组件
-│   ├── hooks/             # 自定义 Hooks
-│   ├── services/          # 业务服务
-│   ├── stores/            # 状态管理
-│   ├── types/             # 类型定义
-│   └── utils/             # 工具函数
-├── electron/              # Electron 主进程
-│   ├── main/              # 主进程代码
-│   └── preload/           # 预加载脚本
-├── dist/                  # 构建输出
-├── dist-electron/         # Electron 构建输出
-└── release/               # 分发文件
+├── src/                           # 源代码
+│   ├── components/                # React 组件
+│   │   ├── image-compression/    # 图片压缩组件
+│   │   ├── image-format-conversion/ # 格式转换组件
+│   │   └── LanguageSwitcher.tsx   # 语言切换器
+│   ├── config/                    # 配置文件
+│   ├── hooks/                     # 自定义 Hooks
+│   ├── i18n/                      # 国际化配置
+│   ├── services/                  # 业务服务
+│   ├── stores/                    # 状态管理
+│   ├── types/                     # 类型定义
+│   └── utils/                     # 工具函数
+├── electron/                      # Electron 主进程
+│   ├── main/                      # 主进程代码
+│   │   ├── services/             # 主进程服务
+│   │   ├── index.ts              # 主进程入口
+│   │   └── update.ts             # 自动更新
+│   └── preload/                   # 预加载脚本
+├── build/                         # 构建资源
+├── dist/                          # 构建输出
+├── dist-electron/                 # Electron 构建输出
+├── release/                       # 分发文件
+├── electron-builder.json         # Electron 构建配置
+├── vite.config.ts                # Vite 配置
+└── tailwind.config.js            # Tailwind CSS 配置
 ```
+
+## 🔧 开发指南
+
+### 脚本命令
+
+- `pnpm run dev` - 启动开发服务器
+- `pnpm run build` - 构建应用并打包 Electron 应用
+
+### 配置文件
+
+- **electron-builder.json** - Electron 应用构建配置
+- **vite.config.ts** - Vite 构建配置
+- **tailwind.config.js** - Tailwind CSS 配置
+- **tsconfig.json** - TypeScript 配置
+
+### 核心依赖
+
+- **Electron** - 桌面应用框架
+- **React** - 用户界面库
+- **TypeScript** - 类型安全的 JavaScript
+- **Vite** - 构建工具
+- **Tailwind CSS** - CSS 框架
+- **Zustand** - 状态管理
+- **pixuli-wasm** - 核心 WASM 模块
 
 ## 📄 许可证
 

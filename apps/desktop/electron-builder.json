@@ -10,6 +10,10 @@
   "buildDependenciesFromSource": false,
   "nodeGypRebuild": false,
   "npmRebuild": false,
+  "removePackageScripts": true,
+  "removePackageKeywords": true,
+  "extraResources": [],
+  "extraFiles": [],
   "files": [
     "dist/**/*",
     "dist-electron/**/*",

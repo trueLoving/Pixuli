@@ -46,13 +46,13 @@ Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。
 ### 构建命令
 ```bash
 # 开发构建
-npm run build:debug
+pnpm run build:debug
 
 # 生产构建
-npm run build
+pnpm run build
 
 # 查看构建产物
-npm run artifacts
+pnpm run artifacts
 ```
 
 ## 主要功能

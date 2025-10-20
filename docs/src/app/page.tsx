@@ -67,14 +67,14 @@ export default function Home() {
               <span className="gradient-text">重新定义</span>
             </h1>
             <p className="hero-description">
-              Pixuli 是一款现代化的跨平台图片管理桌面应用，基于 AI 技术提供智能图片分析、自动标签生成、批量处理等功能，让您的图片库管理变得简单高效。
+              Pixuli 是一款现代化的跨平台图片管理应用，提供桌面端和 Web 端两种使用方式。支持智能图片处理、格式转换、批量操作和云端存储等功能，让您的图片库管理变得简单高效。
             </p>
             <div className="hero-buttons">
               <a href="https://github.com/trueLoving/Pixuli/releases" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
                 <i className="fas fa-download"></i>
                 立即下载
               </a>
-              <a href="#features" className="btn btn-secondary">
+              <a href="/products" className="btn btn-secondary">
                 <i className="fas fa-play"></i>
                 了解更多
               </a>
@@ -89,7 +89,7 @@ export default function Home() {
                 <span className="stat-label">用户满意度</span>
               </div>
               <div className="stat">
-                <span className="stat-number">2</span>
+                <span className="stat-number">3</span>
                 <span className="stat-label">平台支持</span>
               </div>
             </div>
@@ -99,16 +99,16 @@ export default function Home() {
               <Image src="/images/app-preview.png" alt="Pixuli 应用预览" width={600} height={400} className="preview-image" />
               <div className="floating-elements">
                 <div className="floating-card card-1">
-                  <i className="fas fa-magic"></i>
-                  <span>AI 智能分析</span>
+                  <i className="fas fa-compress"></i>
+                  <span>智能压缩</span>
                 </div>
                 <div className="floating-card card-2">
-                  <i className="fas fa-tags"></i>
-                  <span>自动标签</span>
+                  <i className="fas fa-exchange-alt"></i>
+                  <span>格式转换</span>
                 </div>
                 <div className="floating-card card-3">
                   <i className="fas fa-cloud"></i>
-                  <span>云端同步</span>
+                  <span>云端存储</span>
                 </div>
               </div>
             </div>
@@ -128,20 +128,20 @@ export default function Home() {
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">
-                <i className="fas fa-brain"></i>
+                <i className="fas fa-desktop"></i>
               </div>
-              <h3 className="feature-title">AI 智能分析</h3>
+              <h3 className="feature-title">桌面端应用</h3>
               <p className="feature-description">
-                基于 TensorFlow.js 和 GGUF 模型，智能识别图片内容，自动生成描述和标签
+                基于 Electron 构建的桌面应用，支持 Windows、macOS 和 Linux，提供完整的本地文件系统访问
               </p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">
-                <i className="fas fa-tags"></i>
+                <i className="fas fa-globe"></i>
               </div>
-              <h3 className="feature-title">自动标签系统</h3>
+              <h3 className="feature-title">Web 端应用</h3>
               <p className="feature-description">
-                智能分析图片内容，自动生成相关标签，让图片分类变得简单高效
+                基于 React 的 Web 应用，支持在线图片管理、云端存储和团队协作
               </p>
             </div>
             <div className="feature-card">
@@ -159,7 +159,7 @@ export default function Home() {
               </div>
               <h3 className="feature-title">智能搜索</h3>
               <p className="feature-description">
-                基于 AI 的语义搜索，通过描述快速找到您需要的图片
+                支持按文件名、标签和描述搜索，快速定位您需要的图片
               </p>
             </div>
             <div className="feature-card">
@@ -177,7 +177,7 @@ export default function Home() {
               </div>
               <h3 className="feature-title">跨平台支持</h3>
               <p className="feature-description">
-                支持 Windows 和 macOS，一次开发，多平台使用
+                支持 Windows、macOS、Linux 桌面端和 Web 浏览器，一次开发，多平台使用
               </p>
             </div>
             {/* <div className="feature-card">
@@ -229,6 +229,17 @@ export default function Home() {
                 下载 macOS 版
               </a>
             </div>
+            <div className="download-card">
+              <div className="platform-icon">
+                <i className="fas fa-globe"></i>
+              </div>
+              <h3 className="platform-name">Web 版</h3>
+              <p className="platform-description">支持所有现代浏览器</p>
+              <a href="https://pixuli-web.vercel.app/" className="download-btn" target="_blank" rel="noopener noreferrer">
+                <i className="fas fa-external-link-alt"></i>
+                访问 Web 版
+              </a>
+            </div>
           </div>
           <div className="download-info">
             <p className="version-info">当前版本: v1.1.0</p>
@@ -246,10 +257,10 @@ export default function Home() {
             <div className="about-text">
               <h2 className="section-title">关于 Pixuli</h2>
               <p className="about-description">
-                Pixuli 诞生于对高效图片管理的需求。我们相信，通过 AI 技术的力量，可以让图片管理变得更加智能和便捷。
+                Pixuli 诞生于对高效图片管理的需求。我们相信，通过现代化的技术栈，可以让图片管理变得更加智能和便捷。
               </p>
               <p className="about-description">
-                基于 Electron + React + TypeScript 构建，Pixuli 不仅提供了现代化的用户界面，还集成了先进的 AI 技术，包括 TensorFlow.js 和 GGUF 模型支持，为您带来前所未有的图片管理体验。
+                基于 Electron + React + TypeScript + Rust 构建，Pixuli 提供了桌面端和 Web 端两种使用方式，集成了智能图片处理、格式转换、批量操作等功能，为您带来前所未有的图片管理体验。
               </p>
               <div className="tech-stack">
                 <h3>技术栈</h3>
@@ -268,10 +279,6 @@ export default function Home() {
                   <div className="tech-item">
                     <span className="tech-name">TypeScript</span>
                     <span className="tech-desc">类型安全的JavaScript</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">TensorFlow.js</span>
-                    <span className="tech-desc">浏览器端机器学习</span>
                   </div>
                   <div className="tech-item">
                     <span className="tech-name">Rust + WebAssembly</span>
@@ -319,19 +326,19 @@ export default function Home() {
             <div className="footer-section">
               <h3 className="footer-title">产品</h3>
               <ul className="footer-links">
-                <li><a href="#features">功能特色</a></li>
+                <li><a href="/products">功能特色</a></li>
                 <li><a href="https://github.com/trueLoving/Pixuli/releases" target="_blank" rel="noopener noreferrer">下载</a></li>
                 <li><a href="https://github.com/trueLoving/Pixuli/releases" target="_blank" rel="noopener noreferrer">更新日志</a></li>
-                <li><a href="#">路线图</a></li>
+                <li><a href="/tutorial">使用教程</a></li>
               </ul>
             </div>
             <div className="footer-section">
               <h3 className="footer-title">支持</h3>
               <ul className="footer-links">
-                <li><a href="#">帮助文档</a></li>
-                <li><a href="#">常见问题</a></li>
+                <li><a href="/tutorial">帮助文档</a></li>
+                <li><a href="/keyboard">键盘快捷键</a></li>
                 <li><a href="https://github.com/trueLoving/Pixuli/issues" target="_blank" rel="noopener noreferrer">问题反馈</a></li>
-                <li><a href="#">联系我们</a></li>
+                <li><a href="https://github.com/trueLoving/Pixuli/discussions" target="_blank" rel="noopener noreferrer">社区讨论</a></li>
               </ul>
             </div>
             <div className="footer-section">
