@@ -73,13 +73,6 @@ export default defineConfig(({ command }) => {
       sourcemap: false,
       rollupOptions: {
         external: [
-          '@llama-node/llama-cpp',
-          '@llama-node/core',
-          '@llama-node/llama-cpp.win32-x64-msvc',
-          '@llama-node/llama-cpp.darwin-x64',
-          '@llama-node/llama-cpp.darwin-arm64',
-          '@llama-node/llama-cpp.linux-x64-musl',
-          '@llama-node/llama-cpp.linux-x64-gnu',
           'pixuli-wasm'
         ],
         output: {

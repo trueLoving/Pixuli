@@ -509,3 +509,7 @@ export class GitHubService {
     return imageExtensions.includes(extension)
   }
 } 
+
+export function registerGithubHandlers() {
+  new GitHubService()
+}

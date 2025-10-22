@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Globe, Check } from 'lucide-react'
-import { useI18n } from '../hooks/useI18n'
+import { useI18n } from '../../hooks/useI18n'
 
 const LanguageSwitcher: React.FC = () => {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } = useI18n()

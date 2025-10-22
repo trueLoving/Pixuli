@@ -1,19 +1,25 @@
 import { create } from 'zustand'
-import { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@packages/ui/src'
+import { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, UpyunConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@packages/ui/src'
 import { GitHubStorageService } from '@/services/githubStorage'
+import { UpyunStorageService } from '@/services/upyunStorage'
 import { loadGitHubConfig, saveGitHubConfig, clearGitHubConfig } from '@/config/github'
+import { loadUpyunConfig, saveUpyunConfig, clearUpyunConfig } from '@/config/upyun'
 
 interface ImageState {
   images: ImageItem[]
   loading: boolean
   error: string | null
   githubConfig: GitHubConfig | null
-  storageService: GitHubStorageService | null
+  upyunConfig: UpyunConfig | null
+  storageService: GitHubStorageService | UpyunStorageService | null
+  storageType: 'github' | 'upyun' | null
   batchUploadProgress: BatchUploadProgress | null
   
   // Actions
   setGitHubConfig: (config: GitHubConfig) => void
   clearGitHubConfig: () => void
+  setUpyunConfig: (config: UpyunConfig) => void
+  clearUpyunConfig: () => void
   initializeStorage: () => void
   loadImages: () => Promise<void>
   uploadImage: (uploadData: ImageUploadData) => Promise<void>
@@ -30,40 +36,86 @@ interface ImageState {
 
 export const useImageStore = create<ImageState>((set, get) => {
   // 在store创建时加载配置并初始化存储服务
-  const initialConfig = loadGitHubConfig()
+  const initialGitHubConfig = loadGitHubConfig()
+  const initialUpyunConfig = loadUpyunConfig()
+  
+  // 确定当前使用的存储类型
+  const storageType = initialUpyunConfig ? 'upyun' : (initialGitHubConfig ? 'github' : null)
+  const initialConfig = initialUpyunConfig || initialGitHubConfig
   
   return {
     images: [],
     loading: false,
     error: null,
-    githubConfig: initialConfig,
-    storageService: initialConfig ? new GitHubStorageService(initialConfig) : null,
+    githubConfig: initialGitHubConfig,
+    upyunConfig: initialUpyunConfig,
+    storageService: initialConfig ? (storageType === 'upyun' ? new UpyunStorageService(initialUpyunConfig!) : new GitHubStorageService(initialGitHubConfig!)) : null,
+    storageType,
     batchUploadProgress: null,
 
     setGitHubConfig: (config: GitHubConfig) => {
       set({ githubConfig: config })
       saveGitHubConfig(config)
+      // 切换到 GitHub 存储
+      set({ storageType: 'github' })
       get().initializeStorage()
     },
 
+    clearGitHubConfig: () => {
+      set({ githubConfig: null })
+      clearGitHubConfig()
+      // 如果当前使用的是 GitHub，清除存储服务
+      const { storageType } = get()
+      if (storageType === 'github') {
+        set({ storageService: null, storageType: null })
+      }
+    },
+
+    setUpyunConfig: (config: UpyunConfig) => {
+      set({ upyunConfig: config })
+      saveUpyunConfig(config)
+      // 切换到又拍云存储
+      set({ storageType: 'upyun' })
+      get().initializeStorage()
+    },
+
+    clearUpyunConfig: () => {
+      set({ upyunConfig: null })
+      clearUpyunConfig()
+      // 如果当前使用的是又拍云，清除存储服务
+      const { storageType } = get()
+      if (storageType === 'upyun') {
+        set({ storageService: null, storageType: null })
+      }
+    },
+
     initializeStorage: () => {
-      const { githubConfig } = get()
-      if (githubConfig) {
+      const { githubConfig, upyunConfig, storageType } = get()
+      
+      if (storageType === 'upyun' && upyunConfig) {
+        try {
+          const storageService = new UpyunStorageService(upyunConfig)
+          set({ storageService })
+        } catch (error) {
+          console.error('Failed to initialize upyun storage service:', error)
+          set({ error: '初始化又拍云存储服务失败' })
+        }
+      } else if (storageType === 'github' && githubConfig) {
         try {
           const storageService = new GitHubStorageService(githubConfig)
           set({ storageService })
         } catch (error) {
-          console.error('Failed to initialize storage service:', error)
-          set({ error: '初始化存储服务失败' })
+          console.error('Failed to initialize github storage service:', error)
+          set({ error: '初始化GitHub存储服务失败' })
         }
       }
     },
 
     loadImages: async () => {
-      const { storageService } = get()
+      const { storageService, storageType } = get()
       
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' })
+        set({ error: `${storageType === 'upyun' ? '又拍云' : 'GitHub'} 配置未初始化` })
         return
       }
 
@@ -323,16 +375,6 @@ export const useImageStore = create<ImageState>((set, get) => {
 
   setBatchUploadProgress: (progress: BatchUploadProgress | null) => {
     set({ batchUploadProgress: progress })
-  },
-
-  clearGitHubConfig: () => {
-    clearGitHubConfig()
-    set({ 
-      githubConfig: null, 
-      storageService: null, 
-      images: [],
-      error: null 
-    })
-  },
+  }
   }
 }) 

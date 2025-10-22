@@ -244,6 +244,7 @@ export const COMMON_SHORTCUTS = {
   // 特殊字符
   SLASH: '/',
   COMMA: ',',
+  PERIOD: '.',
 } as const
 
 // 快捷键分类

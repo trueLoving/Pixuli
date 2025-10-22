@@ -1,43 +1,46 @@
-import AIAnalysisModal from '@/components/ai-analysis/AIAnalysisModal'
-import AIModelManager from '@/components/ai-analysis/AIModelManager'
-import ImageCompression from '@/components/image-compression/ImageCompression'
-import ImageFormatConversion from '@/components/image-format-conversion/ImageFormatConversion'
-import { useImageStore } from '@/stores/imageStore'
 import {
   COMMON_SHORTCUTS,
   GitHubConfigModal,
   ImageBrowser,
-  ImageUpload,
   ImageSearch,
+  ImageUpload,
   KeyboardHelpModal,
   SHORTCUT_CATEGORIES,
+  UpyunConfigModal,
   formatFileSize,
   getImageDimensionsFromUrl,
   keyboardManager
 } from '@packages/ui/src'
-import { ArrowRightLeft, HelpCircle, RefreshCw, Settings, Zap, Brain } from 'lucide-react'
+import { ArrowRightLeft, HelpCircle, RefreshCw, Settings, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import './App.css'
+import { AIAnalysisModal, AIModelManager, ImageCompression, ImageFormatConversion } from './components'
+import { useImageStore } from './stores/imageStore'
 
 function App() {
-  const { 
-    images, 
-    loading, 
-    error, 
-    githubConfig, 
-    loadImages, 
+  const {
+    images,
+    loading,
+    error,
+    githubConfig,
+    upyunConfig,
+    storageType,
+    loadImages,
     clearError,
     setGitHubConfig,
     clearGitHubConfig,
+    setUpyunConfig,
+    clearUpyunConfig,
     uploadImage,
     uploadMultipleImages,
     batchUploadProgress,
     deleteImage,
     updateImage
   } = useImageStore()
-  
+
   const [showConfigModal, setShowConfigModal] = useState(false)
+  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false)
   const [showCompression, setShowCompression] = useState(false)
   const [showFormatConversion, setShowFormatConversion] = useState(false)
   const [showAIModelManager, setShowAIModelManager] = useState(false)
@@ -55,6 +58,7 @@ function App() {
         { description: '显示键盘快捷键帮助', key: 'F1' },
         { description: '刷新图片列表', key: 'F5' },
         { description: '打开GitHub配置', key: ',', ctrlKey: true },
+        { description: '打开又拍云配置', key: '.', ctrlKey: true },
         { description: '聚焦搜索框', key: '/' },
         { description: '切换视图模式', key: 'V', ctrlKey: true }
       ]
@@ -64,7 +68,7 @@ function App() {
       shortcuts: [
         { description: '打开图片压缩工具', key: 'C', ctrlKey: true },
         { description: '打开图片格式转换', key: 'F', ctrlKey: true },
-        { description: '打开AI图片分析', key: 'A', ctrlKey: true }
+        // { description: '打开AI图片分析', key: 'A', ctrlKey: true }
       ]
     },
     {
@@ -94,6 +98,14 @@ function App() {
 
   const handleCloseConfigModal = useCallback(() => {
     setShowConfigModal(false)
+  }, [])
+
+  const handleOpenUpyunConfigModal = useCallback(() => {
+    setShowUpyunConfigModal(true)
+  }, [])
+
+  const handleCloseUpyunConfigModal = useCallback(() => {
+    setShowUpyunConfigModal(false)
   }, [])
 
   const handleOpenCompression = useCallback(() => {
@@ -159,18 +171,18 @@ function App() {
 
   // 初始化存储服务
   useEffect(() => {
-    if (githubConfig) {
+    if (githubConfig || upyunConfig) {
       // 确保存储服务已初始化
       const { initializeStorage } = useImageStore.getState()
       initializeStorage()
       handleLoadImages()
     }
-  }, [githubConfig, handleLoadImages])
+  }, [githubConfig, upyunConfig, handleLoadImages])
 
   // 页面加载时初始化
   useEffect(() => {
-    const { githubConfig, initializeStorage } = useImageStore.getState()
-    if (githubConfig && !useImageStore.getState().storageService) {
+    const { githubConfig, upyunConfig, initializeStorage } = useImageStore.getState()
+    if ((githubConfig || upyunConfig) && !useImageStore.getState().storageService) {
       initializeStorage()
     }
   }, [])
@@ -184,6 +196,7 @@ function App() {
         description: '关闭当前模态框',
         action: () => {
           if (showConfigModal) handleCloseConfigModal()
+          else if (showUpyunConfigModal) handleCloseUpyunConfigModal()
           else if (showCompression) handleCloseCompression()
           else if (showFormatConversion) handleCloseFormatConversion()
           else if (showAIModelManager) handleCloseAIModelManager()
@@ -204,7 +217,7 @@ function App() {
         action: handleLoadImages,
         category: SHORTCUT_CATEGORIES.GENERAL
       },
-      
+
       // 功能快捷键
       {
         key: COMMON_SHORTCUTS.C,
@@ -234,7 +247,14 @@ function App() {
         action: handleOpenConfigModal,
         category: SHORTCUT_CATEGORIES.GENERAL
       },
-      
+      {
+        key: COMMON_SHORTCUTS.PERIOD,
+        ctrlKey: true,
+        description: '打开又拍云配置',
+        action: handleOpenUpyunConfigModal,
+        category: SHORTCUT_CATEGORIES.GENERAL
+      },
+
       // 搜索快捷键
       {
         key: COMMON_SHORTCUTS.SLASH,
@@ -267,7 +287,7 @@ function App() {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
     }
   }, [
-    showConfigModal, showCompression, showFormatConversion, 
+    showConfigModal, showCompression, showFormatConversion,
     showAIModelManager, showAIAnalysis, showKeyboardHelp,
     handleCloseConfigModal, handleCloseCompression, handleCloseFormatConversion,
     handleCloseAIModelManager, handleCloseAIAnalysis, handleCloseKeyboardHelp,
@@ -278,18 +298,18 @@ function App() {
   // 过滤图片
   const filteredImages = images.filter(image => {
     const matchesSearch = image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         image.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesTags = selectedTags.length === 0 || 
-                       selectedTags.some(tag => image.tags?.includes(tag))
-    
+      image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesTags = selectedTags.length === 0 ||
+      selectedTags.some(tag => image.tags?.includes(tag))
+
     return matchesSearch && matchesTags
   })
 
   // 获取所有标签
   const allTags = Array.from(new Set(images.flatMap(img => img.tags || [])))
 
-  if (!githubConfig) {
+  if (!githubConfig && !upyunConfig) {
     return (
       <div className="h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center w-full max-w-md">
@@ -298,13 +318,23 @@ function App() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 Pixuli</h1>
           <p className="text-gray-600 mb-8 text-lg">专业的图片管理与存储解决方案</p>
-          <p className="text-gray-500 mb-6 text-base">请先配置 GitHub 仓库信息以开始使用</p>
-          <button
-            onClick={handleOpenConfigModal}
-            className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            配置 GitHub
-          </button>
+          <p className="text-gray-500 mb-6 text-base">请选择存储服务以开始使用</p>
+
+          <div className="space-y-4">
+            <button
+              onClick={handleOpenConfigModal}
+              className="w-full px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              配置 GitHub
+            </button>
+
+            {/* <button
+              onClick={handleOpenUpyunConfigModal}
+              className="w-full px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              配置又拍云
+            </button> */}
+          </div>
         </div>
 
         {/* GitHub 配置模态框 */}
@@ -314,6 +344,16 @@ function App() {
           githubConfig={githubConfig}
           onSaveConfig={handleSaveConfig}
           onClearConfig={handleClearConfig}
+        />
+
+        {/* 又拍云配置模态框 */}
+        <UpyunConfigModal
+          isOpen={showUpyunConfigModal}
+          onClose={handleCloseUpyunConfigModal}
+          upyunConfig={upyunConfig}
+          onSaveConfig={setUpyunConfig}
+          onClearConfig={clearUpyunConfig}
+          platform="desktop"
         />
 
         {/* 图片压缩模态框 */}
@@ -333,10 +373,15 @@ function App() {
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold text-gray-900">Pixuli</h1>
               <div className="text-sm text-gray-500 hidden sm:block">
-                仓库: {githubConfig.owner}/{githubConfig.repo}
+                {storageType === 'github' && githubConfig && (
+                  <>仓库: {githubConfig.owner}/{githubConfig.repo}</>
+                )}
+                {storageType === 'upyun' && upyunConfig && (
+                  <>又拍云: {upyunConfig.bucket}</>
+                )}
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleOpenCompression}
@@ -353,20 +398,32 @@ function App() {
                 <ArrowRightLeft className="w-5 h-5" />
               </button>
               {/* 发现有问题，先暂时注释掉，等思路梳理清楚功能稳定后再恢复 */}
-              <button
+              {/* <button
                 onClick={handleOpenAIAnalysis}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title="AI 图片分析 (Ctrl+A)"
               >
                 <Brain className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleOpenConfigModal}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title="GitHub 配置 (Ctrl+,)"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
+              </button> */}
+
+              {storageType === 'github' && githubConfig && (
+                <button
+                  onClick={handleOpenConfigModal}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  title="GitHub 配置 (Ctrl+,)"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              )}
+              {storageType === 'upyun' && upyunConfig && (
+                <button
+                  onClick={handleOpenUpyunConfigModal}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
+                  title="又拍云配置 (Ctrl+.)"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              )}
               <button
                 onClick={handleLoadImages}
                 disabled={loading}
@@ -416,7 +473,7 @@ function App() {
 
           {/* 图片上传区域 */}
           <div className="mb-4">
-            <ImageUpload 
+            <ImageUpload
               onUploadImage={uploadImage}
               onUploadMultipleImages={uploadMultipleImages}
               loading={loading}
@@ -439,7 +496,7 @@ function App() {
 
           {/* 图片浏览 */}
           <div className="min-h-0">
-            <ImageBrowser 
+            <ImageBrowser
               images={filteredImages}
               onDeleteImage={handleDeleteImage}
               onUpdateImage={handleUpdateImage}
@@ -447,7 +504,7 @@ function App() {
               formatFileSize={formatFileSize}
             />
           </div>
-          
+
 
         </div>
       </main>
@@ -459,6 +516,16 @@ function App() {
         githubConfig={githubConfig}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
+      />
+
+      {/* 又拍云配置模态框 */}
+      <UpyunConfigModal
+        isOpen={showUpyunConfigModal}
+        onClose={handleCloseUpyunConfigModal}
+        upyunConfig={upyunConfig}
+        onSaveConfig={setUpyunConfig}
+        onClearConfig={clearUpyunConfig}
+        platform="desktop"
       />
 
       {/* 图片压缩模态框 */}

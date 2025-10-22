@@ -1,10 +1,10 @@
-import { app, ipcMain } from 'electron'
-import { createRequire } from 'node:module'
+import { app, ipcMain } from 'electron';
 import type {
   ProgressInfo,
   UpdateDownloadedEvent,
   UpdateInfo,
-} from 'electron-updater'
+} from 'electron-updater';
+import { createRequire } from 'node:module';
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater');
 

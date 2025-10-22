@@ -1,4 +1,77 @@
 import { GitHubUploadParams, GitHubUploadResponse, GitHubDeleteParams, GitHubGetListParams, GitHubUpdateMetadataParams } from './image'
+import { UpyunConfig } from '@packages/ui/src'
+
+// GitHub API 参数类型
+export interface GitHubUploadParams {
+  owner: string
+  repo: string
+  path: string
+  branch: string
+  fileName: string
+  content: string // base64 content
+  description?: string
+  tags?: string[]
+}
+
+export interface GitHubDeleteParams {
+  owner: string
+  repo: string
+  path: string
+  branch: string
+  fileName: string
+}
+
+export interface GitHubGetListParams {
+  owner: string
+  repo: string
+  path: string
+  branch: string
+}
+
+export interface GitHubUpdateMetadataParams {
+  owner: string
+  repo: string
+  path: string
+  branch: string
+  fileName: string
+  metadata: any
+  oldFileName?: string
+}
+
+// GitHub API 响应类型
+export interface GitHubUploadResponse {
+  sha?: string
+  downloadUrl?: string
+  htmlUrl?: string
+}
+
+export interface GitHubDeleteResponse {
+  success: boolean
+  error?: string
+}
+
+export interface GitHubGetListResponse {
+  success: boolean
+  files?: Array<{
+    sha: string
+    name: string
+    downloadUrl: string
+    htmlUrl: string
+    size: number
+    width: number
+    height: number
+    tags: string[]
+    description: string
+    createdAt: string
+    updatedAt: string
+  }>
+  error?: string
+}
+
+export interface GitHubUpdateMetadataResponse {
+  success: boolean
+  error?: string
+}
 
 // Electron API 类型定义
 export interface ElectronAPI {
@@ -7,6 +80,61 @@ export interface ElectronAPI {
   githubGetList: (params: GitHubGetListParams) => Promise<any[]>
   githubUpdateMetadata: (params: GitHubUpdateMetadataParams) => Promise<void>
   githubSetAuth: (token: string) => Promise<{ success: boolean; error?: string }>
+  
+  // Upyun API
+  upyunUpload: (params: UpyunUploadParams) => Promise<UpyunUploadResponse>
+  upyunDelete: (params: UpyunDeleteParams) => Promise<UpyunDeleteResponse>
+  upyunGetList: (params: UpyunGetListParams) => Promise<UpyunGetListResponse>
+  upyunTest: (config: UpyunConfig) => Promise<UpyunTestResponse>
+}
+
+// Upyun API 参数类型
+export interface UpyunUploadParams {
+  config: UpyunConfig
+  fileName: string
+  content: string // base64 content
+  description?: string
+  tags?: string[]
+}
+
+export interface UpyunDeleteParams {
+  config: UpyunConfig
+  fileName: string
+}
+
+export interface UpyunGetListParams {
+  config: UpyunConfig
+}
+
+// Upyun API 响应类型
+export interface UpyunUploadResponse {
+  success: boolean
+  url?: string
+  path?: string
+  result?: any
+  error?: string
+}
+
+export interface UpyunDeleteResponse {
+  success: boolean
+  error?: string
+}
+
+export interface UpyunGetListResponse {
+  success: boolean
+  files?: Array<{
+    name: string
+    size: number
+    time: number
+    url: string
+  }>
+  error?: string
+}
+
+export interface UpyunTestResponse {
+  success: boolean
+  usage?: number
+  error?: string
 }
 
 // Buffer API 类型定义
