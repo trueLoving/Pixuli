@@ -1,7 +1,11 @@
-export { useVirtualScroll } from './useVirtualScroll'
-export { useLazyLoad } from './useLazyLoad'
-export { useInfiniteScroll } from './useInfiniteScroll'
-export { useImageDimensions, useImageInfo, useImageDimensionsFromUrl } from './useImageDimensions'
+export { useVirtualScroll } from './useVirtualScroll';
+export { useLazyLoad } from './useLazyLoad';
+export { useInfiniteScroll } from './useInfiniteScroll';
+export {
+  useImageDimensions,
+  useImageInfo,
+  useImageDimensionsFromUrl,
+} from './useImageDimensions';
 export {
   useKeyboard,
   useKeyboardShortcut,
@@ -13,5 +17,5 @@ export {
   useLetterKeys,
   isEditableElement,
   getKeyboardTarget,
-  shouldIgnoreKeyboardEvent
-} from './useKeyboard'
+  shouldIgnoreKeyboardEvent,
+} from './useKeyboard';

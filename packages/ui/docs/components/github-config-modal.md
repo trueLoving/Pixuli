@@ -5,32 +5,30 @@ GitHub 配置模态框，用于配置 GitHub 存储，支持配置导入/导出�
 ## 📋 基本用法
 
 ```tsx
-import { GitHubConfigModal } from 'pixuli-ui/src'
+import { GitHubConfigModal } from 'pixuli-ui/src';
 
 function App() {
-  const [showConfig, setShowConfig] = useState(false)
-  const [githubConfig, setGithubConfig] = useState<GitHubConfig | null>(null)
-  
+  const [showConfig, setShowConfig] = useState(false);
+  const [githubConfig, setGithubConfig] = useState<GitHubConfig | null>(null);
+
   const handleSaveConfig = (config: GitHubConfig) => {
     // 保存配置到本地存储或状态管理
-    setGithubConfig(config)
-    localStorage.setItem('githubConfig', JSON.stringify(config))
-    setShowConfig(false)
-  }
-  
+    setGithubConfig(config);
+    localStorage.setItem('githubConfig', JSON.stringify(config));
+    setShowConfig(false);
+  };
+
   const handleClearConfig = () => {
     // 清除配置
-    setGithubConfig(null)
-    localStorage.removeItem('githubConfig')
-    setShowConfig(false)
-  }
-  
+    setGithubConfig(null);
+    localStorage.removeItem('githubConfig');
+    setShowConfig(false);
+  };
+
   return (
     <div>
-      <button onClick={() => setShowConfig(true)}>
-        配置 GitHub
-      </button>
-      
+      <button onClick={() => setShowConfig(true)}>配置 GitHub</button>
+
       <GitHubConfigModal
         isOpen={showConfig}
         onClose={() => setShowConfig(false)}
@@ -40,21 +38,21 @@ function App() {
         platform="web"
       />
     </div>
-  )
+  );
 }
 ```
 
 ## 🔧 Props
 
-| 属性 | 类型 | 必需 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `isOpen` | `boolean` | ✅ | - | 是否显示模态框 |
-| `onClose` | `() => void` | ✅ | - | 关闭回调 |
-| `githubConfig` | `GitHubConfig \| null` | ❌ | - | 当前配置 |
-| `onSaveConfig` | `(config: GitHubConfig) => void` | ✅ | - | 保存配置回调 |
-| `onClearConfig` | `() => void` | ✅ | - | 清除配置回调 |
-| `platform` | `'web' \| 'desktop'` | ❌ | `'web'` | 平台类型 |
-| `t` | `(key: string) => string` | ❌ | - | 翻译函数 |
+| 属性            | 类型                             | 必需 | 默认值  | 说明           |
+| --------------- | -------------------------------- | ---- | ------- | -------------- |
+| `isOpen`        | `boolean`                        | ✅   | -       | 是否显示模态框 |
+| `onClose`       | `() => void`                     | ✅   | -       | 关闭回调       |
+| `githubConfig`  | `GitHubConfig \| null`           | ❌   | -       | 当前配置       |
+| `onSaveConfig`  | `(config: GitHubConfig) => void` | ✅   | -       | 保存配置回调   |
+| `onClearConfig` | `() => void`                     | ✅   | -       | 清除配置回调   |
+| `platform`      | `'web' \| 'desktop'`             | ❌   | `'web'` | 平台类型       |
+| `t`             | `(key: string) => string`        | ❌   | -       | 翻译函数       |
 
 ## 📝 类型定义
 
@@ -62,11 +60,11 @@ function App() {
 
 ```tsx
 interface GitHubConfig {
-  owner: string        // GitHub 用户名或组织名
-  repo: string         // 仓库名称
-  branch: string       // 分支名称
-  token: string        // Personal Access Token
-  path: string         // 图片存储路径
+  owner: string; // GitHub 用户名或组织名
+  repo: string; // 仓库名称
+  branch: string; // 分支名称
+  token: string; // Personal Access Token
+  path: string; // 图片存储路径
 }
 ```
 
@@ -209,75 +207,75 @@ const t = defaultTranslate(zhCN)
 
 ```tsx
 const validateGitHubConfig = (config: GitHubConfig) => {
-  const errors: string[] = []
-  
+  const errors: string[] = [];
+
   // 验证用户名
   if (!config.owner || config.owner.length < 1) {
-    errors.push('用户名不能为空')
+    errors.push('用户名不能为空');
   }
-  
+
   // 验证仓库名
   if (!config.repo || config.repo.length < 1) {
-    errors.push('仓库名不能为空')
+    errors.push('仓库名不能为空');
   }
-  
+
   // 验证 Token 格式
   if (!config.token || !config.token.startsWith('ghp_')) {
-    errors.push('Token 格式不正确')
+    errors.push('Token 格式不正确');
   }
-  
+
   // 验证路径
   if (!config.path || !config.path.startsWith('/')) {
-    errors.push('路径必须以 / 开头')
+    errors.push('路径必须以 / 开头');
   }
-  
-  return errors
-}
+
+  return errors;
+};
 
 const handleSaveConfig = (config: GitHubConfig) => {
-  const errors = validateGitHubConfig(config)
+  const errors = validateGitHubConfig(config);
   if (errors.length > 0) {
-    alert(errors.join('\n'))
-    return
+    alert(errors.join('\n'));
+    return;
   }
-  
+
   // 保存配置
-  setGithubConfig(config)
-  localStorage.setItem('githubConfig', JSON.stringify(config))
-  setShowConfig(false)
-}
+  setGithubConfig(config);
+  localStorage.setItem('githubConfig', JSON.stringify(config));
+  setShowConfig(false);
+};
 ```
 
 ### 配置导入导出
 
 ```tsx
 const handleExportConfig = () => {
-  if (!githubConfig) return
-  
-  const dataStr = JSON.stringify(githubConfig, null, 2)
-  const dataBlob = new Blob([dataStr], { type: 'application/json' })
-  
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(dataBlob)
-  link.download = 'github-config.json'
-  link.click()
-}
+  if (!githubConfig) return;
+
+  const dataStr = JSON.stringify(githubConfig, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(dataBlob);
+  link.download = 'github-config.json';
+  link.click();
+};
 
 const handleImportConfig = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const file = event.target.files?.[0]
-  if (!file) return
-  
-  const reader = new FileReader()
-  reader.onload = (e) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
     try {
-      const config = JSON.parse(e.target?.result as string)
-      setGithubConfig(config)
+      const config = JSON.parse(e.target?.result as string);
+      setGithubConfig(config);
     } catch (error) {
-      alert('配置文件格式不正确')
+      alert('配置文件格式不正确');
     }
-  }
-  reader.readAsText(file)
-}
+  };
+  reader.readAsText(file);
+};
 ```
 
 ### 平台特定配置

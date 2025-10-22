@@ -1,17 +1,17 @@
-import React from 'react'
-import { ImageItem } from '../../../../types/image'
-import { X, ExternalLink } from 'lucide-react'
-import { defaultTranslate } from '../../../../locales/defaultTranslate'
-import './ImageUrlModal.css'
+import React from 'react';
+import { ImageItem } from '../../../../types/image';
+import { X, ExternalLink } from 'lucide-react';
+import { defaultTranslate } from '../../../../locales/defaultTranslate';
+import './ImageUrlModal.css';
 
 interface ImageUrlModalProps {
-  image: ImageItem | null
-  isOpen: boolean
-  onClose: () => void
-  imageDimensions?: Record<string, { width: number; height: number }>
-  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>
-  onOpenUrl?: (url: string) => void
-  t?: (key: string) => string
+  image: ImageItem | null;
+  isOpen: boolean;
+  onClose: () => void;
+  imageDimensions?: Record<string, { width: number; height: number }>;
+  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onOpenUrl?: (url: string) => void;
+  t?: (key: string) => string;
 }
 
 const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
@@ -21,44 +21,44 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
   imageDimensions = {},
   onCopyUrl,
   onOpenUrl,
-  t
+  t,
 }) => {
-  const translate = t || defaultTranslate
+  const translate = t || defaultTranslate;
 
   if (!isOpen || !image) {
-    return null
+    return null;
   }
 
   const getImageDimensions = () => {
-    const dimensions = imageDimensions[image.id]
+    const dimensions = imageDimensions[image.id];
     if (dimensions) {
-      return `${dimensions.width} × ${dimensions.height}`
+      return `${dimensions.width} × ${dimensions.height}`;
     } else if (image.width > 0 && image.height > 0) {
-      return `${image.width} × ${image.height}`
+      return `${image.width} × ${image.height}`;
     } else {
-      return translate('image.grid.dimensionsUnknown')
+      return translate('image.grid.dimensionsUnknown');
     }
-  }
+  };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
     if (onCopyUrl) {
-      await onCopyUrl(url, type)
+      await onCopyUrl(url, type);
     } else {
       try {
-        await navigator.clipboard.writeText(url)
+        await navigator.clipboard.writeText(url);
       } catch (error) {
-        console.error('Failed to copy URL:', error)
+        console.error('Failed to copy URL:', error);
       }
     }
-  }
+  };
 
   const handleOpenUrl = (url: string) => {
     if (onOpenUrl) {
-      onOpenUrl(url)
+      onOpenUrl(url);
     } else {
-      window.open(url, '_blank')
+      window.open(url, '_blank');
     }
-  }
+  };
 
   return (
     <div className="image-url-modal-overlay">
@@ -75,7 +75,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <div className="image-url-modal-content">
           {/* 图片信息 */}
           <div className="image-url-modal-image-info">
@@ -86,7 +86,9 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
             />
             <div className="image-url-modal-image-details">
               <h4 className="image-url-modal-image-name">{image.name}</h4>
-              <p className="image-url-modal-image-dimensions">{getImageDimensions()}</p>
+              <p className="image-url-modal-image-dimensions">
+                {getImageDimensions()}
+              </p>
             </div>
           </div>
 
@@ -150,7 +152,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageUrlModal
+export default ImageUrlModal;

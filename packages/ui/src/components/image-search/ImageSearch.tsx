@@ -1,16 +1,16 @@
-import React from 'react'
-import { Search, Filter } from 'lucide-react'
-import { defaultTranslate } from '../../locales/defaultTranslate'
-import './ImageSearch.css'
+import React from 'react';
+import { Search, Filter } from 'lucide-react';
+import { defaultTranslate } from '../../locales/defaultTranslate';
+import './ImageSearch.css';
 
 export interface ImageSearchProps {
-  searchTerm: string
-  onSearchChange: (term: string) => void
-  selectedTags: string[]
-  onTagsChange: (tags: string[]) => void
-  allTags: string[]
-  t?: (key: string) => string
-  className?: string
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
+  selectedTags: string[];
+  onTagsChange: (tags: string[]) => void;
+  allTags: string[];
+  t?: (key: string) => string;
+  className?: string;
 }
 
 const ImageSearch: React.FC<ImageSearchProps> = ({
@@ -20,22 +20,22 @@ const ImageSearch: React.FC<ImageSearchProps> = ({
   onTagsChange,
   allTags,
   t,
-  className = ''
+  className = '',
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
-  const translate = t || defaultTranslate
+  const translate = t || defaultTranslate;
 
   const handleTagToggle = (tag: string) => {
     onTagsChange(
       selectedTags.includes(tag)
         ? selectedTags.filter(t => t !== tag)
         : [...selectedTags, tag]
-    )
-  }
+    );
+  };
 
   const handleClearFilters = () => {
-    onTagsChange([])
-  }
+    onTagsChange([]);
+  };
 
   return (
     <div className={`image-search-container ${className}`}>
@@ -46,7 +46,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({
           type="text"
           placeholder={translate('image.search.placeholder')}
           value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={e => onSearchChange(e.target.value)}
           className="image-search-input"
         />
       </div>
@@ -56,7 +56,9 @@ const ImageSearch: React.FC<ImageSearchProps> = ({
         <div className="image-search-filters">
           <div className="image-search-filter-label">
             <Filter className="image-search-filter-icon" />
-            <span className="image-search-filter-text">{translate('image.search.filterByTags')}:</span>
+            <span className="image-search-filter-text">
+              {translate('image.search.filterByTags')}:
+            </span>
           </div>
           <div className="image-search-tags">
             {selectedTags.length > 0 && (
@@ -82,7 +84,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ImageSearch
+export default ImageSearch;

@@ -2,5 +2,47 @@
   // Rust 配置
   "rust-analyzer.linkedProjects": [
     "packages/wasm/Cargo.toml"
-  ]
+  ],
+
+  // Prettier 配置
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+
+  // 文件类型特定配置
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // Prettier 配置
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": false,
+
+  // 其他编辑器设置
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true
 }

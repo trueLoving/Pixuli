@@ -5,11 +5,7 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "src"
-  ],
+  "files": ["dist", "README.md", "src"],
   "publishConfig": {
     "access": "public"
   },

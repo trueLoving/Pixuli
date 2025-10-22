@@ -7,9 +7,12 @@
 
 ## 📖 项目初衷
 
-基于之前使用 **Vue3 + Composition API + Pinia + Vue-Router** 开发图片管理应用的经验，决定尝试使用 **React** 技术栈重新实现，体验不同框架的设计理念。
+基于之前使用 **Vue3 + Composition API + Pinia + Vue-Router**
+开发图片管理应用的经验，决定尝试使用 **React**
+技术栈重新实现，体验不同框架的设计理念。
 
 **之前项目成果**：
+
 - 虚拟滚动+Web Worker，10万图加载优化至2.8s
 - WASM WebP编码，压缩率78%，CDN流量↓62%
 - TensorFlow+Llama，图像描述准召率92%+
@@ -18,12 +21,12 @@
 
 **技术栈对比**：
 
-| 方面 | Vue3项目 | React项目 |
-|------|----------|-----------|
-| 框架 | Vue3 + Composition API | React + Hooks |
-| 状态管理 | Pinia | Zustand |
-| 路由 | Vue Router | 暂无 |
-| 构建工具 | Vite | Vite |
+| 方面     | Vue3项目               | React项目     |
+| -------- | ---------------------- | ------------- |
+| 框架     | Vue3 + Composition API | React + Hooks |
+| 状态管理 | Pinia                  | Zustand       |
+| 路由     | Vue Router             | 暂无          |
+| 构建工具 | Vite                   | Vite          |
 
 ## 🖼️ 项目概述
 
@@ -33,7 +36,6 @@
 - **Web 端**：基于 Vite + React + TypeScript 构建的 Web 应用
 - **核心功能**：图片管理、格式转换、压缩优化、批量处理
 
-
 ## ✨ 主要功能
 
 ```mermaid
@@ -41,23 +43,23 @@ graph TB
     A[Pixuli 智能图片管理] --> B[图片管理]
     A --> C[图片处理]
     A --> D[云端存储]
-    
+
     B --> B1[智能浏览]
     B --> B2[拖拽上传]
     B --> B3[标签系统]
     B --> B4[搜索功能]
     B --> B5[元数据编辑]
-    
+
     C --> C1[WebP 压缩]
     C --> C2[格式转换]
     C --> C3[批量处理]
     C --> C4[尺寸调整]
     C --> C5[质量控制]
-    
+
     D --> D1[GitHub 集成]
     D --> D2[版本控制]
     D --> D3[团队协作]
-    
+
     style A fill:#e3f2fd
     style B fill:#e8f5e8
     style C fill:#fff3e0
@@ -74,45 +76,45 @@ graph TB
         C[状态管理 Zustand]
         D[UI 组件库]
     end
-    
+
     subgraph "业务逻辑层"
         E[图片管理服务]
         F[图片处理服务]
         G[GitHub 存储服务]
     end
-    
+
     subgraph "后端层 (Rust + NAPI)"
         H[pixuli-wasm]
         I[图片处理引擎]
         J[格式转换引擎]
     end
-    
+
     subgraph "系统层"
         K[Electron 主进程]
         L[文件系统]
         M[GitHub API]
         N[本地存储]
     end
-    
+
     A --> B
     B --> C
     B --> D
     B --> E
     B --> F
     B --> G
-    
+
     E --> H
     F --> I
     G --> J
-    
+
     H --> I
     H --> J
-    
+
     K --> L
     K --> M
     K --> N
     K --> A
-    
+
     style A fill:#e3f2fd
     style B fill:#e8f5e8
     style C fill:#fff3e0
@@ -227,16 +229,19 @@ pnpm benchmark           # 运行性能基准测试
 ## 🎯 核心特性
 
 ### 高性能图片处理
+
 - **Rust + WebAssembly**：高性能图片压缩和格式转换
 - **虚拟滚动**：支持大量图片的流畅浏览
 - **懒加载**：按需加载图片资源
 
 ### 跨平台支持
+
 - **桌面端**：Windows、macOS、Linux
 - **Web 端**：现代浏览器支持
 - **响应式设计**：适配不同屏幕尺寸
 
 ### 开发者友好
+
 - **TypeScript**：完整的类型安全
 - **组件化**：可复用的 UI 组件库
 - **Monorepo**：统一的项目管理
@@ -249,7 +254,8 @@ pnpm benchmark           # 运行性能基准测试
 
 ## 🤝 贡献
 
-我们欢迎所有形式的贡献！请查看 [贡献指南](./CONTRIBUTING.md) 了解如何参与项目开发。
+我们欢迎所有形式的贡献！请查看 [贡献指南](./CONTRIBUTING.md)
+了解如何参与项目开发。
 
 ## 📄 许可证
 

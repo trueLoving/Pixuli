@@ -72,12 +72,12 @@
     gap: 1rem;
     align-items: stretch;
   }
-  
+
   .image-browser-header {
     justify-content: center;
     text-align: center;
   }
-  
+
   .image-browser-controls {
     justify-content: center;
     flex-wrap: wrap;
@@ -88,11 +88,11 @@
   .image-browser-toolbar {
     padding: 0 0.5rem;
   }
-  
+
   .image-browser-title {
     font-size: 1.125rem;
   }
-  
+
   .image-browser-controls {
     gap: 0.5rem;
   }
@@ -116,8 +116,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 空状态样式 */
@@ -207,11 +211,11 @@
   .image-browser-title {
     color: #000000;
   }
-  
+
   .image-browser-count {
     color: #404040;
   }
-  
+
   .image-browser-filter-count {
     color: #0000ff;
   }

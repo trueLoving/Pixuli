@@ -373,8 +373,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 文本截断 */
@@ -391,15 +395,15 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .image-list-item .w-16 {
     width: 3rem;
   }
-  
+
   .image-list-item .h-16 {
     height: 3rem;
   }
-  
+
   .image-list-header .px-6 {
     padding-left: 1rem;
     padding-right: 1rem;
@@ -411,9 +415,9 @@
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
-  
+
   .image-list-header .px-6 {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
-} 
+}

@@ -223,7 +223,7 @@
 }
 
 .github-config-help-item-list li:before {
-  content: "•";
+  content: '•';
   color: #3b82f6;
   font-weight: bold;
   margin-right: 0.5rem;
@@ -461,16 +461,16 @@
     max-width: 100%;
     margin: 0.5rem;
   }
-  
+
   .github-config-form-row {
     grid-template-columns: 1fr;
   }
-  
+
   .github-config-modal-actions {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   .github-config-modal-actions-left,
   .github-config-modal-actions-right {
     width: 100%;

@@ -1,51 +1,51 @@
-import { useEscapeKey } from '@packages/ui/src'
-import React, { useEffect, useState } from 'react'
-import { AIModelConfig } from '../../types/electron'
-import './AIModelManager.css'
+import { useEscapeKey } from '@packages/ui/src';
+import React, { useEffect, useState } from 'react';
+import { AIModelConfig } from '../../types/electron';
+import './AIModelManager.css';
 
 interface AIModelManagerProps {
-  isOpen: boolean
-  onClose: () => void
-  onModelUpdate?: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onModelUpdate?: () => void;
 }
 
 const AIModelManager: React.FC<AIModelManagerProps> = ({
   isOpen,
   onClose,
-  onModelUpdate
+  onModelUpdate,
 }) => {
-  const [models, setModels] = useState<AIModelConfig[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string>('')
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [editingModel, setEditingModel] = useState<AIModelConfig | null>(null)
+  const [models, setModels] = useState<AIModelConfig[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingModel, setEditingModel] = useState<AIModelConfig | null>(null);
 
   const [newModel, setNewModel] = useState<Partial<AIModelConfig>>({
     name: '',
     type: 'tensorflow',
     enabled: false,
-    description: ''
-  })
+    description: '',
+  });
 
   useEffect(() => {
     if (isOpen) {
-      loadModels()
+      loadModels();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const loadModels = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const modelList = await window.aiAPI.getModels()
-      setModels(modelList)
-      setError('')
+      const modelList = await window.aiAPI.getModels();
+      setModels(modelList);
+      setError('');
     } catch (error) {
-      console.error('Failed to load models:', error)
-      setError('加载模型列表失败')
+      console.error('Failed to load models:', error);
+      setError('加载模型列表失败');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // 注释掉下载相关功能
   /*
@@ -106,13 +106,13 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
 
   const handleAddModel = async () => {
     if (!newModel.name || !newModel.type) {
-      setError('请填写模型名称和类型')
-      return
+      setError('请填写模型名称和类型');
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const modelId = `model_${Date.now()}`
+      const modelId = `model_${Date.now()}`;
       const model: AIModelConfig = {
         id: modelId,
         name: newModel.name,
@@ -123,141 +123,139 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
         enabled: newModel.enabled || false,
         description: newModel.description,
         version: newModel.version,
-        size: newModel.size
-      }
+        size: newModel.size,
+      };
 
-      const result = await window.aiAPI.addModel(model)
+      const result = await window.aiAPI.addModel(model);
       if (result.success) {
-        await loadModels()
-        setShowAddForm(false)
+        await loadModels();
+        setShowAddForm(false);
         setNewModel({
           name: '',
           type: 'tensorflow',
           enabled: false,
-          description: ''
-        })
-        setError('')
-        onModelUpdate?.()
+          description: '',
+        });
+        setError('');
+        onModelUpdate?.();
       } else {
-        setError(result.error || '添加模型失败')
+        setError(result.error || '添加模型失败');
       }
     } catch (error) {
-      console.error('Add model failed:', error)
-      setError('添加模型时发生错误')
+      console.error('Add model failed:', error);
+      setError('添加模型时发生错误');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRemoveModel = async (modelId: string) => {
-    if (!confirm('确定要删除这个模型吗？')) return
+    if (!confirm('确定要删除这个模型吗？')) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const result = await window.aiAPI.removeModel(modelId)
+      const result = await window.aiAPI.removeModel(modelId);
       if (result.success) {
-        await loadModels()
-        onModelUpdate?.()
+        await loadModels();
+        onModelUpdate?.();
       } else {
-        setError(result.error || '删除模型失败')
+        setError(result.error || '删除模型失败');
       }
     } catch (error) {
-      console.error('Remove model failed:', error)
-      setError('删除模型时发生错误')
+      console.error('Remove model failed:', error);
+      setError('删除模型时发生错误');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleToggleModel = async (modelId: string, enabled: boolean) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const result = await window.aiAPI.updateModel(modelId, { enabled })
+      const result = await window.aiAPI.updateModel(modelId, { enabled });
       if (result.success) {
-        await loadModels()
-        onModelUpdate?.()
+        await loadModels();
+        onModelUpdate?.();
       } else {
-        setError(result.error || '更新模型失败')
+        setError(result.error || '更新模型失败');
       }
     } catch (error) {
-      console.error('Update model failed:', error)
-      setError('更新模型时发生错误')
+      console.error('Update model failed:', error);
+      setError('更新模型时发生错误');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSelectFile = async () => {
     try {
-      console.log('Selecting file for model type:', newModel.type)
-      const result = await window.aiAPI.selectModelFile()
-      console.log('File selection result:', result)
+      console.log('Selecting file for model type:', newModel.type);
+      const result = await window.aiAPI.selectModelFile();
+      console.log('File selection result:', result);
       if (result.success && result.filePath) {
-        setNewModel({ ...newModel, path: result.filePath })
-        console.log('File selected:', result.filePath)
+        setNewModel({ ...newModel, path: result.filePath });
+        console.log('File selected:', result.filePath);
       } else {
-        console.error('File selection failed:', result.error)
-        setError(result.error || '选择文件失败')
+        console.error('File selection failed:', result.error);
+        setError(result.error || '选择文件失败');
       }
     } catch (error) {
-      console.error('Select file failed:', error)
-      setError('选择文件失败')
+      console.error('Select file failed:', error);
+      setError('选择文件失败');
     }
-  }
+  };
 
   const formatFileSize = (bytes?: number) => {
-    if (!bytes) return '未知'
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
+    if (!bytes) return '未知';
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const getModelTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      'tensorflow': 'TensorFlow',
+      tensorflow: 'TensorFlow',
       'tensorflow-lite': 'TensorFlow Lite',
-      'onnx': 'ONNX',
+      onnx: 'ONNX',
       'local-llm': '本地 LLM',
-      'remote-api': '远程 API'
-    }
-    return labels[type] || type
-  }
+      'remote-api': '远程 API',
+    };
+    return labels[type] || type;
+  };
 
   const isBuiltinModel = (modelId: string) => {
-    return modelId.startsWith('builtin-')
-  }
+    return modelId.startsWith('builtin-');
+  };
 
   // 键盘支持
-  useEscapeKey(onClose)
+  useEscapeKey(onClose);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="ai-model-manager-overlay">
       <div className="ai-model-manager">
         <div className="ai-model-manager-header">
           <h2>AI 模型管理</h2>
-          <button className="close-button" onClick={onClose}>×</button>
+          <button className="close-button" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="ai-model-manager-content">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="error-message">{error}</div>}
 
           <div className="model-actions">
-            <button 
+            <button
               className="add-model-button"
               onClick={() => setShowAddForm(true)}
               disabled={loading}
             >
               添加模型
             </button>
-            <button 
+            <button
               className="refresh-button"
               onClick={loadModels}
               disabled={loading}
@@ -269,13 +267,15 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
           {showAddForm && (
             <div className="add-model-form">
               <h3>添加新模型</h3>
-              
+
               <div className="form-group">
                 <label>模型名称:</label>
                 <input
                   type="text"
                   value={newModel.name || ''}
-                  onChange={(e) => setNewModel({...newModel, name: e.target.value})}
+                  onChange={e =>
+                    setNewModel({ ...newModel, name: e.target.value })
+                  }
                   placeholder="输入模型名称"
                 />
               </div>
@@ -284,7 +284,9 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                 <label>模型类型:</label>
                 <select
                   value={newModel.type || 'tensorflow'}
-                  onChange={(e) => setNewModel({...newModel, type: e.target.value as any})}
+                  onChange={e =>
+                    setNewModel({ ...newModel, type: e.target.value as any })
+                  }
                 >
                   <option value="tensorflow">TensorFlow</option>
                   <option value="tensorflow-lite">TensorFlow Lite</option>
@@ -299,19 +301,26 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                 <input
                   type="text"
                   value={newModel.description || ''}
-                  onChange={(e) => setNewModel({...newModel, description: e.target.value})}
+                  onChange={e =>
+                    setNewModel({ ...newModel, description: e.target.value })
+                  }
                   placeholder="输入模型描述"
                 />
               </div>
 
-              {(newModel.type === 'tensorflow' || newModel.type === 'tensorflow-lite' || newModel.type === 'onnx' || newModel.type === 'local-llm') && (
+              {(newModel.type === 'tensorflow' ||
+                newModel.type === 'tensorflow-lite' ||
+                newModel.type === 'onnx' ||
+                newModel.type === 'local-llm') && (
                 <div className="form-group">
                   <label>模型文件路径:</label>
                   <div className="file-input-group">
                     <input
                       type="text"
                       value={newModel.path || ''}
-                      onChange={(e) => setNewModel({...newModel, path: e.target.value})}
+                      onChange={e =>
+                        setNewModel({ ...newModel, path: e.target.value })
+                      }
                       placeholder="选择模型文件"
                       readOnly
                     />
@@ -327,7 +336,12 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                     <input
                       type="text"
                       value={newModel.apiEndpoint || ''}
-                      onChange={(e) => setNewModel({...newModel, apiEndpoint: e.target.value})}
+                      onChange={e =>
+                        setNewModel({
+                          ...newModel,
+                          apiEndpoint: e.target.value,
+                        })
+                      }
                       placeholder="https://api.example.com/analyze"
                     />
                   </div>
@@ -336,7 +350,9 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                     <input
                       type="password"
                       value={newModel.apiKey || ''}
-                      onChange={(e) => setNewModel({...newModel, apiKey: e.target.value})}
+                      onChange={e =>
+                        setNewModel({ ...newModel, apiKey: e.target.value })
+                      }
                       placeholder="输入 API 密钥"
                     />
                   </div>
@@ -348,7 +364,9 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                   <input
                     type="checkbox"
                     checked={newModel.enabled || false}
-                    onChange={(e) => setNewModel({...newModel, enabled: e.target.checked})}
+                    onChange={e =>
+                      setNewModel({ ...newModel, enabled: e.target.checked })
+                    }
                   />
                   启用此模型
                 </label>
@@ -358,9 +376,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                 <button onClick={handleAddModel} disabled={loading}>
                   {loading ? '添加中...' : '添加模型'}
                 </button>
-                <button onClick={() => setShowAddForm(false)}>
-                  取消
-                </button>
+                <button onClick={() => setShowAddForm(false)}>取消</button>
               </div>
             </div>
           )}
@@ -383,25 +399,51 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
                         )}
                       </h4>
                       <div className="model-status">
-                        <span className={`status-badge ${model.enabled ? 'enabled' : 'disabled'}`}>
+                        <span
+                          className={`status-badge ${model.enabled ? 'enabled' : 'disabled'}`}
+                        >
                           {model.enabled ? '已启用' : '已禁用'}
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="model-info">
-                      <p><strong>类型:</strong> {getModelTypeLabel(model.type)}</p>
-                      {model.description && <p><strong>描述:</strong> {model.description}</p>}
-                      {model.version && <p><strong>版本:</strong> {model.version}</p>}
-                      {model.size && <p><strong>大小:</strong> {formatFileSize(model.size)}</p>}
-                      {model.path && <p><strong>路径:</strong> {model.path}</p>}
-                      {model.apiEndpoint && <p><strong>API:</strong> {model.apiEndpoint}</p>}
+                      <p>
+                        <strong>类型:</strong> {getModelTypeLabel(model.type)}
+                      </p>
+                      {model.description && (
+                        <p>
+                          <strong>描述:</strong> {model.description}
+                        </p>
+                      )}
+                      {model.version && (
+                        <p>
+                          <strong>版本:</strong> {model.version}
+                        </p>
+                      )}
+                      {model.size && (
+                        <p>
+                          <strong>大小:</strong> {formatFileSize(model.size)}
+                        </p>
+                      )}
+                      {model.path && (
+                        <p>
+                          <strong>路径:</strong> {model.path}
+                        </p>
+                      )}
+                      {model.apiEndpoint && (
+                        <p>
+                          <strong>API:</strong> {model.apiEndpoint}
+                        </p>
+                      )}
                     </div>
 
                     <div className="model-actions">
                       <button
                         className={`toggle-button ${model.enabled ? 'disable' : 'enable'}`}
-                        onClick={() => handleToggleModel(model.id, !model.enabled)}
+                        onClick={() =>
+                          handleToggleModel(model.id, !model.enabled)
+                        }
                         disabled={loading}
                       >
                         {model.enabled ? '禁用' : '启用'}
@@ -487,7 +529,7 @@ const AIModelManager: React.FC<AIModelManagerProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AIModelManager
+export default AIModelManager;

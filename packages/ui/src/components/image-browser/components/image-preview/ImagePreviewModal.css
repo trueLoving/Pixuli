@@ -195,47 +195,47 @@
     height: 100vh;
     padding: 0;
   }
-  
+
   .image-preview-modal-image {
     max-width: 90vw;
     max-height: 55vh;
   }
-  
+
   .image-preview-modal-close {
     top: 1rem;
     right: 1rem;
     padding: 0.5rem;
   }
-  
+
   .image-preview-modal-nav {
     padding: 0.75rem;
   }
-  
+
   .image-preview-modal-nav-left {
     left: 1rem;
   }
-  
+
   .image-preview-modal-nav-right {
     right: 1rem;
   }
-  
+
   .image-preview-modal-info {
     bottom: 0.5rem;
     padding: 0 1rem;
     max-width: 90vw;
   }
-  
+
   .image-preview-modal-details {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .image-preview-modal-actions {
     flex-direction: column;
     gap: 0.75rem;
     width: 100%;
   }
-  
+
   .image-preview-modal-action-button {
     width: 100%;
     max-width: 200px;
@@ -248,40 +248,40 @@
     height: 100vh;
     padding: 0;
   }
-  
+
   .image-preview-modal-image {
     max-width: 90vw;
     max-height: 45vh;
   }
-  
+
   .image-preview-modal-close {
     top: 0.5rem;
     right: 0.5rem;
     padding: 0.5rem;
   }
-  
+
   .image-preview-modal-nav {
     padding: 0.5rem;
   }
-  
+
   .image-preview-modal-nav-left {
     left: 0.5rem;
   }
-  
+
   .image-preview-modal-nav-right {
     right: 0.5rem;
   }
-  
+
   .image-preview-modal-info {
     bottom: 0.25rem;
     padding: 0 0.5rem;
     max-width: 95vw;
   }
-  
+
   .image-preview-modal-title {
     font-size: 1rem;
   }
-  
+
   .image-preview-modal-details {
     font-size: 0.75rem;
   }

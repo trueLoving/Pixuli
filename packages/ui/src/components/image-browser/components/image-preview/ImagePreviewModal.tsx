@@ -1,21 +1,21 @@
-import React, { useEffect, useCallback } from 'react'
-import { ImageItem } from '../../../../types/image'
-import { X, Link, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
-import { defaultTranslate } from '../../../../locales/defaultTranslate'
-import './ImagePreviewModal.css'
+import React, { useEffect, useCallback } from 'react';
+import { ImageItem } from '../../../../types/image';
+import { X, Link, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { defaultTranslate } from '../../../../locales/defaultTranslate';
+import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {
-  image: ImageItem | null
-  images: ImageItem[]
-  currentIndex: number
-  isOpen: boolean
-  onClose: () => void
-  onNavigate?: (index: number) => void
-  imageDimensions?: Record<string, { width: number; height: number }>
-  formatFileSize?: (size: number) => string
-  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>
-  onOpenUrl?: (url: string) => void
-  t?: (key: string) => string
+  image: ImageItem | null;
+  images: ImageItem[];
+  currentIndex: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onNavigate?: (index: number) => void;
+  imageDimensions?: Record<string, { width: number; height: number }>;
+  formatFileSize?: (size: number) => string;
+  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onOpenUrl?: (url: string) => void;
+  t?: (key: string) => string;
 }
 
 const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
@@ -29,90 +29,90 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   onCopyUrl,
   onOpenUrl,
-  t
+  t,
 }) => {
-  const translate = t || defaultTranslate
+  const translate = t || defaultTranslate;
 
   // 导航功能
   const handlePrevious = useCallback(() => {
     if (onNavigate && images.length > 1) {
-      const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1
-      onNavigate(prevIndex)
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+      onNavigate(prevIndex);
     }
-  }, [onNavigate, currentIndex, images.length])
+  }, [onNavigate, currentIndex, images.length]);
 
   const handleNext = useCallback(() => {
     if (onNavigate && images.length > 1) {
-      const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0
-      onNavigate(nextIndex)
+      const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+      onNavigate(nextIndex);
     }
-  }, [onNavigate, currentIndex, images.length])
+  }, [onNavigate, currentIndex, images.length]);
 
   // 键盘快捷键支持
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isOpen) return
+      if (!isOpen) return;
 
       switch (event.key) {
         case 'ArrowLeft':
-          event.preventDefault()
-          handlePrevious()
-          break
+          event.preventDefault();
+          handlePrevious();
+          break;
         case 'ArrowRight':
-          event.preventDefault()
-          handleNext()
-          break
+          event.preventDefault();
+          handleNext();
+          break;
         case 'Escape':
-          event.preventDefault()
-          onClose()
-          break
+          event.preventDefault();
+          onClose();
+          break;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen, handlePrevious, handleNext, onClose])
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, handlePrevious, handleNext, onClose]);
 
   if (!isOpen || !image) {
-    return null
+    return null;
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN')
-  }
+    return new Date(dateString).toLocaleDateString('zh-CN');
+  };
 
   const getImageDimensions = () => {
-    const dimensions = imageDimensions[image.id]
+    const dimensions = imageDimensions[image.id];
     if (dimensions) {
-      return `${dimensions.width} × ${dimensions.height}`
+      return `${dimensions.width} × ${dimensions.height}`;
     } else if (image.width > 0 && image.height > 0) {
-      return `${image.width} × ${image.height}`
+      return `${image.width} × ${image.height}`;
     } else {
-      return translate('image.grid.dimensionsUnknown')
+      return translate('image.grid.dimensionsUnknown');
     }
-  }
+  };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
     if (onCopyUrl) {
-      await onCopyUrl(url, type)
+      await onCopyUrl(url, type);
     } else {
       try {
-        await navigator.clipboard.writeText(url)
+        await navigator.clipboard.writeText(url);
       } catch (error) {
-        console.error('Failed to copy URL:', error)
+        console.error('Failed to copy URL:', error);
       }
     }
-  }
+  };
 
   const handleOpenUrl = (url: string) => {
     if (onOpenUrl) {
-      onOpenUrl(url)
+      onOpenUrl(url);
     } else {
-      window.open(url, '_blank')
+      window.open(url, '_blank');
     }
-  }
+  };
 
   return (
     <div className="image-preview-modal-overlay">
@@ -147,28 +147,30 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               <ChevronRight className="w-8 h-8" />
             </button>
           )}
-          
+
           <img
             src={image.url}
             alt={image.name}
             className="image-preview-modal-image"
           />
         </div>
-        
+
         <div className="image-preview-modal-info">
           <h3 className="image-preview-modal-title">{image.name}</h3>
-          
+
           {/* 图片计数 */}
           {images.length > 1 && (
             <div className="image-preview-modal-counter">
               {currentIndex + 1} / {images.length}
             </div>
           )}
-          
+
           {image.description && (
-            <p className="image-preview-modal-description">{image.description}</p>
+            <p className="image-preview-modal-description">
+              {image.description}
+            </p>
           )}
-          
+
           <div className="image-preview-modal-details">
             <div className="image-preview-modal-detail-item">
               <span>{getImageDimensions()}</span>
@@ -182,7 +184,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               <span>{formatDate(image.createdAt)}</span>
             </div>
           </div>
-          
+
           {/* 在线地址操作 */}
           <div className="image-preview-modal-actions">
             <button
@@ -203,7 +205,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImagePreviewModal
+export default ImagePreviewModal;

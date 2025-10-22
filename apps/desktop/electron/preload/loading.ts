@@ -1,18 +1,18 @@
 const safeDOM = {
   append(parent: HTMLElement, child: HTMLElement) {
     if (!Array.from(parent.children).find(e => e === child)) {
-      return parent.appendChild(child)
+      return parent.appendChild(child);
     }
   },
   remove(parent: HTMLElement, child: HTMLElement) {
     if (Array.from(parent.children).find(e => e === child)) {
-      return parent.removeChild(child)
+      return parent.removeChild(child);
     }
   },
-}
+};
 
 function useLoading() {
-  const className = `simple-loading`
+  const className = `simple-loading`;
   const styleContent = `
   
   /* 淡入动画 */
@@ -191,14 +191,14 @@ function useLoading() {
       width: 160px;
     }
   }
-      `
+      `;
 
-  const oStyle = document.createElement('style')
-  const oDiv = document.createElement('div')
+  const oStyle = document.createElement('style');
+  const oDiv = document.createElement('div');
 
-  oStyle.id = 'app-loading-style'
-  oStyle.innerHTML = styleContent
-  oDiv.className = className
+  oStyle.id = 'app-loading-style';
+  oStyle.innerHTML = styleContent;
+  oDiv.className = className;
 
   // 创建简洁的加载内容
   oDiv.innerHTML = `
@@ -215,15 +215,15 @@ function useLoading() {
           <div class="progress-bar" id="progress-bar"></div>
         </div>
       </div>
-    `
+    `;
 
   // 智能加载进度 - 优化性能
   const updateProgress = () => {
-    const progressBar = oDiv.querySelector('#progress-bar') as HTMLElement
+    const progressBar = oDiv.querySelector('#progress-bar') as HTMLElement;
     if (progressBar) {
-      let progress = 0
-      const targetProgress = 100
-      const updateInterval = 100 // 减少更新频率
+      let progress = 0;
+      const targetProgress = 100;
+      const updateInterval = 100; // 减少更新频率
 
       const animateProgress = () => {
         if (progress < targetProgress) {
@@ -231,63 +231,65 @@ function useLoading() {
           const increment = Math.min(
             Math.random() * 8 + 2, // 减少随机性
             targetProgress - progress
-          )
-          progress += increment
-          progressBar.style.width = Math.min(progress, targetProgress) + '%'
+          );
+          progress += increment;
+          progressBar.style.width = Math.min(progress, targetProgress) + '%';
 
           // 使用requestAnimationFrame优化性能
-          requestAnimationFrame(animateProgress)
+          requestAnimationFrame(animateProgress);
         }
-      }
+      };
 
       // 延迟开始动画，让用户看到初始状态
-      setTimeout(animateProgress, 200)
+      setTimeout(animateProgress, 200);
     }
-  }
+  };
 
   return {
     appendLoading() {
       // 添加CSS类来隐藏页面内容
-      document.body.classList.add('simple-loading-active')
+      document.body.classList.add('simple-loading-active');
 
       // 添加加载动画
-      safeDOM.append(document.head, oStyle)
-      safeDOM.append(document.body, oDiv)
+      safeDOM.append(document.head, oStyle);
+      safeDOM.append(document.body, oDiv);
 
-      updateProgress()
+      updateProgress();
     },
     removeLoading() {
       // 移除CSS类恢复页面内容
-      document.body.classList.remove('simple-loading-active')
+      document.body.classList.remove('simple-loading-active');
 
-      safeDOM.remove(document.head, oStyle)
-      safeDOM.remove(document.body, oDiv)
+      safeDOM.remove(document.head, oStyle);
+      safeDOM.remove(document.body, oDiv);
     },
-  }
+  };
 }
 
-function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
+function domReady(
+  condition: DocumentReadyState[] = ['complete', 'interactive']
+) {
   return new Promise(resolve => {
     if (condition.includes(document.readyState)) {
-      resolve(true)
+      resolve(true);
     } else {
       document.addEventListener('readystatechange', () => {
         if (condition.includes(document.readyState)) {
-          resolve(true)
+          resolve(true);
         }
-      })
+      });
     }
-  })
+  });
 }
 
 export function loading() {
-  const { appendLoading, removeLoading } = useLoading()
-  domReady().then(appendLoading)
+  const { appendLoading, removeLoading } = useLoading();
+  domReady().then(appendLoading);
 
-  window.onmessage = (ev) => {
-    ev.data.payload === 'removeLoading' && removeLoading()
-  }
+  window.onmessage = ev => {
+    ev.data.payload === 'removeLoading' && removeLoading();
+  };
 
-  setTimeout(removeLoading, 4999)
-  setTimeout(removeLoading, 4999)
+  setTimeout(removeLoading, 4999);
+  setTimeout(removeLoading, 4999);
 }

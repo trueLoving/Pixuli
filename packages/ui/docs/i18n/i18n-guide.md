@@ -5,23 +5,23 @@
 ### 1. 导入翻译函数
 
 ```tsx
-import { defaultTranslate, zhCN, enUS } from '@packages/ui/src'
+import { defaultTranslate, zhCN, enUS } from '@packages/ui/src';
 
 // 使用中文翻译
-const t = defaultTranslate(zhCN)
+const t = defaultTranslate(zhCN);
 
 // 使用英文翻译
-const t = defaultTranslate(enUS)
+const t = defaultTranslate(enUS);
 ```
 
 ### 2. 在组件中使用
 
 ```tsx
-import { ImageBrowser, ImageUpload } from '@packages/ui/src'
+import { ImageBrowser, ImageUpload } from '@packages/ui/src';
 
 function App() {
-  const t = defaultTranslate(zhCN)
-  
+  const t = defaultTranslate(zhCN);
+
   return (
     <div>
       <ImageUpload
@@ -30,7 +30,7 @@ function App() {
         loading={uploading}
         t={t}
       />
-      
+
       <ImageBrowser
         images={images}
         onDeleteImage={handleDelete}
@@ -38,7 +38,7 @@ function App() {
         t={t}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -51,12 +51,12 @@ const customTranslations = {
   'app.title': '我的图片管理器',
   'common.save': '保存设置',
   'image.upload.uploadButton': '开始上传',
-}
+};
 
 const t = defaultTranslate({
   ...zhCN,
-  ...customTranslations
-})
+  ...customTranslations,
+});
 ```
 
 ### 添加新翻译
@@ -65,22 +65,24 @@ const t = defaultTranslate({
 const myTranslations = {
   'custom.newFeature': '新功能',
   'custom.description': '这是一个新功能的描述',
-}
+};
 
 const t = defaultTranslate({
   ...zhCN,
-  ...myTranslations
-})
+  ...myTranslations,
+});
 ```
 
 ## 📋 常用 Key 值
 
 ### 应用基础
+
 - `app.title` - 应用标题
 - `app.welcome` - 欢迎信息
 - `app.description` - 应用描述
 
 ### 通用操作
+
 - `common.save` - 保存
 - `common.cancel` - 取消
 - `common.delete` - 删除
@@ -88,6 +90,7 @@ const t = defaultTranslate({
 - `common.loading` - 加载中
 
 ### 图片相关
+
 - `image.upload.uploadButton` - 上传按钮
 - `image.upload.dragInactive` - 拖拽提示
 - `image.list.preview` - 预览
@@ -95,6 +98,7 @@ const t = defaultTranslate({
 - `image.list.delete` - 删除
 
 ### 配置相关
+
 - `github.config.title` - GitHub 配置标题
 - `github.config.saveConfig` - 保存配置
 - `upyun.config.title` - 又拍云配置标题
@@ -104,21 +108,21 @@ const t = defaultTranslate({
 ### 动态语言切换
 
 ```tsx
-import { useState } from 'react'
-import { defaultTranslate, zhCN, enUS } from '@packages/ui/src'
+import { useState } from 'react';
+import { defaultTranslate, zhCN, enUS } from '@packages/ui/src';
 
 function App() {
-  const [language, setLanguage] = useState('zh')
-  
-  const translations = language === 'zh' ? zhCN : enUS
-  const t = defaultTranslate(translations)
-  
+  const [language, setLanguage] = useState('zh');
+
+  const translations = language === 'zh' ? zhCN : enUS;
+  const t = defaultTranslate(translations);
+
   return (
     <div>
       <button onClick={() => setLanguage(language === 'zh' ? 'en' : 'zh')}>
         {language === 'zh' ? 'English' : '中文'}
       </button>
-      
+
       <ImageBrowser
         images={images}
         t={t}
@@ -126,7 +130,7 @@ function App() {
         onUpdateImage={handleUpdate}
       />
     </div>
-  )
+  );
 }
 ```
 
@@ -137,12 +141,12 @@ function App() {
 const translations = {
   'image.filter.showingImagesCount': '显示 {count} 张图片',
   'image.filter.totalImagesCount': '(共 {count} 张)',
-}
+};
 
-const t = defaultTranslate(translations)
+const t = defaultTranslate(translations);
 
 // 使用时需要手动替换参数
-const message = t('image.filter.showingImagesCount').replace('{count}', '10')
+const message = t('image.filter.showingImagesCount').replace('{count}', '10');
 ```
 
 ## 📚 完整 Key 值列表

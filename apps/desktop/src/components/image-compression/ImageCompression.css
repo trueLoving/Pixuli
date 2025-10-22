@@ -198,7 +198,7 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .image-compression-container {
     max-width: 48rem;
   }
@@ -208,29 +208,29 @@
   .image-compression-modal {
     padding: 0.5rem;
   }
-  
+
   .image-compression-container {
     max-width: 100%;
     max-height: 95vh;
   }
-  
+
   .image-compression-header {
     padding: 1rem;
   }
-  
+
   .image-compression-content {
     padding: 1rem;
   }
-  
+
   .image-compression-upload-area {
     padding: 1.5rem;
   }
-  
+
   .image-compression-upload-icon {
     width: 2.5rem;
     height: 2.5rem;
   }
-  
+
   .image-compression-title {
     font-size: 1.125rem;
   }
@@ -254,8 +254,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 错误状态样式 */
@@ -283,7 +287,7 @@
   .image-compression-loading-spinner {
     animation: none;
   }
-  
+
   * {
     transition: none !important;
   }
@@ -294,11 +298,11 @@
   .image-compression-container {
     border: 2px solid #000000;
   }
-  
+
   .image-compression-upload-area {
     border-color: #000000;
   }
-  
+
   .image-compression-button-primary {
     background-color: #000000;
   }

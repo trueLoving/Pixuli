@@ -141,11 +141,11 @@
   font-size: 14px;
 }
 
-.config-section input[type="checkbox"] {
+.config-section input[type='checkbox'] {
   margin-right: 8px;
 }
 
-.config-section input[type="range"] {
+.config-section input[type='range'] {
   width: 100%;
   margin-top: 8px;
 }
@@ -840,24 +840,24 @@
     width: 95%;
     margin: 20px;
   }
-  
+
   .uploaded-image-preview {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .uploaded-image-preview img {
     width: 100px;
     height: 100px;
     margin: 0 auto;
   }
-  
+
   .model-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .object-item,
   .color-item {
     flex-direction: column;

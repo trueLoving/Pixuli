@@ -4,7 +4,7 @@
   "description": "WASM vs JavaScript 图片压缩性能对比测试",
   "type": "module",
   "scripts": {
-    "benchmark":"pnpm run benchmark:simple && pnpm run benchmark:detailed",
+    "benchmark": "pnpm run benchmark:simple && pnpm run benchmark:detailed",
     "benchmark:simple": "tsx src/simple-compression-bench.ts",
     "benchmark:detailed": "tsx src/detailed-bench.ts"
   },

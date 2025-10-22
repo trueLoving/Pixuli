@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup'
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -9,11 +9,17 @@ export default defineConfig({
   sourcemap: true,
   minify: false,
   external: ['react', 'react-dom'],
-  noExternal: ['lucide-react', 'react-hot-toast', 'react-dropzone', 'react-image-crop', 'zustand'],
+  noExternal: [
+    'lucide-react',
+    'react-hot-toast',
+    'react-dropzone',
+    'react-image-crop',
+    'zustand',
+  ],
   esbuildOptions(options) {
     options.loader = {
       ...options.loader,
       '.css': 'text',
-    }
+    };
   },
-})
+});

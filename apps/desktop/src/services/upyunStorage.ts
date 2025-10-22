@@ -1,10 +1,15 @@
-import { ImageItem, ImageUploadData, ImageEditData, UpyunConfig } from '@packages/ui/src'
+import {
+  ImageItem,
+  ImageUploadData,
+  ImageEditData,
+  UpyunConfig,
+} from '@packages/ui/src';
 
 export class UpyunStorageService {
-  private config: UpyunConfig
+  private config: UpyunConfig;
 
   constructor(config: UpyunConfig) {
-    this.config = config
+    this.config = config;
   }
 
   // 获取图片列表
@@ -12,13 +17,13 @@ export class UpyunStorageService {
     try {
       // 通过 IPC 调用主进程的又拍云服务
       const response = await window.electronAPI.upyunGetList({
-        config: this.config
-      })
+        config: this.config,
+      });
 
       console.log(response);
 
       if (!response.success) {
-        throw new Error(response.error || '获取图片列表失败')
+        throw new Error(response.error || '获取图片列表失败');
       }
 
       // 转换为 ImageItem 格式
@@ -35,40 +40,40 @@ export class UpyunStorageService {
         description: '',
         createdAt: new Date(file.time * 1000).toISOString(),
         updatedAt: new Date(file.time * 1000).toISOString(),
-      }))
+      }));
 
-      return images
+      return images;
     } catch (error) {
-      console.error('Failed to get image list:', error)
-      throw new Error(`获取图片列表失败: ${error}`)
+      console.error('Failed to get image list:', error);
+      throw new Error(`获取图片列表失败: ${error}`);
     }
   }
 
   // 上传图片到又拍云
   async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
     try {
-      const { file, name, description, tags } = uploadData
-      const fileName = name || file.name
-      
+      const { file, name, description, tags } = uploadData;
+      const fileName = name || file.name;
+
       // 将文件转换为 base64
-      const base64Content = await this.fileToBase64(file)
-      
+      const base64Content = await this.fileToBase64(file);
+
       // 通过 IPC 调用主进程的又拍云上传功能
       const response = await window.electronAPI.upyunUpload({
         config: this.config,
         fileName,
         content: base64Content,
         description,
-        tags
-      })
+        tags,
+      });
 
       if (!response.success) {
-        throw new Error(response.error || '上传失败')
+        throw new Error(response.error || '上传失败');
       }
 
       // 获取图片信息
-      const imageInfo = await this.getImageInfo(file)
-      
+      const imageInfo = await this.getImageInfo(file);
+
       const imageItem: ImageItem = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: fileName,
@@ -82,12 +87,12 @@ export class UpyunStorageService {
         description: description || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      };
 
-      return imageItem
+      return imageItem;
     } catch (error) {
-      console.error('Upload image failed:', error)
-      throw new Error(`上传图片失败: ${error}`)
+      console.error('Upload image failed:', error);
+      throw new Error(`上传图片失败: ${error}`);
     }
   }
 
@@ -97,15 +102,15 @@ export class UpyunStorageService {
       // 通过 IPC 调用主进程的又拍云删除功能
       const response = await window.electronAPI.upyunDelete({
         config: this.config,
-        fileName
-      })
+        fileName,
+      });
 
       if (!response.success) {
-        throw new Error(response.error || '删除失败')
+        throw new Error(response.error || '删除失败');
       }
     } catch (error) {
-      console.error('Delete image failed:', error)
-      throw new Error(`删除图片失败: ${error}`)
+      console.error('Delete image failed:', error);
+      throw new Error(`删除图片失败: ${error}`);
     }
   }
 
@@ -114,89 +119,91 @@ export class UpyunStorageService {
     try {
       // 又拍云不支持元数据更新，这里只返回成功
       // 实际应用中可能需要通过其他方式存储元数据
-      console.log('Upyun does not support metadata updates:', editData)
+      console.log('Upyun does not support metadata updates:', editData);
     } catch (error) {
-      console.error('Update image failed:', error)
-      throw new Error(`更新图片失败: ${error}`)
+      console.error('Update image failed:', error);
+      throw new Error(`更新图片失败: ${error}`);
     }
   }
 
   // 批量上传图片
-  async uploadMultipleImages(uploadDataList: ImageUploadData[]): Promise<ImageItem[]> {
-    const results: ImageItem[] = []
-    
+  async uploadMultipleImages(
+    uploadDataList: ImageUploadData[]
+  ): Promise<ImageItem[]> {
+    const results: ImageItem[] = [];
+
     for (const uploadData of uploadDataList) {
       try {
-        const result = await this.uploadImage(uploadData)
-        results.push(result)
+        const result = await this.uploadImage(uploadData);
+        results.push(result);
       } catch (error) {
-        console.error('Batch upload failed for:', uploadData.file.name, error)
+        console.error('Batch upload failed for:', uploadData.file.name, error);
         // 继续处理其他文件
       }
     }
-    
-    return results
+
+    return results;
   }
 
   // 测试连接
   async testConnection(): Promise<boolean> {
     try {
-      const response = await window.electronAPI.upyunTest(this.config)
-      return response.success
+      const response = await window.electronAPI.upyunTest(this.config);
+      return response.success;
     } catch (error) {
-      console.error('Test connection failed:', error)
-      return false
+      console.error('Test connection failed:', error);
+      return false;
     }
   }
 
-  async updateImageInfo(){
-    
-  }
+  async updateImageInfo() {}
 
   // 将文件转换为 base64
   private async fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = () => {
-        const result = reader.result as string
+        const result = reader.result as string;
         // 移除 data:image/...;base64, 前缀
-        const base64 = result.split(',')[1]
-        resolve(base64)
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   // 获取图片信息
-  private async getImageInfo(file: File): Promise<{ width: number; height: number }> {
-    return new Promise((resolve) => {
-      const img = new Image()
+  private async getImageInfo(
+    file: File
+  ): Promise<{ width: number; height: number }> {
+    return new Promise(resolve => {
+      const img = new Image();
       img.onload = () => {
         resolve({
           width: img.naturalWidth,
-          height: img.naturalHeight
-        })
-      }
+          height: img.naturalHeight,
+        });
+      };
       img.onerror = () => {
-        resolve({ width: 0, height: 0 })
-      }
-      img.src = URL.createObjectURL(file)
-    })
+        resolve({ width: 0, height: 0 });
+      };
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   // 根据文件名获取 MIME 类型
   private getMimeType(fileName: string): string {
-    const ext = fileName.toLowerCase().split('.').pop()
+    const ext = fileName.toLowerCase().split('.').pop();
     const mimeTypes: { [key: string]: string } = {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'bmp': 'image/bmp',
-      'svg': 'image/svg+xml'
-    }
-    return mimeTypes[ext || ''] || 'image/jpeg'
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      bmp: 'image/bmp',
+      svg: 'image/svg+xml',
+    };
+    return mimeTypes[ext || ''] || 'image/jpeg';
   }
 }

@@ -101,7 +101,7 @@
   .conversion-stats {
     @apply grid-cols-1 gap-2;
   }
-  
+
   .preview-image {
     @apply h-32;
   }

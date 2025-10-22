@@ -31,7 +31,7 @@ env:
 jobs:
   benchmark:
     runs-on: ${{ github.event.inputs.platform }}
-    
+
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -146,10 +146,9 @@ jobs:
           echo "- **压缩效果**: WebP 格式压缩率通常达到 85-90%" >> benchmark-report.md
           echo "- **内存使用**: WASM 模块内存使用更高效" >> benchmark-report.md
           echo "- **稳定性**: 100 次连续测试零错误" >> benchmark-report.md
-          
+
           echo "📄 测试报告已生成:"
           cat benchmark-report.md
-
 
       - name: 上传测试报告
         uses: actions/upload-artifact@v4

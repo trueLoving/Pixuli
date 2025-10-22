@@ -19,51 +19,51 @@ graph TB
         C[API Gateway]
         D[Storage Layer]
     end
-    
+
     subgraph "MCP Server"
         E[Model Context Manager]
         F[AI Model Interface]
         G[Context Storage]
         H[Protocol Handler]
     end
-    
+
     subgraph "Image Repository"
         I[Image Storage]
         J[Metadata Management]
         K[Search Engine]
         L[Version Control]
     end
-    
+
     subgraph "External Services"
         M[AI Models]
         N[File Storage]
         O[Database]
         P[Cache Layer]
     end
-    
+
     A --> E
     A --> F
     A --> G
     A --> H
-    
+
     B --> I
     B --> J
     B --> K
     B --> L
-    
+
     C --> A
     C --> B
-    
+
     D --> N
     D --> O
     D --> P
-    
+
     E --> M
     F --> M
     I --> N
     J --> O
     K --> P
-    
+
     style A fill:#e3f2fd
     style B fill:#e8f5e8
     style C fill:#fff3e0
@@ -92,23 +92,27 @@ graph TB
 ## 🛠️ 技术栈
 
 ### 核心技术
+
 - **Node.js**: 服务器运行环境
 - **TypeScript**: 类型安全的开发语言
 - **Express.js**: Web 应用框架
 - **Fastify**: 高性能 Web 框架（可选）
 
 ### 数据存储
+
 - **PostgreSQL**: 主数据库，存储元数据和配置
 - **Redis**: 缓存和会话存储
 - **MinIO/S3**: 对象存储，存储图片文件
 - **Elasticsearch**: 全文搜索和索引
 
 ### AI 和机器学习
+
 - **TensorFlow.js**: 浏览器端 AI 模型运行
 - **ONNX Runtime**: 跨平台 AI 模型推理
 - **Transformers.js**: 自然语言处理模型
 
 ### 监控和日志
+
 - **Prometheus**: 指标收集和监控
 - **Grafana**: 监控面板和可视化
 - **Winston**: 日志记录和管理
@@ -164,29 +168,34 @@ server/
 ### 安装和运行
 
 1. **克隆项目**
+
    ```bash
    git clone https://github.com/trueLoving/pixuli.git
    cd pixuli/server
    ```
 
 2. **安装依赖**
+
    ```bash
    pnpm install
    ```
 
 3. **配置环境变量**
+
    ```bash
    cp .env.example .env
    # 编辑 .env 文件，配置数据库连接等信息
    ```
 
 4. **初始化数据库**
+
    ```bash
    pnpm run db:migrate
    pnpm run db:seed
    ```
 
 5. **启动开发服务器**
+
    ```bash
    pnpm run dev
    ```
@@ -212,23 +221,27 @@ docker run -p 3000:3000 --env-file .env pixuli-server
 ### MCP Server API
 
 #### 模型管理
+
 - `POST /mcp/models/register` - 注册新模型
 - `GET /mcp/models` - 获取可用模型列表
 - `DELETE /mcp/models/:id` - 删除模型
 
 #### 上下文管理
+
 - `POST /mcp/context/create` - 创建新上下文
 - `GET /mcp/context/:id` - 获取上下文信息
 - `PUT /mcp/context/:id` - 更新上下文
 - `DELETE /mcp/context/:id` - 删除上下文
 
 #### 模型交互
+
 - `POST /mcp/invoke` - 调用模型推理
 - `GET /mcp/status/:id` - 获取模型状态
 
 ### Image Repository API
 
 #### 图片管理
+
 - `POST /api/images/upload` - 上传图片
 - `GET /api/images` - 获取图片列表
 - `GET /api/images/:id` - 获取图片详情
@@ -236,12 +249,14 @@ docker run -p 3000:3000 --env-file .env pixuli-server
 - `DELETE /api/images/:id` - 删除图片
 
 #### 搜索和分类
+
 - `GET /api/images/search` - 搜索图片
 - `GET /api/images/tags` - 获取标签列表
 - `POST /api/images/:id/tags` - 添加标签
 - `DELETE /api/images/:id/tags/:tag` - 删除标签
 
 #### 批量操作
+
 - `POST /api/images/batch/upload` - 批量上传
 - `POST /api/images/batch/process` - 批量处理
 - `POST /api/images/batch/delete` - 批量删除
@@ -319,11 +334,13 @@ pnpm test:coverage
 ### 生产环境部署
 
 1. **使用 Docker Compose**
+
    ```bash
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
 2. **使用 Kubernetes**
+
    ```bash
    kubectl apply -f k8s/
    ```

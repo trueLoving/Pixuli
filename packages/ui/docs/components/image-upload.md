@@ -5,44 +5,44 @@
 ## 📋 基本用法
 
 ```tsx
-import { ImageUpload } from 'pixuli-ui/src'
+import { ImageUpload } from 'pixuli-ui/src';
 
 function App() {
-  const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState<BatchUploadProgress | null>(null)
-  
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState<BatchUploadProgress | null>(null);
+
   const handleUploadImage = async (data: ImageUploadData) => {
-    setUploading(true)
+    setUploading(true);
     try {
       // 实现单文件上传逻辑
-      console.log('上传图片:', data)
+      console.log('上传图片:', data);
       // 上传成功后更新图片列表
     } catch (error) {
-      console.error('上传失败:', error)
+      console.error('上传失败:', error);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
-  
+  };
+
   const handleUploadMultipleImages = async (data: MultiImageUploadData) => {
-    setUploading(true)
+    setUploading(true);
     try {
       // 实现批量上传逻辑
-      console.log('批量上传图片:', data)
+      console.log('批量上传图片:', data);
       // 更新进度
       setProgress({
         total: data.files.length,
         completed: 0,
         failed: 0,
-        items: []
-      })
+        items: [],
+      });
     } catch (error) {
-      console.error('批量上传失败:', error)
+      console.error('批量上传失败:', error);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
-  
+  };
+
   return (
     <ImageUpload
       onUploadImage={handleUploadImage}
@@ -50,19 +50,19 @@ function App() {
       loading={uploading}
       batchUploadProgress={progress}
     />
-  )
+  );
 }
 ```
 
 ## 🔧 Props
 
-| 属性 | 类型 | 必需 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `onUploadImage` | `(data: ImageUploadData) => Promise<void>` | ✅ | - | 单文件上传回调 |
-| `onUploadMultipleImages` | `(data: MultiImageUploadData) => Promise<void>` | ✅ | - | 批量上传回调 |
-| `loading` | `boolean` | ✅ | - | 上传状态 |
-| `batchUploadProgress` | `BatchUploadProgress \| null` | ❌ | - | 批量上传进度 |
-| `t` | `(key: string) => string` | ❌ | - | 翻译函数 |
+| 属性                     | 类型                                            | 必需 | 默认值 | 说明           |
+| ------------------------ | ----------------------------------------------- | ---- | ------ | -------------- |
+| `onUploadImage`          | `(data: ImageUploadData) => Promise<void>`      | ✅   | -      | 单文件上传回调 |
+| `onUploadMultipleImages` | `(data: MultiImageUploadData) => Promise<void>` | ✅   | -      | 批量上传回调   |
+| `loading`                | `boolean`                                       | ✅   | -      | 上传状态       |
+| `batchUploadProgress`    | `BatchUploadProgress \| null`                   | ❌   | -      | 批量上传进度   |
+| `t`                      | `(key: string) => string`                       | ❌   | -      | 翻译函数       |
 
 ## 📝 类型定义
 
@@ -70,10 +70,10 @@ function App() {
 
 ```tsx
 interface ImageUploadData {
-  file: File
-  name?: string
-  description?: string
-  tags?: string[]
+  file: File;
+  name?: string;
+  description?: string;
+  tags?: string[];
 }
 ```
 
@@ -81,10 +81,10 @@ interface ImageUploadData {
 
 ```tsx
 interface MultiImageUploadData {
-  files: File[]
-  name?: string
-  description?: string
-  tags?: string[]
+  files: File[];
+  name?: string;
+  description?: string;
+  tags?: string[];
 }
 ```
 
@@ -92,18 +92,18 @@ interface MultiImageUploadData {
 
 ```tsx
 interface BatchUploadProgress {
-  total: number
-  completed: number
-  failed: number
-  current?: string
-  items: UploadProgress[]
+  total: number;
+  completed: number;
+  failed: number;
+  current?: string;
+  items: UploadProgress[];
 }
 
 interface UploadProgress {
-  id: string
-  progress: number
-  status: 'uploading' | 'success' | 'error'
-  message?: string
+  id: string;
+  progress: number;
+  status: 'uploading' | 'success' | 'error';
+  message?: string;
 }
 ```
 
@@ -229,36 +229,37 @@ const t = defaultTranslate(zhCN)
 ```tsx
 const validateFile = (file: File) => {
   // 检查文件类型
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
   if (!allowedTypes.includes(file.type)) {
-    throw new Error('不支持的文件类型')
+    throw new Error('不支持的文件类型');
   }
-  
+
   // 检查文件大小
-  const maxSize = 10 * 1024 * 1024 // 10MB
+  const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
-    throw new Error('文件大小超过限制')
+    throw new Error('文件大小超过限制');
   }
-  
-  return true
-}
+
+  return true;
+};
 
 <ImageUpload
   onUploadImage={handleUpload}
   onUploadMultipleImages={handleBatchUpload}
   loading={uploading}
   // 可以在回调中实现自定义验证
-/>
+/>;
 ```
 
 ### 自定义进度显示
 
 ```tsx
-const [customProgress, setCustomProgress] = useState<BatchUploadProgress | null>(null)
+const [customProgress, setCustomProgress] =
+  useState<BatchUploadProgress | null>(null);
 
 const handleBatchUpload = async (data: MultiImageUploadData) => {
-  setUploading(true)
-  
+  setUploading(true);
+
   // 初始化进度
   const progress: BatchUploadProgress = {
     total: data.files.length,
@@ -267,51 +268,51 @@ const handleBatchUpload = async (data: MultiImageUploadData) => {
     items: data.files.map(file => ({
       id: file.name,
       progress: 0,
-      status: 'uploading' as const
-    }))
-  }
-  setCustomProgress(progress)
-  
+      status: 'uploading' as const,
+    })),
+  };
+  setCustomProgress(progress);
+
   // 逐个上传文件
   for (let i = 0; i < data.files.length; i++) {
-    const file = data.files[i]
+    const file = data.files[i];
     try {
       // 上传文件
-      await uploadSingleFile(file)
-      
+      await uploadSingleFile(file);
+
       // 更新进度
       setCustomProgress(prev => ({
         ...prev!,
         completed: prev!.completed + 1,
-        items: prev!.items.map(item => 
-          item.id === file.name 
+        items: prev!.items.map(item =>
+          item.id === file.name
             ? { ...item, progress: 100, status: 'success' as const }
             : item
-        )
-      }))
+        ),
+      }));
     } catch (error) {
       // 更新失败状态
       setCustomProgress(prev => ({
         ...prev!,
         failed: prev!.failed + 1,
-        items: prev!.items.map(item => 
-          item.id === file.name 
+        items: prev!.items.map(item =>
+          item.id === file.name
             ? { ...item, status: 'error' as const, message: error.message }
             : item
-        )
-      }))
+        ),
+      }));
     }
   }
-  
-  setUploading(false)
-}
+
+  setUploading(false);
+};
 
 <ImageUpload
   onUploadImage={handleUpload}
   onUploadMultipleImages={handleBatchUpload}
   loading={uploading}
   batchUploadProgress={customProgress}
-/>
+/>;
 ```
 
 ## ⚠️ 注意事项

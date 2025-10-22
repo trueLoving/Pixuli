@@ -1,13 +1,20 @@
-import { CompressionResult, formatFileSize } from '@/utils/imageCompression'
-import { AlertCircle, CheckCircle, Download, Eye, Loader2, RotateCcw } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { CompressionResult, formatFileSize } from '@/utils/imageCompression';
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Eye,
+  Loader2,
+  RotateCcw,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface ImageCompressionPreviewProps {
-  originalFile: File
-  compressionResult: CompressionResult | null
-  isCompressing: boolean
-  onDownload: (file: File) => void
-  onRetry: () => void
+  originalFile: File;
+  compressionResult: CompressionResult | null;
+  isCompressing: boolean;
+  onDownload: (file: File) => void;
+  onRetry: () => void;
 }
 
 const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
@@ -15,38 +22,40 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
   compressionResult,
   isCompressing,
   onDownload,
-  onRetry
+  onRetry,
 }) => {
-  const [originalPreview, setOriginalPreview] = useState<string>('')
-  const [compressedPreview, setCompressedPreview] = useState<string>('')
+  const [originalPreview, setOriginalPreview] = useState<string>('');
+  const [compressedPreview, setCompressedPreview] = useState<string>('');
 
   // 创建预览URL
   useEffect(() => {
     if (originalFile) {
-      const url = URL.createObjectURL(originalFile)
-      setOriginalPreview(url)
-      return () => URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(originalFile);
+      setOriginalPreview(url);
+      return () => URL.revokeObjectURL(url);
     }
-  }, [originalFile])
+  }, [originalFile]);
 
   useEffect(() => {
     if (compressionResult?.compressedFile) {
-      const url = URL.createObjectURL(compressionResult.compressedFile)
-      setCompressedPreview(url)
-      return () => URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(compressionResult.compressedFile);
+      setCompressedPreview(url);
+      return () => URL.revokeObjectURL(url);
     }
-  }, [compressionResult])
+  }, [compressionResult]);
 
   if (isCompressing) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">正在压缩图片...</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            正在压缩图片...
+          </h3>
           <p className="text-gray-500">请稍候，压缩过程可能需要几秒钟</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!compressionResult) {
@@ -58,7 +67,7 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           <p className="text-gray-500">配置压缩选项后，点击压缩按钮查看效果</p>
         </div>
       </div>
-    )
+    );
   }
 
   const {
@@ -66,11 +75,11 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
     compressedSize,
     compressionRatio,
     originalDimensions,
-    compressedDimensions
-  } = compressionResult
+    compressedDimensions,
+  } = compressionResult;
 
-  const sizeReduction = originalSize - compressedSize
-  const isCompressionSuccessful = compressionRatio > 0
+  const sizeReduction = originalSize - compressedSize;
+  const isCompressionSuccessful = compressionRatio > 0;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -115,7 +124,9 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-800">压缩效果</span>
+              <span className="text-sm font-medium text-green-800">
+                压缩效果
+              </span>
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-green-600">
@@ -142,7 +153,9 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           </div>
           <div className="text-xs text-gray-600">
             <div className="font-medium">原始图片</div>
-            <div>{originalDimensions.width} × {originalDimensions.height}</div>
+            <div>
+              {originalDimensions.width} × {originalDimensions.height}
+            </div>
             <div>{formatFileSize(originalSize)}</div>
           </div>
         </div>
@@ -158,7 +171,9 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           </div>
           <div className="text-xs text-blue-600">
             <div className="font-medium">压缩后图片</div>
-            <div>{compressedDimensions.width} × {compressedDimensions.height}</div>
+            <div>
+              {compressedDimensions.width} × {compressedDimensions.height}
+            </div>
             <div>{formatFileSize(compressedSize)}</div>
           </div>
         </div>
@@ -187,11 +202,15 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
         <div className="text-xs text-gray-600 space-y-1">
           <div className="flex justify-between">
             <span>文件名:</span>
-            <span className="font-medium">{compressionResult.compressedFile.name}</span>
+            <span className="font-medium">
+              {compressionResult.compressedFile.name}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>文件类型:</span>
-            <span className="font-medium">{compressionResult.compressedFile.type}</span>
+            <span className="font-medium">
+              {compressionResult.compressedFile.type}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>压缩比例:</span>
@@ -200,13 +219,14 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           <div className="flex justify-between">
             <span>尺寸变化:</span>
             <span className="font-medium">
-              {originalDimensions.width}×{originalDimensions.height} → {compressedDimensions.width}×{compressedDimensions.height}
+              {originalDimensions.width}×{originalDimensions.height} →{' '}
+              {compressedDimensions.width}×{compressedDimensions.height}
             </span>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageCompressionPreview 
+export default ImageCompressionPreview;

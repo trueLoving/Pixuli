@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      prettier:
+        specifier: ^3.0.0
+        version: 3.6.2
 
   apps/desktop:
     dependencies:

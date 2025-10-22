@@ -5,42 +5,42 @@
 ## 📋 基本用法
 
 ```tsx
-import { ImageBrowser } from 'pixuli-ui/src'
+import { ImageBrowser } from 'pixuli-ui/src';
 
 function App() {
-  const [images, setImages] = useState<ImageItem[]>([])
-  
+  const [images, setImages] = useState<ImageItem[]>([]);
+
   const handleDeleteImage = async (id: string, name: string) => {
     // 实现删除逻辑
-    console.log('删除图片:', id, name)
-  }
-  
+    console.log('删除图片:', id, name);
+  };
+
   const handleUpdateImage = async (data: ImageEditData) => {
     // 实现更新逻辑
-    console.log('更新图片:', data)
-  }
-  
+    console.log('更新图片:', data);
+  };
+
   return (
     <ImageBrowser
       images={images}
       onDeleteImage={handleDeleteImage}
       onUpdateImage={handleUpdateImage}
     />
-  )
+  );
 }
 ```
 
 ## 🔧 Props
 
-| 属性 | 类型 | 必需 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `images` | `ImageItem[]` | ✅ | - | 图片数据数组 |
-| `className` | `string` | ❌ | - | 自定义 CSS 类名 |
-| `onDeleteImage` | `(id: string, name: string) => Promise<void>` | ❌ | - | 删除图片回调 |
-| `onUpdateImage` | `(data: ImageEditData) => Promise<void>` | ❌ | - | 更新图片回调 |
-| `getImageDimensionsFromUrl` | `(url: string) => Promise<{width: number, height: number}>` | ❌ | - | 获取图片尺寸函数 |
-| `formatFileSize` | `(size: number) => string` | ❌ | - | 格式化文件大小函数 |
-| `t` | `(key: string) => string` | ❌ | - | 翻译函数 |
+| 属性                        | 类型                                                        | 必需 | 默认值 | 说明               |
+| --------------------------- | ----------------------------------------------------------- | ---- | ------ | ------------------ |
+| `images`                    | `ImageItem[]`                                               | ✅   | -      | 图片数据数组       |
+| `className`                 | `string`                                                    | ❌   | -      | 自定义 CSS 类名    |
+| `onDeleteImage`             | `(id: string, name: string) => Promise<void>`               | ❌   | -      | 删除图片回调       |
+| `onUpdateImage`             | `(data: ImageEditData) => Promise<void>`                    | ❌   | -      | 更新图片回调       |
+| `getImageDimensionsFromUrl` | `(url: string) => Promise<{width: number, height: number}>` | ❌   | -      | 获取图片尺寸函数   |
+| `formatFileSize`            | `(size: number) => string`                                  | ❌   | -      | 格式化文件大小函数 |
+| `t`                         | `(key: string) => string`                                   | ❌   | -      | 翻译函数           |
 
 ## 📝 类型定义
 
@@ -48,18 +48,18 @@ function App() {
 
 ```tsx
 interface ImageItem {
-  id: string
-  name: string
-  url: string
-  githubUrl: string
-  size: number
-  width: number
-  height: number
-  type: string
-  tags: string[]
-  description?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  url: string;
+  githubUrl: string;
+  size: number;
+  width: number;
+  height: number;
+  type: string;
+  tags: string[];
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
@@ -67,10 +67,10 @@ interface ImageItem {
 
 ```tsx
 interface ImageEditData {
-  id: string
-  name?: string
-  description?: string
-  tags?: string[]
+  id: string;
+  name?: string;
+  description?: string;
+  tags?: string[];
 }
 ```
 

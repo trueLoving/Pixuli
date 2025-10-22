@@ -9,14 +9,25 @@ import {
   UpyunConfigModal,
   formatFileSize,
   getImageDimensionsFromUrl,
-  keyboardManager
-} from '@packages/ui/src'
-import { ArrowRightLeft, HelpCircle, RefreshCw, Settings, Zap } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { Toaster } from 'react-hot-toast'
-import './App.css'
-import { AIAnalysisModal, AIModelManager, ImageCompression, ImageFormatConversion } from './components'
-import { useImageStore } from './stores/imageStore'
+  keyboardManager,
+} from '@packages/ui/src';
+import {
+  ArrowRightLeft,
+  HelpCircle,
+  RefreshCw,
+  Settings,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
+import './App.css';
+import {
+  AIAnalysisModal,
+  AIModelManager,
+  ImageCompression,
+  ImageFormatConversion,
+} from './components';
+import { useImageStore } from './stores/imageStore';
 
 function App() {
   const {
@@ -36,18 +47,18 @@ function App() {
     uploadMultipleImages,
     batchUploadProgress,
     deleteImage,
-    updateImage
-  } = useImageStore()
+    updateImage,
+  } = useImageStore();
 
-  const [showConfigModal, setShowConfigModal] = useState(false)
-  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false)
-  const [showCompression, setShowCompression] = useState(false)
-  const [showFormatConversion, setShowFormatConversion] = useState(false)
-  const [showAIModelManager, setShowAIModelManager] = useState(false)
-  const [showAIAnalysis, setShowAIAnalysis] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
+  const [showCompression, setShowCompression] = useState(false);
+  const [showFormatConversion, setShowFormatConversion] = useState(false);
+  const [showAIModelManager, setShowAIModelManager] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   // 键盘快捷键分类数据
   const keyboardCategories = [
@@ -60,8 +71,8 @@ function App() {
         { description: '打开GitHub配置', key: ',', ctrlKey: true },
         { description: '打开又拍云配置', key: '.', ctrlKey: true },
         { description: '聚焦搜索框', key: '/' },
-        { description: '切换视图模式', key: 'V', ctrlKey: true }
-      ]
+        { description: '切换视图模式', key: 'V', ctrlKey: true },
+      ],
     },
     {
       name: '功能操作',
@@ -69,7 +80,7 @@ function App() {
         { description: '打开图片压缩工具', key: 'C', ctrlKey: true },
         { description: '打开图片格式转换', key: 'F', ctrlKey: true },
         // { description: '打开AI图片分析', key: 'A', ctrlKey: true }
-      ]
+      ],
     },
     {
       name: '图片浏览',
@@ -78,114 +89,127 @@ function App() {
         { description: '选择下一张图片', key: 'ArrowDown' },
         { description: '选择左侧图片', key: 'ArrowLeft' },
         { description: '选择右侧图片', key: 'ArrowRight' },
-        { description: '打开选中的图片', key: 'Enter' }
-      ]
-    }
-  ]
+        { description: '打开选中的图片', key: 'Enter' },
+      ],
+    },
+  ];
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
     try {
-      await loadImages()
+      await loadImages();
     } catch (error) {
-      console.error('Failed to load images:', error)
+      console.error('Failed to load images:', error);
     }
-  }, [loadImages])
+  }, [loadImages]);
 
   const handleOpenConfigModal = useCallback(() => {
-    setShowConfigModal(true)
-  }, [])
+    setShowConfigModal(true);
+  }, []);
 
   const handleCloseConfigModal = useCallback(() => {
-    setShowConfigModal(false)
-  }, [])
+    setShowConfigModal(false);
+  }, []);
 
   const handleOpenUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(true)
-  }, [])
+    setShowUpyunConfigModal(true);
+  }, []);
 
   const handleCloseUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(false)
-  }, [])
+    setShowUpyunConfigModal(false);
+  }, []);
 
   const handleOpenCompression = useCallback(() => {
-    console.log('Opening compression modal, current state:', showCompression)
-    setShowCompression(true)
-    console.log('State set to true, new state:', true)
-  }, [showCompression])
+    console.log('Opening compression modal, current state:', showCompression);
+    setShowCompression(true);
+    console.log('State set to true, new state:', true);
+  }, [showCompression]);
 
   const handleCloseCompression = useCallback(() => {
-    setShowCompression(false)
-  }, [])
+    setShowCompression(false);
+  }, []);
 
   const handleOpenFormatConversion = useCallback(() => {
-    setShowFormatConversion(true)
-  }, [])
+    setShowFormatConversion(true);
+  }, []);
 
   const handleCloseFormatConversion = useCallback(() => {
-    setShowFormatConversion(false)
-  }, [])
+    setShowFormatConversion(false);
+  }, []);
 
   const handleOpenAIModelManager = useCallback(() => {
-    setShowAIModelManager(true)
-  }, [])
+    setShowAIModelManager(true);
+  }, []);
 
   const handleCloseAIModelManager = useCallback(() => {
-    setShowAIModelManager(false)
-  }, [])
+    setShowAIModelManager(false);
+  }, []);
 
   const handleOpenAIAnalysis = useCallback(() => {
-    setShowAIAnalysis(true)
-  }, [])
+    setShowAIAnalysis(true);
+  }, []);
 
   const handleCloseAIAnalysis = useCallback(() => {
-    setShowAIAnalysis(false)
-  }, [])
+    setShowAIAnalysis(false);
+  }, []);
 
   const handleOpenKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(true)
-  }, [])
+    setShowKeyboardHelp(true);
+  }, []);
 
   const handleCloseKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(false)
-  }, [])
+    setShowKeyboardHelp(false);
+  }, []);
 
-  const handleSaveConfig = useCallback((config: any) => {
-    setGitHubConfig(config)
-    setShowConfigModal(false)
-  }, [setGitHubConfig])
+  const handleSaveConfig = useCallback(
+    (config: any) => {
+      setGitHubConfig(config);
+      setShowConfigModal(false);
+    },
+    [setGitHubConfig]
+  );
 
   const handleClearConfig = useCallback(() => {
-    clearGitHubConfig()
-    setShowConfigModal(false)
-  }, [clearGitHubConfig])
+    clearGitHubConfig();
+    setShowConfigModal(false);
+  }, [clearGitHubConfig]);
 
   // CRUD 操作回调函数
-  const handleDeleteImage = useCallback(async (imageId: string, fileName: string) => {
-    await deleteImage(imageId, fileName)
-  }, [deleteImage])
+  const handleDeleteImage = useCallback(
+    async (imageId: string, fileName: string) => {
+      await deleteImage(imageId, fileName);
+    },
+    [deleteImage]
+  );
 
-  const handleUpdateImage = useCallback(async (data: any) => {
-    await updateImage(data)
-  }, [updateImage])
+  const handleUpdateImage = useCallback(
+    async (data: any) => {
+      await updateImage(data);
+    },
+    [updateImage]
+  );
 
   // 初始化存储服务
   useEffect(() => {
     if (githubConfig || upyunConfig) {
       // 确保存储服务已初始化
-      const { initializeStorage } = useImageStore.getState()
-      initializeStorage()
-      handleLoadImages()
+      const { initializeStorage } = useImageStore.getState();
+      initializeStorage();
+      handleLoadImages();
     }
-  }, [githubConfig, upyunConfig, handleLoadImages])
+  }, [githubConfig, upyunConfig, handleLoadImages]);
 
   // 页面加载时初始化
   useEffect(() => {
-    const { githubConfig, upyunConfig, initializeStorage } = useImageStore.getState()
-    if ((githubConfig || upyunConfig) && !useImageStore.getState().storageService) {
-      initializeStorage()
+    const { githubConfig, upyunConfig, initializeStorage } =
+      useImageStore.getState();
+    if (
+      (githubConfig || upyunConfig) &&
+      !useImageStore.getState().storageService
+    ) {
+      initializeStorage();
     }
-  }, [])
+  }, []);
 
   // 注册键盘快捷键
   useEffect(() => {
@@ -195,27 +219,27 @@ function App() {
         key: COMMON_SHORTCUTS.ESCAPE,
         description: '关闭当前模态框',
         action: () => {
-          if (showConfigModal) handleCloseConfigModal()
-          else if (showUpyunConfigModal) handleCloseUpyunConfigModal()
-          else if (showCompression) handleCloseCompression()
-          else if (showFormatConversion) handleCloseFormatConversion()
-          else if (showAIModelManager) handleCloseAIModelManager()
-          else if (showAIAnalysis) handleCloseAIAnalysis()
-          else if (showKeyboardHelp) handleCloseKeyboardHelp()
+          if (showConfigModal) handleCloseConfigModal();
+          else if (showUpyunConfigModal) handleCloseUpyunConfigModal();
+          else if (showCompression) handleCloseCompression();
+          else if (showFormatConversion) handleCloseFormatConversion();
+          else if (showAIModelManager) handleCloseAIModelManager();
+          else if (showAIAnalysis) handleCloseAIAnalysis();
+          else if (showKeyboardHelp) handleCloseKeyboardHelp();
         },
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.F1,
         description: '显示键盘快捷键帮助',
         action: handleOpenKeyboardHelp,
-        category: SHORTCUT_CATEGORIES.HELP
+        category: SHORTCUT_CATEGORIES.HELP,
       },
       {
         key: COMMON_SHORTCUTS.F5,
         description: '刷新图片列表',
         action: handleLoadImages,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
 
       // 功能快捷键
@@ -224,35 +248,35 @@ function App() {
         ctrlKey: true,
         description: '打开图片压缩工具',
         action: handleOpenCompression,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.F,
         ctrlKey: true,
         description: '打开图片格式转换',
         action: handleOpenFormatConversion,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.A,
         ctrlKey: true,
         description: '打开AI图片分析',
         action: handleOpenAIAnalysis,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.COMMA,
         ctrlKey: true,
         description: '打开GitHub配置',
         action: handleOpenConfigModal,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.PERIOD,
         ctrlKey: true,
         description: '打开又拍云配置',
         action: handleOpenUpyunConfigModal,
-        category: SHORTCUT_CATEGORIES.GENERAL
+        category: SHORTCUT_CATEGORIES.GENERAL,
       },
 
       // 搜索快捷键
@@ -260,13 +284,15 @@ function App() {
         key: COMMON_SHORTCUTS.SLASH,
         description: '聚焦搜索框',
         action: () => {
-          const searchInput = document.querySelector('input[placeholder*="搜索"]') as HTMLInputElement
+          const searchInput = document.querySelector(
+            'input[placeholder*="搜索"]'
+          ) as HTMLInputElement;
           if (searchInput) {
-            searchInput.focus()
-            searchInput.select()
+            searchInput.focus();
+            searchInput.select();
           }
         },
-        category: SHORTCUT_CATEGORIES.SEARCH
+        category: SHORTCUT_CATEGORIES.SEARCH,
       },
       {
         key: COMMON_SHORTCUTS.V,
@@ -274,40 +300,54 @@ function App() {
         description: '切换视图模式',
         action: () => {
           // 触发图片浏览器的视图切换
-          const event = new CustomEvent('toggleViewMode')
-          window.dispatchEvent(event)
+          const event = new CustomEvent('toggleViewMode');
+          window.dispatchEvent(event);
         },
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
-      }
-    ]
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+    ];
 
-    keyboardManager.registerBatch(shortcuts)
+    keyboardManager.registerBatch(shortcuts);
 
     return () => {
-      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
-    }
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
+    };
   }, [
-    showConfigModal, showCompression, showFormatConversion,
-    showAIModelManager, showAIAnalysis, showKeyboardHelp,
-    handleCloseConfigModal, handleCloseCompression, handleCloseFormatConversion,
-    handleCloseAIModelManager, handleCloseAIAnalysis, handleCloseKeyboardHelp,
-    handleOpenKeyboardHelp, handleLoadImages, handleOpenCompression,
-    handleOpenFormatConversion, handleOpenAIAnalysis, handleOpenConfigModal
-  ])
+    showConfigModal,
+    showCompression,
+    showFormatConversion,
+    showAIModelManager,
+    showAIAnalysis,
+    showKeyboardHelp,
+    handleCloseConfigModal,
+    handleCloseCompression,
+    handleCloseFormatConversion,
+    handleCloseAIModelManager,
+    handleCloseAIAnalysis,
+    handleCloseKeyboardHelp,
+    handleOpenKeyboardHelp,
+    handleLoadImages,
+    handleOpenCompression,
+    handleOpenFormatConversion,
+    handleOpenAIAnalysis,
+    handleOpenConfigModal,
+  ]);
 
   // 过滤图片
   const filteredImages = images.filter(image => {
-    const matchesSearch = image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesTags = selectedTags.length === 0 ||
-      selectedTags.some(tag => image.tags?.includes(tag))
+    const matchesTags =
+      selectedTags.length === 0 ||
+      selectedTags.some(tag => image.tags?.includes(tag));
 
-    return matchesSearch && matchesTags
-  })
+    return matchesSearch && matchesTags;
+  });
 
   // 获取所有标签
-  const allTags = Array.from(new Set(images.flatMap(img => img.tags || [])))
+  const allTags = Array.from(new Set(images.flatMap(img => img.tags || [])));
 
   if (!githubConfig && !upyunConfig) {
     return (
@@ -316,9 +356,15 @@ function App() {
           <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
             <Settings className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">欢迎使用 Pixuli</h1>
-          <p className="text-gray-600 mb-8 text-lg">专业的图片管理与存储解决方案</p>
-          <p className="text-gray-500 mb-6 text-base">请选择存储服务以开始使用</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            欢迎使用 Pixuli
+          </h1>
+          <p className="text-gray-600 mb-8 text-lg">
+            专业的图片管理与存储解决方案
+          </p>
+          <p className="text-gray-500 mb-6 text-base">
+            请选择存储服务以开始使用
+          </p>
 
           <div className="space-y-4">
             <button
@@ -361,7 +407,7 @@ function App() {
           <ImageCompression onClose={handleCloseCompression} />
         )}
       </div>
-    )
+    );
   }
 
   return (
@@ -374,7 +420,9 @@ function App() {
               <h1 className="text-xl font-bold text-gray-900">Pixuli</h1>
               <div className="text-sm text-gray-500 hidden sm:block">
                 {storageType === 'github' && githubConfig && (
-                  <>仓库: {githubConfig.owner}/{githubConfig.repo}</>
+                  <>
+                    仓库: {githubConfig.owner}/{githubConfig.repo}
+                  </>
                 )}
                 {storageType === 'upyun' && upyunConfig && (
                   <>又拍云: {upyunConfig.bucket}</>
@@ -430,7 +478,9 @@ function App() {
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title="刷新图片 (F5)"
               >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+                />
               </button>
               <button
                 onClick={handleOpenKeyboardHelp}
@@ -504,8 +554,6 @@ function App() {
               formatFileSize={formatFileSize}
             />
           </div>
-
-
         </div>
       </main>
 
@@ -529,9 +577,7 @@ function App() {
       />
 
       {/* 图片压缩模态框 */}
-      {showCompression && (
-        <ImageCompression onClose={handleCloseCompression} />
-      )}
+      {showCompression && <ImageCompression onClose={handleCloseCompression} />}
 
       {/* 图片格式转换模态框 */}
       {showFormatConversion && (
@@ -542,8 +588,8 @@ function App() {
       <AIAnalysisModal
         isOpen={showAIAnalysis}
         onClose={handleCloseAIAnalysis}
-        onAnalysisComplete={(result) => {
-          console.log('AI 分析完成:', result)
+        onAnalysisComplete={result => {
+          console.log('AI 分析完成:', result);
         }}
         onOpenModelManager={handleOpenAIModelManager}
       />
@@ -556,8 +602,8 @@ function App() {
           // 刷新AI分析模态框中的模型列表
           if (showAIAnalysis) {
             // 触发AI分析模态框重新加载模型
-            const event = new CustomEvent('modelListUpdated')
-            window.dispatchEvent(event)
+            const event = new CustomEvent('modelListUpdated');
+            window.dispatchEvent(event);
           }
         }}
       />
@@ -571,7 +617,7 @@ function App() {
 
       <Toaster />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

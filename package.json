@@ -3,16 +3,17 @@
   "description": "Pixuli - 智能图片管理应用 Monorepo",
   "private": true,
   "scripts": {
-    "build:wasm":"pnpm run --filter pixuli-wasm build",
+    "build:wasm": "pnpm run --filter pixuli-wasm build",
     "dev:web": "pnpm run --filter pixuli-web dev",
     "build:web": "pnpm run --filter pixuli-web build",
     "dev:desktop": "pnpm run --filter pixuli-desktop dev",
     "build:desktop": "pnpm run --filter pixuli-desktop build",
     "docs:dev": "pnpm run --filter pixuli-docs dev",
     "docs:build": "pnpm run --filter pixuli-docs build",
-    "benchmark":"pnpm run --filter pixuli-benchmark benchmark",
-    "lint":"echo 'todo'",
-    "test":"echo 'todo'"
+    "benchmark": "pnpm run --filter pixuli-benchmark benchmark",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "echo 'todo'"
   },
   "keywords": [
     "monorepo",
@@ -23,5 +24,8 @@
     "图片管理"
   ],
   "author": "Pixuli Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
 }

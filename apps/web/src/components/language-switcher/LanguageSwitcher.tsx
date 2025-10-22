@@ -1,18 +1,19 @@
-import { Check, Globe } from 'lucide-react'
-import React, { useState } from 'react'
-import { useI18n } from '../../i18n/useI18n'
+import { Check, Globe } from 'lucide-react';
+import React, { useState } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 
 const LanguageSwitcher: React.FC = () => {
-  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } = useI18n()
-  const [isOpen, setIsOpen] = useState(false)
+  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
+    useI18n();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const currentLang = getCurrentLanguage()
-  const availableLanguages = getAvailableLanguages()
+  const currentLang = getCurrentLanguage();
+  const availableLanguages = getAvailableLanguages();
 
   const handleLanguageChange = (langCode: string) => {
-    changeLanguage(langCode)
-    setIsOpen(false)
-  }
+    changeLanguage(langCode);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative">
@@ -41,7 +42,7 @@ const LanguageSwitcher: React.FC = () => {
               <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('language.current')}
               </div>
-              {availableLanguages.map((lang) => (
+              {availableLanguages.map(lang => (
                 <button
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
@@ -61,7 +62,7 @@ const LanguageSwitcher: React.FC = () => {
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default LanguageSwitcher
+export default LanguageSwitcher;

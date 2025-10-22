@@ -2,7 +2,8 @@
 
 > Pixuli 官方文档网站，提供完整的产品介绍、使用教程和技术文档
 
-这是 Pixuli 项目的官方文档网站，使用 Next.js 15+ App Router 和 React 构建，提供现代化的文档阅读体验。
+这是 Pixuli 项目的官方文档网站，使用 Next.js 15+ App
+Router 和 React 构建，提供现代化的文档阅读体验。
 
 ## 🌟 项目特色
 
@@ -17,7 +18,7 @@
 
 ### 环境要求
 
-- Node.js 18.0+ 
+- Node.js 18.0+
 - pnpm 8.0+ (推荐) 或 npm 9.0+
 - Git
 
@@ -72,16 +73,19 @@ docs/
 ## 🎨 技术栈
 
 ### 核心框架
+
 - **Next.js 15.5.4** - React 全栈框架
 - **React 19.1.0** - 用户界面库
 - **TypeScript 5** - 类型安全的 JavaScript
 
 ### 样式和 UI
+
 - **Tailwind CSS 3.3.2** - 实用优先的 CSS 框架
 - **@tailwindcss/typography** - 排版插件
 - **Font Awesome 6.4.0** - 图标库
 
 ### 构建工具
+
 - **Turbopack** - Next.js 15 的快速构建工具
 - **PostCSS** - CSS 后处理器
 - **Autoprefixer** - CSS 前缀自动添加
@@ -95,6 +99,7 @@ docs/
 3. 在 `Navigation.tsx` 中添加导航链接
 
 示例：
+
 ```bash
 mkdir src/app/new-page
 echo "export default function NewPage() { return <div>新页面</div>; }" > src/app/new-page/page.tsx
@@ -133,23 +138,25 @@ export default function PageName() {
 ### 本地开发
 
 1. **克隆仓库**
+
    ```bash
    git clone https://github.com/trueLoving/Pixuli.git
    cd Pixuli/docs
    ```
 
 2. **安装依赖**
+
    ```bash
    pnpm install
    ```
 
 3. **启动开发服务器**
+
    ```bash
    pnpm dev
    ```
 
-4. **访问网站**
-   打开 [http://localhost:3001](http://localhost:3001)
+4. **访问网站** 打开 [http://localhost:3001](http://localhost:3001)
 
 ### 代码规范
 
@@ -183,6 +190,7 @@ git commit -m "docs: 更新 README 文档"
    - 选择 `docs` 目录作为根目录
 
 2. **配置环境变量**
+
    ```bash
    NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
    ```
@@ -194,6 +202,7 @@ git commit -m "docs: 更新 README 文档"
 ### 其他平台部署
 
 #### Netlify
+
 ```bash
 # 构建命令
 npm run build
@@ -203,6 +212,7 @@ npm run build
 ```
 
 #### GitHub Pages
+
 ```bash
 # 安装 gh-pages
 npm install -g gh-pages
@@ -215,12 +225,14 @@ gh-pages -d .next
 ## 📊 性能优化
 
 ### 构建优化
+
 - **Turbopack** - 使用 Next.js 15 的快速构建工具
 - **静态生成** - 所有页面预渲染为静态文件
 - **图片优化** - 使用 Next.js Image 组件
 - **代码分割** - 自动代码分割和懒加载
 
 ### 运行时优化
+
 - **CDN 加速** - 静态资源通过 CDN 分发
 - **缓存策略** - 合理的缓存头设置
 - **压缩** - Gzip/Brotli 压缩
@@ -229,21 +241,23 @@ gh-pages -d .next
 ## 🔍 SEO 优化
 
 ### 元数据配置
+
 ```typescript
 export const metadata: Metadata = {
-  title: "Pixuli - 智能图片管理应用",
-  description: "现代化的跨平台图片管理桌面应用",
-  keywords: "图片管理,图片处理,桌面应用",
+  title: 'Pixuli - 智能图片管理应用',
+  description: '现代化的跨平台图片管理桌面应用',
+  keywords: '图片管理,图片处理,桌面应用',
   openGraph: {
-    type: "website",
-    url: "https://pixuli-docs.vercel.app/",
-    title: "Pixuli - 智能图片管理应用",
-    description: "智能图片处理和管理",
+    type: 'website',
+    url: 'https://pixuli-docs.vercel.app/',
+    title: 'Pixuli - 智能图片管理应用',
+    description: '智能图片处理和管理',
   },
 };
 ```
 
 ### 结构化数据
+
 - 使用 JSON-LD 格式
 - 添加面包屑导航
 - 实现站点地图
@@ -254,6 +268,7 @@ export const metadata: Metadata = {
 ### 常见问题
 
 #### 1. 构建失败
+
 ```bash
 # 清除缓存
 rm -rf .next node_modules
@@ -262,16 +277,19 @@ pnpm build
 ```
 
 #### 2. 样式不生效
+
 - 检查 Tailwind CSS 配置
 - 确认 `globals.css` 正确导入
 - 验证 Tailwind 类名拼写
 
 #### 3. 图片加载失败
+
 - 检查 `public/images/` 目录
 - 确认图片路径正确
 - 使用 Next.js Image 组件
 
 #### 4. 开发服务器启动失败
+
 ```bash
 # 检查端口占用
 lsof -ti:3001
@@ -285,22 +303,26 @@ pnpm dev --port 3002
 ### 如何贡献
 
 1. **Fork 项目**
+
    ```bash
    # Fork 到你的 GitHub 账户
    ```
 
 2. **创建分支**
+
    ```bash
    git checkout -b feature/new-feature
    ```
 
 3. **提交更改**
+
    ```bash
    git add .
    git commit -m "feat: 添加新功能"
    ```
 
 4. **推送分支**
+
    ```bash
    git push origin feature/new-feature
    ```
@@ -324,12 +346,14 @@ pnpm dev --port 3002
 
 ## 🔗 相关链接
 
-- **项目主页**: [https://github.com/trueLoving/Pixuli](https://github.com/trueLoving/Pixuli)
+- **项目主页**:
+  [https://github.com/trueLoving/Pixuli](https://github.com/trueLoving/Pixuli)
 - **在线文档**: [https://pixuli-docs.vercel.app](https://pixuli-docs.vercel.app)
 - **Web 版应用**: [https://pixuli-web.vercel.app](https://pixuli-web.vercel.app)
 - **问题反馈**: [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
-- **功能建议**: [GitHub Discussions](https://github.com/trueLoving/Pixuli/discussions)
+- **功能建议**:
+  [GitHub Discussions](https://github.com/trueLoving/Pixuli/discussions)
 
 ---
 
-*最后更新：2025年10月*
+_最后更新：2025年10月_

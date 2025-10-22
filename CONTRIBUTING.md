@@ -22,7 +22,8 @@ cd Pixuli
 pnpm install
 ```
 
-> ⚠️ **重要**: 本项目使用 pnpm workspace 管理，**仅支持 pnpm 包管理工具**。请勿使用 npm 或 yarn，否则可能导致依赖安装失败或版本冲突。
+> ⚠️ **重要**: 本项目使用 pnpm
+> workspace 管理，**仅支持 pnpm 包管理工具**。请勿使用 npm 或 yarn，否则可能导致依赖安装失败或版本冲突。
 
 ### 📋 可用脚本命令
 
@@ -80,9 +81,11 @@ pnpm dev:web
 #### 开发流程
 
 1. **启动开发服务器**
+
    ```bash
    pnpm dev:web
    ```
+
    访问 [http://localhost:3000](http://localhost:3000)
 
 2. **开发功能**
@@ -125,9 +128,11 @@ pnpm dev:desktop
 #### 开发流程
 
 1. **启动开发模式**
+
    ```bash
    pnpm dev:desktop
    ```
+
    这会同时启动 Vite 开发服务器和 Electron 应用
 
 2. **开发功能**
@@ -174,6 +179,7 @@ pnpm install
    - 添加 CSS 样式
 
 2. **测试组件**
+
    ```bash
    # 构建组件库(验证是否通过编译)
    pnpm build
@@ -209,6 +215,7 @@ pnpm build:wasm
    - 更新 `packages/wasm/Cargo.toml` 配置
 
 2. **构建 WASM**
+
    ```bash
    pnpm build:wasm
    ```
@@ -351,11 +358,13 @@ git push origin feature/your-feature-name
 
 ### Q: 为什么必须使用 pnpm？
 
-A: 本项目使用 pnpm workspace 管理 monorepo，pnpm 提供了更好的依赖管理和性能。使用其他包管理工具可能导致依赖安装失败或版本冲突。
+A: 本项目使用 pnpm
+workspace 管理 monorepo，pnpm 提供了更好的依赖管理和性能。使用其他包管理工具可能导致依赖安装失败或版本冲突。
 
 ### Q: 如何安装 pnpm？
 
-A: 
+A:
+
 ```bash
 # 使用 npm 安装 pnpm
 npm install -g pnpm
@@ -383,7 +392,8 @@ A: 在 `packages/ui/src/components/` 中创建组件，更新导出和文档。
 ## 📞 联系我们
 
 - **GitHub Issues**: [报告问题](https://github.com/trueLoving/Pixuli/issues)
-- **GitHub Discussions**: [功能建议](https://github.com/trueLoving/Pixuli/discussions)
+- **GitHub Discussions**:
+  [功能建议](https://github.com/trueLoving/Pixuli/discussions)
 
 ---
 

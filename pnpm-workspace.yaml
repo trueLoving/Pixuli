@@ -1,7 +1,6 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-  - 'benchmark'  
-  - "docs"
-  - "server"
-  
+  - 'benchmark'
+  - 'docs'
+  - 'server'

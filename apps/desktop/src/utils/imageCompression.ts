@@ -1,24 +1,24 @@
-import { WebPCompressionService } from '@/services/webpCompression'
-import { WebPCompressOptions, WebPCompressResult } from '@/types/webp'
+import { WebPCompressionService } from '@/services/webpCompression';
+import { WebPCompressOptions, WebPCompressResult } from '@/types/webp';
 
 export interface CompressionOptions {
-  quality?: number
-  lossless?: boolean
+  quality?: number;
+  lossless?: boolean;
 }
 
 export interface CompressionResult {
-  compressedFile: File
-  originalSize: number
-  compressedSize: number
-  compressionRatio: number
-  originalDimensions: { width: number; height: number }
-  compressedDimensions: { width: number; height: number }
+  compressedFile: File;
+  originalSize: number;
+  compressedSize: number;
+  compressionRatio: number;
+  originalDimensions: { width: number; height: number };
+  compressedDimensions: { width: number; height: number };
 }
 
 export const DEFAULT_COMPRESSION_OPTIONS: CompressionOptions = {
   quality: 80,
-  lossless: false
-}
+  lossless: false,
+};
 
 /**
  * 压缩图片文件（仅使用 WASM WebP 压缩）
@@ -30,32 +30,43 @@ export async function compressImage(
   file: File,
   options: Partial<CompressionOptions> = {}
 ): Promise<CompressionResult> {
-  const finalOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options }
-  
+  const finalOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options };
+
   // 获取原始图片尺寸
-  const originalDimensions = await getImageDimensions(file)
-  
+  const originalDimensions = await getImageDimensions(file);
+
   try {
     // 使用 WASM WebP 压缩
     const webpOptions: WebPCompressOptions = {
       quality: finalOptions.quality,
-      lossless: finalOptions.lossless
-    }
-    
-    const webpResult = await WebPCompressionService.compressImage(file, webpOptions)
-    const compressedFile = WebPCompressionService.createCompressedFile(webpResult, file.name)
-    
+      lossless: finalOptions.lossless,
+    };
+
+    const webpResult = await WebPCompressionService.compressImage(
+      file,
+      webpOptions
+    );
+    const compressedFile = WebPCompressionService.createCompressedFile(
+      webpResult,
+      file.name
+    );
+
     return {
       compressedFile,
       originalSize: file.size,
       compressedSize: webpResult.compressedSize,
       compressionRatio: webpResult.compressionRatio * 100,
       originalDimensions,
-      compressedDimensions: { width: webpResult.width, height: webpResult.height }
-    }
+      compressedDimensions: {
+        width: webpResult.width,
+        height: webpResult.height,
+      },
+    };
   } catch (error) {
-    console.error('WASM WebP compression failed:', error)
-    throw new Error(`图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    console.error('WASM WebP compression failed:', error);
+    throw new Error(
+      `图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
+    );
   }
 }
 
@@ -64,18 +75,20 @@ export async function compressImage(
  * @param file 图片文件
  * @returns Promise<{width: number, height: number}>
  */
-async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+async function getImageDimensions(
+  file: File
+): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
+    const img = new Image();
     img.onload = () => {
       resolve({
         width: img.naturalWidth || img.width,
-        height: img.naturalHeight || img.height
-      })
-    }
-    img.onerror = reject
-    img.src = URL.createObjectURL(file)
-  })
+        height: img.naturalHeight || img.height,
+      });
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 /**
@@ -89,29 +102,43 @@ export async function compressImages(
   options: Partial<CompressionOptions> = {}
 ): Promise<CompressionResult[]> {
   try {
-    const finalOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options }
+    const finalOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options };
     const webpOptions: WebPCompressOptions = {
       quality: finalOptions.quality,
-      lossless: finalOptions.lossless
-    }
-    
+      lossless: finalOptions.lossless,
+    };
+
     // 使用 WASM 批量压缩
-    const webpResults = await WebPCompressionService.batchCompressImages(files, webpOptions)
-    
+    const webpResults = await WebPCompressionService.batchCompressImages(
+      files,
+      webpOptions
+    );
+
     return webpResults.map((webpResult, index) => {
-      const file = files[index]
+      const file = files[index];
       return {
-        compressedFile: WebPCompressionService.createCompressedFile(webpResult, file.name),
+        compressedFile: WebPCompressionService.createCompressedFile(
+          webpResult,
+          file.name
+        ),
         originalSize: webpResult.originalSize,
         compressedSize: webpResult.compressedSize,
         compressionRatio: webpResult.compressionRatio * 100,
-        originalDimensions: { width: webpResult.width, height: webpResult.height },
-        compressedDimensions: { width: webpResult.width, height: webpResult.height }
-      }
-    })
+        originalDimensions: {
+          width: webpResult.width,
+          height: webpResult.height,
+        },
+        compressedDimensions: {
+          width: webpResult.width,
+          height: webpResult.height,
+        },
+      };
+    });
   } catch (error) {
-    console.error('Batch WASM WebP compression failed:', error)
-    throw new Error(`批量图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    console.error('Batch WASM WebP compression failed:', error);
+    throw new Error(
+      `批量图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
+    );
   }
 }
 
@@ -120,33 +147,35 @@ export async function compressImages(
  * @param fileSize 文件大小（字节）
  * @returns CompressionOptions 推荐的压缩选项
  */
-export function getAutoCompressionOptions(fileSize: number): CompressionOptions {
-  const sizeMB = fileSize / (1024 * 1024)
-  
+export function getAutoCompressionOptions(
+  fileSize: number
+): CompressionOptions {
+  const sizeMB = fileSize / (1024 * 1024);
+
   if (sizeMB > 10) {
     // 超大文件：高压缩
     return {
       quality: 60,
-      lossless: false
-    }
+      lossless: false,
+    };
   } else if (sizeMB > 5) {
     // 大文件：中等压缩
     return {
       quality: 70,
-      lossless: false
-    }
+      lossless: false,
+    };
   } else if (sizeMB > 2) {
     // 中等文件：轻微压缩
     return {
       quality: 80,
-      lossless: false
-    }
+      lossless: false,
+    };
   } else {
     // 小文件：保持原样或轻微压缩
     return {
       quality: 85,
-      lossless: false
-    }
+      lossless: false,
+    };
   }
 }
 
@@ -156,13 +185,13 @@ export function getAutoCompressionOptions(fileSize: number): CompressionOptions 
  * @returns 格式化后的大小字符串
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**
@@ -171,7 +200,7 @@ export function formatFileSize(bytes: number): string {
  * @returns 是否为图片文件
  */
 export function isImageFile(file: File): boolean {
-  return file.type.startsWith('image/')
+  return file.type.startsWith('image/');
 }
 
 /**
@@ -185,6 +214,6 @@ export function getSupportedImageFormats(): string[] {
     'image/png',
     'image/webp',
     'image/gif',
-    'image/bmp'
-  ]
+    'image/bmp',
+  ];
 }

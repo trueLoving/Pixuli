@@ -218,25 +218,25 @@
   .keyboard-help-modal-overlay {
     padding: 0.5rem;
   }
-  
+
   .keyboard-help-modal-header {
     padding: 1rem;
   }
-  
+
   .keyboard-help-modal-body {
     padding: 1rem;
   }
-  
+
   .keyboard-help-shortcuts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .keyboard-help-shortcut-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .keyboard-help-shortcut-keys {
     align-self: flex-end;
   }
@@ -248,11 +248,11 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .keyboard-help-modal-title-text {
     font-size: 1.125rem;
   }
-  
+
   .keyboard-help-modal-subtitle {
     font-size: 0.75rem;
   }
@@ -293,7 +293,7 @@
   .keyboard-help-modal-content {
     animation: none;
   }
-  
+
   .keyboard-help-shortcut-item {
     transition: none;
   }
@@ -304,15 +304,15 @@
   .keyboard-help-modal-title-text {
     color: #000000;
   }
-  
+
   .keyboard-help-modal-subtitle {
     color: #404040;
   }
-  
+
   .keyboard-help-shortcut-description {
     color: #000000;
   }
-  
+
   .keyboard-help-key {
     border-color: #000000;
     background-color: #ffffff;

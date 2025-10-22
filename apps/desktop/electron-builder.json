@@ -18,23 +18,18 @@
     "dist/**/*",
     "dist-electron/**/*",
     "node_modules/pixuli-wasm/index.js",
-    "node_modules/pixuli-wasm/index.d.ts", 
+    "node_modules/pixuli-wasm/index.d.ts",
     "node_modules/pixuli-wasm/package.json",
     "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
   ],
-  "asarUnpack": [
-    "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
-  ],
+  "asarUnpack": ["node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"],
   "mac": {
     "category": "public.app-category.graphics-design",
     "artifactName": "${productName}_${version}_${arch}.${ext}",
     "target": [
       {
         "target": "dmg",
-        "arch": [
-          "x64",
-          "arm64"
-        ]
+        "arch": ["x64", "arm64"]
       }
     ],
     "hardenedRuntime": false,
@@ -45,9 +40,7 @@
     "target": [
       {
         "target": "nsis",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       }
     ],
     "artifactName": "${productName}_${version}_${arch}.${ext}"

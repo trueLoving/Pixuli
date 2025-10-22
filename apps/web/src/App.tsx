@@ -7,20 +7,20 @@ import {
   ImageUpload,
   KeyboardHelpModal,
   keyboardManager,
-  Toaster
-} from '@packages/ui/src'
-import { HelpCircle, RefreshCw, Settings } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import './App.css'
-import { Demo, useDemoMode } from './components/demo/Demo'
-import LanguageSwitcher from './components/language-switcher/LanguageSwitcher'
-import { useI18n } from './i18n/useI18n'
-import { useImageStore } from './stores/imageStore'
-import { createKeyboardShortcuts } from './utils/keyboardShortcuts'
+  Toaster,
+} from '@packages/ui/src';
+import { HelpCircle, RefreshCw, Settings } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import './App.css';
+import { Demo, useDemoMode } from './components/demo/Demo';
+import LanguageSwitcher from './components/language-switcher/LanguageSwitcher';
+import { useI18n } from './i18n/useI18n';
+import { useImageStore } from './stores/imageStore';
+import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
 
 function App() {
-  const { t } = useI18n()
-  const { isDemoMode, exitDemoMode } = useDemoMode()
+  const { t } = useI18n();
+  const { isDemoMode, exitDemoMode } = useDemoMode();
   const {
     images,
     loading,
@@ -34,154 +34,196 @@ function App() {
     uploadMultipleImages,
     batchUploadProgress,
     deleteImage,
-    updateImage
-  } = useImageStore()
+    updateImage,
+  } = useImageStore();
 
-  const [showConfigModal, setShowConfigModal] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   // 键盘快捷键分类数据 - 使用 useMemo 优化性能
-  const keyboardCategories = useMemo(() => [
-    {
-      name: t('keyboard.categories.general'),
-      shortcuts: [
-        { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
-        { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
-        { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
-        { description: t('keyboard.shortcuts.openConfig'), key: ',', ctrlKey: true },
-        { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
-        { description: t('keyboard.shortcuts.toggleView'), key: 'V', ctrlKey: true }
-      ]
-    },
-    {
-      name: t('keyboard.categories.browsing'),
-      shortcuts: [
-        { description: t('keyboard.shortcuts.selectUp'), key: 'ArrowUp' },
-        { description: t('keyboard.shortcuts.selectDown'), key: 'ArrowDown' },
-        { description: t('keyboard.shortcuts.selectLeft'), key: 'ArrowLeft' },
-        { description: t('keyboard.shortcuts.selectRight'), key: 'ArrowRight' },
-        { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' }
-      ]
-    }
-  ], [t])
+  const keyboardCategories = useMemo(
+    () => [
+      {
+        name: t('keyboard.categories.general'),
+        shortcuts: [
+          { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
+          { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
+          { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
+          {
+            description: t('keyboard.shortcuts.openConfig'),
+            key: ',',
+            ctrlKey: true,
+          },
+          { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
+          {
+            description: t('keyboard.shortcuts.toggleView'),
+            key: 'V',
+            ctrlKey: true,
+          },
+        ],
+      },
+      {
+        name: t('keyboard.categories.browsing'),
+        shortcuts: [
+          { description: t('keyboard.shortcuts.selectUp'), key: 'ArrowUp' },
+          { description: t('keyboard.shortcuts.selectDown'), key: 'ArrowDown' },
+          { description: t('keyboard.shortcuts.selectLeft'), key: 'ArrowLeft' },
+          {
+            description: t('keyboard.shortcuts.selectRight'),
+            key: 'ArrowRight',
+          },
+          { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' },
+        ],
+      },
+    ],
+    [t]
+  );
 
   // 使用 useCallback 优化回调函数
   const handleLoadImages = useCallback(async () => {
     try {
-      await loadImages()
+      await loadImages();
     } catch (error) {
-      console.error('Failed to load images:', error)
+      console.error('Failed to load images:', error);
     }
-  }, [loadImages])
+  }, [loadImages]);
 
   const handleOpenConfigModal = useCallback(() => {
-    setShowConfigModal(true)
-  }, [])
+    setShowConfigModal(true);
+  }, []);
 
   const handleCloseConfigModal = useCallback(() => {
-    setShowConfigModal(false)
-  }, [])
+    setShowConfigModal(false);
+  }, []);
 
-  const handleSaveConfig = useCallback((config: any) => {
-    setGitHubConfig(config)
-    setShowConfigModal(false)
-  }, [setGitHubConfig])
+  const handleSaveConfig = useCallback(
+    (config: any) => {
+      setGitHubConfig(config);
+      setShowConfigModal(false);
+    },
+    [setGitHubConfig]
+  );
 
   const handleClearConfig = useCallback(() => {
-    clearGitHubConfig()
-    setShowConfigModal(false)
-  }, [clearGitHubConfig])
+    clearGitHubConfig();
+    setShowConfigModal(false);
+  }, [clearGitHubConfig]);
 
-  const handleDeleteImage = useCallback(async (imageId: string, fileName: string) => {
-    await deleteImage(imageId, fileName)
-  }, [deleteImage])
+  const handleDeleteImage = useCallback(
+    async (imageId: string, fileName: string) => {
+      await deleteImage(imageId, fileName);
+    },
+    [deleteImage]
+  );
 
-  const handleUpdateImage = useCallback(async (data: any) => {
-    await updateImage(data)
-  }, [updateImage])
+  const handleUpdateImage = useCallback(
+    async (data: any) => {
+      await updateImage(data);
+    },
+    [updateImage]
+  );
 
   const handleOpenKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(true)
-  }, [])
+    setShowKeyboardHelp(true);
+  }, []);
 
   const handleCloseKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(false)
-  }, [])
+    setShowKeyboardHelp(false);
+  }, []);
 
   // 初始化存储服务
   useEffect(() => {
     if (githubConfig) {
-      const { initializeStorage } = useImageStore.getState()
-      initializeStorage()
-      handleLoadImages()
+      const { initializeStorage } = useImageStore.getState();
+      initializeStorage();
+      handleLoadImages();
     }
-  }, [githubConfig, handleLoadImages])
+  }, [githubConfig, handleLoadImages]);
 
   // 页面加载时初始化
   useEffect(() => {
-    const { githubConfig, initializeStorage } = useImageStore.getState()
+    const { githubConfig, initializeStorage } = useImageStore.getState();
     if (githubConfig && !useImageStore.getState().storageService) {
-      initializeStorage()
+      initializeStorage();
     }
-  }, [])
+  }, []);
 
   // 注册键盘快捷键 - 使用事件驱动模式
   useEffect(() => {
-    const shortcuts = createKeyboardShortcuts(t)
-    keyboardManager.registerBatch(shortcuts)
+    const shortcuts = createKeyboardShortcuts(t);
+    keyboardManager.registerBatch(shortcuts);
 
     // 事件监听器
     const handleCloseModals = () => {
-      if (showConfigModal) handleCloseConfigModal()
-      else if (showKeyboardHelp) handleCloseKeyboardHelp()
-    }
+      if (showConfigModal) handleCloseConfigModal();
+      else if (showKeyboardHelp) handleCloseKeyboardHelp();
+    };
 
-    const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp()
-    const handleRefreshImages = () => handleLoadImages()
-    const handleOpenConfig = () => handleOpenConfigModal()
+    const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
+    const handleRefreshImages = () => handleLoadImages();
+    const handleOpenConfig = () => handleOpenConfigModal();
 
-    window.addEventListener('closeModals', handleCloseModals)
-    window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent)
-    window.addEventListener('refreshImages', handleRefreshImages)
-    window.addEventListener('openConfig', handleOpenConfig)
+    window.addEventListener('closeModals', handleCloseModals);
+    window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent);
+    window.addEventListener('refreshImages', handleRefreshImages);
+    window.addEventListener('openConfig', handleOpenConfig);
 
     return () => {
-      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
-      window.removeEventListener('closeModals', handleCloseModals)
-      window.removeEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent)
-      window.removeEventListener('refreshImages', handleRefreshImages)
-      window.removeEventListener('openConfig', handleOpenConfig)
-    }
-  }, [t, showConfigModal, showKeyboardHelp, handleCloseConfigModal, handleCloseKeyboardHelp, handleOpenKeyboardHelp, handleLoadImages, handleOpenConfigModal])
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
+      window.removeEventListener('closeModals', handleCloseModals);
+      window.removeEventListener(
+        'openKeyboardHelp',
+        handleOpenKeyboardHelpEvent
+      );
+      window.removeEventListener('refreshImages', handleRefreshImages);
+      window.removeEventListener('openConfig', handleOpenConfig);
+    };
+  }, [
+    t,
+    showConfigModal,
+    showKeyboardHelp,
+    handleCloseConfigModal,
+    handleCloseKeyboardHelp,
+    handleOpenKeyboardHelp,
+    handleLoadImages,
+    handleOpenConfigModal,
+  ]);
 
   // 过滤图片 - 使用 useMemo 优化性能
   const filteredImages = useMemo(() => {
     return images.filter(image => {
-      const matchesSearch = image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesSearch =
+        image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        image.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesTags = selectedTags.length === 0 ||
-        selectedTags.some(tag => image.tags?.includes(tag))
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.some(tag => image.tags?.includes(tag));
 
-      return matchesSearch && matchesTags
-    })
-  }, [images, searchTerm, selectedTags])
+      return matchesSearch && matchesTags;
+    });
+  }, [images, searchTerm, selectedTags]);
 
   // 获取所有标签 - 使用 useMemo 优化性能
   const allTags = useMemo(() => {
-    return Array.from(new Set(images.flatMap(img => img.tags || [])))
-  }, [images])
+    return Array.from(new Set(images.flatMap(img => img.tags || [])));
+  }, [images]);
 
   if (!githubConfig) {
     return (
-      <div className="h-screen flex items-center justify-center p-4" style={{ backgroundColor: 'var(--app-theme-background-primary)' }}>
+      <div
+        className="h-screen flex items-center justify-center p-4"
+        style={{ backgroundColor: 'var(--app-theme-background-primary)' }}
+      >
         <div className="text-center w-full max-w-md">
           <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
             <Settings className="w-10 h-10 text-blue-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('app.welcome')}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            {t('app.welcome')}
+          </h1>
           <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
 
           {isDemoMode && <Demo t={t} onExitDemo={exitDemoMode} />}
@@ -205,17 +247,25 @@ function App() {
           t={t}
         />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--app-theme-background-primary)' }}>
+    <div
+      className="h-screen flex flex-col"
+      style={{ backgroundColor: 'var(--app-theme-background-primary)' }}
+    >
       {/* 顶部导航栏 */}
-      <header className="shadow-sm border-b flex-shrink-0" style={{ backgroundColor: 'var(--app-theme-background-secondary)' }}>
+      <header
+        className="shadow-sm border-b flex-shrink-0"
+        style={{ backgroundColor: 'var(--app-theme-background-secondary)' }}
+      >
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">{t('app.title')}</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                {t('app.title')}
+              </h1>
               <div className="text-sm text-gray-500 hidden sm:block">
                 {t('app.repository')}: {githubConfig.owner}/{githubConfig.repo}
               </div>
@@ -241,7 +291,9 @@ function App() {
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title={`${t('navigation.refresh')} (F5)`}
               >
-                <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
+                />
               </button>
               <button
                 onClick={handleOpenKeyboardHelp}
@@ -297,7 +349,8 @@ function App() {
           {/* 图片统计和操作区域 */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')})
+              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')}
+              )
             </h2>
             {loading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -318,8 +371,6 @@ function App() {
               formatFileSize={formatFileSize}
             />
           </div>
-
-
         </div>
       </main>
 
@@ -343,7 +394,7 @@ function App() {
 
       <Toaster />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

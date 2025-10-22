@@ -1,61 +1,64 @@
-import { FormatConversionService } from '@/services/formatConversion'
+import { FormatConversionService } from '@/services/formatConversion';
 import {
   FormatConversionOptions,
   SUPPORTED_FORMATS,
   getFormatInfo,
   supportsLossless,
-  supportsTransparency
-} from '@/types/formatConversion'
-import { Info, Settings, Zap } from 'lucide-react'
-import React, { useState } from 'react'
+  supportsTransparency,
+} from '@/types/formatConversion';
+import { Info, Settings, Zap } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface ImageFormatConversionSettingsProps {
-  file: File
-  options: FormatConversionOptions
-  onOptionsChange: (options: FormatConversionOptions) => void
-  onAutoOptimize: () => void
+  file: File;
+  options: FormatConversionOptions;
+  onOptionsChange: (options: FormatConversionOptions) => void;
+  onAutoOptimize: () => void;
 }
 
-const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps> = ({
-  file,
-  options,
-  onOptionsChange,
-  onAutoOptimize
-}) => {
-  const [showAdvanced, setShowAdvanced] = useState(false)
+const ImageFormatConversionSettings: React.FC<
+  ImageFormatConversionSettingsProps
+> = ({ file, options, onOptionsChange, onAutoOptimize }) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleOptionChange = (key: keyof FormatConversionOptions, value: any) => {
+  const handleOptionChange = (
+    key: keyof FormatConversionOptions,
+    value: any
+  ) => {
     onOptionsChange({
       ...options,
-      [key]: value
-    })
-  }
+      [key]: value,
+    });
+  };
 
   const handleFormatChange = (targetFormat: string) => {
-    const newOptions = { ...options, targetFormat: targetFormat as any }
-    
+    const newOptions = { ...options, targetFormat: targetFormat as any };
+
     // 如果新格式不支持透明度，关闭透明度选项
     if (!supportsTransparency(targetFormat as any)) {
-      newOptions.preserveTransparency = false
+      newOptions.preserveTransparency = false;
     }
-    
+
     // 如果新格式不支持无损压缩，关闭无损选项
     if (!supportsLossless(targetFormat as any)) {
-      newOptions.lossless = false
+      newOptions.lossless = false;
     }
-    
-    onOptionsChange(newOptions)
-  }
+
+    onOptionsChange(newOptions);
+  };
 
   const handleAutoOptimize = () => {
-    const autoOptions = FormatConversionService.getAutoConversionOptions(file, options.targetFormat)
-    onOptionsChange({ ...options, ...autoOptions })
-    onAutoOptimize()
-  }
+    const autoOptions = FormatConversionService.getAutoConversionOptions(
+      file,
+      options.targetFormat
+    );
+    onOptionsChange({ ...options, ...autoOptions });
+    onAutoOptimize();
+  };
 
-  const fileSizeMB = file.size / (1024 * 1024)
-  const isLargeFile = fileSizeMB > 5
-  const targetFormatInfo = getFormatInfo(options.targetFormat)
+  const fileSizeMB = file.size / (1024 * 1024);
+  const isLargeFile = fileSizeMB > 5;
+  const targetFormatInfo = getFormatInfo(options.targetFormat);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -97,7 +100,7 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
           目标格式
         </label>
         <div className="grid grid-cols-2 gap-3">
-          {SUPPORTED_FORMATS.map((format) => (
+          {SUPPORTED_FORMATS.map(format => (
             <div
               key={format.format}
               className={`format-option ${
@@ -111,7 +114,9 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{format.name}</div>
-                  <div className="text-xs text-gray-500">{format.description}</div>
+                  <div className="text-xs text-gray-500">
+                    {format.description}
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,14 +131,18 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
             <label className="text-sm font-medium text-gray-700">
               质量设置
             </label>
-            <span className="text-sm text-gray-500">{options.quality || 80}%</span>
+            <span className="text-sm text-gray-500">
+              {options.quality || 80}%
+            </span>
           </div>
           <input
             type="range"
             min="1"
             max="100"
             value={options.quality || 80}
-            onChange={(e) => handleOptionChange('quality', parseInt(e.target.value))}
+            onChange={e =>
+              handleOptionChange('quality', parseInt(e.target.value))
+            }
             className="quality-slider"
           />
           <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -165,7 +174,9 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
               <input
                 type="checkbox"
                 checked={options.preserveTransparency || false}
-                onChange={(e) => handleOptionChange('preserveTransparency', e.target.checked)}
+                onChange={e =>
+                  handleOptionChange('preserveTransparency', e.target.checked)
+                }
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             </div>
@@ -180,7 +191,7 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
               <input
                 type="checkbox"
                 checked={options.lossless || false}
-                onChange={(e) => handleOptionChange('lossless', e.target.checked)}
+                onChange={e => handleOptionChange('lossless', e.target.checked)}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
             </div>
@@ -193,7 +204,7 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
             </label>
             <select
               value={options.colorSpace || 'rgb'}
-              onChange={(e) => handleOptionChange('colorSpace', e.target.value)}
+              onChange={e => handleOptionChange('colorSpace', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="rgb">RGB</option>
@@ -232,14 +243,15 @@ const ImageFormatConversionSettings: React.FC<ImageFormatConversionSettingsProps
             <div className="text-sm text-yellow-700">
               <div className="font-medium mb-1">大文件提示</div>
               <div>
-                检测到文件较大 ({fileSizeMB.toFixed(1)} MB)，建议使用较低的质量设置以获得更好的性能。
+                检测到文件较大 ({fileSizeMB.toFixed(1)}{' '}
+                MB)，建议使用较低的质量设置以获得更好的性能。
               </div>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ImageFormatConversionSettings
+export default ImageFormatConversionSettings;

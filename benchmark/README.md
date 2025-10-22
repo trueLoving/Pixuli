@@ -1,6 +1,7 @@
 # Pixuli 性能基准测试
 
-这个目录包含了 Pixuli WASM 和 JavaScript 图片压缩功能的性能对比测试，用于验证 WASM 实现的性能优势。
+这个目录包含了 Pixuli
+WASM 和 JavaScript 图片压缩功能的性能对比测试，用于验证 WASM 实现的性能优势。
 
 ## 🎯 测试目标
 
@@ -28,16 +29,19 @@ pnpm install
 ### 运行测试
 
 #### 简化基准测试（推荐）
+
 ```bash
 pnpm run benchmark:simple
 ```
 
 #### 详细基准测试
+
 ```bash
 pnpm run benchmark:detailed
 ```
 
 #### 运行所有测试
+
 ```bash
 pnpm run benchmark
 ```
@@ -45,35 +49,41 @@ pnpm run benchmark
 ## 📊 测试内容
 
 ### 1. 单次压缩性能对比
+
 - **WASM WebP 压缩** vs **JavaScript 压缩**
 - 处理时间对比（毫秒）
 - 操作频率对比（ops/sec）
 - 性能提升百分比
 
 ### 2. 不同质量设置测试
+
 - 质量范围：60, 70, 80, 90, 95
 - 压缩率对比
 - 处理时间对比
 - 质量 vs 性能权衡分析
 
 ### 3. 批量压缩性能测试
+
 - 批量大小：2, 5, 10 张图片
 - WASM 批量处理 vs JavaScript 并行处理
 - 批量处理效率对比
 - 内存使用情况
 
 ### 4. 压缩效果对比
+
 - 原始文件大小
 - 压缩后文件大小
 - 压缩率百分比
 - 图片尺寸信息
 
 ### 5. 内存使用对比
+
 - WASM 压缩内存占用
 - JavaScript 压缩内存占用
 - 内存效率对比
 
 ### 6. 稳定性测试
+
 - 连续运行 100 次测试
 - 错误率统计
 - 平均处理时间
@@ -82,16 +92,19 @@ pnpm run benchmark
 ## 🛠️ 技术实现
 
 ### 测试框架
+
 - **TinyBench**: 高性能基准测试框架
 - **TypeScript**: 类型安全的测试代码
 - **Node.js**: 服务端测试环境
 
 ### 测试数据
+
 - **真实图片**: 使用项目中的测试图片文件
 - **模拟数据**: 当无测试图片时使用随机数据
 - **多种格式**: 支持 PNG、ICO 等格式
 
 ### WASM 模块
+
 - **pixuli-wasm**: 项目自研的 WASM 图片处理模块
 - **WebP 压缩**: 支持有损和无损压缩
 - **批量处理**: 支持多图片批量压缩
@@ -101,16 +114,19 @@ pnpm run benchmark
 根据测试，WASM WebP 压缩相比 JavaScript 压缩通常具有以下优势：
 
 ### ⚡ 性能优势
+
 - **更快的处理速度** - 通常快 2-10 倍
 - **更高的操作频率** - 更高的 ops/sec
 - **更低的延迟** - 更快的响应时间
 
 ### 📦 压缩优势
+
 - **更好的压缩效果** - WebP 格式压缩率更高
 - **更精确的质量控制** - 支持 0-100 质量设置
 - **无损压缩支持** - 支持无损压缩模式
 
 ### 💾 资源优势
+
 - **更低的内存使用** - 原生代码更高效
 - **更好的稳定性** - 更少的错误率
 - **批量处理优化** - 批量压缩效率更高
@@ -118,18 +134,21 @@ pnpm run benchmark
 ## 📋 测试指标
 
 ### 性能指标
+
 - **处理时间** (毫秒)
 - **操作频率** (ops/sec)
 - **性能提升** (百分比)
 - **平均时间** (毫秒)
 
 ### 压缩指标
+
 - **压缩率** (百分比)
 - **文件大小** (字节)
 - **质量设置** (0-100)
 - **图片尺寸** (宽x高)
 
 ### 资源指标
+
 - **内存使用** (MB)
 - **错误率** (百分比)
 - **稳定性** (连续运行成功率)
@@ -146,27 +165,29 @@ pnpm run benchmark
 ## 🔧 自定义测试
 
 ### 修改测试参数
+
 ```typescript
 // 修改测试时间
 const bench = new Bench({
   time: 5000, // 运行 5 秒
-  iterations: 20 // 最少 20 次迭代
-})
+  iterations: 20, // 最少 20 次迭代
+});
 
 // 修改质量设置
-const qualities = [60, 70, 80, 90, 95]
+const qualities = [60, 70, 80, 90, 95];
 
 // 修改批量大小
-const batchSizes = [2, 5, 10]
+const batchSizes = [2, 5, 10];
 ```
 
 ### 添加新的测试场景
+
 ```typescript
 // 添加新的压缩选项测试
 bench.add('WASM WebP 自定义质量', async () => {
-  const result = compressToWebp(imageData, { quality: 85 })
-  return result
-})
+  const result = compressToWebp(imageData, { quality: 85 });
+  return result;
+});
 ```
 
 ## 📊 结果分析
@@ -182,6 +203,7 @@ bench.add('WASM WebP 自定义质量', async () => {
 ## 🎉 测试完成
 
 测试完成后会显示：
+
 - ✅ WASM WebP 压缩的各项优势
 - 📈 详细的性能指标
 - 🎯 压缩效果对比

@@ -1,25 +1,25 @@
-import React from 'react'
-import { Grid, List } from 'lucide-react'
-import { defaultTranslate } from '../../../locales/defaultTranslate'
-import './ImageViewToggle.css'
+import React from 'react';
+import { Grid, List } from 'lucide-react';
+import { defaultTranslate } from '../../../locales/defaultTranslate';
+import './ImageViewToggle.css';
 
-export type ViewMode = 'grid' | 'list'
+export type ViewMode = 'grid' | 'list';
 
 interface ViewToggleProps {
-  currentView: ViewMode
-  onViewChange: (view: ViewMode) => void
-  className?: string
-  t?: (key: string) => string
+  currentView: ViewMode;
+  onViewChange: (view: ViewMode) => void;
+  className?: string;
+  t?: (key: string) => string;
 }
 
-const ViewToggle: React.FC<ViewToggleProps> = ({ 
-  currentView, 
-  onViewChange, 
+const ViewToggle: React.FC<ViewToggleProps> = ({
+  currentView,
+  onViewChange,
   className = '',
-  t
+  t,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
-  const translate = t || defaultTranslate
+  const translate = t || defaultTranslate;
   return (
     <div className={`image-view-toggle-container ${className}`}>
       <button
@@ -30,9 +30,11 @@ const ViewToggle: React.FC<ViewToggleProps> = ({
         title={translate('image.viewMode.grid')}
       >
         <Grid className="image-view-toggle-icon" />
-        <span className="image-view-toggle-text">{translate('image.viewMode.grid')}</span>
+        <span className="image-view-toggle-text">
+          {translate('image.viewMode.grid')}
+        </span>
       </button>
-      
+
       <button
         onClick={() => onViewChange('list')}
         className={`image-view-toggle-button ${
@@ -41,10 +43,12 @@ const ViewToggle: React.FC<ViewToggleProps> = ({
         title={translate('image.viewMode.list')}
       >
         <List className="image-view-toggle-icon" />
-        <span className="image-view-toggle-text">{translate('image.viewMode.list')}</span>
+        <span className="image-view-toggle-text">
+          {translate('image.viewMode.list')}
+        </span>
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default ViewToggle 
+export default ViewToggle;

@@ -2,5 +2,7 @@
   "recommendations": [
     // Rust 开发
     "rust-lang.rust-analyzer",
+    // 代码格式化
+    "esbenp.prettier-vscode"
   ]
 }

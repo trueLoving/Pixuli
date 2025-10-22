@@ -4,52 +4,52 @@
  */
 
 export interface KeyboardShortcut {
-  key: string
-  ctrlKey?: boolean
-  altKey?: boolean
-  shiftKey?: boolean
-  metaKey?: boolean
-  description: string
-  action: () => void
-  category: string
-  enabled?: boolean
+  key: string;
+  ctrlKey?: boolean;
+  altKey?: boolean;
+  shiftKey?: boolean;
+  metaKey?: boolean;
+  description: string;
+  action: () => void;
+  category: string;
+  enabled?: boolean;
 }
 
 export interface KeyboardShortcutCategory {
-  name: string
-  description: string
-  shortcuts: KeyboardShortcut[]
+  name: string;
+  description: string;
+  shortcuts: KeyboardShortcut[];
 }
 
 export class KeyboardShortcutManager {
-  private shortcuts: Map<string, KeyboardShortcut> = new Map()
-  private categories: Map<string, KeyboardShortcutCategory> = new Map()
-  private isEnabled = true
-  private eventListeners: Set<(event: KeyboardEvent) => void> = new Set()
+  private shortcuts: Map<string, KeyboardShortcut> = new Map();
+  private categories: Map<string, KeyboardShortcutCategory> = new Map();
+  private isEnabled = true;
+  private eventListeners: Set<(event: KeyboardEvent) => void> = new Set();
 
   constructor() {
-    this.bindGlobalKeydown()
+    this.bindGlobalKeydown();
   }
 
   /**
    * 注册快捷键
    */
   register(shortcut: KeyboardShortcut): void {
-    const key = this.generateKey(shortcut)
-    this.shortcuts.set(key, shortcut)
-    
+    const key = this.generateKey(shortcut);
+    this.shortcuts.set(key, shortcut);
+
     // 添加到分类
     if (!this.categories.has(shortcut.category)) {
       this.categories.set(shortcut.category, {
         name: shortcut.category,
         description: '',
-        shortcuts: []
-      })
+        shortcuts: [],
+      });
     }
-    
-    const category = this.categories.get(shortcut.category)!
+
+    const category = this.categories.get(shortcut.category)!;
     if (!category.shortcuts.find(s => this.generateKey(s) === key)) {
-      category.shortcuts.push(shortcut)
+      category.shortcuts.push(shortcut);
     }
   }
 
@@ -57,12 +57,14 @@ export class KeyboardShortcutManager {
    * 注销快捷键
    */
   unregister(shortcut: KeyboardShortcut): void {
-    const key = this.generateKey(shortcut)
-    this.shortcuts.delete(key)
-    
-    const category = this.categories.get(shortcut.category)
+    const key = this.generateKey(shortcut);
+    this.shortcuts.delete(key);
+
+    const category = this.categories.get(shortcut.category);
     if (category) {
-      category.shortcuts = category.shortcuts.filter(s => this.generateKey(s) !== key)
+      category.shortcuts = category.shortcuts.filter(
+        s => this.generateKey(s) !== key
+      );
     }
   }
 
@@ -70,41 +72,41 @@ export class KeyboardShortcutManager {
    * 批量注册快捷键
    */
   registerBatch(shortcuts: KeyboardShortcut[]): void {
-    shortcuts.forEach(shortcut => this.register(shortcut))
+    shortcuts.forEach(shortcut => this.register(shortcut));
   }
 
   /**
    * 启用/禁用快捷键系统
    */
   setEnabled(enabled: boolean): void {
-    this.isEnabled = enabled
+    this.isEnabled = enabled;
   }
 
   /**
    * 获取所有分类
    */
   getCategories(): KeyboardShortcutCategory[] {
-    return Array.from(this.categories.values())
+    return Array.from(this.categories.values());
   }
 
   /**
    * 获取指定分类的快捷键
    */
   getShortcutsByCategory(category: string): KeyboardShortcut[] {
-    return this.categories.get(category)?.shortcuts || []
+    return this.categories.get(category)?.shortcuts || [];
   }
 
   /**
    * 生成快捷键的唯一标识
    */
   private generateKey(shortcut: KeyboardShortcut): string {
-    const modifiers = []
-    if (shortcut.ctrlKey) modifiers.push('ctrl')
-    if (shortcut.altKey) modifiers.push('alt')
-    if (shortcut.shiftKey) modifiers.push('shift')
-    if (shortcut.metaKey) modifiers.push('meta')
-    
-    return `${modifiers.join('+')}+${shortcut.key.toLowerCase()}`
+    const modifiers = [];
+    if (shortcut.ctrlKey) modifiers.push('ctrl');
+    if (shortcut.altKey) modifiers.push('alt');
+    if (shortcut.shiftKey) modifiers.push('shift');
+    if (shortcut.metaKey) modifiers.push('meta');
+
+    return `${modifiers.join('+')}+${shortcut.key.toLowerCase()}`;
   }
 
   /**
@@ -112,11 +114,11 @@ export class KeyboardShortcutManager {
    */
   private bindGlobalKeydown(): void {
     const handleKeydown = (event: KeyboardEvent) => {
-      if (!this.isEnabled) return
+      if (!this.isEnabled) return;
 
       // 如果焦点在输入框、文本区域或可编辑元素上，跳过快捷键
-      const target = event.target as HTMLElement
-      if (this.isEditableElement(target)) return
+      const target = event.target as HTMLElement;
+      if (this.isEditableElement(target)) return;
 
       const key = this.generateKey({
         key: event.key,
@@ -126,33 +128,33 @@ export class KeyboardShortcutManager {
         metaKey: event.metaKey,
         description: '',
         action: () => {},
-        category: ''
-      })
+        category: '',
+      });
 
-      const shortcut = this.shortcuts.get(key)
+      const shortcut = this.shortcuts.get(key);
       if (shortcut && shortcut.enabled !== false) {
-        event.preventDefault()
-        event.stopPropagation()
-        shortcut.action()
+        event.preventDefault();
+        event.stopPropagation();
+        shortcut.action();
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeydown)
-    this.eventListeners.add(handleKeydown)
+    document.addEventListener('keydown', handleKeydown);
+    this.eventListeners.add(handleKeydown);
   }
 
   /**
    * 检查是否为可编辑元素
    */
   private isEditableElement(element: HTMLElement): boolean {
-    const tagName = element.tagName.toLowerCase()
-    const editableTags = ['input', 'textarea', 'select']
-    
-    if (editableTags.includes(tagName)) return true
-    if (element.contentEditable === 'true') return true
-    if (element.getAttribute('role') === 'textbox') return true
-    
-    return false
+    const tagName = element.tagName.toLowerCase();
+    const editableTags = ['input', 'textarea', 'select'];
+
+    if (editableTags.includes(tagName)) return true;
+    if (element.contentEditable === 'true') return true;
+    if (element.getAttribute('role') === 'textbox') return true;
+
+    return false;
   }
 
   /**
@@ -160,16 +162,16 @@ export class KeyboardShortcutManager {
    */
   destroy(): void {
     this.eventListeners.forEach(listener => {
-      document.removeEventListener('keydown', listener)
-    })
-    this.eventListeners.clear()
-    this.shortcuts.clear()
-    this.categories.clear()
+      document.removeEventListener('keydown', listener);
+    });
+    this.eventListeners.clear();
+    this.shortcuts.clear();
+    this.categories.clear();
   }
 }
 
 // 全局快捷键管理器实例
-export const keyboardManager = new KeyboardShortcutManager()
+export const keyboardManager = new KeyboardShortcutManager();
 
 // 常用快捷键定义
 export const COMMON_SHORTCUTS = {
@@ -180,7 +182,7 @@ export const COMMON_SHORTCUTS = {
   TAB: 'Tab',
   BACKSPACE: 'Backspace',
   DELETE: 'Delete',
-  
+
   // 功能键
   F1: 'F1',
   F2: 'F2',
@@ -194,13 +196,13 @@ export const COMMON_SHORTCUTS = {
   F10: 'F10',
   F11: 'F11',
   F12: 'F12',
-  
+
   // 方向键
   ARROW_UP: 'ArrowUp',
   ARROW_DOWN: 'ArrowDown',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
-  
+
   // 字母和数字
   A: 'a',
   B: 'b',
@@ -228,7 +230,7 @@ export const COMMON_SHORTCUTS = {
   X: 'x',
   Y: 'y',
   Z: 'z',
-  
+
   // 数字
   DIGIT_0: '0',
   DIGIT_1: '1',
@@ -240,12 +242,12 @@ export const COMMON_SHORTCUTS = {
   DIGIT_7: '7',
   DIGIT_8: '8',
   DIGIT_9: '9',
-  
+
   // 特殊字符
   SLASH: '/',
   COMMA: ',',
   PERIOD: '.',
-} as const
+} as const;
 
 // 快捷键分类
 export const SHORTCUT_CATEGORIES = {
@@ -255,5 +257,5 @@ export const SHORTCUT_CATEGORIES = {
   IMAGE_BROWSER: '图片浏览',
   IMAGE_EDIT: '图片编辑',
   SEARCH: '搜索',
-  HELP: '帮助'
-} as const
+  HELP: '帮助',
+} as const;

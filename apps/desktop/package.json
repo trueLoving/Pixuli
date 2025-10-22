@@ -1,6 +1,6 @@
 {
   "name": "pixuli-desktop",
-  "productName":"Pixuli",
+  "productName": "Pixuli",
   "version": "1.1.0",
   "debug": {
     "env": {
@@ -14,13 +14,7 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder"
   },
-  "keywords": [
-    "electron",
-    "vite",
-    "react",
-    "typescript",
-    "图片管理"
-  ],
+  "keywords": ["electron", "vite", "react", "typescript", "图片管理"],
   "author": "Pixuli Team",
   "license": "MIT",
   "devDependencies": {

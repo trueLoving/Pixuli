@@ -147,30 +147,30 @@
   .image-url-modal-container {
     margin: 0.5rem;
   }
-  
+
   .image-url-modal-header {
     padding: 1rem;
   }
-  
+
   .image-url-modal-content {
     padding: 1rem;
   }
-  
+
   .image-url-modal-input-group {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .image-url-modal-button {
     justify-content: center;
   }
-  
+
   .image-url-modal-image-info {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
   }
-  
+
   .image-url-modal-thumbnail {
     width: 3rem;
     height: 3rem;

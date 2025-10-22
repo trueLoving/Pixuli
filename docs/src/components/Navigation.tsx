@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect } from "react";
-import Image from "next/image";
+import React, { useEffect } from 'react';
+import Image from 'next/image';
 
 export default function Navigation() {
   useEffect(() => {
@@ -38,7 +38,13 @@ export default function Navigation() {
         <div className="nav-logo">
           <a href="/" className="logo-link">
             <div className="logo-container">
-              <Image src="/images/logo.png" alt="Pixuli" width={40} height={40} className="logo" />
+              <Image
+                src="/images/logo.png"
+                alt="Pixuli"
+                width={40}
+                height={40}
+                className="logo"
+              />
               <div className="logo-text-container">
                 <span className="logo-text">Pixuli</span>
                 <span className="logo-subtitle">智能图片管理</span>
@@ -48,16 +54,24 @@ export default function Navigation() {
         </div>
         <ul className="nav-menu">
           <li className="nav-item">
-            <a href="/" className="nav-link">首页</a>
+            <a href="/" className="nav-link">
+              首页
+            </a>
           </li>
           <li className="nav-item">
-            <a href="/#features" className="nav-link">功能特色</a>
+            <a href="/#features" className="nav-link">
+              功能特色
+            </a>
           </li>
           <li className="nav-item">
-            <a href="/#download" className="nav-link">下载</a>
+            <a href="/#download" className="nav-link">
+              下载
+            </a>
           </li>
           <li className="nav-item">
-            <a href="/#about" className="nav-link">关于</a>
+            <a href="/#about" className="nav-link">
+              关于
+            </a>
           </li>
           {/* <li className="nav-item">
             <a href="/products" className="nav-link">产品矩阵</a>
@@ -78,4 +92,3 @@ export default function Navigation() {
     </nav>
   );
 }
-

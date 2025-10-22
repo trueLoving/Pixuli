@@ -1,5 +1,5 @@
-import type { ImageItem } from '../types/image'
-import type { FilterOptions } from '../components/image-browser/image-filter/ImageFilter'
+import type { ImageItem } from '../types/image';
+import type { FilterOptions } from '../components/image-browser/image-filter/ImageFilter';
 
 /**
  * 根据筛选条件过滤图片数组
@@ -7,37 +7,40 @@ import type { FilterOptions } from '../components/image-browser/image-filter/Ima
  * @param filters 筛选条件
  * @returns 筛选后的图片数组
  */
-export function filterImages(images: ImageItem[], filters: FilterOptions): ImageItem[] {
-  const { searchTerm, selectedTypes, selectedTags } = filters
-  
+export function filterImages(
+  images: ImageItem[],
+  filters: FilterOptions
+): ImageItem[] {
+  const { searchTerm, selectedTypes, selectedTags } = filters;
+
   return images.filter(image => {
     // 搜索词筛选
     if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase()
-      const matchesSearch = 
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
         image.name.toLowerCase().includes(searchLower) ||
         image.description?.toLowerCase().includes(searchLower) ||
-        image.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      
-      if (!matchesSearch) return false
+        image.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+
+      if (!matchesSearch) return false;
     }
-    
+
     // 类型筛选
     if (selectedTypes.length > 0) {
       if (!image.type || !selectedTypes.includes(image.type)) {
-        return false
+        return false;
       }
     }
-    
+
     // 标签筛选
     if (selectedTags.length > 0) {
       if (!image.tags || !image.tags.some(tag => selectedTags.includes(tag))) {
-        return false
+        return false;
       }
     }
-    
-    return true
-  })
+
+    return true;
+  });
 }
 
 /**
@@ -47,15 +50,20 @@ export function filterImages(images: ImageItem[], filters: FilterOptions): Image
  * @returns 筛选统计信息
  */
 export function getFilterStats(images: ImageItem[], filters: FilterOptions) {
-  const filteredImages = filterImages(images, filters)
-  const hasFilters = filters.searchTerm || filters.selectedTypes.length > 0 || filters.selectedTags.length > 0
-  
+  const filteredImages = filterImages(images, filters);
+  const hasFilters =
+    filters.searchTerm ||
+    filters.selectedTypes.length > 0 ||
+    filters.selectedTags.length > 0;
+
   return {
     total: images.length,
     filtered: filteredImages.length,
     hasFilters,
-    percentage: hasFilters ? Math.round((filteredImages.length / images.length) * 100) : 100
-  }
+    percentage: hasFilters
+      ? Math.round((filteredImages.length / images.length) * 100)
+      : 100,
+  };
 }
 
 /**
@@ -64,13 +72,13 @@ export function getFilterStats(images: ImageItem[], filters: FilterOptions) {
  * @returns 去重后的图片类型数组
  */
 export function getAvailableTypes(images: ImageItem[]): string[] {
-  const types = new Set<string>()
+  const types = new Set<string>();
   images.forEach(image => {
     if (image.type) {
-      types.add(image.type)
+      types.add(image.type);
     }
-  })
-  return Array.from(types).sort()
+  });
+  return Array.from(types).sort();
 }
 
 /**
@@ -79,13 +87,13 @@ export function getAvailableTypes(images: ImageItem[]): string[] {
  * @returns 去重后的标签数组
  */
 export function getAvailableTags(images: ImageItem[]): string[] {
-  const tags = new Set<string>()
+  const tags = new Set<string>();
   images.forEach(image => {
     if (image.tags && image.tags.length > 0) {
-      image.tags.forEach(tag => tags.add(tag))
+      image.tags.forEach(tag => tags.add(tag));
     }
-  })
-  return Array.from(tags).sort()
+  });
+  return Array.from(tags).sort();
 }
 
 /**
@@ -105,10 +113,10 @@ export function getTypeDisplayName(type: string): string {
     'image/tiff': 'TIFF',
     'image/avif': 'AVIF',
     'image/heic': 'HEIC',
-    'image/heif': 'HEIF'
-  }
-  
-  return typeMap[type] || type.split('/')[1]?.toUpperCase() || type
+    'image/heif': 'HEIF',
+  };
+
+  return typeMap[type] || type.split('/')[1]?.toUpperCase() || type;
 }
 
 /**
@@ -128,10 +136,10 @@ export function getTypeColor(type: string): string {
     'image/tiff': 'text-red-600',
     'image/avif': 'text-indigo-600',
     'image/heic': 'text-pink-600',
-    'image/heif': 'text-pink-600'
-  }
-  
-  return colorMap[type] || 'text-gray-600'
+    'image/heif': 'text-pink-600',
+  };
+
+  return colorMap[type] || 'text-gray-600';
 }
 
 /**
@@ -140,43 +148,46 @@ export function getTypeColor(type: string): string {
  * @param filters 筛选条件
  * @returns 是否匹配
  */
-export function imageMatchesFilters(image: ImageItem, filters: FilterOptions): boolean {
-  const { searchTerm, selectedTypes, selectedTags, sizeRange } = filters
-  
+export function imageMatchesFilters(
+  image: ImageItem,
+  filters: FilterOptions
+): boolean {
+  const { searchTerm, selectedTypes, selectedTags, sizeRange } = filters;
+
   // 搜索词筛选
   if (searchTerm) {
-    const searchLower = searchTerm.toLowerCase()
-    const matchesSearch = 
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
       image.name.toLowerCase().includes(searchLower) ||
       image.description?.toLowerCase().includes(searchLower) ||
-      image.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-    
-    if (!matchesSearch) return false
+      image.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+
+    if (!matchesSearch) return false;
   }
-  
+
   // 类型筛选
   if (selectedTypes.length > 0) {
     if (!image.type || !selectedTypes.includes(image.type)) {
-      return false
+      return false;
     }
   }
-  
+
   // 标签筛选
   if (selectedTags.length > 0) {
     if (!image.tags || !image.tags.some(tag => selectedTags.includes(tag))) {
-      return false
+      return false;
     }
   }
-  
+
   // 文件大小筛选
   if (sizeRange.min > 0 && image.size < sizeRange.min) {
-    return false
+    return false;
   }
   if (sizeRange.max > 0 && image.size > sizeRange.max) {
-    return false
+    return false;
   }
-  
-  return true
+
+  return true;
 }
 
 /**
@@ -188,8 +199,8 @@ export function createDefaultFilters(): FilterOptions {
     searchTerm: '',
     selectedTypes: [],
     selectedTags: [],
-    sizeRange: { min: 0, max: 0 }
-  }
+    sizeRange: { min: 0, max: 0 },
+  };
 }
 
 /**
@@ -198,9 +209,11 @@ export function createDefaultFilters(): FilterOptions {
  * @returns 是否为空
  */
 export function isEmptyFilters(filters: FilterOptions): boolean {
-  return !filters.searchTerm && 
-         filters.selectedTypes.length === 0 && 
-         filters.selectedTags.length === 0 &&
-         filters.sizeRange.min === 0 && 
-         filters.sizeRange.max === 0
-} 
+  return (
+    !filters.searchTerm &&
+    filters.selectedTypes.length === 0 &&
+    filters.selectedTags.length === 0 &&
+    filters.sizeRange.min === 0 &&
+    filters.sizeRange.max === 0
+  );
+}

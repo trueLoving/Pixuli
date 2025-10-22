@@ -3,15 +3,15 @@
  */
 
 export interface ImageDimensions {
-  width: number
-  height: number
+  width: number;
+  height: number;
 }
 
 export interface ImageInfo extends ImageDimensions {
-  naturalWidth: number
-  naturalHeight: number
-  aspectRatio: number
-  orientation: 'landscape' | 'portrait' | 'square'
+  naturalWidth: number;
+  naturalHeight: number;
+  aspectRatio: number;
+  orientation: 'landscape' | 'portrait' | 'square';
 }
 
 /**
@@ -21,32 +21,32 @@ export interface ImageInfo extends ImageDimensions {
  */
 export function getImageDimensions(file: File): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
-    
+    const img = new Image();
+
     img.onload = () => {
       resolve({
         width: img.width,
-        height: img.height
-      })
-    }
-    
+        height: img.height,
+      });
+    };
+
     img.onerror = () => {
-      reject(new Error('图片加载失败'))
-    }
-    
+      reject(new Error('图片加载失败'));
+    };
+
     // 创建对象URL
-    const objectUrl = URL.createObjectURL(file)
-    img.src = objectUrl
-    
+    const objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
+
     // 图片加载完成后清理对象URL
     img.onload = () => {
-      URL.revokeObjectURL(objectUrl)
+      URL.revokeObjectURL(objectUrl);
       resolve({
         width: img.width,
-        height: img.height
-      })
-    }
-  })
+        height: img.height,
+      });
+    };
+  });
 }
 
 /**
@@ -56,68 +56,68 @@ export function getImageDimensions(file: File): Promise<ImageDimensions> {
  */
 export function getImageInfo(file: File): Promise<ImageInfo> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
-    
+    const img = new Image();
+
     img.onload = () => {
-      const width = img.width
-      const height = img.height
-      const naturalWidth = img.naturalWidth || width
-      const naturalHeight = img.naturalHeight || height
-      const aspectRatio = width / height
-      
-      let orientation: 'landscape' | 'portrait' | 'square'
+      const width = img.width;
+      const height = img.height;
+      const naturalWidth = img.naturalWidth || width;
+      const naturalHeight = img.naturalHeight || height;
+      const aspectRatio = width / height;
+
+      let orientation: 'landscape' | 'portrait' | 'square';
       if (width > height) {
-        orientation = 'landscape'
+        orientation = 'landscape';
       } else if (width < height) {
-        orientation = 'portrait'
+        orientation = 'portrait';
       } else {
-        orientation = 'square'
+        orientation = 'square';
       }
-      
+
       resolve({
         width,
         height,
         naturalWidth,
         naturalHeight,
         aspectRatio,
-        orientation
-      })
-    }
-    
+        orientation,
+      });
+    };
+
     img.onerror = () => {
-      reject(new Error('图片加载失败'))
-    }
-    
-    const objectUrl = URL.createObjectURL(file)
-    img.src = objectUrl
-    
+      reject(new Error('图片加载失败'));
+    };
+
+    const objectUrl = URL.createObjectURL(file);
+    img.src = objectUrl;
+
     img.onload = () => {
-      URL.revokeObjectURL(objectUrl)
-      const width = img.width
-      const height = img.height
-      const naturalWidth = img.naturalWidth || width
-      const naturalHeight = img.naturalHeight || height
-      const aspectRatio = width / height
-      
-      let orientation: 'landscape' | 'portrait' | 'square'
+      URL.revokeObjectURL(objectUrl);
+      const width = img.width;
+      const height = img.height;
+      const naturalWidth = img.naturalWidth || width;
+      const naturalHeight = img.naturalHeight || height;
+      const aspectRatio = width / height;
+
+      let orientation: 'landscape' | 'portrait' | 'square';
       if (width > height) {
-        orientation = 'landscape'
+        orientation = 'landscape';
       } else if (width < height) {
-        orientation = 'portrait'
+        orientation = 'portrait';
       } else {
-        orientation = 'square'
+        orientation = 'square';
       }
-      
+
       resolve({
         width,
         height,
         naturalWidth,
         naturalHeight,
         aspectRatio,
-        orientation
-      })
-    }
-  })
+        orientation,
+      });
+    };
+  });
 }
 
 /**
@@ -125,25 +125,27 @@ export function getImageInfo(file: File): Promise<ImageInfo> {
  * @param url 图片URL
  * @returns Promise<ImageDimensions> 图片尺寸信息
  */
-export function getImageDimensionsFromUrl(url: string): Promise<ImageDimensions> {
+export function getImageDimensionsFromUrl(
+  url: string
+): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
-    
+    const img = new Image();
+
     img.onload = () => {
       resolve({
-        width: img.naturalWidth,  // 使用 naturalWidth 获取真实尺寸
-        height: img.naturalHeight // 使用 naturalHeight 获取真实尺寸
-      })
-    }
-    
+        width: img.naturalWidth, // 使用 naturalWidth 获取真实尺寸
+        height: img.naturalHeight, // 使用 naturalHeight 获取真实尺寸
+      });
+    };
+
     img.onerror = () => {
-      reject(new Error('图片加载失败'))
-    }
-    
+      reject(new Error('图片加载失败'));
+    };
+
     // 设置跨域属性以支持 GitHub 图片
-    img.crossOrigin = 'anonymous'
-    img.src = url
-  })
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+  });
 }
 
 /**
@@ -152,7 +154,7 @@ export function getImageDimensionsFromUrl(url: string): Promise<ImageDimensions>
  * @returns boolean 是否为图片文件
  */
 export function isImageFile(file: File): boolean {
-  return file.type.startsWith('image/')
+  return file.type.startsWith('image/');
 }
 
 /**
@@ -161,7 +163,7 @@ export function isImageFile(file: File): boolean {
  * @returns string 图片类型
  */
 export function getImageType(file: File): string {
-  return file.type || 'image/unknown'
+  return file.type || 'image/unknown';
 }
 
 /**
@@ -170,13 +172,13 @@ export function getImageType(file: File): string {
  * @returns string 格式化后的大小
  */
 export function formatImageFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**
@@ -195,44 +197,44 @@ export function calculateDisplayDimensions(
   maxHeight?: number,
   keepAspectRatio: boolean = true
 ): ImageDimensions {
-  let width = originalWidth
-  let height = originalHeight
-  
+  let width = originalWidth;
+  let height = originalHeight;
+
   if (maxWidth && maxHeight) {
     if (keepAspectRatio) {
       // 保持宽高比，选择较小的缩放比例
-      const scaleX = maxWidth / originalWidth
-      const scaleY = maxHeight / originalHeight
-      const scale = Math.min(scaleX, scaleY)
-      
-      width = Math.round(originalWidth * scale)
-      height = Math.round(originalHeight * scale)
+      const scaleX = maxWidth / originalWidth;
+      const scaleY = maxHeight / originalHeight;
+      const scale = Math.min(scaleX, scaleY);
+
+      width = Math.round(originalWidth * scale);
+      height = Math.round(originalHeight * scale);
     } else {
       // 不保持宽高比，直接限制
-      width = Math.min(originalWidth, maxWidth)
-      height = Math.min(originalHeight, maxHeight)
+      width = Math.min(originalWidth, maxWidth);
+      height = Math.min(originalHeight, maxHeight);
     }
   } else if (maxWidth) {
     // 只限制宽度
     if (keepAspectRatio) {
-      const scale = maxWidth / originalWidth
-      width = maxWidth
-      height = Math.round(originalHeight * scale)
+      const scale = maxWidth / originalWidth;
+      width = maxWidth;
+      height = Math.round(originalHeight * scale);
     } else {
-      width = Math.min(originalWidth, maxWidth)
+      width = Math.min(originalWidth, maxWidth);
     }
   } else if (maxHeight) {
     // 只限制高度
     if (keepAspectRatio) {
-      const scale = maxHeight / originalHeight
-      height = maxHeight
-      width = Math.round(originalWidth * scale)
+      const scale = maxHeight / originalHeight;
+      height = maxHeight;
+      width = Math.round(originalWidth * scale);
     } else {
-      height = Math.min(originalHeight, maxHeight)
+      height = Math.min(originalHeight, maxHeight);
     }
   }
-  
-  return { width, height }
+
+  return { width, height };
 }
 
 /**
@@ -241,7 +243,7 @@ export function calculateDisplayDimensions(
  * @returns string 预览URL
  */
 export function createImagePreviewUrl(file: File): string {
-  return URL.createObjectURL(file)
+  return URL.createObjectURL(file);
 }
 
 /**
@@ -249,5 +251,5 @@ export function createImagePreviewUrl(file: File): string {
  * @param url 预览URL
  */
 export function revokeImagePreviewUrl(url: string): void {
-  URL.revokeObjectURL(url)
-} 
+  URL.revokeObjectURL(url);
+}

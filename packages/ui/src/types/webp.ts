@@ -1,29 +1,29 @@
 export interface WebPCompressOptions {
   /** 压缩质量 (0-100) */
-  quality?: number
+  quality?: number;
   /** 是否使用无损压缩 */
-  lossless?: boolean
+  lossless?: boolean;
 }
 
 export interface WebPCompressResult {
   /** 压缩后的数据 */
-  data: Array<number>
+  data: Array<number>;
   /** 原始大小 */
-  originalSize: number
+  originalSize: number;
   /** 压缩后大小 */
-  compressedSize: number
+  compressedSize: number;
   /** 压缩率 (0-1) */
-  compressionRatio: number
+  compressionRatio: number;
   /** 压缩后的宽度 */
-  width: number
+  width: number;
   /** 压缩后的高度 */
-  height: number
+  height: number;
 }
 
 export interface WebPImageInfo {
-  width: number
-  height: number
-  format: string
-  size: number
-  channels: number
+  width: number;
+  height: number;
+  format: string;
+  size: number;
+  channels: number;
 }

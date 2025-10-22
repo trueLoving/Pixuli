@@ -17,37 +17,42 @@ import { ImageBrowser } from 'pixuli-ui/src'
 ### 1. 导入组件和样式
 
 ```tsx
-import { ImageBrowser, ImageUpload, zhCN, defaultTranslate } from 'pixuli-ui/src'
-import 'pixuli-ui/dist/index.css'
+import {
+  ImageBrowser,
+  ImageUpload,
+  zhCN,
+  defaultTranslate,
+} from 'pixuli-ui/src';
+import 'pixuli-ui/dist/index.css';
 ```
 
 ### 2. 设置国际化
 
 ```tsx
 // 使用中文翻译
-const t = defaultTranslate(zhCN)
+const t = defaultTranslate(zhCN);
 
 // 或使用英文翻译
-import { enUS } from 'pixuli-ui/src'
-const t = defaultTranslate(enUS)
+import { enUS } from 'pixuli-ui/src';
+const t = defaultTranslate(enUS);
 ```
 
 ### 3. 使用图片浏览器
 
 ```tsx
 function App() {
-  const [images, setImages] = useState<ImageItem[]>([])
-  
+  const [images, setImages] = useState<ImageItem[]>([]);
+
   const handleDeleteImage = async (id: string, name: string) => {
     // 实现删除逻辑
-    console.log('删除图片:', id, name)
-  }
-  
+    console.log('删除图片:', id, name);
+  };
+
   const handleUpdateImage = async (data: ImageEditData) => {
     // 实现更新逻辑
-    console.log('更新图片:', data)
-  }
-  
+    console.log('更新图片:', data);
+  };
+
   return (
     <ImageBrowser
       images={images}
@@ -55,7 +60,7 @@ function App() {
       onUpdateImage={handleUpdateImage}
       t={t}
     />
-  )
+  );
 }
 ```
 
@@ -63,20 +68,20 @@ function App() {
 
 ```tsx
 function UploadPage() {
-  const [uploading, setUploading] = useState(false)
-  
+  const [uploading, setUploading] = useState(false);
+
   const handleUploadImage = async (data: ImageUploadData) => {
-    setUploading(true)
+    setUploading(true);
     try {
       // 实现上传逻辑
-      console.log('上传图片:', data)
+      console.log('上传图片:', data);
     } catch (error) {
-      console.error('上传失败:', error)
+      console.error('上传失败:', error);
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
-  
+  };
+
   return (
     <ImageUpload
       onUploadImage={handleUploadImage}
@@ -84,7 +89,7 @@ function UploadPage() {
       loading={uploading}
       t={t}
     />
-  )
+  );
 }
 ```
 
@@ -92,15 +97,15 @@ function UploadPage() {
 
 ```tsx
 function ConfigPage() {
-  const [showConfig, setShowConfig] = useState(false)
-  const [githubConfig, setGithubConfig] = useState<GitHubConfig | null>(null)
-  
+  const [showConfig, setShowConfig] = useState(false);
+  const [githubConfig, setGithubConfig] = useState<GitHubConfig | null>(null);
+
   const handleSaveConfig = (config: GitHubConfig) => {
-    setGithubConfig(config)
-    localStorage.setItem('githubConfig', JSON.stringify(config))
-    setShowConfig(false)
-  }
-  
+    setGithubConfig(config);
+    localStorage.setItem('githubConfig', JSON.stringify(config));
+    setShowConfig(false);
+  };
+
   return (
     <GitHubConfigModal
       isOpen={showConfig}
@@ -110,7 +115,7 @@ function ConfigPage() {
       onClearConfig={() => setGithubConfig(null)}
       t={t}
     />
-  )
+  );
 }
 ```
 
@@ -120,40 +125,40 @@ function ConfigPage() {
 
 ```tsx
 interface ImageItem {
-  id: string
-  name: string
-  url: string
-  githubUrl: string
-  size: number
-  width: number
-  height: number
-  type: string
-  tags: string[]
-  description?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  url: string;
+  githubUrl: string;
+  size: number;
+  width: number;
+  height: number;
+  type: string;
+  tags: string[];
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface GitHubConfig {
-  owner: string
-  repo: string
-  branch: string
-  token: string
-  path: string
+  owner: string;
+  repo: string;
+  branch: string;
+  token: string;
+  path: string;
 }
 
 interface ImageUploadData {
-  file: File
-  name?: string
-  description?: string
-  tags?: string[]
+  file: File;
+  name?: string;
+  description?: string;
+  tags?: string[];
 }
 
 interface ImageEditData {
-  id: string
-  name?: string
-  description?: string
-  tags?: string[]
+  id: string;
+  name?: string;
+  description?: string;
+  tags?: string[];
 }
 ```
 
@@ -200,32 +205,32 @@ const customTranslations = {
   'app.title': '我的图片管理器',
   'common.save': '保存设置',
   'image.upload.uploadButton': '开始上传',
-}
+};
 
 const t = defaultTranslate({
   ...zhCN,
-  ...customTranslations
-})
+  ...customTranslations,
+});
 ```
 
 ### 动态语言切换
 
 ```tsx
-import { useState } from 'react'
-import { defaultTranslate, zhCN, enUS } from 'pixuli-ui/src'
+import { useState } from 'react';
+import { defaultTranslate, zhCN, enUS } from 'pixuli-ui/src';
 
 function App() {
-  const [language, setLanguage] = useState('zh')
-  
-  const translations = language === 'zh' ? zhCN : enUS
-  const t = defaultTranslate(translations)
-  
+  const [language, setLanguage] = useState('zh');
+
+  const translations = language === 'zh' ? zhCN : enUS;
+  const t = defaultTranslate(translations);
+
   return (
     <div>
       <button onClick={() => setLanguage(language === 'zh' ? 'en' : 'zh')}>
         {language === 'zh' ? 'English' : '中文'}
       </button>
-      
+
       <ImageBrowser
         images={images}
         t={t}
@@ -233,7 +238,7 @@ function App() {
         onUpdateImage={handleUpdate}
       />
     </div>
-  )
+  );
 }
 ```
 

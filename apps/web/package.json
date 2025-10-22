@@ -9,13 +9,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
-  "keywords": [
-    "vite",
-    "react",
-    "typescript",
-    "图片管理",
-    "web"
-  ],
+  "keywords": ["vite", "react", "typescript", "图片管理", "web"],
   "author": "Pixuli Team",
   "license": "MIT",
   "dependencies": {

@@ -198,11 +198,11 @@
     margin: 0 0.5rem;
     padding: 1rem;
   }
-  
+
   .image-edit-button-group {
     flex-direction: column;
   }
-  
+
   .image-edit-button {
     width: 100%;
   }

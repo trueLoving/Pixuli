@@ -3,135 +3,152 @@ import {
   DEFAULT_COMPRESSION_OPTIONS,
   compressImage,
   getAutoCompressionOptions,
-  isImageFile
-} from '@/utils/imageCompression'
-import { showError, showInfo, showSuccess, useEscapeKey } from '@packages/ui/src'
-import { Upload, X, Zap } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
-import './ImageCompression.css'
-import ImageCompressionPreview from './ImageCompressionPreview'
-import ImageCompressionSettings from './ImageCompressionSettings'
+  isImageFile,
+} from '@/utils/imageCompression';
+import {
+  showError,
+  showInfo,
+  showSuccess,
+  useEscapeKey,
+} from '@packages/ui/src';
+import { Upload, X, Zap } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import './ImageCompression.css';
+import ImageCompressionPreview from './ImageCompressionPreview';
+import ImageCompressionSettings from './ImageCompressionSettings';
 
 interface ImageCompressionProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [compressionOptions, setCompressionOptions] = useState<CompressionOptions>(DEFAULT_COMPRESSION_OPTIONS)
-  const [compressionResult, setCompressionResult] = useState<any>(null)
-  const [isCompressing, setIsCompressing] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [compressionOptions, setCompressionOptions] =
+    useState<CompressionOptions>(DEFAULT_COMPRESSION_OPTIONS);
+  const [compressionResult, setCompressionResult] = useState<any>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   // 处理文件选择
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      if (!isImageFile(file)) {
-        showError('请选择有效的图片文件')
-        return
+  const handleFileSelect = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        if (!isImageFile(file)) {
+          showError('请选择有效的图片文件');
+          return;
+        }
+
+        if (file.size > 50 * 1024 * 1024) {
+          // 50MB限制
+          showError('文件大小不能超过50MB');
+          return;
+        }
+
+        setSelectedFile(file);
+        setCompressionResult(null);
+
+        // 自动优化设置
+        const autoOptions = getAutoCompressionOptions(file.size);
+        setCompressionOptions(autoOptions);
+
+        showInfo(`已选择图片: ${file.name}`);
       }
-      
-      if (file.size > 50 * 1024 * 1024) { // 50MB限制
-        showError('文件大小不能超过50MB')
-        return
-      }
-      
-      setSelectedFile(file)
-      setCompressionResult(null)
-      
-      // 自动优化设置
-      const autoOptions = getAutoCompressionOptions(file.size)
-      setCompressionOptions(autoOptions)
-      
-      showInfo(`已选择图片: ${file.name}`)
-    }
-  }, [])
+    },
+    []
+  );
 
   // 处理拖拽
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const files = Array.from(event.dataTransfer.files)
-    
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files);
+
     if (files.length > 1) {
-      showError('一次只能处理一张图片')
-      return
+      showError('一次只能处理一张图片');
+      return;
     }
-    
-    const file = files[0]
+
+    const file = files[0];
     if (file && isImageFile(file)) {
       if (file.size > 50 * 1024 * 1024) {
-        showError('文件大小不能超过50MB')
-        return
+        showError('文件大小不能超过50MB');
+        return;
       }
-      
-      setSelectedFile(file)
-      setCompressionResult(null)
-      
-      // 自动优化设置
-      const autoOptions = getAutoCompressionOptions(file.size)
-      setCompressionOptions(autoOptions)
-      
-      showInfo(`已选择图片: ${file.name}`)
-    } else {
-      showError('请选择有效的图片文件')
-    }
-  }, [])
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-  }, [])
+      setSelectedFile(file);
+      setCompressionResult(null);
+
+      // 自动优化设置
+      const autoOptions = getAutoCompressionOptions(file.size);
+      setCompressionOptions(autoOptions);
+
+      showInfo(`已选择图片: ${file.name}`);
+    } else {
+      showError('请选择有效的图片文件');
+    }
+  }, []);
+
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+    },
+    []
+  );
 
   // 执行压缩
   const handleCompress = useCallback(async () => {
-    if (!selectedFile) return
-    
-    setIsCompressing(true)
+    if (!selectedFile) return;
+
+    setIsCompressing(true);
     try {
-      const result = await compressImage(selectedFile, compressionOptions)
-      setCompressionResult(result)
-      
+      const result = await compressImage(selectedFile, compressionOptions);
+      setCompressionResult(result);
+
       if (result.compressionRatio > 0) {
-        showSuccess(`压缩成功！节省了 ${result.compressionRatio.toFixed(1)}% 的空间`)
+        showSuccess(
+          `压缩成功！节省了 ${result.compressionRatio.toFixed(1)}% 的空间`
+        );
       } else {
-        showInfo('图片已经是最优大小，无需进一步压缩')
+        showInfo('图片已经是最优大小，无需进一步压缩');
       }
     } catch (error) {
-      showError(`压缩失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      showError(
+        `压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
+      );
     } finally {
-      setIsCompressing(false)
+      setIsCompressing(false);
     }
-  }, [selectedFile, compressionOptions])
+  }, [selectedFile, compressionOptions]);
 
   // 下载压缩后的图片
   const handleDownload = useCallback((file: File) => {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `compressed_${file.name}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    showSuccess('压缩后的图片已开始下载')
-  }, [])
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `compressed_${file.name}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showSuccess('压缩后的图片已开始下载');
+  }, []);
 
   // 重新压缩
   const handleRetry = useCallback(() => {
-    setCompressionResult(null)
-  }, [])
+    setCompressionResult(null);
+  }, []);
 
   // 自动优化
   const handleAutoOptimize = useCallback(() => {
     if (selectedFile) {
-      const autoOptions = getAutoCompressionOptions(selectedFile.size)
-      setCompressionOptions(autoOptions)
-      showInfo('已应用自动优化设置')
+      const autoOptions = getAutoCompressionOptions(selectedFile.size);
+      setCompressionOptions(autoOptions);
+      showInfo('已应用自动优化设置');
     }
-  }, [selectedFile])
+  }, [selectedFile]);
 
   // 键盘支持
-  useEscapeKey(onClose)
+  useEscapeKey(onClose);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -140,7 +157,9 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <Zap className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900">图片压缩工具</h2>
+            <h2 className="text-xl font-semibold text-gray-900">
+              图片压缩工具
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -199,7 +218,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
                   onOptionsChange={setCompressionOptions}
                   onAutoOptimize={handleAutoOptimize}
                 />
-                
+
                 {/* 压缩按钮 */}
                 <div className="pt-4">
                   <button
@@ -244,7 +263,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageCompression 
+export default ImageCompression;

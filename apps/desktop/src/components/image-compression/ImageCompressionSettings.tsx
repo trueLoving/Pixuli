@@ -1,37 +1,41 @@
-import { CompressionOptions, formatFileSize, getAutoCompressionOptions } from '@/utils/imageCompression'
-import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react'
-import React, { useState } from 'react'
+import {
+  CompressionOptions,
+  formatFileSize,
+  getAutoCompressionOptions,
+} from '@/utils/imageCompression';
+import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react';
+import React, { useState } from 'react';
 
 interface ImageCompressionSettingsProps {
-  file: File
-  options: CompressionOptions
-  onOptionsChange: (options: CompressionOptions) => void
-  onAutoOptimize: () => void
+  file: File;
+  options: CompressionOptions;
+  onOptionsChange: (options: CompressionOptions) => void;
+  onAutoOptimize: () => void;
 }
 
 const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
   file,
   options,
   onOptionsChange,
-  onAutoOptimize
+  onAutoOptimize,
 }) => {
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleOptionChange = (key: keyof CompressionOptions, value: any) => {
     onOptionsChange({
       ...options,
-      [key]: value
-    })
-  }
+      [key]: value,
+    });
+  };
 
   const handleAutoOptimize = () => {
-    const autoOptions = getAutoCompressionOptions(file.size)
-    onOptionsChange(autoOptions)
-    onAutoOptimize()
-  }
+    const autoOptions = getAutoCompressionOptions(file.size);
+    onOptionsChange(autoOptions);
+    onAutoOptimize();
+  };
 
-  const fileSizeMB = file.size / (1024 * 1024)
-  const isLargeFile = fileSizeMB > 5
+  const fileSizeMB = file.size / (1024 * 1024);
+  const isLargeFile = fileSizeMB > 5;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -70,7 +74,9 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
           </div>
           <div>
             <span className="text-gray-500">状态:</span>
-            <div className={`font-medium ${isLargeFile ? 'text-orange-600' : 'text-green-600'}`}>
+            <div
+              className={`font-medium ${isLargeFile ? 'text-orange-600' : 'text-green-600'}`}
+            >
               {isLargeFile ? '建议压缩' : '大小适中'}
             </div>
           </div>
@@ -89,7 +95,9 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             max="100"
             step="5"
             value={options.quality || 80}
-            onChange={(e) => handleOptionChange('quality', parseInt(e.target.value))}
+            onChange={e =>
+              handleOptionChange('quality', parseInt(e.target.value))
+            }
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -104,7 +112,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             type="checkbox"
             id="lossless"
             checked={options.lossless || false}
-            onChange={(e) => handleOptionChange('lossless', e.target.checked)}
+            onChange={e => handleOptionChange('lossless', e.target.checked)}
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
           />
           <label htmlFor="lossless" className="text-sm text-gray-700">
@@ -125,7 +133,12 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -164,7 +177,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageCompressionSettings
+export default ImageCompressionSettings;

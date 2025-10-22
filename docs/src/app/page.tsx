@@ -1,21 +1,21 @@
 'use client';
 
-import Image from "next/image";
-import { useEffect } from "react";
+import Image from 'next/image';
+import { useEffect } from 'react';
 
 export default function Home() {
   useEffect(() => {
     // 平滑滚动
     const links = document.querySelectorAll('a[href^="#"]');
     links.forEach(link => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', e => {
         e.preventDefault();
         const targetId = link.getAttribute('href')?.substring(1);
         const targetElement = document.getElementById(targetId || '');
         if (targetElement) {
           targetElement.scrollIntoView({
             behavior: 'smooth',
-            block: 'start'
+            block: 'start',
           });
         }
       });
@@ -24,10 +24,10 @@ export default function Home() {
     // 滚动动画
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
+      rootMargin: '0px 0px -50px 0px',
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('animate-in');
@@ -35,7 +35,9 @@ export default function Home() {
       });
     }, observerOptions);
 
-    const animateElements = document.querySelectorAll('.feature-card, .download-card, .tech-item');
+    const animateElements = document.querySelectorAll(
+      '.feature-card, .download-card, .tech-item'
+    );
     animateElements.forEach(el => observer.observe(el));
 
     return () => {
@@ -67,10 +69,16 @@ export default function Home() {
               <span className="gradient-text">重新定义</span>
             </h1>
             <p className="hero-description">
-              Pixuli 是一款现代化的跨平台图片管理应用，提供桌面端和 Web 端两种使用方式。支持智能图片处理、格式转换、批量操作和云端存储等功能，让您的图片库管理变得简单高效。
+              Pixuli 是一款现代化的跨平台图片管理应用，提供桌面端和 Web
+              端两种使用方式。支持智能图片处理、格式转换、批量操作和云端存储等功能，让您的图片库管理变得简单高效。
             </p>
             <div className="hero-buttons">
-              <a href="https://github.com/trueLoving/Pixuli/releases" className="btn btn-primary" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/trueLoving/Pixuli/releases"
+                className="btn btn-primary"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <i className="fas fa-download"></i>
                 立即下载
               </a>
@@ -96,7 +104,13 @@ export default function Home() {
           </div>
           <div className="hero-image">
             <div className="app-preview">
-              <Image src="/images/app-preview.png" alt="Pixuli 应用预览" width={600} height={400} className="preview-image" />
+              <Image
+                src="/images/app-preview.png"
+                alt="Pixuli 应用预览"
+                width={600}
+                height={400}
+                className="preview-image"
+              />
               <div className="floating-elements">
                 <div className="floating-card card-1">
                   <i className="fas fa-compress"></i>
@@ -132,7 +146,8 @@ export default function Home() {
               </div>
               <h3 className="feature-title">桌面端应用</h3>
               <p className="feature-description">
-                基于 Electron 构建的桌面应用，支持 Windows、macOS 和 Linux，提供完整的本地文件系统访问
+                基于 Electron 构建的桌面应用，支持 Windows、macOS 和
+                Linux，提供完整的本地文件系统访问
               </p>
             </div>
             <div className="feature-card">
@@ -177,7 +192,8 @@ export default function Home() {
               </div>
               <h3 className="feature-title">跨平台支持</h3>
               <p className="feature-description">
-                支持 Windows、macOS、Linux 桌面端和 Web 浏览器，一次开发，多平台使用
+                支持 Windows、macOS、Linux 桌面端和 Web
+                浏览器，一次开发，多平台使用
               </p>
             </div>
             {/* <div className="feature-card">
@@ -213,7 +229,12 @@ export default function Home() {
               </div>
               <h3 className="platform-name">Windows</h3>
               <p className="platform-description">Windows 10/11 (64-bit)</p>
-              <a href="https://github.com/trueLoving/Pixuli/releases" className="download-btn" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/trueLoving/Pixuli/releases"
+                className="download-btn"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <i className="fas fa-download"></i>
                 下载 Windows 版
               </a>
@@ -224,7 +245,12 @@ export default function Home() {
               </div>
               <h3 className="platform-name">macOS</h3>
               <p className="platform-description">macOS 10.15 或更高版本</p>
-              <a href="https://github.com/trueLoving/Pixuli/releases" className="download-btn" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://github.com/trueLoving/Pixuli/releases"
+                className="download-btn"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <i className="fas fa-download"></i>
                 下载 macOS 版
               </a>
@@ -235,7 +261,12 @@ export default function Home() {
               </div>
               <h3 className="platform-name">Web 版</h3>
               <p className="platform-description">支持所有现代浏览器</p>
-              <a href="https://pixuli-web.vercel.app/" className="download-btn" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://pixuli-web.vercel.app/"
+                className="download-btn"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <i className="fas fa-external-link-alt"></i>
                 访问 Web 版
               </a>
@@ -244,7 +275,14 @@ export default function Home() {
           <div className="download-info">
             <p className="version-info">当前版本: v1.1.0</p>
             <p className="release-notes">
-              <a href="https://github.com/trueLoving/Pixuli/releases" className="release-link" target="_blank" rel="noopener noreferrer">查看更新日志</a>
+              <a
+                href="https://github.com/trueLoving/Pixuli/releases"
+                className="release-link"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                查看更新日志
+              </a>
             </p>
           </div>
         </div>
@@ -257,10 +295,13 @@ export default function Home() {
             <div className="about-text">
               <h2 className="section-title">关于 Pixuli</h2>
               <p className="about-description">
-                Pixuli 诞生于对高效图片管理的需求。我们相信，通过现代化的技术栈，可以让图片管理变得更加智能和便捷。
+                Pixuli
+                诞生于对高效图片管理的需求。我们相信，通过现代化的技术栈，可以让图片管理变得更加智能和便捷。
               </p>
               <p className="about-description">
-                基于 Electron + React + TypeScript + Rust 构建，Pixuli 提供了桌面端和 Web 端两种使用方式，集成了智能图片处理、格式转换、批量操作等功能，为您带来前所未有的图片管理体验。
+                基于 Electron + React + TypeScript + Rust 构建，Pixuli
+                提供了桌面端和 Web
+                端两种使用方式，集成了智能图片处理、格式转换、批量操作等功能，为您带来前所未有的图片管理体验。
               </p>
               <div className="tech-stack">
                 <h3>技术栈</h3>
@@ -305,14 +346,23 @@ export default function Home() {
           <div className="footer-content">
             <div className="footer-section">
               <div className="footer-logo">
-                <Image src="/images/logo.png" alt="Pixuli" width={32} height={32} className="logo" />
+                <Image
+                  src="/images/logo.png"
+                  alt="Pixuli"
+                  width={32}
+                  height={32}
+                  className="logo"
+                />
                 <span className="logo-text">Pixuli</span>
               </div>
               <p className="footer-description">
                 智能图片管理，让每一张图片都有价值
               </p>
               <div className="social-links">
-                <a href="https://github.com/trueLoving/pixuli" className="social-link">
+                <a
+                  href="https://github.com/trueLoving/pixuli"
+                  className="social-link"
+                >
                   <i className="fab fa-github"></i>
                 </a>
                 <a href="#" className="social-link">
@@ -326,35 +376,87 @@ export default function Home() {
             <div className="footer-section">
               <h3 className="footer-title">产品</h3>
               <ul className="footer-links">
-                <li><a href="/products">功能特色</a></li>
-                <li><a href="https://github.com/trueLoving/Pixuli/releases" target="_blank" rel="noopener noreferrer">下载</a></li>
-                <li><a href="https://github.com/trueLoving/Pixuli/releases" target="_blank" rel="noopener noreferrer">更新日志</a></li>
-                <li><a href="/tutorial">使用教程</a></li>
+                <li>
+                  <a href="/products">功能特色</a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/releases"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    下载
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/releases"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    更新日志
+                  </a>
+                </li>
+                <li>
+                  <a href="/tutorial">使用教程</a>
+                </li>
               </ul>
             </div>
             <div className="footer-section">
               <h3 className="footer-title">支持</h3>
               <ul className="footer-links">
-                <li><a href="/tutorial">帮助文档</a></li>
-                <li><a href="/keyboard">键盘快捷键</a></li>
-                <li><a href="https://github.com/trueLoving/Pixuli/issues" target="_blank" rel="noopener noreferrer">问题反馈</a></li>
-                <li><a href="https://github.com/trueLoving/Pixuli/discussions" target="_blank" rel="noopener noreferrer">社区讨论</a></li>
+                <li>
+                  <a href="/tutorial">帮助文档</a>
+                </li>
+                <li>
+                  <a href="/keyboard">键盘快捷键</a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    问题反馈
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/discussions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    社区讨论
+                  </a>
+                </li>
               </ul>
             </div>
             <div className="footer-section">
               <h3 className="footer-title">社区</h3>
               <ul className="footer-links">
-                <li><a href="https://github.com/trueLoving/pixuli" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                <li><a href="#">贡献指南</a></li>
-                <li><a href="#">开发者文档</a></li>
-                <li><a href="#">API 文档</a></li>
+                <li>
+                  <a
+                    href="https://github.com/trueLoving/pixuli"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="#">贡献指南</a>
+                </li>
+                <li>
+                  <a href="#">开发者文档</a>
+                </li>
+                <li>
+                  <a href="#">API 文档</a>
+                </li>
               </ul>
             </div>
           </div>
           <div className="footer-bottom">
-            <p className="copyright">
-              2024 Pixuli Team. 保留所有权利。
-            </p>
+            <p className="copyright">2024 Pixuli Team. 保留所有权利。</p>
             <div className="footer-legal">
               <a href="#">隐私政策</a>
               <a href="#">服务条款</a>

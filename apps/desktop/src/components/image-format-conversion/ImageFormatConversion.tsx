@@ -1,154 +1,188 @@
-import { FormatConversionService } from '@/services/formatConversion'
+import { FormatConversionService } from '@/services/formatConversion';
 import {
   DEFAULT_CONVERSION_OPTIONS,
   FormatConversionOptions,
   FormatConversionResult,
   getFormatFromExtension,
-  isImageFile
-} from '@/types/formatConversion'
-import { showError, showInfo, showSuccess, useEscapeKey } from '@packages/ui/src'
-import { FileImage, RefreshCw, Upload, X } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
-import './ImageFormatConversion.css'
-import ImageFormatConversionPreview from './ImageFormatConversionPreview'
-import ImageFormatConversionSettings from './ImageFormatConversionSettings'
+  isImageFile,
+} from '@/types/formatConversion';
+import {
+  showError,
+  showInfo,
+  showSuccess,
+  useEscapeKey,
+} from '@packages/ui/src';
+import { FileImage, RefreshCw, Upload, X } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import './ImageFormatConversion.css';
+import ImageFormatConversionPreview from './ImageFormatConversionPreview';
+import ImageFormatConversionSettings from './ImageFormatConversionSettings';
 
 interface ImageFormatConversionProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
-const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [conversionOptions, setConversionOptions] = useState<FormatConversionOptions>(DEFAULT_CONVERSION_OPTIONS)
-  const [conversionResult, setConversionResult] = useState<FormatConversionResult | null>(null)
-  const [isConverting, setIsConverting] = useState(false)
+const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
+  onClose,
+}) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [conversionOptions, setConversionOptions] =
+    useState<FormatConversionOptions>(DEFAULT_CONVERSION_OPTIONS);
+  const [conversionResult, setConversionResult] =
+    useState<FormatConversionResult | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
 
   // 处理文件选择
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      if (!isImageFile(file)) {
-        showError('请选择有效的图片文件')
-        return
+  const handleFileSelect = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        if (!isImageFile(file)) {
+          showError('请选择有效的图片文件');
+          return;
+        }
+
+        if (file.size > 50 * 1024 * 1024) {
+          // 50MB限制
+          showError('文件大小不能超过50MB');
+          return;
+        }
+
+        setSelectedFile(file);
+        setConversionResult(null);
+
+        // 自动检测原格式并设置目标格式
+        const originalFormat = getFormatFromExtension(file.name);
+        if (originalFormat) {
+          const autoOptions = FormatConversionService.getAutoConversionOptions(
+            file,
+            'webp'
+          );
+          setConversionOptions({
+            ...DEFAULT_CONVERSION_OPTIONS,
+            ...autoOptions,
+            targetFormat: 'webp', // 默认转换为 WebP
+          });
+        }
+
+        showInfo(`已选择图片: ${file.name}`);
       }
-      
-      if (file.size > 50 * 1024 * 1024) { // 50MB限制
-        showError('文件大小不能超过50MB')
-        return
-      }
-      
-      setSelectedFile(file)
-      setConversionResult(null)
-      
-      // 自动检测原格式并设置目标格式
-      const originalFormat = getFormatFromExtension(file.name)
-      if (originalFormat) {
-        const autoOptions = FormatConversionService.getAutoConversionOptions(file, 'webp')
-        setConversionOptions({
-          ...DEFAULT_CONVERSION_OPTIONS,
-          ...autoOptions,
-          targetFormat: 'webp' // 默认转换为 WebP
-        })
-      }
-      
-      showInfo(`已选择图片: ${file.name}`)
-    }
-  }, [])
+    },
+    []
+  );
 
   // 处理拖拽
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const files = Array.from(event.dataTransfer.files)
-    
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files);
+
     if (files.length > 1) {
-      showError('一次只能处理一张图片')
-      return
+      showError('一次只能处理一张图片');
+      return;
     }
-    
-    const file = files[0]
+
+    const file = files[0];
     if (file && isImageFile(file)) {
       if (file.size > 50 * 1024 * 1024) {
-        showError('文件大小不能超过50MB')
-        return
+        showError('文件大小不能超过50MB');
+        return;
       }
-      
-      setSelectedFile(file)
-      setConversionResult(null)
-      
+
+      setSelectedFile(file);
+      setConversionResult(null);
+
       // 自动检测原格式并设置目标格式
-      const originalFormat = getFormatFromExtension(file.name)
+      const originalFormat = getFormatFromExtension(file.name);
       if (originalFormat) {
-        const autoOptions = FormatConversionService.getAutoConversionOptions(file, 'webp')
+        const autoOptions = FormatConversionService.getAutoConversionOptions(
+          file,
+          'webp'
+        );
         setConversionOptions({
           ...DEFAULT_CONVERSION_OPTIONS,
           ...autoOptions,
-          targetFormat: 'webp' // 默认转换为 WebP
-        })
+          targetFormat: 'webp', // 默认转换为 WebP
+        });
       }
-      
-      showInfo(`已选择图片: ${file.name}`)
-    } else {
-      showError('请选择有效的图片文件')
-    }
-  }, [])
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-  }, [])
+      showInfo(`已选择图片: ${file.name}`);
+    } else {
+      showError('请选择有效的图片文件');
+    }
+  }, []);
+
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+    },
+    []
+  );
 
   // 执行格式转换
   const handleConvert = useCallback(async () => {
-    if (!selectedFile) return
-    
-    setIsConverting(true)
+    if (!selectedFile) return;
+
+    setIsConverting(true);
     try {
-      const result = await FormatConversionService.convertImage(selectedFile, conversionOptions)
-      setConversionResult(result)
-      
+      const result = await FormatConversionService.convertImage(
+        selectedFile,
+        conversionOptions
+      );
+      setConversionResult(result);
+
       if (result.sizeChangeRatio > 0) {
-        showSuccess(`转换成功！文件大小增加了 ${result.sizeChangeRatio.toFixed(1)}%`)
+        showSuccess(
+          `转换成功！文件大小增加了 ${result.sizeChangeRatio.toFixed(1)}%`
+        );
       } else if (result.sizeChangeRatio < 0) {
-        showSuccess(`转换成功！文件大小减少了 ${Math.abs(result.sizeChangeRatio).toFixed(1)}%`)
+        showSuccess(
+          `转换成功！文件大小减少了 ${Math.abs(result.sizeChangeRatio).toFixed(1)}%`
+        );
       } else {
-        showInfo('格式转换完成，文件大小基本无变化')
+        showInfo('格式转换完成，文件大小基本无变化');
       }
     } catch (error) {
-      showError(`格式转换失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      showError(
+        `格式转换失败: ${error instanceof Error ? error.message : '未知错误'}`
+      );
     } finally {
-      setIsConverting(false)
+      setIsConverting(false);
     }
-  }, [selectedFile, conversionOptions])
+  }, [selectedFile, conversionOptions]);
 
   // 下载转换后的图片
   const handleDownload = useCallback((file: File) => {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = file.name
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    showSuccess('转换后的图片已开始下载')
-  }, [])
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showSuccess('转换后的图片已开始下载');
+  }, []);
 
   // 重新转换
   const handleRetry = useCallback(() => {
-    setConversionResult(null)
-  }, [])
+    setConversionResult(null);
+  }, []);
 
   // 自动优化
   const handleAutoOptimize = useCallback(() => {
     if (selectedFile) {
-      const autoOptions = FormatConversionService.getAutoConversionOptions(selectedFile, conversionOptions.targetFormat)
-      setConversionOptions(prev => ({ ...prev, ...autoOptions }))
-      showInfo('已应用自动优化设置')
+      const autoOptions = FormatConversionService.getAutoConversionOptions(
+        selectedFile,
+        conversionOptions.targetFormat
+      );
+      setConversionOptions(prev => ({ ...prev, ...autoOptions }));
+      showInfo('已应用自动优化设置');
     }
-  }, [selectedFile, conversionOptions.targetFormat])
+  }, [selectedFile, conversionOptions.targetFormat]);
 
   // 键盘支持
-  useEscapeKey(onClose)
+  useEscapeKey(onClose);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -161,7 +195,9 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900">图片格式转换</h2>
-              <p className="text-sm text-gray-500">支持多种图片格式之间的转换</p>
+              <p className="text-sm text-gray-500">
+                支持多种图片格式之间的转换
+              </p>
             </div>
           </div>
           <button
@@ -196,7 +232,9 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }
                     <Upload className="w-8 h-8 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">选择图片文件</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      选择图片文件
+                    </h3>
                     <p className="text-gray-500 mb-4">
                       点击选择或拖拽图片到此处
                     </p>
@@ -217,11 +255,15 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">文件名:</span>
-                      <span className="text-gray-900 font-medium">{selectedFile.name}</span>
+                      <span className="text-gray-900 font-medium">
+                        {selectedFile.name}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">文件大小:</span>
-                      <span className="text-gray-900">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                      <span className="text-gray-900">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">文件类型:</span>
@@ -279,7 +321,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({ onClose }
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageFormatConversion
+export default ImageFormatConversion;

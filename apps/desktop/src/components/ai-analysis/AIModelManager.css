@@ -373,19 +373,19 @@
     width: 95%;
     margin: 20px;
   }
-  
+
   .models-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .model-actions {
     flex-direction: column;
   }
-  
+
   .file-input-group {
     flex-direction: column;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }

@@ -11,6 +11,7 @@ Pixuli Mobile 是 Pixuli 智能图片管理生态系统的移动端应用，基�
 ## ✨ 主要功能
 
 ### 🖼️ 图片管理
+
 - **智能浏览** - 网格布局展示图片，支持懒加载
 - **拍照上传** - 支持相机拍照和相册选择
 - **批量操作** - 批量上传、删除、重命名
@@ -18,6 +19,7 @@ Pixuli Mobile 是 Pixuli 智能图片管理生态系统的移动端应用，基�
 - **预览功能** - 全屏预览、缩放、旋转
 
 ### 🤖 AI 智能分析
+
 - **物体检测** - 识别图片中的物体
 - **场景识别** - 自动识别场景类型
 - **人脸检测** - 检测和标记人脸
@@ -25,12 +27,14 @@ Pixuli Mobile 是 Pixuli 智能图片管理生态系统的移动端应用，基�
 - **智能标签** - AI 自动生成标签
 
 ### 🔧 图片处理
+
 - **WebP 压缩** - 智能压缩优化
 - **格式转换** - 支持多种格式转换
 - **尺寸调整** - 批量调整图片尺寸
 - **质量控制** - 可调节压缩参数
 
 ### ☁️ 云端同步
+
 - **GitHub 集成** - 使用 GitHub 仓库存储
 - **离线同步** - 支持离线浏览和同步
 - **版本控制** - 利用 Git 版本管理
@@ -46,50 +50,50 @@ graph TB
         C[Native Modules]
         D[Platform APIs]
     end
-    
+
     subgraph "前端层"
         E[React 组件]
         F[状态管理 Zustand]
         G[导航管理 React Navigation]
         H[UI 组件库]
     end
-    
+
     subgraph "业务逻辑层"
         I[图片管理服务]
         J[AI 分析服务]
         K[图片处理服务]
         L[GitHub 存储服务]
     end
-    
+
     subgraph "原生集成"
         M[相机 API]
         N[文件系统 API]
         O[权限管理]
         P[图片选择器]
     end
-    
+
     subgraph "共享模块"
         Q[pixuli-ui 组件库]
         R[pixuli-wasm 处理引擎]
         S[业务逻辑复用]
     end
-    
+
     A --> B
     B --> E
     E --> F
     E --> G
     E --> H
-    
+
     I --> Q
     J --> R
     K --> R
     L --> S
-    
+
     C --> M
     C --> N
     C --> O
     C --> P
-    
+
     style A fill:#e3f2fd
     style E fill:#e8f5e8
     style I fill:#fff3e0
@@ -189,11 +193,11 @@ export class ImageService {
   async getImages(): Promise<ImageItem[]> {
     // 获取图片列表
   }
-  
+
   async uploadImage(imageUri: string): Promise<ImageItem> {
     // 上传图片
   }
-  
+
   async deleteImage(imageId: string): Promise<void> {
     // 删除图片
   }
@@ -208,7 +212,7 @@ export class AIService {
   async analyzeImage(imageUri: string): Promise<AnalysisResult> {
     // AI 图片分析
   }
-  
+
   async generateTags(imageUri: string): Promise<string[]> {
     // 生成智能标签
   }
@@ -237,12 +241,14 @@ export const darkTheme: ThemeColors = {
 ## 📱 平台特性
 
 ### Android 特性
+
 - Material Design 3 设计语言
 - 权限管理优化
 - 后台任务处理
 - 文件系统访问
 
 ### iOS 特性
+
 - Human Interface Guidelines
 - 原生导航体验
 - 相册权限管理
@@ -251,16 +257,19 @@ export const darkTheme: ThemeColors = {
 ## 🔗 与 Pixuli 生态集成
 
 ### 共享组件
+
 - 复用 `packages/ui` 中的组件
 - 统一的设计系统和主题
 - 一致的交互体验
 
 ### 业务逻辑
+
 - 共享图片处理逻辑
 - 统一的 AI 分析服务
 - GitHub 存储集成
 
 ### 数据同步
+
 - 与桌面版和 Web 版数据同步
 - 云端存储一致性
 - 离线缓存策略
@@ -302,21 +311,25 @@ npx react-native run-ios --configuration Release
 ## 🐛 常见问题
 
 ### 1. Metro 缓存问题
+
 ```bash
 npx react-native start --reset-cache
 ```
 
 ### 2. iOS 依赖问题
+
 ```bash
 cd ios && pod install && cd ..
 ```
 
 ### 3. Android 构建问题
+
 ```bash
 cd android && ./gradlew clean && cd ..
 ```
 
 ### 4. 权限问题
+
 确保在 `android/app/src/main/AndroidManifest.xml` 和 `ios/mobile/Info.plist` 中正确配置权限。
 
 ## 🤝 贡献指南

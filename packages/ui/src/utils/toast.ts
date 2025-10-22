@@ -1,4 +1,4 @@
-import toast from 'react-hot-toast'
+import toast from 'react-hot-toast';
 
 // 成功消息提示
 export const showSuccess = (message: string) => {
@@ -13,8 +13,8 @@ export const showSuccess = (message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 错误消息提示
 export const showError = (message: string) => {
@@ -29,8 +29,8 @@ export const showError = (message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 警告消息提示
 export const showWarning = (message: string) => {
@@ -46,8 +46,8 @@ export const showWarning = (message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 信息消息提示
 export const showInfo = (message: string) => {
@@ -63,8 +63,8 @@ export const showInfo = (message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 加载中消息提示
 export const showLoading = (message: string) => {
@@ -78,8 +78,8 @@ export const showLoading = (message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 更新加载中消息为成功
 export const updateLoadingToSuccess = (toastId: string, message: string) => {
@@ -94,8 +94,8 @@ export const updateLoadingToSuccess = (toastId: string, message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-}
+  });
+};
 
 // 更新加载中消息为错误
 export const updateLoadingToError = (toastId: string, message: string) => {
@@ -110,5 +110,5 @@ export const updateLoadingToError = (toastId: string, message: string) => {
       borderRadius: '8px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     },
-  })
-} 
+  });
+};

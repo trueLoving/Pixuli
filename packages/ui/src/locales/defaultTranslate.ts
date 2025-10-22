@@ -1,4 +1,4 @@
-import zhCN from './zh-CN.json'
+import zhCN from './zh-CN.json';
 
 /**
  * 默认中文翻译函数
@@ -7,12 +7,12 @@ import zhCN from './zh-CN.json'
  * @returns 翻译后的文本，如果找不到则返回key本身
  */
 export const defaultTranslate = (key: string): string => {
-  const keys = key.split('.')
-  let value: any = zhCN
+  const keys = key.split('.');
+  let value: any = zhCN;
   for (const k of keys) {
-    value = value?.[k]
+    value = value?.[k];
   }
-  return value || key
-}
+  return value || key;
+};
 
-export default defaultTranslate
+export default defaultTranslate;

@@ -1,99 +1,114 @@
-import { Octokit } from 'octokit'
-import { ipcMain } from 'electron'
+import { Octokit } from 'octokit';
+import { ipcMain } from 'electron';
 
 export class GitHubService {
-  private octokit: Octokit | null = null
+  private octokit: Octokit | null = null;
 
   constructor() {
-    this.setupIpcHandlers()
+    this.setupIpcHandlers();
   }
 
   private setupIpcHandlers() {
     // 设置 GitHub 认证
     ipcMain.handle('github:setAuth', async (event, token: string) => {
       try {
-        this.octokit = new Octokit({ auth: token })
-        return { success: true }
+        this.octokit = new Octokit({ auth: token });
+        return { success: true };
       } catch (error) {
-        console.error('Failed to set GitHub auth:', error)
-        return { success: false, error: error instanceof Error ? error.message : String(error) }
+        console.error('Failed to set GitHub auth:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
       }
-    })
+    });
 
     // 上传图片
     ipcMain.handle('github:upload', async (event, params: any) => {
       try {
         if (!this.octokit) {
-          throw new Error('GitHub 认证未设置')
+          throw new Error('GitHub 认证未设置');
         }
 
-        const { owner, repo, path, branch, fileName, content, description, tags } = params
-        const filePath = `${path}/${fileName}`
-        
+        const {
+          owner,
+          repo,
+          path,
+          branch,
+          fileName,
+          content,
+          description,
+          tags,
+        } = params;
+        const filePath = `${path}/${fileName}`;
+
         // 首先检查文件是否已存在
-        let existingSha: string | null = null
+        let existingSha: string | null = null;
         try {
           const existingFile = await this.octokit.rest.repos.getContent({
             owner,
             repo,
             path: filePath,
             ref: branch,
-          })
-          
+          });
+
           if (Array.isArray(existingFile.data)) {
             // 如果是目录，抛出错误
-            throw new Error('Path is a directory')
+            throw new Error('Path is a directory');
           } else {
-            existingSha = existingFile.data.sha
+            existingSha = existingFile.data.sha;
           }
         } catch (error: any) {
           // 如果文件不存在，existingSha 保持为 null
           if (error.status !== 404) {
-            console.warn('Error checking existing file:', error.message)
+            console.warn('Error checking existing file:', error.message);
           }
         }
-        
-        const response = await this.octokit.rest.repos.createOrUpdateFileContents({
-          owner,
-          repo,
-          path: filePath,
-          message: existingSha ? `Update image: ${fileName}` : `Add image: ${fileName}`,
-          content,
-          branch,
-          ...(existingSha && { sha: existingSha }),
-        })
+
+        const response =
+          await this.octokit.rest.repos.createOrUpdateFileContents({
+            owner,
+            repo,
+            path: filePath,
+            message: existingSha
+              ? `Update image: ${fileName}`
+              : `Add image: ${fileName}`,
+            content,
+            branch,
+            ...(existingSha && { sha: existingSha }),
+          });
 
         return {
           sha: response.data.content?.sha,
           downloadUrl: response.data.content?.download_url,
           htmlUrl: response.data.content?.html_url,
-        }
+        };
       } catch (error) {
-        console.error('GitHub upload failed:', error)
-        throw error
+        console.error('GitHub upload failed:', error);
+        throw error;
       }
-    })
+    });
 
     // 删除图片
     ipcMain.handle('github:delete', async (event, params: any) => {
       try {
         if (!this.octokit) {
-          throw new Error('GitHub 认证未设置')
+          throw new Error('GitHub 认证未设置');
         }
 
-        const { owner, repo, path, branch, fileName } = params
-        const filePath = `${path}/${fileName}`
-        
+        const { owner, repo, path, branch, fileName } = params;
+        const filePath = `${path}/${fileName}`;
+
         // 获取文件的当前 SHA
         const fileInfo = await this.octokit.rest.repos.getContent({
           owner,
           repo,
           path: filePath,
           ref: branch,
-        })
+        });
 
         if (Array.isArray(fileInfo.data)) {
-          throw new Error('路径指向目录，不是文件')
+          throw new Error('路径指向目录，不是文件');
         }
 
         await this.octokit.rest.repos.deleteFile({
@@ -103,45 +118,47 @@ export class GitHubService {
           message: `Delete image: ${fileName}`,
           sha: fileInfo.data.sha,
           branch,
-        })
+        });
       } catch (error) {
-        console.error('GitHub delete failed:', error)
-        throw error
+        console.error('GitHub delete failed:', error);
+        throw error;
       }
-    })
+    });
 
     // 获取图片列表
     ipcMain.handle('github:getList', async (event, params: any) => {
       try {
         if (!this.octokit) {
-          throw new Error('GitHub 认证未设置')
+          throw new Error('GitHub 认证未设置');
         }
 
-        const { owner, repo, path, branch } = params
-        
+        const { owner, repo, path, branch } = params;
+
         const response = await this.octokit.rest.repos.getContent({
           owner,
           repo,
           path,
           ref: branch,
-        })
+        });
 
         if (!Array.isArray(response.data)) {
-          return []
+          return [];
         }
 
         // 筛选出图片文件
-        const imageFiles = response.data.filter(item => this.isImageFile(item.name))
-        
+        const imageFiles = response.data.filter(item =>
+          this.isImageFile(item.name)
+        );
+
         if (imageFiles.length === 0) {
-          return []
+          return [];
         }
 
         // 使用批量方式获取文件时间信息
-        const imageItems = []
-        const defaultDate = new Date().toISOString()
-        const fileTimeMap = new Map<string, string>()
-        
+        const imageItems = [];
+        const defaultDate = new Date().toISOString();
+        const fileTimeMap = new Map<string, string>();
+
         try {
           // 方案1：尝试使用 GraphQL 批量获取
           const query = `
@@ -163,68 +180,77 @@ export class GitHubService {
                 }
               }
             }
-          `
-          
-          const graphqlResponse = await this.octokit.graphql(query, {
+          `;
+
+          const graphqlResponse = (await this.octokit.graphql(query, {
             owner,
             repo,
-            branch: `refs/heads/${branch}`
-          }) as any
-          
-          const commits = graphqlResponse.repository?.ref?.target?.history?.nodes || []
-           
+            branch: `refs/heads/${branch}`,
+          })) as any;
+
+          const commits =
+            graphqlResponse.repository?.ref?.target?.history?.nodes || [];
+
           // 获取仓库第一次提交的时间（最后一个提交，因为历史是按时间倒序排列）
-          const firstCommitDate = commits.length > 0 ? commits[commits.length - 1].committedDate : defaultDate
-          
+          const firstCommitDate =
+            commits.length > 0
+              ? commits[commits.length - 1].committedDate
+              : defaultDate;
+
           // 为每个图片文件分配时间
           for (const imageFile of imageFiles) {
-            let bestDate = firstCommitDate // 默认使用第一次提交时间
-            
+            let bestDate = firstCommitDate; // 默认使用第一次提交时间
+
             // 查找包含此文件名的提交
             for (const commit of commits) {
               if (commit.message && commit.message.includes(imageFile.name)) {
-                const commitDate = commit.committedDate
+                const commitDate = commit.committedDate;
                 if (new Date(commitDate) > new Date(bestDate)) {
-                  bestDate = commitDate
+                  bestDate = commitDate;
                 }
               }
             }
-            
-            fileTimeMap.set(imageFile.name, bestDate)
+
+            fileTimeMap.set(imageFile.name, bestDate);
           }
         } catch (graphqlError) {
-          console.warn('GraphQL failed, falling back to individual file queries:', graphqlError)
-          
+          console.warn(
+            'GraphQL failed, falling back to individual file queries:',
+            graphqlError
+          );
+
           // 方案2：降级到逐个文件查询（虽然慢但准确）
           // 首先获取仓库的第一次提交时间作为默认值
-          let firstCommitDate = defaultDate
+          let firstCommitDate = defaultDate;
           try {
             const allCommits = await this.octokit.rest.repos.listCommits({
               owner,
               repo,
               per_page: 1,
-            })
-            
+            });
+
             if (allCommits.data.length > 0) {
               // 获取完整的提交历史来找到第一次提交
               const fullHistory = await this.octokit.rest.repos.listCommits({
                 owner,
                 repo,
                 per_page: 1000, // 获取更多提交以找到第一次提交
-              })
-              
+              });
+
               if (fullHistory.data.length > 0) {
                 // 最后一个提交是第一次提交
-                const firstCommit = fullHistory.data[fullHistory.data.length - 1]
-                firstCommitDate = firstCommit.commit.committer?.date || 
-                                 firstCommit.commit.author?.date || 
-                                 defaultDate
+                const firstCommit =
+                  fullHistory.data[fullHistory.data.length - 1];
+                firstCommitDate =
+                  firstCommit.commit.committer?.date ||
+                  firstCommit.commit.author?.date ||
+                  defaultDate;
               }
             }
           } catch (historyError) {
-            console.warn('Failed to get repository history:', historyError)
+            console.warn('Failed to get repository history:', historyError);
           }
-          
+
           for (const imageFile of imageFiles) {
             try {
               const fileCommits = await this.octokit.rest.repos.listCommits({
@@ -232,29 +258,33 @@ export class GitHubService {
                 repo,
                 path: `${path}/${imageFile.name}`,
                 per_page: 1,
-              })
-              
+              });
+
               if (fileCommits.data.length > 0) {
-                const commit = fileCommits.data[0]
-                const commitDate = commit.commit.committer?.date || 
-                                 commit.commit.author?.date || 
-                                 firstCommitDate
-                fileTimeMap.set(imageFile.name, commitDate)
+                const commit = fileCommits.data[0];
+                const commitDate =
+                  commit.commit.committer?.date ||
+                  commit.commit.author?.date ||
+                  firstCommitDate;
+                fileTimeMap.set(imageFile.name, commitDate);
               } else {
                 // 如果没有找到该文件的提交记录，使用第一次提交时间
-                fileTimeMap.set(imageFile.name, firstCommitDate)
+                fileTimeMap.set(imageFile.name, firstCommitDate);
               }
             } catch (fileError) {
-              console.warn(`Failed to get commit for ${imageFile.name}:`, fileError)
+              console.warn(
+                `Failed to get commit for ${imageFile.name}:`,
+                fileError
+              );
               // 如果获取失败，使用第一次提交时间
-              fileTimeMap.set(imageFile.name, firstCommitDate)
+              fileTimeMap.set(imageFile.name, firstCommitDate);
             }
           }
         }
-        
+
         // 批量获取 metadata 文件以提高性能
-        const metadataMap = new Map<string, any>()
-        
+        const metadataMap = new Map<string, any>();
+
         try {
           // 获取 .metadata 目录中的所有文件
           const metadataResponse = await this.octokit!.rest.repos.getContent({
@@ -262,59 +292,75 @@ export class GitHubService {
             repo,
             path: `${path}/.metadata`,
             ref: branch,
-          })
-          
+          });
+
           if (Array.isArray(metadataResponse.data)) {
             // 批量获取所有 metadata 文件内容
             const metadataPromises = metadataResponse.data
               .filter(file => file.name.endsWith('.json'))
-              .map(async (file) => {
+              .map(async file => {
                 try {
-                  const fileResponse = await this.octokit!.rest.repos.getContent({
-                    owner,
-                    repo,
-                    path: file.path,
-                    ref: branch,
-                  })
-                  
-                  if (!Array.isArray(fileResponse.data) && 'content' in fileResponse.data) {
-                    const content = Buffer.from(fileResponse.data.content, 'base64').toString('utf8')
-                    const metadata = JSON.parse(content)
+                  const fileResponse =
+                    await this.octokit!.rest.repos.getContent({
+                      owner,
+                      repo,
+                      path: file.path,
+                      ref: branch,
+                    });
+
+                  if (
+                    !Array.isArray(fileResponse.data) &&
+                    'content' in fileResponse.data
+                  ) {
+                    const content = Buffer.from(
+                      fileResponse.data.content,
+                      'base64'
+                    ).toString('utf8');
+                    const metadata = JSON.parse(content);
                     // 从文件名提取图片名（去掉 .json 后缀）
-                    const imageName = file.name.replace('.json', '')
-                    metadataMap.set(imageName, metadata)
+                    const imageName = file.name.replace('.json', '');
+                    metadataMap.set(imageName, metadata);
                   }
                 } catch (error) {
-                  console.warn(`Failed to load metadata for ${file.name}:`, error)
+                  console.warn(
+                    `Failed to load metadata for ${file.name}:`,
+                    error
+                  );
                 }
-              })
-            
-            await Promise.all(metadataPromises)
+              });
+
+            await Promise.all(metadataPromises);
           }
         } catch (metadataError) {
-          console.log('No .metadata directory found or failed to access, using defaults')
+          console.log(
+            'No .metadata directory found or failed to access, using defaults'
+          );
         }
-        
+
         // 构建最终结果
         for (const item of imageFiles) {
-          const lastCommitDate = fileTimeMap.get(item.name) || defaultDate
-          
+          const lastCommitDate = fileTimeMap.get(item.name) || defaultDate;
+
           // 从 metadataMap 中获取对应的 metadata
-          const parsedMetadata = metadataMap.get(item.name)
-          const metadata = parsedMetadata ? {
-            width: parsedMetadata.width || 0,
-            height: parsedMetadata.height || 0,
-            tags: Array.isArray(parsedMetadata.tags) ? parsedMetadata.tags : [],
-            description: parsedMetadata.description || '',
-            updatedAt: parsedMetadata.updatedAt || lastCommitDate
-          } : {
-            width: 0,
-            height: 0,
-            tags: [] as string[],
-            description: '',
-            updatedAt: lastCommitDate
-          }
-          
+          const parsedMetadata = metadataMap.get(item.name);
+          const metadata = parsedMetadata
+            ? {
+                width: parsedMetadata.width || 0,
+                height: parsedMetadata.height || 0,
+                tags: Array.isArray(parsedMetadata.tags)
+                  ? parsedMetadata.tags
+                  : [],
+                description: parsedMetadata.description || '',
+                updatedAt: parsedMetadata.updatedAt || lastCommitDate,
+              }
+            : {
+                width: 0,
+                height: 0,
+                tags: [] as string[],
+                description: '',
+                updatedAt: lastCommitDate,
+              };
+
           imageItems.push({
             sha: item.sha,
             name: item.name,
@@ -327,52 +373,60 @@ export class GitHubService {
             description: metadata.description,
             createdAt: lastCommitDate,
             updatedAt: metadata.updatedAt,
-          })
+          });
         }
 
-        return imageItems
+        return imageItems;
       } catch (error) {
-        console.error('GitHub get list failed:', error)
-        throw error
+        console.error('GitHub get list failed:', error);
+        throw error;
       }
-    })
+    });
 
     // 更新元数据
     ipcMain.handle('github:updateMetadata', async (event, params: any) => {
       try {
         if (!this.octokit) {
-          throw new Error('GitHub 认证未设置')
+          throw new Error('GitHub 认证未设置');
         }
 
-        const { owner, repo, path, branch, fileName, metadata, oldFileName } = params
-        
+        const { owner, repo, path, branch, fileName, metadata, oldFileName } =
+          params;
+
         // 如果文件名发生了变化，需要重命名文件
         if (oldFileName && oldFileName !== metadata.name) {
-          await this.renameFile(owner, repo, path, branch, oldFileName, metadata.name)
+          await this.renameFile(
+            owner,
+            repo,
+            path,
+            branch,
+            oldFileName,
+            metadata.name
+          );
         }
-        
+
         // 创建或更新元数据文件
-        const metadataFileName = `${metadata.name}.json`
-        const metadataPath = `${path}/.metadata/${metadataFileName}`
-        const metadataContent = JSON.stringify(metadata, null, 2)
+        const metadataFileName = `${metadata.name}.json`;
+        const metadataPath = `${path}/.metadata/${metadataFileName}`;
+        const metadataContent = JSON.stringify(metadata, null, 2);
 
         // 先尝试获取文件的当前 SHA，如果文件存在则更新，否则创建
-        let fileSha: string | undefined = undefined
+        let fileSha: string | undefined = undefined;
         try {
           const fileResponse = await this.octokit.rest.repos.getContent({
             owner,
             repo,
             path: metadataPath,
             ref: branch,
-          })
-          
+          });
+
           if ('sha' in fileResponse.data) {
-            fileSha = fileResponse.data.sha
+            fileSha = fileResponse.data.sha;
           }
         } catch (error: any) {
           // 如果文件不存在（404错误），则是创建新文件，不需要 SHA
           if (error.status !== 404) {
-            throw error
+            throw error;
           }
         }
 
@@ -383,26 +437,33 @@ export class GitHubService {
           message: `Update metadata for: ${metadata.name}`,
           content: Buffer.from(metadataContent).toString('base64'),
           branch,
-        }
+        };
 
         // 如果文件存在，添加 SHA 参数
         if (fileSha) {
-          updateParams.sha = fileSha
+          updateParams.sha = fileSha;
         }
 
-        await this.octokit.rest.repos.createOrUpdateFileContents(updateParams)
+        await this.octokit.rest.repos.createOrUpdateFileContents(updateParams);
       } catch (error) {
-        console.error('GitHub update metadata failed:', error)
-        throw error
+        console.error('GitHub update metadata failed:', error);
+        throw error;
       }
-    })
+    });
   }
 
   // 重命名文件
-  private async renameFile(owner: string, repo: string, path: string, branch: string, oldFileName: string, newFileName: string) {
+  private async renameFile(
+    owner: string,
+    repo: string,
+    path: string,
+    branch: string,
+    oldFileName: string,
+    newFileName: string
+  ) {
     try {
-      const oldFilePath = `${path}/${oldFileName}`
-      const newFilePath = `${path}/${newFileName}`
+      const oldFilePath = `${path}/${oldFileName}`;
+      const newFilePath = `${path}/${newFileName}`;
 
       // 1. 获取原文件内容
       const fileInfo = await this.octokit!.rest.repos.getContent({
@@ -410,37 +471,37 @@ export class GitHubService {
         repo,
         path: oldFilePath,
         ref: branch,
-      })
+      });
 
       if (Array.isArray(fileInfo.data)) {
-        throw new Error('原路径指向目录，不是文件')
+        throw new Error('原路径指向目录，不是文件');
       }
 
-      const fileData = fileInfo.data as any
-      const fileContent = fileData.content
-      const fileEncoding = fileData.encoding
+      const fileData = fileInfo.data as any;
+      const fileContent = fileData.content;
+      const fileEncoding = fileData.encoding;
 
       if (!fileContent || fileEncoding !== 'base64') {
-        throw new Error('无法获取文件内容')
+        throw new Error('无法获取文件内容');
       }
 
       // 2. 检查新文件是否已存在，如果存在则获取其 SHA
-      let newFileSha: string | undefined = undefined
+      let newFileSha: string | undefined = undefined;
       try {
         const newFileInfo = await this.octokit!.rest.repos.getContent({
           owner,
           repo,
           path: newFilePath,
           ref: branch,
-        })
-        
+        });
+
         if (!Array.isArray(newFileInfo.data)) {
-          newFileSha = (newFileInfo.data as any).sha
+          newFileSha = (newFileInfo.data as any).sha;
         }
       } catch (error: any) {
         // 如果新文件不存在（404错误），则正常创建
         if (error.status !== 404) {
-          throw error
+          throw error;
         }
       }
 
@@ -452,14 +513,14 @@ export class GitHubService {
         message: `Rename file: ${oldFileName} → ${newFileName}`,
         content: fileContent,
         branch,
-      }
+      };
 
       // 如果新文件已存在，添加 SHA 参数
       if (newFileSha) {
-        createParams.sha = newFileSha
+        createParams.sha = newFileSha;
       }
 
-      await this.octokit!.rest.repos.createOrUpdateFileContents(createParams)
+      await this.octokit!.rest.repos.createOrUpdateFileContents(createParams);
 
       // 4. 删除原文件
       await this.octokit!.rest.repos.deleteFile({
@@ -469,20 +530,20 @@ export class GitHubService {
         message: `Delete old file after rename: ${oldFileName}`,
         sha: fileData.sha,
         branch,
-      })
+      });
 
       // 5. 删除旧的metadata文件（如果存在）
       try {
-        const oldMetadataPath = `${path}/.metadata/${oldFileName}.json`
+        const oldMetadataPath = `${path}/.metadata/${oldFileName}.json`;
         const oldMetadataInfo = await this.octokit!.rest.repos.getContent({
           owner,
           repo,
           path: oldMetadataPath,
           ref: branch,
-        })
+        });
 
         if (!Array.isArray(oldMetadataInfo.data)) {
-          const oldMetadataData = oldMetadataInfo.data as any
+          const oldMetadataData = oldMetadataInfo.data as any;
           await this.octokit!.rest.repos.deleteFile({
             owner,
             repo,
@@ -490,26 +551,37 @@ export class GitHubService {
             message: `Delete old metadata after rename: ${oldFileName}`,
             sha: oldMetadataData.sha,
             branch,
-          })
+          });
         }
       } catch (metadataError) {
         // 如果旧的metadata文件不存在，忽略错误
-        console.log('Old metadata file not found, skipping deletion')
+        console.log('Old metadata file not found, skipping deletion');
       }
-
     } catch (error) {
-      console.error('GitHub rename file failed:', error)
-      throw new Error(`重命名文件失败: ${error instanceof Error ? error.message : String(error)}`)
+      console.error('GitHub rename file failed:', error);
+      throw new Error(
+        `重命名文件失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   private isImageFile(fileName: string): boolean {
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
-    const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'))
-    return imageExtensions.includes(extension)
+    const imageExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.bmp',
+      '.webp',
+      '.svg',
+    ];
+    const extension = fileName
+      .toLowerCase()
+      .substring(fileName.lastIndexOf('.'));
+    return imageExtensions.includes(extension);
   }
-} 
+}
 
 export function registerGithubHandlers() {
-  new GitHubService()
+  new GitHubService();
 }

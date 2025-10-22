@@ -1,19 +1,20 @@
-import React, { useState } from 'react'
-import { Globe, Check } from 'lucide-react'
-import { useI18n } from '../../hooks/useI18n'
+import React, { useState } from 'react';
+import { Globe, Check } from 'lucide-react';
+import { useI18n } from '../../hooks/useI18n';
 
 const LanguageSwitcher: React.FC = () => {
-  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } = useI18n()
-  const [isOpen, setIsOpen] = useState(false)
-  
-  const currentLang = getCurrentLanguage()
-  const availableLanguages = getAvailableLanguages()
-  
+  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
+    useI18n();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const currentLang = getCurrentLanguage();
+  const availableLanguages = getAvailableLanguages();
+
   const handleLanguageChange = (langCode: string) => {
-    changeLanguage(langCode)
-    setIsOpen(false)
-  }
-  
+    changeLanguage(langCode);
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative">
       <button
@@ -26,11 +27,11 @@ const LanguageSwitcher: React.FC = () => {
           {availableLanguages.find(lang => lang.code === currentLang)?.flag}
         </span>
       </button>
-      
+
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
           <div className="py-1">
-            {availableLanguages.map((lang) => (
+            {availableLanguages.map(lang => (
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
@@ -49,7 +50,7 @@ const LanguageSwitcher: React.FC = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default LanguageSwitcher
+export default LanguageSwitcher;
