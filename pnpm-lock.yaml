@@ -13,9 +13,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.14
         version: 10.4.21(postcss@8.5.6)
-      electron:
-        specifier: ^33.4.11
-        version: 33.4.11
       electron-updater:
         specifier: 6.3.9
         version: 6.3.9
@@ -74,6 +71,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@5.4.19(@types/node@22.18.6)(lightningcss@1.30.1)(terser@5.44.0))
+      electron:
+        specifier: ^33.4.11
+        version: 33.4.11
       electron-builder:
         specifier: ^24.0.0
         version: 24.13.3(electron-builder-squirrel-windows@24.13.3)
@@ -205,9 +205,6 @@ importers:
 
   apps/web:
     dependencies:
-      autoprefixer:
-        specifier: ^10.4.14
-        version: 10.4.21(postcss@8.5.6)
       i18next:
         specifier: ^25.6.0
         version: 25.6.0(typescript@5.9.3)
@@ -220,24 +217,18 @@ importers:
       octokit:
         specifier: ^3.1.2
         version: 3.2.2
-      postcss:
-        specifier: ^8.4.24
-        version: 8.5.6
+      pixuli-ui:
+        specifier: workspace:*
+        version: link:../../packages/ui
       react:
         specifier: ^18.2.0
         version: 18.3.1
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
-      react-hot-toast:
-        specifier: ^2.6.0
-        version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-i18next:
         specifier: ^16.0.1
         version: 16.0.1(i18next@25.6.0(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
-      tailwindcss:
-        specifier: ^3.3.2
-        version: 3.4.17(ts-node@10.9.2(@types/node@22.18.6)(typescript@5.9.3))
       zustand:
         specifier: ^4.4.1
         version: 4.5.7(@types/react@18.3.23)(react@18.3.1)
@@ -254,6 +245,15 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@5.4.19(@types/node@22.18.6)(lightningcss@1.30.1)(terser@5.44.0))
+      autoprefixer:
+        specifier: ^10.4.14
+        version: 10.4.21(postcss@8.5.6)
+      postcss:
+        specifier: ^8.4.24
+        version: 8.5.6
+      tailwindcss:
+        specifier: ^3.3.2
+        version: 3.4.17(ts-node@10.9.2(@types/node@22.18.6)(typescript@5.9.3))
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

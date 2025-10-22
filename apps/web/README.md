@@ -194,45 +194,31 @@ pnpm preview
 
 ```
 apps/web/
-├── src/                    # 源代码
-│   ├── components/         # React 组件
-│   │   └── LanguageSwitcher.tsx # 语言切换组件
-│   ├── config/             # 配置文件
-│   │   └── github.ts       # GitHub 配置管理
-│   ├── hooks/              # 自定义 Hooks
-│   │   └── useI18n.ts      # 国际化 Hook
-│   ├── i18n/               # 国际化配置
-│   │   └── index.ts        # i18n 初始化
-│   ├── services/           # 业务服务
-│   │   └── githubStorage.ts # GitHub 存储服务
-│   ├── stores/             # 状态管理
-│   │   └── imageStore.ts   # 图片状态管理
-│   ├── utils/              # 工具函数
-│   │   └── env.ts          # 环境变量工具
-│   ├── App.tsx             # 主应用组件
-│   ├── App.css             # 应用样式
-│   ├── main.tsx            # 应用入口
-│   └── index.css           # 全局样式
-├── public/                 # 静态资源
-├── dist/                   # 构建输出
-├── package.json            # 项目配置
-├── vite.config.ts          # Vite 配置
-├── tailwind.config.js      # Tailwind 配置
-└── tsconfig.app.json       # TypeScript 配置
-
-packages/ui/                # UI 组件库
-├── src/
-│   ├── components/         # UI 组件
-│   │   ├── github-config/  # GitHub 配置组件
-│   │   ├── image-browser/  # 图片浏览器
-│   │   ├── image-upload/   # 图片上传组件
-│   │   ├── image-search/   # 图片搜索组件
-│   │   └── keyboard-help/  # 键盘帮助组件
-│   ├── hooks/              # 自定义 Hooks
-│   ├── locales/            # 国际化文件
-│   ├── types/              # 类型定义
-│   ├── utils/              # 工具函数
-│   └── styles/             # 样式文件
+├── src/                     # 源代码
+│   ├── components/             # React 组件
+│   │   └── LanguageSwitcher      # 语言切换组件
+│   │   └── Demo                  # Demo切换组件
+│   ├── config/                 # 配置文件
+│   │   └── github.ts             # GitHub 配置管理
+│   ├── i18n/                   # 国际化配置
+│   │   └── index.ts              # i18n 初始化
+│   │   └── useI18n.ts            # i18n hooks
+│   ├── services/               # 业务服务
+│   │   └── githubStorage.ts      # GitHub 存储服务
+│   ├── stores/                 # 状态管理
+│   │   └── imageStore.ts         # 图片状态管理
+│   ├── utils/                  # 工具函数
+│   │   └── keyboardShortcuts.ts  # 快捷键处理函数
+│   ├── App.tsx                 # 主应用组件
+│   ├── App.css                 # 应用样式
+│   ├── main.tsx                # 应用入口
+│   └── index.css               # 全局样式
+├── public/                     # 静态资源
+├── dist/                       # 构建输出
+├── package.json                # 项目配置
+├── vite.config.ts              # Vite 配置
+├── tailwind.config.js          # Tailwind 配置
+└── tsconfig.app.json           # TypeScript 配置
 ```
 
 ## ⌨️ 键盘快捷键
@@ -276,66 +262,6 @@ pnpm build
 # GitHub Actions 会自动部署
 ```
 
-## 🔧 开发指南
-
-### 添加新功能
-
-1. 在 `packages/ui/src/components/` 中创建 UI 组件
-2. 在 `src/services/` 中添加业务逻辑
-3. 在 `src/stores/` 中管理状态
-4. 更新 `packages/ui/src/types/` 中的类型定义
-
-### Monorepo 结构
-
-项目采用 Monorepo 结构，主要包含：
-- `apps/web/`: Web 应用主代码
-- `packages/ui/`: 共享 UI 组件库
-
-### 国际化开发
-
-```typescript
-// 添加新的翻译
-// packages/ui/src/locales/zh-CN.json
-{
-  "newFeature": {
-    "title": "新功能",
-    "description": "功能描述"
-  }
-}
-
-// packages/ui/src/locales/en-US.json
-{
-  "newFeature": {
-    "title": "New Feature",
-    "description": "Feature description"
-  }
-}
-
-// 在组件中使用
-const { t } = useI18n()
-const title = t('newFeature.title')
-```
-
-### GitHub API 集成
-
-```typescript
-// 使用 Octokit 调用 GitHub API
-import { Octokit } from 'octokit'
-
-const octokit = new Octokit({ auth: token })
-
-// 上传文件
-await octokit.rest.repos.createOrUpdateFileContents({
-  owner: 'username',
-  repo: 'repository',
-  path: 'images/photo.jpg',
-  message: 'Upload image',
-  content: base64Content,
-  branch: 'main'
-})
-```
-
-
 ## 🆚 与 Desktop 版本对比
 
 | 功能 | Desktop | Web | 说明 |
@@ -349,8 +275,8 @@ await octokit.rest.repos.createOrUpdateFileContents({
 | 配置导入导出 | ✅ | ✅ | 功能一致 |
 | 图片编辑 | ✅ | ✅ | 功能一致 |
 | 图片预览 | ✅ | ✅ | 功能一致 |
-| AI 分析 | ❌ | ❌ | Web 端暂不支持 |
-| 模型管理 | ✅ | ❌ | Web 端暂不支持 |
+| 图片压缩 | ✅ | ❌ | Web 端暂不支持 |
+| 图片转换 | ✅ | ❌ | Web 端暂不支持 |
 
 ## 📄 许可证
 

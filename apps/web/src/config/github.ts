@@ -1,4 +1,4 @@
-import { type GitHubConfig } from '@packages/ui/src'
+import type { GitHubConfig } from '@packages/ui/src'
 
 // 默认 GitHub 配置
 export const DEFAULT_GITHUB_CONFIG: Partial<GitHubConfig> = {

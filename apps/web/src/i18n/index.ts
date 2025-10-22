@@ -1,9 +1,9 @@
 import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
+import { initReactI18next } from 'react-i18next'
 
 // 导入packages/ui的语言包
-import { zhCN, enUS } from '@packages/ui/src'
+import { enUS, zhCN } from '@packages/ui/src'
 
 const resources = {
   'zh-CN': {
@@ -21,11 +21,11 @@ i18n
     resources,
     fallbackLng: 'zh-CN',
     debug: false,
-    
+
     interpolation: {
       escapeValue: false, // React already does escaping
     },
-    
+
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],

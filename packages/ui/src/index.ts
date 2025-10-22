@@ -21,6 +21,7 @@ export { default as UpyunConfigModal } from './components/upyun-config/UpyunConf
 export { default as KeyboardHelpModal } from './components/keyboard-help/KeyboardHelpModal'
 export { default as ImageUpload } from './components/image-upload/ImageUpload'
 export { default as ImageSearch } from './components/image-search/ImageSearch'
+export { default as Toaster } from './components/toaster/Toaster'
 export { ImageBrowser, ImageGrid, ImageList, ImageFilter, ImageSorter, ImagePreviewModal, ImageUrlModal, ImageEditModal } from './components/image-browser'
 
 // 语言包导出

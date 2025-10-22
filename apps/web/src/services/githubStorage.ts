@@ -1,4 +1,8 @@
-import type { ImageItem, GitHubConfig, ImageUploadData } from '@packages/ui/src'
+import type {
+  GitHubConfig,
+  ImageItem,
+  ImageUploadData
+} from '@packages/ui/src'
 
 export class GitHubStorageService {
   private config: GitHubConfig
@@ -35,13 +39,13 @@ export class GitHubStorageService {
     try {
       const { file, name, description, tags } = uploadData
       const fileName = name || file.name
-      
+
       // 将文件转换为 base64
       const base64Content = await this.fileToBase64(file)
-      
+
       // 构建文件路径
       const filePath = `${this.config.path}/${fileName}`
-      
+
       // 调用 GitHub API 上传文件
       const response = await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}`,
@@ -57,7 +61,7 @@ export class GitHubStorageService {
 
       // 获取图片信息
       const imageInfo = await this.getImageInfo(file)
-      
+
       const imageItem: ImageItem = {
         id: response.content.sha || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: fileName,
@@ -92,12 +96,12 @@ export class GitHubStorageService {
   async deleteImage(_imageId: string, fileName: string): Promise<void> {
     try {
       const filePath = `${this.config.path}/${fileName}`
-      
+
       // 首先获取文件的SHA
       const fileInfo = await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`
       )
-      
+
       // 删除文件
       await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}`,
@@ -129,12 +133,12 @@ export class GitHubStorageService {
     try {
       const metadataFileName = this.getMetadataFileName(fileName)
       const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
-      
+
       // 获取元数据文件的SHA
       const metadataFileInfo = await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
       )
-      
+
       // 删除元数据文件
       await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
@@ -160,7 +164,7 @@ export class GitHubStorageService {
       )
 
       // 过滤出图片文件
-      const imageFiles = response.filter((item: any) => 
+      const imageFiles = response.filter((item: any) =>
         this.isImageFile(item.name) && item.type === 'file'
       )
 
@@ -189,13 +193,13 @@ export class GitHubStorageService {
           updatedAt: metadata?.updatedAt || new Date().toISOString(),
         }
       }))
-      
+
       // 检查重复ID
       const idCounts = images.reduce((acc: Record<string, number>, img: ImageItem) => {
         acc[img.id] = (acc[img.id] || 0) + 1
         return acc
       }, {})
-      
+
       const duplicateIds = Object.entries(idCounts).filter(([_, count]) => (count as number) > 1)
       if (duplicateIds.length > 0) {
         console.warn('发现重复的图片ID:', duplicateIds)
@@ -211,7 +215,7 @@ export class GitHubStorageService {
         })
         return processedImages
       }
-      
+
       return images
     } catch (error) {
       console.error('Get image list failed:', error)
@@ -226,12 +230,12 @@ export class GitHubStorageService {
       if (oldFileName && oldFileName !== fileName) {
         const oldFilePath = `${this.config.path}/${oldFileName}`
         const newFilePath = `${this.config.path}/${fileName}`
-        
+
         // 获取原文件信息
         const fileInfo = await this.makeGitHubRequest(
           `/repos/${this.config.owner}/${this.config.repo}/contents/${oldFilePath}?ref=${this.config.branch}`
         )
-        
+
         // 创建新文件
         await this.makeGitHubRequest(
           `/repos/${this.config.owner}/${this.config.repo}/contents/${newFilePath}`,
@@ -245,7 +249,7 @@ export class GitHubStorageService {
             })
           }
         )
-        
+
         // 删除原文件
         await this.makeGitHubRequest(
           `/repos/${this.config.owner}/${this.config.repo}/contents/${oldFilePath}`,
@@ -273,7 +277,7 @@ export class GitHubStorageService {
     try {
       const metadataFileName = this.getMetadataFileName(fileName)
       const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
-      
+
       // 构建元数据内容
       const metadataContent = {
         id: metadata.id || fileName,
@@ -331,11 +335,11 @@ export class GitHubStorageService {
     try {
       const metadataFileName = this.getMetadataFileName(fileName)
       const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`
-      
+
       const response = await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
       )
-      
+
       // 解码 base64 内容
       const metadataContent = decodeURIComponent(escape(atob(response.content)))
       return JSON.parse(metadataContent)
@@ -343,7 +347,6 @@ export class GitHubStorageService {
       throw new Error(`Failed to get metadata for ${fileName}: ${error}`)
     }
   }
-
 
   // 辅助方法：文件转 base64
   private async fileToBase64(file: File): Promise<string> {

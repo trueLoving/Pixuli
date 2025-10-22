@@ -1,7 +1,15 @@
+import type {
+  BatchUploadProgress,
+  GitHubConfig,
+  ImageEditData,
+  ImageItem,
+  ImageUploadData,
+  MultiImageUploadData,
+  UploadProgress
+} from '@packages/ui/src'
 import { create } from 'zustand'
-import type { ImageItem, ImageUploadData, ImageEditData, GitHubConfig, MultiImageUploadData, BatchUploadProgress, UploadProgress } from '@packages/ui/src'
-import { GitHubStorageService } from '@/services/githubStorage'
-import { loadGitHubConfig, saveGitHubConfig, clearGitHubConfig } from '@/config/github'
+import { clearGitHubConfig, loadGitHubConfig, saveGitHubConfig } from '../config/github'
+import { GitHubStorageService } from '../services/githubStorage'
 
 interface ImageState {
   images: ImageItem[]
@@ -10,7 +18,7 @@ interface ImageState {
   githubConfig: GitHubConfig | null
   storageService: GitHubStorageService | null
   batchUploadProgress: BatchUploadProgress | null
-  
+
   // Actions
   setGitHubConfig: (config: GitHubConfig) => void
   clearGitHubConfig: () => void
@@ -31,7 +39,7 @@ interface ImageState {
 export const useImageStore = create<ImageState>((set, get) => {
   // 在store创建时加载配置并初始化存储服务
   const initialConfig = loadGitHubConfig()
-  
+
   return {
     images: [],
     loading: false,
@@ -61,7 +69,7 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     loadImages: async () => {
       const { storageService } = get()
-      
+
       if (!storageService) {
         set({ error: 'GitHub 配置未初始化' })
         return
@@ -70,8 +78,8 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null })
       try {
         const images = await storageService.getImageList()
-        
-        
+
+
         // 去重：确保每个图片ID只出现一次，如果有重复，保留最新的
         const uniqueImages = images.reduce((acc: ImageItem[], current) => {
           const existingIndex = acc.findIndex(img => img.id === current.id)
@@ -87,13 +95,13 @@ export const useImageStore = create<ImageState>((set, get) => {
           }
           return acc
         }, [])
-        
+
         set({ images: uniqueImages, loading: false })
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : '加载图片失败'
-        set({ 
-          error: errorMsg, 
-          loading: false 
+        set({
+          error: errorMsg,
+          loading: false
         })
       }
     },
@@ -110,15 +118,15 @@ export const useImageStore = create<ImageState>((set, get) => {
         const newImage = await storageService.uploadImage(uploadData)
         set(state => ({
           // 去重：确保不会添加重复ID的图片
-          images: state.images.some(img => img.id === newImage.id) 
+          images: state.images.some(img => img.id === newImage.id)
             ? state.images.map(img => img.id === newImage.id ? newImage : img)
             : [...state.images, newImage],
           loading: false
         }))
       } catch (error) {
-        set({ 
-          error: error instanceof Error ? error.message : '上传图片失败', 
-          loading: false 
+        set({
+          error: error instanceof Error ? error.message : '上传图片失败',
+          loading: false
         })
       }
     },
@@ -142,8 +150,8 @@ export const useImageStore = create<ImageState>((set, get) => {
       }))
 
       // 初始化批量上传进度
-      set({ 
-        loading: true, 
+      set({
+        loading: true,
         error: null,
         batchUploadProgress: {
           total,
@@ -160,15 +168,15 @@ export const useImageStore = create<ImageState>((set, get) => {
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         const itemId = items[i].id
-        
+
         try {
           // 更新当前上传状态
           set(state => ({
             batchUploadProgress: state.batchUploadProgress ? {
               ...state.batchUploadProgress,
               current: file.name,
-              items: state.batchUploadProgress.items.map(item => 
-                item.id === itemId 
+              items: state.batchUploadProgress.items.map(item =>
+                item.id === itemId
                   ? { ...item, status: 'uploading', message: '正在上传...' }
                   : item
               )
@@ -176,10 +184,10 @@ export const useImageStore = create<ImageState>((set, get) => {
           }))
 
           // 上传单个图片
-          const fileName = name 
-            ? `${name}-${i + 1}-${file.name}` 
+          const fileName = name
+            ? `${name}-${i + 1}-${file.name}`
             : file.name
-          
+
           const singleUploadData: ImageUploadData = {
             file,
             name: fileName,
@@ -196,8 +204,8 @@ export const useImageStore = create<ImageState>((set, get) => {
             batchUploadProgress: state.batchUploadProgress ? {
               ...state.batchUploadProgress,
               completed,
-              items: state.batchUploadProgress.items.map(item => 
-                item.id === itemId 
+              items: state.batchUploadProgress.items.map(item =>
+                item.id === itemId
                   ? { ...item, status: 'success', progress: 100, message: '上传成功' }
                   : item
               )
@@ -207,14 +215,14 @@ export const useImageStore = create<ImageState>((set, get) => {
         } catch (error) {
           failed++
           const errorMessage = error instanceof Error ? error.message : '上传失败'
-          
+
           // 更新失败状态
           set(state => ({
             batchUploadProgress: state.batchUploadProgress ? {
               ...state.batchUploadProgress,
               failed,
-              items: state.batchUploadProgress.items.map(item => 
-                item.id === itemId 
+              items: state.batchUploadProgress.items.map(item =>
+                item.id === itemId
                   ? { ...item, status: 'error', message: errorMessage }
                   : item
               )
@@ -246,9 +254,9 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false
         }))
       } catch (error) {
-        set({ 
-          error: error instanceof Error ? error.message : '删除图片失败', 
-          loading: false 
+        set({
+          error: error instanceof Error ? error.message : '删除图片失败',
+          loading: false
         })
       }
     },
@@ -277,19 +285,19 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         // 传递旧文件名用于重命名检测
         await storageService.updateImageInfo(editData.id, image.name, metadata, image.name)
-        
+
         set(state => ({
-          images: state.images.map(img => 
-            img.id === editData.id 
+          images: state.images.map(img =>
+            img.id === editData.id
               ? { ...img, ...metadata }
               : img
           ),
           loading: false
         }))
       } catch (error) {
-        set({ 
-          error: error instanceof Error ? error.message : '更新图片失败', 
-          loading: false 
+        set({
+          error: error instanceof Error ? error.message : '更新图片失败',
+          loading: false
         })
       }
     },
@@ -297,7 +305,7 @@ export const useImageStore = create<ImageState>((set, get) => {
     addImage: (image: ImageItem) => {
       set(state => ({
         // 去重：确保不会添加重复ID的图片
-        images: state.images.some(img => img.id === image.id) 
+        images: state.images.some(img => img.id === image.id)
           ? state.images.map(img => img.id === image.id ? image : img)
           : [...state.images, image]
       }))
@@ -317,22 +325,22 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ error })
     },
 
-      clearError: () => {
-    set({ error: null })
-  },
+    clearError: () => {
+      set({ error: null })
+    },
 
-  setBatchUploadProgress: (progress: BatchUploadProgress | null) => {
-    set({ batchUploadProgress: progress })
-  },
+    setBatchUploadProgress: (progress: BatchUploadProgress | null) => {
+      set({ batchUploadProgress: progress })
+    },
 
-  clearGitHubConfig: () => {
-    clearGitHubConfig()
-    set({ 
-      githubConfig: null, 
-      storageService: null, 
-      images: [],
-      error: null 
-    })
-  },
+    clearGitHubConfig: () => {
+      clearGitHubConfig()
+      set({
+        githubConfig: null,
+        storageService: null,
+        images: [],
+        error: null
+      })
+    },
   }
 }) 

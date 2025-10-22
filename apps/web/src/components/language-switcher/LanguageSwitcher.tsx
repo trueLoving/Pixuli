@@ -1,19 +1,19 @@
+import { Check, Globe } from 'lucide-react'
 import React, { useState } from 'react'
-import { Globe, Check } from 'lucide-react'
-import { useI18n } from '../hooks/useI18n'
+import { useI18n } from '../../i18n/useI18n'
 
 const LanguageSwitcher: React.FC = () => {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
-  
+
   const currentLang = getCurrentLanguage()
   const availableLanguages = getAvailableLanguages()
-  
+
   const handleLanguageChange = (langCode: string) => {
     changeLanguage(langCode)
     setIsOpen(false)
   }
-  
+
   return (
     <div className="relative">
       <button
@@ -26,15 +26,15 @@ const LanguageSwitcher: React.FC = () => {
           {availableLanguages.find(lang => lang.code === currentLang)?.flag}
         </span>
       </button>
-      
+
       {isOpen && (
         <>
           {/* 背景遮罩 */}
-          <div 
+          <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* 下拉菜单 */}
           <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
             <div className="p-2">

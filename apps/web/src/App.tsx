@@ -1,26 +1,26 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useImageStore } from '@/stores/imageStore'
-import { Settings, RefreshCw, HelpCircle, Play } from 'lucide-react'
 import {
+  formatFileSize,
+  getImageDimensionsFromUrl,
   GitHubConfigModal,
-  ImageUpload,
   ImageBrowser,
   ImageSearch,
+  ImageUpload,
   KeyboardHelpModal,
   keyboardManager,
-  COMMON_SHORTCUTS,
-  SHORTCUT_CATEGORIES,
-  getImageDimensionsFromUrl,
-  formatFileSize
+  Toaster
 } from '@packages/ui/src'
-import { Toaster } from 'react-hot-toast'
-import { isDemoEnvironment, setDemoMode, getDemoConfig } from '@/utils/env'
-import LanguageSwitcher from './components/LanguageSwitcher'
-import { useI18n } from './hooks/useI18n'
+import { HelpCircle, RefreshCw, Settings } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import './App.css'
+import { Demo, useDemoMode } from './components/demo/Demo'
+import LanguageSwitcher from './components/language-switcher/LanguageSwitcher'
+import { useI18n } from './i18n/useI18n'
+import { useImageStore } from './stores/imageStore'
+import { createKeyboardShortcuts } from './utils/keyboardShortcuts'
 
 function App() {
   const { t } = useI18n()
+  const { isDemoMode, exitDemoMode } = useDemoMode()
   const {
     images,
     loading,
@@ -41,10 +41,9 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
-  const [isDemoMode, setIsDemoMode] = useState(false)
 
-  // 键盘快捷键分类数据
-  const keyboardCategories = [
+  // 键盘快捷键分类数据 - 使用 useMemo 优化性能
+  const keyboardCategories = useMemo(() => [
     {
       name: t('keyboard.categories.general'),
       shortcuts: [
@@ -66,9 +65,9 @@ function App() {
         { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' }
       ]
     }
-  ]
+  ], [t])
 
-  // 使用 useCallback 来稳定函数引用
+  // 使用 useCallback 优化回调函数
   const handleLoadImages = useCallback(async () => {
     try {
       await loadImages()
@@ -95,7 +94,6 @@ function App() {
     setShowConfigModal(false)
   }, [clearGitHubConfig])
 
-  // CRUD 操作回调函数
   const handleDeleteImage = useCallback(async (imageId: string, fileName: string) => {
     await deleteImage(imageId, fileName)
   }, [deleteImage])
@@ -115,7 +113,6 @@ function App() {
   // 初始化存储服务
   useEffect(() => {
     if (githubConfig) {
-      // 确保存储服务已初始化
       const { initializeStorage } = useImageStore.getState()
       initializeStorage()
       handleLoadImages()
@@ -130,97 +127,52 @@ function App() {
     }
   }, [])
 
-  // 检测演示环境
+  // 注册键盘快捷键 - 使用事件驱动模式
   useEffect(() => {
-    const demoMode = isDemoEnvironment()
-    setIsDemoMode(demoMode)
-  }, [])
-
-  // 注册键盘快捷键
-  useEffect(() => {
-    const shortcuts = [
-      // 通用快捷键
-      {
-        key: COMMON_SHORTCUTS.ESCAPE,
-        description: t('keyboard.shortcuts.closeModal'),
-        action: () => {
-          if (showConfigModal) handleCloseConfigModal()
-          else if (showKeyboardHelp) handleCloseKeyboardHelp()
-        },
-        category: SHORTCUT_CATEGORIES.GENERAL
-      },
-      {
-        key: COMMON_SHORTCUTS.F1,
-        description: t('keyboard.shortcuts.showHelp'),
-        action: handleOpenKeyboardHelp,
-        category: SHORTCUT_CATEGORIES.HELP
-      },
-      {
-        key: COMMON_SHORTCUTS.F5,
-        description: t('keyboard.shortcuts.refresh'),
-        action: handleLoadImages,
-        category: SHORTCUT_CATEGORIES.GENERAL
-      },
-
-      {
-        key: COMMON_SHORTCUTS.COMMA,
-        ctrlKey: true,
-        description: t('keyboard.shortcuts.openConfig'),
-        action: handleOpenConfigModal,
-        category: SHORTCUT_CATEGORIES.GENERAL
-      },
-
-      // 搜索快捷键
-      {
-        key: COMMON_SHORTCUTS.SLASH,
-        description: t('keyboard.shortcuts.focusSearch'),
-        action: () => {
-          // 使用更通用的选择器来查找搜索输入框
-          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement
-          if (searchInput) {
-            searchInput.focus()
-            searchInput.select()
-          }
-        },
-        category: SHORTCUT_CATEGORIES.SEARCH
-      },
-      {
-        key: COMMON_SHORTCUTS.V,
-        ctrlKey: true,
-        description: t('keyboard.shortcuts.toggleView'),
-        action: () => {
-          // 触发图片浏览器的视图切换
-          const event = new CustomEvent('toggleViewMode')
-          window.dispatchEvent(event)
-        },
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER
-      }
-    ]
-
+    const shortcuts = createKeyboardShortcuts(t)
     keyboardManager.registerBatch(shortcuts)
+
+    // 事件监听器
+    const handleCloseModals = () => {
+      if (showConfigModal) handleCloseConfigModal()
+      else if (showKeyboardHelp) handleCloseKeyboardHelp()
+    }
+
+    const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp()
+    const handleRefreshImages = () => handleLoadImages()
+    const handleOpenConfig = () => handleOpenConfigModal()
+
+    window.addEventListener('closeModals', handleCloseModals)
+    window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent)
+    window.addEventListener('refreshImages', handleRefreshImages)
+    window.addEventListener('openConfig', handleOpenConfig)
 
     return () => {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut))
+      window.removeEventListener('closeModals', handleCloseModals)
+      window.removeEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent)
+      window.removeEventListener('refreshImages', handleRefreshImages)
+      window.removeEventListener('openConfig', handleOpenConfig)
     }
-  }, [
-    showConfigModal, showKeyboardHelp,
-    handleCloseConfigModal, handleCloseKeyboardHelp,
-    handleOpenKeyboardHelp, handleLoadImages, handleOpenConfigModal
-  ])
+  }, [t, showConfigModal, showKeyboardHelp, handleCloseConfigModal, handleCloseKeyboardHelp, handleOpenKeyboardHelp, handleLoadImages, handleOpenConfigModal])
 
-  // 过滤图片
-  const filteredImages = images.filter(image => {
-    const matchesSearch = image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      image.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  // 过滤图片 - 使用 useMemo 优化性能
+  const filteredImages = useMemo(() => {
+    return images.filter(image => {
+      const matchesSearch = image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        image.description?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesTags = selectedTags.length === 0 ||
-      selectedTags.some(tag => image.tags?.includes(tag))
+      const matchesTags = selectedTags.length === 0 ||
+        selectedTags.some(tag => image.tags?.includes(tag))
 
-    return matchesSearch && matchesTags
-  })
+      return matchesSearch && matchesTags
+    })
+  }, [images, searchTerm, selectedTags])
 
-  // 获取所有标签
-  const allTags = Array.from(new Set(images.flatMap(img => img.tags || [])))
+  // 获取所有标签 - 使用 useMemo 优化性能
+  const allTags = useMemo(() => {
+    return Array.from(new Set(images.flatMap(img => img.tags || [])))
+  }, [images])
 
   if (!githubConfig) {
     return (
@@ -232,46 +184,7 @@ function App() {
           <h1 className="text-3xl font-bold text-gray-900 mb-3">{t('app.welcome')}</h1>
           <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
 
-          {isDemoMode && (
-            <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Play className="w-5 h-5 text-purple-600" />
-                <h3 className="text-lg font-semibold text-purple-800">{t('app.demoMode.title')}</h3>
-              </div>
-              <p className="text-purple-700 text-sm mb-3">
-                {t('app.demoMode.description')}
-              </p>
-              <div className="flex justify-center space-x-3">
-                <button
-                  onClick={() => {
-                    const demoConfig = getDemoConfig()
-                    const blob = new Blob([JSON.stringify(demoConfig, null, 2)], { type: 'application/json' })
-                    const url = URL.createObjectURL(blob)
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.download = 'pixuli-github-config-demo.json'
-                    document.body.appendChild(link)
-                    link.click()
-                    document.body.removeChild(link)
-                    URL.revokeObjectURL(url)
-                  }}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>{t('app.demoMode.downloadDemo')}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setDemoMode(false)
-                    setIsDemoMode(false)
-                  }}
-                  className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
-                >
-                  {t('app.demoMode.exitDemo')}
-                </button>
-              </div>
-            </div>
-          )}
+          {isDemoMode && <Demo t={t} onExitDemo={exitDemoMode} />}
 
           <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
           <button
@@ -298,7 +211,7 @@ function App() {
   return (
     <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--app-theme-background-primary)' }}>
       {/* 顶部导航栏 */}
-      <header className="shadow-sm border-b flex-shrink-0" style={{ backgroundColor: 'var(--app-theme-background-secondary)'}}>
+      <header className="shadow-sm border-b flex-shrink-0" style={{ backgroundColor: 'var(--app-theme-background-secondary)' }}>
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -308,7 +221,6 @@ function App() {
               </div>
               {isDemoMode && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                  <Play className="w-3 h-3" />
                   <span>{t('app.demoMode.title')}</span>
                 </div>
               )}
