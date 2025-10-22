@@ -13,7 +13,8 @@
     "benchmark": "pnpm run --filter pixuli-benchmark benchmark",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "echo 'todo'"
+    "test": "echo 'todo'",
+    "prepare": "husky"
   },
   "keywords": [
     "monorepo",
@@ -26,6 +27,13 @@
   "author": "Pixuli Team",
   "license": "MIT",
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.5",
     "prettier": "^3.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["prettier --write"],
+    "*.{css,scss,less}": ["prettier --write"],
+    "*.{json,md,yml,yaml}": ["prettier --write"]
   }
 }
