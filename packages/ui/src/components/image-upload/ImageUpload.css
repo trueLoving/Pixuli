@@ -9,18 +9,18 @@
 }
 
 .image-upload-dropzone.active {
-  border-color: var(--pixuli-ui-theme-interactive-primary);
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  border-color: #3b82f6;
+  background-color: #f8fafc;
 }
 
 .image-upload-dropzone.inactive {
-  border-color: var(--pixuli-ui-theme-border-primary);
-  background-color: var(--pixuli-ui-theme-background-primary);
+  border-color: #e5e7eb;
+  background-color: #ffffff;
 }
 
 .image-upload-dropzone.inactive:hover {
-  border-color: var(--pixuli-ui-theme-text-tertiary);
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  border-color: #9ca3af;
+  background-color: #f8fafc;
 }
 
 .image-upload-content {
@@ -36,11 +36,11 @@
 }
 
 .image-upload-icon-container.active {
-  background-color: var(--pixuli-ui-theme-background-tertiary);
+  background-color: #f1f5f9;
 }
 
 .image-upload-icon-container.inactive {
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  background-color: #f8fafc;
 }
 
 .image-upload-icon {
@@ -49,11 +49,11 @@
 }
 
 .image-upload-icon.active {
-  color: var(--pixuli-ui-theme-interactive-primaryHover);
+  color: #2563eb;
 }
 
 .image-upload-icon.inactive {
-  color: var(--pixuli-ui-theme-text-tertiary);
+  color: #9ca3af;
 }
 
 .image-upload-text {
@@ -62,16 +62,16 @@
 }
 
 .image-upload-text.active {
-  color: var(--pixuli-ui-theme-interactive-primaryActive);
+  color: #1d4ed8;
 }
 
 .image-upload-text.inactive {
-  color: var(--pixuli-ui-theme-text-primary);
+  color: #111827;
 }
 
 .image-upload-description {
   font-size: 0.875rem;
-  color: var(--pixuli-ui-theme-text-secondary);
+  color: #6b7280;
   margin-top: 0.25rem;
 }
 
@@ -90,14 +90,16 @@
 }
 
 .image-upload-modal-content {
-  background-color: var(--pixuli-ui-theme-background-primary);
+  background-color: #ffffff;
   border-radius: 0.5rem;
   padding: 1.5rem;
   width: 100%;
   margin: 0 1rem;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--pixuli-ui-theme-shadow-lg);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .image-upload-modal-content.single {
@@ -118,19 +120,19 @@
 .image-upload-modal-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--pixuli-ui-theme-text-primary);
+  color: #111827;
 }
 
 .image-upload-modal-close {
-  color: var(--pixuli-ui-theme-text-tertiary);
+  color: #9ca3af;
   transition: all 0.2s ease-in-out;
   padding: 0.25rem;
   border-radius: 50%;
 }
 
 .image-upload-modal-close:hover {
-  color: var(--pixuli-ui-theme-text-secondary);
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  color: #6b7280;
+  background-color: #f8fafc;
 }
 
 .image-upload-modal-close-icon {
@@ -157,15 +159,15 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  background-color: #f8fafc;
   border-radius: 0.5rem;
-  border: 1px solid var(--pixuli-ui-theme-border-primary);
+  border: 1px solid #e5e7eb;
 }
 
 .image-upload-file-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: var(--pixuli-ui-theme-text-tertiary);
+  color: #9ca3af;
 }
 
 .image-upload-file-info {
@@ -176,7 +178,7 @@
 .image-upload-file-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--pixuli-ui-theme-text-primary);
+  color: #111827;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -184,7 +186,7 @@
 
 .image-upload-file-size {
   font-size: 0.75rem;
-  color: var(--pixuli-ui-theme-text-secondary);
+  color: #6b7280;
 }
 
 .image-upload-form-group {
@@ -196,48 +198,48 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--pixuli-ui-theme-text-primary);
+  color: #111827;
   margin-bottom: 0.25rem;
 }
 
 .image-upload-form-optional {
-  color: var(--pixuli-ui-theme-text-tertiary);
+  color: #9ca3af;
   font-size: 0.75rem;
 }
 
 .image-upload-form-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--pixuli-ui-theme-border-primary);
+  border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  background-color: var(--pixuli-ui-theme-background-primary);
-  color: var(--pixuli-ui-theme-text-primary);
+  background-color: #ffffff;
+  color: #111827;
   transition: all 0.2s ease-in-out;
 }
 
 .image-upload-form-input:focus {
   outline: none;
-  border-color: var(--pixuli-ui-theme-border-focus);
-  box-shadow: 0 0 0 2px var(--pixuli-ui-theme-border-focus);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 .image-upload-form-textarea {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--pixuli-ui-theme-border-primary);
+  border: 1px solid #e5e7eb;
   border-radius: 0.375rem;
   font-size: 0.875rem;
-  background-color: var(--pixuli-ui-theme-background-primary);
-  color: var(--pixuli-ui-theme-text-primary);
+  background-color: #ffffff;
+  color: #111827;
   transition: all 0.2s ease-in-out;
   resize: none;
 }
 
 .image-upload-form-textarea:focus {
   outline: none;
-  border-color: var(--pixuli-ui-theme-border-focus);
+  border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
@@ -268,32 +270,32 @@
 }
 
 .image-upload-button-secondary {
-  background-color: var(--pixuli-ui-theme-background-primary);
-  color: var(--pixuli-ui-theme-text-primary);
-  border-color: var(--pixuli-ui-theme-border-primary);
+  background-color: #ffffff;
+  color: #111827;
+  border-color: #e5e7eb;
 }
 
 .image-upload-button-secondary:hover {
-  background-color: var(--pixuli-ui-theme-background-secondary);
+  background-color: #f8fafc;
 }
 
 .image-upload-button-secondary:focus {
-  box-shadow: 0 0 0 2px var(--pixuli-ui-theme-border-focus);
+  box-shadow: 0 0 0 2px #3b82f6;
 }
 
 .image-upload-button-primary {
-  background-color: var(--pixuli-ui-theme-interactive-primary);
-  color: var(--pixuli-ui-theme-text-inverse);
-  border-color: var(--pixuli-ui-theme-interactive-primary);
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
 }
 
 .image-upload-button-primary:hover {
-  background-color: var(--pixuli-ui-theme-interactive-primaryHover);
-  border-color: var(--pixuli-ui-theme-interactive-primaryHover);
+  background-color: #2563eb;
+  border-color: #2563eb;
 }
 
 .image-upload-button-primary:focus {
-  box-shadow: 0 0 0 2px var(--pixuli-ui-theme-border-focus);
+  box-shadow: 0 0 0 2px #3b82f6;
 }
 
 .image-upload-button-primary:disabled {

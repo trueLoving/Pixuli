@@ -1,8 +1,8 @@
 import { Cloud, Download, Save, Trash2, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { defaultTranslate } from '../../locales/defaultTranslate';
+import type { UpyunConfig } from '../../types/upyun';
 import { showError, showSuccess } from '../../utils/toast';
-import type { UpyunConfig } from '../../types/image';
 import './UpyunConfigModal.css';
 
 interface UpyunConfigModalProps {

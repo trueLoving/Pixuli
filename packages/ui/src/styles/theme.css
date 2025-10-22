@@ -1,4 +1,5 @@
-/* 全局主题样式 */
+/* TODO: 主题样式 */
+/* css var 变量实现*/
 
 /* 根元素CSS变量定义 - 默认浅色主题 */
 :root {
@@ -148,61 +149,6 @@
   --pixuli-ui-theme-shadow-lg:
     0 10px 15px -3px rgba(34, 197, 94, 0.2),
     0 4px 6px -2px rgba(34, 197, 94, 0.1);
-}
-
-/* 主题过渡动画 */
-* {
-  transition:
-    background-color var(--theme-transition-duration, 0.2s) ease-in-out,
-    border-color var(--theme-transition-duration, 0.2s) ease-in-out,
-    color var(--theme-transition-duration, 0.2s) ease-in-out,
-    box-shadow var(--theme-transition-duration, 0.2s) ease-in-out;
-}
-
-/* 主题Provider容器 */
-.theme-provider {
-  min-height: 100vh;
-  background-color: var(--pixuli-ui-theme-background-primary);
-  color: var(--pixuli-ui-theme-text-primary);
-}
-
-/* 全局滚动条样式 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--pixuli-ui-theme-background-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--pixuli-ui-theme-border-secondary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--pixuli-ui-theme-text-tertiary);
-}
-
-/* 选择文本样式 */
-::selection {
-  background-color: var(--pixuli-ui-theme-interactive-primary);
-  color: var(--pixuli-ui-theme-text-inverse);
-}
-
-/* 焦点样式 */
-:focus-visible {
-  outline: 2px solid var(--pixuli-ui-theme-border-focus);
-  outline-offset: 2px;
-}
-
-/* 无障碍支持 */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
 }
 
 /* 高对比度模式支持 */

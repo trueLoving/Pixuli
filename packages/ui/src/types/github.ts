@@ -1,13 +1,12 @@
-// Web API 类型定义
-export interface GitHubAPI {
-  upload: (params: GitHubUploadParams) => Promise<GitHubUploadResponse>;
-  delete: (params: GitHubDeleteParams) => Promise<void>;
-  getList: (params: GitHubGetListParams) => Promise<any[]>;
-  updateMetadata: (params: GitHubUpdateMetadataParams) => Promise<void>;
-  setAuth: (token: string) => Promise<{ success: boolean; error?: string }>;
+export interface GitHubConfig {
+  owner: string;
+  repo: string;
+  branch: string;
+  token: string;
+  path: string;
 }
 
-// GitHub API 参数类型
+// GitHub API 相关类型
 export interface GitHubUploadParams {
   owner: string;
   repo: string;
@@ -49,12 +48,3 @@ export interface GitHubUpdateMetadataParams {
   metadata: any;
   oldFileName?: string;
 }
-
-// 全局类型声明
-declare global {
-  interface Window {
-    githubAPI: GitHubAPI;
-  }
-}
-
-export {};

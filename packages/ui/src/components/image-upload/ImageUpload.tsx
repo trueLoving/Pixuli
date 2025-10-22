@@ -1,3 +1,4 @@
+// TODO: 上传时支持对图片进行预上传处理，支持图片压缩、格式转换、质量优化等
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
