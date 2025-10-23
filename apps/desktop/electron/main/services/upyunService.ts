@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+// @ts-ignore
 import * as upyun from 'upyun';
 
 interface UpyunConfig {

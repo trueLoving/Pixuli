@@ -16,7 +16,7 @@ export class UpyunStorageService {
   async getImageList(): Promise<ImageItem[]> {
     try {
       // 通过 IPC 调用主进程的又拍云服务
-      const response = await window.electronAPI.upyunGetList({
+      const response = await window.upyunAPI.upyunGetList({
         config: this.config,
       });
 
@@ -59,7 +59,7 @@ export class UpyunStorageService {
       const base64Content = await this.fileToBase64(file);
 
       // 通过 IPC 调用主进程的又拍云上传功能
-      const response = await window.electronAPI.upyunUpload({
+      const response = await window.upyunAPI.upyunUpload({
         config: this.config,
         fileName,
         content: base64Content,
@@ -100,7 +100,7 @@ export class UpyunStorageService {
   async deleteImage(imageId: string, fileName: string): Promise<void> {
     try {
       // 通过 IPC 调用主进程的又拍云删除功能
-      const response = await window.electronAPI.upyunDelete({
+      const response = await window.upyunAPI.upyunDelete({
         config: this.config,
         fileName,
       });
@@ -148,7 +148,7 @@ export class UpyunStorageService {
   // 测试连接
   async testConnection(): Promise<boolean> {
     try {
-      const response = await window.electronAPI.upyunTest(this.config);
+      const response = await window.upyunAPI.upyunTest(this.config);
       return response.success;
     } catch (error) {
       console.error('Test connection failed:', error);

@@ -14,6 +14,7 @@ import {
 import { Upload, X, Zap } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import './ImageCompression.css';
+import { useI18n } from '../../i18n/useI18n';
 import ImageCompressionPreview from './ImageCompressionPreview';
 import ImageCompressionSettings from './ImageCompressionSettings';
 
@@ -22,6 +23,7 @@ interface ImageCompressionProps {
 }
 
 const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
+  const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionOptions, setCompressionOptions] =
     useState<CompressionOptions>(DEFAULT_COMPRESSION_OPTIONS);
@@ -34,13 +36,13 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
       const file = event.target.files?.[0];
       if (file) {
         if (!isImageFile(file)) {
-          showError('请选择有效的图片文件');
+          showError(t('common.error'));
           return;
         }
 
         if (file.size > 50 * 1024 * 1024) {
           // 50MB限制
-          showError('文件大小不能超过50MB');
+          showError(t('common.error'));
           return;
         }
 
@@ -63,14 +65,14 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
     const files = Array.from(event.dataTransfer.files);
 
     if (files.length > 1) {
-      showError('一次只能处理一张图片');
+      showError(t('common.error'));
       return;
     }
 
     const file = files[0];
     if (file && isImageFile(file)) {
       if (file.size > 50 * 1024 * 1024) {
-        showError('文件大小不能超过50MB');
+        showError(t('common.error'));
         return;
       }
 
@@ -83,7 +85,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
 
       showInfo(`已选择图片: ${file.name}`);
     } else {
-      showError('请选择有效的图片文件');
+      showError(t('common.error'));
     }
   }, []);
 
@@ -108,11 +110,11 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
           `压缩成功！节省了 ${result.compressionRatio.toFixed(1)}% 的空间`
         );
       } else {
-        showInfo('图片已经是最优大小，无需进一步压缩');
+        showInfo(t('common.success'));
       }
     } catch (error) {
       showError(
-        `压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `压缩失败: ${error instanceof Error ? error.message : t('common.unknownError')}`
       );
     } finally {
       setIsCompressing(false);
@@ -130,7 +132,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showSuccess('压缩后的图片已开始下载');
+    showSuccess(t('common.success'));
   }, []);
 
   // 重新压缩
@@ -143,7 +145,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
     if (selectedFile) {
       const autoOptions = getAutoCompressionOptions(selectedFile.size);
       setCompressionOptions(autoOptions);
-      showInfo('已应用自动优化设置');
+      showInfo(t('common.success'));
     }
   }, [selectedFile]);
 
@@ -227,7 +229,11 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
                     className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <Zap className="w-5 h-5" />
-                    <span>{isCompressing ? '压缩中...' : '开始压缩'}</span>
+                    <span>
+                      {isCompressing
+                        ? t('common.loading')
+                        : t('common.success')}
+                    </span>
                   </button>
                 </div>
               </div>

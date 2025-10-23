@@ -1,0 +1,165 @@
+/* LanguageSwitcher 组件样式 */
+.language-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.language-switcher__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.language-switcher__trigger:hover {
+  color: #111827;
+  background-color: #f3f4f6;
+}
+
+.language-switcher__trigger:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.language-switcher__globe-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.language-switcher__flag {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.language-switcher__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: transparent;
+}
+
+.language-switcher__dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  width: 192px;
+  background: white;
+  border-radius: 8px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  z-index: 20;
+}
+
+.language-switcher__content {
+  padding: 8px;
+}
+
+.language-switcher__current-title {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.language-switcher__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #374151;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.language-switcher__option:hover {
+  background-color: #f3f4f6;
+}
+
+.language-switcher__option:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.language-switcher__option--active {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.language-switcher__option-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-switcher__option-flag {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.language-switcher__option-name {
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.language-switcher__check-icon {
+  width: 16px;
+  height: 16px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+/* 动画效果 */
+.language-switcher__dropdown {
+  animation: language-switcher-fade-in 0.15s ease-out;
+}
+
+@keyframes language-switcher-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .language-switcher__dropdown {
+    width: 160px;
+  }
+
+  .language-switcher__option {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .language-switcher__option-flag {
+    font-size: 16px;
+  }
+}

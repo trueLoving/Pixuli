@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 import {
   Eye,
   Download,
@@ -8,7 +9,7 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
-import { FormatConversionResult } from '@/types/formatConversion';
+import { FormatConversionResult } from '@/types/imageConvert';
 
 interface ImageFormatConversionPreviewProps {
   originalFile: File | null;
@@ -21,6 +22,7 @@ interface ImageFormatConversionPreviewProps {
 const ImageFormatConversionPreview: React.FC<
   ImageFormatConversionPreviewProps
 > = ({ originalFile, conversionResult, isConverting, onDownload, onRetry }) => {
+  const { t } = useI18n();
   const [originalPreview, setOriginalPreview] = useState<string>('');
   const [convertedPreview, setConvertedPreview] = useState<string>('');
 
@@ -111,7 +113,7 @@ const ImageFormatConversionPreview: React.FC<
             <div className="relative">
               <img
                 src={originalPreview}
-                alt="原始图片"
+                alt={t('image.list.preview')}
                 className="preview-image"
               />
               <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
@@ -131,7 +133,7 @@ const ImageFormatConversionPreview: React.FC<
             <div className="relative">
               <img
                 src={convertedPreview}
-                alt="转换后图片"
+                alt={t('image.list.preview')}
                 className="preview-image"
               />
               <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">

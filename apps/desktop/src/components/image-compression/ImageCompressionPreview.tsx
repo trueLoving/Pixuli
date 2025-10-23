@@ -8,6 +8,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ImageCompressionPreviewProps {
   originalFile: File;
@@ -24,6 +25,7 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
   onDownload,
   onRetry,
 }) => {
+  const { t } = useI18n();
   const [originalPreview, setOriginalPreview] = useState<string>('');
   const [compressedPreview, setCompressedPreview] = useState<string>('');
 
@@ -147,7 +149,7 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           <div className="bg-gray-100 rounded-lg p-2 mb-2">
             <img
               src={originalPreview}
-              alt="原始图片"
+              alt={t('image.list.preview')}
               className="w-full h-32 object-contain rounded"
             />
           </div>
@@ -165,7 +167,7 @@ const ImageCompressionPreview: React.FC<ImageCompressionPreviewProps> = ({
           <div className="bg-blue-100 rounded-lg p-2 mb-2">
             <img
               src={compressedPreview}
-              alt="压缩后图片"
+              alt={t('image.list.preview')}
               className="w-full h-32 object-contain rounded"
             />
           </div>

@@ -7,19 +7,20 @@ import {
   ImageUpload,
   KeyboardHelpModal,
   keyboardManager,
+  LanguageSwitcher,
   Toaster,
 } from '@packages/ui/src';
 import { HelpCircle, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { Demo, useDemoMode } from './components/demo/Demo';
-import LanguageSwitcher from './components/language-switcher/LanguageSwitcher';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
 
 function App() {
-  const { t } = useI18n();
+  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
+    useI18n();
   const { isDemoMode, exitDemoMode } = useDemoMode();
   const {
     images,
@@ -277,7 +278,14 @@ function App() {
             </div>
 
             <div className="flex items-center space-x-3">
-              <LanguageSwitcher />
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"

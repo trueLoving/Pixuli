@@ -5,6 +5,7 @@ import {
 } from '@/utils/imageCompression';
 import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ImageCompressionSettingsProps {
   file: File;
@@ -19,6 +20,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
   onOptionsChange,
   onAutoOptimize,
 }) => {
+  const { t } = useI18n();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleOptionChange = (key: keyof CompressionOptions, value: any) => {
@@ -70,14 +72,16 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
           </div>
           <div>
             <span className="text-gray-500">文件类型:</span>
-            <div className="font-medium">{file.type || '未知'}</div>
+            <div className="font-medium">
+              {file.type || t('common.unknownError')}
+            </div>
           </div>
           <div>
             <span className="text-gray-500">状态:</span>
             <div
               className={`font-medium ${isLargeFile ? 'text-orange-600' : 'text-green-600'}`}
             >
-              {isLargeFile ? '建议压缩' : '大小适中'}
+              {isLargeFile ? t('common.warning') : t('common.success')}
             </div>
           </div>
         </div>
@@ -126,7 +130,9 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
-            <span>{showAdvanced ? '隐藏' : '显示'} 高级选项</span>
+            <span>
+              {showAdvanced ? t('common.close') : t('common.open')} 高级选项
+            </span>
             <svg
               className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
               fill="none"

@@ -5,7 +5,7 @@ import {
   getFormatInfo,
   supportsTransparency,
   supportsLossless,
-} from '@/types/formatConversion';
+} from '@/types/imageConvert';
 
 export class FormatConversionService {
   /**

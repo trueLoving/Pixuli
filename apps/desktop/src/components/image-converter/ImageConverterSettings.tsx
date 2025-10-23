@@ -5,9 +5,10 @@ import {
   getFormatInfo,
   supportsLossless,
   supportsTransparency,
-} from '@/types/formatConversion';
+} from '@/types/imageConvert';
 import { Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ImageFormatConversionSettingsProps {
   file: File;
@@ -19,6 +20,7 @@ interface ImageFormatConversionSettingsProps {
 const ImageFormatConversionSettings: React.FC<
   ImageFormatConversionSettingsProps
 > = ({ file, options, onOptionsChange, onAutoOptimize }) => {
+  const { t } = useI18n();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleOptionChange = (
@@ -159,7 +161,9 @@ const ImageFormatConversionSettings: React.FC<
           className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
         >
           <Settings className="w-4 h-4" />
-          <span>{showAdvanced ? '隐藏' : '显示'}高级选项</span>
+          <span>
+            {showAdvanced ? t('common.close') : t('common.open')}高级选项
+          </span>
         </button>
       </div>
 

@@ -23,8 +23,8 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
 });
 
-// --------- Expose Electron API to the Renderer process ---------
-contextBridge.exposeInMainWorld('electronAPI', {
+// --------- Expose Github API to the Renderer process ---------
+contextBridge.exposeInMainWorld('githubAPI', {
   // Github API
   githubUpload: (params: any) => ipcRenderer.invoke('github:upload', params),
   githubDelete: (params: any) => ipcRenderer.invoke('github:delete', params),
@@ -32,7 +32,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   githubUpdateMetadata: (params: any) =>
     ipcRenderer.invoke('github:updateMetadata', params),
   githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
+});
 
+// --------- Expose Upyun API to the Renderer process ---------
+contextBridge.exposeInMainWorld('upyunAPI', {
   // Upyun API
   upyunUpload: (params: any) => ipcRenderer.invoke('upyun:upload', params),
   upyunDelete: (params: any) => ipcRenderer.invoke('upyun:delete', params),
@@ -53,6 +56,17 @@ contextBridge.exposeInMainWorld('wasmAPI', {
     ipcRenderer.invoke('wasm:convert-image-format', imageData, options),
   batchConvertImageFormat: (imagesData: number[][], options: any) =>
     ipcRenderer.invoke('wasm:batch-convert-image-format', imagesData, options),
+});
+
+// --------- Expose AI API to the Renderer process ---------
+contextBridge.exposeInMainWorld('aiAPI', {
+  // Qwen LLM分析
+  analyzeImageWithQwen: (request: any) =>
+    ipcRenderer.invoke('ai:analyze-image-qwen', request),
+  // Qwen分析器检查
+  checkQwenAnalyzer: () => ipcRenderer.invoke('ai:check-qwen-analyzer'),
+  // 选择 Qwen 模型文件
+  selectModelFile: () => ipcRenderer.invoke('ai:select-model-file'),
 });
 
 // --------- Preload Loading Animation -------------------------

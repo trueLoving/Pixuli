@@ -12,7 +12,7 @@ export class GitHubStorageService {
 
   private async setAuth() {
     try {
-      await window.electronAPI.githubSetAuth(this.config.token);
+      await window.githubAPI.githubSetAuth(this.config.token);
     } catch (error) {
       console.error('Failed to set GitHub auth:', error);
     }
@@ -28,7 +28,7 @@ export class GitHubStorageService {
       const base64Content = await this.fileToBase64(file);
 
       // 通过 IPC 调用主进程的 GitHub 上传功能
-      const response = await window.electronAPI.githubUpload({
+      const response = await window.githubAPI.githubUpload({
         owner: this.config.owner,
         repo: this.config.repo,
         path: this.config.path,
@@ -69,7 +69,7 @@ export class GitHubStorageService {
   // 删除图片
   async deleteImage(imageId: string, fileName: string): Promise<void> {
     try {
-      await window.electronAPI.githubDelete({
+      await window.githubAPI.githubDelete({
         owner: this.config.owner,
         repo: this.config.repo,
         path: this.config.path,
@@ -85,7 +85,7 @@ export class GitHubStorageService {
   // 获取图片列表
   async getImageList(): Promise<ImageItem[]> {
     try {
-      const response = await window.electronAPI.githubGetList({
+      const response = await window.githubAPI.githubGetList({
         owner: this.config.owner,
         repo: this.config.repo,
         path: this.config.path,
@@ -120,7 +120,7 @@ export class GitHubStorageService {
         ([_, count]) => (count as number) > 1
       );
       if (duplicateIds.length > 0) {
-        console.warn('发现重复的图片ID:', duplicateIds);
+        console.warn('Found duplicate image IDs:', duplicateIds);
         // 为重复的ID添加后缀以确保唯一性
         const processedImages = images.map((img: any, index: number) => {
           if (idCounts[img.id] > 1) {
@@ -149,7 +149,7 @@ export class GitHubStorageService {
     oldFileName?: string
   ): Promise<void> {
     try {
-      await window.electronAPI.githubUpdateMetadata({
+      await window.githubAPI.githubUpdateMetadata({
         owner: this.config.owner,
         repo: this.config.repo,
         path: this.config.path,

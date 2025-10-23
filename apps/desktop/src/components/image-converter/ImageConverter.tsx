@@ -5,7 +5,7 @@ import {
   FormatConversionResult,
   getFormatFromExtension,
   isImageFile,
-} from '@/types/formatConversion';
+} from '@/types/imageConvert';
 import {
   showError,
   showInfo,
@@ -14,9 +14,10 @@ import {
 } from '@packages/ui/src';
 import { FileImage, RefreshCw, Upload, X } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
-import './ImageFormatConversion.css';
-import ImageFormatConversionPreview from './ImageFormatConversionPreview';
-import ImageFormatConversionSettings from './ImageFormatConversionSettings';
+import './ImageConverter.css';
+import { useI18n } from '../../i18n/useI18n';
+import ImageFormatConversionPreview from './ImageConverterPreview';
+import ImageFormatConversionSettings from './ImageConverterSettings';
 
 interface ImageFormatConversionProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ interface ImageFormatConversionProps {
 const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
   onClose,
 }) => {
+  const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [conversionOptions, setConversionOptions] =
     useState<FormatConversionOptions>(DEFAULT_CONVERSION_OPTIONS);
@@ -38,13 +40,13 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
       const file = event.target.files?.[0];
       if (file) {
         if (!isImageFile(file)) {
-          showError('请选择有效的图片文件');
+          showError(t('common.error'));
           return;
         }
 
         if (file.size > 50 * 1024 * 1024) {
           // 50MB限制
-          showError('文件大小不能超过50MB');
+          showError(t('common.error'));
           return;
         }
 
@@ -77,14 +79,14 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
     const files = Array.from(event.dataTransfer.files);
 
     if (files.length > 1) {
-      showError('一次只能处理一张图片');
+      showError(t('common.error'));
       return;
     }
 
     const file = files[0];
     if (file && isImageFile(file)) {
       if (file.size > 50 * 1024 * 1024) {
-        showError('文件大小不能超过50MB');
+        showError(t('common.error'));
         return;
       }
 
@@ -107,7 +109,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
 
       showInfo(`已选择图片: ${file.name}`);
     } else {
-      showError('请选择有效的图片文件');
+      showError(t('common.error'));
     }
   }, []);
 
@@ -139,11 +141,11 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
           `转换成功！文件大小减少了 ${Math.abs(result.sizeChangeRatio).toFixed(1)}%`
         );
       } else {
-        showInfo('格式转换完成，文件大小基本无变化');
+        showInfo(t('common.success'));
       }
     } catch (error) {
       showError(
-        `格式转换失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `格式转换失败: ${error instanceof Error ? error.message : t('common.unknownError')}`
       );
     } finally {
       setIsConverting(false);
@@ -161,7 +163,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showSuccess('转换后的图片已开始下载');
+    showSuccess(t('common.success'));
   }, []);
 
   // 重新转换
@@ -177,7 +179,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
         conversionOptions.targetFormat
       );
       setConversionOptions(prev => ({ ...prev, ...autoOptions }));
-      showInfo('已应用自动优化设置');
+      showInfo(t('common.success'));
     }
   }, [selectedFile, conversionOptions.targetFormat]);
 

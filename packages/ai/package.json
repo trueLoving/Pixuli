@@ -1,0 +1,45 @@
+{
+  "name": "pixuli-ai",
+  "version": "1.0.0",
+  "description": "AI analysis package for Pixuli desktop application",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "setup": "node -e \"const os=require('os');const{execSync}=require('child_process');const platform=os.platform();if(platform==='win32'){execSync('setup.bat',{stdio:'inherit'})}else{execSync('bash setup.sh',{stdio:'inherit'})}\"",
+    "setup:python": "python3 setup.py",
+    "setup:clean": "node -e \"const os=require('os');const{execSync}=require('child_process');const platform=os.platform();if(platform==='win32'){execSync('setup.bat --clean',{stdio:'inherit'})}else{execSync('bash setup.sh --clean',{stdio:'inherit'})}\"",
+    "setup:build": "node -e \"const os=require('os');const{execSync}=require('child_process');const platform=os.platform();if(platform==='win32'){execSync('setup.bat --build-only',{stdio:'inherit'})}else{execSync('bash setup.sh --build-only',{stdio:'inherit'})}\"",
+    "setup:test": "node -e \"const os=require('os');const{execSync}=require('child_process');const platform=os.platform();if(platform==='win32'){execSync('setup.bat --test-only',{stdio:'inherit'})}else{execSync('bash setup.sh --test-only',{stdio:'inherit'})}\"",
+    "setup:venv": "python3 setup.py --venv",
+    "build": "python3 scripts/build_qwen_analyzer.py",
+    "build:all": "bash scripts/build_qwen.sh",
+    "clean": "rm -rf dist/* resources/bin/*",
+    "test": "python3 scripts/test_qwen.py",
+    "test:binary": "python3 scripts/test_qwen.py",
+    "lint": "python3 -m flake8 src/",
+    "format": "python3 -m black src/",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["ai", "image-analysis", "computer-vision", "llm"],
+  "author": "Pixuli Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/",
+    "resources/",
+    "src/",
+    "scripts/",
+    "setup.sh",
+    "setup.bat",
+    "setup.py",
+    "requirements.txt",
+    "README.md",
+    "SETUP.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}

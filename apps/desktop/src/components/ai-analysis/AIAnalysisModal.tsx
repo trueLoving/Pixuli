@@ -1,24 +1,22 @@
 import { useEscapeKey } from '@packages/ui/src';
-import { Cog, Loader2, Play, Upload, X } from 'lucide-react';
+import { FolderOpen, Loader2, Play, Upload, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { AIModelConfig, ImageAnalysisResponse } from '../../types/electron';
+import { AIModelConfig, ImageAnalysisResponse } from '../../types/ai';
+import { useI18n } from '../../i18n/useI18n';
 import './AIAnalysisModal.css';
 
 interface AIAnalysisModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAnalysisComplete?: (result: ImageAnalysisResponse) => void;
-  onOpenModelManager?: () => void;
 }
 
 const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
   isOpen,
   onClose,
   onAnalysisComplete,
-  onOpenModelManager,
 }) => {
-  const [models, setModels] = useState<AIModelConfig[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>('');
+  const { t } = useI18n();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] =
     useState<ImageAnalysisResponse | null>(null);
@@ -30,52 +28,31 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     size: number;
     dimensions?: { width: number; height: number };
   } | null>(null);
-  const [config, setConfig] = useState({
+
+  // Qwen模型配置
+  const [qwenConfig, setQwenConfig] = useState({
+    modelPath: '',
+    device: 'auto' as 'cpu' | 'cuda' | 'auto',
+    maxTokens: 512,
+    temperature: 0.7,
     useGpu: false,
     confidenceThreshold: 0.5,
   });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadModels();
-    }
-  }, [isOpen]);
-
-  // 监听模型更新事件
-  useEffect(() => {
-    const handleModelUpdate = () => {
-      console.log('Model list updated, reloading models...');
-      loadModels();
-    };
-
-    window.addEventListener('modelListUpdated', handleModelUpdate);
-
-    return () => {
-      window.removeEventListener('modelListUpdated', handleModelUpdate);
-    };
-  }, []);
-
-  const loadModels = async () => {
+  // 选择Qwen模型路径
+  const handleSelectModelPath = async () => {
     try {
-      const modelList = await window.aiAPI.getModels();
-      setModels(modelList);
-
-      // 选择第一个启用的模型，如果没有启用的模型则选择第一个
-      const enabledModel = modelList.find(m => m.enabled);
-      if (enabledModel) {
-        setSelectedModel(enabledModel.id);
-        console.log('Selected enabled model:', enabledModel.name);
-      } else if (modelList.length > 0) {
-        setSelectedModel(modelList[0].id);
-        console.log('Selected first available model:', modelList[0].name);
+      const result = await window.aiAPI.selectModelFile();
+      if (result.success && result.filePath) {
+        setQwenConfig(prev => ({ ...prev, modelPath: result.filePath! }));
+        setError('');
       } else {
-        setSelectedModel('');
-        console.log('No models available');
+        setError(t('common.error'));
       }
     } catch (error) {
-      console.error('Failed to load models:', error);
-      setError('加载模型列表失败');
+      setError(t('common.error'));
     }
   };
 
@@ -96,7 +73,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('请选择图片文件');
+      setError(t('common.error'));
       return;
     }
 
@@ -118,52 +95,11 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     reader.readAsDataURL(file);
   };
 
-  // 注释掉下载模型功能
-  /*
-  const handleDownloadModel = async (modelId: string) => {
-    setIsDownloading(true)
-    setDownloadProgress(prev => ({ ...prev, [modelId]: 0 }))
-
-    try {
-      const model = availableModels.find(m => m.id === modelId)
-      if (!model) {
-        setError('模型信息不存在')
-        return
-      }
-
-      let result
-      if (model.type === 'tensorflow') {
-        // 使用 TensorFlow 模型下载
-        result = await window.aiAPI.downloadTensorFlowModel(modelId, model.url)
-      } else {
-        // 使用通用模型下载
-        result = await window.modelAPI.downloadModel(modelId)
-      }
-
-      if (result.success) {
-        // 下载成功后添加到本地模型
-        await window.aiAPI.addModel({
-          id: modelId,
-          name: model.name,
-          type: model.type,
-          path: result.path,
-          enabled: true
-        })
-        await loadModels() // 重新加载模型列表
-      } else {
-        setError(result.error || '下载失败')
-      }
-    } catch (error) {
-      setError('下载模型失败')
-    } finally {
-      setIsDownloading(false)
-      setDownloadProgress(prev => ({ ...prev, [modelId]: 0 }))
-    }
-  }
-  */
-
   const handleAnalyze = async () => {
-    if (!uploadedImage || !selectedModel) return;
+    if (!uploadedImage || !qwenConfig.modelPath) {
+      setError(t('common.error'));
+      return;
+    }
 
     setIsAnalyzing(true);
     setError('');
@@ -174,43 +110,38 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       const arrayBuffer = await uploadedImage.file.arrayBuffer();
       const buffer = window.Buffer.from(arrayBuffer);
 
-      // 获取选中的模型配置
-      const modelConfig = models.find(m => m.id === selectedModel);
+      // 创建临时模型配置
+      const tempModelConfig: AIModelConfig = {
+        id: 'temp-qwen-model',
+        name: 'Qwen LLM',
+        type: 'qwen-llm',
+        enabled: true,
+        modelPath: qwenConfig.modelPath,
+        device: qwenConfig.device,
+        maxTokens: qwenConfig.maxTokens,
+        temperature: qwenConfig.temperature,
+      };
 
-      let result;
-      if (modelConfig?.type === 'tensorflow') {
-        // 使用 TensorFlow 模型分析
-        result = await window.aiAPI.analyzeImageWithTensorFlow({
-          imageData: buffer,
-          modelId: selectedModel,
-          config,
-        });
-      } else if (modelConfig?.type === 'tensorflow-lite') {
-        // 使用 TensorFlow Lite 模型分析
-        result = await window.aiAPI.analyzeImageWithTensorFlowLite({
-          imageData: buffer,
-          modelId: selectedModel,
-          config,
-        });
-      } else {
-        // 使用通用 AI 分析
-        result = await window.aiAPI.analyzeImage({
-          imageData: buffer,
-          modelId: selectedModel,
-          config,
-        });
-      }
+      // 使用 Qwen LLM 模型分析
+      const result = await window.aiAPI.analyzeImageWithQwen({
+        imageData: buffer,
+        modelId: tempModelConfig.id,
+        config: {
+          useGpu: qwenConfig.useGpu,
+          confidenceThreshold: qwenConfig.confidenceThreshold,
+        },
+      });
 
       setAnalysisResult(result);
 
       if (result.success && onAnalysisComplete) {
         onAnalysisComplete(result);
       } else {
-        setError(result.error || '分析失败');
+        setError(result.error || t('common.error'));
       }
     } catch (error) {
       console.error('Analysis failed:', error);
-      setError('分析过程中发生错误');
+      setError(t('common.error'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -235,15 +166,6 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
         <div className="ai-analysis-modal-header">
           <h2>AI 图片分析</h2>
           <div className="header-actions">
-            {onOpenModelManager && (
-              <button
-                className="model-manager-button"
-                onClick={onOpenModelManager}
-                title="模型管理"
-              >
-                <Cog className="w-5 h-5" />
-              </button>
-            )}
             <button className="close-button" onClick={onClose}>
               <X className="w-5 h-5" />
             </button>
@@ -297,84 +219,106 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
           <div className="model-config-section">
             <h3>模型配置</h3>
 
-            {/* 本地模型选择 */}
+            {/* Qwen模型路径配置 */}
             <div className="config-section">
-              <label>选择本地模型:</label>
+              <label>Qwen 模型路径:</label>
+              <div className="file-input-group">
+                <input
+                  type="text"
+                  value={qwenConfig.modelPath}
+                  onChange={e =>
+                    setQwenConfig(prev => ({
+                      ...prev,
+                      modelPath: e.target.value,
+                    }))
+                  }
+                  placeholder={t('common.error')}
+                  readOnly
+                />
+                <button onClick={handleSelectModelPath} disabled={isAnalyzing}>
+                  <FolderOpen className="w-4 h-4" />
+                  选择目录
+                </button>
+              </div>
+            </div>
+
+            {/* 计算设备选择 */}
+            <div className="config-section">
+              <label>计算设备:</label>
               <select
-                value={selectedModel}
-                onChange={e => setSelectedModel(e.target.value)}
+                value={qwenConfig.device}
+                onChange={e =>
+                  setQwenConfig(prev => ({
+                    ...prev,
+                    device: e.target.value as 'cpu' | 'cuda' | 'auto',
+                    useGpu: e.target.value === 'cuda',
+                  }))
+                }
                 disabled={isAnalyzing}
               >
-                <option value="">请选择模型</option>
-                {models.map(model => (
-                  <option key={model.id} value={model.id}>
-                    {model.name} {model.enabled ? '(已启用)' : ''}
-                  </option>
-                ))}
+                <option value="auto">自动选择</option>
+                <option value="cpu">CPU</option>
+                <option value="cuda">GPU (CUDA)</option>
               </select>
             </div>
 
-            {/* 注释掉下载模型列表，改为手动导入 */}
-            {/*
-            <div className="config-section">
-              <label>下载新模型:</label>
-              <div className="available-models">
-                {availableModels.map(model => (
-                  <div key={model.id} className="model-item">
-                    <div className="model-info">
-                      <h4>{model.name}</h4>
-                      <p className="model-description">{model.description}</p>
-                      <div className="model-meta">
-                        <span className="model-type">{model.type}</span>
-                        <span className="model-size">{formatFileSize(model.size)}</span>
-                      </div>
-                    </div>
-                    <button
-                      className="download-btn"
-                      onClick={() => handleDownloadModel(model.id)}
-                      disabled={isDownloading || models.some(m => m.id === model.id)}
-                    >
-                      {isDownloading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4" />
-                      )}
-                      {models.some(m => m.id === model.id) ? '已安装' : '下载'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            */}
-
+            {/* 最大Token数 */}
             <div className="config-section">
               <label>
+                最大Token数: {qwenConfig.maxTokens}
                 <input
-                  type="checkbox"
-                  checked={config.useGpu}
+                  type="range"
+                  min="100"
+                  max="2048"
+                  step="100"
+                  value={qwenConfig.maxTokens}
                   onChange={e =>
-                    setConfig({ ...config, useGpu: e.target.checked })
+                    setQwenConfig(prev => ({
+                      ...prev,
+                      maxTokens: parseInt(e.target.value),
+                    }))
                   }
                   disabled={isAnalyzing}
                 />
-                使用 GPU 加速
               </label>
             </div>
 
+            {/* 生成温度 */}
             <div className="config-section">
               <label>
-                置信度阈值: {config.confidenceThreshold}
+                生成温度: {qwenConfig.temperature}
+                <input
+                  type="range"
+                  min="0.1"
+                  max="2.0"
+                  step="0.1"
+                  value={qwenConfig.temperature}
+                  onChange={e =>
+                    setQwenConfig(prev => ({
+                      ...prev,
+                      temperature: parseFloat(e.target.value),
+                    }))
+                  }
+                  disabled={isAnalyzing}
+                />
+              </label>
+            </div>
+
+            {/* 置信度阈值 */}
+            <div className="config-section">
+              <label>
+                置信度阈值: {qwenConfig.confidenceThreshold}
                 <input
                   type="range"
                   min="0"
                   max="1"
                   step="0.1"
-                  value={config.confidenceThreshold}
+                  value={qwenConfig.confidenceThreshold}
                   onChange={e =>
-                    setConfig({
-                      ...config,
+                    setQwenConfig(prev => ({
+                      ...prev,
                       confidenceThreshold: parseFloat(e.target.value),
-                    })
+                    }))
                   }
                   disabled={isAnalyzing}
                 />
@@ -384,7 +328,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
             <button
               className="analyze-button"
               onClick={handleAnalyze}
-              disabled={!uploadedImage || !selectedModel || isAnalyzing}
+              disabled={!uploadedImage || !qwenConfig.modelPath || isAnalyzing}
             >
               {isAnalyzing ? (
                 <>

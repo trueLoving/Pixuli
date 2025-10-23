@@ -2,29 +2,25 @@ import { ipcMain, dialog, app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { promisify } from 'util';
-import {
-  analyzeImageWithAi,
-  analyzeImageWithTensorflow,
-  analyzeImageWithTensorflowLite,
-  downloadTensorflowModel,
-} from 'pixuli-wasm';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);
 
-// AI 模型配置接口
+// AI 模型配置接口 - 只支持 Qwen LLM
 export interface AIModelConfig {
   id: string;
   name: string;
-  type: 'tensorflow' | 'tensorflow-lite' | 'onnx' | 'local-llm' | 'remote-api';
-  path?: string;
-  apiEndpoint?: string;
-  apiKey?: string;
+  type: 'qwen-llm';
   enabled: boolean;
   description?: string;
   version?: string;
   size?: number;
+  // Qwen LLM 特定配置
+  modelPath?: string;
+  device?: 'cpu' | 'cuda' | 'auto';
+  maxTokens?: number;
+  temperature?: number;
 }
 
 // 图片分析请求接口
@@ -70,15 +66,14 @@ export interface ImageAnalysisResponse {
 }
 
 class AIService {
-  private models: Map<string, AIModelConfig> = new Map();
-  private modelsDir: string;
-  private configFile: string;
+  public models: Map<string, AIModelConfig> = new Map();
+  public modelsDir: string;
+  public configFile: string;
 
   constructor() {
     this.modelsDir = path.join(app.getPath('userData'), 'models');
     this.configFile = path.join(app.getPath('userData'), 'ai-models.json');
     this.initializeService();
-    this.registerIpcHandlers();
   }
 
   private async initializeService() {
@@ -110,7 +105,7 @@ class AIService {
     }
   }
 
-  private async saveModelConfigs() {
+  public async saveModelConfigs() {
     try {
       const configs = Array.from(this.models.values());
       await writeFile(this.configFile, JSON.stringify(configs, null, 2));
@@ -119,504 +114,17 @@ class AIService {
     }
   }
 
-  private registerIpcHandlers() {
-    // 分析图片
-    ipcMain.handle(
-      'ai:analyze-image',
-      async (
-        event,
-        request: ImageAnalysisRequest
-      ): Promise<ImageAnalysisResponse> => {
-        try {
-          return await this.analyzeImage(request);
-        } catch (error) {
-          console.error('Image analysis failed:', error);
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    );
-
-    // TensorFlow 图片分析
-    ipcMain.handle(
-      'ai:analyze-image-tensorflow',
-      async (
-        event,
-        request: ImageAnalysisRequest
-      ): Promise<ImageAnalysisResponse> => {
-        try {
-          return await this.analyzeImageWithTensorFlow(request);
-        } catch (error) {
-          console.error('TensorFlow analysis failed:', error);
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    );
-
-    // TensorFlow Lite 图片分析
-    ipcMain.handle(
-      'ai:analyze-image-tensorflow-lite',
-      async (
-        event,
-        request: ImageAnalysisRequest
-      ): Promise<ImageAnalysisResponse> => {
-        try {
-          return await this.analyzeImageWithTensorFlowLite(request);
-        } catch (error) {
-          console.error('TensorFlow Lite analysis failed:', error);
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    );
-
-    // 获取模型列表
-    ipcMain.handle('ai:get-models', async () => {
-      return Array.from(this.models.values());
-    });
-
-    // 添加模型
-    ipcMain.handle('ai:add-model', async (event, config: AIModelConfig) => {
-      try {
-        this.models.set(config.id, config);
-        await this.saveModelConfigs();
-        return { success: true };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
-    });
-
-    // 删除模型
-    ipcMain.handle('ai:remove-model', async (event, modelId: string) => {
-      try {
-        this.models.delete(modelId);
-        await this.saveModelConfigs();
-        return { success: true };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
-    });
-
-    // 更新模型配置
-    ipcMain.handle(
-      'ai:update-model',
-      async (event, modelId: string, updates: Partial<AIModelConfig>) => {
-        try {
-          const model = this.models.get(modelId);
-          if (!model) {
-            return { success: false, error: 'Model not found' };
-          }
-
-          const updatedModel = { ...model, ...updates };
-          this.models.set(modelId, updatedModel);
-          await this.saveModelConfigs();
-          return { success: true };
-        } catch (error) {
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    );
-
-    // 检查模型可用性
-    ipcMain.handle('ai:check-model', async (event, modelId: string) => {
-      try {
-        const model = this.models.get(modelId);
-        if (!model) {
-          return { available: false, error: 'Model not found' };
-        }
-
-        if (
-          model.type === 'local-llm' ||
-          model.type === 'tensorflow' ||
-          model.type === 'onnx'
-        ) {
-          if (!model.path) {
-            return { available: false, error: 'Model path not specified' };
-          }
-
-          const exists = fs.existsSync(model.path);
-          return {
-            available: exists,
-            error: exists ? undefined : 'Model file not found',
-          };
-        }
-
-        return { available: true };
-      } catch (error) {
-        return {
-          available: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
-    });
-
-    // 下载模型
-    ipcMain.handle(
-      'ai:download-model',
-      async (event, modelId: string, url: string) => {
-        try {
-          // 这里应该实现模型下载逻辑
-          // 暂时返回成功
-          return { success: true, message: 'Model download started' };
-        } catch (error) {
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-          };
-        }
-      }
-    );
-
-    // 选择模型文件
-    ipcMain.handle('ai:select-model-file', async () => {
-      try {
-        console.log('Opening file selection dialog for AI models');
-        const result = await dialog.showOpenDialog({
-          title: '选择 AI 模型文件',
-          filters: [
-            { name: 'TensorFlow Lite 模型', extensions: ['tflite'] },
-            { name: 'TensorFlow 模型', extensions: ['pb', 'json', 'bin'] },
-            { name: 'ONNX 模型', extensions: ['onnx'] },
-            { name: '所有文件', extensions: ['*'] },
-          ],
-          properties: ['openFile'],
-          defaultPath: process.env.HOME || process.env.USERPROFILE || '/',
-        });
-
-        console.log('File selection result:', result);
-        if (!result.canceled && result.filePaths.length > 0) {
-          const selectedFile = result.filePaths[0];
-          console.log('Selected file:', selectedFile);
-          return { success: true, filePath: selectedFile };
-        }
-
-        console.log('No file selected or dialog canceled');
-        return { success: false, error: 'No file selected' };
-      } catch (error) {
-        console.error('File selection error:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        };
-      }
-    });
-  }
-
-  public async analyzeImage(
-    request: ImageAnalysisRequest
-  ): Promise<ImageAnalysisResponse> {
-    try {
-      // 获取模型配置
-      let modelConfig: AIModelConfig | undefined;
-
-      if (request.modelId) {
-        modelConfig = this.models.get(request.modelId);
-      } else {
-        // 使用默认启用的模型
-        modelConfig = Array.from(this.models.values()).find(m => m.enabled);
-      }
-
-      if (!modelConfig) {
-        return {
-          success: false,
-          error: 'No AI model available',
-        };
-      }
-
-      // 调用 WASM 分析函数
-      const wasmConfig = {
-        modelType: this.mapModelType(modelConfig.type),
-        modelPath: modelConfig.path,
-        apiEndpoint: modelConfig.apiEndpoint,
-        apiKey: modelConfig.apiKey,
-        useGpu: request.config?.useGpu ?? false,
-        confidenceThreshold: request.config?.confidenceThreshold ?? 0.5,
-      };
-
-      const result = analyzeImageWithAi(
-        Array.from(request.imageData),
-        wasmConfig
-      );
-
-      return {
-        success: true,
-        result: {
-          imageType: result.imageType,
-          tags: result.tags,
-          description: result.description,
-          confidence: result.confidence,
-          objects: result.objects.map((obj: any) => ({
-            name: obj.name,
-            confidence: obj.confidence,
-            bbox: {
-              x: obj.bbox.x,
-              y: obj.bbox.y,
-              width: obj.bbox.width,
-              height: obj.bbox.height,
-            },
-            category: obj.category,
-          })),
-          colors: result.colors.map((color: any) => ({
-            name: color.name,
-            rgb: color.rgb,
-            percentage: color.percentage,
-            hex: color.hex,
-          })),
-          sceneType: result.sceneType,
-          analysisTime: result.analysisTime,
-          modelUsed: result.modelUsed,
-        },
-      };
-    } catch (error) {
-      console.error('Image analysis error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Analysis failed',
-      };
-    }
-  }
-
-  private mapModelType(type: string): any {
-    switch (type) {
-      case 'tensorflow':
-        return 0; // AIModelType.TensorFlow
-      case 'tensorflow-lite':
-        return 1; // AIModelType.TensorFlowLite
-      case 'onnx':
-        return 2; // AIModelType.ONNX
-      case 'local-llm':
-        return 3; // AIModelType.LocalLLM
-      case 'remote-api':
-        return 4; // AIModelType.RemoteAPI
-      default:
-        return 0;
-    }
-  }
-
   // 获取模型目录路径
   public getModelsDir(): string {
     return this.modelsDir;
   }
 
-  // 添加默认模型配置
+  // 添加默认模型配置 - 不添加任何默认模型，用户需要手动配置Qwen模型
   public async addDefaultModels() {
-    // 只添加通用AI分析模型（内置，无需文件）
-    const defaultModels: AIModelConfig[] = [
-      {
-        id: 'builtin-general',
-        name: '通用图片分析',
-        type: 'tensorflow',
-        enabled: true,
-        description: '内置通用图片分析模型，基于图像特征分析',
-        version: '1.0.0',
-        size: 0, // 内置模型，无文件大小
-      },
-    ];
-
-    for (const model of defaultModels) {
-      if (!this.models.has(model.id)) {
-        this.models.set(model.id, model);
-      }
-    }
-
-    await this.saveModelConfigs();
-  }
-
-  // 下载 TensorFlow 模型
-  async downloadTensorFlowModel(
-    modelId: string,
-    modelUrl: string
-  ): Promise<{ success: boolean; path?: string; error?: string }> {
-    try {
-      const modelPath = await downloadTensorflowModel(modelId, modelUrl);
-
-      // 添加到模型配置
-      const modelConfig: AIModelConfig = {
-        id: modelId,
-        name: modelId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        type: 'tensorflow',
-        path: modelPath,
-        enabled: true,
-        description: `TensorFlow model: ${modelId}`,
-        version: '1.0',
-        size: 0, // 实际大小需要从文件系统获取
-      };
-
-      this.models.set(modelId, modelConfig);
-      await this.saveModelConfigs();
-
-      return { success: true, path: modelPath };
-    } catch (error) {
-      console.error('Failed to download TensorFlow model:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  }
-
-  // 使用 TensorFlow Lite 模型分析图片
-  async analyzeImageWithTensorFlowLite(
-    request: ImageAnalysisRequest
-  ): Promise<ImageAnalysisResponse> {
-    try {
-      const modelConfig = this.models.get(request.modelId || '');
-      if (!modelConfig) {
-        return {
-          success: false,
-          error: 'Model not found',
-        };
-      }
-
-      // 如果没有模型路径，使用通用AI分析
-      if (!modelConfig.path) {
-        return await this.analyzeImage(request);
-      }
-
-      // 检查模型文件是否存在
-      if (!fs.existsSync(modelConfig.path)) {
-        console.warn(
-          `Model file not found: ${modelConfig.path}, falling back to general analysis`
-        );
-        return await this.analyzeImage(request);
-      }
-
-      const result = analyzeImageWithTensorflowLite(
-        Array.from(request.imageData),
-        modelConfig.path
-      );
-
-      return {
-        success: true,
-        result: {
-          imageType: result.imageType,
-          tags: result.tags,
-          description: result.description,
-          confidence: result.confidence,
-          objects: result.objects.map((obj: any) => ({
-            name: obj.name,
-            confidence: obj.confidence,
-            bbox: {
-              x: obj.bbox.x,
-              y: obj.bbox.y,
-              width: obj.bbox.width,
-              height: obj.bbox.height,
-            },
-            category: obj.category,
-          })),
-          colors: result.colors.map((color: any) => ({
-            name: color.name,
-            rgb: color.rgb,
-            percentage: color.percentage,
-            hex: color.hex,
-          })),
-          sceneType: result.sceneType,
-          analysisTime: result.analysisTime,
-          modelUsed: result.modelUsed,
-        },
-      };
-    } catch (error) {
-      console.error('TensorFlow Lite analysis failed:', error);
-      // 如果TensorFlow Lite分析失败，回退到通用分析
-      try {
-        return await this.analyzeImage(request);
-      } catch (fallbackError) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Analysis failed',
-        };
-      }
-    }
-  }
-
-  // 使用 TensorFlow 模型分析图片
-  async analyzeImageWithTensorFlow(
-    request: ImageAnalysisRequest
-  ): Promise<ImageAnalysisResponse> {
-    try {
-      const modelConfig = this.models.get(request.modelId || '');
-      if (!modelConfig) {
-        return {
-          success: false,
-          error: 'Model not found',
-        };
-      }
-
-      // 如果没有模型路径，使用通用AI分析
-      if (!modelConfig.path) {
-        return await this.analyzeImage(request);
-      }
-
-      // 检查模型文件是否存在
-      if (!fs.existsSync(modelConfig.path)) {
-        console.warn(
-          `Model file not found: ${modelConfig.path}, falling back to general analysis`
-        );
-        return await this.analyzeImage(request);
-      }
-
-      const result = analyzeImageWithTensorflow(
-        Array.from(request.imageData),
-        modelConfig.path
-      );
-
-      return {
-        success: true,
-        result: {
-          imageType: result.imageType,
-          tags: result.tags,
-          description: result.description,
-          confidence: result.confidence,
-          objects: result.objects.map((obj: any) => ({
-            name: obj.name,
-            confidence: obj.confidence,
-            bbox: {
-              x: obj.bbox.x,
-              y: obj.bbox.y,
-              width: obj.bbox.width,
-              height: obj.bbox.height,
-            },
-            category: obj.category,
-          })),
-          colors: result.colors.map((color: any) => ({
-            name: color.name,
-            rgb: color.rgb,
-            percentage: color.percentage,
-            hex: color.hex,
-          })),
-          sceneType: result.sceneType,
-          analysisTime: result.analysisTime,
-          modelUsed: result.modelUsed,
-        },
-      };
-    } catch (error) {
-      console.error('TensorFlow analysis failed:', error);
-      // 如果TensorFlow分析失败，回退到通用分析
-      try {
-        return await this.analyzeImage(request);
-      } catch (fallbackError) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Analysis failed',
-        };
-      }
-    }
+    // Qwen LLM需要用户手动下载和配置，不提供默认模型
+    console.log(
+      'No default models added. Users need to configure Qwen LLM manually.'
+    );
   }
 
   // 获取所有模型
@@ -689,10 +197,10 @@ class AIService {
         return { available: false, error: 'Model not found' };
       }
 
-      if (model.path) {
+      if (model.modelPath) {
         const fs = await import('fs');
         const path = await import('path');
-        const exists = fs.existsSync(path.resolve(model.path));
+        const exists = fs.existsSync(path.resolve(model.modelPath));
         return { available: exists };
       }
 
@@ -719,9 +227,10 @@ class AIService {
           { name: 'TensorFlow Lite 模型', extensions: ['tflite'] },
           { name: 'TensorFlow 模型', extensions: ['pb', 'json', 'bin'] },
           { name: 'ONNX 模型', extensions: ['onnx'] },
+          { name: 'Qwen 模型目录', extensions: ['*'] },
           { name: '所有文件', extensions: ['*'] },
         ],
-        properties: ['openFile'],
+        properties: ['openFile', 'openDirectory'],
         defaultPath: process.env.HOME || process.env.USERPROFILE || '/',
       });
 
@@ -737,8 +246,217 @@ class AIService {
       };
     }
   }
+
+  // 使用 Qwen LLM 分析图片
+  async analyzeImageWithQwen(
+    request: ImageAnalysisRequest
+  ): Promise<ImageAnalysisResponse> {
+    try {
+      const modelConfig = this.models.get(request.modelId || '');
+      if (!modelConfig || modelConfig.type !== 'qwen-llm') {
+        return {
+          success: false,
+          error: 'Qwen model not found or invalid type',
+        };
+      }
+
+      if (!modelConfig.modelPath) {
+        return {
+          success: false,
+          error: 'Qwen model path not configured',
+        };
+      }
+
+      // 检查Qwen分析器二进制文件是否存在
+      const analyzerPath = this.getQwenAnalyzerPath();
+      if (!fs.existsSync(analyzerPath)) {
+        return {
+          success: false,
+          error:
+            'Qwen analyzer binary not found. Please ensure the application is properly installed.',
+        };
+      }
+
+      // 将图片保存为临时文件
+      const tempImagePath = path.join(
+        app.getPath('temp'),
+        `temp_image_${Date.now()}.jpg`
+      );
+      await writeFile(tempImagePath, request.imageData);
+
+      try {
+        // 调用二进制文件进行图片分析
+        const result = await this.callQwenAnalyzerBinary(
+          analyzerPath,
+          modelConfig,
+          tempImagePath,
+          request.config
+        );
+
+        return {
+          success: true,
+          result: {
+            imageType: result.imageType || 'unknown',
+            tags: result.tags || [],
+            description: result.description || '无法生成描述',
+            confidence: result.confidence || 0.8,
+            objects: result.objects || [],
+            colors: result.colors || [],
+            sceneType: result.sceneType || 'unknown',
+            analysisTime: result.analysisTime || 0,
+            modelUsed: result.modelUsed || modelConfig.name,
+          },
+        };
+      } finally {
+        // 清理临时文件
+        try {
+          if (fs.existsSync(tempImagePath)) {
+            fs.unlinkSync(tempImagePath);
+          }
+        } catch (cleanupError) {
+          console.warn('Failed to cleanup temp image:', cleanupError);
+        }
+      }
+    } catch (error) {
+      console.error('Qwen analysis failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Analysis failed',
+      };
+    }
+  }
+
+  // 调用Qwen分析器二进制文件
+  private async callQwenAnalyzerBinary(
+    analyzerPath: string,
+    modelConfig: AIModelConfig,
+    imagePath: string,
+    config?: { useGpu?: boolean; confidenceThreshold?: number }
+  ): Promise<any> {
+    const { spawn } = await import('child_process');
+
+    return new Promise((resolve, reject) => {
+      const device = config?.useGpu ? 'cuda' : 'cpu';
+
+      const args = [
+        '--model-path',
+        modelConfig.modelPath!,
+        '--image-path',
+        imagePath,
+        '--device',
+        device,
+        '--max-tokens',
+        String(modelConfig.maxTokens || 512),
+        '--temperature',
+        String(modelConfig.temperature || 0.7),
+      ];
+
+      console.log('Calling Qwen analyzer binary:', analyzerPath);
+      console.log('Args:', args);
+
+      const analyzerProcess = spawn(analyzerPath, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env },
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      analyzerProcess.stdout.on('data', data => {
+        stdout += data.toString();
+      });
+
+      analyzerProcess.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+
+      analyzerProcess.on('close', code => {
+        if (code === 0) {
+          try {
+            const result = JSON.parse(stdout);
+            if (result.success) {
+              resolve(result);
+            } else {
+              reject(new Error(result.error || 'Analysis failed'));
+            }
+          } catch (parseError) {
+            reject(new Error(`Failed to parse analyzer output: ${parseError}`));
+          }
+        } else {
+          reject(
+            new Error(`Qwen analyzer failed with code ${code}: ${stderr}`)
+          );
+        }
+      });
+
+      analyzerProcess.on('error', error => {
+        reject(new Error(`Failed to start Qwen analyzer: ${error.message}`));
+      });
+    });
+  }
+
+  // 获取Qwen分析器二进制文件路径（公开方法）
+  public getQwenAnalyzerPath(): string {
+    const platform = process.platform;
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (isDev) {
+      // 开发环境：从packages/ai目录查找
+      return path.join(
+        __dirname,
+        '../../../packages/ai/resources/bin/qwen_analyzer'
+      );
+    } else {
+      // 生产环境：从应用资源目录查找
+      const resourcesPath = process.resourcesPath || app.getAppPath();
+      const analyzerName =
+        platform === 'win32' ? 'qwen_analyzer.exe' : 'qwen_analyzer';
+      return path.join(resourcesPath, 'bin', analyzerName);
+    }
+  }
 }
 
-export const aiService = new AIService();
+const aiService = new AIService();
 
-export function registerAiHandlers() {}
+export function registerAiHandlers() {
+  // Qwen LLM 图片分析
+  ipcMain.handle(
+    'ai:analyze-image-qwen',
+    async (
+      event,
+      request: ImageAnalysisRequest
+    ): Promise<ImageAnalysisResponse> => {
+      try {
+        return await aiService.analyzeImageWithQwen(request);
+      } catch (error) {
+        console.error('Qwen analysis failed:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    }
+  );
+
+  // 检查Qwen分析器二进制文件
+  ipcMain.handle('ai:check-qwen-analyzer', async () => {
+    try {
+      const analyzerPath = aiService.getQwenAnalyzerPath();
+      const exists = fs.existsSync(analyzerPath);
+      return {
+        success: exists,
+        error: exists ? undefined : 'Qwen analyzer binary not found',
+        analyzerPath,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  ipcMain.handle('select-model-file', async () => {
+    return await aiService.selectModelFile();
+  });
+}

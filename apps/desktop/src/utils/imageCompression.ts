@@ -1,5 +1,5 @@
-import { WebPCompressionService } from '@/services/webpCompression';
-import { WebPCompressOptions, WebPCompressResult } from '@/types/webp';
+import { WebPCompressionService } from '../services/webpCompression';
+import { WebPCompressOptions } from '../types/imageCompress';
 
 export interface CompressionOptions {
   quality?: number;

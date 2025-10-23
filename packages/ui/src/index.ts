@@ -11,6 +11,10 @@ export type {
   FilterOptions,
 } from './components/image-browser';
 export type { ImageSearchProps } from './components/image-search/ImageSearch';
+export type {
+  Language,
+  LanguageSwitcherProps,
+} from './components/language-switcher/LanguageSwitcher';
 
 // 工具函数导出
 export * from './utils/toast';
@@ -30,6 +34,7 @@ export { default as KeyboardHelpModal } from './components/keyboard-help/Keyboar
 export { default as ImageUpload } from './components/image-upload/ImageUpload';
 export { default as ImageSearch } from './components/image-search/ImageSearch';
 export { default as Toaster } from './components/toaster/Toaster';
+export { default as LanguageSwitcher } from './components/language-switcher/LanguageSwitcher';
 export {
   ImageBrowser,
   ImageGrid,

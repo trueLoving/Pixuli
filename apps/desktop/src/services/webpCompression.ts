@@ -1,4 +1,4 @@
-import { WebPCompressOptions, WebPCompressResult } from '@/types/webp';
+import { WebPCompressOptions, WebPCompressResult } from '@/types/imageCompress';
 
 // 移除重复的类型声明，使用 electron.d.ts 中的定义
 
