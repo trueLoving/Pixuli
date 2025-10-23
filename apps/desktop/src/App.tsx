@@ -394,52 +394,54 @@ function App() {
       />
 
       {/* 主页内容 */}
-      <Home
-        t={t}
-        error={error}
-        onClearError={clearError}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        selectedTags={selectedTags}
-        onTagsChange={setSelectedTags}
-        allTags={allTags}
-        onUploadImage={(file: File) => uploadImage({ file })}
-        onUploadMultipleImages={(files: File[]) =>
-          uploadMultipleImages({ files })
-        }
-        loading={loading}
-        batchUploadProgress={batchUploadProgress}
-        filteredImages={filteredImages}
-        onDeleteImage={(imageId: string, fileName: string) =>
-          handleDeleteImage(imageId, fileName)
-        }
-        onUpdateImage={(data: any) => handleUpdateImage(data)}
-        githubConfig={githubConfig}
-        upyunConfig={upyunConfig}
-        showConfigModal={showConfigModal}
-        showUpyunConfigModal={showUpyunConfigModal}
-        showCompression={showCompression}
-        showFormatConversion={showFormatConversion}
-        showAIAnalysis={showAIAnalysis}
-        showKeyboardHelp={showKeyboardHelp}
-        onCloseConfigModal={handleCloseConfigModal}
-        onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
-        onCloseCompression={handleCloseCompression}
-        onCloseFormatConversion={handleCloseFormatConversion}
-        onCloseAIAnalysis={handleCloseAIAnalysis}
-        onCloseKeyboardHelp={handleCloseKeyboardHelp}
-        onSaveConfig={handleSaveConfig}
-        onClearConfig={handleClearConfig}
-        onSetUpyunConfig={setUpyunConfig}
-        onClearUpyunConfig={clearUpyunConfig}
-        onAnalysisComplete={result => {
-          console.log('AI 分析完成:', result);
-        }}
-        keyboardCategories={keyboardCategories}
-        ImageCompression={ImageCompression}
-        ImageConverter={ImageConverter}
-        AIAnalysisModal={AIAnalysisModal}
-      />
+      <div className="flex-1 overflow-hidden">
+        <Home
+          t={t}
+          error={error}
+          onClearError={clearError}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedTags={selectedTags}
+          onTagsChange={setSelectedTags}
+          allTags={allTags}
+          onUploadImage={(file: File) => uploadImage({ file })}
+          onUploadMultipleImages={(files: File[]) =>
+            uploadMultipleImages({ files })
+          }
+          loading={loading}
+          batchUploadProgress={batchUploadProgress}
+          filteredImages={filteredImages}
+          onDeleteImage={(imageId: string, fileName: string) =>
+            handleDeleteImage(imageId, fileName)
+          }
+          onUpdateImage={(data: any) => handleUpdateImage(data)}
+          githubConfig={githubConfig}
+          upyunConfig={upyunConfig}
+          showConfigModal={showConfigModal}
+          showUpyunConfigModal={showUpyunConfigModal}
+          showCompression={showCompression}
+          showFormatConversion={showFormatConversion}
+          showAIAnalysis={showAIAnalysis}
+          showKeyboardHelp={showKeyboardHelp}
+          onCloseConfigModal={handleCloseConfigModal}
+          onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
+          onCloseCompression={handleCloseCompression}
+          onCloseFormatConversion={handleCloseFormatConversion}
+          onCloseAIAnalysis={handleCloseAIAnalysis}
+          onCloseKeyboardHelp={handleCloseKeyboardHelp}
+          onSaveConfig={handleSaveConfig}
+          onClearConfig={handleClearConfig}
+          onSetUpyunConfig={setUpyunConfig}
+          onClearUpyunConfig={clearUpyunConfig}
+          onAnalysisComplete={result => {
+            console.log('AI 分析完成:', result);
+          }}
+          keyboardCategories={keyboardCategories}
+          ImageCompression={ImageCompression}
+          ImageConverter={ImageConverter}
+          AIAnalysisModal={AIAnalysisModal}
+        />
+      </div>
 
       <Toaster />
     </div>
