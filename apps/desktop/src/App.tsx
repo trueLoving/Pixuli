@@ -1,16 +1,11 @@
 import {
   COMMON_SHORTCUTS,
-  SHORTCUT_CATEGORIES,
   keyboardManager,
+  SHORTCUT_CATEGORIES,
+  Toaster,
 } from '@packages/ui/src';
 import { useCallback, useEffect, useState } from 'react';
-import { Toaster } from 'react-hot-toast';
 import './App.css';
-import {
-  AIAnalysisModal,
-  ImageCompression,
-  ImageConverter,
-} from './components';
 import { useI18n } from './i18n/useI18n';
 import { Header, Home, WelcomePage } from './layout';
 import { useImageStore } from './stores/imageStore';
@@ -46,64 +41,6 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-
-  // 键盘快捷键分类数据
-  const keyboardCategories = [
-    {
-      name: t('keyboard.categories.general'),
-      shortcuts: [
-        { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
-        { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
-        { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
-        {
-          description: t('keyboard.shortcuts.openConfig'),
-          key: ',',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openConfig'),
-          key: '.',
-          ctrlKey: true,
-        },
-        { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
-        {
-          description: t('keyboard.shortcuts.toggleView'),
-          key: 'V',
-          ctrlKey: true,
-        },
-      ],
-    },
-    {
-      name: t('keyboard.categories.features'),
-      shortcuts: [
-        {
-          description: t('keyboard.shortcuts.openCompression'),
-          key: 'C',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openFormatConversion'),
-          key: 'F',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openAIAnalysis'),
-          key: 'A',
-          ctrlKey: true,
-        },
-      ],
-    },
-    {
-      name: t('keyboard.categories.browsing'),
-      shortcuts: [
-        { description: t('keyboard.shortcuts.selectUp'), key: 'ArrowUp' },
-        { description: t('keyboard.shortcuts.selectDown'), key: 'ArrowDown' },
-        { description: t('keyboard.shortcuts.selectLeft'), key: 'ArrowLeft' },
-        { description: t('keyboard.shortcuts.selectRight'), key: 'ArrowRight' },
-        { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' },
-      ],
-    },
-  ];
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -367,7 +304,6 @@ function App() {
         onClearConfig={handleClearConfig}
         onSetUpyunConfig={setUpyunConfig}
         onClearUpyunConfig={clearUpyunConfig}
-        ImageCompression={ImageCompression}
       />
     );
   }
@@ -391,6 +327,25 @@ function App() {
         onOpenUpyunConfigModal={handleOpenUpyunConfigModal}
         onLoadImages={handleLoadImages}
         onOpenKeyboardHelp={handleOpenKeyboardHelp}
+        showConfigModal={showConfigModal}
+        showUpyunConfigModal={showUpyunConfigModal}
+        showCompression={showCompression}
+        showFormatConversion={showFormatConversion}
+        showAIAnalysis={showAIAnalysis}
+        showKeyboardHelp={showKeyboardHelp}
+        onCloseConfigModal={handleCloseConfigModal}
+        onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
+        onCloseCompression={handleCloseCompression}
+        onCloseFormatConversion={handleCloseFormatConversion}
+        onCloseAIAnalysis={handleCloseAIAnalysis}
+        onCloseKeyboardHelp={handleCloseKeyboardHelp}
+        onSaveConfig={handleSaveConfig}
+        onClearConfig={handleClearConfig}
+        onSetUpyunConfig={setUpyunConfig}
+        onClearUpyunConfig={clearUpyunConfig}
+        onAnalysisComplete={result => {
+          console.log('AI 分析完成:', result);
+        }}
       />
 
       {/* 主页内容 */}
@@ -415,31 +370,6 @@ function App() {
             handleDeleteImage(imageId, fileName)
           }
           onUpdateImage={(data: any) => handleUpdateImage(data)}
-          githubConfig={githubConfig}
-          upyunConfig={upyunConfig}
-          showConfigModal={showConfigModal}
-          showUpyunConfigModal={showUpyunConfigModal}
-          showCompression={showCompression}
-          showFormatConversion={showFormatConversion}
-          showAIAnalysis={showAIAnalysis}
-          showKeyboardHelp={showKeyboardHelp}
-          onCloseConfigModal={handleCloseConfigModal}
-          onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
-          onCloseCompression={handleCloseCompression}
-          onCloseFormatConversion={handleCloseFormatConversion}
-          onCloseAIAnalysis={handleCloseAIAnalysis}
-          onCloseKeyboardHelp={handleCloseKeyboardHelp}
-          onSaveConfig={handleSaveConfig}
-          onClearConfig={handleClearConfig}
-          onSetUpyunConfig={setUpyunConfig}
-          onClearUpyunConfig={clearUpyunConfig}
-          onAnalysisComplete={result => {
-            console.log('AI 分析完成:', result);
-          }}
-          keyboardCategories={keyboardCategories}
-          ImageCompression={ImageCompression}
-          ImageConverter={ImageConverter}
-          AIAnalysisModal={AIAnalysisModal}
         />
       </div>
 

@@ -34,7 +34,6 @@ interface WelcomePageProps {
   /** 清除又拍云配置 */
   onClearUpyunConfig: () => void;
   /** 压缩组件 */
-  ImageCompression: React.ComponentType<{ onClose: () => void }>;
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({
@@ -43,17 +42,13 @@ const WelcomePage: React.FC<WelcomePageProps> = ({
   upyunConfig,
   showConfigModal,
   showUpyunConfigModal,
-  showCompression,
   onOpenConfigModal,
   onCloseConfigModal,
-  onOpenUpyunConfigModal,
   onCloseUpyunConfigModal,
-  onCloseCompression,
   onSaveConfig,
   onClearConfig,
   onSetUpyunConfig,
   onClearUpyunConfig,
-  ImageCompression,
 }) => {
   return (
     <div className="h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -113,9 +108,6 @@ const WelcomePage: React.FC<WelcomePageProps> = ({
         onClearConfig={onClearUpyunConfig}
         platform="desktop"
       />
-
-      {/* 图片压缩模态框 */}
-      {showCompression && <ImageCompression onClose={onCloseCompression} />}
     </div>
   );
 };

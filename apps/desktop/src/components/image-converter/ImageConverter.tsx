@@ -1,4 +1,4 @@
-import { FormatConversionService } from '@/services/formatConversion';
+import { FormatConversionService } from '@/services/imageConvertService';
 import {
   DEFAULT_CONVERSION_OPTIONS,
   FormatConversionOptions,
@@ -20,10 +20,12 @@ import ImageFormatConversionPreview from './ImageConverterPreview';
 import ImageFormatConversionSettings from './ImageConverterSettings';
 
 interface ImageFormatConversionProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
 const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
+  isOpen,
   onClose,
 }) => {
   const { t } = useI18n();
@@ -185,6 +187,10 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
 
   // 键盘支持
   useEscapeKey(onClose);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">

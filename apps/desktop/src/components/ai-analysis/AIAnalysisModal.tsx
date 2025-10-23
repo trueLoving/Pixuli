@@ -56,18 +56,6 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     }
   };
 
-  // 注释掉下载相关功能
-  /*
-  const loadAvailableModels = async () => {
-    try {
-      const available = await window.modelAPI.getAvailableModels()
-      setAvailableModels(available)
-    } catch (error) {
-      console.error('Failed to load available models:', error)
-    }
-  }
-  */
-
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;

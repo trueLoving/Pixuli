@@ -1,4 +1,4 @@
-import { WebPCompressionService } from '../services/webpCompression';
+import { WebPCompressionService } from '../services/imageCompressService';
 import { WebPCompressOptions } from '../types/imageCompress';
 
 export interface CompressionOptions {

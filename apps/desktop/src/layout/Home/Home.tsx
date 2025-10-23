@@ -2,15 +2,12 @@ import {
   BatchUploadProgress,
   formatFileSize,
   getImageDimensionsFromUrl,
-  GitHubConfigModal,
   ImageBrowser,
   ImageItem,
   ImageSearch,
   ImageUpload,
   ImageUploadData,
-  KeyboardHelpModal,
   MultiImageUploadData,
-  UpyunConfigModal,
 } from '@packages/ui/src';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
@@ -46,59 +43,6 @@ interface HomeProps {
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
   /** 更新图片 */
   onUpdateImage: (data: any) => Promise<void>;
-  /** GitHub 配置 */
-  githubConfig?: any;
-  /** 又拍云配置 */
-  upyunConfig?: any;
-  /** 是否显示 GitHub 配置模态框 */
-  showConfigModal: boolean;
-  /** 是否显示又拍云配置模态框 */
-  showUpyunConfigModal: boolean;
-  /** 是否显示压缩工具 */
-  showCompression: boolean;
-  /** 是否显示格式转换 */
-  showFormatConversion: boolean;
-  /** 是否显示 AI 分析 */
-  showAIAnalysis: boolean;
-  /** 是否显示键盘帮助 */
-  showKeyboardHelp: boolean;
-  /** 关闭 GitHub 配置模态框 */
-  onCloseConfigModal: () => void;
-  /** 关闭又拍云配置模态框 */
-  onCloseUpyunConfigModal: () => void;
-  /** 关闭压缩工具 */
-  onCloseCompression: () => void;
-  /** 关闭格式转换 */
-  onCloseFormatConversion: () => void;
-  /** 关闭 AI 分析 */
-  onCloseAIAnalysis: () => void;
-  /** 关闭键盘帮助 */
-  onCloseKeyboardHelp: () => void;
-  /** 保存 GitHub 配置 */
-  onSaveConfig: (config: any) => void;
-  /** 清除 GitHub 配置 */
-  onClearConfig: () => void;
-  /** 设置又拍云配置 */
-  onSetUpyunConfig: (config: any) => void;
-  /** 清除又拍云配置 */
-  onClearUpyunConfig: () => void;
-  /** AI 分析完成回调 */
-  onAnalysisComplete: (result: any) => void;
-  /** 键盘快捷键分类 */
-  keyboardCategories: Array<{
-    name: string;
-    shortcuts: Array<{
-      description: string;
-      key: string;
-      ctrlKey?: boolean;
-    }>;
-  }>;
-  /** 压缩组件 */
-  ImageCompression: React.ComponentType<{ onClose: () => void }>;
-  /** 格式转换组件 */
-  ImageConverter: React.ComponentType<{ onClose: () => void }>;
-  /** AI 分析组件 */
-  AIAnalysisModal: React.ComponentType<any>;
 }
 
 const Home: React.FC<HomeProps> = ({
@@ -117,29 +61,6 @@ const Home: React.FC<HomeProps> = ({
   filteredImages,
   onDeleteImage,
   onUpdateImage,
-  githubConfig,
-  upyunConfig,
-  showConfigModal,
-  showUpyunConfigModal,
-  showCompression,
-  showFormatConversion,
-  showAIAnalysis,
-  showKeyboardHelp,
-  onCloseConfigModal,
-  onCloseUpyunConfigModal,
-  onCloseCompression,
-  onCloseFormatConversion,
-  onCloseAIAnalysis,
-  onCloseKeyboardHelp,
-  onSaveConfig,
-  onClearConfig,
-  onSetUpyunConfig,
-  onClearUpyunConfig,
-  onAnalysisComplete,
-  keyboardCategories,
-  ImageCompression,
-  ImageConverter,
-  AIAnalysisModal,
 }) => {
   return (
     <div className="h-full flex flex-col">
@@ -212,50 +133,6 @@ const Home: React.FC<HomeProps> = ({
           </div>
         </div>
       </main>
-
-      {/* GitHub 配置模态框 */}
-      <GitHubConfigModal
-        t={t}
-        isOpen={showConfigModal}
-        onClose={onCloseConfigModal}
-        githubConfig={githubConfig}
-        onSaveConfig={onSaveConfig}
-        onClearConfig={onClearConfig}
-      />
-
-      {/* 又拍云配置模态框 */}
-      <UpyunConfigModal
-        t={t}
-        isOpen={showUpyunConfigModal}
-        onClose={onCloseUpyunConfigModal}
-        upyunConfig={upyunConfig}
-        onSaveConfig={onSetUpyunConfig}
-        onClearConfig={onClearUpyunConfig}
-        platform="desktop"
-      />
-
-      {/* 图片压缩模态框 */}
-      {showCompression && <ImageCompression onClose={onCloseCompression} />}
-
-      {/* 图片格式转换模态框 */}
-      {showFormatConversion && (
-        <ImageConverter onClose={onCloseFormatConversion} />
-      )}
-
-      {/* AI 分析模态框 */}
-      <AIAnalysisModal
-        isOpen={showAIAnalysis}
-        onClose={onCloseAIAnalysis}
-        onAnalysisComplete={onAnalysisComplete}
-      />
-
-      {/* 键盘快捷键帮助模态框 */}
-      <KeyboardHelpModal
-        t={t}
-        isOpen={showKeyboardHelp}
-        onClose={onCloseKeyboardHelp}
-        categories={keyboardCategories}
-      />
     </div>
   );
 };

@@ -8,6 +8,13 @@ import {
   Zap,
 } from 'lucide-react';
 import React from 'react';
+import {
+  GitHubConfigModal,
+  KeyboardHelpModal,
+  UpyunConfigModal,
+} from '@packages/ui/src';
+import { AIAnalysisModal } from '../../components';
+import { ImageCompression, ImageConverter } from '../../components';
 
 interface HeaderProps {
   /** 存储类型 */
@@ -16,10 +23,17 @@ interface HeaderProps {
   githubConfig?: {
     owner: string;
     repo: string;
+    branch: string;
+    token: string;
+    path: string;
   } | null;
   /** 又拍云配置 */
   upyunConfig?: {
     bucket: string;
+    operator: string;
+    password: string;
+    domain: string;
+    path: string;
   } | null;
   /** 是否正在加载 */
   loading: boolean;
@@ -49,6 +63,40 @@ interface HeaderProps {
   onLoadImages: () => void;
   /** 打开键盘帮助 */
   onOpenKeyboardHelp: () => void;
+  /** 是否显示 GitHub 配置模态框 */
+  showConfigModal: boolean;
+  /** 是否显示又拍云配置模态框 */
+  showUpyunConfigModal: boolean;
+  /** 是否显示压缩工具 */
+  showCompression: boolean;
+  /** 是否显示格式转换 */
+  showFormatConversion: boolean;
+  /** 是否显示 AI 分析 */
+  showAIAnalysis: boolean;
+  /** 是否显示键盘帮助 */
+  showKeyboardHelp: boolean;
+  /** 关闭 GitHub 配置模态框 */
+  onCloseConfigModal: () => void;
+  /** 关闭又拍云配置模态框 */
+  onCloseUpyunConfigModal: () => void;
+  /** 关闭压缩工具 */
+  onCloseCompression: () => void;
+  /** 关闭格式转换 */
+  onCloseFormatConversion: () => void;
+  /** 关闭 AI 分析 */
+  onCloseAIAnalysis: () => void;
+  /** 关闭键盘帮助 */
+  onCloseKeyboardHelp: () => void;
+  /** 保存 GitHub 配置 */
+  onSaveConfig: (config: any) => void;
+  /** 清除 GitHub 配置 */
+  onClearConfig: () => void;
+  /** 设置又拍云配置 */
+  onSetUpyunConfig: (config: any) => void;
+  /** 清除又拍云配置 */
+  onClearUpyunConfig: () => void;
+  /** AI 分析完成回调 */
+  onAnalysisComplete: (result: any) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -67,7 +115,82 @@ const Header: React.FC<HeaderProps> = ({
   onOpenUpyunConfigModal,
   onLoadImages,
   onOpenKeyboardHelp,
+  showConfigModal,
+  showUpyunConfigModal,
+  showCompression,
+  showFormatConversion,
+  showAIAnalysis,
+  showKeyboardHelp,
+  onCloseConfigModal,
+  onCloseUpyunConfigModal,
+  onCloseCompression,
+  onCloseFormatConversion,
+  onCloseAIAnalysis,
+  onCloseKeyboardHelp,
+  onSaveConfig,
+  onClearConfig,
+  onSetUpyunConfig,
+  onClearUpyunConfig,
+  onAnalysisComplete,
 }) => {
+  // 键盘快捷键分类数据
+  const keyboardCategories = [
+    {
+      name: t('keyboard.categories.general'),
+      shortcuts: [
+        { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
+        { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
+        { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
+        {
+          description: t('keyboard.shortcuts.openConfig'),
+          key: ',',
+          ctrlKey: true,
+        },
+        {
+          description: t('keyboard.shortcuts.openConfig'),
+          key: '.',
+          ctrlKey: true,
+        },
+        { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
+        {
+          description: t('keyboard.shortcuts.toggleView'),
+          key: 'V',
+          ctrlKey: true,
+        },
+      ],
+    },
+    {
+      name: t('keyboard.categories.features'),
+      shortcuts: [
+        {
+          description: t('keyboard.shortcuts.openCompression'),
+          key: 'C',
+          ctrlKey: true,
+        },
+        {
+          description: t('keyboard.shortcuts.openFormatConversion'),
+          key: 'F',
+          ctrlKey: true,
+        },
+        {
+          description: t('keyboard.shortcuts.openAIAnalysis'),
+          key: 'A',
+          ctrlKey: true,
+        },
+      ],
+    },
+    {
+      name: t('keyboard.categories.browsing'),
+      shortcuts: [
+        { description: t('keyboard.shortcuts.selectUp'), key: 'ArrowUp' },
+        { description: t('keyboard.shortcuts.selectDown'), key: 'ArrowDown' },
+        { description: t('keyboard.shortcuts.selectLeft'), key: 'ArrowLeft' },
+        { description: t('keyboard.shortcuts.selectRight'), key: 'ArrowRight' },
+        { description: t('keyboard.shortcuts.openSelected'), key: 'Enter' },
+      ],
+    },
+  ];
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -171,6 +294,51 @@ const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* GitHub 配置模态框 */}
+      <GitHubConfigModal
+        t={t}
+        isOpen={showConfigModal}
+        onClose={onCloseConfigModal}
+        githubConfig={githubConfig}
+        onSaveConfig={onSaveConfig}
+        onClearConfig={onClearConfig}
+      />
+
+      {/* 又拍云配置模态框 */}
+      <UpyunConfigModal
+        t={t}
+        isOpen={showUpyunConfigModal}
+        onClose={onCloseUpyunConfigModal}
+        upyunConfig={upyunConfig}
+        onSaveConfig={onSetUpyunConfig}
+        onClearConfig={onClearUpyunConfig}
+        platform="desktop"
+      />
+
+      {/* 图片压缩模态框 */}
+      <ImageCompression isOpen={showCompression} onClose={onCloseCompression} />
+
+      {/* 图片格式转换模态框 */}
+      <ImageConverter
+        isOpen={showFormatConversion}
+        onClose={onCloseFormatConversion}
+      />
+
+      {/* AI 分析模态框 */}
+      <AIAnalysisModal
+        isOpen={showAIAnalysis}
+        onClose={onCloseAIAnalysis}
+        onAnalysisComplete={onAnalysisComplete}
+      />
+
+      {/* 键盘快捷键帮助模态框 */}
+      <KeyboardHelpModal
+        t={t}
+        isOpen={showKeyboardHelp}
+        onClose={onCloseKeyboardHelp}
+        categories={keyboardCategories}
+      />
     </header>
   );
 };

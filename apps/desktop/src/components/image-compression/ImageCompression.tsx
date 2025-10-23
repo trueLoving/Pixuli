@@ -19,10 +19,14 @@ import ImageCompressionPreview from './ImageCompressionPreview';
 import ImageCompressionSettings from './ImageCompressionSettings';
 
 interface ImageCompressionProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
+const ImageCompression: React.FC<ImageCompressionProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionOptions, setCompressionOptions] =
@@ -151,6 +155,10 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({ onClose }) => {
 
   // 键盘支持
   useEscapeKey(onClose);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">

@@ -1,26 +1,26 @@
-import { create } from 'zustand';
 import {
-  ImageItem,
-  ImageUploadData,
-  ImageEditData,
-  GitHubConfig,
-  UpyunConfig,
-  MultiImageUploadData,
-  BatchUploadProgress,
-  UploadProgress,
-} from '@packages/ui/src';
+  clearGitHubConfig,
+  loadGitHubConfig,
+  saveGitHubConfig,
+} from '@/config/github';
+import {
+  clearUpyunConfig,
+  loadUpyunConfig,
+  saveUpyunConfig,
+} from '@/config/upyun';
 import { GitHubStorageService } from '@/services/githubStorage';
 import { UpyunStorageService } from '@/services/upyunStorage';
 import {
-  loadGitHubConfig,
-  saveGitHubConfig,
-  clearGitHubConfig,
-} from '@/config/github';
-import {
-  loadUpyunConfig,
-  saveUpyunConfig,
-  clearUpyunConfig,
-} from '@/config/upyun';
+  BatchUploadProgress,
+  GitHubConfig,
+  ImageEditData,
+  ImageItem,
+  ImageUploadData,
+  MultiImageUploadData,
+  UploadProgress,
+  UpyunConfig,
+} from '@packages/ui/src';
+import { create } from 'zustand';
 
 interface ImageState {
   images: ImageItem[];

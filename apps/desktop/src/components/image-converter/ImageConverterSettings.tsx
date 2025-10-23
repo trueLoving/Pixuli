@@ -1,4 +1,4 @@
-import { FormatConversionService } from '@/services/formatConversion';
+import { FormatConversionService } from '@/services/imageConvertService';
 import {
   FormatConversionOptions,
   SUPPORTED_FORMATS,
