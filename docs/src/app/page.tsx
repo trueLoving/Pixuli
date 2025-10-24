@@ -420,15 +420,6 @@ export default function Home() {
                     问题反馈
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="https://github.com/trueLoving/Pixuli/discussions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    社区讨论
-                  </a>
-                </li>
               </ul>
             </div>
             <div className="footer-section">
@@ -443,7 +434,10 @@ export default function Home() {
                     GitHub
                   </a>
                 </li>
-                <li>
+                {/* <li>
+                  <a href="#">Discord</a>
+                </li>
+                 <li>
                   <a href="#">贡献指南</a>
                 </li>
                 <li>
@@ -451,7 +445,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a href="#">API 文档</a>
-                </li>
+                </li> */}
               </ul>
             </div>
           </div>

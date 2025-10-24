@@ -35,7 +35,7 @@ export default function ProductsPage() {
                 <td>
                   <strong>Pixuli Desktop</strong>
                 </td>
-                <td>Windows, macOS, Linux</td>
+                <td>Windows, macOS</td>
                 <td>✅ 已发布</td>
                 <td>跨平台桌面应用</td>
                 <td>图片管理、批量处理、格式转换、本地存储</td>
@@ -81,7 +81,7 @@ export default function ProductsPage() {
                 </td>
                 <td>React + TypeScript</td>
                 <td>用户界面</td>
-                <td>19.1.0</td>
+                <td>18.2.0</td>
               </tr>
               <tr>
                 <td>
@@ -89,7 +89,7 @@ export default function ProductsPage() {
                 </td>
                 <td>Electron</td>
                 <td>跨平台打包</td>
-                <td>最新版</td>
+                <td>33.4.11</td>
               </tr>
               <tr>
                 <td>
@@ -113,7 +113,7 @@ export default function ProductsPage() {
                 </td>
                 <td>GitHub API</td>
                 <td>云端存储</td>
-                <td>v4</td>
+                <td>最新版</td>
               </tr>
             </tbody>
           </table>

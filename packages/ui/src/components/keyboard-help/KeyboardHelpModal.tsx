@@ -1,3 +1,4 @@
+// TODO: 自定义快捷键
 import React from 'react';
 import { X, Keyboard, Command, RefreshCw, Zap } from 'lucide-react';
 import { defaultTranslate } from '../../locales/defaultTranslate';
