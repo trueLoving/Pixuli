@@ -301,7 +301,11 @@
       "batchUploadButton": "批量上传",
       "dragActive": "释放文件以上传",
       "dragInactive": "拖拽图片到此处或点击选择",
+      "dragInactiveWithCrop": "拖拽图片到此处或点击选择图片（支持裁剪）",
       "supportedFormats": "支持 JPG, PNG, GIF, BMP, WebP, SVG 等主流图片格式 • 可同时选择多张图片",
+      "cropHint": "支持裁剪",
+      "cropComplete": "裁剪完成",
+      "skipCrop": "跳过裁剪",
       "optional": "(可选)"
     },
     "edit": {
@@ -321,6 +325,28 @@
       "dimensions": "尺寸",
       "gettingDimensions": "获取中...",
       "tagsExample": "例如：风景, 自然, 山水, 摄影"
+    },
+    "crop": {
+      "title": "裁剪图片",
+      "rotate": "旋转",
+      "reset": "重置",
+      "cancel": "取消",
+      "skip": "跳过裁剪",
+      "confirm": "确认裁剪",
+      "shape": {
+        "title": "选择裁剪形状",
+        "subtitle": "选择您喜欢的裁剪形状",
+        "rectangle": "矩形",
+        "rectangleDesc": "经典矩形裁剪",
+        "circle": "圆形",
+        "circleDesc": "圆形头像裁剪",
+        "heart": "心形",
+        "heartDesc": "浪漫心形裁剪",
+        "star": "星形",
+        "starDesc": "创意星形裁剪",
+        "diamond": "菱形",
+        "diamondDesc": "时尚菱形裁剪"
+      }
     }
   },
   "messages": {

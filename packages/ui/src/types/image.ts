@@ -20,6 +20,14 @@ export interface ImageUploadData {
   tags?: string[];
 }
 
+export interface ImageCropOptions {
+  aspectRatio?: number;
+  minWidth?: number;
+  minHeight?: number;
+  maxWidth?: number;
+  maxHeight?: number;
+}
+
 export interface ImageEditData {
   id: string;
   name?: string;

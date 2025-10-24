@@ -351,6 +351,14 @@ function App() {
               onUploadMultipleImages={uploadMultipleImages}
               loading={loading}
               batchUploadProgress={batchUploadProgress}
+              enableCrop={true}
+              cropOptions={{
+                aspectRatio: 16 / 9, // 16:9 宽高比，适合大多数场景
+                minWidth: 320,
+                minHeight: 180,
+                maxWidth: 1920,
+                maxHeight: 1080,
+              }}
             />
           </div>
 

@@ -1,0 +1,310 @@
+/* 图片裁剪模态框样式 */
+.image-crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.image-crop-modal-content {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.image-crop-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.image-crop-modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.image-crop-modal-close {
+  color: #9ca3af;
+  transition: all 0.2s ease-in-out;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.image-crop-modal-close:hover {
+  color: #6b7280;
+  background-color: #f3f4f6;
+}
+
+.image-crop-modal-close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.image-crop-modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.5rem;
+  overflow: hidden;
+}
+
+.image-crop-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  max-height: 60vh;
+  overflow: hidden;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+.image-crop-react-crop {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.image-crop-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.image-crop-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+}
+
+.image-crop-controls-group {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.image-crop-control-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.image-crop-control-button:hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.image-crop-control-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.image-crop-control-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.image-crop-info {
+  text-align: right;
+}
+
+.image-crop-filename {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0 0 0.25rem 0;
+}
+
+.image-crop-dimensions {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.image-crop-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.image-crop-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid;
+}
+
+.image-crop-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px;
+}
+
+.image-crop-button-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.image-crop-button-secondary:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.image-crop-button-secondary:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.image-crop-button-skip {
+  background-color: #f59e0b;
+  color: #ffffff;
+  border-color: #f59e0b;
+}
+
+.image-crop-button-skip:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+}
+
+.image-crop-button-skip:focus {
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1);
+}
+
+.image-crop-button-primary {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.image-crop-button-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.image-crop-button-primary:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.image-crop-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-crop-button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .image-crop-modal-content {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+
+  .image-crop-modal-header {
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  .image-crop-modal-body {
+    padding: 0 1rem;
+  }
+
+  .image-crop-modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .image-crop-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .image-crop-controls {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .image-crop-controls-group {
+    justify-content: center;
+  }
+
+  .image-crop-info {
+    text-align: center;
+  }
+
+  .image-crop-container {
+    min-height: 300px;
+    max-height: 50vh;
+  }
+}
+
+/* ReactCrop 样式覆盖 */
+.ReactCrop {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ReactCrop__crop-selection {
+  border: 2px solid #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+.ReactCrop__drag-handle {
+  background-color: #3b82f6;
+  border: 2px solid #ffffff;
+  width: 12px;
+  height: 12px;
+}
+
+.ReactCrop__drag-handle:hover {
+  background-color: #2563eb;
+}
+
+.ReactCrop__crop-selection:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}

@@ -300,7 +300,11 @@
       "batchUploadButton": "Batch Upload",
       "dragActive": "Release files to upload",
       "dragInactive": "Drag images here or click to select",
+      "dragInactiveWithCrop": "Drag images here or click to select (with crop support)",
       "supportedFormats": "Supports mainstream image formats like JPG, PNG, GIF, BMP, WebP, SVG • Can select multiple images at once",
+      "cropHint": "with crop support",
+      "cropComplete": "Crop completed",
+      "skipCrop": "Skip crop",
       "optional": "(Optional)"
     },
     "edit": {
@@ -320,6 +324,28 @@
       "dimensions": "Dimensions",
       "gettingDimensions": "Getting...",
       "tagsExample": "e.g.: landscape, nature, mountain, photography"
+    },
+    "crop": {
+      "title": "Crop Image",
+      "rotate": "Rotate",
+      "reset": "Reset",
+      "cancel": "Cancel",
+      "skip": "Skip Crop",
+      "confirm": "Confirm Crop",
+      "shape": {
+        "title": "Select Crop Shape",
+        "subtitle": "Choose your preferred crop shape",
+        "rectangle": "Rectangle",
+        "rectangleDesc": "Classic rectangular crop",
+        "circle": "Circle",
+        "circleDesc": "Circular avatar crop",
+        "heart": "Heart",
+        "heartDesc": "Romantic heart-shaped crop",
+        "star": "Star",
+        "starDesc": "Creative star-shaped crop",
+        "diamond": "Diamond",
+        "diamondDesc": "Stylish diamond-shaped crop"
+      }
     }
   },
   "messages": {

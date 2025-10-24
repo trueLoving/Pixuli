@@ -75,6 +75,11 @@
   margin-top: 0.25rem;
 }
 
+.image-upload-crop-hint {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
 /* 上传模态框样式 */
 .image-upload-modal-overlay {
   position: fixed;

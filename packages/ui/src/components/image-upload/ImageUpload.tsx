@@ -1,26 +1,28 @@
-// TODO: 上传时支持对图片进行预上传处理，支持图片压缩、格式转换、质量优化等
-import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
 import {
+  AlertCircle,
+  CheckCircle,
+  Crop,
+  Image as ImageIcon,
+  Loader2,
   Upload,
   X,
-  Image as ImageIcon,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
 } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { defaultTranslate } from '../../locales/defaultTranslate';
 import type {
+  BatchUploadProgress,
+  ImageCropOptions,
   ImageUploadData,
   MultiImageUploadData,
-  BatchUploadProgress,
 } from '../../types/image';
 import {
   showInfo,
   showLoading,
-  updateLoadingToSuccess,
   updateLoadingToError,
+  updateLoadingToSuccess,
 } from '../../utils/toast';
-import { defaultTranslate } from '../../locales/defaultTranslate';
+import ImageCropModal from './image-crop/ImageCropModal';
 import './ImageUpload.css';
 
 interface ImageUploadProps {
@@ -29,6 +31,8 @@ interface ImageUploadProps {
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   t?: (key: string) => string;
+  enableCrop?: boolean;
+  cropOptions?: ImageCropOptions;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -37,6 +41,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   loading,
   batchUploadProgress,
   t,
+  enableCrop = false,
+  cropOptions,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -45,37 +51,66 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     useState<MultiImageUploadData | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isMultiple, setIsMultiple] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropFileIndex, setCropFileIndex] = useState<number>(-1);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      if (acceptedFiles.length === 1) {
-        // 单张图片上传
-        const file = acceptedFiles[0];
-        setUploadData({
-          file,
-          name: file.name,
-          description: '',
-          tags: [],
-        });
-        setIsMultiple(false);
-        setShowForm(true);
-        showInfo(`${translate('image.upload.selectedSingle')}: ${file.name}`);
-      } else {
-        // 多张图片上传
-        setMultiUploadData({
-          files: acceptedFiles,
-          name: '',
-          description: '',
-          tags: [],
-        });
-        setIsMultiple(true);
-        setShowForm(true);
-        showInfo(
-          `${translate('image.upload.selectedMultiple')} ${acceptedFiles.length} 张图片`
-        );
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        if (acceptedFiles.length === 1) {
+          // 单张图片上传
+          const file = acceptedFiles[0];
+          if (enableCrop) {
+            // 启用裁剪功能，先显示裁剪界面
+            setCropFile(file);
+            setCropFileIndex(-1);
+            setShowCropModal(true);
+          } else {
+            setUploadData({
+              file,
+              name: file.name,
+              description: '',
+              tags: [],
+            });
+            setIsMultiple(false);
+            setShowForm(true);
+            showInfo(
+              `${translate('image.upload.selectedSingle')}: ${file.name}`
+            );
+          }
+        } else {
+          // 多张图片上传
+          if (enableCrop) {
+            // 多张图片时，先处理第一张图片的裁剪
+            setCropFile(acceptedFiles[0]);
+            setCropFileIndex(0);
+            setMultiUploadData({
+              files: acceptedFiles,
+              name: '',
+              description: '',
+              tags: [],
+            });
+            setIsMultiple(true);
+            setShowCropModal(true);
+          } else {
+            setMultiUploadData({
+              files: acceptedFiles,
+              name: '',
+              description: '',
+              tags: [],
+            });
+            setIsMultiple(true);
+            setShowForm(true);
+            showInfo(
+              `${translate('image.upload.selectedMultiple')} ${acceptedFiles.length} 张图片`
+            );
+          }
+        }
       }
-    }
-  }, []);
+    },
+    [enableCrop, translate]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -159,6 +194,88 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setMultiUploadData(null);
     setShowForm(false);
     setIsMultiple(false);
+    setShowCropModal(false);
+    setCropFile(null);
+    setCropFileIndex(-1);
+  };
+
+  // 处理裁剪完成
+  const handleCropComplete = (croppedFile: File) => {
+    if (cropFileIndex === -1) {
+      // 单张图片裁剪完成
+      setUploadData({
+        file: croppedFile,
+        name: croppedFile.name,
+        description: '',
+        tags: [],
+      });
+      setIsMultiple(false);
+      setShowForm(true);
+    } else {
+      // 多张图片中的第一张裁剪完成
+      if (multiUploadData) {
+        const newFiles = [...multiUploadData.files];
+        newFiles[cropFileIndex] = croppedFile;
+        setMultiUploadData({
+          ...multiUploadData,
+          files: newFiles,
+        });
+        setShowForm(true);
+      }
+    }
+
+    setShowCropModal(false);
+    setCropFile(null);
+    setCropFileIndex(-1);
+    showInfo(
+      `${translate('image.upload.cropComplete') || '裁剪完成'}: ${croppedFile.name}`
+    );
+  };
+
+  // 处理跳过裁剪
+  const handleSkipCrop = (originalFile: File) => {
+    if (cropFileIndex === -1) {
+      // 单张图片跳过裁剪
+      setUploadData({
+        file: originalFile,
+        name: originalFile.name,
+        description: '',
+        tags: [],
+      });
+      setIsMultiple(false);
+      setShowForm(true);
+    } else {
+      // 多张图片中的第一张跳过裁剪
+      if (multiUploadData) {
+        const newFiles = [...multiUploadData.files];
+        newFiles[cropFileIndex] = originalFile;
+        setMultiUploadData({
+          ...multiUploadData,
+          files: newFiles,
+        });
+        setShowForm(true);
+      }
+    }
+
+    setShowCropModal(false);
+    setCropFile(null);
+    setCropFileIndex(-1);
+    showInfo(
+      `${translate('image.upload.skipCrop') || '跳过裁剪'}: ${originalFile.name}`
+    );
+  };
+
+  // 处理裁剪取消
+  const handleCropCancel = () => {
+    setShowCropModal(false);
+    setCropFile(null);
+    setCropFileIndex(-1);
+
+    // 如果是多张图片，重置多张图片上传数据
+    if (multiUploadData) {
+      setMultiUploadData(null);
+      setIsMultiple(false);
+    }
   };
 
   // 批量上传进度显示
@@ -417,33 +534,68 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   }
 
   return (
-    <div
-      {...getRootProps()}
-      className={`image-upload-dropzone ${isDragActive ? 'active' : 'inactive'}`}
-    >
-      <input {...getInputProps({})} />
-      <div className="image-upload-content">
-        <div
-          className={`image-upload-icon-container ${isDragActive ? 'active' : 'inactive'}`}
-        >
-          <Upload
-            className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
-          />
-        </div>
-        <div>
-          <p
-            className={`image-upload-text ${isDragActive ? 'active' : 'inactive'}`}
+    <>
+      {/* 裁剪模态框 */}
+      {showCropModal && cropFile && (
+        <ImageCropModal
+          src={URL.createObjectURL(cropFile)}
+          fileName={cropFile.name}
+          originalFile={cropFile}
+          onCropComplete={handleCropComplete}
+          onSkipCrop={handleSkipCrop}
+          onCancel={handleCropCancel}
+          t={translate}
+          aspectRatio={cropOptions?.aspectRatio}
+          minWidth={cropOptions?.minWidth}
+          minHeight={cropOptions?.minHeight}
+          maxWidth={cropOptions?.maxWidth}
+          maxHeight={cropOptions?.maxHeight}
+        />
+      )}
+
+      <div
+        {...getRootProps()}
+        className={`image-upload-dropzone ${isDragActive ? 'active' : 'inactive'}`}
+      >
+        <input {...getInputProps({})} />
+        <div className="image-upload-content">
+          <div
+            className={`image-upload-icon-container ${isDragActive ? 'active' : 'inactive'}`}
           >
-            {isDragActive
-              ? translate('image.upload.dragActive')
-              : translate('image.upload.dragInactive')}
-          </p>
-          <p className="image-upload-description">
-            {translate('image.upload.supportedFormats')}
-          </p>
+            {enableCrop ? (
+              <Crop
+                className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
+              />
+            ) : (
+              <Upload
+                className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
+              />
+            )}
+          </div>
+          <div>
+            <p
+              className={`image-upload-text ${isDragActive ? 'active' : 'inactive'}`}
+            >
+              {isDragActive
+                ? translate('image.upload.dragActive')
+                : enableCrop
+                  ? translate('image.upload.dragInactiveWithCrop') ||
+                    '拖拽图片到此处或点击选择图片（支持裁剪）'
+                  : translate('image.upload.dragInactive')}
+            </p>
+            <p className="image-upload-description">
+              {translate('image.upload.supportedFormats')}
+              {enableCrop && (
+                <span className="image-upload-crop-hint">
+                  {' '}
+                  ({translate('image.upload.cropHint') || '支持裁剪'})
+                </span>
+              )}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
