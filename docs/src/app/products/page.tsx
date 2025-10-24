@@ -1,7 +1,13 @@
+import PageLayout from '../../components/PageLayout';
+
 export default function ProductsPage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="prose prose-lg max-w-none">
+    <PageLayout
+      title="产品矩阵"
+      subtitle="全面了解 Pixuli 的产品生态和功能特性"
+      icon="fas fa-cube"
+    >
+      <div className="content-card">
         <h1>📊 Pixuli 产品矩阵与功能清单</h1>
 
         <blockquote>
@@ -481,6 +487,6 @@ export default function ProductsPage() {
           <em>最后更新：2025年10月</em>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 }

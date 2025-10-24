@@ -36,7 +36,7 @@ export default function Home() {
     }, observerOptions);
 
     const animateElements = document.querySelectorAll(
-      '.feature-card, .download-card, .tech-item'
+      '.feature-card, .download-card, .tech-item, .content-card'
     );
     animateElements.forEach(el => observer.observe(el));
 
@@ -131,207 +131,206 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="features">
+      <section id="features" className="page-content">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">强大的功能特色</h2>
-            <p className="section-description">
-              基于先进技术构建，为您提供最佳的图片管理体验
-            </p>
-          </div>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-desktop"></i>
+          <div className="content-wrapper">
+            <div className="content-card">
+              <div className="section-header">
+                <h2 className="section-title">强大的功能特色</h2>
+                <p className="section-description">
+                  基于先进技术构建，为您提供最佳的图片管理体验
+                </p>
               </div>
-              <h3 className="feature-title">桌面端应用</h3>
-              <p className="feature-description">
-                基于 Electron 构建的桌面应用，支持 Windows、macOS 和
-                Linux，提供完整的本地文件系统访问
-              </p>
+              <div className="features-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-desktop"></i>
+                  </div>
+                  <h3 className="feature-title">桌面端应用</h3>
+                  <p className="feature-description">
+                    基于 Electron 构建的桌面应用，支持 Windows 和
+                    macOS，提供完整的本地文件系统访问
+                  </p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-globe"></i>
+                  </div>
+                  <h3 className="feature-title">Web 端应用</h3>
+                  <p className="feature-description">
+                    基于 React 的 Web 应用，支持在线图片管理、云端存储和团队协作
+                  </p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-compress"></i>
+                  </div>
+                  <h3 className="feature-title">智能压缩</h3>
+                  <p className="feature-description">
+                    智能图片压缩算法，在保持质量的同时大幅减少文件大小
+                  </p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-search"></i>
+                  </div>
+                  <h3 className="feature-title">智能搜索</h3>
+                  <p className="feature-description">
+                    支持按文件名、标签和描述搜索，快速定位您需要的图片
+                  </p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-cloud"></i>
+                  </div>
+                  <h3 className="feature-title">GitHub 集成</h3>
+                  <p className="feature-description">
+                    与 GitHub 深度集成，支持版本控制和团队协作
+                  </p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">
+                    <i className="fas fa-mobile-alt"></i>
+                  </div>
+                  <h3 className="feature-title">跨平台支持</h3>
+                  <p className="feature-description">
+                    支持 Windows、macOS 桌面端和 Web
+                    浏览器，一次开发，多平台使用
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-globe"></i>
-              </div>
-              <h3 className="feature-title">Web 端应用</h3>
-              <p className="feature-description">
-                基于 React 的 Web 应用，支持在线图片管理、云端存储和团队协作
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-compress"></i>
-              </div>
-              <h3 className="feature-title">智能压缩</h3>
-              <p className="feature-description">
-                智能图片压缩算法，在保持质量的同时大幅减少文件大小
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-search"></i>
-              </div>
-              <h3 className="feature-title">智能搜索</h3>
-              <p className="feature-description">
-                支持按文件名、标签和描述搜索，快速定位您需要的图片
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-cloud"></i>
-              </div>
-              <h3 className="feature-title">GitHub 集成</h3>
-              <p className="feature-description">
-                与 GitHub 深度集成，支持版本控制和团队协作
-              </p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-mobile-alt"></i>
-              </div>
-              <h3 className="feature-title">跨平台支持</h3>
-              <p className="feature-description">
-                支持 Windows、macOS、Linux 桌面端和 Web
-                浏览器，一次开发，多平台使用
-              </p>
-            </div>
-            {/* <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-book"></i>
-              </div>
-              <h3 className="feature-title">详细文档</h3>
-              <p className="feature-description">
-                完整的使用教程和键盘功能说明，助您快速上手
-              </p>
-              <div className="feature-links">
-                <a href="/tutorial" className="feature-link">使用教程</a>
-                <a href="/keyboard" className="feature-link">键盘功能</a>
-              </div>
-            </div> */}
           </div>
         </div>
       </section>
 
       {/* Download Section */}
-      <section id="download" className="download">
+      <section id="download" className="page-content">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">立即下载 Pixuli</h2>
-            <p className="section-description">
-              选择您的平台，开始体验智能图片管理
-            </p>
-          </div>
-          <div className="download-grid">
-            <div className="download-card">
-              <div className="platform-icon">
-                <i className="fab fa-windows"></i>
+          <div className="content-wrapper">
+            <div className="content-card">
+              <div className="section-header">
+                <h2 className="section-title">立即下载 Pixuli</h2>
+                <p className="section-description">
+                  选择您的平台，开始体验智能图片管理
+                </p>
               </div>
-              <h3 className="platform-name">Windows</h3>
-              <p className="platform-description">Windows 10/11 (64-bit)</p>
-              <a
-                href="https://github.com/trueLoving/Pixuli/releases"
-                className="download-btn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <i className="fas fa-download"></i>
-                下载 Windows 版
-              </a>
-            </div>
-            <div className="download-card">
-              <div className="platform-icon">
-                <i className="fab fa-apple"></i>
+              <div className="download-grid">
+                <div className="download-card">
+                  <div className="platform-icon">
+                    <i className="fab fa-windows"></i>
+                  </div>
+                  <h3 className="platform-name">Windows</h3>
+                  <p className="platform-description">Windows 10/11 (64-bit)</p>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/releases"
+                    className="download-btn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="fas fa-download"></i>
+                    下载 Windows 版
+                  </a>
+                </div>
+                <div className="download-card">
+                  <div className="platform-icon">
+                    <i className="fab fa-apple"></i>
+                  </div>
+                  <h3 className="platform-name">macOS</h3>
+                  <p className="platform-description">macOS 10.15 或更高版本</p>
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/releases"
+                    className="download-btn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="fas fa-download"></i>
+                    下载 macOS 版
+                  </a>
+                </div>
+                <div className="download-card">
+                  <div className="platform-icon">
+                    <i className="fas fa-globe"></i>
+                  </div>
+                  <h3 className="platform-name">Web 版</h3>
+                  <p className="platform-description">支持所有现代浏览器</p>
+                  <a
+                    href="https://pixuli-web.vercel.app/"
+                    className="download-btn"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="fas fa-external-link-alt"></i>
+                    访问 Web 版
+                  </a>
+                </div>
               </div>
-              <h3 className="platform-name">macOS</h3>
-              <p className="platform-description">macOS 10.15 或更高版本</p>
-              <a
-                href="https://github.com/trueLoving/Pixuli/releases"
-                className="download-btn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <i className="fas fa-download"></i>
-                下载 macOS 版
-              </a>
-            </div>
-            <div className="download-card">
-              <div className="platform-icon">
-                <i className="fas fa-globe"></i>
+              <div className="download-info">
+                <p className="version-info">当前版本: v1.1.0</p>
+                <p className="release-notes">
+                  <a
+                    href="https://github.com/trueLoving/Pixuli/releases"
+                    className="release-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    查看更新日志
+                  </a>
+                </p>
               </div>
-              <h3 className="platform-name">Web 版</h3>
-              <p className="platform-description">支持所有现代浏览器</p>
-              <a
-                href="https://pixuli-web.vercel.app/"
-                className="download-btn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <i className="fas fa-external-link-alt"></i>
-                访问 Web 版
-              </a>
             </div>
-          </div>
-          <div className="download-info">
-            <p className="version-info">当前版本: v1.1.0</p>
-            <p className="release-notes">
-              <a
-                href="https://github.com/trueLoving/Pixuli/releases"
-                className="release-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                查看更新日志
-              </a>
-            </p>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="about">
+      <section id="about" className="page-content">
         <div className="container">
-          <div className="about-content">
-            <div className="about-text">
-              <h2 className="section-title">关于 Pixuli</h2>
-              <p className="about-description">
-                Pixuli
-                诞生于对高效图片管理的需求。我们相信，通过现代化的技术栈，可以让图片管理变得更加智能和便捷。
-              </p>
-              <p className="about-description">
-                基于 Electron + React + TypeScript + Rust 构建，Pixuli
-                提供了桌面端和 Web
-                端两种使用方式，集成了智能图片处理、格式转换、批量操作等功能，为您带来前所未有的图片管理体验。
-              </p>
-              <div className="tech-stack">
-                <h3>技术栈</h3>
-                <p className="tech-description">
-                  基于现代化的技术栈构建，确保应用的高性能、可维护性和用户体验
-                </p>
-                <div className="tech-items">
-                  <div className="tech-item">
-                    <span className="tech-name">Electron</span>
-                    <span className="tech-desc">跨平台桌面应用框架</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">React</span>
-                    <span className="tech-desc">现代化用户界面库</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">TypeScript</span>
-                    <span className="tech-desc">类型安全的JavaScript</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">Rust + WebAssembly</span>
-                    <span className="tech-desc">高性能图像处理</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">Tailwind CSS</span>
-                    <span className="tech-desc">实用优先的CSS框架</span>
-                  </div>
-                  <div className="tech-item">
-                    <span className="tech-name">Vite</span>
-                    <span className="tech-desc">快速构建工具</span>
+          <div className="content-wrapper">
+            <div className="content-card">
+              <div className="about-content">
+                <div className="about-text">
+                  <h2 className="section-title">关于 Pixuli</h2>
+                  <p className="about-description">
+                    Pixuli
+                    诞生于对高效图片管理的需求。我们相信，通过现代化的技术栈，可以让图片管理变得更加智能和便捷。
+                  </p>
+                  <p className="about-description">
+                    基于 Electron + React + TypeScript + Rust 构建，Pixuli
+                    提供了桌面端和 Web
+                    端两种使用方式，集成了智能图片处理、格式转换、批量操作等功能，为您带来前所未有的图片管理体验。
+                  </p>
+                  <div className="tech-stack">
+                    <h3>技术栈</h3>
+                    <p className="tech-description">
+                      基于现代化的技术栈构建，确保应用的高性能、可维护性和用户体验
+                    </p>
+                    <div className="tech-items">
+                      <div className="tech-item">
+                        <span className="tech-name">Electron</span>
+                        <span className="tech-desc">跨平台桌面应用框架</span>
+                      </div>
+                      <div className="tech-item">
+                        <span className="tech-name">React</span>
+                        <span className="tech-desc">现代化用户界面库</span>
+                      </div>
+                      <div className="tech-item">
+                        <span className="tech-name">TypeScript</span>
+                        <span className="tech-desc">类型安全的JavaScript</span>
+                      </div>
+                      <div className="tech-item">
+                        <span className="tech-name">Rust + WebAssembly</span>
+                        <span className="tech-desc">高性能图像处理</span>
+                      </div>
+                      <div className="tech-item">
+                        <span className="tech-name">Tailwind CSS</span>
+                        <span className="tech-desc">实用优先的CSS框架</span>
+                      </div>
+                      <div className="tech-item">
+                        <span className="tech-name">Vite</span>
+                        <span className="tech-desc">快速构建工具</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -364,12 +363,6 @@ export default function Home() {
                   className="social-link"
                 >
                   <i className="fab fa-github"></i>
-                </a>
-                <a href="#" className="social-link">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" className="social-link">
-                  <i className="fab fa-discord"></i>
                 </a>
               </div>
             </div>
@@ -434,18 +427,6 @@ export default function Home() {
                     GitHub
                   </a>
                 </li>
-                {/* <li>
-                  <a href="#">Discord</a>
-                </li>
-                 <li>
-                  <a href="#">贡献指南</a>
-                </li>
-                <li>
-                  <a href="#">开发者文档</a>
-                </li>
-                <li>
-                  <a href="#">API 文档</a>
-                </li> */}
               </ul>
             </div>
           </div>

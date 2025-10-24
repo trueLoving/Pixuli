@@ -1,7 +1,13 @@
+import PageLayout from '../../components/PageLayout';
+
 export default function KeyboardPage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="prose prose-lg max-w-none">
+    <PageLayout
+      title="键盘快捷键"
+      subtitle="掌握 Pixuli 的键盘快捷键，让您的图片管理更加高效便捷"
+      icon="fas fa-keyboard"
+    >
+      <div className="content-card">
         <h1>⌨️ Pixuli 键盘快捷键指南</h1>
 
         <p>掌握 Pixuli 的键盘快捷键，让您的图片管理更加高效便捷。</p>
@@ -476,6 +482,6 @@ export default function KeyboardPage() {
           <em>最后更新：2025年10月</em>
         </p>
       </div>
-    </div>
+    </PageLayout>
   );
 }

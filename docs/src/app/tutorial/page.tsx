@@ -1,7 +1,13 @@
+import PageLayout from '../../components/PageLayout';
+
 export default function TutorialPage() {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="prose prose-lg max-w-none">
+    <PageLayout
+      title="使用教程"
+      subtitle="快速上手 Pixuli 图片管理应用，掌握核心功能"
+      icon="fas fa-graduation-cap"
+    >
+      <div className="content-card">
         <h1>Pixuli 使用说明教程</h1>
 
         <p>
@@ -313,6 +319,6 @@ export default function TutorialPage() {
 
         <p>现在您可以享受 Pixuli 带来的图片管理体验了！</p>
       </div>
-    </div>
+    </PageLayout>
   );
 }
