@@ -1,0 +1,28 @@
+{
+  "version": {
+    "title": "Version Information",
+    "subtitle": "Application version, build time and dependency information",
+    "tabs": {
+      "basic": "Basic Info",
+      "frameworks": "Frameworks",
+      "dependencies": "Dependencies"
+    },
+    "basic": {
+      "name": "Application Name",
+      "version": "Version",
+      "buildTime": "Build Time",
+      "branch": "Branch",
+      "description": "Description"
+    },
+    "dependencies": {
+      "note": "Dependencies Note",
+      "description": "Above shows the main dependency packages and their version information"
+    },
+    "footer": {
+      "generated": "Generated at"
+    }
+  },
+  "common": {
+    "close": "Close"
+  }
+}

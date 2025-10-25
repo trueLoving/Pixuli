@@ -4,13 +4,29 @@ import { initReactI18next } from 'react-i18next';
 
 // 导入packages/ui的语言包
 import { enUS, zhCN } from '@packages/ui/src';
+// 导入web端专用语言包
+import zhCNWeb from '../locales/zh-CN.json';
+import enUSWeb from '../locales/en-US.json';
+
+// 合并语言包
+const mergeLocales = (baseLocales: any, webLocales: any) => {
+  const merged = { ...baseLocales };
+  Object.keys(webLocales).forEach(key => {
+    if (merged[key]) {
+      merged[key] = { ...merged[key], ...webLocales[key] };
+    } else {
+      merged[key] = webLocales[key];
+    }
+  });
+  return merged;
+};
 
 const resources = {
   'zh-CN': {
-    translation: zhCN,
+    translation: mergeLocales(zhCN, zhCNWeb),
   },
   'en-US': {
-    translation: enUS,
+    translation: mergeLocales(enUS, enUSWeb),
   },
 };
 

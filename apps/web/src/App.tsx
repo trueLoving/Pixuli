@@ -1,4 +1,3 @@
-// TODO: 添加版本号信息相关内容
 import {
   formatFileSize,
   getImageDimensionsFromUrl,
@@ -11,10 +10,11 @@ import {
   LanguageSwitcher,
   Toaster,
 } from '@packages/ui/src';
-import { HelpCircle, RefreshCw, Settings } from 'lucide-react';
+import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { Demo, useDemoMode } from './components/demo/Demo';
+import VersionInfoModal from './components/version-info/VersionInfoModal';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
@@ -43,6 +43,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showVersionInfo, setShowVersionInfo] = useState(false);
 
   // 键盘快捷键分类数据 - 使用 useMemo 优化性能
   const keyboardCategories = useMemo(
@@ -133,6 +134,14 @@ function App() {
 
   const handleCloseKeyboardHelp = useCallback(() => {
     setShowKeyboardHelp(false);
+  }, []);
+
+  const handleOpenVersionInfo = useCallback(() => {
+    setShowVersionInfo(true);
+  }, []);
+
+  const handleCloseVersionInfo = useCallback(() => {
+    setShowVersionInfo(false);
   }, []);
 
   // 初始化存储服务
@@ -288,6 +297,13 @@ function App() {
                 showBackdrop={true}
               />
               <button
+                onClick={handleOpenVersionInfo}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title={t('version.title')}
+              >
+                <Info className="w-5 h-5" />
+              </button>
+              <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title={`${t('navigation.settings')} (Ctrl+,)`}
@@ -406,6 +422,13 @@ function App() {
         isOpen={showKeyboardHelp}
         onClose={handleCloseKeyboardHelp}
         categories={keyboardCategories}
+        t={t}
+      />
+
+      {/* 版本信息模态框 */}
+      <VersionInfoModal
+        isOpen={showVersionInfo}
+        onClose={handleCloseVersionInfo}
         t={t}
       />
 
