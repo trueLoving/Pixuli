@@ -4,8 +4,9 @@ import {
   compressImage,
   getAutoCompressionOptions,
   isImageFile,
-} from '@/utils/imageCompression';
+} from '@/services/imageCompressService';
 import {
+  defaultTranslate,
   showError,
   showInfo,
   showSuccess,
@@ -14,20 +15,25 @@ import {
 import { Upload, X, Zap } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import './ImageCompression.css';
-import { useI18n } from '../../i18n/useI18n';
 import ImageCompressionPreview from './ImageCompressionPreview';
 import ImageCompressionSettings from './ImageCompressionSettings';
+import zhCN from './locales/zh-CN.json';
 
 interface ImageCompressionProps {
   isOpen: boolean;
   onClose: () => void;
+  t?: (key: string) => string;
 }
+
+const dT = (key: string) => {
+  return defaultTranslate(key, zhCN);
+};
 
 const ImageCompression: React.FC<ImageCompressionProps> = ({
   isOpen,
   onClose,
+  t = dT,
 }) => {
-  const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressionOptions, setCompressionOptions] =
     useState<CompressionOptions>(DEFAULT_COMPRESSION_OPTIONS);
@@ -168,7 +174,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
           <div className="flex items-center space-x-3">
             <Zap className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl font-semibold text-gray-900">
-              图片压缩工具
+              {t('imageCompression.title')}
             </h2>
           </div>
           <button
@@ -197,17 +203,17 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
                     </div>
                     <div className="space-y-2">
                       <h3 className="text-xl font-semibold text-gray-900">
-                        选择图片文件
+                        {t('imageCompression.fileSelect.title')}
                       </h3>
                       <p className="text-gray-600 text-base">
-                        拖拽图片到此处或点击选择文件
+                        {t('imageCompression.fileSelect.placeholder')}
                       </p>
                       <p className="text-sm text-gray-500">
-                        支持 JPG, PNG, GIF, BMP, WebP 等格式，最大 50MB
+                        {t('imageCompression.fileSelect.description')}
                       </p>
                     </div>
                     <button className="mt-6 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                      选择文件
+                      {t('imageCompression.fileSelect.selectFile')}
                     </button>
                   </div>
                   <input
@@ -223,6 +229,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
               <div className="space-y-4">
                 {/* 压缩设置 */}
                 <ImageCompressionSettings
+                  t={t}
                   file={selectedFile}
                   options={compressionOptions}
                   onOptionsChange={setCompressionOptions}
@@ -239,8 +246,8 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
                     <Zap className="w-5 h-5" />
                     <span>
                       {isCompressing
-                        ? t('common.loading')
-                        : t('common.success')}
+                        ? t('imageCompression.compression.compressing')
+                        : t('imageCompression.compression.start')}
                     </span>
                   </button>
                 </div>
@@ -252,6 +259,7 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
           <div className="w-1/2 p-6 overflow-y-auto flex flex-col">
             {selectedFile ? (
               <ImageCompressionPreview
+                t={t}
                 originalFile={selectedFile}
                 compressionResult={compressionResult}
                 isCompressing={isCompressing}
@@ -265,10 +273,10 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
                     <Zap className="w-10 h-10 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900">
-                    图片预览区域
+                    {t('imageCompression.preview.title')}
                   </h3>
                   <p className="text-gray-500">
-                    选择图片后，这里将显示预览和压缩结果
+                    {t('imageCompression.preview.description')}
                   </p>
                 </div>
               </div>

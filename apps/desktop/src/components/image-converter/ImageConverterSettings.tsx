@@ -1,4 +1,4 @@
-import { FormatConversionService } from '@/services/imageConvertService';
+import { ImageConvertService } from '@/services/imageConvertService';
 import {
   FormatConversionOptions,
   SUPPORTED_FORMATS,
@@ -6,21 +6,26 @@ import {
   supportsLossless,
   supportsTransparency,
 } from '@/types/imageConvert';
+import { defaultTranslate } from '@packages/ui/src';
 import { Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
-import { useI18n } from '../../i18n/useI18n';
+import zhCN from './locales/zh-CN.json';
 
 interface ImageFormatConversionSettingsProps {
   file: File;
   options: FormatConversionOptions;
   onOptionsChange: (options: FormatConversionOptions) => void;
   onAutoOptimize: () => void;
+  t?: (key: string) => string;
 }
+
+const dT = (key: string) => {
+  return defaultTranslate(key, zhCN);
+};
 
 const ImageFormatConversionSettings: React.FC<
   ImageFormatConversionSettingsProps
-> = ({ file, options, onOptionsChange, onAutoOptimize }) => {
-  const { t } = useI18n();
+> = ({ file, options, onOptionsChange, onAutoOptimize, t = dT }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleOptionChange = (
@@ -50,7 +55,7 @@ const ImageFormatConversionSettings: React.FC<
   };
 
   const handleAutoOptimize = () => {
-    const autoOptions = FormatConversionService.getAutoConversionOptions(
+    const autoOptions = ImageConvertService.getAutoConversionOptions(
       file,
       options.targetFormat
     );
@@ -67,14 +72,16 @@ const ImageFormatConversionSettings: React.FC<
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Settings className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-medium text-gray-900">转换设置</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            {t('imageConverter.settings.title')}
+          </h3>
         </div>
         <button
           onClick={handleAutoOptimize}
           className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
         >
           <Zap className="w-4 h-4" />
-          <span>自动优化</span>
+          <span>{t('imageConverter.settings.autoOptimize')}</span>
         </button>
       </div>
 
@@ -82,15 +89,19 @@ const ImageFormatConversionSettings: React.FC<
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
           <Info className="w-4 h-4" />
-          <span>文件信息</span>
+          <span>{t('imageConverter.settings.fileInfo')}</span>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-gray-500">大小:</span>
+            <span className="text-gray-500">
+              {t('imageConverter.settings.size')}
+            </span>
             <span className="ml-1 font-medium">{fileSizeMB.toFixed(2)} MB</span>
           </div>
           <div>
-            <span className="text-gray-500">类型:</span>
+            <span className="text-gray-500">
+              {t('imageConverter.settings.type')}
+            </span>
             <span className="ml-1 font-medium">{file.type}</span>
           </div>
         </div>
@@ -99,7 +110,7 @@ const ImageFormatConversionSettings: React.FC<
       {/* 目标格式选择 */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-3">
-          目标格式
+          {t('imageConverter.settings.targetFormat')}
         </label>
         <div className="grid grid-cols-2 gap-3">
           {SUPPORTED_FORMATS.map(format => (
@@ -131,7 +142,7 @@ const ImageFormatConversionSettings: React.FC<
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700">
-              质量设置
+              {t('imageConverter.settings.quality')}
             </label>
             <span className="text-sm text-gray-500">
               {options.quality || 80}%
@@ -148,8 +159,8 @@ const ImageFormatConversionSettings: React.FC<
             className="quality-slider"
           />
           <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>低质量</span>
-            <span>高质量</span>
+            <span>{t('imageConverter.settings.lowQuality')}</span>
+            <span>{t('imageConverter.settings.highQuality')}</span>
           </div>
         </div>
       )}
@@ -162,7 +173,10 @@ const ImageFormatConversionSettings: React.FC<
         >
           <Settings className="w-4 h-4" />
           <span>
-            {showAdvanced ? t('common.close') : t('common.open')}高级选项
+            {showAdvanced
+              ? t('imageConverter.settings.close')
+              : t('imageConverter.settings.open')}
+            {t('imageConverter.settings.advancedOptions')}
           </span>
         </button>
       </div>
@@ -173,7 +187,7 @@ const ImageFormatConversionSettings: React.FC<
           {supportsTransparency(options.targetFormat) && (
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">
-                保持透明度
+                {t('imageConverter.settings.preserveTransparency')}
               </label>
               <input
                 type="checkbox"
@@ -190,7 +204,7 @@ const ImageFormatConversionSettings: React.FC<
           {supportsLossless(options.targetFormat) && (
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">
-                无损压缩
+                {t('imageConverter.settings.losslessCompression')}
               </label>
               <input
                 type="checkbox"
@@ -204,7 +218,7 @@ const ImageFormatConversionSettings: React.FC<
           {/* 颜色空间 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              颜色空间
+              {t('imageConverter.settings.colorSpace')}
             </label>
             <select
               value={options.colorSpace || 'rgb'}
@@ -213,7 +227,9 @@ const ImageFormatConversionSettings: React.FC<
             >
               <option value="rgb">RGB</option>
               <option value="rgba">RGBA</option>
-              <option value="grayscale">灰度</option>
+              <option value="grayscale">
+                {t('imageConverter.settings.grayscale')}
+              </option>
             </select>
           </div>
         </div>
@@ -226,13 +242,15 @@ const ImageFormatConversionSettings: React.FC<
             <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm">
               <div className="font-medium text-blue-900 mb-1">
-                {targetFormatInfo.name} 格式信息
+                {targetFormatInfo.name}{' '}
+                {t('imageConverter.settings.formatInfo')}
               </div>
               <div className="text-blue-700 mb-2">
                 {targetFormatInfo.description}
               </div>
               <div className="text-blue-600">
-                常用场景: {targetFormatInfo.commonUse}
+                {t('imageConverter.settings.commonUse')}:{' '}
+                {targetFormatInfo.commonUse}
               </div>
             </div>
           </div>
@@ -245,10 +263,14 @@ const ImageFormatConversionSettings: React.FC<
           <div className="flex items-start space-x-2">
             <Info className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-yellow-700">
-              <div className="font-medium mb-1">大文件提示</div>
+              <div className="font-medium mb-1">
+                {t('imageConverter.settings.largeFileWarning')}
+              </div>
               <div>
-                检测到文件较大 ({fileSizeMB.toFixed(1)}{' '}
-                MB)，建议使用较低的质量设置以获得更好的性能。
+                {t('imageConverter.settings.largeFileDescription').replace(
+                  '{size}',
+                  fileSizeMB.toFixed(1)
+                )}
               </div>
             </div>
           </div>

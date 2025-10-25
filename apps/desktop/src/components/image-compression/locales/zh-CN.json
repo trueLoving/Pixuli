@@ -1,0 +1,73 @@
+{
+  "imageCompression": {
+    "title": "图片压缩工具",
+    "fileSelect": {
+      "title": "选择图片文件",
+      "placeholder": "拖拽图片到此处或点击选择文件",
+      "description": "支持 JPG, PNG, GIF, BMP, WebP 等格式，最大 50MB",
+      "selectFile": "选择文件"
+    },
+    "compression": {
+      "start": "开始压缩",
+      "compressing": "压缩中...",
+      "success": "压缩成功！节省了 {ratio}% 的空间",
+      "failed": "压缩失败: {error}",
+      "retry": "重新压缩"
+    },
+    "download": {
+      "success": "下载成功"
+    },
+    "autoOptimize": {
+      "success": "自动优化完成"
+    },
+    "fileInfo": {
+      "selected": "已选择图片: {name}"
+    },
+    "preview": {
+      "title": "图片压缩预览",
+      "description": "选择图片后，这里将显示预览和压缩结果",
+      "compressing": "正在压缩图片...",
+      "waiting": "请稍候，压缩过程可能需要几秒钟",
+      "previewTitle": "压缩预览",
+      "previewDescription": "配置压缩选项后，点击压缩按钮查看效果",
+      "resultTitle": "压缩结果",
+      "success": "压缩成功",
+      "noNeed": "无需压缩",
+      "originalSize": "原始大小",
+      "compressedSize": "压缩后大小",
+      "compressionEffect": "压缩效果",
+      "saved": "节省",
+      "originalImage": "原始图片",
+      "compressedImage": "压缩后图片",
+      "downloadCompressed": "下载压缩后图片",
+      "retryCompression": "重新压缩",
+      "fileName": "文件名:",
+      "fileType": "文件类型:",
+      "compressionRatio": "压缩比例:",
+      "dimensionChange": "尺寸变化:"
+    },
+    "settings": {
+      "title": "WebP 压缩设置",
+      "autoOptimize": "自动优化",
+      "fileInfo": "文件信息",
+      "fileName": "文件名:",
+      "fileSize": "文件大小:",
+      "fileType": "文件类型:",
+      "status": "状态:",
+      "quality": "WebP 压缩质量",
+      "lowQuality": "低质量 (10)",
+      "highQuality": "高质量 (100)",
+      "lossless": "无损压缩（忽略质量设置）",
+      "advancedOptions": "高级选项",
+      "open": "展开",
+      "close": "收起",
+      "webpDescription": "WebP 压缩说明：",
+      "qualityTip1": "质量越高，文件越大，但图片质量越好",
+      "qualityTip2": "无损压缩保持原始质量，但文件可能较大",
+      "qualityTip3": "建议质量范围：60-90",
+      "qualityTip4": "大文件建议使用较低质量以获得更好的压缩效果",
+      "compressionTip": "压缩提示：",
+      "wasmTip": "使用 WASM WebP 压缩可以获得更好的压缩效果和更快的处理速度。压缩后的文件将保存为 .webp 格式。"
+    }
+  }
+}

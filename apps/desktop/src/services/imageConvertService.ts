@@ -5,9 +5,9 @@ import {
   getFormatInfo,
   supportsTransparency,
   supportsLossless,
-} from '@/types/imageConvert';
+} from '../types/imageConvert';
 
-export class FormatConversionService {
+export class ImageConvertService {
   /**
    * 转换图片格式
    */

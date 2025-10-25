@@ -2,25 +2,31 @@ import {
   CompressionOptions,
   formatFileSize,
   getAutoCompressionOptions,
-} from '@/utils/imageCompression';
+} from '@/services/imageCompressService';
 import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
-import { useI18n } from '../../i18n/useI18n';
+import { defaultTranslate } from '@packages/ui/src';
+import zhCN from './locales/zh-CN.json';
 
 interface ImageCompressionSettingsProps {
   file: File;
   options: CompressionOptions;
   onOptionsChange: (options: CompressionOptions) => void;
   onAutoOptimize: () => void;
+  t?: (key: string) => string;
 }
+
+const dT = (key: string) => {
+  return defaultTranslate(key, zhCN);
+};
 
 const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
   file,
   options,
   onOptionsChange,
   onAutoOptimize,
+  t = dT,
 }) => {
-  const { t } = useI18n();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleOptionChange = (key: keyof CompressionOptions, value: any) => {
@@ -44,14 +50,16 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Settings className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-medium text-gray-900">WebP 压缩设置</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            {t('imageCompression.settings.title')}
+          </h3>
         </div>
         <button
           onClick={handleAutoOptimize}
           className="flex items-center space-x-2 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
         >
           <Zap className="w-4 h-4" />
-          <span>自动优化</span>
+          <span>{t('imageCompression.settings.autoOptimize')}</span>
         </button>
       </div>
 
@@ -59,25 +67,35 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
       <div className="bg-gray-50 rounded-lg p-3 mb-4">
         <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
           <FileImage className="w-4 h-4" />
-          <span className="font-medium">文件信息</span>
+          <span className="font-medium">
+            {t('imageCompression.settings.fileInfo')}
+          </span>
         </div>
         <div className="grid grid-cols-2 gap-4 text-xs">
           <div>
-            <span className="text-gray-500">文件名:</span>
+            <span className="text-gray-500">
+              {t('imageCompression.settings.fileName')}
+            </span>
             <div className="font-medium truncate">{file.name}</div>
           </div>
           <div>
-            <span className="text-gray-500">文件大小:</span>
+            <span className="text-gray-500">
+              {t('imageCompression.settings.fileSize')}
+            </span>
             <div className="font-medium">{formatFileSize(file.size)}</div>
           </div>
           <div>
-            <span className="text-gray-500">文件类型:</span>
+            <span className="text-gray-500">
+              {t('imageCompression.settings.fileType')}
+            </span>
             <div className="font-medium">
               {file.type || t('common.unknownError')}
             </div>
           </div>
           <div>
-            <span className="text-gray-500">状态:</span>
+            <span className="text-gray-500">
+              {t('imageCompression.settings.status')}
+            </span>
             <div
               className={`font-medium ${isLargeFile ? 'text-orange-600' : 'text-green-600'}`}
             >
@@ -91,7 +109,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            WebP 压缩质量
+            {t('imageCompression.settings.quality')}
           </label>
           <input
             type="range"
@@ -105,9 +123,9 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>低质量 (10)</span>
+            <span>{t('imageCompression.settings.lowQuality')}</span>
             <span className="font-medium">{options.quality || 80}%</span>
-            <span>高质量 (100)</span>
+            <span>{t('imageCompression.settings.highQuality')}</span>
           </div>
         </div>
 
@@ -120,7 +138,7 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
           />
           <label htmlFor="lossless" className="text-sm text-gray-700">
-            无损压缩（忽略质量设置）
+            {t('imageCompression.settings.lossless')}
           </label>
         </div>
 
@@ -131,7 +149,10 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
             className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
             <span>
-              {showAdvanced ? t('common.close') : t('common.open')} 高级选项
+              {showAdvanced
+                ? t('imageCompression.settings.close')
+                : t('imageCompression.settings.open')}{' '}
+              {t('imageCompression.settings.advancedOptions')}
             </span>
             <svg
               className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
@@ -155,12 +176,14 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
               <div className="flex items-start space-x-2">
                 <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-800">
-                  <p className="font-medium mb-1">WebP 压缩说明：</p>
+                  <p className="font-medium mb-1">
+                    {t('imageCompression.settings.webpDescription')}
+                  </p>
                   <ul className="space-y-1 text-xs">
-                    <li>• 质量越高，文件越大，但图片质量越好</li>
-                    <li>• 无损压缩保持原始质量，但文件可能较大</li>
-                    <li>• 建议质量范围：60-90</li>
-                    <li>• 大文件建议使用较低质量以获得更好的压缩效果</li>
+                    <li>• {t('imageCompression.settings.qualityTip1')}</li>
+                    <li>• {t('imageCompression.settings.qualityTip2')}</li>
+                    <li>• {t('imageCompression.settings.qualityTip3')}</li>
+                    <li>• {t('imageCompression.settings.qualityTip4')}</li>
                   </ul>
                 </div>
               </div>
@@ -174,11 +197,10 @@ const ImageCompressionSettings: React.FC<ImageCompressionSettingsProps> = ({
         <div className="flex items-start space-x-2">
           <HardDrive className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
           <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">压缩提示：</p>
-            <p className="text-xs">
-              使用 WASM WebP 压缩可以获得更好的压缩效果和更快的处理速度。
-              压缩后的文件将保存为 .webp 格式。
+            <p className="font-medium mb-1">
+              {t('imageCompression.settings.compressionTip')}
             </p>
+            <p className="text-xs">{t('imageCompression.settings.wasmTip')}</p>
           </div>
         </div>
       </div>

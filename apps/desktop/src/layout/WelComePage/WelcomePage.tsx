@@ -74,7 +74,13 @@ const WelcomePage: React.FC<WelcomePageProps> = ({
             {t('app.configureGitHub')}
           </button>
 
-          {/* 又拍云配置按钮（暂时注释） */}
+          {/* TODO: 又拍云配置按钮 对接还是有问题，
+            目前存在的问题：
+            1. 有些功能，基于目前又拍云提供的 API 是不支持的，得要想办法（比如图片的尺寸，图片的元数据存储问题）
+            2. 对接的 API 的权限问题，需要申请，对接中。。。。
+            3. 桌面端和web端现在功能存在差异（主要是因为又拍云不支持跨域访问和 token浏览器端生成），而且也不想再弄个服务端，不想耦合太多的服务组件
+            4. 还有太多问题，需要慢慢解决。。。。
+          /}
           {/* <button
             onClick={onOpenUpyunConfigModal}
             className="w-full px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"

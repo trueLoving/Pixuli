@@ -1,0 +1,76 @@
+{
+  "imageConverter": {
+    "title": "Image Format Conversion",
+    "subtitle": "Supports conversion between multiple image formats",
+    "fileSelect": {
+      "title": "Select Image File",
+      "placeholder": "Click to select or drag image here",
+      "supportedFormats": "Supports JPEG, PNG, WebP, GIF, BMP, TIFF formats"
+    },
+    "conversion": {
+      "start": "Start Conversion",
+      "converting": "Converting...",
+      "successIncreased": "Conversion successful! File size increased by {ratio}%",
+      "successDecreased": "Conversion successful! File size decreased by {ratio}%",
+      "success": "Conversion successful",
+      "failed": "Format conversion failed: {error}",
+      "retry": "Retry Conversion"
+    },
+    "download": {
+      "success": "Download successful"
+    },
+    "autoOptimize": {
+      "success": "Auto optimization completed"
+    },
+    "fileInfo": {
+      "title": "File Information",
+      "fileName": "File Name:",
+      "fileSize": "File Size:",
+      "fileType": "File Type:"
+    },
+    "preview": {
+      "converting": "Converting format...",
+      "waiting": "Please wait, conversion may take a few seconds",
+      "previewTitle": "Conversion Preview",
+      "previewDescription": "Configure conversion options and click convert button to see results",
+      "imageComparison": "Image Comparison",
+      "originalImage": "Original Image",
+      "convertedImage": "Converted Image",
+      "conversionStats": "Conversion Statistics",
+      "originalSize": "Original Size",
+      "convertedSize": "Converted Size",
+      "sizeChange": "Size Change",
+      "conversionTime": "Conversion Time",
+      "details": "Details",
+      "originalFormat": "Original Format",
+      "targetFormat": "Target Format",
+      "dimensionChange": "Dimension Change",
+      "downloadConverted": "Download Converted Image",
+      "retryConversion": "Retry Conversion"
+    },
+    "settings": {
+      "title": "Conversion Settings",
+      "autoOptimize": "Auto Optimize",
+      "fileInfo": "File Information",
+      "size": "Size:",
+      "type": "Type:",
+      "targetFormat": "Target Format",
+      "quality": "Quality Settings",
+      "lowQuality": "Low Quality",
+      "highQuality": "High Quality",
+      "advancedOptions": "Advanced Options",
+      "open": "Expand",
+      "close": "Collapse",
+      "preserveTransparency": "Preserve Transparency",
+      "losslessCompression": "Lossless Compression",
+      "colorSpace": "Color Space",
+      "rgb": "RGB",
+      "rgba": "RGBA",
+      "grayscale": "Grayscale",
+      "formatInfo": "Format Information",
+      "commonUse": "Common Use:",
+      "largeFileWarning": "Large File Warning",
+      "largeFileDescription": "Large file detected ({size} MB), recommend using lower quality settings for better performance."
+    }
+  }
+}

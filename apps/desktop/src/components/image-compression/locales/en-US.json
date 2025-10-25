@@ -1,0 +1,73 @@
+{
+  "imageCompression": {
+    "title": "Image Compression Tool",
+    "fileSelect": {
+      "title": "Select Image File",
+      "placeholder": "Drag image here or click to select file",
+      "description": "Supports JPG, PNG, GIF, BMP, WebP formats, max 50MB",
+      "selectFile": "Select File"
+    },
+    "compression": {
+      "start": "Start Compression",
+      "compressing": "Compressing...",
+      "success": "Compression successful! Saved {ratio}% space",
+      "failed": "Compression failed: {error}",
+      "retry": "Retry Compression"
+    },
+    "download": {
+      "success": "Download successful"
+    },
+    "autoOptimize": {
+      "success": "Auto optimization completed"
+    },
+    "fileInfo": {
+      "selected": "Selected image: {name}"
+    },
+    "preview": {
+      "title": "Image Compression Preview",
+      "description": "After selecting an image, preview and compression results will be displayed here",
+      "compressing": "Compressing image...",
+      "waiting": "Please wait, compression may take a few seconds",
+      "previewTitle": "Compression Preview",
+      "previewDescription": "Configure compression options and click compress button to see results",
+      "resultTitle": "Compression Result",
+      "success": "Compression Successful",
+      "noNeed": "No Compression Needed",
+      "originalSize": "Original Size",
+      "compressedSize": "Compressed Size",
+      "compressionEffect": "Compression Effect",
+      "saved": "Saved",
+      "originalImage": "Original Image",
+      "compressedImage": "Compressed Image",
+      "downloadCompressed": "Download Compressed Image",
+      "retryCompression": "Retry Compression",
+      "fileName": "File Name:",
+      "fileType": "File Type:",
+      "compressionRatio": "Compression Ratio:",
+      "dimensionChange": "Dimension Change:"
+    },
+    "settings": {
+      "title": "WebP Compression Settings",
+      "autoOptimize": "Auto Optimize",
+      "fileInfo": "File Information",
+      "fileName": "File Name:",
+      "fileSize": "File Size:",
+      "fileType": "File Type:",
+      "status": "Status:",
+      "quality": "WebP Compression Quality",
+      "lowQuality": "Low Quality (10)",
+      "highQuality": "High Quality (100)",
+      "lossless": "Lossless Compression (Ignore Quality Settings)",
+      "advancedOptions": "Advanced Options",
+      "open": "Expand",
+      "close": "Collapse",
+      "webpDescription": "WebP Compression Description:",
+      "qualityTip1": "Higher quality means larger file size but better image quality",
+      "qualityTip2": "Lossless compression maintains original quality but may result in larger files",
+      "qualityTip3": "Recommended quality range: 60-90",
+      "qualityTip4": "Large files recommend lower quality for better compression",
+      "compressionTip": "Compression Tips:",
+      "wasmTip": "Using WASM WebP compression provides better compression and faster processing. Compressed files will be saved in .webp format."
+    }
+  }
+}

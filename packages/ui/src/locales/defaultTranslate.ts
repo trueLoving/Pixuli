@@ -6,9 +6,12 @@ import zhCN from './zh-CN.json';
  * @param key 翻译键，支持嵌套路径，如 'github.config.title'
  * @returns 翻译后的文本，如果找不到则返回key本身
  */
-export const defaultTranslate = (key: string): string => {
+export const defaultTranslate = (
+  key: string,
+  langs: Record<string, any> = zhCN
+): string => {
   const keys = key.split('.');
-  let value: any = zhCN;
+  let value: any = langs;
   for (const k of keys) {
     value = value?.[k];
   }

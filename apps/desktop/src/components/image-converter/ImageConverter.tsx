@@ -1,4 +1,4 @@
-import { FormatConversionService } from '@/services/imageConvertService';
+import { ImageConvertService } from '@/services/imageConvertService';
 import {
   DEFAULT_CONVERSION_OPTIONS,
   FormatConversionOptions,
@@ -7,6 +7,7 @@ import {
   isImageFile,
 } from '@/types/imageConvert';
 import {
+  defaultTranslate,
   showError,
   showInfo,
   showSuccess,
@@ -15,20 +16,25 @@ import {
 import { FileImage, RefreshCw, Upload, X } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import './ImageConverter.css';
-import { useI18n } from '../../i18n/useI18n';
 import ImageFormatConversionPreview from './ImageConverterPreview';
 import ImageFormatConversionSettings from './ImageConverterSettings';
+import zhCN from './locales/zh-CN.json';
 
 interface ImageFormatConversionProps {
   isOpen: boolean;
   onClose: () => void;
+  t?: (key: string) => string;
 }
+
+const dT = (key: string) => {
+  return defaultTranslate(key, zhCN);
+};
 
 const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
   isOpen,
   onClose,
+  t = dT,
 }) => {
-  const { t } = useI18n();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [conversionOptions, setConversionOptions] =
     useState<FormatConversionOptions>(DEFAULT_CONVERSION_OPTIONS);
@@ -58,7 +64,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
         // 自动检测原格式并设置目标格式
         const originalFormat = getFormatFromExtension(file.name);
         if (originalFormat) {
-          const autoOptions = FormatConversionService.getAutoConversionOptions(
+          const autoOptions = ImageConvertService.getAutoConversionOptions(
             file,
             'webp'
           );
@@ -98,7 +104,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
       // 自动检测原格式并设置目标格式
       const originalFormat = getFormatFromExtension(file.name);
       if (originalFormat) {
-        const autoOptions = FormatConversionService.getAutoConversionOptions(
+        const autoOptions = ImageConvertService.getAutoConversionOptions(
           file,
           'webp'
         );
@@ -128,7 +134,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
 
     setIsConverting(true);
     try {
-      const result = await FormatConversionService.convertImage(
+      const result = await ImageConvertService.convertImage(
         selectedFile,
         conversionOptions
       );
@@ -176,7 +182,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
   // 自动优化
   const handleAutoOptimize = useCallback(() => {
     if (selectedFile) {
-      const autoOptions = FormatConversionService.getAutoConversionOptions(
+      const autoOptions = ImageConvertService.getAutoConversionOptions(
         selectedFile,
         conversionOptions.targetFormat
       );
@@ -202,9 +208,11 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
               <RefreshCw className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">图片格式转换</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {t('imageConverter.title')}
+              </h2>
               <p className="text-sm text-gray-500">
-                支持多种图片格式之间的转换
+                {t('imageConverter.subtitle')}
               </p>
             </div>
           </div>
@@ -241,13 +249,13 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      选择图片文件
+                      {t('imageConverter.fileSelect.title')}
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      点击选择或拖拽图片到此处
+                      {t('imageConverter.fileSelect.placeholder')}
                     </p>
                     <p className="text-sm text-gray-400">
-                      支持 JPEG、PNG、WebP、GIF、BMP、TIFF 格式
+                      {t('imageConverter.fileSelect.supportedFormats')}
                     </p>
                   </div>
                 </div>
@@ -258,23 +266,31 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center space-x-3 mb-3">
                     <FileImage className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-medium text-gray-900">文件信息</h4>
+                    <h4 className="font-medium text-gray-900">
+                      {t('imageConverter.fileInfo.title')}
+                    </h4>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">文件名:</span>
+                      <span className="text-gray-600">
+                        {t('imageConverter.fileInfo.fileName')}
+                      </span>
                       <span className="text-gray-900 font-medium">
                         {selectedFile.name}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">文件大小:</span>
+                      <span className="text-gray-600">
+                        {t('imageConverter.fileInfo.fileSize')}
+                      </span>
                       <span className="text-gray-900">
                         {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">文件类型:</span>
+                      <span className="text-gray-600">
+                        {t('imageConverter.fileInfo.fileType')}
+                      </span>
                       <span className="text-gray-900">{selectedFile.type}</span>
                     </div>
                   </div>
@@ -284,6 +300,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
               {/* 转换设置 */}
               {selectedFile && (
                 <ImageFormatConversionSettings
+                  t={t}
                   file={selectedFile}
                   options={conversionOptions}
                   onOptionsChange={setConversionOptions}
@@ -302,12 +319,12 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
                     {isConverting ? (
                       <>
                         <RefreshCw className="w-5 h-5 animate-spin" />
-                        <span>转换中...</span>
+                        <span>{t('imageConverter.conversion.converting')}</span>
                       </>
                     ) : (
                       <>
                         <RefreshCw className="w-5 h-5" />
-                        <span>开始转换</span>
+                        <span>{t('imageConverter.conversion.start')}</span>
                       </>
                     )}
                   </button>
@@ -318,6 +335,7 @@ const ImageFormatConversion: React.FC<ImageFormatConversionProps> = ({
             {/* 右侧：预览和结果 */}
             <div>
               <ImageFormatConversionPreview
+                t={t}
                 originalFile={selectedFile}
                 conversionResult={conversionResult}
                 isConverting={isConverting}

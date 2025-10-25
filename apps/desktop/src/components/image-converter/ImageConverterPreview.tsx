@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useI18n } from '../../i18n/useI18n';
-import {
-  Eye,
-  Download,
-  RefreshCw,
-  Clock,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-} from 'lucide-react';
 import { FormatConversionResult } from '@/types/imageConvert';
+import { defaultTranslate } from '@packages/ui/src';
+import {
+  Clock,
+  Download,
+  Eye,
+  Minus,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+} from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import zhCN from './locales/zh-CN.json';
 
 interface ImageFormatConversionPreviewProps {
   originalFile: File | null;
@@ -17,12 +18,23 @@ interface ImageFormatConversionPreviewProps {
   isConverting: boolean;
   onDownload: (file: File) => void;
   onRetry: () => void;
+  t?: (key: string) => string;
 }
+
+const dT = (key: string) => {
+  return defaultTranslate(key, zhCN);
+};
 
 const ImageFormatConversionPreview: React.FC<
   ImageFormatConversionPreviewProps
-> = ({ originalFile, conversionResult, isConverting, onDownload, onRetry }) => {
-  const { t } = useI18n();
+> = ({
+  originalFile,
+  conversionResult,
+  isConverting,
+  onDownload,
+  onRetry,
+  t = dT,
+}) => {
   const [originalPreview, setOriginalPreview] = useState<string>('');
   const [convertedPreview, setConvertedPreview] = useState<string>('');
 
@@ -50,9 +62,9 @@ const ImageFormatConversionPreview: React.FC<
         <div className="text-center">
           <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            正在转换格式...
+            {t('imageConverter.preview.converting')}
           </h3>
-          <p className="text-gray-500">请稍候，转换过程可能需要几秒钟</p>
+          <p className="text-gray-500">{t('imageConverter.preview.waiting')}</p>
         </div>
       </div>
     );
@@ -63,8 +75,12 @@ const ImageFormatConversionPreview: React.FC<
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="text-center">
           <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">转换预览</h3>
-          <p className="text-gray-500">配置转换选项后，点击转换按钮查看效果</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {t('imageConverter.preview.previewTitle')}
+          </h3>
+          <p className="text-gray-500">
+            {t('imageConverter.preview.previewDescription')}
+          </p>
         </div>
       </div>
     );
@@ -99,13 +115,17 @@ const ImageFormatConversionPreview: React.FC<
     <div className="space-y-6">
       {/* 图片对比预览 */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">图片对比</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('imageConverter.preview.imageComparison')}
+        </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 原始图片 */}
           <div className="text-center">
             <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700">原始图片</h4>
+              <h4 className="text-sm font-medium text-gray-700">
+                {t('imageConverter.preview.originalImage')}
+              </h4>
               <p className="text-xs text-gray-500">
                 {originalFormat.toUpperCase()}
               </p>
@@ -125,7 +145,9 @@ const ImageFormatConversionPreview: React.FC<
           {/* 转换后图片 */}
           <div className="text-center">
             <div className="mb-2">
-              <h4 className="text-sm font-medium text-gray-700">转换后图片</h4>
+              <h4 className="text-sm font-medium text-gray-700">
+                {t('imageConverter.preview.convertedImage')}
+              </h4>
               <p className="text-xs text-gray-500">
                 {targetFormat.toUpperCase()}
               </p>
@@ -146,16 +168,22 @@ const ImageFormatConversionPreview: React.FC<
 
       {/* 转换统计 */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">转换统计</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('imageConverter.preview.conversionStats')}
+        </h3>
 
         <div className="conversion-stats">
           <div className="stat-item">
             <div className="stat-value">{formatFileSize(originalSize)}</div>
-            <div className="stat-label">原始大小</div>
+            <div className="stat-label">
+              {t('imageConverter.preview.originalSize')}
+            </div>
           </div>
           <div className="stat-item">
             <div className="stat-value">{formatFileSize(convertedSize)}</div>
-            <div className="stat-label">转换后大小</div>
+            <div className="stat-label">
+              {t('imageConverter.preview.convertedSize')}
+            </div>
           </div>
           <div className="stat-item">
             <div
@@ -164,37 +192,49 @@ const ImageFormatConversionPreview: React.FC<
               {React.createElement(sizeChangeIcon, { className: 'w-4 h-4' })}
               <span>{Math.abs(sizeChangeRatio).toFixed(1)}%</span>
             </div>
-            <div className="stat-label">大小变化</div>
+            <div className="stat-label">
+              {t('imageConverter.preview.sizeChange')}
+            </div>
           </div>
           <div className="stat-item">
             <div className="stat-value flex items-center justify-center space-x-1">
               <Clock className="w-4 h-4" />
               <span>{conversionTime.toFixed(0)}ms</span>
             </div>
-            <div className="stat-label">转换时间</div>
+            <div className="stat-label">
+              {t('imageConverter.preview.conversionTime')}
+            </div>
           </div>
         </div>
       </div>
 
       {/* 详细信息 */}
       <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">详细信息</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {t('imageConverter.preview.details')}
+        </h3>
 
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">原始格式</span>
+            <span className="text-sm text-gray-600">
+              {t('imageConverter.preview.originalFormat')}
+            </span>
             <span className="text-sm font-medium text-gray-900">
               {originalFormat.toUpperCase()}
             </span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">目标格式</span>
+            <span className="text-sm text-gray-600">
+              {t('imageConverter.preview.targetFormat')}
+            </span>
             <span className="text-sm font-medium text-gray-900">
               {targetFormat.toUpperCase()}
             </span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">尺寸变化</span>
+            <span className="text-sm text-gray-600">
+              {t('imageConverter.preview.dimensionChange')}
+            </span>
             <span className="text-sm font-medium text-gray-900">
               {originalDimensions.width}×{originalDimensions.height} →{' '}
               {convertedDimensions.width}×{convertedDimensions.height}
@@ -210,14 +250,14 @@ const ImageFormatConversionPreview: React.FC<
           className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center space-x-2"
         >
           <Download className="w-5 h-5" />
-          <span>下载转换后的图片</span>
+          <span>{t('imageConverter.preview.downloadConverted')}</span>
         </button>
         <button
           onClick={onRetry}
           className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
         >
           <RefreshCw className="w-5 h-5" />
-          <span>重新转换</span>
+          <span>{t('imageConverter.preview.retryConversion')}</span>
         </button>
       </div>
     </div>
