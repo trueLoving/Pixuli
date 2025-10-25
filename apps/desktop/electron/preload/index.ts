@@ -69,5 +69,11 @@ contextBridge.exposeInMainWorld('aiAPI', {
   selectModelFile: () => ipcRenderer.invoke('ai:select-model-file'),
 });
 
+// --------- Expose Clipboard API to the Renderer process ---------
+contextBridge.exposeInMainWorld('clipboardAPI', {
+  writeText: (text: string) => ipcRenderer.invoke('clipboard:writeText', text),
+  readText: () => ipcRenderer.invoke('clipboard:readText'),
+});
+
 // --------- Preload Loading Animation -------------------------
 loading();

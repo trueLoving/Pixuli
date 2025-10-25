@@ -1,3 +1,6 @@
+// TODO: 产物体积优化，现在 mac 打包有 800+ mb，
+// 感觉有问题，应该是打包了什么不应该打包的东西，存在优化的空间
+// TODO: 产物打包后有问题，跟 github 认证库有关系，需要观察看看
 import {
   COMMON_SHORTCUTS,
   keyboardManager,

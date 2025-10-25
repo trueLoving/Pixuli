@@ -1,6 +1,13 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
-  - 'benchmark'
-  - 'docs'
-  - 'server'
+  - apps/*
+  - packages/*
+  - benchmark
+  - docs
+  - server
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - electron
+  - esbuild
+  - sharp
+  - unrs-resolver

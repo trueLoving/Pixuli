@@ -2,27 +2,19 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.pixuli.app",
   "productName": "Pixuli",
-  "asar": true,
-  "compression": "maximum",
   "directories": {
     "output": "release"
   },
-  "buildDependenciesFromSource": false,
-  "nodeGypRebuild": false,
-  "npmRebuild": false,
-  "removePackageScripts": true,
-  "removePackageKeywords": true,
   "extraResources": [],
   "extraFiles": [],
   "files": [
     "dist/**/*",
     "dist-electron/**/*",
-    "node_modules/pixuli-wasm/index.js",
-    "node_modules/pixuli-wasm/index.d.ts",
-    "node_modules/pixuli-wasm/package.json",
-    "node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"
+    "node_modules/pixuli-wasm/**/*",
+    "node_modules/octokit/**/*",
+    "node_modules/@octokit/**/*"
   ],
-  "asarUnpack": ["node_modules/pixuli-wasm/pixuli-wasm.darwin-x64.node"],
+  "asarUnpack": ["node_modules/octokit/**/*", "node_modules/@octokit/**/*"],
   "mac": {
     "category": "public.app-category.graphics-design",
     "artifactName": "${productName}_${version}_${arch}.${ext}",
@@ -62,5 +54,12 @@
     "releaseType": "release",
     "private": false,
     "vPrefixedTagName": true
-  }
+  },
+  "asar": true,
+  "compression": "store",
+  "removePackageScripts": true,
+  "removePackageKeywords": true,
+  "buildDependenciesFromSource": false,
+  "nodeGypRebuild": false,
+  "npmRebuild": false
 }
