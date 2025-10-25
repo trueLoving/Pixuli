@@ -35,12 +35,6 @@ function App() {
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
-  const [showCompression, setShowCompression] = useState(false);
-  const [showFormatConversion, setShowFormatConversion] = useState(false);
-  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -65,40 +59,6 @@ function App() {
 
   const handleCloseUpyunConfigModal = useCallback(() => {
     setShowUpyunConfigModal(false);
-  }, []);
-
-  const handleOpenCompression = useCallback(() => {
-    console.log('Opening compression modal, current state:', showCompression);
-    setShowCompression(true);
-    console.log('State set to true, new state:', true);
-  }, [showCompression]);
-
-  const handleCloseCompression = useCallback(() => {
-    setShowCompression(false);
-  }, []);
-
-  const handleOpenFormatConversion = useCallback(() => {
-    setShowFormatConversion(true);
-  }, []);
-
-  const handleCloseFormatConversion = useCallback(() => {
-    setShowFormatConversion(false);
-  }, []);
-
-  const handleOpenAIAnalysis = useCallback(() => {
-    setShowAIAnalysis(true);
-  }, []);
-
-  const handleCloseAIAnalysis = useCallback(() => {
-    setShowAIAnalysis(false);
-  }, []);
-
-  const handleOpenKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(true);
-  }, []);
-
-  const handleCloseKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(false);
   }, []);
 
   const handleSaveConfig = useCallback(
@@ -161,17 +121,17 @@ function App() {
         action: () => {
           if (showConfigModal) handleCloseConfigModal();
           else if (showUpyunConfigModal) handleCloseUpyunConfigModal();
-          else if (showCompression) handleCloseCompression();
-          else if (showFormatConversion) handleCloseFormatConversion();
-          else if (showAIAnalysis) handleCloseAIAnalysis();
-          else if (showKeyboardHelp) handleCloseKeyboardHelp();
         },
         category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.F1,
         description: t('keyboard.shortcuts.showHelp'),
-        action: handleOpenKeyboardHelp,
+        action: () => {
+          // 触发键盘帮助事件
+          const event = new CustomEvent('openKeyboardHelp');
+          window.dispatchEvent(event);
+        },
         category: SHORTCUT_CATEGORIES.HELP,
       },
       {
@@ -186,21 +146,30 @@ function App() {
         key: COMMON_SHORTCUTS.C,
         ctrlKey: true,
         description: t('keyboard.shortcuts.openCompression'),
-        action: handleOpenCompression,
+        action: () => {
+          const event = new CustomEvent('openCompression');
+          window.dispatchEvent(event);
+        },
         category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.F,
         ctrlKey: true,
         description: t('keyboard.shortcuts.openFormatConversion'),
-        action: handleOpenFormatConversion,
+        action: () => {
+          const event = new CustomEvent('openFormatConversion');
+          window.dispatchEvent(event);
+        },
         category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
         key: COMMON_SHORTCUTS.A,
         ctrlKey: true,
         description: t('keyboard.shortcuts.openAIAnalysis'),
-        action: handleOpenAIAnalysis,
+        action: () => {
+          const event = new CustomEvent('openAIAnalysis');
+          window.dispatchEvent(event);
+        },
         category: SHORTCUT_CATEGORIES.GENERAL,
       },
       {
@@ -253,38 +222,14 @@ function App() {
     };
   }, [
     showConfigModal,
-    showCompression,
-    showFormatConversion,
-    showAIAnalysis,
-    showKeyboardHelp,
+    showUpyunConfigModal,
     handleCloseConfigModal,
-    handleCloseCompression,
-    handleCloseFormatConversion,
-    handleCloseAIAnalysis,
-    handleCloseKeyboardHelp,
-    handleOpenKeyboardHelp,
+    handleCloseUpyunConfigModal,
     handleLoadImages,
-    handleOpenCompression,
-    handleOpenFormatConversion,
-    handleOpenAIAnalysis,
     handleOpenConfigModal,
+    handleOpenUpyunConfigModal,
+    t,
   ]);
-
-  // 过滤图片
-  const filteredImages = images.filter(image => {
-    const matchesSearch =
-      image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      image.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.some(tag => image.tags?.includes(tag));
-
-    return matchesSearch && matchesTags;
-  });
-
-  // 获取所有标签
-  const allTags = Array.from(new Set(images.flatMap(img => img.tags || [])));
 
   if (!githubConfig && !upyunConfig) {
     return (
@@ -294,12 +239,10 @@ function App() {
         upyunConfig={upyunConfig}
         showConfigModal={showConfigModal}
         showUpyunConfigModal={showUpyunConfigModal}
-        showCompression={showCompression}
         onOpenConfigModal={handleOpenConfigModal}
         onCloseConfigModal={handleCloseConfigModal}
         onOpenUpyunConfigModal={handleOpenUpyunConfigModal}
         onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
-        onCloseCompression={handleCloseCompression}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
         onSetUpyunConfig={setUpyunConfig}
@@ -320,25 +263,7 @@ function App() {
         currentLanguage={getCurrentLanguage()}
         availableLanguages={getAvailableLanguages()}
         onLanguageChange={changeLanguage}
-        onOpenCompression={handleOpenCompression}
-        onOpenFormatConversion={handleOpenFormatConversion}
-        onOpenAIAnalysis={handleOpenAIAnalysis}
-        onOpenConfigModal={handleOpenConfigModal}
-        onOpenUpyunConfigModal={handleOpenUpyunConfigModal}
         onLoadImages={handleLoadImages}
-        onOpenKeyboardHelp={handleOpenKeyboardHelp}
-        showConfigModal={showConfigModal}
-        showUpyunConfigModal={showUpyunConfigModal}
-        showCompression={showCompression}
-        showFormatConversion={showFormatConversion}
-        showAIAnalysis={showAIAnalysis}
-        showKeyboardHelp={showKeyboardHelp}
-        onCloseConfigModal={handleCloseConfigModal}
-        onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
-        onCloseCompression={handleCloseCompression}
-        onCloseFormatConversion={handleCloseFormatConversion}
-        onCloseAIAnalysis={handleCloseAIAnalysis}
-        onCloseKeyboardHelp={handleCloseKeyboardHelp}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
         onSetUpyunConfig={setUpyunConfig}
@@ -354,18 +279,13 @@ function App() {
           t={t}
           error={error}
           onClearError={clearError}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedTags={selectedTags}
-          onTagsChange={setSelectedTags}
-          allTags={allTags}
           onUploadImage={(file: File) => uploadImage({ file })}
           onUploadMultipleImages={(files: File[]) =>
             uploadMultipleImages({ files })
           }
           loading={loading}
           batchUploadProgress={batchUploadProgress}
-          filteredImages={filteredImages}
+          images={images}
           onDeleteImage={(imageId: string, fileName: string) =>
             handleDeleteImage(imageId, fileName)
           }

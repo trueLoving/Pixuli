@@ -10,7 +10,7 @@ import {
   MultiImageUploadData,
 } from '@packages/ui/src';
 import { RefreshCw } from 'lucide-react';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 interface HomeProps {
   /** 翻译函数 */
@@ -19,16 +19,6 @@ interface HomeProps {
   error?: string | null;
   /** 清除错误 */
   onClearError: () => void;
-  /** 搜索词 */
-  searchTerm: string;
-  /** 搜索词变化回调 */
-  onSearchChange: (term: string) => void;
-  /** 选中的标签 */
-  selectedTags: string[];
-  /** 标签变化回调 */
-  onTagsChange: (tags: string[]) => void;
-  /** 所有标签 */
-  allTags: string[];
   /** 上传图片 */
   onUploadImage: (file: File) => Promise<void>;
   /** 批量上传图片 */
@@ -37,8 +27,8 @@ interface HomeProps {
   loading: boolean;
   /** 批量上传进度 */
   batchUploadProgress?: BatchUploadProgress | null;
-  /** 过滤后的图片列表 */
-  filteredImages: ImageItem[];
+  /** 图片列表 */
+  images: ImageItem[];
   /** 删除图片 */
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
   /** 更新图片 */
@@ -49,19 +39,40 @@ const Home: React.FC<HomeProps> = ({
   t,
   error,
   onClearError,
-  searchTerm,
-  onSearchChange,
-  selectedTags,
-  onTagsChange,
-  allTags,
   onUploadImage,
   onUploadMultipleImages,
   loading,
   batchUploadProgress,
-  filteredImages,
+  images,
   onDeleteImage,
   onUpdateImage,
 }) => {
+  // 搜索和过滤状态管理
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // 获取所有标签
+  const allTags = useMemo(
+    () => Array.from(new Set(images.flatMap(img => img.tags || []))),
+    [images]
+  );
+
+  // 过滤图片
+  const filteredImages = useMemo(
+    () =>
+      images.filter(image => {
+        const matchesSearch =
+          image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          image.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesTags =
+          selectedTags.length === 0 ||
+          selectedTags.some(tag => image.tags?.includes(tag));
+
+        return matchesSearch && matchesTags;
+      }),
+    [images, searchTerm, selectedTags]
+  );
   return (
     <div className="h-full flex flex-col">
       {/* 主内容区域 - 可滚动 */}
@@ -86,9 +97,9 @@ const Home: React.FC<HomeProps> = ({
           <ImageSearch
             t={t}
             searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
+            onSearchChange={setSearchTerm}
             selectedTags={selectedTags}
-            onTagsChange={onTagsChange}
+            onTagsChange={setSelectedTags}
             allTags={allTags}
           />
 
@@ -110,7 +121,8 @@ const Home: React.FC<HomeProps> = ({
           {/* 图片统计和操作区域 */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              {t('image.library')} ({filteredImages.length} {t('image.count')})
+              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')}
+              )
             </h2>
             {loading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">

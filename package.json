@@ -24,7 +24,7 @@
     "typescript",
     "图片管理"
   ],
-  "author": "Pixuli Team",
+  "author": "trueLoving",
   "license": "MIT",
   "devDependencies": {
     "husky": "^9.1.7",

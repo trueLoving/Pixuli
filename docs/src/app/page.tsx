@@ -431,7 +431,7 @@ export default function Home() {
             </div>
           </div>
           <div className="footer-bottom">
-            <p className="copyright">2024 Pixuli Team. 保留所有权利。</p>
+            <p className="copyright">2024 trueLoving. 保留所有权利。</p>
             <div className="footer-legal">
               <a href="#">隐私政策</a>
               <a href="#">服务条款</a>

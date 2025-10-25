@@ -12,10 +12,11 @@
   "homepage": "./",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build"
+    "build:web": "tsc && vite build",
+    "build": "tsc && vite build && electron-builder"
   },
   "keywords": ["electron", "vite", "react", "typescript", "图片管理"],
-  "author": "Pixuli Team",
+  "author": "trueLoving",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.18.0",

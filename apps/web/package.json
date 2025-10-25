@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "keywords": ["vite", "react", "typescript", "图片管理", "web"],
-  "author": "Pixuli Team",
+  "author": "trueLoving",
   "license": "MIT",
   "dependencies": {
     "i18next": "^25.6.0",

@@ -1,4 +1,9 @@
-import { LanguageSwitcher } from '@packages/ui/src';
+import {
+  GitHubConfigModal,
+  KeyboardHelpModal,
+  LanguageSwitcher,
+  UpyunConfigModal,
+} from '@packages/ui/src';
 import {
   ArrowRightLeft,
   Brain,
@@ -7,14 +12,12 @@ import {
   Settings,
   Zap,
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  GitHubConfigModal,
-  KeyboardHelpModal,
-  UpyunConfigModal,
-} from '@packages/ui/src';
-import { AIAnalysisModal } from '../../components';
-import { ImageCompression, ImageConverter } from '../../components';
+  AIAnalysisModal,
+  ImageCompression,
+  ImageConverter,
+} from '../../components';
 
 interface HeaderProps {
   /** 存储类型 */
@@ -49,44 +52,8 @@ interface HeaderProps {
   }>;
   /** 语言切换回调 */
   onLanguageChange: (code: string) => void;
-  /** 打开压缩工具 */
-  onOpenCompression: () => void;
-  /** 打开格式转换 */
-  onOpenFormatConversion: () => void;
-  /** 打开 AI 分析 */
-  onOpenAIAnalysis: () => void;
-  /** 打开 GitHub 配置 */
-  onOpenConfigModal: () => void;
-  /** 打开又拍云配置 */
-  onOpenUpyunConfigModal: () => void;
   /** 刷新图片 */
   onLoadImages: () => void;
-  /** 打开键盘帮助 */
-  onOpenKeyboardHelp: () => void;
-  /** 是否显示 GitHub 配置模态框 */
-  showConfigModal: boolean;
-  /** 是否显示又拍云配置模态框 */
-  showUpyunConfigModal: boolean;
-  /** 是否显示压缩工具 */
-  showCompression: boolean;
-  /** 是否显示格式转换 */
-  showFormatConversion: boolean;
-  /** 是否显示 AI 分析 */
-  showAIAnalysis: boolean;
-  /** 是否显示键盘帮助 */
-  showKeyboardHelp: boolean;
-  /** 关闭 GitHub 配置模态框 */
-  onCloseConfigModal: () => void;
-  /** 关闭又拍云配置模态框 */
-  onCloseUpyunConfigModal: () => void;
-  /** 关闭压缩工具 */
-  onCloseCompression: () => void;
-  /** 关闭格式转换 */
-  onCloseFormatConversion: () => void;
-  /** 关闭 AI 分析 */
-  onCloseAIAnalysis: () => void;
-  /** 关闭键盘帮助 */
-  onCloseKeyboardHelp: () => void;
   /** 保存 GitHub 配置 */
   onSaveConfig: (config: any) => void;
   /** 清除 GitHub 配置 */
@@ -108,31 +75,68 @@ const Header: React.FC<HeaderProps> = ({
   currentLanguage,
   availableLanguages,
   onLanguageChange,
-  onOpenCompression,
-  onOpenFormatConversion,
-  onOpenAIAnalysis,
-  onOpenConfigModal,
-  onOpenUpyunConfigModal,
   onLoadImages,
-  onOpenKeyboardHelp,
-  showConfigModal,
-  showUpyunConfigModal,
-  showCompression,
-  showFormatConversion,
-  showAIAnalysis,
-  showKeyboardHelp,
-  onCloseConfigModal,
-  onCloseUpyunConfigModal,
-  onCloseCompression,
-  onCloseFormatConversion,
-  onCloseAIAnalysis,
-  onCloseKeyboardHelp,
   onSaveConfig,
   onClearConfig,
   onSetUpyunConfig,
   onClearUpyunConfig,
   onAnalysisComplete,
 }) => {
+  // 模态框状态管理
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
+  const [showCompression, setShowCompression] = useState(false);
+  const [showFormatConversion, setShowFormatConversion] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+
+  // 模态框控制函数
+  const handleOpenConfigModal = () => setShowConfigModal(true);
+  const handleCloseConfigModal = () => setShowConfigModal(false);
+  const handleOpenUpyunConfigModal = () => setShowUpyunConfigModal(true);
+  const handleCloseUpyunConfigModal = () => setShowUpyunConfigModal(false);
+  const handleOpenCompression = () => setShowCompression(true);
+  const handleCloseCompression = () => setShowCompression(false);
+  const handleOpenFormatConversion = () => setShowFormatConversion(true);
+  const handleCloseFormatConversion = () => setShowFormatConversion(false);
+  const handleOpenAIAnalysis = () => setShowAIAnalysis(true);
+  const handleCloseAIAnalysis = () => setShowAIAnalysis(false);
+  const handleOpenKeyboardHelp = () => setShowKeyboardHelp(true);
+  const handleCloseKeyboardHelp = () => setShowKeyboardHelp(false);
+
+  const handleSaveConfig = (config: any) => {
+    onSaveConfig(config);
+    setShowConfigModal(false);
+  };
+
+  const handleClearConfig = () => {
+    onClearConfig();
+    setShowConfigModal(false);
+  };
+
+  // 监听键盘快捷键事件
+  useEffect(() => {
+    const handleOpenCompression = () => setShowCompression(true);
+    const handleOpenFormatConversion = () => setShowFormatConversion(true);
+    const handleOpenAIAnalysis = () => setShowAIAnalysis(true);
+    const handleOpenKeyboardHelp = () => setShowKeyboardHelp(true);
+
+    window.addEventListener('openCompression', handleOpenCompression);
+    window.addEventListener('openFormatConversion', handleOpenFormatConversion);
+    window.addEventListener('openAIAnalysis', handleOpenAIAnalysis);
+    window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelp);
+
+    return () => {
+      window.removeEventListener('openCompression', handleOpenCompression);
+      window.removeEventListener(
+        'openFormatConversion',
+        handleOpenFormatConversion
+      );
+      window.removeEventListener('openAIAnalysis', handleOpenAIAnalysis);
+      window.removeEventListener('openKeyboardHelp', handleOpenKeyboardHelp);
+    };
+  }, []);
+
   // 键盘快捷键分类数据
   const keyboardCategories = [
     {
@@ -214,7 +218,7 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-3">
             {/* 图片压缩工具 */}
             <button
-              onClick={onOpenCompression}
+              onClick={handleOpenCompression}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.compression')}
             >
@@ -223,7 +227,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* 图片格式转换 */}
             <button
-              onClick={onOpenFormatConversion}
+              onClick={handleOpenFormatConversion}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.formatConversion')}
             >
@@ -232,7 +236,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* AI 分析 */}
             <button
-              onClick={onOpenAIAnalysis}
+              onClick={handleOpenAIAnalysis}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.aiAnalysis')}
             >
@@ -242,7 +246,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* GitHub 配置 */}
             {storageType === 'github' && githubConfig && (
               <button
-                onClick={onOpenConfigModal}
+                onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 title={t('navigation.settings')}
               >
@@ -253,7 +257,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* 又拍云配置 */}
             {storageType === 'upyun' && upyunConfig && (
               <button
-                onClick={onOpenUpyunConfigModal}
+                onClick={handleOpenUpyunConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
                 title={t('navigation.upyunSettings')}
               >
@@ -275,7 +279,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* 键盘帮助 */}
             <button
-              onClick={onOpenKeyboardHelp}
+              onClick={handleOpenKeyboardHelp}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('navigation.help')}
             >
@@ -299,17 +303,17 @@ const Header: React.FC<HeaderProps> = ({
       <GitHubConfigModal
         t={t}
         isOpen={showConfigModal}
-        onClose={onCloseConfigModal}
+        onClose={handleCloseConfigModal}
         githubConfig={githubConfig}
-        onSaveConfig={onSaveConfig}
-        onClearConfig={onClearConfig}
+        onSaveConfig={handleSaveConfig}
+        onClearConfig={handleClearConfig}
       />
 
       {/* 又拍云配置模态框 */}
       <UpyunConfigModal
         t={t}
         isOpen={showUpyunConfigModal}
-        onClose={onCloseUpyunConfigModal}
+        onClose={handleCloseUpyunConfigModal}
         upyunConfig={upyunConfig}
         onSaveConfig={onSetUpyunConfig}
         onClearConfig={onClearUpyunConfig}
@@ -317,18 +321,21 @@ const Header: React.FC<HeaderProps> = ({
       />
 
       {/* 图片压缩模态框 */}
-      <ImageCompression isOpen={showCompression} onClose={onCloseCompression} />
+      <ImageCompression
+        isOpen={showCompression}
+        onClose={handleCloseCompression}
+      />
 
       {/* 图片格式转换模态框 */}
       <ImageConverter
         isOpen={showFormatConversion}
-        onClose={onCloseFormatConversion}
+        onClose={handleCloseFormatConversion}
       />
 
       {/* AI 分析模态框 */}
       <AIAnalysisModal
         isOpen={showAIAnalysis}
-        onClose={onCloseAIAnalysis}
+        onClose={handleCloseAIAnalysis}
         onAnalysisComplete={onAnalysisComplete}
       />
 
@@ -336,7 +343,7 @@ const Header: React.FC<HeaderProps> = ({
       <KeyboardHelpModal
         t={t}
         isOpen={showKeyboardHelp}
-        onClose={onCloseKeyboardHelp}
+        onClose={handleCloseKeyboardHelp}
         categories={keyboardCategories}
       />
     </header>

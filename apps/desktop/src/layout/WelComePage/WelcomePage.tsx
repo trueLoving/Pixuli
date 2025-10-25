@@ -13,8 +13,6 @@ interface WelcomePageProps {
   showConfigModal: boolean;
   /** 是否显示又拍云配置模态框 */
   showUpyunConfigModal: boolean;
-  /** 是否显示压缩工具 */
-  showCompression: boolean;
   /** 打开 GitHub 配置模态框 */
   onOpenConfigModal: () => void;
   /** 关闭 GitHub 配置模态框 */
@@ -23,8 +21,6 @@ interface WelcomePageProps {
   onOpenUpyunConfigModal: () => void;
   /** 关闭又拍云配置模态框 */
   onCloseUpyunConfigModal: () => void;
-  /** 关闭压缩工具 */
-  onCloseCompression: () => void;
   /** 保存 GitHub 配置 */
   onSaveConfig: (config: any) => void;
   /** 清除 GitHub 配置 */
@@ -33,7 +29,6 @@ interface WelcomePageProps {
   onSetUpyunConfig: (config: any) => void;
   /** 清除又拍云配置 */
   onClearUpyunConfig: () => void;
-  /** 压缩组件 */
 }
 
 const WelcomePage: React.FC<WelcomePageProps> = ({
@@ -44,6 +39,7 @@ const WelcomePage: React.FC<WelcomePageProps> = ({
   showUpyunConfigModal,
   onOpenConfigModal,
   onCloseConfigModal,
+  onOpenUpyunConfigModal,
   onCloseUpyunConfigModal,
   onSaveConfig,
   onClearConfig,

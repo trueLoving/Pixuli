@@ -21,7 +21,7 @@
     "type-check": "tsc --noEmit"
   },
   "keywords": ["ai", "image-analysis", "computer-vision", "llm"],
-  "author": "Pixuli Team",
+  "author": "trueLoving",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.0.0"
