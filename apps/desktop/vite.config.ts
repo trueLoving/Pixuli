@@ -77,25 +77,36 @@ export default defineConfig(({ command }) => {
       target: 'esnext',
       minify: 'esbuild',
       sourcemap: false,
+      cssCodeSplit: true,
       rollupOptions: {
         external: ['pixuli-wasm'],
         output: {
           manualChunks: id => {
-            // 核心依赖
+            // React核心
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
+              return 'react';
             }
-            // UI组件
-            if (id.includes('lucide-react') || id.includes('react-hot-toast')) {
+            // UI组件库
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            if (
+              id.includes('react-hot-toast') ||
+              id.includes('react-dropzone') ||
+              id.includes('react-image-crop')
+            ) {
               return 'ui';
             }
-            // 状态管理
+            // 状态管理和工具
             if (id.includes('zustand')) {
               return 'state';
             }
-            // TensorFlow (可选)
-            if (id.includes('@tensorflow')) {
-              return 'tensorflow';
+            if (id.includes('i18next')) {
+              return 'i18n';
+            }
+            // GitHub API
+            if (id.includes('octokit')) {
+              return 'github';
             }
             // 其他第三方库
             if (id.includes('node_modules')) {

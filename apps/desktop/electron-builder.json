@@ -10,11 +10,8 @@
   "files": [
     "dist/**/*",
     "dist-electron/**/*",
-    "node_modules/pixuli-wasm/**/*",
-    "node_modules/octokit/**/*",
-    "node_modules/@octokit/**/*"
+    "!**/node_modules/pixuli-wasm/{.cargo,src,target,*.rs,*.toml,*.lock,tsconfig.json}"
   ],
-  "asarUnpack": ["node_modules/octokit/**/*", "node_modules/@octokit/**/*"],
   "mac": {
     "category": "public.app-category.graphics-design",
     "artifactName": "${productName}_${version}_${arch}.${ext}",
@@ -56,10 +53,11 @@
     "vPrefixedTagName": true
   },
   "asar": true,
-  "compression": "store",
+  "compression": "maximum",
   "removePackageScripts": true,
   "removePackageKeywords": true,
   "buildDependenciesFromSource": false,
   "nodeGypRebuild": false,
-  "npmRebuild": false
+  "npmRebuild": false,
+  "includeSubNodeModules": false
 }
