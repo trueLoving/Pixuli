@@ -1,7 +1,7 @@
 {
   "name": "pixuli-desktop",
   "productName": "Pixuli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://localhost:5173"

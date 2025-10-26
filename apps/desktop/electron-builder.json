@@ -20,15 +20,12 @@
   "mac": {
     "category": "public.app-category.graphics-design",
     "artifactName": "${productName}_${version}_${arch}.${ext}",
-    "target": [
-      {
-        "target": "dmg",
-        "arch": ["x64", "arm64"]
-      }
-    ],
     "hardenedRuntime": false,
     "gatekeeperAssess": false,
-    "compression": "maximum"
+    "compression": "maximum",
+    "target": {
+      "target": "dmg"
+    }
   },
   "win": {
     "target": [

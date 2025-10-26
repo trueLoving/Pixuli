@@ -64,9 +64,10 @@ jobs:
       - name: 安装 Rust 工具链
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          targets: x86_64-pc-windows-msvc,x86_64-apple-darwin,aarch64-apple-darwin,x86_64-unknown-linux-gnu
 
       - name: 显示发布配置
+        shell: bash
         run: |
           echo "=== 发布配置信息 ==="
           echo "版本号: ${{ github.event.inputs.version }}"
@@ -87,82 +88,147 @@ jobs:
           echo "标签版本: v$VERSION"
 
       - name: 使用 pnpm version 更新版本号
+        shell: bash
         run: |
-          # 使用 pnpm version 命令更新版本号
-          cd apps/desktop && pnpm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
-          echo "已使用 pnpm version 更新版本号为: ${{ steps.version.outputs.VERSION }}"
-          # 显示更新后的版本号
+          # 检查并更新版本号（支持相同版本号重复发布）
+          cd apps/desktop
+          CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "当前版本号: $CURRENT_VERSION"
+          echo "目标版本号: $TARGET_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "版本号不同，更新版本号为: $TARGET_VERSION"
+            pnpm version $TARGET_VERSION --no-git-tag-version
+          else
+            echo "版本号相同，跳过更新（支持重复发布）"
+          fi
+
+          echo "当前 package.json 中的版本号:"
           grep '"version"' package.json
 
       - name: 安装依赖
+        shell: bash
         run: pnpm install
 
       - name: 构建 WASM 模块
+        shell: bash
         run: |
-          # 根据平台和架构构建对应的 WASM 模块
+          # 根据平台构建对应的 WASM 模块
+          echo "构建 WASM 模块 - 平台: ${{ matrix.platform }}"
+
           cd packages/wasm
 
           if [ "${{ matrix.platform }}" = "win" ]; then
             echo "构建 Windows x64 WASM 模块"
-            napi build --platform x86_64-pc-windows-msvc --release
+            npx napi build --target x86_64-pc-windows-msvc --platform --release
           elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
             echo "构建 macOS x64 WASM 模块"
-            rustup target add x86_64-apple-darwin
-            napi build --platform x86_64-apple-darwin --release
+            npx napi build --target x86_64-apple-darwin --platform --release
           elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
             echo "构建 macOS ARM64 WASM 模块"
-            rustup target add aarch64-apple-darwin
-            napi build --platform aarch64-apple-darwin --release
+            npx napi build --target aarch64-apple-darwin --platform --release
           elif [ "${{ matrix.platform }}" = "linux" ]; then
             echo "构建 Linux x64 WASM 模块"
-            rustup target add x86_64-unknown-linux-gnu
-            napi build --platform x86_64-unknown-linux-gnu --release
+            npx napi build --target x86_64-unknown-linux-gnu --platform --release
+          else
+            echo "错误: 未知的平台 ${{ matrix.platform }}"
+            exit 1
           fi
 
           echo "WASM 模块构建完成"
 
-      - name: 验证 WASM 模块 (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "检查 WASM 二进制文件:"
-          Write-Host "Windows 环境 - 使用 PowerShell 命令:"
-          Get-ChildItem -Path packages/wasm -Filter "*.node" -ErrorAction SilentlyContinue | Format-Table Name, Length, LastWriteTime
-          Write-Host "WASM 二进制文件列表:"
-          Get-ChildItem -Path packages/wasm -Filter "*.node" -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "找到: $($_.FullName)" }
-
-      - name: 验证 WASM 模块 (Unix)
-        if: runner.os != 'Windows'
+      - name: 验证 WASM 模块
         shell: bash
         run: |
+          echo "=== 验证 WASM 模块构建结果 ==="
+          echo "平台: ${{ matrix.platform }}"
+          echo "操作系统: $RUNNER_OS"
+
+          # 根据平台确定期望的二进制文件名
+          case "${{ matrix.platform }}" in
+            "win")
+              expected_file="pixuli-wasm.win32-x64-msvc.node"
+              ;;
+            "mac-x64")
+              expected_file="pixuli-wasm.darwin-x64.node"
+              ;;
+            "mac-arm64")
+              expected_file="pixuli-wasm.darwin-arm64.node"
+              ;;
+            "linux")
+              expected_file="pixuli-wasm.linux-x64-gnu.node"
+              ;;
+            *)
+              echo "错误: 未知的平台 ${{ matrix.platform }}"
+              exit 1
+              ;;
+          esac
+
+          echo "期望的二进制文件: $expected_file"
+
+          # 检查 WASM 二进制文件
           echo "检查 WASM 二进制文件:"
-          echo "$RUNNER_OS 环境 - 使用 Unix 命令:"
-          ls -la packages/wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
-          echo "WASM 二进制文件列表:"
-          find packages/wasm -name "*.node" -type f
-          echo "检查文件架构:"
-          for file in packages/wasm/*.node; do
-            if [ -f "$file" ]; then
-              echo "文件: $file"
-              file "$file" || echo "无法检查文件架构"
+          if [ -d "packages/wasm" ]; then
+            echo "WASM 目录存在，查找 .node 文件:"
+            find packages/wasm -name "*.node" -type f 2>/dev/null || echo "未找到 .node 文件"
+
+            # 检查期望的文件是否存在
+            if [ -f "packages/wasm/$expected_file" ]; then
+              echo "✅ 找到期望的二进制文件: $expected_file"
+              echo "文件详细信息:"
+              ls -la "packages/wasm/$expected_file"
+
+              # 检查文件架构（在支持 file 命令的系统上）
+              if command -v file >/dev/null 2>&1; then
+                echo "架构信息:"
+                file "packages/wasm/$expected_file" 2>/dev/null || echo "无法检查文件架构"
+              fi
+            else
+              echo "❌ 未找到期望的二进制文件: $expected_file"
+              echo "当前目录中的所有 .node 文件:"
+              ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
+              exit 1
             fi
-          done
+
+            # 检查 package.json 中的 targets 配置
+            echo "检查 package.json 中的 targets 配置:"
+            if [ -f "packages/wasm/package.json" ]; then
+              grep -A 10 '"targets"' packages/wasm/package.json || echo "未找到 targets 配置"
+            fi
+          else
+            echo "错误: packages/wasm 目录不存在"
+            exit 1
+          fi
+
+          echo "=== WASM 模块验证完成 ==="
+
+      - name: 构建前端资源
+        shell: bash
+        run: |
+          echo "构建前端资源 (TypeScript & Vite)"
+          cd apps/desktop
+          pnpm run build:web
 
       - name: 构建桌面应用
+        shell: bash
         run: |
           # 根据平台和架构构建对应的桌面应用
+          cd apps/desktop
+
           if [ "${{ matrix.platform }}" = "win" ]; then
             echo "构建 Windows x64 桌面应用"
-            pnpm run build:desktop
+            npx electron-builder --win --x64
           elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
             echo "构建 macOS x64 桌面应用"
-            pnpm run build:desktop -- --config.mac.target.arch=x64
+            npx electron-builder --mac --x64
           elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
             echo "构建 macOS ARM64 桌面应用"
-            pnpm run build:desktop -- --config.mac.target.arch=arm64
+            npx electron-builder --mac --arm64
           elif [ "${{ matrix.platform }}" = "linux" ]; then
             echo "构建 Linux x64 桌面应用"
-            pnpm run build:desktop -- --config.linux.target.arch=x64
+            npx electron-builder --linux --x64
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -186,6 +252,7 @@ jobs:
     if: ${{ github.event.inputs.is-publish == 'false' }}
     steps:
       - name: 跳过发布
+        shell: bash
         run: |
           echo "=== 发布已跳过 ==="
           echo "is-publish 设置为 false，跳过发布相关操作"
@@ -218,6 +285,7 @@ jobs:
 
       - name: 创建发布
         id: create_release
+        shell: bash
         run: |
           # 检查标签是否已存在
           if gh release view ${{ steps.version.outputs.TAG_VERSION }} >/dev/null 2>&1; then
@@ -258,24 +326,11 @@ jobs:
               - **Linux**: 主流 Linux 发行版, 4GB RAM, 2GB 可用磁盘空间
               - **处理器**: Intel/AMD 64位处理器或 Apple Silicon (M1/M2)
 
-              ### ✨ 桌面应用特性
-              - ✅ 完整的本地文件系统访问
-              - ✅ 原生性能优化
-              - ✅ 系统集成和通知
-              - ✅ 离线功能支持
-              - ✅ 多窗口管理
-              - ✅ 键盘快捷键
-
               ### 📋 更新日志
               - 版本: v${{ steps.version.outputs.VERSION }}
               - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
               - 提交: ${{ github.sha }}
               - 分支: ${{ github.ref_name }}
-
-              ### 🔗 相关链接
-              - 📖 [使用文档](https://github.com/trueLoving/Pixuli/wiki)
-              - 🐛 [问题反馈](https://github.com/trueLoving/Pixuli/issues)
-              - 💬 [讨论区](https://github.com/trueLoving/Pixuli/discussions)
 
               ---
               *感谢您使用 Pixuli Desktop！如有问题或建议，欢迎在 GitHub 上反馈。*" \
@@ -286,6 +341,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 Windows 构建产物
+        shell: bash
         run: |
           # 查找 Windows 构建产物
           find artifacts/pixuli-desktop-win-v${{ steps.version.outputs.VERSION }} -name "*.exe" -type f | while read file; do
@@ -296,6 +352,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 macOS DMG 包
+        shell: bash
         run: |
           # 查找 macOS DMG 构建产物
           find artifacts/pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
@@ -310,6 +367,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 Linux AppImage 包
+        shell: bash
         run: |
           # 查找 Linux AppImage 构建产物
           find artifacts/pixuli-desktop-linux-v${{ steps.version.outputs.VERSION }} -name "*.AppImage" -type f | while read file; do
@@ -351,27 +409,46 @@ jobs:
           version: 10
 
       - name: 拉取远程更改
+        shell: bash
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git pull origin main --rebase
 
-      - name: 使用 pnpm version 更新版本号
+      - name: 检查并更新版本号
+        shell: bash
         run: |
-          # 使用 pnpm version 命令更新版本号
-          pnpm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version
-          echo "已使用 pnpm version 更新版本号为: ${{ steps.version.outputs.VERSION }}"
-          # 显示更新后的版本号
+          # 检查并更新版本号（支持相同版本号重复发布）
+          CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "当前版本号: $CURRENT_VERSION"
+          echo "目标版本号: $TARGET_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "版本号不同，更新版本号为: $TARGET_VERSION"
+            pnpm version $TARGET_VERSION --no-git-tag-version
+            VERSION_CHANGED=true
+          else
+            echo "版本号相同，跳过更新（支持重复发布）"
+            VERSION_CHANGED=false
+          fi
+
+          echo "当前 package.json 中的版本号:"
           grep '"version"' package.json
 
+          echo "VERSION_CHANGED=$VERSION_CHANGED" >> $GITHUB_ENV
+
       - name: 提交版本号更新
+        shell: bash
         run: |
           # 检查是否有变更需要提交
-          if git diff --quiet package.json; then
-            echo "package.json 没有变更，跳过提交"
-          else
+          if [ "$VERSION_CHANGED" = "true" ]; then
+            echo "版本号已更新，提交更改"
             git add package.json
             git commit -m "chore: bump version to ${{ steps.version.outputs.VERSION }}"
             git push origin main
             echo "版本号更新已提交并推送"
+          else
+            echo "版本号未变更，跳过提交"
           fi
