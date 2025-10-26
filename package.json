@@ -32,8 +32,15 @@
     "prettier": "^3.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": ["prettier --write"],
-    "*.{css,scss,less}": ["prettier --write"],
-    "*.{json,md,yml,yaml}": ["prettier --write"]
-  }
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --write"
+    ],
+    "*.{css,scss,less}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "version": "1.2.0"
 }
