@@ -25,16 +25,27 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
         include:
           - os: windows-latest
             platform: win
             artifact_name: win
             file_extensions: '.exe'
+            arch: x64
           - os: macos-latest
-            platform: mac
-            artifact_name: mac
+            platform: mac-x64
+            artifact_name: mac-x64
             file_extensions: '.dmg'
+            arch: x64
+          - os: macos-latest
+            platform: mac-arm64
+            artifact_name: mac-arm64
+            file_extensions: '.dmg'
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            artifact_name: linux
+            file_extensions: '.AppImage'
+            arch: x64
 
     steps:
       - name: 检出代码
@@ -88,8 +99,26 @@ jobs:
 
       - name: 构建 WASM 模块
         run: |
-          # 使用 napi 构建多平台二进制文件（包含 Rust 构建）
-          pnpm run build:wasm
+          # 根据平台和架构构建对应的 WASM 模块
+          cd packages/wasm
+
+          if [ "${{ matrix.platform }}" = "win" ]; then
+            echo "构建 Windows x64 WASM 模块"
+            napi build --platform x86_64-pc-windows-msvc --release
+          elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
+            echo "构建 macOS x64 WASM 模块"
+            rustup target add x86_64-apple-darwin
+            napi build --platform x86_64-apple-darwin --release
+          elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
+            echo "构建 macOS ARM64 WASM 模块"
+            rustup target add aarch64-apple-darwin
+            napi build --platform aarch64-apple-darwin --release
+          elif [ "${{ matrix.platform }}" = "linux" ]; then
+            echo "构建 Linux x64 WASM 模块"
+            rustup target add x86_64-unknown-linux-gnu
+            napi build --platform x86_64-unknown-linux-gnu --release
+          fi
+
           echo "WASM 模块构建完成"
 
       - name: 验证 WASM 模块 (Windows)
@@ -111,9 +140,30 @@ jobs:
           ls -la packages/wasm/*.node 2>/dev/null || echo "未找到 .node 文件"
           echo "WASM 二进制文件列表:"
           find packages/wasm -name "*.node" -type f
+          echo "检查文件架构:"
+          for file in packages/wasm/*.node; do
+            if [ -f "$file" ]; then
+              echo "文件: $file"
+              file "$file" || echo "无法检查文件架构"
+            fi
+          done
 
       - name: 构建桌面应用
-        run: pnpm run build:desktop
+        run: |
+          # 根据平台和架构构建对应的桌面应用
+          if [ "${{ matrix.platform }}" = "win" ]; then
+            echo "构建 Windows x64 桌面应用"
+            pnpm run build:desktop
+          elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
+            echo "构建 macOS x64 桌面应用"
+            pnpm run build:desktop -- --config.mac.target.arch=x64
+          elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
+            echo "构建 macOS ARM64 桌面应用"
+            pnpm run build:desktop -- --config.mac.target.arch=arm64
+          elif [ "${{ matrix.platform }}" = "linux" ]; then
+            echo "构建 Linux x64 桌面应用"
+            pnpm run build:desktop -- --config.linux.target.arch=x64
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -124,6 +174,7 @@ jobs:
           path: |
             apps/desktop/release/*.exe
             apps/desktop/release/*.dmg
+            apps/desktop/release/*.AppImage
             !apps/desktop/release/*.blockmap
             !apps/desktop/release/*.yml
             !apps/desktop/release/*.map
@@ -181,13 +232,19 @@ jobs:
               请根据您的操作系统选择相应的安装包：
 
               **🪟 Windows 用户**
-              - 下载 `.exe` 文件进行安装
+              - 下载 `win` 版本的 `.exe` 文件进行安装
               - 支持 Windows 10/11 (64位)
               - 推荐使用 Windows 10 1903 或更高版本
 
               **🍎 macOS 用户**
-              - 下载 `.dmg` 文件进行安装
+              - **Intel Mac**: 下载 `mac-x64` 版本的 `.dmg` 文件
+              - **Apple Silicon Mac**: 下载 `mac-arm64` 版本的 `.dmg` 文件
               - 支持 macOS 10.15 (Catalina) 或更高版本
+
+              **🐧 Linux 用户**
+              - 下载 `linux` 版本的 `.AppImage` 文件
+              - 支持主流 Linux 发行版 (Ubuntu, Debian, Fedora, Arch 等)
+              - 需要 64位 x86 架构
 
               ### 🚀 安装指南
               1. 下载对应系统的安装包
@@ -198,7 +255,8 @@ jobs:
               ### 💻 系统要求
               - **Windows**: Windows 10/11 (64位), 4GB RAM, 2GB 可用磁盘空间
               - **macOS**: macOS 10.15+, 4GB RAM, 2GB 可用磁盘空间
-              - **处理器**: Intel/AMD 64位处理器或 Apple Silicon
+              - **Linux**: 主流 Linux 发行版, 4GB RAM, 2GB 可用磁盘空间
+              - **处理器**: Intel/AMD 64位处理器或 Apple Silicon (M1/M2)
 
               ### ✨ 桌面应用特性
               - ✅ 完整的本地文件系统访问
@@ -240,8 +298,22 @@ jobs:
       - name: 上传 macOS DMG 包
         run: |
           # 查找 macOS DMG 构建产物
-          find artifacts/pixuli-desktop-mac-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
-            echo "上传文件: $file"
+          find artifacts/pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
+            echo "上传 macOS x64 文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+          find artifacts/pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
+            echo "上传 macOS ARM64 文件: $file"
+            gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传 Linux AppImage 包
+        run: |
+          # 查找 Linux AppImage 构建产物
+          find artifacts/pixuli-desktop-linux-v${{ steps.version.outputs.VERSION }} -name "*.AppImage" -type f | while read file; do
+            echo "上传 Linux 文件: $file"
             gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
           done
         env:
