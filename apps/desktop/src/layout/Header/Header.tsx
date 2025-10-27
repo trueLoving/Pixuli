@@ -240,22 +240,22 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* 图片压缩工具 */}
-            <button
+            {/* <button
               onClick={handleOpenCompression}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.compression')}
             >
               <Zap className="w-5 h-5" />
-            </button>
+            </button> */}
 
             {/* 图片格式转换 */}
-            <button
+            {/* <button
               onClick={handleOpenFormatConversion}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.formatConversion')}
             >
               <ArrowRightLeft className="w-5 h-5" />
-            </button>
+            </button> */}
 
             {/* 语言切换器 */}
             <LanguageSwitcher

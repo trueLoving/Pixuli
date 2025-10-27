@@ -1,10 +1,15 @@
-import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron';
-import fs from 'fs';
+import { BrowserWindow, Menu, nativeImage, Tray } from 'electron';
 import path from 'node:path';
 
 let tray: Tray | null = null;
+let compressionWindow: BrowserWindow | null = null;
+let conversionWindow: BrowserWindow | null = null;
 
 let onQuit: (() => void) | null = null;
+
+const preload = path.join(__dirname, '../preload/index.js');
+const indexHtml = path.join(__dirname, '../../dist/index.html');
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 /**
  * 创建系统托盘
@@ -21,49 +26,9 @@ export function createTray(
 
   onQuit = onQuitCallback || null;
 
-  console.log('创建托盘图标，当前目录:', __dirname);
-  console.log('VITE_PUBLIC:', process.env.VITE_PUBLIC);
-
   // 尝试多个可能的图标路径
-  const possibleIconPaths = [
-    path.join(process.env.VITE_PUBLIC || '', 'favicon.ico'),
-    path.join(process.env.VITE_PUBLIC || '', 'icon.png'),
-    path.join(__dirname, '../../dist/favicon.ico'),
-    path.join(__dirname, '../../public/favicon.ico'),
-    path.join(__dirname, '../../dist/icon.png'),
-    path.join(__dirname, '../../public/icon.png'),
-    path.join(__dirname, '../../build/icon.png'),
-  ];
-
-  let icon = null;
-  for (const iconPath of possibleIconPaths) {
-    try {
-      console.log('尝试加载图标:', iconPath);
-      if (fs.existsSync(iconPath)) {
-        console.log('图标文件存在:', iconPath);
-        icon = nativeImage.createFromPath(iconPath);
-        if (!icon.isEmpty()) {
-          console.log('托盘图标加载成功:', iconPath);
-          break;
-        } else {
-          console.warn('图标为空:', iconPath);
-        }
-      } else {
-        console.log('图标文件不存在:', iconPath);
-      }
-    } catch (error) {
-      console.warn('尝试加载图标失败:', iconPath, error);
-    }
-  }
-
-  // 如果所有路径都失败，创建一个简单的默认图标
-  if (!icon || icon.isEmpty()) {
-    console.warn('无法加载图标文件，将使用默认图标');
-    // 创建一个 16x16 的单色图标 (Base64 编码的 1 像素 PNG)
-    const base64Icon =
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==';
-    icon = nativeImage.createFromDataURL('data:image/png;base64,' + base64Icon);
-  }
+  const iconPath = path.join(__dirname, '../../public/icon.png');
+  let icon = nativeImage.createFromPath(iconPath);
 
   // macOS 需要设置为模板图像（单色），在调整大小之前设置
   if (process.platform === 'darwin') {
@@ -71,7 +36,7 @@ export function createTray(
   }
 
   // 调整图标大小
-  let trayIcon = icon.resize({ width: 16, height: 16 });
+  let trayIcon = icon.resize({ width: 28, height: 28 });
 
   // 创建托盘
   tray = new Tray(trayIcon);
@@ -82,35 +47,101 @@ export function createTray(
   // 创建上下文菜单
   updateTrayMenu(win);
 
-  // 点击托盘图标时切换窗口显示/隐藏
-  tray.on('click', () => {
-    if (win) {
-      if (win.isVisible()) {
-        win.hide();
-      } else {
-        win.show();
-        win.focus();
-      }
-    }
-  });
-
   // 右键点击托盘图标显示菜单
   tray.on('right-click', () => {
     tray?.popUpContextMenu();
   });
+}
 
-  // macOS 特有：双击托盘图标
-  if (process.platform === 'darwin') {
-    tray.on('double-click', () => {
-      if (win) {
-        if (win.isVisible()) {
-          win.hide();
-        } else {
-          win.show();
-          win.focus();
-        }
-      }
-    });
+/**
+ * 打开图片压缩窗口
+ */
+function openCompressionWindow() {
+  // 如果窗口已存在且显示，则聚焦
+  if (compressionWindow && !compressionWindow.isDestroyed()) {
+    compressionWindow.show();
+    compressionWindow.focus();
+    return;
+  }
+
+  // 创建新窗口
+  compressionWindow = new BrowserWindow({
+    title: '图片压缩',
+    width: 1000,
+    height: 700,
+    minWidth: 800,
+    minHeight: 600,
+    webPreferences: {
+      preload,
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: true,
+    },
+  });
+
+  // 加载压缩窗口内容
+  if (VITE_DEV_SERVER_URL) {
+    // 开发模式：加载 dev server 并传递 hash
+    compressionWindow.loadURL(`${VITE_DEV_SERVER_URL}#compression`);
+  } else {
+    // 生产模式：加载本地文件
+    compressionWindow.loadFile(indexHtml, { hash: 'compression' });
+  }
+
+  // 窗口关闭时清理引用
+  compressionWindow.on('closed', () => {
+    compressionWindow = null;
+  });
+
+  // 开发模式下打开调试工具
+  if (VITE_DEV_SERVER_URL) {
+    compressionWindow.webContents.openDevTools();
+  }
+}
+
+/**
+ * 打开图片转换窗口
+ */
+function openConversionWindow() {
+  // 如果窗口已存在且显示，则聚焦
+  if (conversionWindow && !conversionWindow.isDestroyed()) {
+    conversionWindow.show();
+    conversionWindow.focus();
+    return;
+  }
+
+  // 创建新窗口
+  conversionWindow = new BrowserWindow({
+    title: '图片转换',
+    width: 1000,
+    height: 700,
+    minWidth: 800,
+    minHeight: 600,
+    webPreferences: {
+      preload,
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: true,
+    },
+  });
+
+  // 加载转换窗口内容
+  if (VITE_DEV_SERVER_URL) {
+    // 开发模式：加载 dev server 并传递 hash
+    conversionWindow.loadURL(`${VITE_DEV_SERVER_URL}#conversion`);
+  } else {
+    // 生产模式：加载本地文件
+    conversionWindow.loadFile(indexHtml, { hash: 'conversion' });
+  }
+
+  // 窗口关闭时清理引用
+  conversionWindow.on('closed', () => {
+    conversionWindow = null;
+  });
+
+  // 开发模式下打开调试工具
+  if (VITE_DEV_SERVER_URL) {
+    conversionWindow.webContents.openDevTools();
   }
 }
 
@@ -127,57 +158,40 @@ export function updateTrayMenu(win: BrowserWindow | null) {
     {
       label: '图片压缩',
       click: () => {
-        // 确保窗口显示
-        if (win) {
-          if (!win.isVisible()) {
-            win.show();
-          }
-          win.focus();
-        }
+        openCompressionWindow();
       },
     },
     {
       label: '图片转换',
       click: () => {
-        // 确保窗口显示
-        if (win) {
-          if (!win.isVisible()) {
-            win.show();
-          }
-          win.focus();
-        }
+        openConversionWindow();
       },
     },
     { type: 'separator' },
-    {
-      label: win?.isVisible() ? '隐藏窗口' : '显示窗口',
-      click: () => {
-        if (win) {
-          if (win.isVisible()) {
-            win.hide();
-          } else {
-            win.show();
-            win.focus();
-          }
-          // 更新菜单
-          updateTrayMenu(win);
-        }
-      },
-    },
-    { type: 'separator' },
-    {
-      label: '退出',
-      click: () => {
-        if (onQuit) {
-          onQuit();
-        }
-        app.quit();
-      },
-    },
   ];
 
   const contextMenu = Menu.buildFromTemplate(template);
   tray.setContextMenu(contextMenu);
+}
+
+/**
+ * 关闭压缩窗口
+ */
+export function closeCompressionWindow() {
+  if (compressionWindow && !compressionWindow.isDestroyed()) {
+    compressionWindow.close();
+    compressionWindow = null;
+  }
+}
+
+/**
+ * 关闭转换窗口
+ */
+export function closeConversionWindow() {
+  if (conversionWindow && !conversionWindow.isDestroyed()) {
+    conversionWindow.close();
+    conversionWindow = null;
+  }
 }
 
 /**
@@ -187,5 +201,14 @@ export function destroyTray() {
   if (tray) {
     tray.destroy();
     tray = null;
+  }
+  // 同时关闭所有窗口
+  if (compressionWindow && !compressionWindow.isDestroyed()) {
+    compressionWindow.close();
+    compressionWindow = null;
+  }
+  if (conversionWindow && !conversionWindow.isDestroyed()) {
+    conversionWindow.close();
+    conversionWindow = null;
   }
 }

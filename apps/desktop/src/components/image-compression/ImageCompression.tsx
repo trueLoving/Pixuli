@@ -40,6 +40,9 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
   const [compressionResult, setCompressionResult] = useState<any>(null);
   const [isCompressing, setIsCompressing] = useState(false);
 
+  // 检查是否是独立窗口模式
+  const isStandaloneWindow = window.location.hash === '#compression';
+
   // 处理文件选择
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,8 +170,20 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+    <div
+      className={`${
+        isStandaloneWindow
+          ? 'absolute inset-0 bg-white'
+          : 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
+      }`}
+    >
+      <div
+        className={`bg-white ${
+          isStandaloneWindow
+            ? 'w-full h-full rounded-none shadow-none'
+            : 'rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh]'
+        } overflow-hidden`}
+      >
         {/* 头部 */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
@@ -185,7 +200,13 @@ const ImageCompression: React.FC<ImageCompressionProps> = ({
           </button>
         </div>
 
-        <div className="flex h-[calc(90vh-120px)]">
+        <div
+          className={`flex ${
+            isStandaloneWindow
+              ? 'h-[calc(100vh-120px)]'
+              : 'h-[calc(90vh-120px)]'
+          }`}
+        >
           {/* 左侧：文件选择和设置 */}
           <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto flex flex-col">
             {/* 文件选择区域 */}

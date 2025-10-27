@@ -5,7 +5,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
 import { registerServiceHandlers } from './services';
-import { createTray, updateTrayMenu, destroyTray } from './tray';
+import {
+  createTray,
+  updateTrayMenu,
+  destroyTray,
+  closeCompressionWindow,
+  closeConversionWindow,
+} from './tray';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -166,3 +172,13 @@ ipcMain.handle('open-win', (_, arg) => {
 
 // 注册服务处理程序
 registerServiceHandlers();
+
+// 处理关闭压缩窗口的 IPC 请求
+ipcMain.handle('close-compression-window', () => {
+  closeCompressionWindow();
+});
+
+// 处理关闭转换窗口的 IPC 请求
+ipcMain.handle('close-conversion-window', () => {
+  closeConversionWindow();
+});

@@ -1,6 +1,3 @@
-// TODO: 产物体积优化，现在 mac 打包有 800+ mb，
-// 感觉有问题，应该是打包了什么不应该打包的东西，存在优化的空间（发现把 pixuli-wasm 的 target 也打包进去了，要排除掉）
-// TODO: 产物打包后有问题，跟 github 认证库有关系，需要观察看看
 import {
   COMMON_SHORTCUTS,
   keyboardManager,
@@ -9,11 +6,20 @@ import {
 } from '@packages/ui/src';
 import { useCallback, useEffect, useState } from 'react';
 import './App.css';
+import { ImageCompression, ImageConverter } from './components';
 import { useI18n } from './i18n/useI18n';
 import { Header, Home, WelcomePage } from './layout';
 import { useImageStore } from './stores/imageStore';
 
 function App() {
+  // 检查是否在压缩窗口模式
+  const [isCompressionMode, setIsCompressionMode] = useState(
+    window.location.hash === '#compression'
+  );
+  // 检查是否在转换窗口模式
+  const [isConversionMode, setIsConversionMode] = useState(
+    window.location.hash === '#conversion'
+  );
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
     useI18n();
   const {
@@ -38,6 +44,12 @@ function App() {
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
+  const [showCompressionModal, setShowCompressionModal] = useState(
+    window.location.hash === '#compression'
+  );
+  const [showConversionModal, setShowConversionModal] = useState(
+    window.location.hash === '#conversion'
+  );
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -233,6 +245,44 @@ function App() {
     handleOpenUpyunConfigModal,
     t,
   ]);
+
+  // 如果是转换窗口模式，只显示转换组件
+  if (isConversionMode) {
+    return (
+      <>
+        <ImageConverter
+          isOpen={showConversionModal}
+          onClose={() => {
+            // 关闭窗口
+            const ipcRenderer = (window as any).ipcRenderer;
+            if (ipcRenderer && ipcRenderer.invoke) {
+              ipcRenderer.invoke('close-conversion-window');
+            }
+          }}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
+  // 如果是压缩窗口模式，只显示压缩组件
+  if (isCompressionMode) {
+    return (
+      <>
+        <ImageCompression
+          isOpen={showCompressionModal}
+          onClose={() => {
+            // 关闭窗口
+            const ipcRenderer = (window as any).ipcRenderer;
+            if (ipcRenderer && ipcRenderer.invoke) {
+              ipcRenderer.invoke('close-compression-window');
+            }
+          }}
+        />
+        <Toaster />
+      </>
+    );
+  }
 
   if (!githubConfig && !upyunConfig) {
     return (
