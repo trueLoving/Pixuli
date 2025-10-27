@@ -104,7 +104,7 @@ const VersionInfoModal: React.FC<VersionInfoModalProps> = ({
           <div className="space-y-4">
             {activeTab === 'basic' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center space-x-2 mb-2">
                       <Package className="w-4 h-4 text-blue-600" />
@@ -148,6 +148,16 @@ const VersionInfoModal: React.FC<VersionInfoModalProps> = ({
                     </div>
                     <p className="text-sm text-gray-600 font-mono">
                       {versionInfo.git.branch}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Hash className="w-4 h-4 text-cyan-600" />
+                      <span className="font-medium text-gray-900">Commit</span>
+                    </div>
+                    <p className="text-sm text-gray-600 font-mono">
+                      {versionInfo.git.commit}
                     </p>
                   </div>
                 </div>

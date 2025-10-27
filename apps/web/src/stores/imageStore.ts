@@ -299,12 +299,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         };
 
         // 传递旧文件名用于重命名检测
-        await storageService.updateImageInfo(
-          editData.id,
-          image.name,
-          metadata,
-          image.name
-        );
+        await storageService.updateImageInfo(editData.id, image.name, metadata);
 
         set(state => ({
           images: state.images.map(img =>

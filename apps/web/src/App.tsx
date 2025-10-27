@@ -1,8 +1,3 @@
-/**
- * TODO:
- * 1.3.0 web 版本需求：
- *  版本依赖信息完善（补充 git 分支相关信息）
- */
 import {
   formatFileSize,
   getImageDimensionsFromUrl,
@@ -175,6 +170,7 @@ function App() {
     const handleCloseModals = () => {
       if (showConfigModal) handleCloseConfigModal();
       else if (showKeyboardHelp) handleCloseKeyboardHelp();
+      else if (showVersionInfo) handleCloseVersionInfo();
     };
 
     const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
@@ -200,8 +196,10 @@ function App() {
     t,
     showConfigModal,
     showKeyboardHelp,
+    showVersionInfo,
     handleCloseConfigModal,
     handleCloseKeyboardHelp,
+    handleCloseVersionInfo,
     handleOpenKeyboardHelp,
     handleLoadImages,
     handleOpenConfigModal,
@@ -373,14 +371,6 @@ function App() {
               onUploadMultipleImages={uploadMultipleImages}
               loading={loading}
               batchUploadProgress={batchUploadProgress}
-              enableCrop={true}
-              cropOptions={{
-                aspectRatio: 16 / 9, // 16:9 宽高比，适合大多数场景
-                minWidth: 320,
-                minHeight: 180,
-                maxWidth: 1920,
-                maxHeight: 1080,
-              }}
             />
           </div>
 
