@@ -173,11 +173,9 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
           <div className="image-edit-form-group">
             <label className="image-edit-form-label">
               {translate('image.edit.imageName')}{' '}
-              <span className="image-edit-form-optional">
-                {translate('image.edit.optional')}
-              </span>
             </label>
             <input
+              disabled={true}
               type="text"
               value={formData.name || ''}
               onChange={e => handleInputChange('name', e.target.value)}

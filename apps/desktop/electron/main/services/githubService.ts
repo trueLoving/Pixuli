@@ -6,119 +6,6 @@ class GitHubService {
 
   constructor() {}
 
-  // 重命名文件
-  public async renameFile(
-    owner: string,
-    repo: string,
-    path: string,
-    branch: string,
-    oldFileName: string,
-    newFileName: string
-  ) {
-    try {
-      const oldFilePath = `${path}/${oldFileName}`;
-      const newFilePath = `${path}/${newFileName}`;
-
-      // 1. 获取原文件内容
-      const fileInfo = await this.octokit!.rest.repos.getContent({
-        owner,
-        repo,
-        path: oldFilePath,
-        ref: branch,
-      });
-
-      if (Array.isArray(fileInfo.data)) {
-        throw new Error('原路径指向目录，不是文件');
-      }
-
-      const fileData = fileInfo.data as any;
-      const fileContent = fileData.content;
-      const fileEncoding = fileData.encoding;
-
-      if (!fileContent || fileEncoding !== 'base64') {
-        throw new Error('无法获取文件内容');
-      }
-
-      // 2. 检查新文件是否已存在，如果存在则获取其 SHA
-      let newFileSha: string | undefined = undefined;
-      try {
-        const newFileInfo = await this.octokit!.rest.repos.getContent({
-          owner,
-          repo,
-          path: newFilePath,
-          ref: branch,
-        });
-
-        if (!Array.isArray(newFileInfo.data)) {
-          newFileSha = (newFileInfo.data as any).sha;
-        }
-      } catch (error: any) {
-        // 如果新文件不存在（404错误），则正常创建
-        if (error.status !== 404) {
-          throw error;
-        }
-      }
-
-      // 3. 上传到新文件名
-      const createParams: any = {
-        owner,
-        repo,
-        path: newFilePath,
-        message: `Rename file: ${oldFileName} → ${newFileName}`,
-        content: fileContent,
-        branch,
-      };
-
-      // 如果新文件已存在，添加 SHA 参数
-      if (newFileSha) {
-        createParams.sha = newFileSha;
-      }
-
-      await this.octokit!.rest.repos.createOrUpdateFileContents(createParams);
-
-      // 4. 删除原文件
-      await this.octokit!.rest.repos.deleteFile({
-        owner,
-        repo,
-        path: oldFilePath,
-        message: `Delete old file after rename: ${oldFileName}`,
-        sha: fileData.sha,
-        branch,
-      });
-
-      // 5. 删除旧的metadata文件（如果存在）
-      try {
-        const oldMetadataPath = `${path}/.metadata/${oldFileName}.json`;
-        const oldMetadataInfo = await this.octokit!.rest.repos.getContent({
-          owner,
-          repo,
-          path: oldMetadataPath,
-          ref: branch,
-        });
-
-        if (!Array.isArray(oldMetadataInfo.data)) {
-          const oldMetadataData = oldMetadataInfo.data as any;
-          await this.octokit!.rest.repos.deleteFile({
-            owner,
-            repo,
-            path: oldMetadataPath,
-            message: `Delete old metadata after rename: ${oldFileName}`,
-            sha: oldMetadataData.sha,
-            branch,
-          });
-        }
-      } catch (metadataError) {
-        // 如果旧的metadata文件不存在，忽略错误
-        console.log('Old metadata file not found, skipping deletion');
-      }
-    } catch (error) {
-      console.error('GitHub rename file failed:', error);
-      throw new Error(
-        `重命名文件失败: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
-
   public isImageFile(fileName: string): boolean {
     const imageExtensions = [
       '.jpg',
@@ -524,20 +411,7 @@ export function registerGithubHandlers() {
         throw new Error('GitHub 认证未设置');
       }
 
-      const { owner, repo, path, branch, fileName, metadata, oldFileName } =
-        params;
-
-      // 如果文件名发生了变化，需要重命名文件
-      if (oldFileName && oldFileName !== metadata.name) {
-        await githubService.renameFile(
-          owner,
-          repo,
-          path,
-          branch,
-          oldFileName,
-          metadata.name
-        );
-      }
+      const { owner, repo, path, branch, metadata } = params;
 
       // 创建或更新元数据文件
       const metadataFileName = `${metadata.name}.json`;

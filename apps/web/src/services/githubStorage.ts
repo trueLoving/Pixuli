@@ -179,8 +179,8 @@ export class GitHubStorageService {
           try {
             metadata = await this.getImageMetadata(item.name);
           } catch (error) {
-            // 元数据文件不存在，使用默认值
-            console.debug(`No metadata found for ${item.name}`);
+            // 其他错误，记录debug日志
+            console.debug(`Failed to fetch metadata for ${item.name}:`, error);
           }
 
           return {
@@ -238,48 +238,9 @@ export class GitHubStorageService {
   async updateImageInfo(
     _imageId: string,
     fileName: string,
-    metadata: any,
-    oldFileName?: string
+    metadata: any
   ): Promise<void> {
     try {
-      // TODO: 处理文件名重命名（得要想一个更好的办法来处理这种情况，这种操作不常用，但是得考虑）
-      if (oldFileName && oldFileName !== fileName) {
-        const oldFilePath = `${this.config.path}/${oldFileName}`;
-        const newFilePath = `${this.config.path}/${fileName}`;
-
-        // 获取原文件信息
-        const fileInfo = await this.makeGitHubRequest(
-          `/repos/${this.config.owner}/${this.config.repo}/contents/${oldFilePath}?ref=${this.config.branch}`
-        );
-
-        // 创建新文件
-        await this.makeGitHubRequest(
-          `/repos/${this.config.owner}/${this.config.repo}/contents/${newFilePath}`,
-          {
-            method: 'PUT',
-            body: JSON.stringify({
-              message: `Rename image: ${oldFileName} -> ${fileName}`,
-              content: fileInfo.content,
-              sha: fileInfo.sha,
-              branch: this.config.branch,
-            }),
-          }
-        );
-
-        // 删除原文件
-        await this.makeGitHubRequest(
-          `/repos/${this.config.owner}/${this.config.repo}/contents/${oldFilePath}`,
-          {
-            method: 'DELETE',
-            body: JSON.stringify({
-              message: `Delete old image: ${oldFileName}`,
-              sha: fileInfo.sha,
-              branch: this.config.branch,
-            }),
-          }
-        );
-      }
-
       // 更新元数据文件
       await this.updateImageMetadata(fileName, metadata);
     } catch (error) {
@@ -346,25 +307,37 @@ export class GitHubStorageService {
   private getMetadataFileName(fileName: string): string {
     const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
     const extension = fileName.substring(fileName.lastIndexOf('.'));
+    // 格式：filename.metadata.ext.json (例如：abc23.metadata.png.json)
     return `${nameWithoutExt}.metadata${extension}.json`;
   }
 
   // 获取图片元数据
-  private async getImageMetadata(fileName: string): Promise<any> {
+  private async getImageMetadata(fileName: string): Promise<any | null> {
     try {
       const metadataFileName = this.getMetadataFileName(fileName);
-      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
+      // 使用 raw.githubusercontent.com 直接获取文件内容
+      // URL格式：https://raw.githubusercontent.com/owner/repo/refs/heads/branch/path/.metadata/file.json
+      const metadataUrl = `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.config.path}/.metadata/${metadataFileName}`;
 
-      const response = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
-      );
+      const response = await fetch(metadataUrl);
 
-      // 解码 base64 内容
-      const metadataContent = decodeURIComponent(
-        escape(atob(response.content))
-      );
-      return JSON.parse(metadataContent);
+      // 如果文件不存在（404），记录警告而不是错误
+      if (response.status === 404) {
+        console.warn(`Metadata file not found for ${fileName} (404)`);
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.status}`);
+      }
+
+      const metadataContent = await response.json();
+      return metadataContent;
     } catch (error) {
+      // 如果是已知的404错误，直接返回null
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
       throw new Error(`Failed to get metadata for ${fileName}: ${error}`);
     }
   }
