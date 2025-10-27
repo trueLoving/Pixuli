@@ -8,6 +8,7 @@ import {
   aiAnalysisLocales,
   imageCompressionLocales,
   imageConverterLocales,
+  versionInfoLocales,
 } from '../components';
 
 // 合并语言包
@@ -30,6 +31,7 @@ const resources = {
       ...aiAnalysisLocales['zh-CN'],
       ...imageCompressionLocales['zh-CN'],
       ...imageConverterLocales['zh-CN'],
+      ...versionInfoLocales['zh-CN'],
     },
   },
   'en-US': {
@@ -38,6 +40,7 @@ const resources = {
       ...aiAnalysisLocales['en-US'],
       ...imageCompressionLocales['en-US'],
       ...imageConverterLocales['en-US'],
+      ...versionInfoLocales['en-US'],
     },
   },
 };

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
 import { registerServiceHandlers } from './services';
+import { createTray, updateTrayMenu, destroyTray } from './tray';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +46,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null;
+let appIsQuitting = false;
 const preload = path.join(__dirname, '../preload/index.js');
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
@@ -78,6 +80,28 @@ async function createWindow() {
     win?.webContents.send('main-process-message', new Date().toLocaleString());
   });
 
+  // 创建系统托盘，传入退出回调
+  createTray(win, () => {
+    appIsQuitting = true;
+  });
+
+  // 监听窗口显示/隐藏，更新托盘菜单
+  win.on('show', () => {
+    updateTrayMenu(win);
+  });
+
+  win.on('hide', () => {
+    updateTrayMenu(win);
+  });
+
+  // 监听窗口关闭事件，阻止默认行为并隐藏到托盘
+  win.on('close', event => {
+    if (!appIsQuitting) {
+      event.preventDefault();
+      win?.hide();
+    }
+  });
+
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('https:')) shell.openExternal(url);
@@ -88,14 +112,23 @@ async function createWindow() {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  win = null;
-  if (process.platform !== 'darwin') app.quit();
+  // macOS 上即使所有窗口都关闭，应用也继续运行
+  if (process.platform !== 'darwin') {
+    win = null;
+    app.quit();
+  } else {
+    // macOS 上保持窗口引用但不退出
+    if (win) {
+      win.hide();
+    }
+  }
 });
 
 app.on('second-instance', () => {
   if (win) {
     // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore();
+    win.show();
     win.focus();
   }
 });
@@ -107,6 +140,11 @@ app.on('activate', () => {
   } else {
     createWindow();
   }
+});
+
+// 应用退出前清理托盘
+app.on('before-quit', () => {
+  destroyTray();
 });
 
 // New window example arg: new windows url

@@ -1,0 +1,28 @@
+{
+  "version": {
+    "title": "Version Info",
+    "subtitle": "View application and dependency version details",
+    "tabs": {
+      "basic": "Basic Info",
+      "frameworks": "Frameworks",
+      "dependencies": "Dependencies"
+    },
+    "basic": {
+      "name": "Application Name",
+      "version": "Version",
+      "buildTime": "Build Time",
+      "branch": "Git Branch",
+      "description": "Description"
+    },
+    "dependencies": {
+      "note": "Runtime Dependencies",
+      "description": "This shows the dependency packages required at runtime and their versions."
+    },
+    "footer": {
+      "generated": "Generated"
+    }
+  },
+  "common": {
+    "close": "Close"
+  }
+}

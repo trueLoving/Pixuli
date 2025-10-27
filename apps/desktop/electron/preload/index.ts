@@ -82,5 +82,14 @@ contextBridge.exposeInMainWorld('clipboardAPI', {
   readText: () => ipcRenderer.invoke('clipboard:readText'),
 });
 
+// --------- Expose Electron API to the Renderer process ---------
+contextBridge.exposeInMainWorld('electronAPI', {
+  onReceiveMessage: (callback: (message: string) => void) => {
+    return ipcRenderer.on('main-process-message', (event, message) => {
+      callback(message);
+    });
+  },
+});
+
 // --------- Preload Loading Animation -------------------------
 loading();

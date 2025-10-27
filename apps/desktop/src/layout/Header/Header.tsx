@@ -8,6 +8,7 @@ import {
   ArrowRightLeft,
   Brain,
   HelpCircle,
+  Info,
   RefreshCw,
   Settings,
   Zap,
@@ -17,6 +18,7 @@ import {
   AIAnalysisModal,
   ImageCompression,
   ImageConverter,
+  VersionInfoModal,
 } from '../../components';
 
 interface HeaderProps {
@@ -89,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({
   const [showFormatConversion, setShowFormatConversion] = useState(false);
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [showVersionInfo, setShowVersionInfo] = useState(false);
 
   // 模态框控制函数
   const handleOpenConfigModal = () => setShowConfigModal(true);
@@ -103,6 +106,8 @@ const Header: React.FC<HeaderProps> = ({
   const handleCloseAIAnalysis = () => setShowAIAnalysis(false);
   const handleOpenKeyboardHelp = () => setShowKeyboardHelp(true);
   const handleCloseKeyboardHelp = () => setShowKeyboardHelp(false);
+  const handleOpenVersionInfo = () => setShowVersionInfo(true);
+  const handleCloseVersionInfo = () => setShowVersionInfo(false);
 
   const handleSaveConfig = (config: any) => {
     onSaveConfig(config);
@@ -114,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({
     setShowConfigModal(false);
   };
 
-  // 监听键盘快捷键事件
+  // 监听键盘快捷键事件和IPC消息
   useEffect(() => {
     const handleOpenCompression = () => setShowCompression(true);
     const handleOpenFormatConversion = () => setShowFormatConversion(true);
@@ -304,6 +309,15 @@ const Header: React.FC<HeaderProps> = ({
             >
               <HelpCircle className="w-5 h-5" />
             </button>
+
+            {/* 版本信息 */}
+            <button
+              onClick={handleOpenVersionInfo}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              title={t('version.title')}
+            >
+              <Info className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>
@@ -357,6 +371,13 @@ const Header: React.FC<HeaderProps> = ({
         isOpen={showKeyboardHelp}
         onClose={handleCloseKeyboardHelp}
         categories={keyboardCategories}
+      />
+
+      {/* 版本信息模态框 */}
+      <VersionInfoModal
+        t={t}
+        isOpen={showVersionInfo}
+        onClose={handleCloseVersionInfo}
       />
     </header>
   );

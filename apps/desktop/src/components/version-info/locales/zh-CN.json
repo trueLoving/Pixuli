@@ -1,0 +1,28 @@
+{
+  "version": {
+    "title": "版本信息",
+    "subtitle": "查看应用和依赖版本详情",
+    "tabs": {
+      "basic": "基本信息",
+      "frameworks": "开发框架",
+      "dependencies": "依赖项"
+    },
+    "basic": {
+      "name": "应用名称",
+      "version": "版本号",
+      "buildTime": "构建时间",
+      "branch": "Git 分支",
+      "description": "应用描述"
+    },
+    "dependencies": {
+      "note": "运行时依赖",
+      "description": "此处显示应用运行时所需的依赖包及其版本。"
+    },
+    "footer": {
+      "generated": "生成时间"
+    }
+  },
+  "common": {
+    "close": "关闭"
+  }
+}
