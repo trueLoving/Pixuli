@@ -216,6 +216,24 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* 右侧操作按钮 */}
           <div className="flex items-center space-x-3">
+            {/*
+              TODO:
+                AI 分析，等与大模型流程打通验证完成后再开放
+                目前思考是直接打入大模型还是说外部让用户自己下载，然后安装，
+                还有就是要不要考虑 MCP 的方式。提供远程 API 调用
+                还有就是 prompt 的优化设计，工具不仅提供标准的 prompt，也可让用户自己输入，然后根据用户输入的 prompt 进行分析，如果用户输入 prompt，是否要做优化功能。。。。
+                还有就是模型的选择、支持和对应的 ABI语言（python or rust），如果是 python 还得要了解 python 相关的库和生态
+                还有就是如果是选择 python，那么图片的压缩和转换是否也使用 python，不使用 rust。保持一致。
+                还有太多语言会感觉很复杂，到时候脑子都不够用了。。。。
+            */}
+            <button
+              onClick={handleOpenAIAnalysis}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              title={t('image.aiAnalysis')}
+            >
+              <Brain className="w-5 h-5" />
+            </button>
+
             {/* 图片压缩工具 */}
             <button
               onClick={handleOpenCompression}
@@ -243,24 +261,6 @@ const Header: React.FC<HeaderProps> = ({
               currentTitle={t('language.current')}
               showBackdrop={false}
             />
-
-            {/*
-              TODO:
-                AI 分析，等与大模型流程打通验证完成后再开放
-                目前思考是直接打入大模型还是说外部让用户自己下载，然后安装，
-                还有就是要不要考虑 MCP 的方式。提供远程 API 调用
-                还有就是 prompt 的优化设计，工具不仅提供标准的 prompt，也可让用户自己输入，然后根据用户输入的 prompt 进行分析，如果用户输入 prompt，是否要做优化功能。。。。
-                还有就是模型的选择、支持和对应的 ABI语言（python or rust），如果是 python 还得要了解 python 相关的库和生态
-                还有就是如果是选择 python，那么图片的压缩和转换是否也使用 python，不使用 rust。保持一致。
-                还有太多语言会感觉很复杂，到时候脑子都不够用了。。。。
-            */}
-            {/* <button
-              onClick={handleOpenAIAnalysis}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              title={t('image.aiAnalysis')}
-            >
-              <Brain className="w-5 h-5" />
-            </button> */}
 
             {/* GitHub 配置 */}
             {storageType === 'github' && githubConfig && (

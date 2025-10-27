@@ -17,8 +17,9 @@ export interface AIModelConfig {
 
 // 图片分析请求接口
 export interface ImageAnalysisRequest {
-  imageData: Buffer;
+  imageData: Buffer | Uint8Array | number[];
   modelId?: string;
+  modelConfig?: AIModelConfig; // 直接传递模型配置
   config?: {
     useGpu?: boolean;
     confidenceThreshold?: number;

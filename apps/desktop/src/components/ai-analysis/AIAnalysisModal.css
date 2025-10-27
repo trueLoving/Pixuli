@@ -125,6 +125,58 @@
   margin-bottom: 16px;
 }
 
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.qwen-config {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.qwen-config label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.qwen-config label:first-child {
+  margin-top: 0;
+}
+
+.warning-message {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  color: #92400e;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warning-message::before {
+  content: '⚠️';
+  font-size: 18px;
+}
+
 .config-section label {
   display: block;
   margin-bottom: 8px;

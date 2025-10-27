@@ -56,6 +56,13 @@ contextBridge.exposeInMainWorld('wasmAPI', {
     ipcRenderer.invoke('wasm:convert-image-format', imageData, options),
   batchConvertImageFormat: (imagesData: number[][], options: any) =>
     ipcRenderer.invoke('wasm:batch-convert-image-format', imagesData, options),
+  // AI 分析功能
+  analyzeImage: (imageData: number[], options?: any) =>
+    ipcRenderer.invoke('wasm:analyze-image', imageData, options),
+  batchAnalyzeImages: (imagesData: number[][], options?: any) =>
+    ipcRenderer.invoke('wasm:batch-analyze-images', imagesData, options),
+  checkModelAvailability: (modelPath: string) =>
+    ipcRenderer.invoke('wasm:check-model-availability', modelPath),
 });
 
 // --------- Expose AI API to the Renderer process ---------

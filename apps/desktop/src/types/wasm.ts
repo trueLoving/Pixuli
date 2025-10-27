@@ -12,6 +12,10 @@ export interface WasmAPI {
     imagesData: number[][],
     options: any
   ) => Promise<any[]>;
+  // AI 分析功能
+  analyzeImage: (imageData: number[], options?: any) => Promise<any>;
+  batchAnalyzeImages: (imagesData: number[][], options?: any) => Promise<any[]>;
+  checkModelAvailability: (modelPath: string) => Promise<boolean>;
 }
 
 // 全局类型声明

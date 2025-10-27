@@ -1,5 +1,10 @@
-//! Pixuli WASM 图片处理库
-//!
+//
+// 1.3.0 wasm 版本需求
+// AI 分析功能实现(目前只支持 Qwen 模型，后续再支持其他模型)
+// 代码整理（分析->analyze、转换->convert、压缩->compress）归类到文件夹
+//
+//
+// Pixuli WASM 图片处理库
 
 #![deny(clippy::all)]
 
@@ -9,6 +14,7 @@ use napi_derive::napi;
 pub mod format_conversion;
 pub mod image;
 pub mod webp;
+pub mod ai_analysis;
 
 // 重新导出主要功能
 pub use image::*;
@@ -17,6 +23,11 @@ pub use webp::*;
 pub use format_conversion::{
   batch_convert_image_format, convert_image_format, get_format_info, get_supported_formats,
   FormatConversionOptions, FormatConversionResult, ResizeOptions,
+};
+
+pub use ai_analysis::{
+  analyze_image, batch_analyze_images, check_model_availability,
+  AIAnalysisOptions, AIAnalysisResult,
 };
 
 /// 简单的加法函数，用于测试WASM接口

@@ -25,8 +25,9 @@ export interface AIModelConfig {
 
 // 图片分析请求接口
 export interface ImageAnalysisRequest {
-  imageData: Buffer;
+  imageData: Buffer | Uint8Array | number[];
   modelId?: string;
+  modelConfig?: AIModelConfig; // 直接传递模型配置
   config?: {
     useGpu?: boolean;
     confidenceThreshold?: number;
@@ -222,15 +223,12 @@ class AIService {
     try {
       const { dialog } = await import('electron');
       const result = await dialog.showOpenDialog({
-        title: '选择 AI 模型文件',
+        title: '选择 GGUF 模型文件',
         filters: [
-          { name: 'TensorFlow Lite 模型', extensions: ['tflite'] },
-          { name: 'TensorFlow 模型', extensions: ['pb', 'json', 'bin'] },
-          { name: 'ONNX 模型', extensions: ['onnx'] },
-          { name: 'Qwen 模型目录', extensions: ['*'] },
+          { name: 'GGUF 模型', extensions: ['gguf'] },
           { name: '所有文件', extensions: ['*'] },
         ],
-        properties: ['openFile', 'openDirectory'],
+        properties: ['openFile'],
         defaultPath: process.env.HOME || process.env.USERPROFILE || '/',
       });
 
@@ -252,13 +250,15 @@ class AIService {
     request: ImageAnalysisRequest
   ): Promise<ImageAnalysisResponse> {
     try {
-      const modelConfig = this.models.get(request.modelId || '');
-      if (!modelConfig || modelConfig.type !== 'qwen-llm') {
+      // 从 request 中获取模型配置（不再依赖 models Map）
+      if (!request.modelConfig) {
         return {
           success: false,
-          error: 'Qwen model not found or invalid type',
+          error: 'Qwen model configuration is required',
         };
       }
+
+      const modelConfig = request.modelConfig;
 
       if (!modelConfig.modelPath) {
         return {
@@ -282,7 +282,23 @@ class AIService {
         app.getPath('temp'),
         `temp_image_${Date.now()}.jpg`
       );
-      await writeFile(tempImagePath, request.imageData);
+
+      // 处理不同的数据格式（Uint8Array 或 Buffer）
+      let imageBuffer: Buffer;
+      if (request.imageData instanceof Uint8Array) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else if (request.imageData instanceof Buffer) {
+        imageBuffer = request.imageData;
+      } else if (Array.isArray(request.imageData)) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else {
+        return {
+          success: false,
+          error: 'Invalid image data format',
+        };
+      }
+
+      await writeFile(tempImagePath, imageBuffer);
 
       try {
         // 调用二进制文件进行图片分析
@@ -336,7 +352,15 @@ class AIService {
     const { spawn } = await import('child_process');
 
     return new Promise((resolve, reject) => {
-      const device = config?.useGpu ? 'cuda' : 'cpu';
+      // 确定计算设备
+      let device: string;
+      if (modelConfig.device && modelConfig.device !== 'auto') {
+        device = modelConfig.device;
+      } else if (config?.useGpu) {
+        device = 'cuda';
+      } else {
+        device = 'cpu';
+      }
 
       const args = [
         '--model-path',
@@ -456,7 +480,7 @@ export function registerAiHandlers() {
     }
   });
 
-  ipcMain.handle('select-model-file', async () => {
+  ipcMain.handle('ai:select-model-file', async () => {
     return await aiService.selectModelFile();
   });
 }

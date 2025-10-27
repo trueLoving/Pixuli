@@ -152,10 +152,7 @@ class UpyunService {
     }
   }
 
-  // TODO: 更新元数据
-  async updateMetadata(params: UpyunUpdateMetadataParams) {
-    // todo
-  }
+  async updateMetadata(params: UpyunUpdateMetadataParams) {}
 }
 
 const upyunService = new UpyunService();

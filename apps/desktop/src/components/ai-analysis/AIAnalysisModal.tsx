@@ -35,27 +35,34 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     dimensions?: { width: number; height: number };
   } | null>(null);
 
-  // Qwen模型配置
+  // AI 分析配置
+  const [aiConfig, setAiConfig] = useState({
+    confidenceThreshold: 0.5,
+    maxTags: 10,
+    analyzeColors: true,
+    detectObjects: false,
+    useQwen: false, // 是否使用 Qwen 模型
+  });
+
+  // Qwen 模型配置
   const [qwenConfig, setQwenConfig] = useState({
     modelPath: '',
-    device: 'auto' as 'cpu' | 'cuda' | 'auto',
+    device: 'cpu' as 'cpu' | 'cuda',
     maxTokens: 512,
     temperature: 0.7,
-    useGpu: false,
-    confidenceThreshold: 0.5,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 选择Qwen模型路径
-  const handleSelectModelPath = async () => {
+  // 选择 Qwen GGUF 模型路径
+  const handleSelectQwenModelPath = async () => {
     try {
       const result = await window.aiAPI.selectModelFile();
       if (result.success && result.filePath) {
         setQwenConfig(prev => ({ ...prev, modelPath: result.filePath! }));
         setError('');
       } else {
-        setError(t('common.error'));
+        setError(result.error || t('common.error'));
       }
     } catch (error) {
       setError(t('common.error'));
@@ -90,8 +97,14 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
   };
 
   const handleAnalyze = async () => {
-    if (!uploadedImage || !qwenConfig.modelPath) {
-      setError(t('common.error'));
+    if (!uploadedImage) {
+      setError('请先上传图片');
+      return;
+    }
+
+    // 如果使用 Qwen 模型，检查是否配置了模型路径
+    if (aiConfig.useQwen && !qwenConfig.modelPath) {
+      setError('请先选择 Qwen GGUF 模型文件');
       return;
     }
 
@@ -100,31 +113,148 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     setAnalysisResult(null);
 
     try {
-      // 将上传的图片文件转换为 Buffer
       const arrayBuffer = await uploadedImage.file.arrayBuffer();
-      const buffer = window.Buffer.from(arrayBuffer);
 
-      // 创建临时模型配置
-      const tempModelConfig: AIModelConfig = {
-        id: 'temp-qwen-model',
-        name: 'Qwen LLM',
-        type: 'qwen-llm',
-        enabled: true,
-        modelPath: qwenConfig.modelPath,
-        device: qwenConfig.device,
-        maxTokens: qwenConfig.maxTokens,
-        temperature: qwenConfig.temperature,
-      };
+      let result: ImageAnalysisResponse;
 
-      // 使用 Qwen LLM 模型分析
-      const result = await window.aiAPI.analyzeImageWithQwen({
-        imageData: buffer,
-        modelId: tempModelConfig.id,
-        config: {
-          useGpu: qwenConfig.useGpu,
-          confidenceThreshold: qwenConfig.confidenceThreshold,
-        },
-      });
+      // 注意：Qwen GGUF 功能暂时不可用，强制使用 WASM 分析
+      // TODO: 等待 GGUF 支持实现
+      const shouldUseQwen = false; // 暂时禁用
+
+      if (shouldUseQwen && aiConfig.useQwen && qwenConfig.modelPath) {
+        // 使用 Qwen GGUF 模型分析（暂时不可用）
+        const buffer = new Uint8Array(arrayBuffer);
+
+        const tempModelConfig: AIModelConfig = {
+          id: 'qwen-gguf-model-' + Date.now(),
+          name: 'Qwen GGUF',
+          type: 'qwen-llm',
+          enabled: true,
+          modelPath: qwenConfig.modelPath,
+          device: qwenConfig.device,
+          maxTokens: qwenConfig.maxTokens,
+          temperature: qwenConfig.temperature,
+        };
+
+        result = await window.aiAPI.analyzeImageWithQwen({
+          imageData: buffer,
+          modelConfig: tempModelConfig,
+          config: {
+            useGpu: qwenConfig.device === 'cuda',
+            confidenceThreshold: aiConfig.confidenceThreshold,
+          },
+        });
+      } else {
+        // 使用 WASM 基础分析
+        const imageData = Array.from(new Uint8Array(arrayBuffer));
+
+        const wasmResult = await window.wasmAPI.analyzeImage(imageData, {
+          confidence_threshold: aiConfig.confidenceThreshold,
+          max_tags: aiConfig.maxTags,
+          analyze_colors: aiConfig.analyzeColors,
+          detect_objects: aiConfig.detectObjects,
+        });
+
+        console.log('WASM Result:', wasmResult);
+
+        // 注意：NAPI-RS 会将 snake_case 转换为 camelCase
+        // 使用 tagsJson 而不是 tags_json
+
+        // 安全的 JSON 解析
+        let tags: string[] = [];
+        let colors: Array<{
+          name: string;
+          rgb: number[];
+          hex: string;
+          percentage: number;
+        }> = [];
+        let objects: Array<{
+          name: string;
+          confidence: number;
+          bbox: { x: number; y: number; width: number; height: number };
+          category: string;
+        }> = [];
+
+        try {
+          tags = JSON.parse(wasmResult.tagsJson || '[]') as string[];
+        } catch (e) {
+          console.error('Failed to parse tags:', e);
+          tags = [];
+        }
+
+        try {
+          colors = JSON.parse(wasmResult.colorsJson || '[]') as Array<{
+            name: string;
+            rgb: number[];
+            hex: string;
+            percentage: number;
+          }>;
+        } catch (e) {
+          console.error('Failed to parse colors:', e);
+          colors = [];
+        }
+
+        try {
+          objects = JSON.parse(wasmResult.objectsJson || '[]') as Array<{
+            name: string;
+            confidence: number;
+            bbox: { x: number; y: number; width: number; height: number };
+            category: string;
+          }>;
+        } catch (e) {
+          console.error('Failed to parse objects:', e);
+          objects = [];
+        }
+
+        console.log('WASM Result:', wasmResult);
+        console.log('tagsJson raw:', wasmResult.tagsJson);
+        console.log('colorsJson raw:', wasmResult.colorsJson);
+        console.log('Parsed tags:', tags);
+        console.log('Parsed colors:', colors);
+        if (colors.length > 0) {
+          console.log('First color full:', colors[0]);
+          console.log(
+            'First color.rgb:',
+            colors[0]?.rgb,
+            'Is Array:',
+            Array.isArray(colors[0]?.rgb)
+          );
+        }
+        console.log('Parsed objects:', objects);
+
+        result = {
+          success: wasmResult.success,
+          result: {
+            imageType: wasmResult.imageType, // camelCase
+            tags: tags,
+            description: wasmResult.description,
+            confidence: wasmResult.confidence,
+            objects: objects,
+            colors: colors
+              .filter(
+                color =>
+                  color &&
+                  color.rgb &&
+                  Array.isArray(color.rgb) &&
+                  color.rgb.length >= 3
+              )
+              .map(color => ({
+                name: color.name || 'Unknown Color',
+                rgb: [color.rgb[0], color.rgb[1], color.rgb[2]] as [
+                  number,
+                  number,
+                  number,
+                ],
+                percentage: color.percentage || 0,
+                hex: color.hex || '#000000',
+              })),
+            sceneType: wasmResult.sceneType, // camelCase
+            analysisTime: wasmResult.analysisTime || 0, // camelCase
+            modelUsed: wasmResult.modelUsed || 'WASM', // camelCase
+          },
+          error: wasmResult.error,
+        };
+      }
 
       setAnalysisResult(result);
 
@@ -135,7 +265,7 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       }
     } catch (error) {
       console.error('Analysis failed:', error);
-      setError(t('common.error'));
+      setError(error instanceof Error ? error.message : t('common.error'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -213,124 +343,195 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
             />
           </div>
 
-          {/* 模型配置区域 */}
+          {/* AI 分析配置区域 */}
           <div className="model-config-section">
-            <h3>{t('aiAnalysis.modelConfig.title')}</h3>
+            <h3>分析配置</h3>
 
-            {/* Qwen模型路径配置 */}
+            {/* 选择分析方式 */}
             <div className="config-section">
-              <label>{t('aiAnalysis.modelConfig.qwenModelPath')}</label>
-              <div className="file-input-group">
+              <label className="checkbox-label">
                 <input
-                  type="text"
-                  value={qwenConfig.modelPath}
+                  type="checkbox"
+                  checked={aiConfig.useQwen}
                   onChange={e =>
-                    setQwenConfig(prev => ({
+                    setAiConfig(prev => ({
                       ...prev,
-                      modelPath: e.target.value,
+                      useQwen: e.target.checked,
                     }))
                   }
-                  placeholder={t('common.error')}
-                  readOnly
+                  disabled={isAnalyzing || true} // 暂时禁用，等待开发
                 />
-                <button onClick={handleSelectModelPath} disabled={isAnalyzing}>
-                  <FolderOpen className="w-4 h-4" />
-                  {t('aiAnalysis.modelConfig.selectDirectory')}
-                </button>
-              </div>
-            </div>
-
-            {/* 计算设备选择 */}
-            <div className="config-section">
-              <label>{t('aiAnalysis.modelConfig.computeDevice')}</label>
-              <select
-                value={qwenConfig.device}
-                onChange={e =>
-                  setQwenConfig(prev => ({
-                    ...prev,
-                    device: e.target.value as 'cpu' | 'cuda' | 'auto',
-                    useGpu: e.target.value === 'cuda',
-                  }))
-                }
-                disabled={isAnalyzing}
-              >
-                <option value="auto">
-                  {t('aiAnalysis.modelConfig.autoSelect')}
-                </option>
-                <option value="cpu">{t('aiAnalysis.modelConfig.cpu')}</option>
-                <option value="cuda">{t('aiAnalysis.modelConfig.gpu')}</option>
-              </select>
-            </div>
-
-            {/* 最大Token数 */}
-            <div className="config-section">
-              <label>
-                {t('aiAnalysis.modelConfig.maxTokens')} {qwenConfig.maxTokens}
-                <input
-                  type="range"
-                  min="100"
-                  max="2048"
-                  step="100"
-                  value={qwenConfig.maxTokens}
-                  onChange={e =>
-                    setQwenConfig(prev => ({
-                      ...prev,
-                      maxTokens: parseInt(e.target.value),
-                    }))
-                  }
-                  disabled={isAnalyzing}
-                />
+                使用 Qwen GGUF 模型（正在开发中，暂时不可用）
               </label>
+              {aiConfig.useQwen && (
+                <div className="warning-message">
+                  ⚠️ GGUF 模型支持正在开发中，请使用 WASM 基础分析功能
+                </div>
+              )}
+              {aiConfig.useQwen && (
+                <div className="qwen-config">
+                  <label>GGUF 模型文件</label>
+                  <div className="file-input-group">
+                    <input
+                      type="text"
+                      value={qwenConfig.modelPath}
+                      placeholder="请选择 .gguf 模型文件"
+                      readOnly
+                    />
+                    <button
+                      onClick={handleSelectQwenModelPath}
+                      disabled={isAnalyzing}
+                    >
+                      <FolderOpen className="w-4 h-4" />
+                      选择文件
+                    </button>
+                  </div>
+                  {qwenConfig.modelPath && (
+                    <>
+                      <label>计算设备</label>
+                      <select
+                        value={qwenConfig.device}
+                        onChange={e =>
+                          setQwenConfig(prev => ({
+                            ...prev,
+                            device: e.target.value as 'cpu' | 'cuda',
+                          }))
+                        }
+                        disabled={isAnalyzing}
+                      >
+                        <option value="cpu">CPU</option>
+                        <option value="cuda">GPU (CUDA)</option>
+                      </select>
+                      <label>
+                        最大 Token 数 {qwenConfig.maxTokens}
+                        <input
+                          type="range"
+                          min="100"
+                          max="2048"
+                          step="100"
+                          value={qwenConfig.maxTokens}
+                          onChange={e =>
+                            setQwenConfig(prev => ({
+                              ...prev,
+                              maxTokens: parseInt(e.target.value),
+                            }))
+                          }
+                          disabled={isAnalyzing}
+                        />
+                      </label>
+                      <label>
+                        温度 {qwenConfig.temperature.toFixed(1)}
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="2.0"
+                          step="0.1"
+                          value={qwenConfig.temperature}
+                          onChange={e =>
+                            setQwenConfig(prev => ({
+                              ...prev,
+                              temperature: parseFloat(e.target.value),
+                            }))
+                          }
+                          disabled={isAnalyzing}
+                        />
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* 生成温度 */}
-            <div className="config-section">
-              <label>
-                {t('aiAnalysis.modelConfig.temperature')}{' '}
-                {qwenConfig.temperature}
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2.0"
-                  step="0.1"
-                  value={qwenConfig.temperature}
-                  onChange={e =>
-                    setQwenConfig(prev => ({
-                      ...prev,
-                      temperature: parseFloat(e.target.value),
-                    }))
-                  }
-                  disabled={isAnalyzing}
-                />
-              </label>
-            </div>
+            {!aiConfig.useQwen && (
+              <>
+                {/* 置信度阈值 */}
+                <div className="config-section">
+                  <label>
+                    置信度阈值 {aiConfig.confidenceThreshold.toFixed(1)}
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={aiConfig.confidenceThreshold}
+                      onChange={e =>
+                        setAiConfig(prev => ({
+                          ...prev,
+                          confidenceThreshold: parseFloat(e.target.value),
+                        }))
+                      }
+                      disabled={isAnalyzing}
+                    />
+                  </label>
+                </div>
 
-            {/* 置信度阈值 */}
-            <div className="config-section">
-              <label>
-                {t('aiAnalysis.modelConfig.confidenceThreshold')}{' '}
-                {qwenConfig.confidenceThreshold}
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={qwenConfig.confidenceThreshold}
-                  onChange={e =>
-                    setQwenConfig(prev => ({
-                      ...prev,
-                      confidenceThreshold: parseFloat(e.target.value),
-                    }))
-                  }
-                  disabled={isAnalyzing}
-                />
-              </label>
-            </div>
+                {/* 最大标签数 */}
+                <div className="config-section">
+                  <label>
+                    最大标签数 {aiConfig.maxTags}
+                    <input
+                      type="range"
+                      min="1"
+                      max="20"
+                      step="1"
+                      value={aiConfig.maxTags}
+                      onChange={e =>
+                        setAiConfig(prev => ({
+                          ...prev,
+                          maxTags: parseInt(e.target.value),
+                        }))
+                      }
+                      disabled={isAnalyzing}
+                    />
+                  </label>
+                </div>
+
+                {/* 颜色分析开关 */}
+                <div className="config-section">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={aiConfig.analyzeColors}
+                      onChange={e =>
+                        setAiConfig(prev => ({
+                          ...prev,
+                          analyzeColors: e.target.checked,
+                        }))
+                      }
+                      disabled={isAnalyzing}
+                    />
+                    启用颜色分析
+                  </label>
+                </div>
+
+                {/* 对象检测开关 */}
+                <div className="config-section">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={aiConfig.detectObjects}
+                      onChange={e =>
+                        setAiConfig(prev => ({
+                          ...prev,
+                          detectObjects: e.target.checked,
+                        }))
+                      }
+                      disabled={isAnalyzing}
+                    />
+                    启用对象检测
+                  </label>
+                </div>
+              </>
+            )}
 
             <button
               className="analyze-button"
               onClick={handleAnalyze}
-              disabled={!uploadedImage || !qwenConfig.modelPath || isAnalyzing}
+              disabled={
+                !uploadedImage ||
+                isAnalyzing ||
+                (aiConfig.useQwen && !qwenConfig.modelPath)
+              }
             >
               {isAnalyzing ? (
                 <>
@@ -357,10 +558,15 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
                   <div className="analysis-stats">
                     <span className="confidence-badge">
                       {t('aiAnalysis.result.confidence')}{' '}
-                      {(analysisResult.result.confidence * 100).toFixed(1)}%
+                      {((analysisResult.result.confidence || 0) * 100).toFixed(
+                        1
+                      )}
+                      %
                     </span>
                     <span className="time-badge">
-                      {analysisResult.result.analysisTime.toFixed(0)}
+                      {analysisResult.result.analysisTime
+                        ? analysisResult.result.analysisTime.toFixed(0)
+                        : '0'}
                       {t('aiAnalysis.result.time')}
                     </span>
                   </div>

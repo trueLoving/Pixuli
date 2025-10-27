@@ -6,6 +6,9 @@ import {
   getImageInfo,
   convertImageFormat,
   batchConvertImageFormat,
+  analyzeImage,
+  batchAnalyzeImages,
+  checkModelAvailability,
 } from 'pixuli-wasm';
 
 export function registerWasmHandlers() {
@@ -76,6 +79,45 @@ export function registerWasmHandlers() {
         return await batchConvertImageFormat(imagesData, options);
       } catch (error) {
         console.error('Batch image format conversion error:', error);
+        throw error;
+      }
+    }
+  );
+
+  // AI 图片分析IPC处理器
+  ipcMain.handle(
+    'wasm:analyze-image',
+    async (_, imageData: number[], options?: any) => {
+      try {
+        return await analyzeImage(imageData, options);
+      } catch (error) {
+        console.error('AI image analysis error:', error);
+        throw error;
+      }
+    }
+  );
+
+  // 批量AI图片分析IPC处理器
+  ipcMain.handle(
+    'wasm:batch-analyze-images',
+    async (_, imagesData: number[][], options?: any) => {
+      try {
+        return await batchAnalyzeImages(imagesData, options);
+      } catch (error) {
+        console.error('Batch AI image analysis error:', error);
+        throw error;
+      }
+    }
+  );
+
+  // 检查模型可用性IPC处理器
+  ipcMain.handle(
+    'wasm:check-model-availability',
+    async (_, modelPath: string) => {
+      try {
+        return await checkModelAvailability(modelPath);
+      } catch (error) {
+        console.error('Model availability check error:', error);
         throw error;
       }
     }

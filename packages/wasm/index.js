@@ -777,8 +777,11 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding;
+module.exports.analyzeImage = nativeBinding.analyzeImage;
+module.exports.batchAnalyzeImages = nativeBinding.batchAnalyzeImages;
 module.exports.batchCompressToWebp = nativeBinding.batchCompressToWebp;
 module.exports.batchConvertImageFormat = nativeBinding.batchConvertImageFormat;
+module.exports.checkModelAvailability = nativeBinding.checkModelAvailability;
 module.exports.compressToWebp = nativeBinding.compressToWebp;
 module.exports.convertImageFormat = nativeBinding.convertImageFormat;
 module.exports.getFormatInfo = nativeBinding.getFormatInfo;

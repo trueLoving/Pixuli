@@ -1,3 +1,10 @@
+/**
+ * 国际化语言包重新设计，拆分语言包，
+ * 1.基础的翻译包放在 packages/ui/src/locales 目录下，作为公共语言包，其他语言包继承自该语言包。
+ * 2.组件的翻译包放在 packages/ui/src/components 目录下。
+ * 3.应用的翻译包交给应用层自己实现（区分方式则是看在哪里使用）
+ * 组件测试框架添加，编写 components 下面的组件测试
+ */
 // 类型导出
 export * from './types/image';
 export * from './types/github';
