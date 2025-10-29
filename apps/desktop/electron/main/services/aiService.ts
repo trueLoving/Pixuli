@@ -2,16 +2,18 @@ import { ipcMain, dialog, app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { promisify } from 'util';
+import * as https from 'https';
+import * as http from 'http';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);
 
-// AI 模型配置接口 - 只支持 Qwen LLM
+// AI 模型配置接口 - 支持 Qwen LLM, Ollama, Shimmy
 export interface AIModelConfig {
   id: string;
   name: string;
-  type: 'qwen-llm';
+  type: 'qwen-llm' | 'ollama' | 'shimmy';
   enabled: boolean;
   description?: string;
   version?: string;
@@ -21,6 +23,12 @@ export interface AIModelConfig {
   device?: 'cpu' | 'cuda' | 'auto';
   maxTokens?: number;
   temperature?: number;
+  // Ollama 特定配置
+  ollamaBaseUrl?: string; // Ollama API 基础 URL，默认 http://localhost:11434
+  ollamaModel?: string; // Ollama 模型名称，如 qwen-vl, llava:1.5 等
+  // Shimmy 特定配置
+  shimmyPath?: string; // Shimmy 工具路径
+  shimmyModel?: string; // Shimmy 模型名称
 }
 
 // 图片分析请求接口
@@ -438,6 +446,570 @@ class AIService {
       return path.join(resourcesPath, 'bin', analyzerName);
     }
   }
+
+  // 使用 Ollama 分析图片
+  async analyzeImageWithOllama(
+    request: ImageAnalysisRequest
+  ): Promise<ImageAnalysisResponse> {
+    try {
+      if (!request.modelConfig) {
+        return {
+          success: false,
+          error: 'Ollama model configuration is required',
+        };
+      }
+
+      const modelConfig = request.modelConfig;
+      let baseUrl = modelConfig.ollamaBaseUrl || 'http://localhost:11434';
+      // 确保 URL 包含协议
+      if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+        baseUrl = `http://${baseUrl}`;
+      }
+      const modelName = modelConfig.ollamaModel || 'llava:latest';
+
+      if (!modelName) {
+        return {
+          success: false,
+          error: 'Ollama model name not configured',
+        };
+      }
+
+      // 处理图片数据
+      let imageBuffer: Buffer;
+      if (request.imageData instanceof Uint8Array) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else if (request.imageData instanceof Buffer) {
+        imageBuffer = request.imageData;
+      } else if (Array.isArray(request.imageData)) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else {
+        return {
+          success: false,
+          error: 'Invalid image data format',
+        };
+      }
+
+      // 将图片转换为 base64
+      const base64Image = imageBuffer.toString('base64');
+
+      // 调用 Ollama API
+      const startTime = Date.now();
+      const result = await this.callOllamaAPI(baseUrl, modelName, base64Image, {
+        temperature: modelConfig.temperature || 0.7,
+        maxTokens: modelConfig.maxTokens || 512,
+      });
+
+      const analysisTime = Date.now() - startTime;
+
+      // 解析 Ollama 返回的描述
+      // Ollama chat API 返回格式: { message: { content: "..." } }
+      const description =
+        result.message?.content || result.response || '无法生成描述';
+
+      // 提取标签（从描述中提取关键词，简单的实现）
+      const tags = this.extractTagsFromDescription(description);
+
+      return {
+        success: true,
+        result: {
+          imageType: 'unknown',
+          tags,
+          description,
+          confidence: 0.8,
+          objects: [],
+          colors: [],
+          sceneType: 'unknown',
+          analysisTime,
+          modelUsed: `${modelName} (Ollama)`,
+        },
+      };
+    } catch (error) {
+      console.error('Ollama analysis failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Analysis failed',
+      };
+    }
+  }
+
+  // 调用 Ollama API
+  private async callOllamaAPI(
+    baseUrl: string,
+    model: string,
+    base64Image: string,
+    options: { temperature?: number; maxTokens?: number }
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      // Ollama 视觉模型使用 /api/chat 端点
+      const url = new URL(`${baseUrl}/api/chat`);
+
+      const payload = {
+        model,
+        messages: [
+          {
+            role: 'user',
+            content:
+              '请详细描述这张图片，包括内容、场景、颜色、对象等。用中文回答。',
+            images: [base64Image],
+          },
+        ],
+        stream: false,
+        options: {
+          temperature: options.temperature || 0.7,
+          num_predict: options.maxTokens || 512,
+        },
+      };
+
+      const urlObj = new URL(baseUrl);
+      const isHttps = urlObj.protocol === 'https:';
+      const client = isHttps ? https : http;
+
+      const postData = JSON.stringify(payload);
+
+      const options_req = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (isHttps ? 443 : 80),
+        path: '/api/chat',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData),
+        },
+        timeout: 120000, // 120秒超时（图片分析可能需要更长时间）
+      };
+
+      const req = client.request(options_req, res => {
+        let data = '';
+
+        res.on('data', chunk => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            if (res.statusCode === 200) {
+              const result = JSON.parse(data);
+              resolve(result);
+            } else {
+              reject(
+                new Error(
+                  `Ollama API error: ${res.statusCode} - ${data || res.statusMessage}`
+                )
+              );
+            }
+          } catch (error) {
+            reject(new Error(`Failed to parse Ollama response: ${error}`));
+          }
+        });
+      });
+
+      req.on('error', error => {
+        reject(new Error(`Ollama API request failed: ${error.message}`));
+      });
+
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Ollama API request timeout'));
+      });
+
+      req.write(postData);
+      req.end();
+    });
+  }
+
+  // 检查 Ollama 连接
+  async checkOllamaConnection(baseUrl?: string): Promise<{
+    success: boolean;
+    error?: string;
+    models?: string[];
+  }> {
+    try {
+      let url = baseUrl || 'http://localhost:11434';
+      // 确保 URL 包含协议
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `http://${url}`;
+      }
+      const modelsResult = await this.getOllamaModels(url);
+
+      if (modelsResult.success && modelsResult.models) {
+        return {
+          success: true,
+          models: modelsResult.models.map(m => m.name),
+        };
+      } else {
+        return {
+          success: false,
+          error: modelsResult.error || 'Failed to connect to Ollama',
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // 获取 Ollama 可用模型列表
+  async getOllamaModels(baseUrl?: string): Promise<{
+    success: boolean;
+    models?: Array<{ name: string; size: number; modified_at: string }>;
+    error?: string;
+  }> {
+    try {
+      let url = baseUrl || 'http://localhost:11434';
+      // 确保 URL 包含协议
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `http://${url}`;
+      }
+      const urlObj = new URL(url);
+      const isHttps = urlObj.protocol === 'https:';
+      const client = isHttps ? https : http;
+
+      return new Promise((resolve, reject) => {
+        const options = {
+          hostname: urlObj.hostname,
+          port: urlObj.port || (isHttps ? 443 : 80),
+          path: '/api/tags',
+          method: 'GET',
+          timeout: 10000, // 10秒超时
+        };
+
+        const req = client.request(options, res => {
+          let data = '';
+
+          res.on('data', chunk => {
+            data += chunk;
+          });
+
+          res.on('end', () => {
+            try {
+              if (res.statusCode === 200) {
+                const result = JSON.parse(data);
+                resolve({
+                  success: true,
+                  models: result.models || [],
+                });
+              } else {
+                resolve({
+                  success: false,
+                  error: `HTTP ${res.statusCode}: ${data || res.statusMessage}`,
+                });
+              }
+            } catch (error) {
+              resolve({
+                success: false,
+                error: error instanceof Error ? error.message : 'Parse error',
+              });
+            }
+          });
+        });
+
+        req.on('error', error => {
+          resolve({
+            success: false,
+            error: error.message || 'Connection failed',
+          });
+        });
+
+        req.on('timeout', () => {
+          req.destroy();
+          resolve({
+            success: false,
+            error: 'Connection timeout',
+          });
+        });
+
+        req.end();
+      });
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // 使用 Shimmy 分析图片
+  async analyzeImageWithShimmy(
+    request: ImageAnalysisRequest
+  ): Promise<ImageAnalysisResponse> {
+    try {
+      if (!request.modelConfig) {
+        return {
+          success: false,
+          error: 'Shimmy model configuration is required',
+        };
+      }
+
+      const modelConfig = request.modelConfig;
+      const shimmyPath = modelConfig.shimmyPath || this.getDefaultShimmyPath();
+
+      if (!shimmyPath || !fs.existsSync(shimmyPath)) {
+        return {
+          success: false,
+          error: 'Shimmy path not configured or not found',
+        };
+      }
+
+      // 处理图片数据
+      let imageBuffer: Buffer;
+      if (request.imageData instanceof Uint8Array) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else if (request.imageData instanceof Buffer) {
+        imageBuffer = request.imageData;
+      } else if (Array.isArray(request.imageData)) {
+        imageBuffer = Buffer.from(request.imageData);
+      } else {
+        return {
+          success: false,
+          error: 'Invalid image data format',
+        };
+      }
+
+      // 将图片保存为临时文件
+      const tempImagePath = path.join(
+        app.getPath('temp'),
+        `temp_image_${Date.now()}.jpg`
+      );
+      await writeFile(tempImagePath, imageBuffer);
+
+      try {
+        // 调用 Shimmy 工具
+        const startTime = Date.now();
+        const result = await this.callShimmyTool(
+          shimmyPath,
+          modelConfig.shimmyModel || 'qwen-vl',
+          tempImagePath
+        );
+        const analysisTime = Date.now() - startTime;
+
+        // 解析结果
+        const description = result.description || '无法生成描述';
+        const tags = this.extractTagsFromDescription(description);
+
+        return {
+          success: true,
+          result: {
+            imageType: result.imageType || 'unknown',
+            tags,
+            description,
+            confidence: result.confidence || 0.8,
+            objects: result.objects || [],
+            colors: result.colors || [],
+            sceneType: result.sceneType || 'unknown',
+            analysisTime,
+            modelUsed: modelConfig.shimmyModel || 'qwen-vl (Shimmy)',
+          },
+        };
+      } finally {
+        // 清理临时文件
+        try {
+          if (fs.existsSync(tempImagePath)) {
+            fs.unlinkSync(tempImagePath);
+          }
+        } catch (cleanupError) {
+          console.warn('Failed to cleanup temp image:', cleanupError);
+        }
+      }
+    } catch (error) {
+      console.error('Shimmy analysis failed:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Analysis failed',
+      };
+    }
+  }
+
+  // 调用 Shimmy 工具
+  private async callShimmyTool(
+    shimmyPath: string,
+    modelName: string,
+    imagePath: string
+  ): Promise<any> {
+    const { spawn } = await import('child_process');
+
+    return new Promise((resolve, reject) => {
+      // Shimmy CLI 命令格式: shimmy analyze --model <model> --image <path>
+      const args = ['analyze', '--model', modelName, '--image', imagePath];
+
+      console.log('Calling Shimmy tool:', shimmyPath);
+      console.log('Args:', args);
+
+      const shimmyProcess = spawn(shimmyPath, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env },
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      shimmyProcess.stdout.on('data', data => {
+        stdout += data.toString();
+      });
+
+      shimmyProcess.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+
+      shimmyProcess.on('close', code => {
+        if (code === 0) {
+          try {
+            const result = JSON.parse(stdout);
+            resolve(result);
+          } catch (parseError) {
+            // 如果不是 JSON，尝试解析为文本描述
+            resolve({
+              description: stdout.trim() || '分析完成',
+            });
+          }
+        } else {
+          reject(
+            new Error(
+              `Shimmy tool failed with code ${code}: ${stderr || stdout}`
+            )
+          );
+        }
+      });
+
+      shimmyProcess.on('error', error => {
+        reject(new Error(`Failed to start Shimmy tool: ${error.message}`));
+      });
+
+      // 设置超时
+      setTimeout(() => {
+        shimmyProcess.kill();
+        reject(new Error('Shimmy tool timeout'));
+      }, 120000); // 2分钟超时
+    });
+  }
+
+  // 获取默认 Shimmy 路径
+  private getDefaultShimmyPath(): string {
+    const platform = process.platform;
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (isDev) {
+      // 开发环境：尝试从常见路径查找
+      const possiblePaths = [
+        path.join(process.env.HOME || '', '.local', 'bin', 'shimmy'),
+        path.join('/usr', 'local', 'bin', 'shimmy'),
+        'shimmy', // 如果在 PATH 中
+      ];
+
+      for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+          return p;
+        }
+      }
+    }
+
+    // 生产环境：从应用资源目录查找
+    const resourcesPath = process.resourcesPath || app.getAppPath();
+    const shimmyName = platform === 'win32' ? 'shimmy.exe' : 'shimmy';
+    return path.join(resourcesPath, 'bin', shimmyName);
+  }
+
+  // 检查 Shimmy
+  async checkShimmy(shimmyPath?: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      const pathToCheck = shimmyPath || this.getDefaultShimmyPath();
+
+      if (!pathToCheck) {
+        return {
+          success: false,
+          error: 'Shimmy path not configured',
+        };
+      }
+
+      // 检查文件是否存在
+      if (!fs.existsSync(pathToCheck)) {
+        return {
+          success: false,
+          error: `Shimmy not found at: ${pathToCheck}`,
+        };
+      }
+
+      // 尝试运行 shimmy --version
+      const { execFile } = await import('child_process');
+      const { promisify } = await import('util');
+      const execFileAsync = promisify(execFile);
+
+      try {
+        await execFileAsync(pathToCheck, ['--version'], { timeout: 5000 });
+        return { success: true };
+      } catch (error) {
+        // 即使版本检查失败，如果文件存在也认为可用
+        return { success: true };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  // 从描述中提取标签（简单实现）
+  private extractTagsFromDescription(description: string): string[] {
+    // 简单关键词提取，可以根据需要改进
+    const commonKeywords = [
+      '图片',
+      '照片',
+      '图像',
+      '场景',
+      '人物',
+      '动物',
+      '物体',
+      '建筑',
+      '自然',
+      '风景',
+      '室内',
+      '室外',
+      '白天',
+      '晚上',
+      '日出',
+      '日落',
+      '城市',
+      '乡村',
+      '大海',
+      '山',
+      '森林',
+      '河流',
+      '天空',
+      '云',
+    ];
+
+    const tags: string[] = [];
+    const lowerDesc = description.toLowerCase();
+
+    for (const keyword of commonKeywords) {
+      if (lowerDesc.includes(keyword.toLowerCase())) {
+        tags.push(keyword);
+      }
+    }
+
+    // 如果标签太少，添加一些基于描述的通用标签
+    if (tags.length < 3) {
+      if (lowerDesc.includes('人') || lowerDesc.includes('人物')) {
+        tags.push('人物');
+      }
+      if (lowerDesc.includes('动物')) {
+        tags.push('动物');
+      }
+      if (lowerDesc.includes('风景') || lowerDesc.includes('自然')) {
+        tags.push('风景');
+      }
+      if (lowerDesc.includes('建筑')) {
+        tags.push('建筑');
+      }
+    }
+
+    return tags.slice(0, 10); // 最多返回10个标签
+  }
 }
 
 const aiService = new AIService();
@@ -482,5 +1054,82 @@ export function registerAiHandlers() {
 
   ipcMain.handle('ai:select-model-file', async () => {
     return await aiService.selectModelFile();
+  });
+
+  // Ollama 图片分析
+  ipcMain.handle(
+    'ai:analyze-image-ollama',
+    async (
+      event,
+      request: ImageAnalysisRequest
+    ): Promise<ImageAnalysisResponse> => {
+      try {
+        return await aiService.analyzeImageWithOllama(request);
+      } catch (error) {
+        console.error('Ollama analysis failed:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    }
+  );
+
+  // 检查 Ollama 连接
+  ipcMain.handle(
+    'ai:check-ollama-connection',
+    async (event, baseUrl?: string) => {
+      try {
+        return await aiService.checkOllamaConnection(baseUrl);
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    }
+  );
+
+  // 获取 Ollama 模型列表
+  ipcMain.handle('ai:get-ollama-models', async (event, baseUrl?: string) => {
+    try {
+      return await aiService.getOllamaModels(baseUrl);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
+
+  // Shimmy 图片分析
+  ipcMain.handle(
+    'ai:analyze-image-shimmy',
+    async (
+      event,
+      request: ImageAnalysisRequest
+    ): Promise<ImageAnalysisResponse> => {
+      try {
+        return await aiService.analyzeImageWithShimmy(request);
+      } catch (error) {
+        console.error('Shimmy analysis failed:', error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    }
+  );
+
+  // 检查 Shimmy
+  ipcMain.handle('ai:check-shimmy', async (event, shimmyPath?: string) => {
+    try {
+      return await aiService.checkShimmy(shimmyPath);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   });
 }

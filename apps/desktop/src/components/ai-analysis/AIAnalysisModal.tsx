@@ -35,13 +35,17 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     dimensions?: { width: number; height: number };
   } | null>(null);
 
-  // AI 分析配置
+  // AI 分析方式：'wasm' | 'qwen' | 'ollama' | 'shimmy'
+  const [analysisType, setAnalysisType] = useState<
+    'wasm' | 'qwen' | 'ollama' | 'shimmy'
+  >('wasm');
+
+  // AI 分析配置（WASM 用）
   const [aiConfig, setAiConfig] = useState({
     confidenceThreshold: 0.5,
     maxTags: 10,
     analyzeColors: true,
     detectObjects: false,
-    useQwen: false, // 是否使用 Qwen 模型
   });
 
   // Qwen 模型配置
@@ -52,6 +56,27 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
     temperature: 0.7,
   });
 
+  // Ollama 配置
+  const [ollamaConfig, setOllamaConfig] = useState({
+    baseUrl: 'http://localhost:11434',
+    model: 'llava:latest',
+    temperature: 0.7,
+    maxTokens: 512,
+  });
+  const [ollamaModels, setOllamaModels] = useState<
+    Array<{ name: string; size: number; modified_at: string }>
+  >([]);
+  const [checkingOllama, setCheckingOllama] = useState(false);
+  const [ollamaConnected, setOllamaConnected] = useState(false);
+
+  // Shimmy 配置
+  const [shimmyConfig, setShimmyConfig] = useState({
+    shimmyPath: '',
+    model: 'qwen-vl',
+  });
+  const [checkingShimmy, setCheckingShimmy] = useState(false);
+  const [shimmyAvailable, setShimmyAvailable] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 选择 Qwen GGUF 模型路径
@@ -61,6 +86,83 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       if (result.success && result.filePath) {
         setQwenConfig(prev => ({ ...prev, modelPath: result.filePath! }));
         setError('');
+      } else {
+        setError(result.error || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+    }
+  };
+
+  // 检查 Ollama 连接并获取模型列表
+  const handleCheckOllamaConnection = async () => {
+    setCheckingOllama(true);
+    setError('');
+    try {
+      const result = await window.aiAPI.checkOllamaConnection(
+        ollamaConfig.baseUrl
+      );
+      if (result.success) {
+        setOllamaConnected(true);
+        // 获取模型列表
+        const modelsResult = await window.aiAPI.getOllamaModels(
+          ollamaConfig.baseUrl
+        );
+        if (modelsResult.success && modelsResult.models) {
+          setOllamaModels(modelsResult.models);
+          // 如果当前模型不在列表中，使用第一个可用模型
+          if (
+            !modelsResult.models.find(m => m.name === ollamaConfig.model) &&
+            modelsResult.models.length > 0
+          ) {
+            setOllamaConfig(prev => ({
+              ...prev,
+              model: modelsResult.models![0].name,
+            }));
+          }
+        }
+      } else {
+        setOllamaConnected(false);
+        setError(result.error || '无法连接到 Ollama');
+      }
+    } catch (error) {
+      setOllamaConnected(false);
+      setError(error instanceof Error ? error.message : '检查连接失败');
+    } finally {
+      setCheckingOllama(false);
+    }
+  };
+
+  // 检查 Shimmy
+  const handleCheckShimmy = async () => {
+    setCheckingShimmy(true);
+    setError('');
+    try {
+      const result = await window.aiAPI.checkShimmy(shimmyConfig.shimmyPath);
+      if (result.success) {
+        setShimmyAvailable(true);
+      } else {
+        setShimmyAvailable(false);
+        setError(result.error || 'Shimmy 工具不可用');
+      }
+    } catch (error) {
+      setShimmyAvailable(false);
+      setError(error instanceof Error ? error.message : '检查失败');
+    } finally {
+      setCheckingShimmy(false);
+    }
+  };
+
+  // 选择 Shimmy 工具路径
+  const handleSelectShimmyPath = async () => {
+    try {
+      // 使用文件选择对话框选择可执行文件
+      const result = await window.aiAPI.selectModelFile(); // 复用这个 API，稍后可以创建专门的 API
+      if (result.success && result.filePath) {
+        setShimmyConfig(prev => ({ ...prev, shimmyPath: result.filePath! }));
+        setError('');
+        // 自动检查
+        await handleCheckShimmy();
       } else {
         setError(result.error || t('common.error'));
       }
@@ -102,9 +204,17 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
       return;
     }
 
-    // 如果使用 Qwen 模型，检查是否配置了模型路径
-    if (aiConfig.useQwen && !qwenConfig.modelPath) {
+    // 根据分析方式检查配置
+    if (analysisType === 'qwen' && !qwenConfig.modelPath) {
       setError('请先选择 Qwen GGUF 模型文件');
+      return;
+    }
+    if (analysisType === 'ollama' && !ollamaConnected) {
+      setError('请先检查并连接 Ollama');
+      return;
+    }
+    if (analysisType === 'shimmy' && !shimmyConfig.shimmyPath) {
+      setError('请先配置 Shimmy 工具路径');
       return;
     }
 
@@ -114,17 +224,12 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
 
     try {
       const arrayBuffer = await uploadedImage.file.arrayBuffer();
+      const buffer = new Uint8Array(arrayBuffer);
 
       let result: ImageAnalysisResponse;
 
-      // 注意：Qwen GGUF 功能暂时不可用，强制使用 WASM 分析
-      // TODO: 等待 GGUF 支持实现
-      const shouldUseQwen = false; // 暂时禁用
-
-      if (shouldUseQwen && aiConfig.useQwen && qwenConfig.modelPath) {
-        // 使用 Qwen GGUF 模型分析（暂时不可用）
-        const buffer = new Uint8Array(arrayBuffer);
-
+      if (analysisType === 'qwen' && qwenConfig.modelPath) {
+        // 使用 Qwen GGUF 模型分析
         const tempModelConfig: AIModelConfig = {
           id: 'qwen-gguf-model-' + Date.now(),
           name: 'Qwen GGUF',
@@ -143,6 +248,38 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
             useGpu: qwenConfig.device === 'cuda',
             confidenceThreshold: aiConfig.confidenceThreshold,
           },
+        });
+      } else if (analysisType === 'ollama') {
+        // 使用 Ollama 分析
+        const tempModelConfig: AIModelConfig = {
+          id: 'ollama-model-' + Date.now(),
+          name: ollamaConfig.model,
+          type: 'ollama',
+          enabled: true,
+          ollamaBaseUrl: ollamaConfig.baseUrl,
+          ollamaModel: ollamaConfig.model,
+          temperature: ollamaConfig.temperature,
+          maxTokens: ollamaConfig.maxTokens,
+        };
+
+        result = await window.aiAPI.analyzeImageWithOllama({
+          imageData: buffer,
+          modelConfig: tempModelConfig,
+        });
+      } else if (analysisType === 'shimmy' && shimmyConfig.shimmyPath) {
+        // 使用 Shimmy 分析
+        const tempModelConfig: AIModelConfig = {
+          id: 'shimmy-model-' + Date.now(),
+          name: shimmyConfig.model,
+          type: 'shimmy',
+          enabled: true,
+          shimmyPath: shimmyConfig.shimmyPath,
+          shimmyModel: shimmyConfig.model,
+        };
+
+        result = await window.aiAPI.analyzeImageWithShimmy({
+          imageData: buffer,
+          modelConfig: tempModelConfig,
         });
       } else {
         // 使用 WASM 基础分析
@@ -345,104 +482,246 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
 
           {/* AI 分析配置区域 */}
           <div className="model-config-section">
-            <h3>分析配置</h3>
+            <h3>{t('aiAnalysis.modelConfig.title')}</h3>
 
             {/* 选择分析方式 */}
             <div className="config-section">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={aiConfig.useQwen}
-                  onChange={e =>
-                    setAiConfig(prev => ({
-                      ...prev,
-                      useQwen: e.target.checked,
-                    }))
-                  }
-                  disabled={isAnalyzing || true} // 暂时禁用，等待开发
-                />
-                使用 Qwen GGUF 模型（正在开发中，暂时不可用）
-              </label>
-              {aiConfig.useQwen && (
-                <div className="warning-message">
-                  ⚠️ GGUF 模型支持正在开发中，请使用 WASM 基础分析功能
+              <label>分析方式</label>
+              <select
+                value={analysisType}
+                onChange={e =>
+                  setAnalysisType(
+                    e.target.value as 'wasm' | 'qwen' | 'ollama' | 'shimmy'
+                  )
+                }
+                disabled={isAnalyzing}
+              >
+                <option value="wasm">WASM 基础分析</option>
+                <option value="qwen">Qwen GGUF 模型</option>
+                <option value="ollama">Ollama</option>
+                <option value="shimmy">Shimmy</option>
+              </select>
+            </div>
+
+            {/* Qwen 配置 */}
+            {analysisType === 'qwen' && (
+              <div className="config-section">
+                <label>GGUF 模型文件</label>
+                <div className="file-input-group">
+                  <input
+                    type="text"
+                    value={qwenConfig.modelPath}
+                    placeholder="请选择 .gguf 模型文件"
+                    readOnly
+                  />
+                  <button
+                    onClick={handleSelectQwenModelPath}
+                    disabled={isAnalyzing}
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                    选择文件
+                  </button>
                 </div>
-              )}
-              {aiConfig.useQwen && (
-                <div className="qwen-config">
-                  <label>GGUF 模型文件</label>
-                  <div className="file-input-group">
-                    <input
-                      type="text"
-                      value={qwenConfig.modelPath}
-                      placeholder="请选择 .gguf 模型文件"
-                      readOnly
-                    />
-                    <button
-                      onClick={handleSelectQwenModelPath}
+                {qwenConfig.modelPath && (
+                  <>
+                    <label>计算设备</label>
+                    <select
+                      value={qwenConfig.device}
+                      onChange={e =>
+                        setQwenConfig(prev => ({
+                          ...prev,
+                          device: e.target.value as 'cpu' | 'cuda',
+                        }))
+                      }
                       disabled={isAnalyzing}
                     >
-                      <FolderOpen className="w-4 h-4" />
-                      选择文件
-                    </button>
-                  </div>
-                  {qwenConfig.modelPath && (
-                    <>
-                      <label>计算设备</label>
-                      <select
-                        value={qwenConfig.device}
+                      <option value="cpu">CPU</option>
+                      <option value="cuda">GPU (CUDA)</option>
+                    </select>
+                    <label>
+                      最大 Token 数 {qwenConfig.maxTokens}
+                      <input
+                        type="range"
+                        min="100"
+                        max="2048"
+                        step="100"
+                        value={qwenConfig.maxTokens}
                         onChange={e =>
                           setQwenConfig(prev => ({
                             ...prev,
-                            device: e.target.value as 'cpu' | 'cuda',
+                            maxTokens: parseInt(e.target.value),
                           }))
                         }
                         disabled={isAnalyzing}
-                      >
-                        <option value="cpu">CPU</option>
-                        <option value="cuda">GPU (CUDA)</option>
-                      </select>
-                      <label>
-                        最大 Token 数 {qwenConfig.maxTokens}
-                        <input
-                          type="range"
-                          min="100"
-                          max="2048"
-                          step="100"
-                          value={qwenConfig.maxTokens}
-                          onChange={e =>
-                            setQwenConfig(prev => ({
-                              ...prev,
-                              maxTokens: parseInt(e.target.value),
-                            }))
-                          }
-                          disabled={isAnalyzing}
-                        />
-                      </label>
-                      <label>
-                        温度 {qwenConfig.temperature.toFixed(1)}
-                        <input
-                          type="range"
-                          min="0.1"
-                          max="2.0"
-                          step="0.1"
-                          value={qwenConfig.temperature}
-                          onChange={e =>
-                            setQwenConfig(prev => ({
-                              ...prev,
-                              temperature: parseFloat(e.target.value),
-                            }))
-                          }
-                          disabled={isAnalyzing}
-                        />
-                      </label>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                      />
+                    </label>
+                    <label>
+                      温度 {qwenConfig.temperature.toFixed(1)}
+                      <input
+                        type="range"
+                        min="0.1"
+                        max="2.0"
+                        step="0.1"
+                        value={qwenConfig.temperature}
+                        onChange={e =>
+                          setQwenConfig(prev => ({
+                            ...prev,
+                            temperature: parseFloat(e.target.value),
+                          }))
+                        }
+                        disabled={isAnalyzing}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
+            )}
 
-            {!aiConfig.useQwen && (
+            {/* Ollama 配置 */}
+            {analysisType === 'ollama' && (
+              <div className="config-section">
+                <label>Ollama 请求路径</label>
+                <div className="input-group">
+                  <input
+                    type="text"
+                    value={ollamaConfig.baseUrl}
+                    onChange={e =>
+                      setOllamaConfig(prev => ({
+                        ...prev,
+                        baseUrl: e.target.value,
+                      }))
+                    }
+                    placeholder="http://localhost:11434"
+                    disabled={isAnalyzing}
+                  />
+                  <button
+                    onClick={handleCheckOllamaConnection}
+                    disabled={isAnalyzing || checkingOllama}
+                  >
+                    {checkingOllama ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      '检查连接'
+                    )}
+                  </button>
+                </div>
+                {ollamaConnected && (
+                  <div className="success-message">✅ Ollama 连接成功</div>
+                )}
+                {ollamaConnected && ollamaModels.length > 0 && (
+                  <>
+                    <label>选择模型</label>
+                    <select
+                      value={ollamaConfig.model}
+                      onChange={e =>
+                        setOllamaConfig(prev => ({
+                          ...prev,
+                          model: e.target.value,
+                        }))
+                      }
+                      disabled={isAnalyzing}
+                    >
+                      {ollamaModels.map(model => (
+                        <option key={model.name} value={model.name}>
+                          {model.name}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                <label>
+                  温度 {ollamaConfig.temperature.toFixed(1)}
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="2.0"
+                    step="0.1"
+                    value={ollamaConfig.temperature}
+                    onChange={e =>
+                      setOllamaConfig(prev => ({
+                        ...prev,
+                        temperature: parseFloat(e.target.value),
+                      }))
+                    }
+                    disabled={isAnalyzing}
+                  />
+                </label>
+                <label>
+                  最大 Token 数 {ollamaConfig.maxTokens}
+                  <input
+                    type="range"
+                    min="100"
+                    max="2048"
+                    step="100"
+                    value={ollamaConfig.maxTokens}
+                    onChange={e =>
+                      setOllamaConfig(prev => ({
+                        ...prev,
+                        maxTokens: parseInt(e.target.value),
+                      }))
+                    }
+                    disabled={isAnalyzing}
+                  />
+                </label>
+              </div>
+            )}
+
+            {/* Shimmy 配置 */}
+            {analysisType === 'shimmy' && (
+              <div className="config-section">
+                <label>Shimmy 工具路径</label>
+                <div className="file-input-group">
+                  <input
+                    type="text"
+                    value={shimmyConfig.shimmyPath}
+                    placeholder="请选择 Shimmy 可执行文件路径"
+                    readOnly
+                  />
+                  <button
+                    onClick={handleSelectShimmyPath}
+                    disabled={isAnalyzing}
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                    选择文件
+                  </button>
+                  <button
+                    onClick={handleCheckShimmy}
+                    disabled={
+                      isAnalyzing || checkingShimmy || !shimmyConfig.shimmyPath
+                    }
+                  >
+                    {checkingShimmy ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      '检查'
+                    )}
+                  </button>
+                </div>
+                {shimmyAvailable && (
+                  <div className="success-message">✅ Shimmy 工具可用</div>
+                )}
+                {shimmyConfig.shimmyPath && (
+                  <>
+                    <label>模型名称</label>
+                    <input
+                      type="text"
+                      value={shimmyConfig.model}
+                      onChange={e =>
+                        setShimmyConfig(prev => ({
+                          ...prev,
+                          model: e.target.value,
+                        }))
+                      }
+                      placeholder="qwen-vl"
+                      disabled={isAnalyzing}
+                    />
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* WASM 配置 */}
+            {analysisType === 'wasm' && (
               <>
                 {/* 置信度阈值 */}
                 <div className="config-section">
@@ -530,7 +809,9 @@ const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
               disabled={
                 !uploadedImage ||
                 isAnalyzing ||
-                (aiConfig.useQwen && !qwenConfig.modelPath)
+                (analysisType === 'qwen' && !qwenConfig.modelPath) ||
+                (analysisType === 'ollama' && !ollamaConnected) ||
+                (analysisType === 'shimmy' && !shimmyConfig.shimmyPath)
               }
             >
               {isAnalyzing ? (

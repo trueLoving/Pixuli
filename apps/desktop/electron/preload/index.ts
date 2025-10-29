@@ -70,8 +70,23 @@ contextBridge.exposeInMainWorld('aiAPI', {
   // Qwen LLM分析
   analyzeImageWithQwen: (request: any) =>
     ipcRenderer.invoke('ai:analyze-image-qwen', request),
+  // Ollama 图片分析
+  analyzeImageWithOllama: (request: any) =>
+    ipcRenderer.invoke('ai:analyze-image-ollama', request),
+  // Shimmy 图片分析
+  analyzeImageWithShimmy: (request: any) =>
+    ipcRenderer.invoke('ai:analyze-image-shimmy', request),
   // Qwen分析器检查
   checkQwenAnalyzer: () => ipcRenderer.invoke('ai:check-qwen-analyzer'),
+  // Ollama 连接检查
+  checkOllamaConnection: (baseUrl?: string) =>
+    ipcRenderer.invoke('ai:check-ollama-connection', baseUrl),
+  // 获取 Ollama 可用模型列表
+  getOllamaModels: (baseUrl?: string) =>
+    ipcRenderer.invoke('ai:get-ollama-models', baseUrl),
+  // Shimmy 检查
+  checkShimmy: (shimmyPath?: string) =>
+    ipcRenderer.invoke('ai:check-shimmy', shimmyPath),
   // 选择 Qwen 模型文件
   selectModelFile: () => ipcRenderer.invoke('ai:select-model-file'),
 });

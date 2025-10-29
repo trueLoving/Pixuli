@@ -1,8 +1,8 @@
-// AI 模型配置接口 - 只支持 Qwen LLM
+// AI 模型配置接口 - 支持 Qwen LLM, Ollama, Shimmy
 export interface AIModelConfig {
   id: string;
   name: string;
-  type: 'qwen-llm';
+  type: 'qwen-llm' | 'ollama' | 'shimmy';
   enabled: boolean;
   description?: string;
   version?: string;
@@ -13,6 +13,12 @@ export interface AIModelConfig {
   device?: 'cpu' | 'cuda' | 'auto';
   maxTokens?: number;
   temperature?: number;
+  // Ollama 特定配置
+  ollamaBaseUrl?: string; // Ollama API 基础 URL，默认 http://localhost:11434
+  ollamaModel?: string; // Ollama 模型名称，如 qwen-vl, llava-1.5 等
+  // Shimmy 特定配置
+  shimmyPath?: string; // Shimmy 工具路径
+  shimmyModel?: string; // Shimmy 模型名称
 }
 
 // 图片分析请求接口
@@ -64,8 +70,33 @@ export interface AIAPI {
   analyzeImageWithQwen: (
     request: ImageAnalysisRequest
   ) => Promise<ImageAnalysisResponse>;
+  // Ollama 图片分析
+  analyzeImageWithOllama: (
+    request: ImageAnalysisRequest
+  ) => Promise<ImageAnalysisResponse>;
+  // Shimmy 图片分析
+  analyzeImageWithShimmy: (
+    request: ImageAnalysisRequest
+  ) => Promise<ImageAnalysisResponse>;
   // Qwen分析器检查
   checkQwenAnalyzer: () => Promise<{ success: boolean; error?: string }>;
+  // Ollama 连接检查
+  checkOllamaConnection: (baseUrl?: string) => Promise<{
+    success: boolean;
+    error?: string;
+    models?: string[];
+  }>;
+  // Shimmy 检查
+  checkShimmy: (shimmyPath?: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
+  // 获取 Ollama 可用模型列表
+  getOllamaModels: (baseUrl?: string) => Promise<{
+    success: boolean;
+    models?: Array<{ name: string; size: number; modified_at: string }>;
+    error?: string;
+  }>;
   // 选择 Qwen 模型文件
   selectModelFile: () => Promise<{
     success: boolean;

@@ -87,9 +87,12 @@ export const appOnlyLocales = {
  * @param key 翻译键，支持嵌套路径，如 'github.config.title'
  * @returns 翻译后的文本，如果找不到则返回key本身
  */
-export const defaultTranslate = (key: string): string => {
+export const defaultTranslate = (
+  key: string,
+  langs?: Record<string, any>
+): string => {
   const keys = key.split('.');
-  let value: any = appLocales['zh-CN'];
+  let value: any = langs || appLocales['zh-CN'];
   for (const k of keys) {
     value = value?.[k];
   }

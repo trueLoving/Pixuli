@@ -9,6 +9,7 @@
     },
     "modelConfig": {
       "title": "模型配置",
+      "analysisType": "分析方式",
       "qwenModelPath": "Qwen 模型路径:",
       "selectDirectory": "选择目录",
       "computeDevice": "计算设备:",
@@ -17,7 +18,16 @@
       "gpu": "GPU (CUDA)",
       "maxTokens": "最大Token数:",
       "temperature": "生成温度:",
-      "confidenceThreshold": "置信度阈值:"
+      "confidenceThreshold": "置信度阈值:",
+      "ollamaBaseUrl": "Ollama 请求路径",
+      "ollamaModel": "选择模型",
+      "checkConnection": "检查连接",
+      "connectionSuccess": "Ollama 连接成功",
+      "shimmyPath": "Shimmy 工具路径",
+      "shimmyModel": "模型名称",
+      "checkShimmy": "检查",
+      "shimmyAvailable": "Shimmy 工具可用",
+      "selectFile": "选择文件"
     },
     "analyze": {
       "start": "开始分析",
