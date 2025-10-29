@@ -7,7 +7,7 @@ export const useI18n = () => {
 
   // 监听语言变化，更新所有活跃的 toast
   useEffect(() => {
-    const handleLanguageChanged = (lng: string) => {
+    const handleLanguageChanged = (_: string) => {
       updateAllToasts(t);
     };
 
@@ -18,15 +18,19 @@ export const useI18n = () => {
     };
   }, [i18n, t]);
 
-  const changeLanguage = (lng: string) => {
+  const changeLanguage = (lng: string): void => {
     i18n.changeLanguage(lng);
   };
 
-  const getCurrentLanguage = () => {
+  const getCurrentLanguage = (): string => {
     return i18n.language;
   };
 
-  const getAvailableLanguages = () => {
+  const getAvailableLanguages = (): {
+    code: string;
+    name: string;
+    flag: string;
+  }[] => {
     return [
       { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
       { code: 'en-US', name: 'English', flag: '🇺🇸' },
