@@ -1,5 +1,5 @@
-//! 图片格式转换功能模块
-//! 
+//! 图片转换
+//!
 //! 提供各种图片格式之间的转换功能，包括：
 //! - 支持多种图片格式转换 (JPEG, PNG, WebP, GIF, BMP, TIFF)
 //! - 图片尺寸调整和宽高比保持
@@ -44,7 +44,7 @@ pub fn convert_image_format(
     options: FormatConversionOptions,
 ) -> Result<FormatConversionResult, NapiError> {
     let start_time = std::time::Instant::now();
-    
+
     // 解析图片
     let img = image::load_from_memory(&image_data)
         .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
@@ -113,14 +113,14 @@ pub fn batch_convert_image_format(
     options: FormatConversionOptions,
 ) -> Result<Vec<FormatConversionResult>, NapiError> {
     let mut results = Vec::new();
-    
+
     for image_data in images_data {
         match convert_image_format(image_data, options.clone()) {
             Ok(result) => results.push(result),
             Err(e) => return Err(NapiError::new(napi::Status::GenericFailure, format!("Batch conversion failed: {}", e))),
         }
     }
-    
+
     Ok(results)
 }
 
@@ -168,7 +168,7 @@ mod tests {
         let img: RgbImage = ImageBuffer::from_fn(width, height, |x, y| {
             Rgb([(x * 255 / width) as u8, (y * 255 / height) as u8, 128])
         });
-        
+
         let mut buffer = Vec::new();
         let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
         encoder.encode(&img, width, height, image::ColorType::Rgb8).unwrap();
@@ -189,7 +189,7 @@ mod tests {
 
         let result = convert_image_format(image_data, options);
         assert!(result.is_ok());
-        
+
         let result = result.unwrap();
         assert!(!result.data.is_empty());
         assert_eq!(result.width, 100);
@@ -215,7 +215,7 @@ mod tests {
 
         let result = convert_image_format(image_data, options);
         assert!(result.is_ok());
-        
+
         let result = result.unwrap();
         assert_eq!(result.width, 100);
         assert_eq!(result.height, 100);
@@ -229,7 +229,7 @@ mod tests {
             generate_test_image(100, 100),
             generate_test_image(150, 150),
         ];
-        
+
         let options = FormatConversionOptions {
             target_format: "webp".to_string(),
             quality: Some(80),
@@ -241,7 +241,7 @@ mod tests {
 
         let result = batch_convert_image_format(images_data, options);
         assert!(result.is_ok());
-        
+
         let results = result.unwrap();
         assert_eq!(results.len(), 2);
         assert!(!results[0].data.is_empty());
@@ -260,7 +260,7 @@ mod tests {
     fn test_get_format_info() {
         let info = get_format_info("png".to_string());
         assert!(info.is_ok());
-        
+
         let info_str = info.unwrap();
         assert!(info_str.contains("png"));
         assert!(info_str.contains("image/png"));

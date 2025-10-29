@@ -11,21 +11,21 @@
 use napi_derive::napi;
 
 // 导入模块
-pub mod format_conversion;
+pub mod convert;
 pub mod image;
-pub mod webp;
-pub mod ai_analysis;
+pub mod compress;
+pub mod analyze;
 
 // 重新导出主要功能
 pub use image::*;
-pub use webp::*;
+pub use compress::*;
 
-pub use format_conversion::{
+pub use convert::{
   batch_convert_image_format, convert_image_format, get_format_info, get_supported_formats,
   FormatConversionOptions, FormatConversionResult, ResizeOptions,
 };
 
-pub use ai_analysis::{
+pub use analyze::{
   analyze_image, batch_analyze_images, check_model_availability,
   AIAnalysisOptions, AIAnalysisResult,
 };

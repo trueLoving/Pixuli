@@ -1,8 +1,7 @@
-//! AI 图片分析模块
+//! 图片分析
 //!
 //! 提供基于 ONNX Runtime 的图片分析功能
 //! 支持对象检测、场景识别、图片标注等 AI 能力
-
 use napi_derive::napi;
 use napi::Error as NapiError;
 use image::{DynamicImage, GenericImageView};
@@ -259,29 +258,31 @@ fn generate_description_from_features(
 
     let mut tags = Vec::new();
     let mut description_parts = Vec::new();
-    let mut scene_type = String::from("普通图片");
 
     // ========== 方向标签 ==========
-    if aspect_ratio > 1.8 {
+    let is_wide = aspect_ratio > 1.8;
+    let is_landscape = aspect_ratio > 1.3;
+    let is_portrait_tall = aspect_ratio < 0.56;
+    let is_portrait = aspect_ratio < 0.78;
+    let is_square = aspect_ratio >= 0.78 && aspect_ratio <= 1.3;
+
+    if is_wide {
         tags.push(String::from("横向"));
         tags.push(String::from("超宽屏"));
         description_parts.push(format!("一张横向超宽屏图片（{}×{}px）", width, height));
-        scene_type = String::from("全景图");
-    } else if aspect_ratio > 1.3 {
+    } else if is_landscape {
         tags.push(String::from("横向"));
         description_parts.push(format!("一张横向图片（{}×{}px）", width, height));
-    } else if aspect_ratio < 0.56 {
+    } else if is_portrait_tall {
         tags.push(String::from("纵向"));
         tags.push(String::from("竖屏"));
         description_parts.push(format!("一张纵向竖屏图片（{}×{}px）", width, height));
-        scene_type = String::from("手机竖版图");
-    } else if aspect_ratio < 0.78 {
+    } else if is_portrait {
         tags.push(String::from("纵向"));
         description_parts.push(format!("一张纵向图片（{}×{}px）", width, height));
-    } else {
+    } else if is_square {
         tags.push(String::from("方形"));
         description_parts.push(format!("一张方形图片（{}×{}px）", width, height));
-        scene_type = String::from("正方形图");
     }
 
     // ========== 画质标签 ==========
@@ -294,29 +295,43 @@ fn generate_description_from_features(
         } else {
             description_parts.push(String::from("超高分辨率"));
         }
-        scene_type = String::from("超高分辨率大图");
     } else if pixel_count > 6.0 {
         tags.push(String::from("高清"));
         tags.push(String::from("大图"));
         if description_parts.len() > 1 {
             description_parts.insert(1, String::from("高清分辨率"));
         }
-        scene_type = String::from("高清大图");
     } else if pixel_count > 2.0 {
         tags.push(String::from("中等画质"));
         tags.push(String::from("标准尺寸"));
-        scene_type = String::from("标准图");
     } else if pixel_count > 0.5 {
         tags.push(String::from("标清"));
-        scene_type = String::from("普通图");
     } else {
         tags.push(String::from("低清"));
         tags.push(String::from("小图"));
         if !description_parts.is_empty() {
             description_parts.push(String::from("低分辨率"));
         }
-        scene_type = String::from("缩略图");
     }
+
+    // 设置场景类型（综合方向和尺寸）
+    let scene_type = if is_wide {
+        String::from("全景图")
+    } else if is_portrait_tall {
+        String::from("手机竖版图")
+    } else if is_square {
+        String::from("正方形图")
+    } else if pixel_count > 12.0 {
+        String::from("超高分辨率大图")
+    } else if pixel_count > 6.0 {
+        String::from("高清大图")
+    } else if pixel_count > 2.0 {
+        String::from("标准图")
+    } else if pixel_count > 0.5 {
+        String::from("普通图")
+    } else {
+        String::from("缩略图")
+    };
 
     // ========== 尺寸标签 ==========
     if width >= 4000 || height >= 4000 {
@@ -509,8 +524,7 @@ mod tests {
         });
 
         let mut buffer = Vec::new();
-        let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
-        encoder.encode(&img, width, height, image::ColorType::Rgb8).unwrap();
+        img.write_to(&mut std::io::Cursor::new(&mut buffer), image::ImageOutputFormat::Png).unwrap();
         buffer
     }
 

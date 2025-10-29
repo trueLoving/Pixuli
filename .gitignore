@@ -148,7 +148,7 @@ dist
 
 #Added by cargo
 
-/packages/wasm/target
+target
 Cargo.lock
 
 *.node

@@ -1,16 +1,16 @@
 //! 图片格式转换器模块
-//! 
+//!
 //! 提供各种图片格式之间的转换功能
 
 use napi::Error as NapiError;
 use image::{DynamicImage, ColorType};
-use crate::format_conversion::types::SupportedFormat;
+use crate::convert::types::SupportedFormat;
 
 /// 格式转换器 trait
 pub trait FormatConverter {
     /// 转换图片格式
     fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError>;
-    
+
     /// 获取支持的格式
     fn supported_format(&self) -> SupportedFormat;
 }
@@ -40,7 +40,7 @@ impl FormatConverter for JpegConverter {
     fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_jpeg(img, options.quality)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::Jpeg
     }
@@ -53,7 +53,7 @@ impl FormatConverter for PngConverter {
     fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_png(img, options.preserve_transparency)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::Png
     }
@@ -66,7 +66,7 @@ impl FormatConverter for WebPConverter {
     fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_webp(img, options.quality, options.lossless)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::WebP
     }
@@ -79,7 +79,7 @@ impl FormatConverter for GifConverter {
     fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_gif(img)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::Gif
     }
@@ -92,7 +92,7 @@ impl FormatConverter for BmpConverter {
     fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_bmp(img)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::Bmp
     }
@@ -105,7 +105,7 @@ impl FormatConverter for TiffConverter {
     fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
         convert_to_tiff(img)
     }
-    
+
     fn supported_format(&self) -> SupportedFormat {
         SupportedFormat::Tiff
     }
@@ -127,11 +127,11 @@ pub fn get_converter(format: &SupportedFormat) -> Box<dyn FormatConverter> {
 fn convert_to_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, NapiError> {
     let mut buffer = Vec::new();
     let rgb_img = img.to_rgb8();
-    
+
     let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buffer, quality);
     encoder.encode(&rgb_img, rgb_img.width(), rgb_img.height(), ColorType::Rgb8)
         .map_err(|e| NapiError::new(napi::Status::GenericFailure, format!("JPEG encoding failed: {}", e)))?;
-    
+
     Ok(buffer)
 }
 
@@ -139,7 +139,7 @@ fn convert_to_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, NapiError
 #[allow(deprecated)]
 fn convert_to_png(img: &DynamicImage, preserve_transparency: bool) -> Result<Vec<u8>, NapiError> {
     let mut buffer = Vec::new();
-    
+
     if preserve_transparency && img.color().has_alpha() {
         let rgba_img = img.to_rgba8();
         let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
@@ -151,23 +151,23 @@ fn convert_to_png(img: &DynamicImage, preserve_transparency: bool) -> Result<Vec
         encoder.encode(&rgb_img, rgb_img.width(), rgb_img.height(), ColorType::Rgb8)
             .map_err(|e| NapiError::new(napi::Status::GenericFailure, format!("PNG encoding failed: {}", e)))?;
     }
-    
+
     Ok(buffer)
 }
 
 /// 转换为 WebP 格式
 fn convert_to_webp(img: &DynamicImage, quality: u8, lossless: bool) -> Result<Vec<u8>, NapiError> {
     use webp::{Encoder, PixelLayout};
-    
+
     let rgb_img = img.to_rgb8();
     let (width, height) = rgb_img.dimensions();
-    
+
     let encoder = if lossless {
         Encoder::new(&rgb_img, PixelLayout::Rgb, width, height).encode_lossless()
     } else {
         Encoder::new(&rgb_img, PixelLayout::Rgb, width, height).encode(quality as f32)
     };
-    
+
     Ok(encoder.to_vec())
 }
 
@@ -199,7 +199,7 @@ pub fn batch_convert_images(
     options: &ConversionOptions,
 ) -> Result<Vec<Vec<u8>>, NapiError> {
     let mut results = Vec::new();
-    
+
     for img in images {
         match converter.convert(&img, options) {
             Ok(data) => results.push(data),
@@ -209,7 +209,7 @@ pub fn batch_convert_images(
             )),
         }
     }
-    
+
     Ok(results)
 }
 
@@ -218,7 +218,7 @@ pub fn validate_conversion_options(options: &ConversionOptions) -> Result<(), St
     if options.quality == 0 || options.quality > 100 {
         return Err("Quality must be between 1 and 100".to_string());
     }
-    
+
     Ok(())
 }
 
@@ -244,7 +244,7 @@ mod tests {
             preserve_transparency: false,
             lossless: false,
         };
-        
+
         let result = converter.convert(&img, &options);
         assert!(result.is_ok());
         assert!(!result.unwrap().is_empty());
@@ -259,7 +259,7 @@ mod tests {
             preserve_transparency: true,
             lossless: false,
         };
-        
+
         let result = converter.convert(&img, &options);
         assert!(result.is_ok());
         assert!(!result.unwrap().is_empty());
@@ -274,7 +274,7 @@ mod tests {
             preserve_transparency: false,
             lossless: false,
         };
-        
+
         let result = converter.convert(&img, &options);
         assert!(result.is_ok());
         assert!(!result.unwrap().is_empty());

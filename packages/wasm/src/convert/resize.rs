@@ -1,8 +1,8 @@
 //! 图片尺寸调整功能模块
-//! 
+//!
 //! 提供图片尺寸调整和宽高比计算功能
 
-use crate::format_conversion::types::ResizeOptions;
+use crate::convert::types::ResizeOptions;
 
 /// 计算调整后的尺寸
 pub fn calculate_resize_dimensions(
@@ -11,13 +11,13 @@ pub fn calculate_resize_dimensions(
     resize: &ResizeOptions,
 ) -> (u32, u32) {
     let maintain_aspect_ratio = resize.maintain_aspect_ratio.unwrap_or(true);
-    
+
     match (resize.width, resize.height) {
         (Some(target_width), Some(target_height)) => {
             if !maintain_aspect_ratio {
                 return (target_width, target_height);
             }
-            
+
             // 保持宽高比
             calculate_aspect_ratio_resize(
                 original_width,
@@ -60,7 +60,7 @@ fn calculate_aspect_ratio_resize(
 ) -> (u32, u32) {
     let aspect_ratio = original_width as f64 / original_height as f64;
     let target_aspect_ratio = target_width as f64 / target_height as f64;
-    
+
     if aspect_ratio > target_aspect_ratio {
         // 原图更宽，以宽度为准
         let new_height = (target_width as f64 / aspect_ratio) as u32;
@@ -88,7 +88,7 @@ pub fn validate_resize_options(resize: &ResizeOptions) -> Result<(), String> {
         if width == 0 || height == 0 {
             return Err("Width and height must be greater than 0".to_string());
         }
-        
+
         if width > 10000 || height > 10000 {
             return Err("Width and height must be less than 10000".to_string());
         }
@@ -107,7 +107,7 @@ pub fn validate_resize_options(resize: &ResizeOptions) -> Result<(), String> {
             return Err("Height must be less than 10000".to_string());
         }
     }
-    
+
     Ok(())
 }
 
@@ -118,7 +118,7 @@ pub fn get_recommended_resize_options(
     max_dimension: u32,
 ) -> ResizeOptions {
     let _aspect_ratio = original_width as f64 / original_height as f64;
-    
+
     let (target_width, target_height) = if original_width > original_height {
         // 横向图片
         if original_width > max_dimension {
@@ -134,7 +134,7 @@ pub fn get_recommended_resize_options(
             (original_width, original_height)
         }
     };
-    
+
     ResizeOptions {
         width: Some(target_width),
         height: Some(target_height),
@@ -153,7 +153,7 @@ mod tests {
             height: Some(150),
             maintain_aspect_ratio: Some(true),
         };
-        
+
         let (width, height) = calculate_resize_dimensions(400, 300, &resize);
         assert_eq!(width, 200);
         assert_eq!(height, 150);
@@ -166,7 +166,7 @@ mod tests {
             height: None,
             maintain_aspect_ratio: Some(true),
         };
-        
+
         let (width, height) = calculate_resize_dimensions(400, 300, &resize);
         assert_eq!(width, 200);
         assert_eq!(height, 150);
@@ -179,7 +179,7 @@ mod tests {
             height: Some(150),
             maintain_aspect_ratio: Some(true),
         };
-        
+
         let (width, height) = calculate_resize_dimensions(400, 300, &resize);
         assert_eq!(width, 200);
         assert_eq!(height, 150);
@@ -192,7 +192,7 @@ mod tests {
             height: Some(100),
             maintain_aspect_ratio: Some(false),
         };
-        
+
         let (width, height) = calculate_resize_dimensions(400, 300, &resize);
         assert_eq!(width, 200);
         assert_eq!(height, 100);
@@ -205,7 +205,7 @@ mod tests {
             height: Some(150),
             maintain_aspect_ratio: Some(true),
         };
-        
+
         assert!(validate_resize_options(&resize).is_ok());
     }
 
@@ -216,7 +216,7 @@ mod tests {
             height: Some(150),
             maintain_aspect_ratio: Some(true),
         };
-        
+
         assert!(validate_resize_options(&resize).is_err());
     }
 
