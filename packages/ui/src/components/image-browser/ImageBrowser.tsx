@@ -1,18 +1,18 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { defaultTranslate } from '../../locales';
 import { ImageItem } from '../../types/image';
-import ImageGrid from './image-grid/ImageGrid';
-import ImageList from './image-list/ImageList';
-import ViewToggle, { ViewMode } from './image-view-toggle/ImageViewToggle';
-import ImageSorter, { SortField, SortOrder } from './image-sorter/ImageSorter';
-import ImageFilter, { FilterOptions } from './image-filter/ImageFilter';
-import { getSortedImages } from '../../utils/sortUtils';
-import { filterImages, createDefaultFilters } from '../../utils/filterUtils';
+import { createDefaultFilters, filterImages } from '../../utils/filterUtils';
 import {
-  keyboardManager,
   COMMON_SHORTCUTS,
+  keyboardManager,
   SHORTCUT_CATEGORIES,
 } from '../../utils/keyboardShortcuts';
-import { defaultTranslate } from '../../locales/defaultTranslate';
+import { getSortedImages } from '../../utils/sortUtils';
+import ImageFilter, { FilterOptions } from './image-filter/ImageFilter';
+import ImageGrid from './image-grid/ImageGrid';
+import ImageList from './image-list/ImageList';
+import ImageSorter, { SortField, SortOrder } from './image-sorter/ImageSorter';
+import ViewToggle, { ViewMode } from './image-view-toggle/ImageViewToggle';
 import './ImageBrowser.css';
 
 interface ImageBrowserProps {

@@ -1,6 +1,6 @@
-import React from 'react';
 import { Grid, List } from 'lucide-react';
-import { defaultTranslate } from '../../../locales/defaultTranslate';
+import React from 'react';
+import { defaultTranslate } from '../../../locales';
 import './ImageViewToggle.css';
 
 export type ViewMode = 'grid' | 'list';

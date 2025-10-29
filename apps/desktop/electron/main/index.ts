@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, session } from 'electron';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -10,7 +10,7 @@ import {
   updateTrayMenu,
   destroyTray,
   closeCompressionWindow,
-  closeConversionWindow,
+  // closeConversionWindow,
 } from './tray';
 
 const require = createRequire(import.meta.url);
@@ -56,6 +56,54 @@ let appIsQuitting = false;
 const preload = path.join(__dirname, '../preload/index.js');
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
+/**
+ * 设置 Content Security Policy
+ * 为所有窗口统一设置 CSP，提高安全性
+ */
+function setupContentSecurityPolicy() {
+  const defaultSession = session.defaultSession;
+  const isDev = !!VITE_DEV_SERVER_URL;
+
+  // 开发模式的 CSP（允许 Vite dev server 和 HMR）
+  // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
+  const devCSP =
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https: http://localhost:*; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://*; " +
+    "frame-src 'self'; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self';";
+
+  // 生产模式的 CSP（更严格，移除 unsafe-eval）
+  const prodCSP =
+    "default-src 'self'; " +
+    "script-src 'self'; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https:; " +
+    "frame-src 'self'; " +
+    "object-src 'none'; " +
+    "base-uri 'self'; " +
+    "form-action 'self';";
+
+  const csp = isDev ? devCSP : prodCSP;
+
+  // 为所有请求设置 CSP
+  defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [csp],
+      },
+    });
+  });
+}
+
 async function createWindow() {
   win = new BrowserWindow({
     title: `${APP_NAME} - 智能图片管理工具 v${APP_VERSION}`,
@@ -66,6 +114,7 @@ async function createWindow() {
       nodeIntegration: false,
       webSecurity: true,
       allowRunningInsecureContent: false,
+      sandbox: false, // Preload script needs access to Node.js APIs
     },
   });
 
@@ -87,17 +136,17 @@ async function createWindow() {
   });
 
   // 创建系统托盘，传入退出回调
-  createTray(win, () => {
-    appIsQuitting = true;
-  });
+  // createTray(win, () => {
+  //   appIsQuitting = true;
+  // });
 
   // 监听窗口显示/隐藏，更新托盘菜单
   win.on('show', () => {
-    updateTrayMenu(win);
+    // updateTrayMenu(win);
   });
 
   win.on('hide', () => {
-    updateTrayMenu(win);
+    // updateTrayMenu(win);
   });
 
   // 监听窗口关闭事件，阻止默认行为并隐藏到托盘
@@ -115,7 +164,11 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // 在应用准备就绪后设置 CSP
+  setupContentSecurityPolicy();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   // macOS 上即使所有窗口都关闭，应用也继续运行
@@ -150,7 +203,7 @@ app.on('activate', () => {
 
 // 应用退出前清理托盘
 app.on('before-quit', () => {
-  destroyTray();
+  // destroyTray();
 });
 
 // New window example arg: new windows url
@@ -175,10 +228,10 @@ registerServiceHandlers();
 
 // 处理关闭压缩窗口的 IPC 请求
 ipcMain.handle('close-compression-window', () => {
-  closeCompressionWindow();
+  // closeCompressionWindow();
 });
 
 // 处理关闭转换窗口的 IPC 请求
 ipcMain.handle('close-conversion-window', () => {
-  closeConversionWindow();
+  // closeConversionWindow();
 });

@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, ExternalLink, Link, X } from 'lucide-react';
+import React, { useCallback, useEffect } from 'react';
+import { defaultTranslate } from '../../../../locales';
 import { ImageItem } from '../../../../types/image';
-import { X, Link, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
-import { defaultTranslate } from '../../../../locales/defaultTranslate';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {

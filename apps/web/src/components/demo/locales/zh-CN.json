@@ -1,4 +1,12 @@
 {
+  "app": {
+    "demoMode": {
+      "title": "演示模式",
+      "description": "您正在使用演示环境，可以下载预配置的演示配置文件快速体验 Pixuli 的各项功能。",
+      "downloadDemo": "下载演示配置",
+      "exitDemo": "退出演示模式"
+    }
+  },
   "version": {
     "title": "版本信息",
     "subtitle": "应用版本、构建时间和依赖信息",

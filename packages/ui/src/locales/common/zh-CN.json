@@ -1,0 +1,19 @@
+{
+  "common": {
+    "save": "保存",
+    "update": "更新",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "confirm": "确认",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "yes": "是",
+    "no": "否",
+    "unknownError": "未知错误"
+  }
+}

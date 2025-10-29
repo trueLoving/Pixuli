@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { Check, Globe } from 'lucide-react';
+import React, { useState } from 'react';
 import './LanguageSwitcher.css';
 
 export interface Language {

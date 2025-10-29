@@ -1,0 +1,52 @@
+{
+  "github": {
+    "config": {
+      "title": "GitHub 仓库配置",
+      "username": "GitHub 用户名",
+      "usernamePlaceholder": "您的 GitHub 用户名或组织名",
+      "repository": "仓库名称",
+      "repositoryPlaceholder": "用于存储图片的仓库名称",
+      "branch": "分支名称",
+      "branchPlaceholder": "通常为 main 或 master",
+      "path": "图片存储路径",
+      "pathPlaceholder": "仓库中存储图片的文件夹路径",
+      "token": "GitHub Token",
+      "tokenPlaceholder": "ghp_xxxxxxxxxxxxxxxxxxxx",
+      "tokenDescription": "需要 repo 权限的 Personal Access Token，用于访问您的仓库",
+      "import": "↑ 导入",
+      "export": "导出",
+      "clearConfig": "清除配置",
+      "saveConfig": "保存配置",
+      "required": "*"
+    },
+    "help": {
+      "title": "配置帮助",
+      "tokenGuide": {
+        "title": "如何获取 GitHub Token？",
+        "step1": "1. 访问 GitHub Settings → Developer settings",
+        "step2": "2. 选择 Personal access tokens → Tokens (classic)",
+        "step3": "3. 生成新 token，勾选 repo 权限",
+        "step4": "4. 复制生成的 token 并粘贴到上方输入框"
+      },
+      "importExport": {
+        "title": "配置导入导出",
+        "export": "导出：将当前配置保存为 JSON 文件",
+        "import": "导入：从 JSON 文件加载配置",
+        "crossPlatform": "跨平台：支持桌面端和 Web 端配置互导",
+        "backup": "备份：建议定期导出配置作为备份"
+      }
+    }
+  },
+  "messages": {
+    "configSaved": "GitHub 配置已成功保存！",
+    "configCleared": "GitHub 配置已成功清除！",
+    "configExported": "GitHub 配置已成功导出！",
+    "configImported": "GitHub 配置已成功导入！",
+    "saveFailed": "保存配置失败",
+    "clearFailed": "清除配置失败",
+    "exportFailed": "导出配置失败",
+    "importFailed": "导入配置失败",
+    "invalidFormat": "配置文件格式不正确",
+    "noConfigToExport": "没有可导出的配置"
+  }
+}

@@ -1,27 +1,27 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import {
+  Calendar,
+  Edit,
+  Eye,
+  HardDrive,
+  Link,
+  Loader2,
+  Trash2,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '../../../hooks';
+import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
 import {
-  Eye,
-  Edit,
-  Trash2,
-  Calendar,
-  Link,
-  HardDrive,
-  Loader2,
-} from 'lucide-react';
-import ImageEditModal from '../components/image-edit/ImageEditModal';
-import ImagePreviewModal from '../components/image-preview/ImagePreviewModal';
-import ImageUrlModal from '../components/image-url/ImageUrlModal';
-import { useInfiniteScroll, useLazyLoad, useEscapeKey } from '../../../hooks';
-import {
-  showSuccess,
   showError,
   showInfo,
   showLoading,
-  updateLoadingToSuccess,
+  showSuccess,
   updateLoadingToError,
+  updateLoadingToSuccess,
 } from '../../../utils/toast';
-import { defaultTranslate } from '../../../locales/defaultTranslate';
+import ImageEditModal from '../components/image-edit/ImageEditModal';
+import ImagePreviewModal from '../components/image-preview/ImagePreviewModal';
+import ImageUrlModal from '../components/image-url/ImageUrlModal';
 import './ImageGrid.css';
 
 interface ImageGridProps {
@@ -148,18 +148,30 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       ) {
         if (onDeleteImage) {
           const loadingToast = showLoading(
-            `${translate('image.grid.deleting')} "${image.name}"...`
+            `${translate('image.grid.deleting')} "${image.name}"...`,
+            {
+              getMessage: () =>
+                `${translate('image.grid.deleting')} "${image.name}"...`,
+            }
           );
           try {
             await onDeleteImage(image.id, image.name);
             updateLoadingToSuccess(
-              loadingToast,
-              `${translate('image.grid.deleteSuccess')} "${image.name}" ${translate('image.grid.deleted')}`
+              String(loadingToast),
+              `${translate('image.grid.deleteSuccess')} "${image.name}" ${translate('image.grid.deleted')}`,
+              {
+                getMessage: () =>
+                  `${translate('image.grid.deleteSuccess')} "${image.name}" ${translate('image.grid.deleted')}`,
+              }
             );
           } catch (error) {
             updateLoadingToError(
-              loadingToast,
-              `${translate('image.grid.deleteFailed')} "${image.name}" ${translate('image.grid.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`
+              String(loadingToast),
+              `${translate('image.grid.deleteFailed')} "${image.name}" ${translate('image.grid.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`,
+              {
+                getMessage: () =>
+                  `${translate('image.grid.deleteFailed')} "${image.name}" ${translate('image.grid.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`,
+              }
             );
           }
         }
@@ -168,11 +180,16 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     [onDeleteImage, translate]
   );
 
-  const handleEdit = useCallback((image: ImageItem) => {
-    setSelectedImage(image);
-    setShowEditModal(true);
-    showInfo(`${translate('image.grid.editing')} "${image.name}"`);
-  }, []);
+  const handleEdit = useCallback(
+    (image: ImageItem) => {
+      setSelectedImage(image);
+      setShowEditModal(true);
+      showInfo(`${translate('image.grid.editing')} "${image.name}"`, {
+        getMessage: () => `${translate('image.grid.editing')} "${image.name}"`,
+      });
+    },
+    [translate]
+  );
 
   const handlePreview = useCallback(
     (image: ImageItem) => {
@@ -180,9 +197,12 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       setSelectedImage(image);
       setPreviewImageIndex(imageIndex);
       setShowPreview(true);
-      showInfo(`${translate('image.grid.previewing')} "${image.name}"`);
+      showInfo(`${translate('image.grid.previewing')} "${image.name}"`, {
+        getMessage: () =>
+          `${translate('image.grid.previewing')} "${image.name}"`,
+      });
     },
-    [images]
+    [images, translate]
   );
 
   // 监听预览事件（仅网格视图）
@@ -211,28 +231,45 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     };
   }, [handlePreview, images]);
 
-  const handleEditSuccess = useCallback((updatedImage: ImageItem) => {
-    showSuccess(`图片 "${updatedImage.name}" 信息已成功更新`);
-    // 更新选中的图片数据
-    setSelectedImage(updatedImage);
-    setShowEditModal(false);
-
-    // 添加小延迟后刷新显示（确保异步更新完成）
-    setTimeout(() => {
-      // 强制重新渲染，这会触发组件重新从 images prop 中获取最新数据
-      setSelectedImage(prev => {
-        if (prev && prev.id === updatedImage.id) {
-          return updatedImage;
+  const handleEditSuccess = useCallback(
+    (updatedImage: ImageItem) => {
+      showSuccess(
+        translate('image.grid.updateSuccessMessage').replace(
+          '{name}',
+          updatedImage.name
+        ),
+        {
+          getMessage: () =>
+            translate('image.grid.updateSuccessMessage').replace(
+              '{name}',
+              updatedImage.name
+            ),
         }
-        return prev;
-      });
-    }, 100);
-  }, []);
+      );
+      // 更新选中的图片数据
+      setSelectedImage(updatedImage);
+      setShowEditModal(false);
+
+      // 添加小延迟后刷新显示（确保异步更新完成）
+      setTimeout(() => {
+        // 强制重新渲染，这会触发组件重新从 images prop 中获取最新数据
+        setSelectedImage(prev => {
+          if (prev && prev.id === updatedImage.id) {
+            return updatedImage;
+          }
+          return prev;
+        });
+      }, 100);
+    },
+    [translate]
+  );
 
   const handleEditCancel = useCallback(() => {
-    showInfo(translate('image.grid.editCancelled'));
+    showInfo(translate('image.grid.editCancelled'), {
+      messageKey: 'image.grid.editCancelled',
+    });
     setShowEditModal(false);
-  }, []);
+  }, [translate]);
 
   // ESC 键关闭预览和URL模态框
   useEscapeKey(() => {
@@ -243,24 +280,51 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     }
   }, showPreview || showUrlModal);
 
-  const handleViewUrl = useCallback((image: ImageItem) => {
-    setSelectedImage(image);
-    setShowUrlModal(true);
-    showInfo(`查看图片 "${image.name}" 的在线地址`);
-  }, []);
+  const handleViewUrl = useCallback(
+    (image: ImageItem) => {
+      setSelectedImage(image);
+      setShowUrlModal(true);
+      showInfo(
+        translate('image.grid.viewUrlMessage').replace('{name}', image.name),
+        {
+          getMessage: () =>
+            translate('image.grid.viewUrlMessage').replace(
+              '{name}',
+              image.name
+            ),
+        }
+      );
+    },
+    [translate]
+  );
 
   const handleCopyUrl = useCallback(
     async (url: string, type: 'url' | 'githubUrl') => {
       try {
         await navigator.clipboard.writeText(url);
+        const urlTypeText =
+          type === 'url'
+            ? translate('image.grid.imageUrlCopied')
+            : translate('image.grid.githubUrlCopied');
         showSuccess(
-          `${type === 'url' ? translate('image.grid.imageUrlCopied') : translate('image.grid.githubUrlCopied')}${translate('image.grid.copiedToClipboard')}`
+          `${urlTypeText}${translate('image.grid.copiedToClipboard')}`,
+          {
+            getMessage: () => {
+              const currentUrlTypeText =
+                type === 'url'
+                  ? translate('image.grid.imageUrlCopied')
+                  : translate('image.grid.githubUrlCopied');
+              return `${currentUrlTypeText}${translate('image.grid.copiedToClipboard')}`;
+            },
+          }
         );
       } catch (error) {
-        showError(translate('image.grid.copyFailed'));
+        showError(translate('image.grid.copyFailed'), {
+          messageKey: 'image.grid.copyFailed',
+        });
       }
     },
-    []
+    [translate]
   );
 
   const handleOpenUrl = useCallback((url: string) => {
@@ -329,7 +393,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
                 <button
                   onClick={() => handleViewUrl(image)}
                   className="image-action-button"
-                  title="查看地址"
+                  title={translate('image.grid.viewUrl')}
                 >
                   <Link className="image-action-icon" />
                 </button>

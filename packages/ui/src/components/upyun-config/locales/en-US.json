@@ -1,0 +1,38 @@
+{
+  "upyun": {
+    "config": {
+      "title": "Upyun Cloud Storage Configuration",
+      "import": "Import",
+      "export": "Export",
+      "clearConfig": "Clear Config",
+      "saveConfig": "Save Config",
+      "required": "*"
+    },
+    "help": {
+      "title": "Configuration Help",
+      "credentials": {
+        "title": "How to get Upyun credentials?",
+        "step1": "1. Log in to Upyun Console",
+        "step2": "2. Go to Service Management → Cloud Storage",
+        "step3": "3. Create or select a storage bucket",
+        "step4": "4. Create an operator in Operator Management",
+        "step5": "5. Get operator name and password"
+      },
+      "importExport": {
+        "title": "Config Import/Export",
+        "export": "Export: Save current configuration as JSON file",
+        "import": "Import: Load configuration from JSON file",
+        "crossPlatform": "Cross-platform: Support config exchange between desktop and web",
+        "backup": "Backup: Recommend regular export as backup"
+      }
+    }
+  },
+  "messages": {
+    "configCleared": "GitHub configuration cleared successfully!",
+    "clearFailed": "Failed to clear configuration",
+    "exportFailed": "Failed to export configuration",
+    "importFailed": "Failed to import configuration",
+    "invalidFormat": "Configuration file format is incorrect",
+    "noConfigToExport": "No configuration to export"
+  }
+}

@@ -1,4 +1,12 @@
 {
+  "app": {
+    "demoMode": {
+      "title": "Demo Mode",
+      "description": "You are using the demo environment. You can download pre-configured demo configuration files to quickly experience all features of Pixuli.",
+      "downloadDemo": "Download Demo Config",
+      "exitDemo": "Exit Demo Mode"
+    }
+  },
   "version": {
     "title": "Version Information",
     "subtitle": "Application version, build time and dependency information",

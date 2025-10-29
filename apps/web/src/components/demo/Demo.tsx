@@ -141,11 +141,11 @@ export function Demo({ t, onExitDemo }: DemoProps) {
       <div className="flex items-center space-x-2 mb-2">
         <Play className="w-5 h-5 text-purple-600" />
         <h3 className="text-lg font-semibold text-purple-800">
-          {t('app.demoMode.title')}
+          {t('demoMode.title')}
         </h3>
       </div>
       <p className="text-purple-700 text-sm mb-3">
-        {t('app.demoMode.description')}
+        {t('demoMode.description')}
       </p>
       <div className="flex justify-center space-x-3">
         <button
@@ -153,13 +153,13 @@ export function Demo({ t, onExitDemo }: DemoProps) {
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
         >
           <Play className="w-4 h-4" />
-          <span>{t('app.demoMode.downloadDemo')}</span>
+          <span>{t('demoMode.downloadDemo')}</span>
         </button>
         <button
           onClick={handleExitDemoMode}
           className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
         >
-          {t('app.demoMode.exitDemo')}
+          {t('demoMode.exitDemo')}
         </button>
       </div>
     </div>

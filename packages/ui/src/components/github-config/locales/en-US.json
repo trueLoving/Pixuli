@@ -1,0 +1,52 @@
+{
+  "github": {
+    "config": {
+      "title": "GitHub Repository Configuration",
+      "username": "GitHub Username",
+      "usernamePlaceholder": "Your GitHub username or organization name",
+      "repository": "Repository Name",
+      "repositoryPlaceholder": "Repository name for storing images",
+      "branch": "Branch Name",
+      "branchPlaceholder": "Usually main or master",
+      "path": "Image Storage Path",
+      "pathPlaceholder": "Folder path for storing images in repository",
+      "token": "GitHub Token",
+      "tokenPlaceholder": "ghp_xxxxxxxxxxxxxxxxxxxx",
+      "tokenDescription": "Personal Access Token with repo permissions for accessing your repository",
+      "import": "↑ Import",
+      "export": "Export",
+      "clearConfig": "Clear Config",
+      "saveConfig": "Save Config",
+      "required": "*"
+    },
+    "help": {
+      "title": "Configuration Help",
+      "tokenGuide": {
+        "title": "How to get GitHub Token?",
+        "step1": "1. Visit GitHub Settings → Developer settings",
+        "step2": "2. Select Personal access tokens → Tokens (classic)",
+        "step3": "3. Generate new token, check repo permissions",
+        "step4": "4. Copy the generated token and paste it in the input field above"
+      },
+      "importExport": {
+        "title": "Config Import/Export",
+        "export": "Export: Save current configuration as JSON file",
+        "import": "Import: Load configuration from JSON file",
+        "crossPlatform": "Cross-platform: Support config exchange between desktop and web",
+        "backup": "Backup: Recommend regular export as backup"
+      }
+    }
+  },
+  "messages": {
+    "configSaved": "GitHub configuration saved successfully!",
+    "configCleared": "GitHub configuration cleared successfully!",
+    "configExported": "GitHub configuration exported successfully!",
+    "configImported": "GitHub configuration imported successfully!",
+    "saveFailed": "Failed to save configuration",
+    "clearFailed": "Failed to clear configuration",
+    "exportFailed": "Failed to export configuration",
+    "importFailed": "Failed to import configuration",
+    "invalidFormat": "Configuration file format is incorrect",
+    "noConfigToExport": "No configuration to export"
+  }
+}

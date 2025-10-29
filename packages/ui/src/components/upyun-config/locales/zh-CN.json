@@ -1,0 +1,38 @@
+{
+  "upyun": {
+    "config": {
+      "title": "又拍云存储配置",
+      "import": "导入",
+      "export": "导出",
+      "clearConfig": "清除配置",
+      "saveConfig": "保存配置",
+      "required": "*"
+    },
+    "help": {
+      "title": "配置帮助",
+      "credentials": {
+        "title": "如何获取又拍云凭证？",
+        "step1": "1. 登录又拍云控制台",
+        "step2": "2. 进入服务管理 → 云存储",
+        "step3": "3. 创建或选择存储空间",
+        "step4": "4. 在操作员管理中创建操作员",
+        "step5": "5. 获取操作员名称和密码"
+      },
+      "importExport": {
+        "title": "配置导入/导出",
+        "export": "导出：将当前配置保存为 JSON 文件",
+        "import": "导入：从 JSON 文件加载配置",
+        "crossPlatform": "跨平台：支持桌面端和 Web 端配置互导",
+        "backup": "备份：建议定期导出配置作为备份"
+      }
+    }
+  },
+  "messages": {
+    "configCleared": "配置已成功清除！",
+    "clearFailed": "清除配置失败",
+    "exportFailed": "导出配置失败",
+    "importFailed": "导入配置失败",
+    "invalidFormat": "配置文件格式不正确",
+    "noConfigToExport": "没有可导出的配置"
+  }
+}

@@ -13,8 +13,7 @@ import {
 import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { Demo, useDemoMode } from './components/demo/Demo';
-import VersionInfoModal from './components/version-info/VersionInfoModal';
+import { Demo, useDemoMode, VersionInfoModal } from './components';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';

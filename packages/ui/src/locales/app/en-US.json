@@ -1,0 +1,52 @@
+{
+  "app": {
+    "title": "Pixuli",
+    "subtitle": "Professional Image Management and Storage Solution",
+    "welcome": "Welcome to Pixuli",
+    "description": "Please configure GitHub repository information to get started",
+    "configureGitHub": "Configure GitHub",
+    "repository": "Repository",
+    "imageLibrary": "Image Library",
+    "images": "images",
+    "loadingImages": "Loading images...",
+    "configureUpyun": "Configure Upyun"
+  },
+  "navigation": {
+    "settings": "Settings",
+    "upyunSettings": "Upyun Settings",
+    "refresh": "Refresh",
+    "search": "Search",
+    "filter": "Filter",
+    "help": "Help",
+    "play": "Play"
+  },
+  "storage": {
+    "title": "Storage Configuration Management",
+    "configurations": "Storage Configurations",
+    "addConfig": "Add Configuration",
+    "editConfig": "Edit Configuration",
+    "configureStorage": "Configure Storage",
+    "selectSource": "Select Storage Source",
+    "setActive": "Set Active",
+    "noConfigs": "No configurations",
+    "confirmDelete": "Are you sure you want to delete this configuration?",
+    "saveFailed": "Failed to save configuration",
+    "basicInfo": "Basic Information",
+    "configName": "Configuration Name",
+    "configNamePlaceholder": "Enter configuration name",
+    "provider": "Storage Provider",
+    "configuration": "Configuration"
+  },
+  "messages": {
+    "configSaved": "GitHub configuration saved successfully!",
+    "configCleared": "GitHub configuration cleared successfully!",
+    "configExported": "GitHub configuration exported successfully!",
+    "configImported": "GitHub configuration imported successfully!",
+    "saveFailed": "Failed to save configuration",
+    "clearFailed": "Failed to clear configuration",
+    "exportFailed": "Failed to export configuration",
+    "importFailed": "Failed to import configuration",
+    "invalidFormat": "Configuration file format is incorrect",
+    "noConfigToExport": "No configuration to export"
+  }
+}

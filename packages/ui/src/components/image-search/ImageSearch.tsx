@@ -1,6 +1,6 @@
+import { Filter, Search } from 'lucide-react';
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
-import { defaultTranslate } from '../../locales/defaultTranslate';
+import { defaultTranslate } from '../../locales';
 import './ImageSearch.css';
 
 export interface ImageSearchProps {

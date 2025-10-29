@@ -4,10 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="script-src 'self' 'unsafe-inline';"
-    />
+    <!-- Content Security Policy is set via Electron session.webRequest -->
+    <!-- 在生产模式下会自动应用更严格的 CSP -->
+    <!-- 开发模式下允许 Vite dev server 和 HMR 所需的连接 -->
     <title>Pixuli - 智能图片管理工具</title>
   </head>
   <body>

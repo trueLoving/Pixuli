@@ -1,7 +1,7 @@
+import { ExternalLink, X } from 'lucide-react';
 import React from 'react';
+import { defaultTranslate } from '../../../../locales';
 import { ImageItem } from '../../../../types/image';
-import { X, ExternalLink } from 'lucide-react';
-import { defaultTranslate } from '../../../../locales/defaultTranslate';
 import './ImageUrlModal.css';
 
 interface ImageUrlModalProps {

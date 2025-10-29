@@ -1,29 +1,29 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import {
+  Calendar,
+  Edit,
+  Eye,
+  HardDrive,
+  Link,
+  Loader2,
+  MoreHorizontal,
+  Tag,
+  Trash2,
+} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '../../../hooks';
+import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
 import {
-  Eye,
-  Edit,
-  Trash2,
-  Tag,
-  Calendar,
-  Link,
-  MoreHorizontal,
-  HardDrive,
-  Loader2,
-} from 'lucide-react';
-import ImageEditModal from '../components/image-edit/ImageEditModal';
-import ImagePreviewModal from '../components/image-preview/ImagePreviewModal';
-import ImageUrlModal from '../components/image-url/ImageUrlModal';
-import { useLazyLoad, useInfiniteScroll, useEscapeKey } from '../../../hooks';
-import {
-  showSuccess,
   showError,
   showInfo,
   showLoading,
-  updateLoadingToSuccess,
+  showSuccess,
   updateLoadingToError,
+  updateLoadingToSuccess,
 } from '../../../utils/toast';
-import { defaultTranslate } from '../../../locales/defaultTranslate';
+import ImageEditModal from '../components/image-edit/ImageEditModal';
+import ImagePreviewModal from '../components/image-preview/ImagePreviewModal';
+import ImageUrlModal from '../components/image-url/ImageUrlModal';
 import './ImageList.css';
 
 interface ImageListProps {
@@ -103,18 +103,30 @@ const ImageList: React.FC<ImageListProps> = ({
       ) {
         if (onDeleteImage) {
           const loadingToast = showLoading(
-            `${translate('image.list.deleting')} "${image.name}"...`
+            `${translate('image.list.deleting')} "${image.name}"...`,
+            {
+              getMessage: () =>
+                `${translate('image.list.deleting')} "${image.name}"...`,
+            }
           );
           try {
             await onDeleteImage(image.id, image.name);
             updateLoadingToSuccess(
-              loadingToast,
-              `${translate('image.list.deleteSuccess')} "${image.name}" ${translate('image.list.deleted')}`
+              String(loadingToast),
+              `${translate('image.list.deleteSuccess')} "${image.name}" ${translate('image.list.deleted')}`,
+              {
+                getMessage: () =>
+                  `${translate('image.list.deleteSuccess')} "${image.name}" ${translate('image.list.deleted')}`,
+              }
             );
           } catch (error) {
             updateLoadingToError(
-              loadingToast,
-              `${translate('image.list.deleteFailed')} "${image.name}" ${translate('image.list.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`
+              String(loadingToast),
+              `${translate('image.list.deleteFailed')} "${image.name}" ${translate('image.list.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`,
+              {
+                getMessage: () =>
+                  `${translate('image.list.deleteFailed')} "${image.name}" ${translate('image.list.failed')}: ${error instanceof Error ? error.message : translate('common.unknownError')}`,
+              }
             );
           }
         }
@@ -123,11 +135,16 @@ const ImageList: React.FC<ImageListProps> = ({
     [onDeleteImage, translate]
   );
 
-  const handleEdit = useCallback((image: ImageItem) => {
-    setSelectedImage(image);
-    setShowEditModal(true);
-    showInfo(`${translate('image.list.editing')} "${image.name}"`);
-  }, []);
+  const handleEdit = useCallback(
+    (image: ImageItem) => {
+      setSelectedImage(image);
+      setShowEditModal(true);
+      showInfo(`${translate('image.list.editing')} "${image.name}"`, {
+        getMessage: () => `${translate('image.list.editing')} "${image.name}"`,
+      });
+    },
+    [translate]
+  );
 
   const handlePreview = useCallback(
     (image: ImageItem) => {
@@ -135,9 +152,12 @@ const ImageList: React.FC<ImageListProps> = ({
       setSelectedImage(image);
       setPreviewImageIndex(imageIndex);
       setShowPreview(true);
-      showInfo(`${translate('image.list.previewing')} "${image.name}"`);
+      showInfo(`${translate('image.list.previewing')} "${image.name}"`, {
+        getMessage: () =>
+          `${translate('image.list.previewing')} "${image.name}"`,
+      });
     },
-    [images]
+    [images, translate]
   );
 
   // 监听预览事件（仅列表视图）
@@ -166,15 +186,32 @@ const ImageList: React.FC<ImageListProps> = ({
     };
   }, [handlePreview, images]);
 
-  const handleEditSuccess = useCallback((image: ImageItem) => {
-    showSuccess(`图片 "${image.name}" 信息已成功更新`);
-    setShowEditModal(false);
-  }, []);
+  const handleEditSuccess = useCallback(
+    (image: ImageItem) => {
+      showSuccess(
+        translate('image.list.updateSuccessMessage').replace(
+          '{name}',
+          image.name
+        ),
+        {
+          getMessage: () =>
+            translate('image.list.updateSuccessMessage').replace(
+              '{name}',
+              image.name
+            ),
+        }
+      );
+      setShowEditModal(false);
+    },
+    [translate]
+  );
 
   const handleEditCancel = useCallback(() => {
-    showInfo(translate('image.list.editCancelled'));
+    showInfo(translate('image.list.editCancelled'), {
+      messageKey: 'image.list.editCancelled',
+    });
     setShowEditModal(false);
-  }, []);
+  }, [translate]);
 
   // ESC 键关闭预览和URL模态框
   useEscapeKey(() => {
@@ -185,24 +222,51 @@ const ImageList: React.FC<ImageListProps> = ({
     }
   }, showPreview || showUrlModal);
 
-  const handleViewUrl = useCallback((image: ImageItem) => {
-    setSelectedImage(image);
-    setShowUrlModal(true);
-    showInfo(`查看图片 "${image.name}" 的在线地址`);
-  }, []);
+  const handleViewUrl = useCallback(
+    (image: ImageItem) => {
+      setSelectedImage(image);
+      setShowUrlModal(true);
+      showInfo(
+        translate('image.list.viewUrlMessage').replace('{name}', image.name),
+        {
+          getMessage: () =>
+            translate('image.list.viewUrlMessage').replace(
+              '{name}',
+              image.name
+            ),
+        }
+      );
+    },
+    [translate]
+  );
 
   const handleCopyUrl = useCallback(
     async (url: string, type: 'url' | 'githubUrl') => {
       try {
         await navigator.clipboard.writeText(url);
+        const urlTypeText =
+          type === 'url'
+            ? translate('image.list.imageUrlCopied')
+            : translate('image.list.githubUrlCopied');
         showSuccess(
-          `${type === 'url' ? '图片地址' : 'GitHub地址'}已复制到剪贴板`
+          `${urlTypeText}${translate('image.list.copiedToClipboard')}`,
+          {
+            getMessage: () => {
+              const currentUrlTypeText =
+                type === 'url'
+                  ? translate('image.list.imageUrlCopied')
+                  : translate('image.list.githubUrlCopied');
+              return `${currentUrlTypeText}${translate('image.list.copiedToClipboard')}`;
+            },
+          }
         );
       } catch (error) {
-        showError('复制失败，请手动复制');
+        showError(translate('image.list.copyFailed'), {
+          messageKey: 'image.list.copyFailed',
+        });
       }
     },
-    []
+    [translate]
   );
 
   const handleOpenUrl = useCallback((url: string) => {
@@ -262,7 +326,10 @@ const ImageList: React.FC<ImageListProps> = ({
   }, [visibleImages, images, fetchImageDimensions]);
 
   const formatDate = useCallback((dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN');
+    // 使用当前语言环境格式化日期
+    // 对于不同语言，可以使用 translate 来获取语言代码
+    // 这里简化处理，使用浏览器默认语言环境
+    return new Date(dateString).toLocaleDateString();
   }, []);
 
   // 渲染单个图片项的函数
@@ -429,6 +496,7 @@ const ImageList: React.FC<ImageListProps> = ({
       expandedRows,
       handleViewUrl,
       handleDelete,
+      translate,
     ]
   );
 
@@ -455,9 +523,14 @@ const ImageList: React.FC<ImageListProps> = ({
       {/* 列表头部 */}
       <div className="image-list-header">
         <div className="image-list-header-content">
-          <h2 className="image-list-header-title">图片列表</h2>
+          <h2 className="image-list-header-title">
+            {translate('image.list.title')}
+          </h2>
           <div className="image-list-header-count">
-            共 {images.length} 张图片
+            {translate('image.list.totalImages').replace(
+              '{count}',
+              String(images.length)
+            )}
           </div>
         </div>
       </div>
@@ -489,14 +562,19 @@ const ImageList: React.FC<ImageListProps> = ({
           {/* 已加载全部提示 */}
           {!hasMore && visibleItems.length > 0 && (
             <div className="image-list-all-loaded">
-              <p>已加载全部 {visibleItems.length} 张图片</p>
+              <p>
+                {translate('image.list.allLoadedMessage').replace(
+                  '{count}',
+                  String(visibleItems.length)
+                )}
+              </p>
             </div>
           )}
 
           {/* 空状态 */}
           {visibleItems.length === 0 && !isLoading && (
             <div className="image-list-no-images">
-              <p>暂无图片</p>
+              <p>{translate('image.list.noImages')}</p>
             </div>
           )}
         </div>
@@ -512,6 +590,7 @@ const ImageList: React.FC<ImageListProps> = ({
           onSuccess={handleEditSuccess}
           onCancel={handleEditCancel}
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+          t={translate}
         />
       )}
 

@@ -1,7 +1,7 @@
 // TODO: 自定义快捷键
+import { Command, Keyboard, RefreshCw, X, Zap } from 'lucide-react';
 import React from 'react';
-import { X, Keyboard, Command, RefreshCw, Zap } from 'lucide-react';
-import { defaultTranslate } from '../../locales/defaultTranslate';
+import { defaultTranslate } from '../../locales';
 import './KeyboardHelpModal.css';
 
 interface KeyboardShortcut {

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import type { ImageItem, ImageEditData } from '../../../../types/image';
-import { X, Save } from 'lucide-react';
+import { Save, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { defaultTranslate } from '../../../../locales';
+import type { ImageEditData, ImageItem } from '../../../../types/image';
 import {
   showLoading,
-  updateLoadingToSuccess,
   updateLoadingToError,
+  updateLoadingToSuccess,
 } from '../../../../utils/toast';
-import { defaultTranslate } from '../../../../locales/defaultTranslate';
 import './ImageEditModal.css';
 
 interface ImageEditModalProps {

@@ -1,0 +1,9 @@
+{
+  "image": {
+    "search": {
+      "placeholder": "搜索图片名称、描述或标签...",
+      "filterByTags": "按标签筛选",
+      "clearFilters": "清除筛选"
+    }
+  }
+}

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { defaultTranslate } from '../../locales/defaultTranslate';
+import { defaultTranslate } from '../../locales';
 import type {
   BatchUploadProgress,
   ImageCropOptions,

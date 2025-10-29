@@ -1,0 +1,34 @@
+{
+  "keyboard": {
+    "title": "Keyboard Shortcuts",
+    "subtitle": "Use keyboard to quickly operate Pixuli",
+    "usageTips": {
+      "title": "Usage Tips",
+      "tip1": "Shortcuts won't work in input fields, text areas and other editable elements",
+      "tip2": "Press F1 key to open this help interface anytime",
+      "tip3": "Press Esc key to close current modal",
+      "tip4": "Press / key to quickly focus on search box"
+    },
+    "categories": {
+      "general": "General Operations",
+      "features": "Feature Operations",
+      "browsing": "Image Browsing"
+    },
+    "shortcuts": {
+      "closeModal": "Close current modal",
+      "showHelp": "Show keyboard shortcuts help",
+      "refresh": "Refresh image list",
+      "openConfig": "Open GitHub configuration",
+      "focusSearch": "Focus search box",
+      "toggleView": "Toggle view mode",
+      "openCompression": "Open image compression tool",
+      "openFormatConversion": "Open image format conversion",
+      "openAIAnalysis": "Open AI image analysis",
+      "selectUp": "Select previous image",
+      "selectDown": "Select next image",
+      "selectLeft": "Select left image",
+      "selectRight": "Select right image",
+      "openSelected": "Open selected image"
+    }
+  }
+}

@@ -8,7 +8,7 @@ import ReactCrop, {
   makeAspectCrop,
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { defaultTranslate } from '../../../locales/defaultTranslate';
+import { defaultTranslate } from '../../../locales';
 import './ImageCropModal.css';
 
 interface ImageCropModalProps {

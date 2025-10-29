@@ -54,6 +54,4 @@ export {
 } from './components/image-browser';
 
 // 语言包导出
-export { default as zhCN } from './locales/zh-CN.json';
-export { default as enUS } from './locales/en-US.json';
-export { defaultTranslate } from './locales/defaultTranslate';
+export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

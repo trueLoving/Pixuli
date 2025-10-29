@@ -3,32 +3,30 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
 // 导入packages/ui的语言包
-import { enUS, zhCN } from '@packages/ui/src';
-// 导入web端专用语言包
-import zhCNWeb from '../locales/zh-CN.json';
-import enUSWeb from '../locales/en-US.json';
-
-// 合并语言包
-const mergeLocales = (baseLocales: any, webLocales: any) => {
-  const merged = { ...baseLocales };
-  Object.keys(webLocales).forEach(key => {
-    if (merged[key]) {
-      merged[key] = { ...merged[key], ...webLocales[key] };
-    } else {
-      merged[key] = webLocales[key];
-    }
-  });
-  return merged;
-};
+import { enUS, zhCN, deepMerge } from '@packages/ui/src';
+// 导入web端组件的语言包
+import { demoLocales, versionInfoLocales } from '../components';
 
 const resources = {
   'zh-CN': {
-    translation: mergeLocales(zhCN, zhCNWeb),
+    translation: deepMerge(
+      {},
+      zhCN,
+      demoLocales['zh-CN'],
+      versionInfoLocales['zh-CN']
+    ),
   },
   'en-US': {
-    translation: mergeLocales(enUS, enUSWeb),
+    translation: deepMerge(
+      {},
+      enUS,
+      demoLocales['en-US'],
+      versionInfoLocales['en-US']
+    ),
   },
 };
+
+console.log(resources);
 
 i18n
   .use(LanguageDetector)
