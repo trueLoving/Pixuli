@@ -1,6 +1,6 @@
+import { updateAllToasts } from '@packages/ui/src';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { updateAllToasts } from '@packages/ui/src/utils/toast';
 
 export const useI18n = () => {
   const { t, i18n } = useTranslation();

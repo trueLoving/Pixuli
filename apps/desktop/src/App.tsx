@@ -2,60 +2,24 @@ import {
   COMMON_SHORTCUTS,
   keyboardManager,
   SHORTCUT_CATEGORIES,
-  Toaster,
 } from '@packages/ui/src';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { ImageCompression, ImageConverter } from './components';
 import { useI18n } from './i18n/useI18n';
-import SourceManager from './pages/SourceManager/SourceManager';
-import { useImageStore } from './stores/imageStore';
-import { useSourceStore } from './stores/sourceStore';
-import { Header, Home } from './widgets';
+import {
+  CompressionWindowPage,
+  ConversionWindowPage,
+  HomePage,
+  ProjectPage,
+} from './pages';
 
 function App() {
   // 检查是否在压缩窗口模式
-  const [isCompressionMode, setIsCompressionMode] = useState(
-    window.location.hash === '#compression'
-  );
+  const [isCompressionMode] = useState(window.location.hash === '#compression');
   // 检查是否在转换窗口模式
-  const [isConversionMode, setIsConversionMode] = useState(
-    window.location.hash === '#conversion'
-  );
-  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
-    useI18n();
-  const sourceStore = useSourceStore();
-  const {
-    images,
-    loading,
-    error,
-    githubConfig,
-    upyunConfig,
-    storageType,
-    loadImages,
-    clearError,
-    setGitHubConfig,
-    clearGitHubConfig,
-    setUpyunConfig,
-    clearUpyunConfig,
-    uploadImage,
-    uploadMultipleImages,
-    batchUploadProgress,
-    deleteImage,
-    updateImage,
-  } = useImageStore();
-
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
-  const [showCompressionModal, setShowCompressionModal] = useState(
-    window.location.hash === '#compression'
-  );
-  const [showConversionModal, setShowConversionModal] = useState(
-    window.location.hash === '#conversion'
-  );
-
+  const [isConversionMode] = useState(window.location.hash === '#conversion');
   // 项目窗口判断与参数解析
-  const [projectSourceId, setProjectSourceId] = useState<string | null>(() => {
+  const [projectSourceId] = useState<string | null>(() => {
     const hash = window.location.hash;
     if (hash.startsWith('#project')) {
       const idx = hash.indexOf('?');
@@ -65,110 +29,12 @@ function App() {
     }
     return null;
   });
+  const { t } = useI18n();
 
-  useEffect(() => {
-    if (!projectSourceId) return;
-    const src = sourceStore.getSourceById(projectSourceId);
-    if (src) {
-      setGitHubConfig({
-        owner: src.owner,
-        repo: src.repo,
-        branch: src.branch,
-        token: src.token,
-        path: src.path,
-      } as any);
-    }
-  }, [projectSourceId, sourceStore, setGitHubConfig]);
-
-  // 使用 useCallback 来稳定函数引用
-  const handleLoadImages = useCallback(async () => {
-    try {
-      await loadImages();
-    } catch (error) {
-      console.error('Failed to load images:', error);
-    }
-  }, [loadImages]);
-
-  const handleOpenConfigModal = useCallback(() => {
-    setShowConfigModal(true);
-  }, []);
-
-  const handleCloseConfigModal = useCallback(() => {
-    setShowConfigModal(false);
-  }, []);
-
-  const handleOpenUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(true);
-  }, []);
-
-  const handleCloseUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(false);
-  }, []);
-
-  const handleSaveConfig = useCallback(
-    (config: any) => {
-      setGitHubConfig(config);
-      setShowConfigModal(false);
-    },
-    [setGitHubConfig]
-  );
-
-  const handleClearConfig = useCallback(() => {
-    clearGitHubConfig();
-    setShowConfigModal(false);
-  }, [clearGitHubConfig]);
-
-  // CRUD 操作回调函数
-  const handleDeleteImage = useCallback(
-    async (imageId: string, fileName: string) => {
-      await deleteImage(imageId, fileName);
-    },
-    [deleteImage]
-  );
-
-  const handleUpdateImage = useCallback(
-    async (data: any) => {
-      await updateImage(data);
-    },
-    [updateImage]
-  );
-
-  // 初始化存储服务（仅项目窗口模式）
-  useEffect(() => {
-    if (!projectSourceId) return;
-    if (githubConfig || upyunConfig) {
-      const { initializeStorage } = useImageStore.getState();
-      initializeStorage();
-      handleLoadImages();
-    }
-  }, [githubConfig, upyunConfig, handleLoadImages, projectSourceId]);
-
-  // 页面加载时初始化（仅项目窗口模式）
-  useEffect(() => {
-    if (!projectSourceId) return;
-    const { githubConfig, upyunConfig, initializeStorage } =
-      useImageStore.getState();
-    if (
-      (githubConfig || upyunConfig) &&
-      !useImageStore.getState().storageService
-    ) {
-      initializeStorage();
-    }
-  }, [projectSourceId]);
-
-  // 注册键盘快捷键
+  // 注册键盘快捷键（全局通用快捷键）
   useEffect(() => {
     const shortcuts = [
       // 通用快捷键
-      {
-        key: COMMON_SHORTCUTS.ESCAPE,
-        description: t('keyboard.shortcuts.closeModal'),
-        action: () => {
-          if (showConfigModal) handleCloseConfigModal();
-          else if (showUpyunConfigModal) handleCloseUpyunConfigModal();
-        },
-        category: SHORTCUT_CATEGORIES.GENERAL,
-      },
       {
         key: COMMON_SHORTCUTS.F1,
         description: t('keyboard.shortcuts.showHelp'),
@@ -178,12 +44,6 @@ function App() {
           window.dispatchEvent(event);
         },
         category: SHORTCUT_CATEGORIES.HELP,
-      },
-      {
-        key: COMMON_SHORTCUTS.F5,
-        description: t('keyboard.shortcuts.refresh'),
-        action: handleLoadImages,
-        category: SHORTCUT_CATEGORIES.GENERAL,
       },
 
       // 功能快捷键
@@ -215,20 +75,6 @@ function App() {
           const event = new CustomEvent('openAIAnalysis');
           window.dispatchEvent(event);
         },
-        category: SHORTCUT_CATEGORIES.GENERAL,
-      },
-      {
-        key: COMMON_SHORTCUTS.COMMA,
-        ctrlKey: true,
-        description: t('keyboard.shortcuts.openConfig'),
-        action: handleOpenConfigModal,
-        category: SHORTCUT_CATEGORIES.GENERAL,
-      },
-      {
-        key: COMMON_SHORTCUTS.PERIOD,
-        ctrlKey: true,
-        description: t('keyboard.shortcuts.openConfig'),
-        action: handleOpenUpyunConfigModal,
         category: SHORTCUT_CATEGORIES.GENERAL,
       },
 
@@ -265,132 +111,25 @@ function App() {
     return () => {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
     };
-  }, [
-    showConfigModal,
-    showUpyunConfigModal,
-    handleCloseConfigModal,
-    handleCloseUpyunConfigModal,
-    handleLoadImages,
-    handleOpenConfigModal,
-    handleOpenUpyunConfigModal,
-    t,
-  ]);
+  }, [t]);
 
   // 如果是转换窗口模式，只显示转换组件
   if (isConversionMode) {
-    return (
-      <>
-        <ImageConverter
-          isOpen={showConversionModal}
-          onClose={() => {
-            // 关闭窗口
-            const ipcRenderer = (window as any).ipcRenderer;
-            if (ipcRenderer && ipcRenderer.invoke) {
-              ipcRenderer.invoke('close-conversion-window');
-            }
-          }}
-        />
-        <Toaster />
-      </>
-    );
+    return <ConversionWindowPage />;
   }
 
   // 如果是压缩窗口模式，只显示压缩组件
   if (isCompressionMode) {
-    return (
-      <>
-        <ImageCompression
-          isOpen={showCompressionModal}
-          onClose={() => {
-            // 关闭窗口
-            const ipcRenderer = (window as any).ipcRenderer;
-            if (ipcRenderer && ipcRenderer.invoke) {
-              ipcRenderer.invoke('close-compression-window');
-            }
-          }}
-        />
-        <Toaster />
-      </>
-    );
+    return <CompressionWindowPage />;
   }
 
-  // 主窗口：显示源管理 + Header
+  // 主窗口：显示源管理
   if (!projectSourceId) {
-    return (
-      <div className="h-screen bg-gray-50 flex flex-col">
-        <Header
-          storageType={storageType}
-          githubConfig={githubConfig}
-          upyunConfig={upyunConfig}
-          loading={loading}
-          t={t}
-          currentLanguage={getCurrentLanguage()}
-          availableLanguages={getAvailableLanguages()}
-          onLanguageChange={changeLanguage}
-          onLoadImages={handleLoadImages}
-          onSaveConfig={handleSaveConfig}
-          onClearConfig={handleClearConfig}
-          onSetUpyunConfig={setUpyunConfig}
-          onClearUpyunConfig={clearUpyunConfig}
-          onAnalysisComplete={result => {
-            console.log('AI 分析完成:', result);
-          }}
-          isProjectWindow={false}
-        />
-        <div className="flex-1 overflow-hidden">
-          <SourceManager />
-        </div>
-        <Toaster />
-      </div>
-    );
+    return <HomePage />;
   }
 
-  return (
-    <div className="h-screen bg-gray-50 flex flex-col">
-      {/* 顶部导航栏 */}
-      <Header
-        storageType={storageType}
-        githubConfig={githubConfig}
-        upyunConfig={upyunConfig}
-        loading={loading}
-        t={t}
-        currentLanguage={getCurrentLanguage()}
-        availableLanguages={getAvailableLanguages()}
-        onLanguageChange={changeLanguage}
-        onLoadImages={handleLoadImages}
-        onSaveConfig={handleSaveConfig}
-        onClearConfig={handleClearConfig}
-        onSetUpyunConfig={setUpyunConfig}
-        onClearUpyunConfig={clearUpyunConfig}
-        onAnalysisComplete={result => {
-          console.log('AI 分析完成:', result);
-        }}
-        isProjectWindow={true}
-      />
-
-      {/* 主页内容 */}
-      <div className="flex-1 overflow-hidden">
-        <Home
-          t={t}
-          error={error}
-          onClearError={clearError}
-          onUploadImage={(file: File) => uploadImage({ file })}
-          onUploadMultipleImages={(files: File[]) =>
-            uploadMultipleImages({ files })
-          }
-          loading={loading}
-          batchUploadProgress={batchUploadProgress}
-          images={images}
-          onDeleteImage={(imageId: string, fileName: string) =>
-            handleDeleteImage(imageId, fileName)
-          }
-          onUpdateImage={(data: any) => handleUpdateImage(data)}
-        />
-      </div>
-
-      <Toaster />
-    </div>
-  );
+  // 项目窗口：显示图片浏览
+  return <ProjectPage />;
 }
 
 export default App;

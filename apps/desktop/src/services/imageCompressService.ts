@@ -1,9 +1,7 @@
 import {
   WebPCompressOptions,
   WebPCompressResult,
-} from '../types/imageCompress';
-
-// 移除重复的类型声明，使用 electron.d.ts 中的定义
+} from '../features/image-compression/types';
 
 // 导出工具接口和类型
 export interface CompressionOptions {

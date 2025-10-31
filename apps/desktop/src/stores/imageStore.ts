@@ -8,8 +8,8 @@ import {
   loadUpyunConfig,
   saveUpyunConfig,
 } from '@/config/upyun';
-import { GitHubStorageService } from '@/services/githubStorage';
-import { UpyunStorageService } from '@/services/upyunStorage';
+import { GitHubStorageService } from '@/services/githubStorageService';
+import { UpyunStorageService } from '@/services/upyunStorageService';
 import {
   BatchUploadProgress,
   GitHubConfig,

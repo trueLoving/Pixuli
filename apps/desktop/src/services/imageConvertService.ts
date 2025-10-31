@@ -3,9 +3,9 @@ import {
   FormatConversionResult,
   ImageFormat,
   getFormatInfo,
-  supportsTransparency,
   supportsLossless,
-} from '../types/imageConvert';
+  supportsTransparency,
+} from '../features/image-converter/types';
 
 export class ImageConvertService {
   /**

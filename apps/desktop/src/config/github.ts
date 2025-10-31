@@ -1,5 +1,7 @@
 import { GitHubConfig } from '@packages/ui/src';
 
+const GITHUB_CONFIG_KEY = 'pixuli-github-config';
+
 // 默认 GitHub 配置
 export const DEFAULT_GITHUB_CONFIG: Partial<GitHubConfig> = {
   branch: 'main',
@@ -9,7 +11,7 @@ export const DEFAULT_GITHUB_CONFIG: Partial<GitHubConfig> = {
 // 从本地存储加载配置
 export const loadGitHubConfig = (): GitHubConfig | null => {
   try {
-    const config = localStorage.getItem('pixuli_github_config');
+    const config = localStorage.getItem(GITHUB_CONFIG_KEY);
     return config ? JSON.parse(config) : null;
   } catch (error) {
     console.error('Failed to load GitHub config:', error);
@@ -20,7 +22,7 @@ export const loadGitHubConfig = (): GitHubConfig | null => {
 // 保存配置到本地存储
 export const saveGitHubConfig = (config: GitHubConfig): void => {
   try {
-    localStorage.setItem('pixuli_github_config', JSON.stringify(config));
+    localStorage.setItem(GITHUB_CONFIG_KEY, JSON.stringify(config));
   } catch (error) {
     console.error('Failed to save GitHub config:', error);
   }
@@ -29,7 +31,7 @@ export const saveGitHubConfig = (config: GitHubConfig): void => {
 // 清除本地配置
 export const clearGitHubConfig = (): void => {
   try {
-    localStorage.removeItem('pixuli_github_config');
+    localStorage.removeItem(GITHUB_CONFIG_KEY);
   } catch (error) {
     console.error('Failed to clear GitHub config:', error);
   }

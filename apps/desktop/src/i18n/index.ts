@@ -2,14 +2,14 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 // 导入packages/ui的语言包
-import { enUS, zhCN, deepMerge } from '@packages/ui/src';
-// 导入组件语言包
+import { deepMerge, enUS, zhCN } from '@packages/ui/src';
+// 导入桌面端功能模块语言包
 import {
   aiAnalysisLocales,
   imageCompressionLocales,
   imageConverterLocales,
   versionInfoLocales,
-} from '../components';
+} from '../features';
 import { desktopLocales } from './locales';
 
 const resources = {
