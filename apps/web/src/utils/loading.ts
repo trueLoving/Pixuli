@@ -223,7 +223,6 @@ function useLoading() {
     if (progressBar) {
       let progress = 0;
       const targetProgress = 100;
-      const updateInterval = 100; // 减少更新频率
 
       const animateProgress = () => {
         if (progress < targetProgress) {
@@ -286,10 +285,27 @@ export function loading() {
   const { appendLoading, removeLoading } = useLoading();
   domReady().then(appendLoading);
 
-  window.onmessage = ev => {
-    ev.data.payload === 'removeLoading' && removeLoading();
-  };
+  // 监听消息事件（用于手动移除加载动画）
+  window.addEventListener('message', ev => {
+    if (ev.data?.payload === 'removeLoading') {
+      removeLoading();
+    }
+  });
 
+  // 设置超时自动移除（防止加载动画一直显示）
   setTimeout(removeLoading, 4999);
-  setTimeout(removeLoading, 4999);
+}
+
+// 导出移除加载动画的函数，供应用使用
+export function removeLoading() {
+  const loadingDiv = document.querySelector('.simple-loading');
+  const loadingStyle = document.getElementById('app-loading-style');
+
+  if (loadingDiv) {
+    document.body.classList.remove('simple-loading-active');
+    if (loadingStyle) {
+      document.head.removeChild(loadingStyle);
+    }
+    document.body.removeChild(loadingDiv);
+  }
 }
