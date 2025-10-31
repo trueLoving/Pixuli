@@ -10,12 +10,14 @@ import {
   imageConverterLocales,
   versionInfoLocales,
 } from '../components';
+import { desktopLocales } from './locales';
 
 const resources = {
   'zh-CN': {
     translation: deepMerge(
       {},
       zhCN,
+      desktopLocales['zh-CN'],
       aiAnalysisLocales['zh-CN'],
       imageCompressionLocales['zh-CN'],
       imageConverterLocales['zh-CN'],
@@ -26,6 +28,7 @@ const resources = {
     translation: deepMerge(
       {},
       enUS,
+      desktopLocales['en-US'],
       aiAnalysisLocales['en-US'],
       imageCompressionLocales['en-US'],
       imageConverterLocales['en-US'],

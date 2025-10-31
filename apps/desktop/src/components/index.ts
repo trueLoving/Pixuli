@@ -2,6 +2,7 @@ export { default as AIAnalysisModal } from './ai-analysis/AIAnalysisModal';
 export { default as ImageCompression } from './image-compression/ImageCompression';
 export { default as ImageConverter } from './image-converter/ImageConverter';
 export { default as VersionInfoModal } from './version-info/VersionInfoModal';
+export { default as FullScreenLoading } from './full-screen-loading/FullScreenLoading';
 
 // 导出语言包
 export { aiAnalysisLocales } from './ai-analysis/locales';

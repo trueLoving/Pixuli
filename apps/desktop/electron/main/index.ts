@@ -66,6 +66,7 @@ function setupContentSecurityPolicy() {
 
   // 开发模式的 CSP（允许 Vite dev server 和 HMR）
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
+  // Electron 会在开发模式下显示警告，但这是预期的行为
   const devCSP =
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
@@ -93,15 +94,20 @@ function setupContentSecurityPolicy() {
 
   const csp = isDev ? devCSP : prodCSP;
 
-  // 为所有请求设置 CSP
-  defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    callback({
-      responseHeaders: {
-        ...details.responseHeaders,
-        'Content-Security-Policy': [csp],
-      },
-    });
-  });
+  // 为所有请求设置 CSP（包括主文档和所有子资源）
+  defaultSession.webRequest.onHeadersReceived(
+    {
+      urls: ['http://*/*', 'https://*/*', 'file://*/*'],
+    },
+    (details, callback) => {
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [csp],
+        },
+      });
+    }
+  );
 }
 
 async function createWindow() {
@@ -165,7 +171,7 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // 在应用准备就绪后设置 CSP
+  // 在应用准备就绪后立即设置 CSP（在任何窗口创建之前）
   setupContentSecurityPolicy();
   createWindow();
 });
@@ -211,13 +217,18 @@ ipcMain.handle('open-win', (_, arg) => {
   const childWindow = new BrowserWindow({
     webPreferences: {
       preload,
-      nodeIntegration: true,
-      contextIsolation: false,
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      sandbox: false,
     },
   });
 
   if (VITE_DEV_SERVER_URL) {
     childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`);
+    // 开发环境下自动打开 DevTools 便于调试子窗口
+    childWindow.webContents.openDevTools();
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
   }

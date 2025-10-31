@@ -1,6 +1,7 @@
 // TODO: 自定义快捷键
 import { Command, Keyboard, RefreshCw, X, Zap } from 'lucide-react';
 import React from 'react';
+import { useEscapeKey } from '../../hooks';
 import { defaultTranslate } from '../../locales';
 import './KeyboardHelpModal.css';
 
@@ -31,6 +32,13 @@ const KeyboardHelpModal: React.FC<KeyboardHelpModalProps> = ({
   categories,
   t,
 }) => {
+  // ESC 键关闭模态框
+  useEscapeKey(() => {
+    if (isOpen) {
+      onClose();
+    }
+  }, isOpen);
+
   if (!isOpen) return null;
 
   // 使用传入的翻译函数或默认中文翻译函数

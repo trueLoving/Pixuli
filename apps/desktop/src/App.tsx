@@ -8,8 +8,10 @@ import { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { ImageCompression, ImageConverter } from './components';
 import { useI18n } from './i18n/useI18n';
-import { Header, Home, WelcomePage } from './layout';
+import SourceManager from './pages/SourceManager/SourceManager';
 import { useImageStore } from './stores/imageStore';
+import { useSourceStore } from './stores/sourceStore';
+import { Header, Home } from './widgets';
 
 function App() {
   // 检查是否在压缩窗口模式
@@ -22,6 +24,7 @@ function App() {
   );
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
     useI18n();
+  const sourceStore = useSourceStore();
   const {
     images,
     loading,
@@ -50,6 +53,32 @@ function App() {
   const [showConversionModal, setShowConversionModal] = useState(
     window.location.hash === '#conversion'
   );
+
+  // 项目窗口判断与参数解析
+  const [projectSourceId, setProjectSourceId] = useState<string | null>(() => {
+    const hash = window.location.hash;
+    if (hash.startsWith('#project')) {
+      const idx = hash.indexOf('?');
+      const query = idx >= 0 ? new URLSearchParams(hash.slice(idx + 1)) : null;
+      const id = query?.get('id');
+      return id || null;
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (!projectSourceId) return;
+    const src = sourceStore.getSourceById(projectSourceId);
+    if (src) {
+      setGitHubConfig({
+        owner: src.owner,
+        repo: src.repo,
+        branch: src.branch,
+        token: src.token,
+        path: src.path,
+      } as any);
+    }
+  }, [projectSourceId, sourceStore, setGitHubConfig]);
 
   // 使用 useCallback 来稳定函数引用
   const handleLoadImages = useCallback(async () => {
@@ -104,18 +133,19 @@ function App() {
     [updateImage]
   );
 
-  // 初始化存储服务
+  // 初始化存储服务（仅项目窗口模式）
   useEffect(() => {
+    if (!projectSourceId) return;
     if (githubConfig || upyunConfig) {
-      // 确保存储服务已初始化
       const { initializeStorage } = useImageStore.getState();
       initializeStorage();
       handleLoadImages();
     }
-  }, [githubConfig, upyunConfig, handleLoadImages]);
+  }, [githubConfig, upyunConfig, handleLoadImages, projectSourceId]);
 
-  // 页面加载时初始化
+  // 页面加载时初始化（仅项目窗口模式）
   useEffect(() => {
+    if (!projectSourceId) return;
     const { githubConfig, upyunConfig, initializeStorage } =
       useImageStore.getState();
     if (
@@ -124,7 +154,7 @@ function App() {
     ) {
       initializeStorage();
     }
-  }, []);
+  }, [projectSourceId]);
 
   // 注册键盘快捷键
   useEffect(() => {
@@ -284,23 +314,34 @@ function App() {
     );
   }
 
-  if (!githubConfig && !upyunConfig) {
+  // 主窗口：显示源管理 + Header
+  if (!projectSourceId) {
     return (
-      <WelcomePage
-        t={t}
-        githubConfig={githubConfig}
-        upyunConfig={upyunConfig}
-        showConfigModal={showConfigModal}
-        showUpyunConfigModal={showUpyunConfigModal}
-        onOpenConfigModal={handleOpenConfigModal}
-        onCloseConfigModal={handleCloseConfigModal}
-        onOpenUpyunConfigModal={handleOpenUpyunConfigModal}
-        onCloseUpyunConfigModal={handleCloseUpyunConfigModal}
-        onSaveConfig={handleSaveConfig}
-        onClearConfig={handleClearConfig}
-        onSetUpyunConfig={setUpyunConfig}
-        onClearUpyunConfig={clearUpyunConfig}
-      />
+      <div className="h-screen bg-gray-50 flex flex-col">
+        <Header
+          storageType={storageType}
+          githubConfig={githubConfig}
+          upyunConfig={upyunConfig}
+          loading={loading}
+          t={t}
+          currentLanguage={getCurrentLanguage()}
+          availableLanguages={getAvailableLanguages()}
+          onLanguageChange={changeLanguage}
+          onLoadImages={handleLoadImages}
+          onSaveConfig={handleSaveConfig}
+          onClearConfig={handleClearConfig}
+          onSetUpyunConfig={setUpyunConfig}
+          onClearUpyunConfig={clearUpyunConfig}
+          onAnalysisComplete={result => {
+            console.log('AI 分析完成:', result);
+          }}
+          isProjectWindow={false}
+        />
+        <div className="flex-1 overflow-hidden">
+          <SourceManager />
+        </div>
+        <Toaster />
+      </div>
     );
   }
 
@@ -324,6 +365,7 @@ function App() {
         onAnalysisComplete={result => {
           console.log('AI 分析完成:', result);
         }}
+        isProjectWindow={true}
       />
 
       {/* 主页内容 */}

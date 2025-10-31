@@ -66,6 +66,8 @@ interface HeaderProps {
   onClearUpyunConfig: () => void;
   /** AI 分析完成回调 */
   onAnalysisComplete: (result: any) => void;
+  /** 是否为项目窗口模式（项目窗口显示仓库信息，主页面不显示） */
+  isProjectWindow?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -83,6 +85,7 @@ const Header: React.FC<HeaderProps> = ({
   onSetUpyunConfig,
   onClearUpyunConfig,
   onAnalysisComplete,
+  isProjectWindow = false,
 }) => {
   // 模态框状态管理
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -150,40 +153,10 @@ const Header: React.FC<HeaderProps> = ({
         { description: t('keyboard.shortcuts.closeModal'), key: 'Escape' },
         { description: t('keyboard.shortcuts.showHelp'), key: 'F1' },
         { description: t('keyboard.shortcuts.refresh'), key: 'F5' },
-        {
-          description: t('keyboard.shortcuts.openConfig'),
-          key: ',',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openConfig'),
-          key: '.',
-          ctrlKey: true,
-        },
         { description: t('keyboard.shortcuts.focusSearch'), key: '/' },
         {
           description: t('keyboard.shortcuts.toggleView'),
           key: 'V',
-          ctrlKey: true,
-        },
-      ],
-    },
-    {
-      name: t('keyboard.categories.features'),
-      shortcuts: [
-        {
-          description: t('keyboard.shortcuts.openCompression'),
-          key: 'C',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openFormatConversion'),
-          key: 'F',
-          ctrlKey: true,
-        },
-        {
-          description: t('keyboard.shortcuts.openAIAnalysis'),
-          key: 'A',
           ctrlKey: true,
         },
       ],
@@ -207,16 +180,19 @@ const Header: React.FC<HeaderProps> = ({
           {/* 左侧标题和存储信息 */}
           <div className="flex items-center space-x-4">
             <h1 className="text-xl font-bold text-gray-900">Pixuli</h1>
-            <div className="text-sm text-gray-500 hidden sm:block">
-              {storageType === 'github' && githubConfig && (
-                <>
-                  仓库: {githubConfig.owner}/{githubConfig.repo}
-                </>
-              )}
-              {storageType === 'upyun' && upyunConfig && (
-                <>又拍云: {upyunConfig.bucket}</>
-              )}
-            </div>
+            {/* 只在项目窗口模式显示仓库信息 */}
+            {isProjectWindow && (
+              <div className="text-sm text-gray-500 hidden sm:block">
+                {storageType === 'github' && githubConfig && (
+                  <>
+                    仓库: {githubConfig.owner}/{githubConfig.repo}
+                  </>
+                )}
+                {storageType === 'upyun' && upyunConfig && (
+                  <>又拍云: {upyunConfig.bucket}</>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 右侧操作按钮 */}
@@ -231,13 +207,13 @@ const Header: React.FC<HeaderProps> = ({
                 还有就是如果是选择 python，那么图片的压缩和转换是否也使用 python，不使用 rust。保持一致。
                 还有太多语言会感觉很复杂，到时候脑子都不够用了。。。。
             */}
-            <button
+            {/* <button
               onClick={handleOpenAIAnalysis}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
               title={t('image.aiAnalysis')}
             >
               <Brain className="w-5 h-5" />
-            </button>
+            </button> */}
 
             {/* 图片压缩工具 */}
             {/* <button
@@ -268,7 +244,7 @@ const Header: React.FC<HeaderProps> = ({
             />
 
             {/* GitHub 配置 */}
-            {storageType === 'github' && githubConfig && (
+            {/* {storageType === 'github' && githubConfig && (
               <button
                 onClick={handleOpenConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -276,10 +252,10 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <Settings className="w-5 h-5" />
               </button>
-            )}
+            )} */}
 
             {/* 又拍云配置 */}
-            {storageType === 'upyun' && upyunConfig && (
+            {/* {storageType === 'upyun' && upyunConfig && (
               <button
                 onClick={handleOpenUpyunConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
@@ -287,10 +263,10 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <Settings className="w-5 h-5" />
               </button>
-            )}
+            )} */}
 
             {/* 刷新按钮 */}
-            <button
+            {/* <button
               onClick={onLoadImages}
               disabled={loading}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -299,7 +275,7 @@ const Header: React.FC<HeaderProps> = ({
               <RefreshCw
                 className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
               />
-            </button>
+            </button> */}
 
             {/* 键盘帮助 */}
             <button

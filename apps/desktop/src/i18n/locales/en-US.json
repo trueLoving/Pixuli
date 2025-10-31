@@ -1,0 +1,16 @@
+{
+  "sourceManager": {
+    "title": "Repository Sources",
+    "add": "Add",
+    "open": "Open",
+    "openInNewWindow": "Open in New Window",
+    "edit": "Edit",
+    "delete": "Delete",
+    "empty": "No sources yet. Click \"Add Source\" to create one.",
+    "repoLine": "{{owner}}/{{repo}}@{{branch}}",
+    "subPath": "Sub Path",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "loading": "Loading data..."
+  }
+}
