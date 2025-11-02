@@ -71,8 +71,13 @@ export class UpyunStorageService {
         throw new Error(response.error || '上传失败');
       }
 
-      // 获取图片信息
-      const imageInfo = await this.getImageInfo(file);
+      // 获取图片信息（如果失败使用默认值，不影响上传）
+      let imageInfo = { width: 0, height: 0 };
+      try {
+        imageInfo = await this.getImageInfo(file);
+      } catch (error) {
+        console.warn('获取图片信息失败，使用默认值:', error);
+      }
 
       const imageItem: ImageItem = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -177,18 +182,35 @@ export class UpyunStorageService {
   private async getImageInfo(
     file: File
   ): Promise<{ width: number; height: number }> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      // 设置超时，避免永远等待
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+        // 超时后返回默认值而不是 reject，避免影响上传流程
+        resolve({ width: 0, height: 0 });
+      }, 5000); // 5秒超时
+
       img.onload = () => {
-        resolve({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        });
+        clearTimeout(timeout);
+        const dimensions = {
+          width: img.naturalWidth || img.width || 0,
+          height: img.naturalHeight || img.height || 0,
+        };
+        URL.revokeObjectURL(objectUrl);
+        resolve(dimensions);
       };
+
       img.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        // 错误时返回默认值，避免影响上传流程
         resolve({ width: 0, height: 0 });
       };
-      img.src = URL.createObjectURL(file);
+
+      img.src = objectUrl;
     });
   }
 
