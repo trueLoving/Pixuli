@@ -10,7 +10,8 @@ import {
   updateTrayMenu,
   destroyTray,
   closeCompressionWindow,
-  // closeConversionWindow,
+  closeConversionWindow,
+  closeAIAnalysisWindow,
 } from './tray';
 
 const require = createRequire(import.meta.url);
@@ -71,7 +72,7 @@ function setupContentSecurityPolicy() {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https: http://localhost:*; " +
+    "img-src 'self' data: blob: https: http://localhost:*; " +
     "font-src 'self' data:; " +
     "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://*; " +
     "frame-src 'self'; " +
@@ -84,7 +85,7 @@ function setupContentSecurityPolicy() {
     "default-src 'self'; " +
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https:; " +
+    "img-src 'self' data: blob: https:; " +
     "font-src 'self' data:; " +
     "connect-src 'self' https:; " +
     "frame-src 'self'; " +
@@ -142,17 +143,18 @@ async function createWindow() {
   });
 
   // 创建系统托盘，传入退出回调
-  // createTray(win, () => {
-  //   appIsQuitting = true;
-  // });
+  createTray(win, () => {
+    appIsQuitting = true;
+    app.quit();
+  });
 
   // 监听窗口显示/隐藏，更新托盘菜单
   win.on('show', () => {
-    // updateTrayMenu(win);
+    updateTrayMenu(win);
   });
 
   win.on('hide', () => {
-    // updateTrayMenu(win);
+    updateTrayMenu(win);
   });
 
   // 监听窗口关闭事件，阻止默认行为并隐藏到托盘
@@ -209,7 +211,8 @@ app.on('activate', () => {
 
 // 应用退出前清理托盘
 app.on('before-quit', () => {
-  // destroyTray();
+  appIsQuitting = true;
+  destroyTray();
 });
 
 // New window example arg: new windows url
@@ -239,10 +242,15 @@ registerServiceHandlers();
 
 // 处理关闭压缩窗口的 IPC 请求
 ipcMain.handle('close-compression-window', () => {
-  // closeCompressionWindow();
+  closeCompressionWindow();
 });
 
 // 处理关闭转换窗口的 IPC 请求
 ipcMain.handle('close-conversion-window', () => {
-  // closeConversionWindow();
+  closeConversionWindow();
+});
+
+// 处理关闭 AI 分析窗口的 IPC 请求
+ipcMain.handle('close-ai-analysis-window', () => {
+  closeAIAnalysisWindow();
 });

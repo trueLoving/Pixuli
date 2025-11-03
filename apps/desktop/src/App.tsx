@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { useI18n } from './i18n/useI18n';
 import {
+  AIAnalysisWindowPage,
   CompressionWindowPage,
   ConversionWindowPage,
   HomePage,
@@ -18,6 +19,8 @@ function App() {
   const [isCompressionMode] = useState(window.location.hash === '#compression');
   // 检查是否在转换窗口模式
   const [isConversionMode] = useState(window.location.hash === '#conversion');
+  // 检查是否在 AI 分析窗口模式
+  const [isAIAnalysisMode] = useState(window.location.hash === '#ai-analysis');
   // 项目窗口判断与参数解析
   const [projectSourceId] = useState<string | null>(() => {
     const hash = window.location.hash;
@@ -112,6 +115,11 @@ function App() {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
     };
   }, [t]);
+
+  // 如果是 AI 分析窗口模式，只显示 AI 分析组件
+  if (isAIAnalysisMode) {
+    return <AIAnalysisWindowPage />;
+  }
 
   // 如果是转换窗口模式，只显示转换组件
   if (isConversionMode) {

@@ -1,9 +1,11 @@
 import { Toaster } from '@packages/ui/src';
 import React, { useEffect, useState } from 'react';
 import { ImageCompression } from '../../features';
+import { useI18n } from '../../i18n/useI18n';
 
 export const CompressionWindowPage: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
+  const { t } = useI18n();
 
   const handleClose = () => {
     setIsOpen(false);
@@ -27,7 +29,7 @@ export const CompressionWindowPage: React.FC = () => {
 
   return (
     <>
-      <ImageCompression isOpen={isOpen} onClose={handleClose} />
+      <ImageCompression isOpen={isOpen} onClose={handleClose} t={t} />
       <Toaster />
     </>
   );

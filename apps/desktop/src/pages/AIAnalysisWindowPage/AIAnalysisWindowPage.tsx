@@ -1,9 +1,9 @@
 import { Toaster } from '@packages/ui/src';
 import React, { useEffect, useState } from 'react';
-import { ImageConverter } from '../../features';
+import { AIAnalysisModal } from '../../features';
 import { useI18n } from '../../i18n/useI18n';
 
-export const ConversionWindowPage: React.FC = () => {
+export const AIAnalysisWindowPage: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const { t } = useI18n();
 
@@ -12,7 +12,7 @@ export const ConversionWindowPage: React.FC = () => {
     // 关闭窗口
     const ipcRenderer = (window as any).ipcRenderer;
     if (ipcRenderer && ipcRenderer.invoke) {
-      ipcRenderer.invoke('close-conversion-window');
+      ipcRenderer.invoke('close-ai-analysis-window');
     }
   };
 
@@ -29,10 +29,10 @@ export const ConversionWindowPage: React.FC = () => {
 
   return (
     <>
-      <ImageConverter isOpen={isOpen} onClose={handleClose} t={t} />
+      <AIAnalysisModal isOpen={isOpen} onClose={handleClose} t={t} />
       <Toaster />
     </>
   );
 };
 
-export default ConversionWindowPage;
+export default AIAnalysisWindowPage;
