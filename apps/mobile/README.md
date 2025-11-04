@@ -6,7 +6,8 @@
 
 ## 📖 项目简介
 
-Pixuli Mobile 是 Pixuli 智能图片管理生态系统的移动端应用，基于 React Native + TypeScript 构建，提供跨平台的图片管理、AI 分析和云端同步功能。
+pixuli Mobile 是 pixuli 智能图片管理生态系统的移动端应用，基于 React Native +
+TypeScript 构建，提供跨平台的图片管理、AI 分析和云端同步功能。
 
 ## ✨ 主要功能
 
@@ -73,8 +74,8 @@ graph TB
     end
 
     subgraph "共享模块"
-        Q[pixuli-ui 组件库]
-        R[pixuli-wasm 处理引擎]
+        Q[pixuli UI 组件库]
+        R[pixuli WASM 处理引擎]
         S[业务逻辑复用]
     end
 
@@ -254,7 +255,7 @@ export const darkTheme: ThemeColors = {
 - 相册权限管理
 - 后台应用刷新
 
-## 🔗 与 Pixuli 生态集成
+## 🔗 与 pixuli 生态集成
 
 ### 共享组件
 
@@ -330,7 +331,8 @@ cd android && ./gradlew clean && cd ..
 
 ### 4. 权限问题
 
-确保在 `android/app/src/main/AndroidManifest.xml` 和 `ios/mobile/Info.plist` 中正确配置权限。
+确保在 `android/app/src/main/AndroidManifest.xml` 和 `ios/mobile/Info.plist`
+中正确配置权限。
 
 ## 🤝 贡献指南
 
@@ -346,11 +348,11 @@ cd android && ./gradlew clean && cd ..
 
 ## 🔗 相关链接
 
-- [Pixuli Desktop](../desktop/README.md) - 桌面版应用
-- [Pixuli Web](../web/README.md) - Web 版应用
-- [Pixuli UI Package](../../packages/ui/README.md) - 共享 UI 组件
-- [Pixuli WASM Package](../../packages/wasm/README.md) - 图片处理引擎
-- [项目主页](https://github.com/trueLoving/Pixuli) - GitHub 仓库
+- [pixuli Desktop](../desktop/README.md) - 桌面版应用
+- [pixuli Web](../web/README.md) - Web 版应用
+- [pixuli UI Package](../../packages/ui/README.md) - 共享 UI 组件
+- [pixuli WASM Package](../../packages/wasm/README.md) - 图片处理引擎
+- [项目主页](https://github.com/trueLoving/pixuli) - GitHub 仓库
 
 ## 📊 开发进度
 
@@ -365,4 +367,4 @@ cd android && ./gradlew clean && cd ..
 
 ---
 
-**Pixuli Mobile** - 让图片管理更智能，让创作更高效！ 📱✨
+**pixuli Mobile** - 让图片管理更智能，让创作更高效！ 📱✨
