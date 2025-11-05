@@ -355,7 +355,11 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       return (
         <div
           key={image.id}
-          ref={el => el && observeElement(el, image.id)}
+          ref={el => {
+            if (el) {
+              observeElement(el, image.id);
+            }
+          }}
           data-image-index={index}
           onClick={() => onImageSelect?.(index)}
           className={`image-browser-item ${isSelected ? 'selected' : 'unselected'}`}

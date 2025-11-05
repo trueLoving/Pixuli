@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "lucide-react": "^0.263.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.6.0",
     "react-image-crop": "^10.1.8",
@@ -24,8 +24,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "tsup": "^7.0.0",
     "typescript": "^5.0.0"
   },

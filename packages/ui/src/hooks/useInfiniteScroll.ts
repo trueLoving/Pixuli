@@ -14,8 +14,8 @@ interface UseInfiniteScrollReturn {
   isLoading: boolean;
   loadMore: () => void;
   reset: () => void;
-  containerRef: React.RefObject<HTMLDivElement>;
-  loadingRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  loadingRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useInfiniteScroll(

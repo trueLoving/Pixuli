@@ -340,7 +340,11 @@ const ImageList: React.FC<ImageListProps> = ({
       return (
         <div
           key={image.id}
-          ref={el => el && observeElement(el, image.id)}
+          ref={el => {
+            if (el) {
+              observeElement(el, image.id);
+            }
+          }}
           data-image-index={index}
           onClick={() => onImageSelect?.(index)}
           className={`image-list-item ${isSelected ? 'selected' : 'unselected'}`}

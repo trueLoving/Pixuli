@@ -12,8 +12,8 @@ interface UseVirtualScrollReturn {
   totalHeight: number;
   visibleItems: number[];
   scrollTop: number;
-  containerRef: React.RefObject<HTMLDivElement>;
-  scrollContainerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   handleScroll: (e: React.UIEvent<HTMLDivElement>) => void;
 }
 
