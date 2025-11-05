@@ -7,8 +7,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { ImageItem } from 'pixuli-ui/src';
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { ThemedText } from './ThemedText';
+import { ThemedView } from './ThemedView';
 
 interface ImageGridProps {
   images: ImageItem[];

@@ -10,8 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import { GitHubConfig } from 'pixuli-ui/src';
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { ThemedText } from './ThemedText';
+import { ThemedView } from './ThemedView';
 import { useI18n } from '@/i18n/useI18n';
 import { showSuccess, showError } from '@/utils/toast';
 

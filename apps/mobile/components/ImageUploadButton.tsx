@@ -6,8 +6,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { IconSymbol } from './ui/icon-symbol';
-import { ThemedText } from './themed-text';
+import { IconSymbol } from './ui/IconSymbol';
+import { ThemedText } from './ThemedText';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
 
