@@ -1,0 +1,190 @@
+name: 发布 Pixuli Mobile
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: '选择要发布的平台'
+        required: true
+        type: choice
+        options:
+          - android
+          - ios
+          - both
+        default: both
+      releaseToGitHub:
+        description: '将产物附加到 GitHub Release（仅在 tag 或手动开启时）'
+        required: true
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PNPM_VERSION: 9
+  NODE_VERSION: 20
+
+jobs:
+  detect:
+    name: Detect inputs
+    runs-on: ubuntu-latest
+    outputs:
+      do_android: ${{ steps.set.outputs.do_android }}
+      do_ios: ${{ steps.set.outputs.do_ios }}
+      is_tag: ${{ steps.set.outputs.is_tag }}
+      release_enabled: ${{ steps.set.outputs.release_enabled }}
+    steps:
+      - name: Resolve inputs
+        id: set
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PLATFORM="${{ github.event.inputs.platform }}"
+            RELEASE_INPUT="${{ github.event.inputs.releaseToGitHub }}"
+          else
+            # tag push 默认 both，发布 release
+            PLATFORM="both"
+            RELEASE_INPUT="true"
+          fi
+
+          DO_ANDROID=false
+          DO_IOS=false
+          if [[ "$PLATFORM" == "android" || "$PLATFORM" == "both" ]]; then DO_ANDROID=true; fi
+          if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "both" ]]; then DO_IOS=true; fi
+
+          IS_TAG=false
+          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then IS_TAG=true; fi
+
+          echo "do_android=$DO_ANDROID" >> $GITHUB_OUTPUT
+          echo "do_ios=$DO_IOS" >> $GITHUB_OUTPUT
+          echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
+          echo "release_enabled=$RELEASE_INPUT" >> $GITHUB_OUTPUT
+
+  android:
+    name: Android build
+    needs: detect
+    if: needs.detect.outputs.do_android == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies (workspace)
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build Android (APK)
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Locate artifacts
+        id: afp
+        shell: bash
+        run: |
+          APK_GLOB="android/app/build/outputs/apk/release/*.apk"
+          APK_FILE=$(ls $APK_GLOB 2>/dev/null | head -n1 || true)
+          echo "apk=$APK_FILE" >> $GITHUB_OUTPUT
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: |
+            ${{ steps.afp.outputs.apk }}
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release
+        if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.afp.outputs.apk }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ios:
+    name: iOS build (EAS)
+    needs: detect
+    if: needs.detect.outputs.do_ios == 'true'
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Install dependencies (workspace)
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Install EAS CLI
+        run: pnpm dlx eas-cli@latest --version
+
+      - name: EAS build (iOS)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          pnpm dlx eas-cli build --platform ios --non-interactive --no-wait
+          # 由于 EAS 云端构建，此处仅输出提交信息与链接
+
+      - name: Upload EAS build info
+        if: always()
+        run: |
+          echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > eas-ios-info.txt
+
+      - name: Upload iOS build info artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-eas-info
+          path: eas-ios-info.txt
+
+      - name: Attach info to GitHub Release
+        if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            eas-ios-info.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
