@@ -6,12 +6,13 @@ import { deepMerge, enUS, zhCN } from 'pixuli-ui/src/locales';
 // 导入移动端语言包
 import { mobileLocales } from './locales';
 
+// 确保 mobileLocales 正确覆盖基础语言包
 const resources = {
   'zh-CN': {
-    translation: deepMerge({}, zhCN, mobileLocales['zh-CN']),
+    translation: deepMerge({}, zhCN || {}, mobileLocales['zh-CN'] || {}),
   },
   'en-US': {
-    translation: deepMerge({}, enUS, mobileLocales['en-US']),
+    translation: deepMerge({}, enUS || {}, mobileLocales['en-US'] || {}),
   },
 };
 
@@ -19,13 +20,16 @@ const resources = {
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
     resources,
-    lng: Localization.getLocales()[0].languageCode || 'zh-CN',
+    lng: Localization.getLocales()[0]?.languageCode || 'zh-CN',
     fallbackLng: 'zh-CN',
     debug: false,
     interpolation: {
       escapeValue: false, // React already does escaping
     },
     compatibilityJSON: 'v4',
+    // 确保缺失的翻译键返回 key 本身，而不是 undefined
+    returnEmptyString: false,
+    returnNull: false,
   });
 }
 

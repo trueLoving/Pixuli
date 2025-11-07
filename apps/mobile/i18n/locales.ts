@@ -22,6 +22,12 @@ export const mobileLocales = {
       storage: {
         title: '存储配置',
       },
+      language: {
+        title: '语言',
+        zhCN: '简体中文',
+        enUS: '英语',
+        current: '当前语言',
+      },
       github: {
         title: 'GitHub 配置',
         notConfigured: '未配置',
@@ -107,6 +113,12 @@ export const mobileLocales = {
       title: 'Settings',
       storage: {
         title: 'Storage Configuration',
+      },
+      language: {
+        title: 'Language',
+        zhCN: 'Simplified Chinese',
+        enUS: 'English',
+        current: 'Current language',
       },
       github: {
         title: 'GitHub Configuration',

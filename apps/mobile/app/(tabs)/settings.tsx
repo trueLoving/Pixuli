@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
+import { useI18n, useInitLanguage } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 
 type IconName =
@@ -23,9 +23,21 @@ interface SettingItem {
 }
 
 export default function SettingsScreen() {
-  const { t } = useI18n();
+  const {
+    t,
+    getAvailableLanguages,
+    getCurrentLanguage,
+    changeLanguage,
+    isReady,
+  } = useI18n();
+  useInitLanguage();
   const router = useRouter();
   const { githubConfig, storageType } = useImageStore();
+
+  // 确保翻译已加载
+  if (!isReady) {
+    return null;
+  }
 
   const settingsItems: SettingItem[] = [
     {
@@ -52,12 +64,6 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          {t('settings.title')}
-        </ThemedText>
-      </View>
-
       <View style={styles.content}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>
           {t('settings.storage.title')}
@@ -86,6 +92,43 @@ export default function SettingsScreen() {
               </View>
             </View>
             <IconSymbol name="chevron.right" size={20} color="#999" />
+          </TouchableOpacity>
+        ))}
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          {t('settings.language.title')}
+        </ThemedText>
+
+        {getAvailableLanguages().map(lang => (
+          <TouchableOpacity
+            key={lang.code}
+            style={styles.settingItem}
+            onPress={() => changeLanguage(lang.code)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.settingItemLeft}>
+              <View style={styles.iconContainer}>
+                <ThemedText style={{ fontSize: 16 }}>{lang.flag}</ThemedText>
+              </View>
+              <View style={styles.settingItemContent}>
+                <ThemedText style={styles.settingItemTitle}>
+                  {lang.name}
+                </ThemedText>
+                <ThemedText style={styles.settingItemDescription}>
+                  {getCurrentLanguage() === lang.code
+                    ? t('settings.language.current')
+                    : ' '}
+                </ThemedText>
+              </View>
+            </View>
+            {getCurrentLanguage() === lang.code ? (
+              <IconSymbol
+                name="checkmark.seal.fill"
+                size={20}
+                color="#34C759"
+              />
+            ) : (
+              <IconSymbol name="chevron.right" size={20} color="#999" />
+            )}
           </TouchableOpacity>
         ))}
       </View>

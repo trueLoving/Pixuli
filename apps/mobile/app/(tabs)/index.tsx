@@ -78,12 +78,12 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          {t('image.title')}
-        </ThemedText>
-        <View style={styles.headerActions}>
-          {storageType && <ImageUploadButton onUploadComplete={loadImages} />}
+        <View style={styles.titleBlock}>
+          <ThemedText style={styles.subtitle}>
+            {images?.length ? `${images.length} 张` : ''}
+          </ThemedText>
         </View>
+        <View style={styles.headerActions} />
       </View>
 
       {error && (
@@ -108,6 +108,12 @@ export default function HomeScreen() {
           refreshing={refreshing}
         />
       )}
+
+      {storageType && (
+        <View style={styles.fabContainer}>
+          <ImageUploadButton fab onUploadComplete={loadImages} />
+        </View>
+      )}
     </ThemedView>
   );
 }
@@ -124,13 +130,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  titleBlock: {
+    flexDirection: 'column',
+    flex: 1,
+  },
   title: {
     flex: 1,
+  },
+  subtitle: {
+    marginTop: 4,
+    opacity: 0.6,
+    fontSize: 12,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  fabContainer: {
+    position: 'absolute',
+    right: 16,
+    bottom: 24,
   },
   settingsButton: {
     padding: 8,
