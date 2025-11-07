@@ -60,6 +60,7 @@ export const mobileLocales = {
       uploadFailed: '上传失败',
       deleteSuccess: '删除成功',
       deleteFailed: '删除失败',
+      deleteConfirm: '确定要删除这张图片吗？',
     },
     app: {
       welcome: '欢迎使用 pixuli',
@@ -153,6 +154,7 @@ export const mobileLocales = {
       uploadFailed: 'Upload failed',
       deleteSuccess: 'Delete successful',
       deleteFailed: 'Delete failed',
+      deleteConfirm: 'Are you sure you want to delete this image?',
     },
     app: {
       welcome: 'Welcome to Pixuli',

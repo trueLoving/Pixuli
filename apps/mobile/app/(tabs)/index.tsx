@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ImageGrid } from '@/components/ImageGrid';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { ImageBrowser } from '@/components/ImageBrowser';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
 import { ImageItem } from 'pixuli-ui/src';
@@ -18,9 +19,18 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 export default function HomeScreen() {
   const { t } = useI18n();
   const router = useRouter();
-  const { images, loading, error, loadImages, storageType, githubConfig } =
-    useImageStore();
+  const {
+    images,
+    loading,
+    error,
+    loadImages,
+    storageType,
+    githubConfig,
+    deleteImage,
+  } = useImageStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [browserVisible, setBrowserVisible] = useState(false);
+  const [browserIndex, setBrowserIndex] = useState(0);
 
   useEffect(() => {
     // 如果已配置存储，加载图片
@@ -36,8 +46,19 @@ export default function HomeScreen() {
   };
 
   const handleImagePress = (image: ImageItem) => {
-    // TODO: 实现图片详情页面
-    console.log('Image pressed:', image);
+    const index = images.findIndex(img => img.id === image.id);
+    if (index !== -1) {
+      setBrowserIndex(index);
+      setBrowserVisible(true);
+    }
+  };
+
+  const handleDeleteImage = async (image: ImageItem) => {
+    await deleteImage(image.id, image.name);
+    // 如果删除后没有图片了，关闭浏览器
+    if (images.length <= 1) {
+      setBrowserVisible(false);
+    }
   };
 
   const handleGoToSettings = () => {
@@ -114,6 +135,14 @@ export default function HomeScreen() {
           <ImageUploadButton fab onUploadComplete={loadImages} />
         </View>
       )}
+
+      <ImageBrowser
+        visible={browserVisible}
+        images={images}
+        initialIndex={browserIndex}
+        onClose={() => setBrowserVisible(false)}
+        onDelete={handleDeleteImage}
+      />
     </ThemedView>
   );
 }
