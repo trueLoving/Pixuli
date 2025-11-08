@@ -11,6 +11,7 @@
     "subPath": "子路径",
     "collapse": "收起",
     "expand": "展开",
-    "loading": "正在加载数据..."
+    "loading": "正在加载数据...",
+    "imageCount": "张图片"
   }
 }

@@ -55,7 +55,7 @@ body {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -63,8 +63,21 @@ body {
   }
 }
 
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-in-soft {
+  animation: fadeInSoft 0.3s ease-in-out;
 }
 
 /* 响应式设计 */

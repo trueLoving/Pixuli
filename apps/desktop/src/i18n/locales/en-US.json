@@ -11,6 +11,7 @@
     "subPath": "Sub Path",
     "collapse": "Collapse",
     "expand": "Expand",
-    "loading": "Loading data..."
+    "loading": "Loading data...",
+    "imageCount": "images"
   }
 }
