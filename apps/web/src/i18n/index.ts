@@ -5,7 +5,7 @@ import { initReactI18next } from 'react-i18next';
 // 导入packages/ui的语言包
 import { enUS, zhCN, deepMerge } from '@packages/ui/src';
 // 导入web端组件的语言包
-import { demoLocales, versionInfoLocales } from '../components';
+import { demoLocales, versionInfoLocales, pwaLocales } from '../components';
 
 const resources = {
   'zh-CN': {
@@ -13,7 +13,8 @@ const resources = {
       {},
       zhCN,
       demoLocales['zh-CN'],
-      versionInfoLocales['zh-CN']
+      versionInfoLocales['zh-CN'],
+      pwaLocales['zh-CN']
     ),
   },
   'en-US': {
@@ -21,7 +22,8 @@ const resources = {
       {},
       enUS,
       demoLocales['en-US'],
-      versionInfoLocales['en-US']
+      versionInfoLocales['en-US'],
+      pwaLocales['en-US']
     ),
   },
 };

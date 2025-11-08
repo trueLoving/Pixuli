@@ -163,3 +163,6 @@ Cargo.lock
 
 docs/next-env.d.ts
 # models
+
+# pwd
+dev-dist

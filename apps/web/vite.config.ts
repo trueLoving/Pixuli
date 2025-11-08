@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import fs from 'fs';
 import { execSync } from 'child_process';
@@ -82,7 +83,96 @@ const versionInfo = {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'prompt',
+      includeAssets: ['icon.ico', 'icon-192x192.png', 'icon-512x512.png'],
+      manifest: {
+        name: 'Pixuli Web - 智能图片管理',
+        short_name: 'Pixuli',
+        description: '基于 GitHub 的智能图片管理 Web 应用',
+        theme_color: '#2563eb',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'any',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: '/icon-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: '/icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ],
+        shortcuts: [
+          {
+            name: '上传图片',
+            short_name: '上传',
+            description: '快速上传新图片',
+            url: '/?action=upload',
+            icons: [{ src: '/icon-192x192.png', sizes: '192x192' }],
+          },
+        ],
+        categories: ['productivity', 'utilities'],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\.github\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'github-api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'github-images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
