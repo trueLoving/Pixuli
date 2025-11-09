@@ -97,6 +97,12 @@ contextBridge.exposeInMainWorld('clipboardAPI', {
   readText: () => ipcRenderer.invoke('clipboard:readText'),
 });
 
+// --------- Expose File API to the Renderer process ---------
+contextBridge.exposeInMainWorld('fileAPI', {
+  saveFile: (fileName: string, content: string, mimeType?: string) =>
+    ipcRenderer.invoke('file:save', fileName, content, mimeType),
+});
+
 // --------- Expose Electron API to the Renderer process ---------
 contextBridge.exposeInMainWorld('electronAPI', {
   onReceiveMessage: (callback: (message: string) => void) => {
@@ -104,6 +110,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
       callback(message);
     });
   },
+  saveFile: (fileName: string, content: string, mimeType?: string) =>
+    ipcRenderer.invoke('file:save', fileName, content, mimeType),
 });
 
 // --------- Preload Loading Animation -------------------------
