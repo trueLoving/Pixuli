@@ -10,6 +10,8 @@ import {
 } from '@/config/upyun';
 import { GitHubStorageService } from '@/services/githubStorageService';
 import { UpyunStorageService } from '@/services/upyunStorageService';
+import { LogActionType, LogStatus } from '@/services/types/log';
+import { useLogStore } from '@/stores/logStore';
 import {
   BatchUploadProgress,
   GitHubConfig,
@@ -84,6 +86,12 @@ export const useImageStore = create<ImageState>((set, get) => {
       // 切换到 GitHub 存储
       set({ storageType: 'github' });
       get().initializeStorage();
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'github', action: 'set' },
+        });
     },
 
     clearGitHubConfig: () => {
@@ -94,6 +102,12 @@ export const useImageStore = create<ImageState>((set, get) => {
       if (storageType === 'github') {
         set({ storageService: null, storageType: null });
       }
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'github', action: 'clear' },
+        });
     },
 
     setUpyunConfig: (config: UpyunConfig) => {
@@ -102,6 +116,12 @@ export const useImageStore = create<ImageState>((set, get) => {
       // 切换到又拍云存储
       set({ storageType: 'upyun' });
       get().initializeStorage();
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'upyun', action: 'set' },
+        });
     },
 
     clearUpyunConfig: () => {
@@ -112,6 +132,12 @@ export const useImageStore = create<ImageState>((set, get) => {
       if (storageType === 'upyun') {
         set({ storageService: null, storageType: null });
       }
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'upyun', action: 'clear' },
+        });
     },
 
     initializeStorage: () => {
@@ -185,8 +211,10 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
 
       set({ loading: true, error: null });
+      const startTime = Date.now();
       try {
         const newImage = await storageService.uploadImage(uploadData);
+        const duration = Date.now() - startTime;
         set(state => ({
           // 去重：确保不会添加重复ID的图片
           images: state.images.some(img => img.id === newImage.id)
@@ -194,10 +222,26 @@ export const useImageStore = create<ImageState>((set, get) => {
             : [...state.images, newImage],
           loading: false,
         }));
+        // 记录上传成功日志
+        useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.SUCCESS, {
+          imageId: newImage.id,
+          imageName: newImage.name,
+          duration,
+          details: { size: newImage.size, type: newImage.type },
+        });
       } catch (error) {
+        const duration = Date.now() - startTime;
+        const errorMsg =
+          error instanceof Error ? error.message : '上传图片失败';
         set({
-          error: error instanceof Error ? error.message : '上传图片失败',
+          error: errorMsg,
           loading: false,
+        });
+        // 记录上传失败日志
+        useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
+          imageName: uploadData.name || uploadData.file.name,
+          error: errorMsg,
+          duration,
         });
       } finally {
         // 确保 loading 状态总是被清除（双重保险）
@@ -212,11 +256,12 @@ export const useImageStore = create<ImageState>((set, get) => {
         return;
       }
 
+      const { files, name, description, tags } = uploadData;
+      const total = files.length;
+      let completed = 0;
+      let failed = 0;
+
       try {
-        const { files, name, description, tags } = uploadData;
-        const total = files.length;
-        let completed = 0;
-        let failed = 0;
         const items: UploadProgress[] = files.map((_file, index) => ({
           id: `${Date.now()}-${index}`,
           progress: 0,
@@ -320,17 +365,42 @@ export const useImageStore = create<ImageState>((set, get) => {
         }
 
         // 批量上传完成
+        const batchStartTime = Date.now();
         set(state => ({
           images: [...state.images, ...uploadedImages],
           loading: false,
           batchUploadProgress: null,
         }));
+        // 记录批量上传日志
+        useLogStore
+          .getState()
+          .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
+            details: {
+              total,
+              completed,
+              failed,
+              images: uploadedImages.map(img => ({
+                id: img.id,
+                name: img.name,
+              })),
+            },
+            duration: Date.now() - batchStartTime,
+          });
       } catch (error) {
+        const errorMsg =
+          error instanceof Error ? error.message : '批量上传失败';
         set({
-          error: error instanceof Error ? error.message : '批量上传失败',
+          error: errorMsg,
           loading: false,
           batchUploadProgress: null,
         });
+        // 记录批量上传失败日志
+        useLogStore
+          .getState()
+          .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
+            error: errorMsg,
+            details: { total, completed, failed },
+          });
       } finally {
         // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
@@ -345,16 +415,34 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
 
       set({ loading: true, error: null });
+      const startTime = Date.now();
       try {
         await storageService.deleteImage(imageId, fileName);
+        const duration = Date.now() - startTime;
         set(state => ({
           images: state.images.filter(img => img.id !== imageId),
           loading: false,
         }));
+        // 记录删除成功日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
+          imageId,
+          imageName: fileName,
+          duration,
+        });
       } catch (error) {
+        const duration = Date.now() - startTime;
+        const errorMsg =
+          error instanceof Error ? error.message : '删除图片失败';
         set({
-          error: error instanceof Error ? error.message : '删除图片失败',
+          error: errorMsg,
           loading: false,
+        });
+        // 记录删除失败日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
+          imageId,
+          imageName: fileName,
+          error: errorMsg,
+          duration,
         });
       } finally {
         // 确保 loading 状态总是被清除（双重保险）
@@ -376,6 +464,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
 
       set({ loading: true, error: null });
+      const startTime = Date.now();
       try {
         const metadata = {
           name: editData.name || image.name,
@@ -392,16 +481,49 @@ export const useImageStore = create<ImageState>((set, get) => {
           image.name
         );
 
+        const duration = Date.now() - startTime;
         set(state => ({
           images: state.images.map(img =>
             img.id === editData.id ? { ...img, ...metadata } : img
           ),
           loading: false,
         }));
+        // 记录编辑成功日志
+        useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
+          imageId: editData.id,
+          imageName: metadata.name,
+          duration,
+          details: {
+            changes: {
+              name:
+                editData.name !== image.name
+                  ? { old: image.name, new: editData.name }
+                  : undefined,
+              description:
+                editData.description !== image.description
+                  ? { old: image.description, new: editData.description }
+                  : undefined,
+              tags:
+                editData.tags !== image.tags
+                  ? { old: image.tags, new: editData.tags }
+                  : undefined,
+            },
+          },
+        });
       } catch (error) {
+        const duration = Date.now() - startTime;
+        const errorMsg =
+          error instanceof Error ? error.message : '更新图片失败';
         set({
-          error: error instanceof Error ? error.message : '更新图片失败',
+          error: errorMsg,
           loading: false,
+        });
+        // 记录编辑失败日志
+        useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
+          imageId: editData.id,
+          imageName: image.name,
+          error: errorMsg,
+          duration,
         });
       } finally {
         // 确保 loading 状态总是被清除（双重保险）

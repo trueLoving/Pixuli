@@ -4,12 +4,13 @@ import {
   LanguageSwitcher,
   UpyunConfigModal,
 } from '@packages/ui/src';
-import { HelpCircle, Info } from 'lucide-react';
+import { FileText, HelpCircle, Info } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import {
   AIAnalysisModal,
   ImageCompression,
   ImageConverter,
+  OperationLogModal,
   VersionInfoModal,
 } from '../../features';
 
@@ -87,6 +88,7 @@ const Header: React.FC<HeaderProps> = ({
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [showOperationLog, setShowOperationLog] = useState(false);
 
   // 模态框控制函数
   const handleOpenConfigModal = () => setShowConfigModal(true);
@@ -103,6 +105,8 @@ const Header: React.FC<HeaderProps> = ({
   const handleCloseKeyboardHelp = () => setShowKeyboardHelp(false);
   const handleOpenVersionInfo = () => setShowVersionInfo(true);
   const handleCloseVersionInfo = () => setShowVersionInfo(false);
+  const handleOpenOperationLog = () => setShowOperationLog(true);
+  const handleCloseOperationLog = () => setShowOperationLog(false);
 
   const handleSaveConfig = (config: any) => {
     onSaveConfig(config);
@@ -272,6 +276,14 @@ const Header: React.FC<HeaderProps> = ({
             >
               <HelpCircle className="w-5 h-5" />
             </button>
+            {/* 操作日志 */}
+            <button
+              onClick={handleOpenOperationLog}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              title="操作日志"
+            >
+              <FileText className="w-5 h-5" />
+            </button>
             {/* 版本信息 */}
             <button
               onClick={handleOpenVersionInfo}
@@ -333,6 +345,12 @@ const Header: React.FC<HeaderProps> = ({
         isOpen={showKeyboardHelp}
         onClose={handleCloseKeyboardHelp}
         categories={keyboardCategories}
+      />
+
+      {/* 操作日志模态框 */}
+      <OperationLogModal
+        isOpen={showOperationLog}
+        onClose={handleCloseOperationLog}
       />
 
       {/* 版本信息模态框 */}

@@ -98,6 +98,7 @@ export default function PageLayout({
                   width={400}
                   height={300}
                   className="preview-image"
+                  priority={false}
                 />
                 <div className="floating-elements">
                   <div className="floating-card card-1">
