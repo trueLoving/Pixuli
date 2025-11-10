@@ -23,9 +23,23 @@ export class GitHubStorageService {
       const { file, name, description, tags } = uploadData;
       const fileName = name || file.name;
 
+      // ========== 准备阶段：获取图片尺寸信息 ==========
+      // 在上传前获取图片尺寸，作为元数据的一部分
+      let imageDimensions = { width: 0, height: 0 };
+      try {
+        imageDimensions = await this.getImageInfo(file);
+      } catch (error) {
+        console.warn(
+          'Failed to get image dimensions, using default values:',
+          error
+        );
+        // 如果获取尺寸失败，使用默认值 0，后续可以通过 URL 获取
+      }
+
       // 将文件转换为 base64
       const base64Content = await this.fileToBase64(file);
 
+      // ========== 步骤1：上传图片文件 ==========
       // 通过 IPC 调用主进程的 GitHub 上传功能
       const response = await window.githubAPI.githubUpload({
         owner: this.config.owner,
@@ -38,14 +52,8 @@ export class GitHubStorageService {
         tags,
       });
 
-      // 获取图片信息（如果失败使用默认值，不影响上传）
-      let imageInfo = { width: 0, height: 0 };
-      try {
-        imageInfo = await this.getImageInfo(file);
-      } catch (error) {
-        console.warn('获取图片信息失败，使用默认值:', error);
-      }
-
+      // ========== 构建图片元数据对象 ==========
+      // 包含所有元数据信息：尺寸、标签、描述等
       const imageItem: ImageItem = {
         id:
           response.sha ||
@@ -54,14 +62,34 @@ export class GitHubStorageService {
         url: response.downloadUrl || '',
         githubUrl: response.htmlUrl || '',
         size: file.size,
-        width: imageInfo.width,
-        height: imageInfo.height,
+        width: imageDimensions.width,
+        height: imageDimensions.height,
         type: file.type,
         tags: tags || [],
         description: description || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+
+      // ========== 步骤2：上传图片元数据 ==========
+      // 将包含尺寸信息的元数据上传到 GitHub
+      try {
+        await this.updateImageInfo(imageItem.id, fileName, {
+          ...imageItem,
+          width: imageDimensions.width,
+          height: imageDimensions.height,
+        });
+      } catch (error) {
+        // 元数据上传失败时，记录警告但不影响图片上传的成功
+        // 因为图片文件已经成功上传，元数据可以在后续补充
+        console.warn(
+          'Image file uploaded successfully, but metadata upload failed:',
+          error
+        );
+        console.warn(
+          'You can update metadata later or it will be fetched from the image URL'
+        );
+      }
 
       return imageItem;
     } catch (error) {
@@ -101,9 +129,9 @@ export class GitHubStorageService {
         name: item.name,
         url: item.downloadUrl || '',
         githubUrl: item.htmlUrl || '',
-        size: item.size || 0,
-        width: item.width || 0,
-        height: item.height || 0,
+        size: item.size || 0, // 优先从元数据读取，备选 GitHub API
+        width: item.width || 0, // 从元数据读取，如果没有则从 URL 获取
+        height: item.height || 0, // 从元数据读取，如果没有则从 URL 获取
         type: this.getMimeType(item.name),
         tags: item.tags || [],
         description: item.description || '',
@@ -153,13 +181,26 @@ export class GitHubStorageService {
     oldFileName?: string
   ): Promise<void> {
     try {
+      // 确保元数据包含 size, width, height 字段
+      const metadataToUpdate = {
+        id: metadata.id || imageId,
+        name: metadata.name || fileName,
+        description: metadata.description || '',
+        tags: metadata.tags || [],
+        size: metadata.size || 0, // 文件大小（字节）
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        updatedAt: metadata.updatedAt || new Date().toISOString(),
+        createdAt: metadata.createdAt || new Date().toISOString(),
+      };
+
       await window.githubAPI.githubUpdateMetadata({
         owner: this.config.owner,
         repo: this.config.repo,
         path: this.config.path,
         branch: this.config.branch,
         fileName,
-        metadata,
+        metadata: metadataToUpdate,
         oldFileName,
       });
     } catch (error) {

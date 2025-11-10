@@ -40,6 +40,8 @@ export interface UploadProgress {
   progress: number;
   status: 'uploading' | 'success' | 'error';
   message?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface MultiImageUploadData {

@@ -57,9 +57,6 @@ const ImageList: React.FC<ImageListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
-  const [imageDimensions, setImageDimensions] = useState<
-    Record<string, { width: number; height: number }>
-  >({});
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // 滚动加载配置
@@ -297,33 +294,21 @@ const ImageList: React.FC<ImageListProps> = ({
     });
   }, []);
 
-  // 获取图片真实尺寸
-  const fetchImageDimensions = useCallback(
-    async (image: ImageItem) => {
-      if (!getImageDimensionsFromUrl) return;
-
-      try {
-        const dimensions = await getImageDimensionsFromUrl(image.url);
-        setImageDimensions(prev => ({
-          ...prev,
-          [image.id]: dimensions,
-        }));
-      } catch (error) {
-        console.warn(`Failed to get dimensions for ${image.name}:`, error);
+  // 获取图片尺寸显示文本
+  const getDimensionsText = useCallback(
+    (image: ImageItem): string => {
+      // 直接使用元数据中的尺寸
+      if (image.width > 0 && image.height > 0) {
+        return `${image.width} × ${image.height}`;
       }
+      // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
+      return (
+        translate('image.list.dimensionsUnknown') ||
+        translate('image.grid.dimensionsUnknown')
+      );
     },
-    [getImageDimensionsFromUrl]
+    [translate]
   );
-
-  // 当图片变为可见时获取尺寸
-  useEffect(() => {
-    visibleImages.forEach(imageId => {
-      const image = images.find(img => img.id === imageId);
-      if (image && (image.width === 0 || image.height === 0)) {
-        fetchImageDimensions(image);
-      }
-    });
-  }, [visibleImages, images, fetchImageDimensions]);
 
   const formatDate = useCallback((dateString: string) => {
     // 使用当前语言环境格式化日期
@@ -414,16 +399,7 @@ const ImageList: React.FC<ImageListProps> = ({
                     {formatDate(image.createdAt)}
                   </span>
                   <span className="image-list-meta-item">
-                    {(() => {
-                      const dimensions = imageDimensions[image.id];
-                      if (dimensions) {
-                        return `${dimensions.width} × ${dimensions.height}`;
-                      } else if (image.width > 0 && image.height > 0) {
-                        return `${image.width} × ${image.height}`;
-                      } else {
-                        return translate('image.list.gettingDimensions');
-                      }
-                    })()}
+                    {getDimensionsText(image)}
                   </span>
                   {image.size > 0 && (
                     <span className="image-list-meta-item">
@@ -493,7 +469,7 @@ const ImageList: React.FC<ImageListProps> = ({
       observeElement,
       visibleImages,
       formatDate,
-      imageDimensions,
+      getDimensionsText,
       handlePreview,
       handleEdit,
       toggleRowExpansion,
@@ -606,7 +582,6 @@ const ImageList: React.FC<ImageListProps> = ({
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
         onNavigate={handlePreviewNavigate}
-        imageDimensions={imageDimensions}
         formatFileSize={formatFileSize}
         onCopyUrl={handleCopyUrl}
         onOpenUrl={handleOpenUrl}
@@ -618,7 +593,6 @@ const ImageList: React.FC<ImageListProps> = ({
         image={selectedImage}
         isOpen={showUrlModal}
         onClose={() => setShowUrlModal(false)}
-        imageDimensions={imageDimensions}
         onCopyUrl={handleCopyUrl}
         onOpenUrl={handleOpenUrl}
         t={translate}

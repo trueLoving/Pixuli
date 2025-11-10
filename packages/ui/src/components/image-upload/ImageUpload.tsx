@@ -54,10 +54,63 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [showCropModal, setShowCropModal] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropFileIndex, setCropFileIndex] = useState<number>(-1);
+  const [fileDimensions, setFileDimensions] = useState<{
+    [key: string]: { width: number; height: number };
+  }>({});
+
+  // 获取图片尺寸的辅助函数
+  const getImageDimensions = useCallback(
+    (file: File): Promise<{ width: number; height: number }> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        const timeout = setTimeout(() => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('获取图片尺寸超时'));
+        }, 10000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(objectUrl);
+          resolve({
+            width: img.naturalWidth || img.width,
+            height: img.naturalHeight || img.height,
+          });
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('图片加载失败'));
+        };
+
+        img.src = objectUrl;
+      });
+    },
+    []
+  );
 
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
+        // 获取所有文件的尺寸信息
+        const dimensionsMap: {
+          [key: string]: { width: number; height: number };
+        } = {};
+
+        for (const file of acceptedFiles) {
+          try {
+            const dimensions = await getImageDimensions(file);
+            dimensionsMap[file.name] = dimensions;
+          } catch (error) {
+            // 如果获取尺寸失败，使用默认值
+            dimensionsMap[file.name] = { width: 0, height: 0 };
+          }
+        }
+
+        setFileDimensions(dimensionsMap);
+
         if (acceptedFiles.length === 1) {
           // 单张图片上传
           const file = acceptedFiles[0];
@@ -109,7 +162,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }
       }
     },
-    [enableCrop, translate]
+    [enableCrop, translate, getImageDimensions]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -126,17 +179,30 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (uploadData) {
+      const fileName = uploadData.name || uploadData.file.name;
+      const dimensions = fileDimensions[uploadData.file.name];
+      const dimensionsText =
+        dimensions && dimensions.width > 0 && dimensions.height > 0
+          ? ` (${dimensions.width} × ${dimensions.height})`
+          : '';
+
       const loadingToast = showLoading(
-        `${translate('image.upload.uploadingSingle')} "${uploadData.name || uploadData.file.name}"...`
+        `${translate('image.upload.uploadingSingle')} "${fileName}"...`
       );
       try {
         await onUploadImage(uploadData);
         updateLoadingToSuccess(
           loadingToast,
-          `${translate('image.upload.uploadSuccessSingle')} "${uploadData.name || uploadData.file.name}" 上传成功！`
+          `${translate('image.upload.uploadSuccessSingle')} "${fileName}" 上传成功${dimensionsText}！`
         );
         setUploadData(null);
         setShowForm(false);
+        // 清理尺寸信息
+        setFileDimensions(prev => {
+          const newDims = { ...prev };
+          delete newDims[uploadData.file.name];
+          return newDims;
+        });
       } catch (error) {
         updateLoadingToError(
           loadingToast,
@@ -361,6 +427,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   </p>
                   <p className="image-upload-progress-item-message">
                     {item.message}
+                    {item.status === 'success' && item.width && item.height && (
+                      <span className="image-upload-progress-item-dimensions">
+                        {' '}
+                        ({item.width} × {item.height})
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="image-upload-progress-item-progress">
@@ -402,17 +474,31 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           >
             {/* 文件列表 */}
             <div className="image-upload-file-list">
-              {files.map((file, index) => (
-                <div key={index} className="image-upload-file-item">
-                  <ImageIcon className="image-upload-file-icon" />
-                  <div className="image-upload-file-info">
-                    <p className="image-upload-file-name">{file.name}</p>
-                    <p className="image-upload-file-size">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+              {files.map((file, index) => {
+                const dimensions = fileDimensions[file.name];
+                const dimensionsText =
+                  dimensions && dimensions.width > 0 && dimensions.height > 0
+                    ? `${dimensions.width} × ${dimensions.height}`
+                    : null;
+                return (
+                  <div key={index} className="image-upload-file-item">
+                    <ImageIcon className="image-upload-file-icon" />
+                    <div className="image-upload-file-info">
+                      <p className="image-upload-file-name">{file.name}</p>
+                      <div className="image-upload-file-meta">
+                        <p className="image-upload-file-size">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        {dimensionsText && (
+                          <p className="image-upload-file-dimensions">
+                            {dimensionsText}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="image-upload-form-group">

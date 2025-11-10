@@ -8,7 +8,6 @@ interface ImageUrlModalProps {
   image: ImageItem | null;
   isOpen: boolean;
   onClose: () => void;
-  imageDimensions?: Record<string, { width: number; height: number }>;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   onOpenUrl?: (url: string) => void;
   t?: (key: string) => string;
@@ -18,7 +17,6 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
   image,
   isOpen,
   onClose,
-  imageDimensions = {},
   onCopyUrl,
   onOpenUrl,
   t,
@@ -30,14 +28,12 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
   }
 
   const getImageDimensions = () => {
-    const dimensions = imageDimensions[image.id];
-    if (dimensions) {
-      return `${dimensions.width} × ${dimensions.height}`;
-    } else if (image.width > 0 && image.height > 0) {
+    // 直接使用元数据中的尺寸
+    if (image.width > 0 && image.height > 0) {
       return `${image.width} × ${image.height}`;
-    } else {
-      return translate('image.grid.dimensionsUnknown');
     }
+    // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
+    return translate('image.grid.dimensionsUnknown');
   };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {

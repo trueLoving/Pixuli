@@ -7,7 +7,7 @@ import {
   Loader2,
   Trash2,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '../../../hooks';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
@@ -59,10 +59,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
-  const [imageDimensions, setImageDimensions] = useState<
-    Record<string, { width: number; height: number }>
-  >({});
-  const fetchingDimensions = useRef<Set<string>>(new Set());
 
   // 使用无限滚动Hook
   const {
@@ -81,7 +77,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
   });
 
   // 使用懒加载 Hook
-  const { visibleItems: visibleImages, observeElement } = useLazyLoad({
+  const { observeElement } = useLazyLoad({
     threshold: 0.1,
     rootMargin: '50px',
   });
@@ -92,52 +88,18 @@ const ImageGrid: React.FC<ImageGridProps> = ({
     reset();
   }, [images, reset]);
 
-  // 获取图片真实尺寸
-  const fetchImageDimensions = useCallback(
-    async (image: ImageItem) => {
-      if (!getImageDimensionsFromUrl) return;
-
-      // 检查是否已经在获取中
-      if (fetchingDimensions.current.has(image.id)) {
-        return;
+  // 获取图片尺寸显示文本
+  const getDimensionsText = useCallback(
+    (image: ImageItem): string => {
+      // 直接使用元数据中的尺寸
+      if (image.width > 0 && image.height > 0) {
+        return `${image.width} × ${image.height}`;
       }
-
-      // 标记为正在获取
-      fetchingDimensions.current.add(image.id);
-
-      try {
-        const dimensions = await getImageDimensionsFromUrl(image.url);
-
-        // 更新状态
-        setImageDimensions(prev => ({
-          ...prev,
-          [image.id]: dimensions,
-        }));
-      } catch (error) {
-        console.warn(`Failed to get dimensions for ${image.name}:`, error);
-      } finally {
-        // 移除获取标记
-        fetchingDimensions.current.delete(image.id);
-      }
+      // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
+      return translate('image.grid.dimensionsUnknown');
     },
-    [getImageDimensionsFromUrl]
+    [translate]
   );
-
-  // 当图片变为可见时获取尺寸
-  useEffect(() => {
-    visibleImages.forEach(imageId => {
-      const image = images.find(img => img.id === imageId);
-      if (image) {
-        // 如果图片尺寸数据不存在或者为0，或者还没有获取过真实尺寸，则获取尺寸
-        const hasCachedDimensions = imageDimensions[image.id];
-        const isCurrentlyFetching = fetchingDimensions.current.has(image.id);
-
-        if (!hasCachedDimensions && !isCurrentlyFetching) {
-          fetchImageDimensions(image);
-        }
-      }
-    });
-  }, [visibleImages, images, imageDimensions, fetchImageDimensions]);
 
   const handleDelete = useCallback(
     async (image: ImageItem) => {
@@ -458,22 +420,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
               {/* 图片详情 */}
               <div className="image-grid-meta">
                 <span className="image-grid-dimensions">
-                  {(() => {
-                    const dimensions = imageDimensions[image.id];
-                    const isCurrentlyFetching = fetchingDimensions.current.has(
-                      image.id
-                    );
-
-                    if (dimensions) {
-                      return `${dimensions.width} × ${dimensions.height}`;
-                    } else if (image.width > 0 && image.height > 0) {
-                      return `${image.width} × ${image.height}`;
-                    } else if (isCurrentlyFetching) {
-                      return translate('image.grid.gettingDimensions');
-                    } else {
-                      return translate('image.grid.dimensionsUnknown');
-                    }
-                  })()}
+                  {getDimensionsText(image)}
                 </span>
                 {image.size > 0 && (
                   <span className="image-grid-size">
@@ -493,7 +440,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({
       );
     },
     [
-      imageDimensions,
+      getDimensionsText,
       handlePreview,
       handleViewUrl,
       handleEdit,
@@ -573,7 +520,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
         onNavigate={handlePreviewNavigate}
-        imageDimensions={imageDimensions}
         formatFileSize={formatFileSize}
         onCopyUrl={handleCopyUrl}
         onOpenUrl={handleOpenUrl}
@@ -585,7 +531,6 @@ const ImageGrid: React.FC<ImageGridProps> = ({
         image={selectedImage}
         isOpen={showUrlModal}
         onClose={() => setShowUrlModal(false)}
-        imageDimensions={imageDimensions}
         onCopyUrl={handleCopyUrl}
         onOpenUrl={handleOpenUrl}
         t={translate}

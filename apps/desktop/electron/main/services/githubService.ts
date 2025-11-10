@@ -338,9 +338,26 @@ export function registerGithubHandlers() {
                     'base64'
                   ).toString('utf8');
                   const metadata = JSON.parse(content);
-                  // 从文件名提取图片名（去掉 .json 后缀）
-                  const imageName = file.name.replace('.json', '');
+                  // 从文件名提取图片名
+                  // 元数据文件名格式：{filename}.metadata.{ext}.json
+                  // 例如：photo.metadata.jpg.json -> photo.jpg
+                  let imageName = file.name;
+                  // 如果文件名包含 .metadata.，则提取原始文件名
+                  if (file.name.includes('.metadata.')) {
+                    // photo.metadata.jpg.json -> photo.jpg
+                    imageName = file.name.replace(
+                      /\.metadata\.([^.]+)\.json$/,
+                      '.$1'
+                    );
+                  } else {
+                    // 兼容旧格式：直接去掉 .json
+                    imageName = file.name.replace('.json', '');
+                  }
+                  // 使用提取的图片名和原始文件名作为 key（兼容两种格式）
                   metadataMap.set(imageName, metadata);
+                  if (file.name !== imageName) {
+                    metadataMap.set(file.name, metadata);
+                  }
                 }
               } catch (error) {
                 console.warn(
@@ -363,9 +380,14 @@ export function registerGithubHandlers() {
         const lastCommitDate = fileTimeMap.get(item.name) || defaultDate;
 
         // 从 metadataMap 中获取对应的 metadata
-        const parsedMetadata = metadataMap.get(item.name);
+        // 元数据文件名格式：{filename}.metadata.{ext}.json
+        // 需要从文件名中提取图片名
+        const metadataKey = item.name.replace(/\.metadata\.[^.]+\.json$/, '');
+        const parsedMetadata =
+          metadataMap.get(metadataKey) || metadataMap.get(item.name);
         const metadata = parsedMetadata
           ? {
+              size: parsedMetadata.size || item.size || 0, // 优先从元数据读取，备选 GitHub API
               width: parsedMetadata.width || 0,
               height: parsedMetadata.height || 0,
               tags: Array.isArray(parsedMetadata.tags)
@@ -375,6 +397,7 @@ export function registerGithubHandlers() {
               updatedAt: parsedMetadata.updatedAt || lastCommitDate,
             }
           : {
+              size: item.size || 0, // 从 GitHub API 获取
               width: 0,
               height: 0,
               tags: [] as string[],
@@ -387,7 +410,7 @@ export function registerGithubHandlers() {
           name: item.name,
           downloadUrl: item.download_url,
           htmlUrl: item.html_url,
-          size: item.size,
+          size: metadata.size,
           width: metadata.width,
           height: metadata.height,
           tags: metadata.tags,
@@ -411,10 +434,18 @@ export function registerGithubHandlers() {
         throw new Error('GitHub 认证未设置');
       }
 
-      const { owner, repo, path, branch, metadata } = params;
+      const { owner, repo, path, branch, metadata, fileName } = params;
 
       // 创建或更新元数据文件
-      const metadataFileName = `${metadata.name}.json`;
+      // 元数据文件名格式：{filename}.metadata.{ext}.json
+      // 例如：photo.jpg -> photo.metadata.jpg.json
+      const getMetadataFileName = (fileName: string): string => {
+        const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        const extension = fileName.substring(fileName.lastIndexOf('.'));
+        return `${nameWithoutExt}.metadata${extension}.json`;
+      };
+      const targetFileName = fileName || metadata.name;
+      const metadataFileName = getMetadataFileName(targetFileName);
       const metadataPath = `${path}/.metadata/${metadataFileName}`;
       const metadataContent = JSON.stringify(metadata, null, 2);
 
