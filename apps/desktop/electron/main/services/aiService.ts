@@ -828,17 +828,61 @@ class AIService {
     imagePath: string
   ): Promise<any> {
     const { spawn } = await import('child_process');
+    const os = require('os');
+    const homeDir = os.homedir();
 
     return new Promise((resolve, reject) => {
-      // Shimmy CLI 命令格式: shimmy analyze --model <model> --image <path>
-      const args = ['analyze', '--model', modelName, '--image', imagePath];
+      // 尝试查找本地模型路径
+      const modelsDir = path.join(homeDir, 'models');
+      const modelPath = this.findLocalModelPath(modelName, modelsDir);
+
+      // 构建命令参数
+      // 如果 shimmy 支持 analyze 命令（自定义工具），使用 analyze
+      // 否则可能需要使用其他命令或通过 HTTP API
+      const args: string[] = [];
+
+      // 如果找到本地模型目录，添加 --model-dirs 参数
+      if (modelPath) {
+        args.push('--model-dirs', modelsDir);
+        console.log('Using local model directory:', modelsDir);
+      }
+
+      // 根据实际的 shimmy 命令格式调整
+      // 如果 shimmy 是自定义工具，可能使用: analyze --model <name> --image <path>
+      // 如果是标准的 shimmy，可能需要使用 HTTP API 或其他方式
+      if (fs.existsSync(shimmyPath)) {
+        // 检查是否是自定义的 analyze 命令
+        const shimmyHelp = this.checkShimmyCommand(shimmyPath);
+        if (shimmyHelp && shimmyHelp.includes('analyze')) {
+          args.push('analyze', '--model', modelName, '--image', imagePath);
+        } else {
+          // 使用标准 shimmy 命令（可能需要通过 HTTP API）
+          // 这里先尝试 analyze 命令，如果失败再调整
+          args.push(
+            'generate',
+            '--prompt',
+            `描述这张图片: ${imagePath}`,
+            modelName
+          );
+        }
+      } else {
+        args.push('analyze', '--model', modelName, '--image', imagePath);
+      }
 
       console.log('Calling Shimmy tool:', shimmyPath);
       console.log('Args:', args);
+      console.log('Model path:', modelPath || 'using model name');
+
+      // 设置环境变量，确保能找到本地模型
+      const env = {
+        ...process.env,
+        HF_HOME: modelsDir,
+        TRANSFORMERS_CACHE: modelsDir,
+      };
 
       const shimmyProcess = spawn(shimmyPath, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env },
+        env: env,
       });
 
       let stdout = '';
@@ -882,6 +926,64 @@ class AIService {
         reject(new Error('Shimmy tool timeout'));
       }, 120000); // 2分钟超时
     });
+  }
+
+  // 查找本地模型路径
+  private findLocalModelPath(
+    modelName: string,
+    modelsDir: string
+  ): string | null {
+    if (!fs.existsSync(modelsDir)) {
+      return null;
+    }
+
+    // 模型名称到目录名的映射
+    const modelMap: Record<string, string> = {
+      'qwen-vl': 'Qwen2-VL-2B',
+      'qwen2-vl': 'Qwen2-VL-2B',
+      'qwen2-vl-2b': 'Qwen2-VL-2B',
+      'qwen2-vl-7b': 'Qwen2-VL-7B',
+      'minicpm-v': 'MiniCPM-V-2',
+      moondream2: 'Moondream2',
+      llava: 'LLaVA-1.5-7B',
+      'llava-7b': 'LLaVA-1.5-7B',
+      cogvlm2: 'CogVLM2-2B',
+    };
+
+    const modelDirName = modelMap[modelName.toLowerCase()] || modelName;
+    const fullPath = path.join(modelsDir, modelDirName);
+
+    if (fs.existsSync(fullPath)) {
+      // 检查是否包含模型文件
+      const files = fs.readdirSync(fullPath);
+      const hasModelFile = files.some(
+        f =>
+          f.endsWith('.safetensors') ||
+          f.endsWith('.bin') ||
+          f.endsWith('.gguf') ||
+          f === 'config.json'
+      );
+
+      if (hasModelFile) {
+        return fullPath;
+      }
+    }
+
+    return null;
+  }
+
+  // 检查 Shimmy 支持的命令
+  private checkShimmyCommand(shimmyPath: string): string | null {
+    try {
+      const { execSync } = require('child_process');
+      const help = execSync(`"${shimmyPath}" --help`, {
+        encoding: 'utf-8',
+        timeout: 5000,
+      });
+      return help;
+    } catch (error) {
+      return null;
+    }
   }
 
   // 获取默认 Shimmy 路径
