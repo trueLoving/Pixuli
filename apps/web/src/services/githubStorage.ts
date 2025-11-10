@@ -36,44 +36,122 @@ export class GitHubStorageService {
     return response.json();
   }
 
-  // 上传图片到 GitHub
+  /**
+   * 获取图片尺寸信息
+   * @param file 图片文件
+   * @returns Promise<{ width: number; height: number }> 图片尺寸信息
+   */
+  async getImageDimensions(
+    file: File
+  ): Promise<{ width: number; height: number }> {
+    try {
+      return await this.getImageInfo(file);
+    } catch (error) {
+      console.warn(
+        'Failed to get image dimensions, using default values:',
+        error
+      );
+      // 如果获取尺寸失败，使用默认值 0，后续可以通过 URL 获取
+      return { width: 0, height: 0 };
+    }
+  }
+
+  /**
+   * 步骤1：上传图片文件到 GitHub
+   * @param file 图片文件
+   * @param fileName 文件名
+   * @param description 图片描述
+   * @returns Promise<{ sha: string; download_url: string; html_url: string }> GitHub API 响应
+   */
+  private async uploadImageFile(
+    file: File,
+    fileName: string,
+    description?: string
+  ): Promise<{ sha: string; download_url: string; html_url: string }> {
+    // 将文件转换为 base64
+    const base64Content = await this.fileToBase64(file);
+
+    // 构建文件路径
+    const filePath = `${this.config.path}/${fileName}`;
+
+    // 调用 GitHub API 上传文件
+    const response = await this.makeGitHubRequest(
+      `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({
+          message: `Upload image: ${fileName}${description ? ` - ${description}` : ''}`,
+          content: base64Content,
+          branch: this.config.branch,
+        }),
+      }
+    );
+
+    return {
+      sha: response.content.sha,
+      download_url: response.content.download_url || '',
+      html_url: response.content.html_url || '',
+    };
+  }
+
+  /**
+   * 步骤2：上传图片元数据到 GitHub
+   * @param fileName 文件名
+   * @param metadata 元数据对象
+   * @returns Promise<void>
+   */
+  private async uploadImageMetadata(
+    fileName: string,
+    metadata: ImageItem
+  ): Promise<void> {
+    try {
+      await this.updateImageMetadata(fileName, metadata);
+    } catch (error) {
+      console.error('Failed to upload metadata:', error);
+      // 元数据上传失败不应该阻止整个上传流程，但记录错误
+      throw new Error(`上传元数据失败: ${error}`);
+    }
+  }
+
+  /**
+   * 上传图片到 GitHub（完整流程）
+   *
+   * 流程说明：
+   * 1. 获取图片尺寸信息（作为元数据的一部分）
+   * 2. 步骤1：上传图片文件到 GitHub
+   * 3. 步骤2：上传图片元数据到 GitHub（包含尺寸信息）
+   *
+   * @param uploadData 上传数据
+   * @returns Promise<ImageItem> 上传后的图片信息
+   */
   async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
     try {
       const { file, name, description, tags } = uploadData;
       const fileName = name || file.name;
 
-      // 将文件转换为 base64
-      const base64Content = await this.fileToBase64(file);
+      // ========== 准备阶段：获取图片尺寸信息 ==========
+      // 在上传前获取图片尺寸，作为元数据的一部分
+      const imageDimensions = await this.getImageDimensions(file);
 
-      // 构建文件路径
-      const filePath = `${this.config.path}/${fileName}`;
-
-      // 调用 GitHub API 上传文件
-      const response = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}`,
-        {
-          method: 'PUT',
-          body: JSON.stringify({
-            message: `Upload image: ${fileName}${description ? ` - ${description}` : ''}`,
-            content: base64Content,
-            branch: this.config.branch,
-          }),
-        }
+      // ========== 步骤1：上传图片文件 ==========
+      const uploadResponse = await this.uploadImageFile(
+        file,
+        fileName,
+        description
       );
 
-      // 获取图片信息
-      const imageInfo = await this.getImageInfo(file);
-
+      // ========== 构建图片元数据对象 ==========
+      // 包含所有元数据信息：尺寸、标签、描述等
       const imageItem: ImageItem = {
         id:
-          response.content.sha ||
+          uploadResponse.sha ||
           `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: fileName,
-        url: response.content.download_url || '',
-        githubUrl: response.content.html_url || '',
+        url: uploadResponse.download_url,
+        githubUrl: uploadResponse.html_url,
         size: file.size,
-        width: imageInfo.width,
-        height: imageInfo.height,
+        width: imageDimensions.width,
+        height: imageDimensions.height,
         type: file.type,
         tags: tags || [],
         description: description || '',
@@ -81,12 +159,20 @@ export class GitHubStorageService {
         updatedAt: new Date().toISOString(),
       };
 
-      // 创建元数据文件
+      // ========== 步骤2：上传图片元数据 ==========
+      // 将包含尺寸信息的元数据上传到 GitHub
       try {
-        await this.updateImageMetadata(fileName, imageItem);
+        await this.uploadImageMetadata(fileName, imageItem);
       } catch (error) {
-        console.warn('Failed to create metadata file:', error);
-        // 不抛出错误，因为图片已经上传成功
+        // 元数据上传失败时，记录警告但不影响图片上传的成功
+        // 因为图片文件已经成功上传，元数据可以在后续补充
+        console.warn(
+          'Image file uploaded successfully, but metadata upload failed:',
+          error
+        );
+        console.warn(
+          'You can update metadata later or it will be fetched from the image URL'
+        );
       }
 
       return imageItem;
@@ -138,10 +224,38 @@ export class GitHubStorageService {
       const metadataFileName = this.getMetadataFileName(fileName);
       const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
 
-      // 获取元数据文件的SHA
-      const metadataFileInfo = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
-      );
+      // 检查元数据文件是否存在
+      let metadataFileInfo: any;
+      try {
+        metadataFileInfo = await this.makeGitHubRequest(
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+        );
+      } catch (error: any) {
+        // 如果文件不存在（404错误），直接返回，不需要删除
+        const errorMessage = error?.message || '';
+        const isNotFound =
+          errorMessage.includes('404') ||
+          errorMessage.includes('Not Found') ||
+          errorMessage.includes('does not exist');
+
+        if (isNotFound) {
+          // 元数据文件不存在，无需删除
+          return;
+        }
+        // 其他错误，重新抛出
+        throw error;
+      }
+
+      // 如果返回的是数组（目录内容），说明文件不存在
+      if (Array.isArray(metadataFileInfo)) {
+        return;
+      }
+
+      // 确保获取到了 SHA
+      if (!metadataFileInfo.sha) {
+        console.warn(`Metadata file exists but no SHA found for ${fileName}`);
+        return;
+      }
 
       // 删除元数据文件
       await this.makeGitHubRequest(
@@ -156,6 +270,8 @@ export class GitHubStorageService {
         }
       );
     } catch (error) {
+      // 删除元数据失败不应该阻止图片删除，只记录警告
+      console.warn(`Failed to delete metadata for ${fileName}:`, error);
       throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
     }
   }
@@ -188,7 +304,7 @@ export class GitHubStorageService {
             name: metadata?.name || item.name,
             url: item.download_url || '',
             githubUrl: item.html_url || '',
-            size: item.size || 0,
+            size: metadata?.size || item.size || 0, // 优先从元数据读取，备选 GitHub API
             width: metadata?.width || 0, // 初始设为0，后续通过懒加载获取
             height: metadata?.height || 0, // 初始设为0，后续通过懒加载获取
             type: this.getMimeType(item.name),
@@ -264,6 +380,9 @@ export class GitHubStorageService {
         name: metadata.name || fileName,
         description: metadata.description || '',
         tags: metadata.tags || [],
+        size: metadata.size || 0, // 文件大小（字节）
+        width: metadata.width || 0,
+        height: metadata.height || 0,
         updatedAt: metadata.updatedAt || new Date().toISOString(),
         createdAt: metadata.createdAt || new Date().toISOString(),
       };
@@ -274,29 +393,95 @@ export class GitHubStorageService {
 
       // 检查元数据文件是否已存在
       let existingSha: string | undefined;
+      let fileExists = false;
       try {
         const existingFile = await this.makeGitHubRequest(
           `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
         );
-        existingSha = existingFile.sha;
-      } catch (error) {
-        // 文件不存在，这是正常的
-        existingSha = undefined;
+        // 如果返回的是数组（目录内容），说明文件不存在
+        if (Array.isArray(existingFile)) {
+          fileExists = false;
+          existingSha = undefined;
+        } else if (existingFile.sha) {
+          fileExists = true;
+          existingSha = existingFile.sha;
+        }
+      } catch (error: any) {
+        // 检查是否是 404 错误（文件不存在）
+        const errorMessage = error?.message || '';
+        const isNotFound =
+          errorMessage.includes('404') ||
+          errorMessage.includes('Not Found') ||
+          errorMessage.includes('does not exist');
+
+        if (isNotFound) {
+          fileExists = false;
+          existingSha = undefined;
+        } else {
+          // 其他错误，重新抛出
+          throw error;
+        }
+      }
+
+      // 构建请求体
+      const requestBody: any = {
+        message: fileExists
+          ? `Update metadata for image: ${fileName}`
+          : `Create metadata for image: ${fileName}`,
+        content: base64Content,
+        branch: this.config.branch,
+      };
+
+      // 只有在文件存在且 SHA 有效时才传递 sha
+      // 创建新文件时不应该传递 sha
+      if (fileExists && existingSha && existingSha.length > 0) {
+        requestBody.sha = existingSha;
       }
 
       // 创建或更新元数据文件
-      await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
-        {
-          method: 'PUT',
-          body: JSON.stringify({
-            message: `Update metadata for image: ${fileName}`,
-            content: base64Content,
-            sha: existingSha,
-            branch: this.config.branch,
-          }),
+      try {
+        await this.makeGitHubRequest(
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify(requestBody),
+          }
+        );
+      } catch (error: any) {
+        // 如果错误是因为 SHA 不匹配，重新获取最新的 SHA 并重试
+        const errorMessage = error?.message || '';
+        if (errorMessage.includes('does not match') && fileExists) {
+          try {
+            // 重新获取最新的 SHA
+            const latestFile = await this.makeGitHubRequest(
+              `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+            );
+            if (latestFile.sha) {
+              // 使用最新的 SHA 重试
+              const retryRequestBody = {
+                message: `Update metadata for image: ${fileName}`,
+                content: base64Content,
+                sha: latestFile.sha,
+                branch: this.config.branch,
+              };
+              await this.makeGitHubRequest(
+                `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}`,
+                {
+                  method: 'PUT',
+                  body: JSON.stringify(retryRequestBody),
+                }
+              );
+            } else {
+              throw error;
+            }
+          } catch (retryError) {
+            // 重试失败，抛出原始错误
+            throw error;
+          }
+        } else {
+          throw error;
         }
-      );
+      }
     } catch (error) {
       console.error('Update image metadata failed:', error);
       throw new Error(`更新图片元数据失败: ${error}`);
@@ -361,15 +546,32 @@ export class GitHubStorageService {
   private async getImageInfo(
     file: File
   ): Promise<{ width: number; height: number }> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      // 设置超时，避免图片加载时间过长
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('获取图片尺寸超时'));
+      }, 10000); // 10秒超时
+
       img.onload = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
         resolve({
-          width: img.width,
-          height: img.height,
+          width: img.naturalWidth || img.width,
+          height: img.naturalHeight || img.height,
         });
       };
-      img.src = URL.createObjectURL(file);
+
+      img.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('图片加载失败，无法获取尺寸'));
+      };
+
+      img.src = objectUrl;
     });
   }
 

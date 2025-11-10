@@ -205,6 +205,12 @@ export const useImageStore = create<ImageState>((set, get) => {
           uploadedImages.push(newImage);
           completed++;
 
+          // 构建成功消息，包含尺寸信息
+          const dimensionsText =
+            newImage.width > 0 && newImage.height > 0
+              ? `上传成功 (${newImage.width} × ${newImage.height})`
+              : '上传成功';
+
           // 更新成功状态
           set(state => ({
             batchUploadProgress: state.batchUploadProgress
@@ -217,7 +223,9 @@ export const useImageStore = create<ImageState>((set, get) => {
                           ...item,
                           status: 'success',
                           progress: 100,
-                          message: '上传成功',
+                          message: dimensionsText,
+                          width: newImage.width,
+                          height: newImage.height,
                         }
                       : item
                   ),
@@ -291,11 +299,19 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       set({ loading: true, error: null });
       try {
+        // 如果 editData 包含 width 和 height，则使用它们；否则使用图片现有的尺寸
+        const width = (editData as any).width ?? image.width;
+        const height = (editData as any).height ?? image.height;
+
         const metadata = {
+          id: image.id,
           name: editData.name || image.name,
           description: editData.description || image.description,
           tags: editData.tags || image.tags,
+          width: width,
+          height: height,
           updatedAt: new Date().toISOString(),
+          createdAt: image.createdAt,
         };
 
         // 传递旧文件名用于重命名检测

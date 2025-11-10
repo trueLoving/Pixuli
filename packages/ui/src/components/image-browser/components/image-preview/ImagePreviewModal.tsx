@@ -11,7 +11,6 @@ interface ImagePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate?: (index: number) => void;
-  imageDimensions?: Record<string, { width: number; height: number }>;
   formatFileSize?: (size: number) => string;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   onOpenUrl?: (url: string) => void;
@@ -25,7 +24,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   isOpen,
   onClose,
   onNavigate,
-  imageDimensions = {},
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   onCopyUrl,
   onOpenUrl,
@@ -84,14 +82,12 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   };
 
   const getImageDimensions = () => {
-    const dimensions = imageDimensions[image.id];
-    if (dimensions) {
-      return `${dimensions.width} × ${dimensions.height}`;
-    } else if (image.width > 0 && image.height > 0) {
+    // 直接使用元数据中的尺寸
+    if (image.width > 0 && image.height > 0) {
       return `${image.width} × ${image.height}`;
-    } else {
-      return translate('image.grid.dimensionsUnknown');
     }
+    // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
+    return translate('image.grid.dimensionsUnknown');
   };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
