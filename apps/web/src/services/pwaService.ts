@@ -335,8 +335,12 @@ class PWAService {
 
   /**
    * 获取缓存大小
+   * TODO: 暂时注释掉缓存相关逻辑，待问题修复后恢复
    */
   async getCacheSize(): Promise<number> {
+    // TODO: 暂时返回 0，待缓存功能恢复后启用
+    return 0;
+    /*
     if (!this.registration) {
       return 0;
     }
@@ -355,12 +359,17 @@ class PWAService {
         resolve(0);
       }
     });
+    */
   }
 
   /**
    * 清除所有缓存
+   * TODO: 暂时注释掉缓存相关逻辑，待问题修复后恢复
    */
   async clearCache(): Promise<boolean> {
+    // TODO: 暂时返回 false，待缓存功能恢复后启用
+    return false;
+    /*
     if (!this.registration) {
       return false;
     }
@@ -379,20 +388,26 @@ class PWAService {
         resolve(false);
       }
     });
+    */
   }
 
   /**
    * 缓存指定 URL
+   * TODO: 暂时注释掉缓存相关逻辑，待问题修复后恢复
    */
-  async cacheUrls(urls: string[]): Promise<void> {
+  async cacheUrls(_urls: string[]): Promise<void> {
+    // TODO: 暂时不执行任何操作，待缓存功能恢复后启用
+    return;
+    /*
     if (!this.registration?.active) {
       return;
     }
 
     this.registration.active.postMessage({
       type: 'CACHE_URLS',
-      urls,
+      urls: _urls,
     });
+    */
   }
 
   /**

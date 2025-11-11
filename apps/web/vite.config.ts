@@ -129,72 +129,13 @@ export default defineConfig({
       // filename: 'sw.js',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // 增强的缓存策略
-        runtimeCaching: [
-          {
-            // GitHub API - NetworkFirst 策略，优先使用网络，失败时使用缓存
-            urlPattern: /^https:\/\/api\.github\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'github-api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24, // 24 hours
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-              networkTimeoutSeconds: 10, // 10秒超时
-            },
-          },
-          {
-            // GitHub 图片资源 - CacheFirst 策略，优先使用缓存
-            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'github-images-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            // 所有图片资源 - CacheFirst 策略
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            // 静态资源 - CacheFirst 策略
-            urlPattern: /\.(?:js|css|woff|woff2|ttf|eot)$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'static-resources-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-              },
-            },
-          },
-        ],
+        // TODO: 暂时注释掉缓存策略，待问题修复后恢复
+        // runtimeCaching: [...],
         // 跳过等待，立即激活
         skipWaiting: true,
         clientsClaim: true,
-        // 清理旧缓存
-        cleanupOutdatedCaches: true,
+        // TODO: 暂时注释掉清理旧缓存
+        // cleanupOutdatedCaches: true,
       },
       devOptions: {
         enabled: true,

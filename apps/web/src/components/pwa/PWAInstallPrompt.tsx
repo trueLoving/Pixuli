@@ -1,7 +1,10 @@
-import { Download, X, RefreshCw } from 'lucide-react';
+import { Download, X } from 'lucide-react';
+// TODO: 暂时注释掉 RefreshCw 和更新相关导入，待问题修复后恢复
+// import { RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/useI18n';
-import { pwaService } from '../../services/pwaService';
+// TODO: 暂时注释掉 pwaService 导入，待更新功能恢复后启用
+// import { pwaService } from '../../services/pwaService';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -13,8 +16,9 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  const [showUpdate, setShowUpdate] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+  // TODO: 暂时注释掉更新相关状态，待问题修复后恢复
+  // const [showUpdate, setShowUpdate] = useState(false);
+  // const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -34,14 +38,18 @@ export function PWAInstallPrompt() {
       setShowPrompt(false);
     }
 
+    // TODO: 暂时注释掉 Service Worker 更新监听，待问题修复后恢复
+    /*
     // 监听 Service Worker 更新
     pwaService.on('updateAvailable', () => {
       setShowUpdate(true);
     });
+    */
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
-      pwaService.off('updateAvailable', () => {});
+      // TODO: 暂时注释掉更新事件监听清理
+      // pwaService.off('updateAvailable', () => {});
     };
   }, []);
 
@@ -73,6 +81,8 @@ export function PWAInstallPrompt() {
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
+  // TODO: 暂时注释掉更新相关处理函数，待问题修复后恢复
+  /*
   const handleUpdate = async () => {
     setIsUpdating(true);
     try {
@@ -103,6 +113,7 @@ export function PWAInstallPrompt() {
     setShowUpdate(false);
     localStorage.setItem('pwa-update-dismissed', Date.now().toString());
   };
+  */
 
   // 检查是否在 24 小时内已关闭过提示
   useEffect(() => {
@@ -117,6 +128,8 @@ export function PWAInstallPrompt() {
       }
     }
 
+    // TODO: 暂时注释掉更新提示的 localStorage 检查，待问题修复后恢复
+    /*
     const updateDismissed = localStorage.getItem('pwa-update-dismissed');
     if (updateDismissed) {
       const dismissedTime = parseInt(updateDismissed, 10);
@@ -127,8 +140,11 @@ export function PWAInstallPrompt() {
         setShowUpdate(false);
       }
     }
+    */
   }, []);
 
+  // TODO: 暂时注释掉更新提示 UI，待问题修复后恢复
+  /*
   // 显示更新提示
   if (showUpdate) {
     return (
@@ -169,6 +185,7 @@ export function PWAInstallPrompt() {
       </div>
     );
   }
+  */
 
   // 显示安装提示
   if (!showPrompt || !deferredPrompt) {

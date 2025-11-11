@@ -1,6 +1,8 @@
 // 自定义 Service Worker
 // 这个文件会被 vite-plugin-pwa 自动处理，但我们可以在这里添加自定义逻辑
 
+// TODO: 暂时注释掉缓存相关逻辑，待问题修复后恢复
+/*
 const CACHE_VERSION = 'pixuli-v1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
@@ -145,6 +147,20 @@ async function cacheFirstStrategy(request, cacheName) {
     throw error;
   }
 }
+*/
+
+// 最小化 Service Worker - 仅保留基本功能
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installing...');
+  // 立即激活新的 Service Worker
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activating...');
+  // 立即控制所有客户端
+  return self.clients.claim();
+});
 
 // 后台同步事件
 self.addEventListener('sync', (event) => {
@@ -192,8 +208,8 @@ async function syncImages() {
 // 同步 API 数据
 async function syncAPI() {
   try {
-    // 刷新 API 缓存
-    const cache = await caches.open(API_CACHE);
+    // TODO: 暂时注释掉缓存相关逻辑
+    // const cache = await caches.open(API_CACHE);
     // 这里可以添加需要刷新的 API 端点
     console.log('[Service Worker] API sync completed');
   } catch (error) {
@@ -265,7 +281,10 @@ self.addEventListener('message', (event) => {
 
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
-  } else if (event.data && event.data.type === 'CACHE_URLS') {
+  }
+  // TODO: 暂时注释掉缓存相关逻辑，待问题修复后恢复
+  /*
+  else if (event.data && event.data.type === 'CACHE_URLS') {
     event.waitUntil(
       caches.open(STATIC_CACHE).then((cache) => {
         return cache.addAll(event.data.urls);
@@ -280,6 +299,7 @@ self.addEventListener('message', (event) => {
       event.ports[0].postMessage({ success: true });
     });
   }
+  */
 });
 
 // 辅助函数：从 IndexedDB 获取待同步操作
@@ -312,6 +332,8 @@ async function performUpdate(data) {
   console.log('[Service Worker] Performing update:', data);
 }
 
+// TODO: 暂时注释掉缓存相关逻辑
+/*
 // 获取缓存大小
 async function getCacheSize() {
   let totalSize = 0;
@@ -338,3 +360,4 @@ async function clearAllCaches() {
   const cacheNames = await caches.keys();
   return Promise.all(cacheNames.map((name) => caches.delete(name)));
 }
+*/
