@@ -1,5 +1,5 @@
 import { Save, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '../../../../locales';
 import type { ImageEditData, ImageItem } from '../../../../types/image';
 import {
@@ -46,6 +46,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     width: number;
     height: number;
   } | null>(null);
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
   // ESC 键关闭编辑模态框
   useEffect(() => {
@@ -112,6 +113,22 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // 当模态框打开或图片更新时，更新表单数据
+  useEffect(() => {
+    if (isOpen && image) {
+      setFormData({
+        id: image.id,
+        name: image.name,
+        description: image.description || '',
+        tags: image.tags || [],
+      });
+      // 清空标签输入框
+      if (tagInputRef.current) {
+        tagInputRef.current.value = '';
+      }
+    }
+  }, [isOpen, image]);
 
   // 获取图片真实尺寸
   useEffect(() => {
@@ -207,18 +224,79 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
                 {translate('image.edit.optional')}
               </span>
             </label>
+            {/* 标签显示区域 */}
+            {formData.tags && formData.tags.length > 0 && (
+              <div className="image-edit-tags-container">
+                {formData.tags.map((tag, index) => (
+                  <span key={index} className="image-edit-tag">
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newTags =
+                          formData.tags?.filter((_, i) => i !== index) || [];
+                        handleInputChange('tags', newTags);
+                      }}
+                      className="image-edit-tag-remove"
+                      aria-label={`删除标签 ${tag}`}
+                    >
+                      <X className="image-edit-tag-remove-icon" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* 标签输入框 */}
             <input
+              ref={tagInputRef}
               type="text"
-              value={formData.tags?.join(', ') || ''}
-              onChange={e =>
-                handleInputChange(
-                  'tags',
-                  e.target.value
+              onChange={e => {
+                const value = e.target.value;
+                // 如果输入包含逗号，自动添加标签
+                if (value.includes(',')) {
+                  const newTags = value
                     .split(',')
                     .map(tag => tag.trim())
-                    .filter(Boolean)
-                )
-              }
+                    .filter(Boolean);
+                  const existingTags = formData.tags || [];
+                  const uniqueNewTags = newTags.filter(
+                    tag => !existingTags.includes(tag)
+                  );
+                  if (uniqueNewTags.length > 0) {
+                    handleInputChange('tags', [
+                      ...existingTags,
+                      ...uniqueNewTags,
+                    ]);
+                  }
+                  if (tagInputRef.current) {
+                    tagInputRef.current.value = '';
+                  }
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  const value = e.currentTarget.value.trim();
+                  if (value) {
+                    const existingTags = formData.tags || [];
+                    if (!existingTags.includes(value)) {
+                      handleInputChange('tags', [...existingTags, value]);
+                    }
+                    if (tagInputRef.current) {
+                      tagInputRef.current.value = '';
+                    }
+                  }
+                } else if (
+                  e.key === 'Backspace' &&
+                  e.currentTarget.value === ''
+                ) {
+                  // 如果输入框为空且按了退格键，删除最后一个标签
+                  const existingTags = formData.tags || [];
+                  if (existingTags.length > 0) {
+                    handleInputChange('tags', existingTags.slice(0, -1));
+                  }
+                }
+              }}
               placeholder={translate('image.edit.tagsPlaceholder')}
               className="image-edit-form-input"
             />

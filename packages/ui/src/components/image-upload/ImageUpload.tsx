@@ -7,7 +7,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { defaultTranslate } from '../../locales';
 import type {
@@ -57,6 +57,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [fileDimensions, setFileDimensions] = useState<{
     [key: string]: { width: number; height: number };
   }>({});
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
   // 获取图片尺寸的辅助函数
   const getImageDimensions = useCallback(
@@ -178,6 +179,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(uploadData);
     if (uploadData) {
       const fileName = uploadData.name || uploadData.file.name;
       const dimensions = fileDimensions[uploadData.file.name];
@@ -190,7 +192,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         `${translate('image.upload.uploadingSingle')} "${fileName}"...`
       );
       try {
-        await onUploadImage(uploadData);
+        // 确保传递完整的 uploadData，包括 tags
+        const completeUploadData: ImageUploadData = {
+          file: uploadData.file,
+          name: uploadData.name || uploadData.file.name,
+          description: uploadData.description || '',
+          tags: uploadData.tags || [],
+        };
+        await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
           loadingToast,
           `${translate('image.upload.uploadSuccessSingle')} "${fileName}" 上传成功${dimensionsText}！`
@@ -228,7 +237,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         `${translate('image.upload.uploadingMultiple')} ${multiUploadData.files.length} 张图片...`
       );
       try {
-        await onUploadMultipleImages(multiUploadData);
+        // 确保传递完整的 multiUploadData，包括 tags
+        const completeMultiUploadData: MultiImageUploadData = {
+          files: multiUploadData.files,
+          name: multiUploadData.name || '',
+          description: multiUploadData.description || '',
+          tags: multiUploadData.tags || [],
+        };
+        await onUploadMultipleImages(completeMultiUploadData);
         updateLoadingToSuccess(
           loadingToast,
           `${translate('image.upload.uploadSuccessMultiple')} ${multiUploadData.files.length} 张图片！`
@@ -558,21 +574,88 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   {translate('image.upload.optional')}
                 </span>
               </label>
+              {/* 标签显示区域 */}
+              {Array.isArray(currentData?.tags) &&
+                currentData.tags.length > 0 && (
+                  <div className="image-upload-tags-container">
+                    {currentData.tags.map((tag, index) => (
+                      <span key={index} className="image-upload-tag">
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newTags =
+                              currentData.tags?.filter((_, i) => i !== index) ||
+                              [];
+                            isMultipleUpload
+                              ? handleMultiInputChange('tags', newTags)
+                              : handleInputChange('tags', newTags);
+                          }}
+                          className="image-upload-tag-remove"
+                          aria-label={`删除标签 ${tag}`}
+                        >
+                          <X className="image-upload-tag-remove-icon" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              {/* 标签输入框 */}
               <input
+                ref={tagInputRef}
                 type="text"
-                value={
-                  Array.isArray(currentData?.tags)
-                    ? currentData.tags.join(', ')
-                    : ''
-                }
                 onChange={e => {
-                  const tags = e.target.value
-                    .split(',')
-                    .map(tag => tag.trim())
-                    .filter(tag => tag);
-                  isMultipleUpload
-                    ? handleMultiInputChange('tags', tags)
-                    : handleInputChange('tags', tags);
+                  const value = e.target.value;
+                  // 如果输入包含逗号，自动添加标签
+                  if (value.includes(',')) {
+                    const newTags = value
+                      .split(',')
+                      .map(tag => tag.trim())
+                      .filter(Boolean);
+                    const existingTags = currentData?.tags || [];
+                    const uniqueNewTags = newTags.filter(
+                      tag => !existingTags.includes(tag)
+                    );
+                    if (uniqueNewTags.length > 0) {
+                      const updatedTags = [...existingTags, ...uniqueNewTags];
+                      isMultipleUpload
+                        ? handleMultiInputChange('tags', updatedTags)
+                        : handleInputChange('tags', updatedTags);
+                    }
+                    if (tagInputRef.current) {
+                      tagInputRef.current.value = '';
+                    }
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const value = e.currentTarget.value.trim();
+                    if (value) {
+                      const existingTags = currentData?.tags || [];
+                      if (!existingTags.includes(value)) {
+                        const updatedTags = [...existingTags, value];
+                        isMultipleUpload
+                          ? handleMultiInputChange('tags', updatedTags)
+                          : handleInputChange('tags', updatedTags);
+                      }
+                      if (tagInputRef.current) {
+                        tagInputRef.current.value = '';
+                      }
+                    }
+                  } else if (
+                    e.key === 'Backspace' &&
+                    e.currentTarget.value === ''
+                  ) {
+                    // 如果输入框为空且按了退格键，删除最后一个标签
+                    const existingTags = currentData?.tags || [];
+                    if (existingTags.length > 0) {
+                      const updatedTags = existingTags.slice(0, -1);
+                      isMultipleUpload
+                        ? handleMultiInputChange('tags', updatedTags)
+                        : handleInputChange('tags', updatedTags);
+                    }
+                  }
                 }}
                 placeholder={
                   isMultipleUpload

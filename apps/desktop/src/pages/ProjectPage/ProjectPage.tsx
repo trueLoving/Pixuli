@@ -165,10 +165,8 @@ export const ProjectPage: React.FC = () => {
           t={t}
           error={error}
           onClearError={clearError}
-          onUploadImage={(file: File) => uploadImage({ file })}
-          onUploadMultipleImages={(files: File[]) =>
-            uploadMultipleImages({ files })
-          }
+          onUploadImage={uploadImage}
+          onUploadMultipleImages={uploadMultipleImages}
           loading={loading}
           batchUploadProgress={batchUploadProgress}
           images={images}
