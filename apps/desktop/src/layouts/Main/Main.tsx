@@ -20,9 +20,9 @@ interface ImageBrowserProps {
   /** 清除错误 */
   onClearError: () => void;
   /** 上传图片 */
-  onUploadImage: (file: File) => Promise<void>;
+  onUploadImage: (data: ImageUploadData) => Promise<void>;
   /** 批量上传图片 */
-  onUploadMultipleImages: (files: File[]) => Promise<void>;
+  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
   /** 是否正在加载 */
   loading: boolean;
   /** 批量上传进度 */
@@ -107,12 +107,8 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           <div className="mb-4">
             <ImageUpload
               t={t}
-              onUploadImage={(data: ImageUploadData) =>
-                onUploadImage(data.file)
-              }
-              onUploadMultipleImages={(data: MultiImageUploadData) =>
-                onUploadMultipleImages(data.files)
-              }
+              onUploadImage={onUploadImage}
+              onUploadMultipleImages={onUploadMultipleImages}
               loading={loading}
               batchUploadProgress={batchUploadProgress}
             />

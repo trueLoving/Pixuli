@@ -74,11 +74,7 @@ export class GitHubStorageService {
       // ========== 步骤2：上传图片元数据 ==========
       // 将包含尺寸信息的元数据上传到 GitHub
       try {
-        await this.updateImageInfo(imageItem.id, fileName, {
-          ...imageItem,
-          width: imageDimensions.width,
-          height: imageDimensions.height,
-        });
+        await this.updateImageInfo(imageItem.id, fileName, imageItem);
       } catch (error) {
         // 元数据上传失败时，记录警告但不影响图片上传的成功
         // 因为图片文件已经成功上传，元数据可以在后续补充
