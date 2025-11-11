@@ -14,6 +14,8 @@ import {
   saveGitHubConfig,
 } from '../config/github';
 import { GitHubStorageService } from '../services/githubStorage';
+import { backgroundSyncService } from '../services/backgroundSyncService';
+import { pwaService } from '../services/pwaService';
 
 interface ImageState {
   images: ImageItem[];
@@ -121,6 +123,42 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       set({ loading: true, error: null });
       try {
+        // 检查是否在线
+        if (!navigator.onLine) {
+          // 离线模式：添加到后台同步队列
+          await backgroundSyncService.init();
+          await backgroundSyncService.addPendingOperation({
+            type: 'upload',
+            data: uploadData,
+            timestamp: Date.now(),
+          });
+          await pwaService.registerBackgroundSync('sync-images');
+
+          // 创建临时图片项（使用本地预览）
+          const tempImage: ImageItem = {
+            id: `temp-${Date.now()}`,
+            name: uploadData.name || uploadData.file.name,
+            url: URL.createObjectURL(uploadData.file),
+            githubUrl: '',
+            size: uploadData.file.size,
+            width: 0,
+            height: 0,
+            type: uploadData.file.type,
+            tags: uploadData.tags || [],
+            description: uploadData.description || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          set(state => ({
+            images: [...state.images, tempImage],
+            loading: false,
+            error: '图片已添加到同步队列，将在网络恢复后自动上传',
+          }));
+          return;
+        }
+
+        // 在线模式：直接上传
         const newImage = await storageService.uploadImage(uploadData);
         set(state => ({
           // 去重：确保不会添加重复ID的图片
@@ -271,6 +309,27 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       set({ loading: true, error: null });
       try {
+        // 检查是否在线
+        if (!navigator.onLine) {
+          // 离线模式：添加到后台同步队列
+          await backgroundSyncService.init();
+          await backgroundSyncService.addPendingOperation({
+            type: 'delete',
+            data: { imageId, fileName },
+            timestamp: Date.now(),
+          });
+          await pwaService.registerBackgroundSync('sync-images');
+
+          // 立即从本地状态中移除（乐观更新）
+          set(state => ({
+            images: state.images.filter(img => img.id !== imageId),
+            loading: false,
+            error: '删除操作已添加到同步队列，将在网络恢复后执行',
+          }));
+          return;
+        }
+
+        // 在线模式：直接删除
         await storageService.deleteImage(imageId, fileName);
         set(state => ({
           images: state.images.filter(img => img.id !== imageId),
@@ -314,6 +373,33 @@ export const useImageStore = create<ImageState>((set, get) => {
           createdAt: image.createdAt,
         };
 
+        // 检查是否在线
+        if (!navigator.onLine) {
+          // 离线模式：添加到后台同步队列
+          await backgroundSyncService.init();
+          await backgroundSyncService.addPendingOperation({
+            type: 'update',
+            data: {
+              id: editData.id,
+              oldName: image.name,
+              metadata,
+            },
+            timestamp: Date.now(),
+          });
+          await pwaService.registerBackgroundSync('sync-images');
+
+          // 立即更新本地状态（乐观更新）
+          set(state => ({
+            images: state.images.map(img =>
+              img.id === editData.id ? { ...img, ...metadata } : img
+            ),
+            loading: false,
+            error: '更新操作已添加到同步队列，将在网络恢复后执行',
+          }));
+          return;
+        }
+
+        // 在线模式：直接更新
         // 传递旧文件名用于重命名检测
         await storageService.updateImageInfo(editData.id, image.name, metadata);
 
