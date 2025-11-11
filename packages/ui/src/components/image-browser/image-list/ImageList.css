@@ -9,6 +9,10 @@
 
 .image-list-content {
   background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 .image-list-item {
@@ -30,9 +34,13 @@
   background-color: #dbeafe;
   border-left: 4px solid #2563eb;
   border-bottom: 1px solid #93c5fd;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transform: scale(1.02);
-  outline: 2px solid #60a5fa;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 0 0 2px #60a5fa;
+  /* 移除 transform: scale，避免遮挡相邻元素 */
+  /* outline 改为 box-shadow，避免影响布局 */
+  position: relative;
+  z-index: 1;
 }
 
 .image-list-action-button {
@@ -360,8 +368,10 @@
 }
 
 .image-list-scroll-container {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* 加载动画 */

@@ -6,7 +6,6 @@
 /* 图片项样式 */
 .image-browser-item {
   transition: all 0.2s ease-in-out;
-  height: 100%;
   background-color: #ffffff;
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -15,6 +14,9 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  contain: style paint;
+  will-change: transform;
 }
 
 .image-browser-item.unselected {
@@ -34,15 +36,19 @@
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transform: scale(1.05);
+  /* 移除 scale 变换，避免影响布局高度 */
+  /* transform: scale(1.05); */
 }
 
 /* 图片预览区域 */
 .image-grid-preview {
   position: relative;
+  width: 100%;
   aspect-ratio: 1;
+  max-height: 400px;
   background-color: #f8fafc;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .image-grid-selected-indicator {
@@ -102,36 +108,49 @@
 /* 图片信息区域样式 */
 .image-info-section {
   padding: 0.75rem;
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
+  min-height: 160px;
+  max-height: 180px;
+  overflow: hidden;
 }
 
 .image-info-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  gap: 0.25rem;
 }
 
 .image-grid-title {
   font-weight: 500;
   color: #111827;
   font-size: 0.875rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  flex-shrink: 0;
 }
 
 .image-grid-description {
   color: #6b7280;
   font-size: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  flex-shrink: 0;
+  word-break: break-word;
 }
 
 .image-info-footer {
@@ -140,12 +159,16 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex-shrink: 0;
+  min-height: fit-content;
 }
 
 .image-grid-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  max-height: 2.5rem;
+  overflow: hidden;
 }
 
 .image-tag-primary {
@@ -196,11 +219,16 @@
   grid-template-columns: repeat(1, 1fr);
   gap: 1rem;
   padding: 1rem;
+  align-items: stretch;
 }
 
 @media (min-width: 640px) {
   .image-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .image-grid-preview {
+    max-height: 300px;
   }
 }
 
@@ -208,11 +236,19 @@
   .image-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .image-grid-preview {
+    max-height: 280px;
+  }
 }
 
 @media (min-width: 1024px) {
   .image-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .image-grid-preview {
+    max-height: 260px;
   }
 }
 
@@ -220,11 +256,19 @@
   .image-grid {
     grid-template-columns: repeat(5, 1fr);
   }
+
+  .image-grid-preview {
+    max-height: 240px;
+  }
 }
 
 @media (min-width: 1536px) {
   .image-grid {
     grid-template-columns: repeat(6, 1fr);
+  }
+
+  .image-grid-preview {
+    max-height: 220px;
   }
 }
 
@@ -337,23 +381,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 图片信息区域样式 */
-.image-info-section {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.image-info-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.image-info-footer {
-  margin-top: auto;
-  padding-top: 8px;
-}
+/* 图片信息区域样式（重复定义已合并到上方） */
 
 /* 文本截断样式 */
 .line-clamp-2 {
@@ -363,11 +391,7 @@
   overflow: hidden;
 }
 
-/* 性能优化样式 */
-.image-browser-item {
-  contain: layout style paint;
-  will-change: transform;
-}
+/* 性能优化样式（已合并到 .image-browser-item 中） */
 
 /* 响应式网格布局优化 */
 @media (min-width: 640px) {

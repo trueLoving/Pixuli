@@ -51,14 +51,20 @@
 /* 内容区域样式 */
 .image-browser-content {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .image-browser-view {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .image-browser-view.visible {
-  display: block;
+  display: flex;
 }
 
 .image-browser-view.hidden {
