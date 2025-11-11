@@ -123,10 +123,16 @@ export default defineConfig({
         ],
         categories: ['productivity', 'utilities'],
       },
+      // 使用自定义 Service Worker（如果需要完全自定义，可以启用）
+      // strategies: 'injectManifest',
+      // srcDir: 'public',
+      // filename: 'sw.js',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // 增强的缓存策略
         runtimeCaching: [
           {
+            // GitHub API - NetworkFirst 策略，优先使用网络，失败时使用缓存
             urlPattern: /^https:\/\/api\.github\.com\/.*/i,
             handler: 'NetworkFirst',
             options: {
@@ -138,9 +144,11 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200],
               },
+              networkTimeoutSeconds: 10, // 10秒超时
             },
           },
           {
+            // GitHub 图片资源 - CacheFirst 策略，优先使用缓存
             urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
@@ -155,7 +163,8 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            // 所有图片资源 - CacheFirst 策略
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
@@ -163,13 +172,35 @@ export default defineConfig({
                 maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // 静态资源 - CacheFirst 策略
+            urlPattern: /\.(?:js|css|woff|woff2|ttf|eot)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-resources-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+              },
             },
           },
         ],
+        // 跳过等待，立即激活
+        skipWaiting: true,
+        clientsClaim: true,
+        // 清理旧缓存
+        cleanupOutdatedCaches: true,
       },
       devOptions: {
         enabled: true,
         type: 'module',
+        // 开发环境中禁用自动更新，避免页面刷新循环
+        navigateFallback: undefined,
       },
     }),
   ],
