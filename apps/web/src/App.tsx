@@ -3,7 +3,6 @@ import {
   getImageDimensionsFromUrl,
   GitHubConfigModal,
   ImageBrowser,
-  ImageSearch,
   ImageUpload,
   KeyboardHelpModal,
   keyboardManager,
@@ -40,8 +39,6 @@ function App() {
   } = useImageStore();
 
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
 
@@ -205,26 +202,6 @@ function App() {
     handleOpenConfigModal,
   ]);
 
-  // 过滤图片 - 使用 useMemo 优化性能
-  const filteredImages = useMemo(() => {
-    return images.filter(image => {
-      const matchesSearch =
-        image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        image.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesTags =
-        selectedTags.length === 0 ||
-        selectedTags.some(tag => image.tags?.includes(tag));
-
-      return matchesSearch && matchesTags;
-    });
-  }, [images, searchTerm, selectedTags]);
-
-  // 获取所有标签 - 使用 useMemo 优化性能
-  const allTags = useMemo(() => {
-    return Array.from(new Set(images.flatMap(img => img.tags || [])));
-  }, [images]);
-
   if (!githubConfig) {
     return (
       <div
@@ -353,16 +330,6 @@ function App() {
             </div>
           )}
 
-          {/* 搜索和过滤区域 */}
-          <ImageSearch
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedTags={selectedTags}
-            onTagsChange={setSelectedTags}
-            allTags={allTags}
-            t={t}
-          />
-
           {/* 图片上传区域 */}
           <div className="mb-4">
             <ImageUpload
@@ -377,8 +344,7 @@ function App() {
           {/* 图片统计和操作区域 */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')}
-              )
+              {t('app.imageLibrary')} ({images.length} {t('app.images')})
             </h2>
             {loading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -392,7 +358,7 @@ function App() {
           <div className="min-h-0">
             <ImageBrowser
               t={t}
-              images={filteredImages}
+              images={images}
               onDeleteImage={handleDeleteImage}
               onUpdateImage={handleUpdateImage}
               getImageDimensionsFromUrl={getImageDimensionsFromUrl}

@@ -1,18 +1,13 @@
-import { Filter, HardDrive, Image as ImageIcon, Search, X } from 'lucide-react';
+import { Filter, Image as ImageIcon, Search, X } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
-import { formatFileSize } from '../../../utils/fileSizeUtils';
 import './ImageFilter.css';
 
 export interface FilterOptions {
   searchTerm: string;
   selectedTypes: string[];
   selectedTags: string[];
-  sizeRange: {
-    min: number;
-    max: number;
-  };
 }
 
 interface ImageFilterProps {
@@ -56,19 +51,6 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
     return Array.from(tags).sort();
   }, [images]);
 
-  // 获取文件大小范围
-  const fileSizeRange = useMemo(() => {
-    if (images.length === 0) return { min: 0, max: 0 };
-
-    const sizes = images.map(img => img.size).filter(size => size > 0);
-    if (sizes.length === 0) return { min: 0, max: 0 };
-
-    return {
-      min: Math.min(...sizes),
-      max: Math.max(...sizes),
-    };
-  }, [images]);
-
   // 处理搜索词变化
   const handleSearchChange = useCallback(
     (searchTerm: string) => {
@@ -110,37 +92,20 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
     [currentFilters, onFiltersChange]
   );
 
-  // 处理文件大小范围变化
-  const handleSizeRangeChange = useCallback(
-    (min: number, max: number) => {
-      onFiltersChange({
-        ...currentFilters,
-        sizeRange: { min, max },
-      });
-    },
-    [currentFilters, onFiltersChange]
-  );
-
   // 清除所有筛选条件
   const handleClearAll = useCallback(() => {
     onFiltersChange({
       searchTerm: '',
       selectedTypes: [],
       selectedTags: [],
-      sizeRange: { min: 0, max: 0 },
     });
   }, [onFiltersChange]);
 
   // 获取筛选统计信息
   const filterStats = useMemo(() => {
-    const { searchTerm, selectedTypes, selectedTags, sizeRange } =
-      currentFilters;
+    const { searchTerm, selectedTypes, selectedTags } = currentFilters;
     const hasFilters =
-      searchTerm ||
-      selectedTypes.length > 0 ||
-      selectedTags.length > 0 ||
-      sizeRange.min > 0 ||
-      sizeRange.max > 0;
+      searchTerm || selectedTypes.length > 0 || selectedTags.length > 0;
 
     let count = images.length;
     if (hasFilters) {
@@ -165,14 +130,6 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
             !selectedTags.some(tag => image.tags.includes(tag))
           )
             return false;
-        }
-
-        // 文件大小筛选
-        if (sizeRange.min > 0 && image.size < sizeRange.min) {
-          return false;
-        }
-        if (sizeRange.max > 0 && image.size > sizeRange.max) {
-          return false;
         }
 
         return true;
@@ -306,79 +263,6 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                     <span className="image-filter-tag-label">{tag}</span>
                   </label>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* 文件大小筛选 */}
-          {fileSizeRange.max > 0 && (
-            <div className="image-filter-section">
-              <label className="image-filter-label">
-                <HardDrive className="image-filter-size-icon" />
-                {translate('image.filter.fileSizeRange')}
-              </label>
-              <div className="image-filter-size-range">
-                <div className="image-filter-size-inputs">
-                  <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">
-                      {translate('image.filter.minSize')}
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={fileSizeRange.max}
-                      step="1024"
-                      placeholder={translate('image.filter.minSizePlaceholder')}
-                      value={currentFilters.sizeRange.min || ''}
-                      onChange={e => {
-                        const min = parseInt(e.target.value) || 0;
-                        handleSizeRangeChange(
-                          min,
-                          currentFilters.sizeRange.max
-                        );
-                      }}
-                      className="image-filter-size-number"
-                    />
-                    <span className="image-filter-size-unit">
-                      {currentFilters.sizeRange.min > 0
-                        ? formatFileSize(currentFilters.sizeRange.min)
-                        : ''}
-                    </span>
-                  </div>
-                  <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">
-                      {translate('image.filter.maxSize')}
-                    </label>
-                    <input
-                      type="number"
-                      min="1024"
-                      max={fileSizeRange.max}
-                      step="1024"
-                      placeholder={translate('image.filter.maxSizePlaceholder')}
-                      value={currentFilters.sizeRange.max || ''}
-                      onChange={e => {
-                        const max = parseInt(e.target.value) || 0;
-                        handleSizeRangeChange(
-                          currentFilters.sizeRange.min,
-                          max
-                        );
-                      }}
-                      className="image-filter-size-number"
-                    />
-                    <span className="image-filter-size-unit">
-                      {currentFilters.sizeRange.max > 0
-                        ? formatFileSize(currentFilters.sizeRange.max)
-                        : ''}
-                    </span>
-                  </div>
-                </div>
-                <div className="image-filter-size-info">
-                  <span className="image-filter-size-info-text">
-                    {translate('image.filter.currentRange')}:{' '}
-                    {formatFileSize(fileSizeRange.min)} -{' '}
-                    {formatFileSize(fileSizeRange.max)}
-                  </span>
-                </div>
               </div>
             </div>
           )}
