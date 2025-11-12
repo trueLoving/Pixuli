@@ -1,24 +1,28 @@
-import { Filter, HardDrive, Image as ImageIcon, Search, X } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { Filter, Image as ImageIcon, Search, X } from 'lucide-react';
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
-import { formatFileSize } from '../../../utils/fileSizeUtils';
+import { filterImages } from '../../../utils/filterUtils';
 import './ImageFilter.css';
 
 export interface FilterOptions {
   searchTerm: string;
   selectedTypes: string[];
   selectedTags: string[];
-  sizeRange: {
-    min: number;
-    max: number;
-  };
 }
 
 interface ImageFilterProps {
   images: ImageItem[];
   currentFilters: FilterOptions;
-  onFiltersChange: (filters: FilterOptions) => void;
+  onFiltersChange: (
+    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions)
+  ) => void;
   className?: string;
   t?: (key: string) => string;
 }
@@ -33,6 +37,10 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
   const [isExpanded, setIsExpanded] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState(
+    currentFilters.searchTerm
+  );
 
   // 获取所有可用的图片类型
   const availableTypes = useMemo(() => {
@@ -56,69 +64,73 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
     return Array.from(tags).sort();
   }, [images]);
 
-  // 获取文件大小范围
-  const fileSizeRange = useMemo(() => {
-    if (images.length === 0) return { min: 0, max: 0 };
+  // 同步外部搜索词到本地状态
+  useEffect(() => {
+    setLocalSearchTerm(currentFilters.searchTerm);
+  }, [currentFilters.searchTerm]);
 
-    const sizes = images.map(img => img.size).filter(size => size > 0);
-    if (sizes.length === 0) return { min: 0, max: 0 };
-
-    return {
-      min: Math.min(...sizes),
-      max: Math.max(...sizes),
-    };
-  }, [images]);
-
-  // 处理搜索词变化
+  // 处理搜索词变化 - 添加防抖处理，避免频繁更新
   const handleSearchChange = useCallback(
     (searchTerm: string) => {
-      onFiltersChange({
-        ...currentFilters,
-        searchTerm,
-      });
+      setLocalSearchTerm(searchTerm);
+
+      // 清除之前的定时器
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // 设置新的防抖定时器
+      searchTimeoutRef.current = setTimeout(() => {
+        onFiltersChange((prev: FilterOptions) => ({
+          ...prev,
+          searchTerm,
+        }));
+      }, 300); // 300ms防抖延迟
     },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
-  // 处理类型筛选变化
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 处理类型筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTypeChange = useCallback(
     (type: string, isSelected: boolean) => {
-      const newSelectedTypes = isSelected
-        ? [...currentFilters.selectedTypes, type]
-        : currentFilters.selectedTypes.filter(t => t !== type);
+      onFiltersChange((prev: FilterOptions) => {
+        const newSelectedTypes = isSelected
+          ? [...prev.selectedTypes, type]
+          : prev.selectedTypes.filter((t: string) => t !== type);
 
-      onFiltersChange({
-        ...currentFilters,
-        selectedTypes: newSelectedTypes,
+        return {
+          ...prev,
+          selectedTypes: newSelectedTypes,
+        };
       });
     },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
-  // 处理标签筛选变化
+  // 处理标签筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTagChange = useCallback(
     (tag: string, isSelected: boolean) => {
-      const newSelectedTags = isSelected
-        ? [...currentFilters.selectedTags, tag]
-        : currentFilters.selectedTags.filter(t => t !== tag);
+      onFiltersChange((prev: FilterOptions) => {
+        const newSelectedTags = isSelected
+          ? [...prev.selectedTags, tag]
+          : prev.selectedTags.filter((t: string) => t !== tag);
 
-      onFiltersChange({
-        ...currentFilters,
-        selectedTags: newSelectedTags,
+        return {
+          ...prev,
+          selectedTags: newSelectedTags,
+        };
       });
     },
-    [currentFilters, onFiltersChange]
-  );
-
-  // 处理文件大小范围变化
-  const handleSizeRangeChange = useCallback(
-    (min: number, max: number) => {
-      onFiltersChange({
-        ...currentFilters,
-        sizeRange: { min, max },
-      });
-    },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
   // 清除所有筛选条件
@@ -127,59 +139,25 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
       searchTerm: '',
       selectedTypes: [],
       selectedTags: [],
-      sizeRange: { min: 0, max: 0 },
     });
   }, [onFiltersChange]);
 
-  // 获取筛选统计信息
+  // 获取筛选统计信息 - 使用filterUtils统一计算，避免重复逻辑
   const filterStats = useMemo(() => {
-    const { searchTerm, selectedTypes, selectedTags, sizeRange } =
-      currentFilters;
+    const { searchTerm, selectedTypes, selectedTags } = currentFilters;
     const hasFilters =
-      searchTerm ||
-      selectedTypes.length > 0 ||
-      selectedTags.length > 0 ||
-      sizeRange.min > 0 ||
-      sizeRange.max > 0;
+      searchTerm || selectedTypes.length > 0 || selectedTags.length > 0;
 
-    let count = images.length;
-    if (hasFilters) {
-      count = images.filter(image => {
-        // 搜索词筛选
-        if (searchTerm) {
-          const matchesSearch =
-            image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            image.description?.toLowerCase().includes(searchTerm.toLowerCase());
-          if (!matchesSearch) return false;
-        }
+    // 只在有过滤条件时进行实际过滤计算
+    const filtered = hasFilters
+      ? filterImages(images, currentFilters).length
+      : images.length;
 
-        // 类型筛选
-        if (selectedTypes.length > 0) {
-          if (!image.type || !selectedTypes.includes(image.type)) return false;
-        }
-
-        // 标签筛选
-        if (selectedTags.length > 0) {
-          if (
-            !image.tags ||
-            !selectedTags.some(tag => image.tags.includes(tag))
-          )
-            return false;
-        }
-
-        // 文件大小筛选
-        if (sizeRange.min > 0 && image.size < sizeRange.min) {
-          return false;
-        }
-        if (sizeRange.max > 0 && image.size > sizeRange.max) {
-          return false;
-        }
-
-        return true;
-      }).length;
-    }
-
-    return { total: images.length, filtered: count, hasFilters };
+    return {
+      total: images.length,
+      filtered,
+      hasFilters,
+    };
   }, [images, currentFilters]);
 
   // 获取文件类型显示名称
@@ -250,7 +228,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
               <input
                 type="text"
                 placeholder={translate('image.filter.searchPlaceholder')}
-                value={currentFilters.searchTerm}
+                value={localSearchTerm}
                 onChange={e => handleSearchChange(e.target.value)}
                 className="image-filter-input"
               />
@@ -306,79 +284,6 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
                     <span className="image-filter-tag-label">{tag}</span>
                   </label>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {/* 文件大小筛选 */}
-          {fileSizeRange.max > 0 && (
-            <div className="image-filter-section">
-              <label className="image-filter-label">
-                <HardDrive className="image-filter-size-icon" />
-                {translate('image.filter.fileSizeRange')}
-              </label>
-              <div className="image-filter-size-range">
-                <div className="image-filter-size-inputs">
-                  <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">
-                      {translate('image.filter.minSize')}
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={fileSizeRange.max}
-                      step="1024"
-                      placeholder={translate('image.filter.minSizePlaceholder')}
-                      value={currentFilters.sizeRange.min || ''}
-                      onChange={e => {
-                        const min = parseInt(e.target.value) || 0;
-                        handleSizeRangeChange(
-                          min,
-                          currentFilters.sizeRange.max
-                        );
-                      }}
-                      className="image-filter-size-number"
-                    />
-                    <span className="image-filter-size-unit">
-                      {currentFilters.sizeRange.min > 0
-                        ? formatFileSize(currentFilters.sizeRange.min)
-                        : ''}
-                    </span>
-                  </div>
-                  <div className="image-filter-size-input">
-                    <label className="image-filter-size-label">
-                      {translate('image.filter.maxSize')}
-                    </label>
-                    <input
-                      type="number"
-                      min="1024"
-                      max={fileSizeRange.max}
-                      step="1024"
-                      placeholder={translate('image.filter.maxSizePlaceholder')}
-                      value={currentFilters.sizeRange.max || ''}
-                      onChange={e => {
-                        const max = parseInt(e.target.value) || 0;
-                        handleSizeRangeChange(
-                          currentFilters.sizeRange.min,
-                          max
-                        );
-                      }}
-                      className="image-filter-size-number"
-                    />
-                    <span className="image-filter-size-unit">
-                      {currentFilters.sizeRange.max > 0
-                        ? formatFileSize(currentFilters.sizeRange.max)
-                        : ''}
-                    </span>
-                  </div>
-                </div>
-                <div className="image-filter-size-info">
-                  <span className="image-filter-size-info-text">
-                    {translate('image.filter.currentRange')}:{' '}
-                    {formatFileSize(fileSizeRange.min)} -{' '}
-                    {formatFileSize(fileSizeRange.max)}
-                  </span>
-                </div>
               </div>
             </div>
           )}

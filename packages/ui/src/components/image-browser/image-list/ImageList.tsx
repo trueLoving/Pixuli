@@ -9,7 +9,7 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '../../../hooks';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
@@ -40,7 +40,7 @@ interface ImageListProps {
   t?: (key: string) => string;
 }
 
-const ImageList: React.FC<ImageListProps> = ({
+const ImageListComponent: React.FC<ImageListProps> = ({
   images,
   selectedImageIndex = -1,
   onImageSelect,
@@ -85,10 +85,19 @@ const ImageList: React.FC<ImageListProps> = ({
     rootMargin: '50px',
   });
 
+  // 使用 useRef 跟踪上一次的图片列表，只在真正变化时重置
+  const prevImagesIdsRef = useRef<string>('');
+
   // 当图片列表变化时重置滚动状态
   useEffect(() => {
-    // 确保搜索和过滤变化时重置滚动状态
-    reset();
+    // 生成当前图片列表的ID字符串
+    const currentImagesIds = images.map(img => img.id).join(',');
+
+    // 只在图片列表真正变化时重置（通过ID比较，避免引用变化导致的重复重置）
+    if (prevImagesIdsRef.current !== currentImagesIds) {
+      prevImagesIdsRef.current = currentImagesIds;
+      reset();
+    }
   }, [images, reset]);
 
   const handleDelete = useCallback(
@@ -600,5 +609,43 @@ const ImageList: React.FC<ImageListProps> = ({
     </>
   );
 };
+
+// 使用 React.memo 优化，避免不必要的重新渲染
+// 比较函数返回 true 表示 props 相同（不需要重新渲染），false 表示不同（需要重新渲染）
+const ImageList = React.memo(ImageListComponent, (prevProps, nextProps) => {
+  // 快速路径：如果引用相同，直接返回 true
+  if (prevProps.images === nextProps.images) {
+    // 即使引用相同，也要检查其他可能变化的 props
+    return (
+      prevProps.selectedImageIndex === nextProps.selectedImageIndex &&
+      prevProps.className === nextProps.className
+    );
+  }
+
+  // 比较 images 数组：通过 ID 序列和顺序比较
+  if (prevProps.images.length !== nextProps.images.length) {
+    return false; // 长度不同，需要重新渲染
+  }
+
+  // 比较 ID 序列（包括顺序）
+  for (let i = 0; i < prevProps.images.length; i++) {
+    if (prevProps.images[i].id !== nextProps.images[i].id) {
+      return false; // ID 序列或顺序不同，需要重新渲染
+    }
+  }
+
+  // 其他 props 比较
+  if (
+    prevProps.selectedImageIndex !== nextProps.selectedImageIndex ||
+    prevProps.className !== nextProps.className
+  ) {
+    return false;
+  }
+
+  // props 相同，不需要重新渲染
+  return true;
+});
+
+ImageList.displayName = 'ImageList';
 
 export default ImageList;

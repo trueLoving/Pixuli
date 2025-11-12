@@ -4,13 +4,12 @@ import {
   getImageDimensionsFromUrl,
   ImageBrowser as ImageBrowserComponent,
   ImageItem,
-  ImageSearch,
   ImageUpload,
   ImageUploadData,
   MultiImageUploadData,
 } from '@packages/ui/src';
 import { RefreshCw } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
 interface ImageBrowserProps {
   /** 翻译函数 */
@@ -47,32 +46,6 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onDeleteImage,
   onUpdateImage,
 }) => {
-  // 搜索和过滤状态管理
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  // 获取所有标签
-  const allTags = useMemo(
-    () => Array.from(new Set(images.flatMap(img => img.tags || []))),
-    [images]
-  );
-
-  // 过滤图片
-  const filteredImages = useMemo(
-    () =>
-      images.filter(image => {
-        const matchesSearch =
-          image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          image.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesTags =
-          selectedTags.length === 0 ||
-          selectedTags.some(tag => image.tags?.includes(tag));
-
-        return matchesSearch && matchesTags;
-      }),
-    [images, searchTerm, selectedTags]
-  );
   return (
     <div className="h-full flex flex-col">
       {/* 主内容区域 - 可滚动 */}
@@ -93,16 +66,6 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             </div>
           )}
 
-          {/* 搜索和过滤区域 */}
-          <ImageSearch
-            t={t}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedTags={selectedTags}
-            onTagsChange={setSelectedTags}
-            allTags={allTags}
-          />
-
           {/* 图片上传区域 */}
           <div className="mb-4">
             <ImageUpload
@@ -117,8 +80,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           {/* 图片统计和操作区域 */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              {t('app.imageLibrary')} ({filteredImages.length} {t('app.images')}
-              )
+              {t('app.imageLibrary')} ({images.length} {t('app.images')})
             </h2>
             {loading && (
               <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -132,7 +94,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           <div className="min-h-0">
             <ImageBrowserComponent
               t={t}
-              images={filteredImages}
+              images={images}
               onDeleteImage={onDeleteImage}
               onUpdateImage={onUpdateImage}
               getImageDimensionsFromUrl={getImageDimensionsFromUrl}

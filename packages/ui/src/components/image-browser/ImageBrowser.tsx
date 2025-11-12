@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { defaultTranslate } from '../../locales';
 import { ImageItem } from '../../types/image';
 import { createDefaultFilters, filterImages } from '../../utils/filterUtils';
@@ -50,17 +56,56 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     setCurrentView(view);
   }, []);
 
+  // 优化排序变化处理：使用 useRef 避免不必要的状态更新
+  const sortStateRef = useRef({ field: currentSort, order: currentOrder });
+
+  // 同步 ref 与当前状态
+  useEffect(() => {
+    sortStateRef.current = { field: currentSort, order: currentOrder };
+  }, [currentSort, currentOrder]);
+
   const handleSortChange = useCallback((field: SortField, order: SortOrder) => {
+    // 如果排序字段和顺序都没有变化，不更新状态
+    if (
+      sortStateRef.current.field === field &&
+      sortStateRef.current.order === order
+    ) {
+      return;
+    }
+
+    // 更新状态
+    sortStateRef.current = { field, order };
     setCurrentSort(field);
     setCurrentOrder(order);
   }, []);
 
-  const handleFiltersChange = useCallback((filters: FilterOptions) => {
-    setCurrentFilters(filters);
-  }, []);
+  const handleFiltersChange = useCallback(
+    (filters: FilterOptions | ((prev: FilterOptions) => FilterOptions)) => {
+      setCurrentFilters(filters);
+    },
+    []
+  );
+
+  // 使用 useRef 缓存上一次的计算结果和依赖项
+  const prevResultRef = useRef<ImageItem[]>([]);
+  const prevDepsRef = useRef<
+    | {
+        imagesLength: number;
+        imagesIds: string;
+        filters: string;
+        sort: string;
+        resultIds: string; // 缓存排序后的ID序列，用于比较结果是否相同
+      }
+    | undefined
+  >(undefined);
 
   // 先筛选，再排序，并确保没有重复ID
   const filteredAndSortedImages = useMemo(() => {
+    // 生成依赖项的字符串表示，用于比较
+    const imagesIds = images.map(img => `${img.id}:${img.updatedAt}`).join(',');
+    const filtersKey = JSON.stringify(currentFilters);
+    const sortKey = `${currentSort}:${currentOrder}`;
+
     // 去重：确保没有重复的图片ID
     const uniqueImages = images.reduce((acc: ImageItem[], current) => {
       const existingIndex = acc.findIndex(img => img.id === current.id);
@@ -77,7 +122,50 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     }, []);
 
     const filteredImages = filterImages(uniqueImages, currentFilters);
-    return getSortedImages(filteredImages, currentSort, currentOrder);
+    const result = getSortedImages(filteredImages, currentSort, currentOrder);
+
+    // 生成排序后的ID序列，用于比较结果是否相同
+    const resultIds = result.map(img => img.id).join(',');
+
+    // 检查依赖是否真的变化了
+    const prevDeps = prevDepsRef.current;
+
+    // 优先检查结果是否相同（通过ID序列），如果相同直接返回缓存
+    if (
+      prevDeps &&
+      prevDeps.resultIds === resultIds &&
+      result.length === prevResultRef.current.length &&
+      result.length > 0
+    ) {
+      // 结果相同，返回缓存的引用，避免子组件重新渲染
+      // 即使排序字段不同，只要结果相同就返回缓存
+      return prevResultRef.current;
+    }
+
+    // 如果结果不同，检查依赖项是否变化
+    if (
+      prevDeps &&
+      prevDeps.imagesLength === images.length &&
+      prevDeps.imagesIds === imagesIds &&
+      prevDeps.filters === filtersKey &&
+      prevDeps.sort === sortKey &&
+      prevResultRef.current.length > 0
+    ) {
+      // 依赖没有变化，返回上一次的结果
+      return prevResultRef.current;
+    }
+
+    // 更新缓存
+    prevDepsRef.current = {
+      imagesLength: images.length,
+      imagesIds,
+      filters: filtersKey,
+      sort: sortKey,
+      resultIds,
+    };
+    prevResultRef.current = result;
+
+    return result;
   }, [images, currentFilters, currentSort, currentOrder]);
 
   // 预览选中的图片
@@ -284,26 +372,25 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       // 如果当前选中索引超出范围，重置为0
       if (selectedImageIndex >= filteredAndSortedImages.length) {
         setSelectedImageIndex(0);
-        scrollToSelectedItem(0);
+        // 使用requestAnimationFrame延迟滚动，避免重复触发
+        requestAnimationFrame(() => {
+          scrollToSelectedItem(0);
+        });
       }
       // 如果当前没有选中任何图片（-1），选中第一张
       else if (selectedImageIndex < 0) {
         setSelectedImageIndex(0);
-        scrollToSelectedItem(0);
+        requestAnimationFrame(() => {
+          scrollToSelectedItem(0);
+        });
       }
-      // 如果当前有选中的图片，确保它在可视范围内
-      else if (selectedImageIndex >= 0) {
-        scrollToSelectedItem(selectedImageIndex);
-      }
+      // 如果当前有选中的图片，确保它在可视范围内（只在列表长度变化时滚动）
+      // 注意：这里移除了selectedImageIndex依赖，避免每次选中变化都滚动
     } else {
       // 如果没有图片，重置为-1
       setSelectedImageIndex(-1);
     }
-  }, [
-    filteredAndSortedImages.length,
-    selectedImageIndex,
-    scrollToSelectedItem,
-  ]);
+  }, [filteredAndSortedImages.length, scrollToSelectedItem]);
 
   // 监听来自主应用的视图切换事件
   useEffect(() => {

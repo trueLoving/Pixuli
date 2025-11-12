@@ -102,8 +102,21 @@ export function useInfiniteScroll(
     };
   }, [hasMore, isLoading, loadMore, threshold, rootMargin]);
 
+  // 使用 useRef 跟踪上一次的 allItems，只在真正变化时处理
+  const prevAllItemsIdsRef = useRef<string>('');
+
   // 当allItems变化时处理初始加载
   useEffect(() => {
+    // 生成当前图片列表的ID字符串
+    const currentItemsIds = allItems.map(item => item.id).join(',');
+
+    // 只在图片列表真正变化时处理（通过ID比较，避免引用变化导致的重复处理）
+    if (prevAllItemsIdsRef.current === currentItemsIds) {
+      return; // 图片列表没有变化，不处理
+    }
+
+    prevAllItemsIdsRef.current = currentItemsIds;
+
     if (allItems.length === 0) {
       // 清空时重置
       reset();
