@@ -9,13 +9,7 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '../../../hooks';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';

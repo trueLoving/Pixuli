@@ -20,7 +20,9 @@ export interface FilterOptions {
 interface ImageFilterProps {
   images: ImageItem[];
   currentFilters: FilterOptions;
-  onFiltersChange: (filters: FilterOptions) => void;
+  onFiltersChange: (
+    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions)
+  ) => void;
   className?: string;
   t?: (key: string) => string;
 }
@@ -79,7 +81,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
 
       // 设置新的防抖定时器
       searchTimeoutRef.current = setTimeout(() => {
-        onFiltersChange(prev => ({
+        onFiltersChange((prev: FilterOptions) => ({
           ...prev,
           searchTerm,
         }));
@@ -100,10 +102,10 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
   // 处理类型筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTypeChange = useCallback(
     (type: string, isSelected: boolean) => {
-      onFiltersChange(prev => {
+      onFiltersChange((prev: FilterOptions) => {
         const newSelectedTypes = isSelected
           ? [...prev.selectedTypes, type]
-          : prev.selectedTypes.filter(t => t !== type);
+          : prev.selectedTypes.filter((t: string) => t !== type);
 
         return {
           ...prev,
@@ -117,10 +119,10 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
   // 处理标签筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTagChange = useCallback(
     (tag: string, isSelected: boolean) => {
-      onFiltersChange(prev => {
+      onFiltersChange((prev: FilterOptions) => {
         const newSelectedTags = isSelected
           ? [...prev.selectedTags, tag]
-          : prev.selectedTags.filter(t => t !== tag);
+          : prev.selectedTags.filter((t: string) => t !== tag);
 
         return {
           ...prev,
