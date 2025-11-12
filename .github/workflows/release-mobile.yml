@@ -17,9 +17,6 @@ on:
         required: true
         type: boolean
         default: false
-  push:
-    tags:
-      - 'v*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -87,6 +84,20 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
+      - name: Get pnpm store directory
+        shell: bash
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
         working-directory: .
@@ -100,28 +111,132 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Generate Android native project
+        run: npx expo prebuild --platform android --clean
+        working-directory: apps/mobile
+
+      - name: Cache Gradle build cache
+        uses: actions/cache@v4
+        with:
+          path: apps/mobile/android/.gradle
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('apps/mobile/android/**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-build-
+
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
+        working-directory: apps/mobile
 
       - name: Build Android (APK)
+        id: build
         run: |
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --no-daemon
+          echo "构建完成，退出码: $?"
+        working-directory: apps/mobile
 
       - name: Locate artifacts
         id: afp
         shell: bash
         run: |
-          APK_GLOB="android/app/build/outputs/apk/release/*.apk"
-          APK_FILE=$(ls $APK_GLOB 2>/dev/null | head -n1 || true)
-          echo "apk=$APK_FILE" >> $GITHUB_OUTPUT
+          echo "=== 查找 APK 文件 ==="
+          echo "当前工作目录: $(pwd)"
+
+          # 检查 android 目录是否存在
+          if [ ! -d "android" ]; then
+            echo "错误: android 目录不存在"
+            echo "当前目录内容:"
+            ls -la
+            exit 1
+          fi
+
+          # 使用相对于 apps/mobile 的路径
+          APK_DIR="android/app/build/outputs/apk/release"
+          echo "查找目录: $APK_DIR"
+
+          # 检查构建输出目录结构
+          echo "=== 检查构建输出目录结构 ==="
+          if [ -d "android/app/build" ]; then
+            echo "android/app/build 目录存在"
+            find android/app/build -type d -name "outputs" 2>/dev/null | head -5 || echo "未找到 outputs 目录"
+          else
+            echo "android/app/build 目录不存在"
+          fi
+
+          if [ -d "android/app/build/outputs" ]; then
+            echo "android/app/build/outputs 目录存在"
+            ls -la android/app/build/outputs/ || echo "无法列出 outputs 目录"
+          fi
+
+          if [ ! -d "$APK_DIR" ]; then
+            echo "错误: APK 目录不存在: $APK_DIR"
+            echo "搜索所有可能的 APK 位置:"
+            find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
+            echo "搜索所有 build 目录:"
+            find android -type d -name "build" 2>/dev/null | head -10
+            exit 1
+          fi
+
+          echo "APK 目录内容:"
+          ls -la "$APK_DIR" || echo "目录为空"
+
+          # 查找 APK 文件（相对于当前目录 apps/mobile）
+          APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
+
+          if [ -z "$APK_FILE" ]; then
+            echo "错误: 未找到 APK 文件"
+            echo "搜索所有可能的 APK 位置:"
+            find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
+            exit 1
+          fi
+
+          echo "找到 APK 文件: $APK_FILE"
+          echo "文件大小: $(du -h "$APK_FILE" | cut -f1)"
+
+          # 确保路径是相对于 apps/mobile 的（去掉开头的 ./ 如果有）
+          APK_FILE="${APK_FILE#./}"
+
+          # 转换为相对于项目根目录的路径
+          # 当前在 apps/mobile，APK_FILE 应该是 android/app/build/... 格式
+          # 所以完整路径是 apps/mobile/android/app/build/...
+          APK_RELATIVE_PATH="apps/mobile/$APK_FILE"
+
+          echo "相对路径: $APK_RELATIVE_PATH"
+          echo "验证路径是否存在:"
+          if [ -f "$APK_RELATIVE_PATH" ]; then
+            echo "✓ 文件存在: $APK_RELATIVE_PATH"
+          else
+            echo "✗ 文件不存在: $APK_RELATIVE_PATH"
+            echo "尝试使用绝对路径:"
+            ABSOLUTE_PATH="$(pwd)/$APK_FILE"
+            echo "绝对路径: $ABSOLUTE_PATH"
+            if [ -f "$ABSOLUTE_PATH" ]; then
+              echo "✓ 绝对路径文件存在"
+              # 从绝对路径提取相对路径
+              PROJECT_ROOT="${GITHUB_WORKSPACE:-/home/runner/work/Pixuli/Pixuli}"
+              APK_RELATIVE_PATH="${ABSOLUTE_PATH#$PROJECT_ROOT/}"
+              echo "计算后的相对路径: $APK_RELATIVE_PATH"
+            fi
+          fi
+
+          echo "apk=$APK_RELATIVE_PATH" >> $GITHUB_OUTPUT
+        working-directory: apps/mobile
 
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: |
-            ${{ steps.afp.outputs.apk }}
+          path: ${{ steps.afp.outputs.apk }}
           if-no-files-found: error
 
       - name: Attach to GitHub Release
