@@ -1,7 +1,14 @@
 import { Filter, Image as ImageIcon, Search, X } from 'lucide-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
+import { filterImages } from '../../../utils/filterUtils';
 import './ImageFilter.css';
 
 export interface FilterOptions {
@@ -28,6 +35,10 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
   const [isExpanded, setIsExpanded] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState(
+    currentFilters.searchTerm
+  );
 
   // 获取所有可用的图片类型
   const availableTypes = useMemo(() => {
@@ -51,45 +62,73 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
     return Array.from(tags).sort();
   }, [images]);
 
-  // 处理搜索词变化
+  // 同步外部搜索词到本地状态
+  useEffect(() => {
+    setLocalSearchTerm(currentFilters.searchTerm);
+  }, [currentFilters.searchTerm]);
+
+  // 处理搜索词变化 - 添加防抖处理，避免频繁更新
   const handleSearchChange = useCallback(
     (searchTerm: string) => {
-      onFiltersChange({
-        ...currentFilters,
-        searchTerm,
-      });
+      setLocalSearchTerm(searchTerm);
+
+      // 清除之前的定时器
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      // 设置新的防抖定时器
+      searchTimeoutRef.current = setTimeout(() => {
+        onFiltersChange(prev => ({
+          ...prev,
+          searchTerm,
+        }));
+      }, 300); // 300ms防抖延迟
     },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
-  // 处理类型筛选变化
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // 处理类型筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTypeChange = useCallback(
     (type: string, isSelected: boolean) => {
-      const newSelectedTypes = isSelected
-        ? [...currentFilters.selectedTypes, type]
-        : currentFilters.selectedTypes.filter(t => t !== type);
+      onFiltersChange(prev => {
+        const newSelectedTypes = isSelected
+          ? [...prev.selectedTypes, type]
+          : prev.selectedTypes.filter(t => t !== type);
 
-      onFiltersChange({
-        ...currentFilters,
-        selectedTypes: newSelectedTypes,
+        return {
+          ...prev,
+          selectedTypes: newSelectedTypes,
+        };
       });
     },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
-  // 处理标签筛选变化
+  // 处理标签筛选变化 - 使用函数式更新避免依赖currentFilters
   const handleTagChange = useCallback(
     (tag: string, isSelected: boolean) => {
-      const newSelectedTags = isSelected
-        ? [...currentFilters.selectedTags, tag]
-        : currentFilters.selectedTags.filter(t => t !== tag);
+      onFiltersChange(prev => {
+        const newSelectedTags = isSelected
+          ? [...prev.selectedTags, tag]
+          : prev.selectedTags.filter(t => t !== tag);
 
-      onFiltersChange({
-        ...currentFilters,
-        selectedTags: newSelectedTags,
+        return {
+          ...prev,
+          selectedTags: newSelectedTags,
+        };
       });
     },
-    [currentFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
   // 清除所有筛选条件
@@ -101,42 +140,22 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
     });
   }, [onFiltersChange]);
 
-  // 获取筛选统计信息
+  // 获取筛选统计信息 - 使用filterUtils统一计算，避免重复逻辑
   const filterStats = useMemo(() => {
     const { searchTerm, selectedTypes, selectedTags } = currentFilters;
     const hasFilters =
       searchTerm || selectedTypes.length > 0 || selectedTags.length > 0;
 
-    let count = images.length;
-    if (hasFilters) {
-      count = images.filter(image => {
-        // 搜索词筛选
-        if (searchTerm) {
-          const matchesSearch =
-            image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            image.description?.toLowerCase().includes(searchTerm.toLowerCase());
-          if (!matchesSearch) return false;
-        }
+    // 只在有过滤条件时进行实际过滤计算
+    const filtered = hasFilters
+      ? filterImages(images, currentFilters).length
+      : images.length;
 
-        // 类型筛选
-        if (selectedTypes.length > 0) {
-          if (!image.type || !selectedTypes.includes(image.type)) return false;
-        }
-
-        // 标签筛选
-        if (selectedTags.length > 0) {
-          if (
-            !image.tags ||
-            !selectedTags.some(tag => image.tags.includes(tag))
-          )
-            return false;
-        }
-
-        return true;
-      }).length;
-    }
-
-    return { total: images.length, filtered: count, hasFilters };
+    return {
+      total: images.length,
+      filtered,
+      hasFilters,
+    };
   }, [images, currentFilters]);
 
   // 获取文件类型显示名称
@@ -207,7 +226,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
               <input
                 type="text"
                 placeholder={translate('image.filter.searchPlaceholder')}
-                value={currentFilters.searchTerm}
+                value={localSearchTerm}
                 onChange={e => handleSearchChange(e.target.value)}
                 className="image-filter-input"
               />
