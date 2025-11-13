@@ -48,20 +48,16 @@ jobs:
             PLATFORM="both"
             RELEASE_INPUT="true"
           fi
-
           DO_ANDROID=false
           DO_IOS=false
           if [[ "$PLATFORM" == "android" || "$PLATFORM" == "both" ]]; then DO_ANDROID=true; fi
           if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "both" ]]; then DO_IOS=true; fi
-
           IS_TAG=false
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then IS_TAG=true; fi
-
           echo "do_android=$DO_ANDROID" >> $GITHUB_OUTPUT
           echo "do_ios=$DO_IOS" >> $GITHUB_OUTPUT
           echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
           echo "release_enabled=$RELEASE_INPUT" >> $GITHUB_OUTPUT
-
   android:
     name: Android build
     needs: detect
@@ -89,7 +85,6 @@ jobs:
         id: pnpm-cache
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -97,7 +92,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-
       - name: Install dependencies (workspace)
         run: pnpm install --frozen-lockfile
         working-directory: .
@@ -120,7 +114,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
       - name: Generate Android native project
         run: npx expo prebuild --platform android --clean
         working-directory: apps/mobile
@@ -132,7 +125,6 @@ jobs:
           key: ${{ runner.os }}-gradle-build-${{ hashFiles('apps/mobile/android/**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-build-
-
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
         working-directory: apps/mobile
@@ -145,30 +137,12 @@ jobs:
           echo "构建完成，退出码: $?"
         working-directory: apps/mobile
 
-      - name: Extract version
-        id: version
-        shell: bash
-        run: |
-          # 从 package.json 获取版本号，或从 tag 中提取
-          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
-            # 从 tag 中提取版本号（去掉 v 前缀）
-            VERSION="${GITHUB_REF#refs/tags/}"
-            VERSION="${VERSION#v}"
-          else
-            # 从 package.json 获取版本号
-            VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
-          fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "版本号: $VERSION"
-        working-directory: apps/mobile
-
       - name: Locate artifacts
         id: afp
         shell: bash
         run: |
           echo "=== 查找 APK 文件 ==="
           echo "当前工作目录: $(pwd)"
-
           # 检查 android 目录是否存在
           if [ ! -d "android" ]; then
             echo "错误: android 目录不存在"
@@ -176,11 +150,9 @@ jobs:
             ls -la
             exit 1
           fi
-
           # 使用相对于 apps/mobile 的路径
           APK_DIR="android/app/build/outputs/apk/release"
           echo "查找目录: $APK_DIR"
-
           # 检查构建输出目录结构
           echo "=== 检查构建输出目录结构 ==="
           if [ -d "android/app/build" ]; then
@@ -189,12 +161,10 @@ jobs:
           else
             echo "android/app/build 目录不存在"
           fi
-
           if [ -d "android/app/build/outputs" ]; then
             echo "android/app/build/outputs 目录存在"
             ls -la android/app/build/outputs/ || echo "无法列出 outputs 目录"
           fi
-
           if [ ! -d "$APK_DIR" ]; then
             echo "错误: APK 目录不存在: $APK_DIR"
             echo "搜索所有可能的 APK 位置:"
@@ -203,31 +173,24 @@ jobs:
             find android -type d -name "build" 2>/dev/null | head -10
             exit 1
           fi
-
           echo "APK 目录内容:"
           ls -la "$APK_DIR" || echo "目录为空"
-
           # 查找 APK 文件（相对于当前目录 apps/mobile）
           APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
-
           if [ -z "$APK_FILE" ]; then
             echo "错误: 未找到 APK 文件"
             echo "搜索所有可能的 APK 位置:"
             find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
             exit 1
           fi
-
           echo "找到 APK 文件: $APK_FILE"
           echo "文件大小: $(du -h "$APK_FILE" | cut -f1)"
-
           # 确保路径是相对于 apps/mobile 的（去掉开头的 ./ 如果有）
           APK_FILE="${APK_FILE#./}"
-
           # 转换为相对于项目根目录的路径
           # 当前在 apps/mobile，APK_FILE 应该是 android/app/build/... 格式
           # 所以完整路径是 apps/mobile/android/app/build/...
           APK_RELATIVE_PATH="apps/mobile/$APK_FILE"
-
           echo "相对路径: $APK_RELATIVE_PATH"
           echo "验证路径是否存在:"
           if [ -f "$APK_RELATIVE_PATH" ]; then
@@ -245,38 +208,8 @@ jobs:
               echo "计算后的相对路径: $APK_RELATIVE_PATH"
             fi
           fi
-
           echo "apk=$APK_RELATIVE_PATH" >> $GITHUB_OUTPUT
         working-directory: apps/mobile
-
-      - name: Rename APK for release
-        id: rename_apk
-        shell: bash
-        run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          APK_SOURCE="${{ steps.afp.outputs.apk }}"
-
-          # 获取文件扩展名
-          EXT="${APK_SOURCE##*.}"
-
-          # 生成新文件名：Pixuli_版本号.后缀名
-          APK_NEW_NAME="Pixuli_${VERSION}.${EXT}"
-
-          # 获取源文件的目录
-          APK_DIR=$(dirname "$APK_SOURCE")
-
-          # 新文件的完整路径
-          APK_NEW_PATH="${APK_DIR}/${APK_NEW_NAME}"
-
-          # 复制并重命名文件
-          cp "$APK_SOURCE" "$APK_NEW_PATH"
-
-          echo "原文件: $APK_SOURCE"
-          echo "新文件: $APK_NEW_PATH"
-          echo "新文件名: $APK_NEW_NAME"
-
-          echo "apk_release=$APK_NEW_PATH" >> $GITHUB_OUTPUT
-          echo "apk_release_name=$APK_NEW_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
@@ -290,8 +223,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ steps.rename_apk.outputs.apk_release }}
-          file_glob: false
+            ${{ steps.afp.outputs.apk }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -330,45 +262,21 @@ jobs:
         run: |
           pnpm dlx eas-cli build --platform ios --non-interactive --no-wait
           # 由于 EAS 云端构建，此处仅输出提交信息与链接
-
-      - name: Extract version
-        id: version
-        shell: bash
-        run: |
-          # 从 package.json 获取版本号，或从 tag 中提取
-          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
-            # 从 tag 中提取版本号（去掉 v 前缀）
-            VERSION="${GITHUB_REF#refs/tags/}"
-            VERSION="${VERSION#v}"
-          else
-            # 从 package.json 获取版本号
-            VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
-          fi
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "版本号: $VERSION"
-        working-directory: apps/mobile
-
       - name: Upload EAS build info
         if: always()
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          INFO_FILE="Pixuli_${VERSION}.txt"
-          echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > "$INFO_FILE"
-          echo "info_file=$INFO_FILE" >> $GITHUB_OUTPUT
-          echo "info_file_path=apps/mobile/$INFO_FILE" >> $GITHUB_OUTPUT
-
+          echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > eas-ios-info.txt
       - name: Upload iOS build info artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-eas-info
-          path: apps/mobile/Pixuli_${{ steps.version.outputs.VERSION }}.txt
+          path: eas-ios-info.txt
 
       - name: Attach info to GitHub Release
         if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            apps/mobile/Pixuli_${{ steps.version.outputs.VERSION }}.txt
-          file_glob: false
+            eas-ios-info.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

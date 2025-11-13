@@ -10,11 +10,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { ImageItem, ImageEditData } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-ui/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
-import { ImageEditModal } from './ImageEditModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;
@@ -27,7 +26,6 @@ interface ImageBrowserProps {
   initialIndex: number;
   onClose: () => void;
   onDelete: (image: ImageItem) => Promise<void>;
-  onUpdate?: (editData: ImageEditData) => Promise<void>;
 }
 
 export function ImageBrowser({
@@ -36,12 +34,10 @@ export function ImageBrowser({
   initialIndex,
   onClose,
   onDelete,
-  onUpdate,
 }: ImageBrowserProps) {
   const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [deleting, setDeleting] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
@@ -49,6 +45,7 @@ export function ImageBrowser({
   useEffect(() => {
     if (visible) {
       setCurrentIndex(initialIndex);
+      setShowMetadata(false); // 重置 metadata 显示状态
       // 延迟滚动，确保组件已渲染
       setTimeout(() => {
         scrollViewRef.current?.scrollTo({
@@ -163,16 +160,6 @@ export function ImageBrowser({
     }
   };
 
-  const handleEdit = () => {
-    setEditModalVisible(true);
-  };
-
-  const handleUpdate = async (editData: ImageEditData) => {
-    if (onUpdate) {
-      await onUpdate(editData);
-    }
-  };
-
   if (!visible || images.length === 0) {
     return null;
   }
@@ -200,19 +187,14 @@ export function ImageBrowser({
             {currentIndex + 1} / {images.length}
           </ThemedText>
           <View style={styles.headerActions}>
-            {onUpdate && (
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleEdit}
-                disabled={deleting}
-              >
-                <IconSymbol name="pencil" size={24} color="#fff" />
-              </TouchableOpacity>
-            )}
             <TouchableOpacity
               style={styles.headerButton}
-              onPress={() => setShowMetadata(!showMetadata)}
+              onPress={() => {
+                setShowMetadata(prev => !prev);
+              }}
               disabled={deleting}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <IconSymbol
                 name={showMetadata ? 'info.circle.fill' : 'info.circle'}
@@ -241,7 +223,10 @@ export function ImageBrowser({
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={handleScroll}
-          style={styles.imageScrollView}
+          style={[
+            styles.imageScrollView,
+            showMetadata && styles.imageScrollViewWithMetadata,
+          ]}
         >
           {images.map((image, index) => (
             <TouchableOpacity
@@ -263,7 +248,10 @@ export function ImageBrowser({
         {/* 元数据信息面板 */}
         {showMetadata && currentImage && (
           <View style={styles.metadataContainer}>
-            <ScrollView style={styles.metadataContent}>
+            <ScrollView
+              style={styles.metadataContent}
+              showsVerticalScrollIndicator={true}
+            >
               <View style={styles.metadataRow}>
                 <ThemedText style={styles.metadataLabel}>
                   {t('image.imageName')}:
@@ -341,16 +329,6 @@ export function ImageBrowser({
           </ScrollView>
         </View>
       </View>
-
-      {/* 编辑模态框 */}
-      {onUpdate && currentImage && (
-        <ImageEditModal
-          visible={editModalVisible}
-          image={currentImage}
-          onClose={() => setEditModalVisible(false)}
-          onSave={handleUpdate}
-        />
-      )}
     </Modal>
   );
 }
@@ -386,6 +364,9 @@ const styles = StyleSheet.create({
   },
   imageScrollView: {
     flex: 1,
+  },
+  imageScrollViewWithMetadata: {
+    marginBottom: 0,
   },
   imageContainer: {
     width: SCREEN_WIDTH,
@@ -426,9 +407,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 122, 255, 0.3)',
   },
   metadataContainer: {
-    maxHeight: 200,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    height: 200,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   metadataContent: {
     flex: 1,
