@@ -7,10 +7,10 @@ import {
   View,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { IconSymbol } from './ui/IconSymbol';
 import { ThemedText } from './ThemedText';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
+import { ImageUploadEditModal } from './ImageUploadEditModal';
 
 interface ImageUploadButtonProps {
   onUploadComplete?: () => void;
@@ -27,6 +27,11 @@ export function ImageUploadButton({
   const uploadImage = useImageStore(state => state.uploadImage);
   const loading = useImageStore(state => state.loading);
   const [uploading, setUploading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [pendingImage, setPendingImage] = useState<{
+    uri: string;
+    name?: string;
+  } | null>(null);
 
   const pickImage = async () => {
     try {
@@ -46,26 +51,35 @@ export function ImageUploadButton({
       });
 
       if (!result.canceled && result.assets) {
-        setUploading(true);
-        try {
-          // 上传单张或多张图片
-          for (const asset of result.assets) {
-            if (asset.uri) {
-              await uploadImage({
-                uri: asset.uri,
-                name: asset.fileName || undefined,
-                description: undefined,
-                tags: undefined,
-              });
+        // 如果只有一张图片，显示编辑模态框
+        if (result.assets.length === 1 && result.assets[0].uri) {
+          setPendingImage({
+            uri: result.assets[0].uri,
+            name: result.assets[0].fileName || undefined,
+          });
+          setEditModalVisible(true);
+        } else {
+          // 多张图片直接上传（暂不支持批量编辑）
+          setUploading(true);
+          try {
+            for (const asset of result.assets) {
+              if (asset.uri) {
+                await uploadImage({
+                  uri: asset.uri,
+                  name: asset.fileName || undefined,
+                  description: undefined,
+                  tags: undefined,
+                });
+              }
             }
+            onUploadComplete?.();
+            Alert.alert(t('common.success'), t('image.uploadSuccess'));
+          } catch (error) {
+            Alert.alert(t('common.error'), t('image.uploadFailed'));
+            console.error('Upload error:', error);
+          } finally {
+            setUploading(false);
           }
-          onUploadComplete?.();
-          Alert.alert(t('common.success'), t('image.uploadSuccess'));
-        } catch (error) {
-          Alert.alert(t('common.error'), t('image.uploadFailed'));
-          console.error('Upload error:', error);
-        } finally {
-          setUploading(false);
         }
       }
     } catch (error) {
@@ -74,51 +88,93 @@ export function ImageUploadButton({
     }
   };
 
-  if (fab) {
-    return (
-      <TouchableOpacity
-        style={[
-          styles.fabLabelContainer,
-          (loading || uploading) && styles.buttonDisabled,
-        ]}
-        onPress={pickImage}
-        disabled={loading || uploading}
-        accessibilityLabel={t('image.upload')}
-        activeOpacity={0.8}
-      >
-        {loading || uploading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <ThemedText style={styles.fabLabel}>{t('image.upload')}</ThemedText>
-        )}
-      </TouchableOpacity>
-    );
-  }
+  const handleUploadWithMetadata = async (data: {
+    description?: string;
+    tags?: string[];
+    width?: number;
+    height?: number;
+  }) => {
+    if (!pendingImage) return;
+
+    setEditModalVisible(false);
+    setUploading(true);
+    try {
+      await uploadImage({
+        uri: pendingImage.uri,
+        name: pendingImage.name,
+        description: data.description,
+        tags: data.tags,
+      });
+      onUploadComplete?.();
+      Alert.alert(t('common.success'), t('image.uploadSuccess'));
+    } catch (error) {
+      Alert.alert(t('common.error'), t('image.uploadFailed'));
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
+      setPendingImage(null);
+    }
+  };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        compact && styles.buttonCompact,
-        (loading || uploading) && styles.buttonDisabled,
-      ]}
-      onPress={pickImage}
-      disabled={loading || uploading}
-      accessibilityLabel={t('image.upload')}
-    >
-      {loading || uploading ? (
-        <ActivityIndicator size="small" color="#fff" />
+    <>
+      {fab ? (
+        <TouchableOpacity
+          style={[
+            styles.fabLabelContainer,
+            (loading || uploading) && styles.buttonDisabled,
+          ]}
+          onPress={pickImage}
+          disabled={loading || uploading}
+          accessibilityLabel={t('image.upload')}
+          activeOpacity={0.8}
+        >
+          {loading || uploading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <ThemedText style={styles.fabLabel}>{t('image.upload')}</ThemedText>
+          )}
+        </TouchableOpacity>
       ) : (
-        <>
-          {/* <IconSymbol name="plus" size={compact ? 18 : 20} color="#fff" /> */}
-          <ThemedText
-            style={[styles.buttonText, compact && styles.buttonTextCompact]}
-          >
-            {t('image.upload')}
-          </ThemedText>
-        </>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            compact && styles.buttonCompact,
+            (loading || uploading) && styles.buttonDisabled,
+          ]}
+          onPress={pickImage}
+          disabled={loading || uploading}
+          accessibilityLabel={t('image.upload')}
+        >
+          {loading || uploading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              {/* <IconSymbol name="plus" size={compact ? 18 : 20} color="#fff" /> */}
+              <ThemedText
+                style={[styles.buttonText, compact && styles.buttonTextCompact]}
+              >
+                {t('image.upload')}
+              </ThemedText>
+            </>
+          )}
+        </TouchableOpacity>
       )}
-    </TouchableOpacity>
+
+      {pendingImage && (
+        <ImageUploadEditModal
+          visible={editModalVisible}
+          imageUri={pendingImage.uri}
+          imageName={pendingImage.name}
+          onClose={() => {
+            setEditModalVisible(false);
+            setPendingImage(null);
+          }}
+          onSave={handleUploadWithMetadata}
+          loading={uploading}
+        />
+      )}
+    </>
   );
 }
 

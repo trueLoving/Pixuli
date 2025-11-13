@@ -6,7 +6,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

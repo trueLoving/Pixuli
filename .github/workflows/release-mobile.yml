@@ -145,6 +145,23 @@ jobs:
           echo "构建完成，退出码: $?"
         working-directory: apps/mobile
 
+      - name: Extract version
+        id: version
+        shell: bash
+        run: |
+          # 从 package.json 获取版本号，或从 tag 中提取
+          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
+            # 从 tag 中提取版本号（去掉 v 前缀）
+            VERSION="${GITHUB_REF#refs/tags/}"
+            VERSION="${VERSION#v}"
+          else
+            # 从 package.json 获取版本号
+            VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+        working-directory: apps/mobile
+
       - name: Locate artifacts
         id: afp
         shell: bash
@@ -232,6 +249,35 @@ jobs:
           echo "apk=$APK_RELATIVE_PATH" >> $GITHUB_OUTPUT
         working-directory: apps/mobile
 
+      - name: Rename APK for release
+        id: rename_apk
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          APK_SOURCE="${{ steps.afp.outputs.apk }}"
+
+          # 获取文件扩展名
+          EXT="${APK_SOURCE##*.}"
+
+          # 生成新文件名：Pixuli_版本号.后缀名
+          APK_NEW_NAME="Pixuli_${VERSION}.${EXT}"
+
+          # 获取源文件的目录
+          APK_DIR=$(dirname "$APK_SOURCE")
+
+          # 新文件的完整路径
+          APK_NEW_PATH="${APK_DIR}/${APK_NEW_NAME}"
+
+          # 复制并重命名文件
+          cp "$APK_SOURCE" "$APK_NEW_PATH"
+
+          echo "原文件: $APK_SOURCE"
+          echo "新文件: $APK_NEW_PATH"
+          echo "新文件名: $APK_NEW_NAME"
+
+          echo "apk_release=$APK_NEW_PATH" >> $GITHUB_OUTPUT
+          echo "apk_release_name=$APK_NEW_NAME" >> $GITHUB_OUTPUT
+
       - name: Upload Android artifact
         uses: actions/upload-artifact@v4
         with:
@@ -244,7 +290,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ steps.afp.outputs.apk }}
+            ${{ steps.rename_apk.outputs.apk_release }}
+          file_glob: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -284,22 +331,44 @@ jobs:
           pnpm dlx eas-cli build --platform ios --non-interactive --no-wait
           # 由于 EAS 云端构建，此处仅输出提交信息与链接
 
+      - name: Extract version
+        id: version
+        shell: bash
+        run: |
+          # 从 package.json 获取版本号，或从 tag 中提取
+          if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then
+            # 从 tag 中提取版本号（去掉 v 前缀）
+            VERSION="${GITHUB_REF#refs/tags/}"
+            VERSION="${VERSION#v}"
+          else
+            # 从 package.json 获取版本号
+            VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+        working-directory: apps/mobile
+
       - name: Upload EAS build info
         if: always()
         run: |
-          echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > eas-ios-info.txt
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          INFO_FILE="Pixuli_${VERSION}.txt"
+          echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > "$INFO_FILE"
+          echo "info_file=$INFO_FILE" >> $GITHUB_OUTPUT
+          echo "info_file_path=apps/mobile/$INFO_FILE" >> $GITHUB_OUTPUT
 
       - name: Upload iOS build info artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-eas-info
-          path: eas-ios-info.txt
+          path: apps/mobile/Pixuli_${{ steps.version.outputs.VERSION }}.txt
 
       - name: Attach info to GitHub Release
         if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            eas-ios-info.txt
+            apps/mobile/Pixuli_${{ steps.version.outputs.VERSION }}.txt
+          file_glob: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

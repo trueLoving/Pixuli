@@ -153,6 +153,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
+      // 快速获取基础图片列表（不等待元数据）
       const images = await storageService.getImageList();
 
       // 去重：确保每个图片ID只出现一次
@@ -169,7 +170,42 @@ export const useImageStore = create<ImageState>((set, get) => ({
         return acc;
       }, []);
 
+      // 先设置基础图片列表，让页面快速显示
       set({ images: uniqueImages, loading: false });
+
+      // 异步加载元数据并更新（不阻塞页面显示）
+      if (storageService && 'loadImageMetadata' in storageService) {
+        (storageService as any)
+          .loadImageMetadata(uniqueImages)
+          .then((imagesWithMetadata: ImageItem[]) => {
+            // 再次去重并更新
+            const updatedUniqueImages = imagesWithMetadata.reduce(
+              (acc: ImageItem[], current) => {
+                const existingIndex = acc.findIndex(
+                  img => img.id === current.id
+                );
+                if (existingIndex === -1) {
+                  acc.push(current);
+                } else {
+                  const existing = acc[existingIndex];
+                  if (
+                    new Date(current.updatedAt) > new Date(existing.updatedAt)
+                  ) {
+                    acc[existingIndex] = current;
+                  }
+                }
+                return acc;
+              },
+              []
+            );
+            // 更新图片列表（包含元数据）
+            set({ images: updatedUniqueImages });
+          })
+          .catch((error: Error) => {
+            console.warn('Failed to load image metadata:', error);
+            // 元数据加载失败不影响基础功能
+          });
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : '加载图片失败';
       set({

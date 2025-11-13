@@ -24,6 +24,11 @@ const MAPPING = {
   gear: 'settings',
   link: 'link',
   'chevron.left': 'chevron-left',
+  xmark: 'close',
+  pencil: 'edit',
+  'info.circle': 'info',
+  'info.circle.fill': 'info',
+  trash: 'delete',
 } as IconMapping;
 
 /**

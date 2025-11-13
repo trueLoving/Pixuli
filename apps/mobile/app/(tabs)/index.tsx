@@ -27,6 +27,7 @@ export default function HomeScreen() {
     storageType,
     githubConfig,
     deleteImage,
+    updateImage,
   } = useImageStore();
   const [refreshing, setRefreshing] = useState(false);
   const [browserVisible, setBrowserVisible] = useState(false);
@@ -142,6 +143,7 @@ export default function HomeScreen() {
         initialIndex={browserIndex}
         onClose={() => setBrowserVisible(false)}
         onDelete={handleDeleteImage}
+        onUpdate={updateImage}
       />
     </ThemedView>
   );

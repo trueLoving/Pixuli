@@ -151,10 +151,12 @@ export class GitHubStorageService {
         // 忽略错误，使用默认值 0
       }
 
+      const imageId =
+        response.data.content?.sha ||
+        `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
       const imageItem: ImageItem = {
-        id:
-          response.data.content?.sha ||
-          `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: imageId,
         name: fileName,
         url: response.data.content?.download_url || '',
         githubUrl: response.data.content?.html_url || '',
@@ -167,6 +169,18 @@ export class GitHubStorageService {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+
+      // 上传元数据文件
+      try {
+        await this.uploadImageMetadata(fileName, imageItem);
+      } catch (error) {
+        console.warn(
+          'Image file uploaded successfully, but metadata upload failed:',
+          error
+        );
+        // 元数据上传失败不应该阻止整个上传流程
+        // 可以稍后更新元数据或从图片 URL 获取
+      }
 
       return imageItem;
     } catch (error) {
@@ -205,6 +219,14 @@ export class GitHubStorageService {
         sha: file.data.sha,
         branch: this.config.branch,
       });
+
+      // 删除元数据文件
+      try {
+        await this.deleteImageMetadata(fileName);
+      } catch (error) {
+        console.warn('Failed to delete metadata file:', error);
+        // 元数据删除失败不应该阻止整个删除流程
+      }
     } catch (error) {
       console.error('Delete image failed:', error);
       throw new Error(
@@ -214,7 +236,142 @@ export class GitHubStorageService {
   }
 
   /**
-   * 获取图片列表
+   * 删除图片元数据文件
+   */
+  private async deleteImageMetadata(fileName: string): Promise<void> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName);
+      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
+
+      let metadataFileInfo: any;
+      try {
+        const metadataResponse = await this.octokit.rest.repos.getContent({
+          owner: this.config.owner,
+          repo: this.config.repo,
+          path: metadataFilePath,
+          ref: this.config.branch,
+        });
+
+        if (Array.isArray(metadataResponse.data)) {
+          // 如果是数组，说明路径是目录，文件不存在
+          return;
+        }
+
+        metadataFileInfo = metadataResponse.data;
+      } catch (error: any) {
+        // 如果文件不存在（404），直接返回
+        if (error.status === 404) {
+          return;
+        }
+        throw error;
+      }
+
+      if (Array.isArray(metadataFileInfo)) {
+        return;
+      }
+
+      if (!metadataFileInfo.sha) {
+        console.warn(`Metadata file exists but no SHA found for ${fileName}`);
+        return;
+      }
+
+      // 删除元数据文件
+      await this.octokit.rest.repos.deleteFile({
+        owner: this.config.owner,
+        repo: this.config.repo,
+        path: metadataFilePath,
+        message: `Delete metadata for image: ${fileName}`,
+        sha: metadataFileInfo.sha,
+        branch: this.config.branch,
+      });
+    } catch (error) {
+      console.warn(`Failed to delete metadata for ${fileName}:`, error);
+      throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
+    }
+  }
+
+  /**
+   * 获取元数据文件名
+   */
+  private getMetadataFileName(fileName: string): string {
+    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+    const extension = fileName.substring(fileName.lastIndexOf('.'));
+    // 格式：filename.metadata.ext.json (例如：abc23.metadata.png.json)
+    return `${nameWithoutExt}.metadata${extension}.json`;
+  }
+
+  /**
+   * 获取图片元数据
+   */
+  private async getImageMetadata(fileName: string): Promise<any | null> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName);
+      // 使用 raw.githubusercontent.com 直接获取文件内容
+      // URL格式：https://raw.githubusercontent.com/owner/repo/refs/heads/branch/path/.metadata/file.json
+      const metadataUrl = `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.config.path}/.metadata/${metadataFileName}`;
+
+      const response = await fetch(metadataUrl);
+
+      // 如果文件不存在（404），返回 null
+      if (response.status === 404) {
+        console.debug(`Metadata file not found for ${fileName} (404)`);
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.status}`);
+      }
+
+      const metadataContent = await response.json();
+      return metadataContent;
+    } catch (error) {
+      // 如果是已知的404错误，直接返回null
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      console.debug(`Failed to get metadata for ${fileName}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 批量加载图片元数据（限制并发数）
+   */
+  private async loadMetadataBatch(
+    imageFiles: any[],
+    batchSize: number = 5
+  ): Promise<Map<string, any>> {
+    const metadataMap = new Map<string, any>();
+
+    // 分批处理，限制并发数
+    for (let i = 0; i < imageFiles.length; i += batchSize) {
+      const batch = imageFiles.slice(i, i + batchSize);
+      const batchPromises = batch.map(async item => {
+        try {
+          const metadata = await this.getImageMetadata(item.name);
+          if (metadata) {
+            return { fileName: item.name, metadata };
+          }
+          return null;
+        } catch (error) {
+          console.debug(`Failed to fetch metadata for ${item.name}:`, error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(batchPromises);
+      results.forEach(result => {
+        if (result) {
+          metadataMap.set(result.fileName, result.metadata);
+        }
+      });
+    }
+
+    return metadataMap;
+  }
+
+  /**
+   * 获取图片列表（快速返回，不等待元数据）
    */
   async getImageList(): Promise<ImageItem[]> {
     try {
@@ -230,29 +387,57 @@ export class GitHubStorageService {
       }
 
       // 筛选出图片文件
-      const imageFiles = response.data.filter(item =>
-        this.isImageFile(item.name)
+      const imageFiles = response.data.filter(
+        item => this.isImageFile(item.name) && item.type === 'file'
       );
 
       if (imageFiles.length === 0) {
         return [];
       }
 
-      // 转换为 ImageItem 格式
+      // 快速返回基础图片列表（不等待元数据）
       const images: ImageItem[] = imageFiles.map(item => ({
         id: item.sha,
         name: item.name,
         url: item.download_url || '',
         githubUrl: item.html_url || '',
         size: item.size || 0,
-        width: 0, // GitHub API 不直接提供图片尺寸
+        width: 0, // 初始设为0，后续通过异步加载元数据更新
         height: 0,
         type: this.getMimeType(item.name),
-        tags: [],
-        description: '',
+        tags: [], // 初始为空，后续通过异步加载元数据更新
+        description: '', // 初始为空，后续通过异步加载元数据更新
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }));
+
+      // 检查重复ID
+      const idCounts = images.reduce(
+        (acc: Record<string, number>, img: ImageItem) => {
+          acc[img.id] = (acc[img.id] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
+
+      const duplicateIds = Object.entries(idCounts).filter(
+        ([_, count]) => count > 1
+      );
+
+      if (duplicateIds.length > 0) {
+        console.warn('Found duplicate image IDs:', duplicateIds);
+        // 为重复的ID添加后缀以确保唯一性
+        const processedImages = images.map((img, index) => {
+          if (idCounts[img.id] > 1) {
+            return {
+              ...img,
+              id: `${img.id}-${index}`,
+            };
+          }
+          return img;
+        });
+        return processedImages;
+      }
 
       return images;
     } catch (error) {
@@ -260,6 +445,51 @@ export class GitHubStorageService {
       throw new Error(
         `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`
       );
+    }
+  }
+
+  /**
+   * 异步加载图片元数据并更新图片列表
+   */
+  async loadImageMetadata(images: ImageItem[]): Promise<ImageItem[]> {
+    try {
+      // 创建文件名到图片的映射
+      const fileNameMap = new Map<string, ImageItem>();
+      images.forEach(img => {
+        fileNameMap.set(img.name, img);
+      });
+
+      // 分批加载元数据（限制并发数为5）
+      const metadataMap = await this.loadMetadataBatch(
+        Array.from(fileNameMap.keys()).map(name => ({ name })),
+        5
+      );
+
+      // 更新图片信息
+      const updatedImages = images.map(img => {
+        const metadata = metadataMap.get(img.name);
+        if (metadata) {
+          return {
+            ...img,
+            id: metadata.id || img.id,
+            name: metadata.name || img.name,
+            size: metadata.size || img.size || 0,
+            width: metadata.width || 0,
+            height: metadata.height || 0,
+            tags: metadata.tags || [],
+            description: metadata.description || '',
+            createdAt: metadata.createdAt || img.createdAt,
+            updatedAt: metadata.updatedAt || img.updatedAt,
+          };
+        }
+        return img;
+      });
+
+      return updatedImages;
+    } catch (error) {
+      console.error('Load image metadata failed:', error);
+      // 即使加载元数据失败，也返回原始图片列表
+      return images;
     }
   }
 
@@ -325,14 +555,121 @@ export class GitHubStorageService {
         });
       }
 
-      // 注意：GitHub API 不支持直接更新文件的元数据（如描述、标签）
-      // 这些信息通常需要存储在单独的元数据文件中
-      // 这里我们只处理文件重命名
+      // 获取现有的元数据（保留尺寸等信息）
+      let existingMetadata = null;
+      try {
+        existingMetadata = await this.getImageMetadata(fileName);
+      } catch (error) {
+        console.debug(
+          `Failed to get existing metadata for ${fileName}:`,
+          error
+        );
+      }
+
+      // 更新元数据文件，保留现有的尺寸等信息
+      await this.updateImageMetadata(fileName, {
+        id: imageId,
+        name: metadata.name || fileName,
+        description:
+          metadata.description ?? existingMetadata?.description ?? '',
+        tags: metadata.tags ?? existingMetadata?.tags ?? [],
+        size: existingMetadata?.size || 0,
+        width: existingMetadata?.width || 0,
+        height: existingMetadata?.height || 0,
+        updatedAt: metadata.updatedAt,
+        createdAt: existingMetadata?.createdAt || new Date().toISOString(),
+      });
     } catch (error) {
       console.error('Update image info failed:', error);
       throw new Error(
         `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`
       );
+    }
+  }
+
+  /**
+   * 上传图片元数据文件
+   */
+  private async uploadImageMetadata(
+    fileName: string,
+    metadata: ImageItem
+  ): Promise<void> {
+    await this.updateImageMetadata(fileName, metadata);
+  }
+
+  /**
+   * 更新图片元数据文件
+   */
+  private async updateImageMetadata(
+    fileName: string,
+    metadata: any
+  ): Promise<void> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName);
+      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
+
+      // 构建元数据内容
+      const metadataContent = {
+        id: metadata.id || fileName,
+        name: metadata.name || fileName,
+        description: metadata.description || '',
+        tags: metadata.tags || [],
+        size: metadata.size || 0, // 文件大小（字节）
+        width: metadata.width || 0,
+        height: metadata.height || 0,
+        updatedAt: metadata.updatedAt || new Date().toISOString(),
+        createdAt: metadata.createdAt || new Date().toISOString(),
+      };
+
+      // 将元数据转换为 base64
+      const jsonString = JSON.stringify(metadataContent, null, 2);
+      const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+      // 检查元数据文件是否已存在
+      let existingSha: string | undefined;
+      let fileExists = false;
+      try {
+        const existingFile = await this.octokit.rest.repos.getContent({
+          owner: this.config.owner,
+          repo: this.config.repo,
+          path: metadataFilePath,
+          ref: this.config.branch,
+        });
+
+        // 如果返回的是数组（目录内容），说明文件不存在
+        if (Array.isArray(existingFile.data)) {
+          fileExists = false;
+          existingSha = undefined;
+        } else if ('sha' in existingFile.data) {
+          fileExists = true;
+          existingSha = existingFile.data.sha;
+        }
+      } catch (error: any) {
+        // 检查是否是 404 错误（文件不存在）
+        if (error.status === 404) {
+          fileExists = false;
+          existingSha = undefined;
+        } else {
+          // 其他错误，重新抛出
+          throw error;
+        }
+      }
+
+      // 创建或更新元数据文件
+      await this.octokit.rest.repos.createOrUpdateFileContents({
+        owner: this.config.owner,
+        repo: this.config.repo,
+        path: metadataFilePath,
+        message: fileExists
+          ? `Update metadata for image: ${fileName}`
+          : `Create metadata for image: ${fileName}`,
+        content: base64Content,
+        branch: this.config.branch,
+        ...(fileExists && existingSha && { sha: existingSha }),
+      });
+    } catch (error) {
+      console.error('Update image metadata failed:', error);
+      throw new Error(`更新图片元数据失败: ${error}`);
     }
   }
 }

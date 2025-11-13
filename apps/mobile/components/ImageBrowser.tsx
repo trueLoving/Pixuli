@@ -10,10 +10,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem, ImageEditData } from 'pixuli-ui/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
+import { ImageEditModal } from './ImageEditModal';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;
@@ -26,6 +27,7 @@ interface ImageBrowserProps {
   initialIndex: number;
   onClose: () => void;
   onDelete: (image: ImageItem) => Promise<void>;
+  onUpdate?: (editData: ImageEditData) => Promise<void>;
 }
 
 export function ImageBrowser({
@@ -34,10 +36,13 @@ export function ImageBrowser({
   initialIndex,
   onClose,
   onDelete,
+  onUpdate,
 }: ImageBrowserProps) {
   const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [deleting, setDeleting] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [showMetadata, setShowMetadata] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
 
@@ -158,6 +163,16 @@ export function ImageBrowser({
     }
   };
 
+  const handleEdit = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleUpdate = async (editData: ImageEditData) => {
+    if (onUpdate) {
+      await onUpdate(editData);
+    }
+  };
+
   if (!visible || images.length === 0) {
     return null;
   }
@@ -184,17 +199,39 @@ export function ImageBrowser({
           <ThemedText style={styles.headerTitle}>
             {currentIndex + 1} / {images.length}
           </ThemedText>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleDelete}
-            disabled={deleting}
-          >
-            {deleting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <IconSymbol name="trash" size={24} color="#fff" />
+          <View style={styles.headerActions}>
+            {onUpdate && (
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={handleEdit}
+                disabled={deleting}
+              >
+                <IconSymbol name="pencil" size={24} color="#fff" />
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => setShowMetadata(!showMetadata)}
+              disabled={deleting}
+            >
+              <IconSymbol
+                name={showMetadata ? 'info.circle.fill' : 'info.circle'}
+                size={24}
+                color="#fff"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <IconSymbol name="trash" size={24} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* 主图片区域 */}
@@ -222,6 +259,56 @@ export function ImageBrowser({
             </TouchableOpacity>
           ))}
         </ScrollView>
+
+        {/* 元数据信息面板 */}
+        {showMetadata && currentImage && (
+          <View style={styles.metadataContainer}>
+            <ScrollView style={styles.metadataContent}>
+              <View style={styles.metadataRow}>
+                <ThemedText style={styles.metadataLabel}>
+                  {t('image.imageName')}:
+                </ThemedText>
+                <ThemedText style={styles.metadataValue}>
+                  {currentImage.name}
+                </ThemedText>
+              </View>
+              {currentImage.width > 0 && currentImage.height > 0 && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.dimensions')}:
+                  </ThemedText>
+                  <ThemedText style={styles.metadataValue}>
+                    {currentImage.width} × {currentImage.height}
+                  </ThemedText>
+                </View>
+              )}
+              {currentImage.description && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.description')}:
+                  </ThemedText>
+                  <ThemedText style={styles.metadataValue}>
+                    {currentImage.description}
+                  </ThemedText>
+                </View>
+              )}
+              {currentImage.tags && currentImage.tags.length > 0 && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.tags')}:
+                  </ThemedText>
+                  <View style={styles.tagsContainer}>
+                    {currentImage.tags.map((tag, index) => (
+                      <View key={index} style={styles.tag}>
+                        <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
 
         {/* 底部缩略图滚动条 */}
         <View style={styles.thumbnailContainer}>
@@ -254,6 +341,16 @@ export function ImageBrowser({
           </ScrollView>
         </View>
       </View>
+
+      {/* 编辑模态框 */}
+      {onUpdate && currentImage && (
+        <ImageEditModal
+          visible={editModalVisible}
+          image={currentImage}
+          onClose={() => setEditModalVisible(false)}
+          onSave={handleUpdate}
+        />
+      )}
     </Modal>
   );
 }
@@ -277,6 +374,10 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
   headerTitle: {
     color: '#fff',
@@ -323,5 +424,41 @@ const styles = StyleSheet.create({
   thumbnailOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 122, 255, 0.3)',
+  },
+  metadataContainer: {
+    maxHeight: 200,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 16,
+  },
+  metadataContent: {
+    flex: 1,
+  },
+  metadataRow: {
+    marginBottom: 12,
+  },
+  metadataLabel: {
+    color: '#999',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  metadataValue: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  tag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  tagText: {
+    color: '#fff',
+    fontSize: 14,
   },
 });
