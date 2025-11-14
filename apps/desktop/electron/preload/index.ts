@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld('upyunAPI', {
   upyunUpload: (params: any) => ipcRenderer.invoke('upyun:upload', params),
   upyunDelete: (params: any) => ipcRenderer.invoke('upyun:delete', params),
   upyunGetList: (params: any) => ipcRenderer.invoke('upyun:list', params),
+  upyunUpdateMetadata: (params: any) =>
+    ipcRenderer.invoke('upyun:updateMetadata', params),
   upyunTest: (config: any) => ipcRenderer.invoke('upyun:test', config),
 });
 

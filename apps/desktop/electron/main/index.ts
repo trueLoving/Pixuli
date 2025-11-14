@@ -68,26 +68,28 @@ function setupContentSecurityPolicy() {
   // 开发模式的 CSP（允许 Vite dev server 和 HMR）
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
   // Electron 会在开发模式下显示警告，但这是预期的行为
+  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const devCSP =
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https: http://localhost:*; " +
+    "img-src 'self' data: blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://*; " +
+    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self';";
 
   // 生产模式的 CSP（更严格，移除 unsafe-eval）
+  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const prodCSP =
     "default-src 'self'; " +
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https:; " +
+    "img-src 'self' data: blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' https:; " +
+    "connect-src 'self' https: http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +

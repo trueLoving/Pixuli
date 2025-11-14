@@ -1,17 +1,25 @@
-import { GitHubConfigModal } from '@packages/ui/src';
+import { GitHubConfigModal, UpyunConfigModal } from '@packages/ui/src';
 import {
   ChevronUp,
   ChevronDown,
   ExternalLink,
   Pencil,
   Trash2,
+  Cloud,
+  Github,
+  Plus,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FullScreenLoading } from '../../features';
 import { useI18n } from '../../i18n/useI18n';
 import Main from '../../layouts/Main/Main';
 import { useImageStore } from '../../stores/imageStore';
-import { GitHubSourceConfig, useSourceStore } from '../../stores/sourceStore';
+import {
+  GitHubSourceConfig,
+  UpyunSourceConfig,
+  SourceConfig,
+  useSourceStore,
+} from '../../stores/sourceStore';
 
 type GHForm = {
   owner: string;
@@ -28,13 +36,31 @@ const emptyGH: GHForm = {
   path: '',
 };
 
+type UpyunForm = {
+  operator: string;
+  password: string;
+  bucket: string;
+  domain: string;
+  path: string;
+};
+const emptyUpyun: UpyunForm = {
+  operator: '',
+  password: '',
+  bucket: '',
+  domain: '',
+  path: 'images',
+};
+
 export const SourceManager: React.FC = () => {
   const { t } = useI18n();
   const { sources, addSource, updateSource, removeSource, openProjectWindow } =
     useSourceStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGhModal, setShowGhModal] = useState(false);
+  const [showUpyunModal, setShowUpyunModal] = useState(false);
   const [ghConfig, setGhConfig] = useState<GHForm>(emptyGH);
+  const [upyunConfig, setUpyunConfig] = useState<UpyunForm>(emptyUpyun);
+  const [showAddMenu, setShowAddMenu] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -59,6 +85,7 @@ export const SourceManager: React.FC = () => {
     updateImage,
     clearError,
     setGitHubConfig,
+    setUpyunConfig: setImageStoreUpyunConfig,
     initializeStorage,
     loadImages,
   } = useImageStore();
@@ -70,22 +97,41 @@ export const SourceManager: React.FC = () => {
     return sources.find(s => s.id === selectedId) || null;
   }, [sources, selectedId]);
 
-  const startCreate = () => {
+  const startCreateGitHub = () => {
     setEditingId(null);
     setGhConfig(emptyGH);
     setShowGhModal(true);
+    setShowAddMenu(false);
   };
 
-  const startEdit = (source: GitHubSourceConfig) => {
+  const startCreateUpyun = () => {
+    setEditingId(null);
+    setUpyunConfig(emptyUpyun);
+    setShowUpyunModal(true);
+    setShowAddMenu(false);
+  };
+
+  const startEdit = (source: SourceConfig) => {
     setEditingId(source.id);
-    setGhConfig({
-      owner: source.owner,
-      repo: source.repo,
-      branch: source.branch,
-      token: source.token,
-      path: source.path,
-    });
-    setShowGhModal(true);
+    if (source.type === 'github') {
+      setGhConfig({
+        owner: source.owner,
+        repo: source.repo,
+        branch: source.branch,
+        token: source.token,
+        path: source.path,
+      });
+      setShowGhModal(true);
+    } else {
+      setUpyunConfig({
+        operator: source.operator,
+        password: source.password,
+        bucket: source.bucket,
+        domain: source.domain,
+        path: source.path,
+      });
+      setShowUpyunModal(true);
+    }
   };
 
   const handleSaveGh = (config: GHForm) => {
@@ -95,9 +141,30 @@ export const SourceManager: React.FC = () => {
         name: `${config.owner}/${config.repo}`,
       });
     } else {
-      addSource({ ...config, name: `${config.owner}/${config.repo}` });
+      addSource({
+        type: 'github',
+        ...config,
+        name: `${config.owner}/${config.repo}`,
+      });
     }
     setShowGhModal(false);
+    setEditingId(null);
+  };
+
+  const handleSaveUpyun = (config: UpyunForm) => {
+    if (isEditing && editingId) {
+      updateSource(editingId, {
+        ...config,
+        name: config.bucket,
+      });
+    } else {
+      addSource({
+        type: 'upyun',
+        ...config,
+        name: config.bucket,
+      });
+    }
+    setShowUpyunModal(false);
     setEditingId(null);
   };
 
@@ -117,27 +184,31 @@ export const SourceManager: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div
                     className="text-sm font-semibold text-gray-900 truncate"
-                    title={
-                      selectedSource.name ||
-                      `${selectedSource.owner}/${selectedSource.repo}`
-                    }
+                    title={selectedSource.name}
                   >
-                    {selectedSource.name ||
-                      `${selectedSource.owner}/${selectedSource.repo}`}
+                    {selectedSource.name}
                   </div>
                   <div
                     className="text-xs text-gray-500 truncate mt-0.5"
-                    title={t('sourceManager.repoLine', {
-                      owner: selectedSource.owner,
-                      repo: selectedSource.repo,
-                      branch: selectedSource.branch,
-                    })}
+                    title={
+                      selectedSource.type === 'github'
+                        ? t('sourceManager.repoLine', {
+                            owner: selectedSource.owner,
+                            repo: selectedSource.repo,
+                            branch: selectedSource.branch,
+                          })
+                        : `又拍云: ${selectedSource.bucket}`
+                    }
                   >
-                    {t('sourceManager.repoLine', {
-                      owner: selectedSource.owner,
-                      repo: selectedSource.repo,
-                      branch: selectedSource.branch,
-                    })}
+                    {selectedSource.type === 'github' ? (
+                      t('sourceManager.repoLine', {
+                        owner: selectedSource.owner,
+                        repo: selectedSource.repo,
+                        branch: selectedSource.branch,
+                      })
+                    ) : (
+                      <>又拍云: {selectedSource.bucket}</>
+                    )}
                   </div>
                 </div>
                 {images.length > 0 && (
@@ -184,14 +255,41 @@ export const SourceManager: React.FC = () => {
             <div className="text-sm font-medium">
               <span>{t('sourceManager.title')}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out hover:scale-105 active:scale-95"
-                onClick={startCreate}
-                disabled={isInitialLoading || loading}
-              >
-                {t('sourceManager.add')}
-              </button>
+            <div className="flex items-center gap-2 relative">
+              <div className="relative">
+                <button
+                  className="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 flex items-center gap-1"
+                  onClick={() => setShowAddMenu(!showAddMenu)}
+                  disabled={isInitialLoading || loading}
+                >
+                  <Plus className="w-3 h-3" />
+                  {t('sourceManager.add')}
+                </button>
+                {showAddMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowAddMenu(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-[160px]">
+                      <button
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        onClick={startCreateGitHub}
+                      >
+                        <Github className="w-4 h-4" />
+                        GitHub 仓库
+                      </button>
+                      <button
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        onClick={startCreateUpyun}
+                      >
+                        <Cloud className="w-4 h-4" />
+                        又拍云存储
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
               <button
                 className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out hover:scale-110 active:scale-95"
                 onClick={() => setIsCollapsed(true)}
@@ -222,13 +320,23 @@ export const SourceManager: React.FC = () => {
                       setIsInitialLoading(true);
                       setSelectedId(s.id);
                       try {
-                        setGitHubConfig({
-                          owner: s.owner,
-                          repo: s.repo,
-                          branch: s.branch,
-                          token: s.token,
-                          path: s.path,
-                        } as any);
+                        if (s.type === 'github') {
+                          setGitHubConfig({
+                            owner: s.owner,
+                            repo: s.repo,
+                            branch: s.branch,
+                            token: s.token,
+                            path: s.path,
+                          } as any);
+                        } else {
+                          setImageStoreUpyunConfig({
+                            operator: s.operator,
+                            password: s.password,
+                            bucket: s.bucket,
+                            domain: s.domain,
+                            path: s.path,
+                          });
+                        }
                         initializeStorage();
                         await loadImages();
                       } finally {
@@ -251,11 +359,16 @@ export const SourceManager: React.FC = () => {
                     <div className="flex-1 min-w-0 pr-4">
                       {/* 仓库名称 */}
                       <div className="flex items-center gap-2 mb-1">
+                        {s.type === 'github' ? (
+                          <Github className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        ) : (
+                          <Cloud className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        )}
                         <div
                           className="text-sm font-semibold text-gray-900 truncate"
-                          title={s.name || `${s.owner}/${s.repo}`}
+                          title={s.name}
                         >
-                          {s.name || `${s.owner}/${s.repo}`}
+                          {s.name}
                         </div>
                         {selectedId === s.id && (
                           <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
@@ -264,28 +377,57 @@ export const SourceManager: React.FC = () => {
 
                       {/* 仓库详细信息 */}
                       <div className="flex flex-col gap-1">
-                        <div
-                          className="text-xs text-gray-600 font-mono truncate"
-                          title={t('sourceManager.repoLine', {
-                            owner: s.owner,
-                            repo: s.repo,
-                            branch: s.branch,
-                          })}
-                        >
-                          {t('sourceManager.repoLine', {
-                            owner: s.owner,
-                            repo: s.repo,
-                            branch: s.branch,
-                          })}
-                        </div>
-                        {s.path && (
-                          <div
-                            className="text-xs text-gray-500 truncate flex items-center gap-1"
-                            title={s.path}
-                          >
-                            <span className="text-gray-400">路径:</span>
-                            <span>{s.path}</span>
-                          </div>
+                        {s.type === 'github' ? (
+                          <>
+                            <div
+                              className="text-xs text-gray-600 font-mono truncate"
+                              title={t('sourceManager.repoLine', {
+                                owner: s.owner,
+                                repo: s.repo,
+                                branch: s.branch,
+                              })}
+                            >
+                              {t('sourceManager.repoLine', {
+                                owner: s.owner,
+                                repo: s.repo,
+                                branch: s.branch,
+                              })}
+                            </div>
+                            {s.path && (
+                              <div
+                                className="text-xs text-gray-500 truncate flex items-center gap-1"
+                                title={s.path}
+                              >
+                                <span className="text-gray-400">路径:</span>
+                                <span>{s.path}</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div
+                              className="text-xs text-gray-600 truncate"
+                              title={`Bucket: ${s.bucket}`}
+                            >
+                              Bucket: {s.bucket}
+                            </div>
+                            <div
+                              className="text-xs text-gray-500 truncate flex items-center gap-1"
+                              title={s.domain}
+                            >
+                              <span className="text-gray-400">域名:</span>
+                              <span>{s.domain}</span>
+                            </div>
+                            {s.path && (
+                              <div
+                                className="text-xs text-gray-500 truncate flex items-center gap-1"
+                                title={s.path}
+                              >
+                                <span className="text-gray-400">路径:</span>
+                                <span>{s.path}</span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -298,17 +440,19 @@ export const SourceManager: React.FC = () => {
                           : 'opacity-0 group-hover:opacity-100'
                       }`}
                     >
-                      <button
-                        className="p-1.5 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out flex items-center justify-center"
-                        onClick={e => {
-                          e.stopPropagation();
-                          openProjectWindow(s.id);
-                        }}
-                        disabled={isInitialLoading || loading}
-                        title={t('sourceManager.openInNewWindow')}
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </button>
+                      {s.type === 'github' && (
+                        <button
+                          className="p-1.5 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out flex items-center justify-center"
+                          onClick={e => {
+                            e.stopPropagation();
+                            openProjectWindow(s.id);
+                          }}
+                          disabled={isInitialLoading || loading}
+                          title={t('sourceManager.openInNewWindow')}
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         className="p-1.5 rounded-md text-gray-600 hover:text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out flex items-center justify-center"
                         onClick={e => {
@@ -392,10 +536,29 @@ export const SourceManager: React.FC = () => {
         }}
         platform="desktop"
       />
+
+      {/* 又拍云配置弹窗（新增/编辑） */}
+      <UpyunConfigModal
+        t={t}
+        isOpen={showUpyunModal}
+        onClose={() => {
+          setShowUpyunModal(false);
+          setEditingId(null);
+        }}
+        upyunConfig={upyunConfig}
+        onSaveConfig={(cfg: any) => handleSaveUpyun(cfg)}
+        onClearConfig={() => {
+          setUpyunConfig(emptyUpyun);
+          setEditingId(null);
+          setShowUpyunModal(false);
+        }}
+        platform="desktop"
+      />
     </div>
   );
 };
 
+// http://media-12138.test.upcdn.net/images/avatar.png
 // 移除原内联表单，统一改为弹窗配置
 
 export default SourceManager;

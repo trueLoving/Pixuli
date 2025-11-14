@@ -4,7 +4,7 @@ import {
   LanguageSwitcher,
   UpyunConfigModal,
 } from '@packages/ui/src';
-import { FileText, HelpCircle, Info } from 'lucide-react';
+import { FileText, HelpCircle, Info, Settings } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import {
   AIAnalysisModal,
@@ -248,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             )} */}
             {/* 又拍云配置 */}
-            {/* {storageType === 'upyun' && upyunConfig && (
+            {storageType === 'upyun' && upyunConfig && (
               <button
                 onClick={handleOpenUpyunConfigModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded"
@@ -256,7 +256,7 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <Settings className="w-5 h-5" />
               </button>
-            )} */}
+            )}
             {/* 刷新按钮 */}
             {/* <button
               onClick={onLoadImages}
