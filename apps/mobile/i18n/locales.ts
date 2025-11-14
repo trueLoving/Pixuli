@@ -28,6 +28,13 @@ export const mobileLocales = {
         enUS: '英语',
         current: '当前语言',
       },
+      theme: {
+        title: '外观',
+        light: '浅色',
+        dark: '深色',
+        auto: '跟随系统',
+        current: '当前外观',
+      },
       github: {
         title: 'GitHub 配置',
         notConfigured: '未配置',
@@ -153,6 +160,13 @@ export const mobileLocales = {
         zhCN: 'Simplified Chinese',
         enUS: 'English',
         current: 'Current language',
+      },
+      theme: {
+        title: 'Appearance',
+        light: 'Light',
+        dark: 'Dark',
+        auto: 'System',
+        current: 'Current appearance',
       },
       github: {
         title: 'GitHub Configuration',

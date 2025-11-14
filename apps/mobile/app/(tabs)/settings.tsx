@@ -5,7 +5,11 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useI18n, useInitLanguage } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import {
+  useColorScheme,
+  useThemeMode,
+  setThemeMode,
+} from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';
 
 type IconName =
@@ -37,6 +41,12 @@ export default function SettingsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const { githubConfig, storageType } = useImageStore();
+  const currentThemeMode = useThemeMode();
+
+  // 切换主题
+  const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
+    await setThemeMode(mode);
+  };
 
   // 确保翻译已加载
   if (!isReady) {
@@ -150,6 +160,82 @@ export default function SettingsScreen() {
                 />
               </TouchableOpacity>
             ))}
+          </View>
+        </View>
+
+        {/* 外观分组 */}
+        <View style={styles.section}>
+          <ThemedText style={dynamicStyles.sectionTitle}>
+            {t('settings.theme.title')}
+          </ThemedText>
+          <View style={dynamicStyles.groupContainer}>
+            {[
+              {
+                mode: 'light' as const,
+                label: t('settings.theme.light'),
+                icon: 'sun.max.fill',
+              },
+              {
+                mode: 'dark' as const,
+                label: t('settings.theme.dark'),
+                icon: 'moon.fill',
+              },
+              {
+                mode: 'auto' as const,
+                label: t('settings.theme.auto'),
+                icon: 'circle.lefthalf.filled',
+              },
+            ].map((theme, index) => {
+              const isSelected = currentThemeMode === theme.mode;
+              return (
+                <TouchableOpacity
+                  key={theme.mode}
+                  style={[
+                    dynamicStyles.settingItem,
+                    index === 0 && styles.settingItemFirst,
+                    index === 2 && styles.settingItemLast,
+                    isSelected && dynamicStyles.settingItemSelected,
+                  ]}
+                  onPress={() => handleThemeChange(theme.mode)}
+                  activeOpacity={0.6}
+                >
+                  <View style={styles.settingItemLeft}>
+                    <View style={dynamicStyles.iconContainer}>
+                      <IconSymbol
+                        name={theme.icon as any}
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <View style={styles.settingItemContent}>
+                      <ThemedText style={dynamicStyles.settingItemTitle}>
+                        {theme.label}
+                      </ThemedText>
+                      {isSelected && (
+                        <ThemedText
+                          style={dynamicStyles.settingItemDescription}
+                        >
+                          {t('settings.theme.current')}
+                        </ThemedText>
+                      )}
+                    </View>
+                  </View>
+                  {isSelected ? (
+                    <IconSymbol
+                      name="checkmark.circle.fill"
+                      size={22}
+                      color="#34C759"
+                    />
+                  ) : (
+                    <IconSymbol
+                      name="chevron.right"
+                      size={18}
+                      color={colors.sectionTitle}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 

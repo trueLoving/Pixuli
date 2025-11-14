@@ -266,8 +266,8 @@ export default function GitHubSettingsScreen() {
       padding: 8,
     },
     title: {
-      fontSize: 17,
-      fontWeight: '600',
+      fontSize: 20,
+      fontWeight: '700',
       flex: 1,
       textAlign: 'center',
       color: colors.text,
@@ -277,125 +277,73 @@ export default function GitHubSettingsScreen() {
     },
     content: {
       flex: 1,
-      paddingTop: 8,
     },
     form: {
       paddingHorizontal: 16,
       paddingTop: 16,
+      paddingBottom: 8,
     },
     groupContainer: {
-      backgroundColor: colors.cardBackground,
-      borderRadius: 10,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
       overflow: 'hidden',
       shadowColor: '#000',
       shadowOffset: {
         width: 0,
-        height: 0.5,
+        height: 1,
       },
-      shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.05,
-      shadowRadius: 1,
-      elevation: 1,
+      shadowOpacity: colorScheme === 'dark' ? 0.2 : 0.08,
+      shadowRadius: 3,
+      elevation: 2,
     },
     field: {
-      paddingVertical: 12,
+      paddingVertical: 16,
       paddingHorizontal: 16,
       borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.cardBorder,
+      borderBottomColor: colorScheme === 'dark' ? '#38383A' : '#E5E5E5',
     },
     fieldFirst: {
-      borderTopLeftRadius: 10,
-      borderTopRightRadius: 10,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
     },
     fieldLast: {
       borderBottomWidth: 0,
-      borderBottomLeftRadius: 10,
-      borderBottomRightRadius: 10,
+      borderBottomLeftRadius: 12,
+      borderBottomRightRadius: 12,
     },
     label: {
-      fontSize: 13,
-      fontWeight: '400',
-      color: colors.sectionTitle,
-      textTransform: 'uppercase',
-      letterSpacing: -0.08,
-      marginBottom: 8,
+      fontSize: 14,
+      fontWeight: '600',
+      color: colorScheme === 'dark' ? '#FFFFFF' : '#333333',
+      marginBottom: 10,
     },
     input: {
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: '400',
       color: colors.text,
-      backgroundColor: 'transparent',
-      paddingVertical: 4,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: colorScheme === 'dark' ? '#38383A' : '#DDDDDD',
+      borderRadius: 8,
+      minHeight: 44,
     },
     hint: {
-      fontSize: 13,
-      color: colors.sectionTitle,
-      marginTop: 8,
-    },
-    actionButtons: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 8,
-    },
-    actionButtonsGroup: {
-      backgroundColor: colors.cardBackground,
-      borderRadius: 10,
-      overflow: 'hidden',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 0.5,
-      },
-      shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.05,
-      shadowRadius: 1,
-      elevation: 1,
-    },
-    actionButton: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      minHeight: 50,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: colors.cardBorder,
-      backgroundColor: colors.cardBackground,
-      gap: 8,
-    },
-    actionButtonFirst: {
-      borderTopLeftRadius: 10,
-      borderTopRightRadius: 10,
-    },
-    actionButtonLast: {
-      borderBottomWidth: 0,
-      borderBottomLeftRadius: 10,
-      borderBottomRightRadius: 10,
-    },
-    actionButtonText: {
-      color: colors.primary,
-      fontSize: 17,
-      fontWeight: '400',
+      fontSize: 12,
+      color: colorScheme === 'dark' ? '#8E8E93' : '#666666',
+      marginTop: 6,
+      lineHeight: 16,
     },
     footer: {
       flexDirection: 'row',
       paddingHorizontal: 16,
-      paddingTop: 8,
-      paddingBottom: 16,
-      gap: 12,
-    },
-    footerButtonsGroup: {
-      flex: 1,
-      backgroundColor: colors.cardBackground,
-      borderRadius: 10,
-      overflow: 'hidden',
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 0.5,
-      },
-      shadowOpacity: colorScheme === 'dark' ? 0.3 : 0.05,
-      shadowRadius: 1,
-      elevation: 1,
+      paddingTop: 12,
+      paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+      gap: 10,
+      backgroundColor: colors.background,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.cardBorder,
     },
     button: {
       flex: 1,
@@ -403,22 +351,35 @@ export default function GitHubSettingsScreen() {
       minHeight: 50,
       alignItems: 'center',
       justifyContent: 'center',
+      borderRadius: 10,
+    },
+    importButton: {
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderWidth: 1,
+      borderColor: '#007AFF',
+    },
+    importButtonText: {
+      color: '#007AFF',
+      fontSize: 16,
+      fontWeight: '600',
     },
     saveButton: {
-      backgroundColor: colors.primary,
+      backgroundColor: '#007AFF',
     },
     saveButtonText: {
       color: '#FFFFFF',
-      fontSize: 17,
+      fontSize: 16,
       fontWeight: '600',
     },
     clearButton: {
-      backgroundColor: colors.cardBackground,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderWidth: 1,
+      borderColor: '#FF3B30',
     },
     clearButtonText: {
       color: '#FF3B30',
-      fontSize: 17,
-      fontWeight: '400',
+      fontSize: 16,
+      fontWeight: '600',
     },
   });
 
@@ -466,6 +427,7 @@ export default function GitHubSettingsScreen() {
       <ScrollView
         style={dynamicStyles.content}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 16 }}
       >
         <View style={dynamicStyles.form}>
           <View style={dynamicStyles.groupContainer}>
@@ -496,7 +458,7 @@ export default function GitHubSettingsScreen() {
                             ? t('settings.github.tokenPlaceholder')
                             : t('settings.github.pathPlaceholder')
                   }
-                  placeholderTextColor={colors.sectionTitle}
+                  placeholderTextColor="#999999"
                   secureTextEntry={field.secure}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -512,75 +474,37 @@ export default function GitHubSettingsScreen() {
         </View>
       </ScrollView>
 
-      {/* 导入导出按钮组 */}
-      <View style={dynamicStyles.actionButtons}>
-        <View style={dynamicStyles.actionButtonsGroup}>
-          <TouchableOpacity
-            style={[
-              dynamicStyles.actionButton,
-              !githubConfig && dynamicStyles.actionButtonFirst,
-              !githubConfig && dynamicStyles.actionButtonLast,
-            ]}
-            onPress={handleImportConfig}
-            activeOpacity={0.6}
-          >
-            <IconSymbol
-              name="arrow.up.circle"
-              size={20}
-              color={colors.primary}
-            />
-            <ThemedText style={dynamicStyles.actionButtonText}>
-              {t('settings.github.import')}
-            </ThemedText>
-          </TouchableOpacity>
-          {githubConfig && (
-            <TouchableOpacity
-              style={[
-                dynamicStyles.actionButton,
-                dynamicStyles.actionButtonLast,
-              ]}
-              onPress={handleExportConfig}
-              activeOpacity={0.6}
-            >
-              <IconSymbol
-                name="arrow.down.circle"
-                size={20}
-                color={colors.primary}
-              />
-              <ThemedText style={dynamicStyles.actionButtonText}>
-                {t('settings.github.export')}
-              </ThemedText>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
       {/* 底部操作按钮组 */}
       <View style={dynamicStyles.footer}>
+        <TouchableOpacity
+          style={[dynamicStyles.button, dynamicStyles.importButton]}
+          onPress={handleImportConfig}
+          activeOpacity={0.7}
+        >
+          <ThemedText style={dynamicStyles.importButtonText}>
+            {t('settings.github.import')}
+          </ThemedText>
+        </TouchableOpacity>
         {githubConfig && (
-          <View style={dynamicStyles.footerButtonsGroup}>
-            <TouchableOpacity
-              style={dynamicStyles.button}
-              onPress={handleClear}
-              activeOpacity={0.6}
-            >
-              <ThemedText style={dynamicStyles.clearButtonText}>
-                {t('settings.github.clear')}
-              </ThemedText>
-            </TouchableOpacity>
-          </View>
-        )}
-        <View style={dynamicStyles.footerButtonsGroup}>
           <TouchableOpacity
-            style={[dynamicStyles.button, dynamicStyles.saveButton]}
-            onPress={handleSave}
-            activeOpacity={0.8}
+            style={[dynamicStyles.button, dynamicStyles.clearButton]}
+            onPress={handleClear}
+            activeOpacity={0.7}
           >
-            <ThemedText style={dynamicStyles.saveButtonText}>
-              {t('common.save')}
+            <ThemedText style={dynamicStyles.clearButtonText}>
+              {t('settings.github.clear')}
             </ThemedText>
           </TouchableOpacity>
-        </View>
+        )}
+        <TouchableOpacity
+          style={[dynamicStyles.button, dynamicStyles.saveButton]}
+          onPress={handleSave}
+          activeOpacity={0.8}
+        >
+          <ThemedText style={dynamicStyles.saveButtonText}>
+            {t('common.save')}
+          </ThemedText>
+        </TouchableOpacity>
       </View>
     </ThemedView>
   );

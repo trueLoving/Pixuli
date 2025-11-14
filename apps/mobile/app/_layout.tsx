@@ -1,4 +1,4 @@
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme, initTheme } from '@/hooks/useColorScheme';
 import '@/i18n';
 import { useImageStore } from '@/stores/imageStore';
 import {
@@ -20,6 +20,8 @@ export default function RootLayout() {
   const initialize = useImageStore(state => state.initialize);
 
   useEffect(() => {
+    // 初始化主题
+    initTheme();
     // 初始化图片存储
     initialize();
   }, [initialize]);

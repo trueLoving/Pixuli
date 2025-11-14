@@ -29,6 +29,12 @@ const MAPPING = {
   'info.circle': 'info',
   'info.circle.fill': 'info',
   trash: 'delete',
+  'sun.max.fill': 'wb-sunny',
+  'moon.fill': 'nightlight-round',
+  'circle.lefthalf.filled': 'brightness-6',
+  'checkmark.circle.fill': 'check-circle',
+  'arrow.up.circle': 'arrow-circle-up',
+  'arrow.down.circle': 'arrow-circle-down',
 } as IconMapping;
 
 /**
