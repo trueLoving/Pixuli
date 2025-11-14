@@ -1,3 +1,4 @@
+// TODO: 压缩：不修改图片格式，只对文件大小做调整
 import { Toaster } from '@packages/ui/src';
 import React, { useEffect, useState } from 'react';
 import { ImageCompression } from '../../features';

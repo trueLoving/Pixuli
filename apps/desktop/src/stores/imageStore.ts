@@ -466,17 +466,19 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        const metadata = {
+        // 构建完整的元数据对象（包含所有 ImageItem 属性）
+        const metadata: ImageItem = {
+          ...image,
           name: editData.name || image.name,
-          description: editData.description || image.description,
-          tags: editData.tags || image.tags,
+          description: editData.description ?? image.description,
+          tags: editData.tags ?? image.tags,
           updatedAt: new Date().toISOString(),
         };
 
         // 传递旧文件名用于重命名检测
         await storageService.updateImageInfo(
           editData.id,
-          image.name,
+          metadata.name,
           metadata,
           image.name
         );

@@ -58,7 +58,7 @@ export const ProjectPage: React.FC = () => {
   useEffect(() => {
     if (!projectSourceId) return;
     const src = sourceStore.getSourceById(projectSourceId);
-    if (src) {
+    if (src && src.type === 'github') {
       setGitHubConfig({
         owner: src.owner,
         repo: src.repo,
@@ -66,8 +66,16 @@ export const ProjectPage: React.FC = () => {
         token: src.token,
         path: src.path,
       } as any);
+    } else if (src && src.type === 'upyun') {
+      setUpyunConfig({
+        operator: src.operator,
+        password: src.password,
+        bucket: src.bucket,
+        domain: src.domain,
+        path: src.path,
+      });
     }
-  }, [projectSourceId, sourceStore, setGitHubConfig]);
+  }, [projectSourceId, sourceStore, setGitHubConfig, setUpyunConfig]);
 
   // 初始化存储服务
   useEffect(() => {

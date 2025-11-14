@@ -8,18 +8,15 @@ import {
   Cloud,
   Github,
   Plus,
+  FolderPlus,
+  MousePointerClick,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FullScreenLoading } from '../../features';
 import { useI18n } from '../../i18n/useI18n';
 import Main from '../../layouts/Main/Main';
 import { useImageStore } from '../../stores/imageStore';
-import {
-  GitHubSourceConfig,
-  UpyunSourceConfig,
-  SourceConfig,
-  useSourceStore,
-} from '../../stores/sourceStore';
+import { SourceConfig, useSourceStore } from '../../stores/sourceStore';
 
 type GHForm = {
   owner: string;
@@ -228,8 +225,10 @@ export const SourceManager: React.FC = () => {
             </>
           ) : (
             <>
-              <div className="flex-1 text-sm text-gray-400">
-                {t('sourceManager.empty')}
+              <div className="flex-1 text-sm text-gray-500">
+                {sources.length === 0
+                  ? t('sourceManager.emptyTitle')
+                  : t('sourceManager.selectSourceTitle')}
               </div>
               <button
                 className="p-2 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out hover:scale-110 active:scale-95 flex-shrink-0"
@@ -303,8 +302,25 @@ export const SourceManager: React.FC = () => {
 
           <div className="overflow-y-auto max-h-[400px] px-3 pb-3">
             {sources.length === 0 ? (
-              <div className="text-center text-gray-500 text-xs py-8">
-                {t('sourceManager.empty')}
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <div className="p-4 bg-gray-100 rounded-full mb-4">
+                  <FolderPlus className="w-8 h-8 text-gray-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    {t('sourceManager.emptyTitle')}
+                  </p>
+                  <p className="text-xs text-gray-500 mb-4">
+                    {t('sourceManager.empty')}
+                  </p>
+                  <button
+                    onClick={() => setShowAddMenu(true)}
+                    className="px-4 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isInitialLoading || loading}
+                  >
+                    {t('sourceManager.add')}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-2">
@@ -506,8 +522,45 @@ export const SourceManager: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-gray-400 text-sm fade-in-soft">
-              {t('sourceManager.empty')}
+            <div className="h-full flex items-center justify-center fade-in-soft">
+              <div className="flex flex-col items-center justify-center px-8 text-center max-w-md">
+                {sources.length === 0 ? (
+                  <>
+                    <div className="p-4 bg-gray-100 rounded-full mb-4">
+                      <FolderPlus className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-700 mb-2">
+                      {t('sourceManager.emptyTitle')}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                      {t('sourceManager.empty')}
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsCollapsed(false);
+                        setShowAddMenu(true);
+                      }}
+                      className="px-6 py-2.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      disabled={isInitialLoading || loading}
+                    >
+                      <Plus className="w-4 h-4" />
+                      {t('sourceManager.add')}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-4 bg-blue-50 rounded-full mb-4">
+                      <MousePointerClick className="w-10 h-10 text-blue-400" />
+                    </div>
+                    <h3 className="text-base font-medium text-gray-700 mb-2">
+                      {t('sourceManager.selectSourceTitle')}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {t('sourceManager.selectSource')}
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -558,7 +611,6 @@ export const SourceManager: React.FC = () => {
   );
 };
 
-// http://media-12138.test.upcdn.net/images/avatar.png
 // 移除原内联表单，统一改为弹窗配置
 
 export default SourceManager;
