@@ -30,5 +30,11 @@ tempfile = "3.0"
 image = { version = "0.24", features = ["jpeg", "png", "gif", "bmp", "tiff"] }
 
 [profile.release]
-lto = true
+# 使用 "thin" LTO 而不是 "fat" LTO，构建速度更快，性能损失很小
+lto = "thin"
 strip = "symbols"
+# 优化级别：3 是最高优化，但构建时间最长
+# 可以考虑使用 "z" 或 "s" 来优化二进制大小，但这里保持 3 以获得最佳性能
+opt-level = 3
+# 启用代码生成优化
+codegen-units = 1

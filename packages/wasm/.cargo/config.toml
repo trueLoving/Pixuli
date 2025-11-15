@@ -1,2 +1,11 @@
 [target.x86_64-pc-windows-msvc]
 rustflags = ["-C", "target-feature=+crt-static"]
+
+[build]
+# 启用增量编译（在 CI 中也可以使用，配合 sccache 效果更好）
+# Cargo 默认会使用所有可用的 CPU 核心进行并行编译，无需手动设置 jobs
+incremental = true
+
+# 使用更快的链接器（如果可用）
+# Linux: mold 或 lld
+# macOS/Windows: lld

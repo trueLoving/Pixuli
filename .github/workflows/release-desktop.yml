@@ -7,11 +7,26 @@ on:
         description: '发布版本 (例如: 1.0.0)'
         required: true
         default: '1.0.0'
+      platform:
+        description: '选择要发布的平台'
+        required: true
+        type: choice
+        options:
+          - win
+          - mac-x64
+          - mac-arm64
+          - linux
+          - all
+        default: all
       is-publish:
         description: '是否进行发布操作'
         required: false
         default: 'true'
         type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -21,35 +36,66 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  build-and-release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: win
-            artifact_name: win
-            file_extensions: '.exe'
-            arch: x64
-          - os: macos-latest
-            platform: mac-x64
-            artifact_name: mac-x64
-            file_extensions: '.dmg'
-            arch: x64
-          - os: macos-latest
-            platform: mac-arm64
-            artifact_name: mac-arm64
-            file_extensions: '.dmg'
-            arch: arm64
-          - os: ubuntu-latest
-            platform: linux
-            artifact_name: linux
-            file_extensions: '.AppImage'
-            arch: x64
+  detect:
+    name: 检测输入参数
+    runs-on: ubuntu-latest
+    outputs:
+      do_win: ${{ steps.set.outputs.do_win }}
+      do_mac_x64: ${{ steps.set.outputs.do_mac_x64 }}
+      do_mac_arm64: ${{ steps.set.outputs.do_mac_arm64 }}
+      do_linux: ${{ steps.set.outputs.do_linux }}
+      target_branch: ${{ steps.set.outputs.target_branch }}
+      version: ${{ steps.set.outputs.version }}
+      is_publish: ${{ steps.set.outputs.is_publish }}
+    steps:
+      - name: 解析输入参数
+        id: set
+        shell: bash
+        run: |
+          PLATFORM="${{ github.event.inputs.platform }}"
+          BRANCH="${{ github.ref_name }}"
+          VERSION="${{ github.event.inputs.version }}"
+          IS_PUBLISH="${{ github.event.inputs.is-publish }}"
 
+          DO_WIN=false
+          DO_MAC_X64=false
+          DO_MAC_ARM64=false
+          DO_LINUX=false
+
+          if [[ "$PLATFORM" == "win" || "$PLATFORM" == "all" ]]; then DO_WIN=true; fi
+          if [[ "$PLATFORM" == "mac-x64" || "$PLATFORM" == "all" ]]; then DO_MAC_X64=true; fi
+          if [[ "$PLATFORM" == "mac-arm64" || "$PLATFORM" == "all" ]]; then DO_MAC_ARM64=true; fi
+          if [[ "$PLATFORM" == "linux" || "$PLATFORM" == "all" ]]; then DO_LINUX=true; fi
+
+          echo "do_win=$DO_WIN" >> $GITHUB_OUTPUT
+          echo "do_mac_x64=$DO_MAC_X64" >> $GITHUB_OUTPUT
+          echo "do_mac_arm64=$DO_MAC_ARM64" >> $GITHUB_OUTPUT
+          echo "do_linux=$DO_LINUX" >> $GITHUB_OUTPUT
+          echo "target_branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is_publish=$IS_PUBLISH" >> $GITHUB_OUTPUT
+
+          echo "=== 检测结果 ==="
+          echo "平台选择: $PLATFORM"
+          echo "目标分支: $BRANCH"
+          echo "版本号: $VERSION"
+          echo "是否发布: $IS_PUBLISH"
+          echo "构建 Windows: $DO_WIN"
+          echo "构建 macOS x64: $DO_MAC_X64"
+          echo "构建 macOS ARM64: $DO_MAC_ARM64"
+          echo "构建 Linux: $DO_LINUX"
+          echo "================"
+
+  build-win:
+    name: 构建 Windows
+    needs: detect
+    if: needs.detect.outputs.do_win == 'true'
+    runs-on: windows-latest
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.target_branch }}
 
       - name: 设置 Node.js
         uses: actions/setup-node@v4
@@ -61,27 +107,63 @@ jobs:
         with:
           version: 10
 
+      - name: 获取 pnpm store 目录
+        shell: bash
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: 安装 Rust 工具链
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-pc-windows-msvc,x86_64-apple-darwin,aarch64-apple-darwin,x86_64-unknown-linux-gnu
+          targets: x86_64-pc-windows-msvc
+
+      - name: 设置 Rust/Cargo 缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: 安装 sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: 设置 Cargo target 目录缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/wasm/target/
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('packages/wasm/Cargo.lock', 'packages/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
 
       - name: 显示发布配置
         shell: bash
         run: |
           echo "=== 发布配置信息 ==="
-          echo "版本号: ${{ github.event.inputs.version }}"
-          echo "是否发布: ${{ github.event.inputs.is-publish }}"
-          echo "操作系统: ${{ matrix.os }}"
-          echo "平台: ${{ matrix.platform }}"
+          echo "版本号: ${{ needs.detect.outputs.version }}"
+          echo "目标分支: ${{ needs.detect.outputs.target_branch }}"
+          echo "平台: Windows x64"
           echo "=================="
 
       - name: 提取版本号
         id: version
         shell: bash
         run: |
-          # 从手动输入获取版本号
-          VERSION=${{ github.event.inputs.version }}
+          VERSION="${{ needs.detect.outputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
@@ -90,7 +172,6 @@ jobs:
       - name: 使用 pnpm version 更新版本号
         shell: bash
         run: |
-          # 检查并更新版本号（支持相同版本号重复发布）
           cd apps/desktop
           CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
           TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
@@ -110,98 +191,41 @@ jobs:
 
       - name: 安装依赖
         shell: bash
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: 构建 WASM 模块
         shell: bash
         run: |
-          # 根据平台构建对应的 WASM 模块
-          echo "构建 WASM 模块 - 平台: ${{ matrix.platform }}"
-
+          echo "构建 Windows x64 WASM 模块"
           cd packages/wasm
-
-          if [ "${{ matrix.platform }}" = "win" ]; then
-            echo "构建 Windows x64 WASM 模块"
+          # 尝试使用 sccache，如果失败则自动降级到标准构建
+          export RUSTC_WRAPPER=sccache
+          npx napi build --target x86_64-pc-windows-msvc --platform --release || {
+            echo "⚠️ sccache 构建失败，降级到标准构建（不使用缓存）"
+            unset RUSTC_WRAPPER
             npx napi build --target x86_64-pc-windows-msvc --platform --release
-          elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
-            echo "构建 macOS x64 WASM 模块"
-            npx napi build --target x86_64-apple-darwin --platform --release
-          elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
-            echo "构建 macOS ARM64 WASM 模块"
-            npx napi build --target aarch64-apple-darwin --platform --release
-          elif [ "${{ matrix.platform }}" = "linux" ]; then
-            echo "构建 Linux x64 WASM 模块"
-            npx napi build --target x86_64-unknown-linux-gnu --platform --release
-          else
-            echo "错误: 未知的平台 ${{ matrix.platform }}"
-            exit 1
-          fi
-
+          }
           echo "WASM 模块构建完成"
+        env:
+          SCCACHE_GHA_ENABLED: 'true'
+          RUST_BACKTRACE: '1'
+          SCCACHE_NO_DAEMON: '1'
 
       - name: 验证 WASM 模块
         shell: bash
         run: |
           echo "=== 验证 WASM 模块构建结果 ==="
-          echo "平台: ${{ matrix.platform }}"
-          echo "操作系统: $RUNNER_OS"
-
-          # 根据平台确定期望的二进制文件名
-          case "${{ matrix.platform }}" in
-            "win")
-              expected_file="pixuli-wasm.win32-x64-msvc.node"
-              ;;
-            "mac-x64")
-              expected_file="pixuli-wasm.darwin-x64.node"
-              ;;
-            "mac-arm64")
-              expected_file="pixuli-wasm.darwin-arm64.node"
-              ;;
-            "linux")
-              expected_file="pixuli-wasm.linux-x64-gnu.node"
-              ;;
-            *)
-              echo "错误: 未知的平台 ${{ matrix.platform }}"
-              exit 1
-              ;;
-          esac
-
+          expected_file="pixuli-wasm.win32-x64-msvc.node"
           echo "期望的二进制文件: $expected_file"
 
-          # 检查 WASM 二进制文件
-          echo "检查 WASM 二进制文件:"
-          if [ -d "packages/wasm" ]; then
-            echo "WASM 目录存在，查找 .node 文件:"
-            find packages/wasm -name "*.node" -type f 2>/dev/null || echo "未找到 .node 文件"
-
-            # 检查期望的文件是否存在
-            if [ -f "packages/wasm/$expected_file" ]; then
-              echo "✅ 找到期望的二进制文件: $expected_file"
-              echo "文件详细信息:"
-              ls -la "packages/wasm/$expected_file"
-
-              # 检查文件架构（在支持 file 命令的系统上）
-              if command -v file >/dev/null 2>&1; then
-                echo "架构信息:"
-                file "packages/wasm/$expected_file" 2>/dev/null || echo "无法检查文件架构"
-              fi
-            else
-              echo "❌ 未找到期望的二进制文件: $expected_file"
-              echo "当前目录中的所有 .node 文件:"
-              ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
-              exit 1
-            fi
-
-            # 检查 package.json 中的 targets 配置
-            echo "检查 package.json 中的 targets 配置:"
-            if [ -f "packages/wasm/package.json" ]; then
-              grep -A 10 '"targets"' packages/wasm/package.json || echo "未找到 targets 配置"
-            fi
+          if [ -f "packages/wasm/$expected_file" ]; then
+            echo "✅ 找到期望的二进制文件: $expected_file"
+            ls -la "packages/wasm/$expected_file"
           else
-            echo "错误: packages/wasm 目录不存在"
+            echo "❌ 未找到期望的二进制文件: $expected_file"
+            ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
             exit 1
           fi
-
           echo "=== WASM 模块验证完成 ==="
 
       - name: 构建前端资源
@@ -214,32 +238,524 @@ jobs:
       - name: 构建桌面应用
         shell: bash
         run: |
-          # 根据平台和架构构建对应的桌面应用
+          echo "构建 Windows x64 桌面应用"
           cd apps/desktop
-
-          if [ "${{ matrix.platform }}" = "win" ]; then
-            echo "构建 Windows x64 桌面应用"
-            npx electron-builder --win --x64
-          elif [ "${{ matrix.platform }}" = "mac-x64" ]; then
-            echo "构建 macOS x64 桌面应用"
-            npx electron-builder --mac --x64
-          elif [ "${{ matrix.platform }}" = "mac-arm64" ]; then
-            echo "构建 macOS ARM64 桌面应用"
-            npx electron-builder --mac --arm64
-          elif [ "${{ matrix.platform }}" = "linux" ]; then
-            echo "构建 Linux x64 桌面应用"
-            npx electron-builder --linux --x64
-          fi
+          npx electron-builder --win --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传构建产物
         uses: actions/upload-artifact@v4
         with:
-          name: pixuli-desktop-${{ matrix.artifact_name }}-v${{ steps.version.outputs.VERSION }}
+          name: pixuli-desktop-win-v${{ steps.version.outputs.VERSION }}
           path: |
             apps/desktop/release/*.exe
+            !apps/desktop/release/*.blockmap
+            !apps/desktop/release/*.yml
+            !apps/desktop/release/*.map
+          retention-days: 30
+
+  build-mac-x64:
+    name: 构建 macOS x64
+    needs: detect
+    if: needs.detect.outputs.do_mac_x64 == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.target_branch }}
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 获取 pnpm store 目录
+        shell: bash
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: 设置 Rust/Cargo 缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: 安装 sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: 设置 Cargo target 目录缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/wasm/target/
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('packages/wasm/Cargo.lock', 'packages/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
+
+      - name: 显示发布配置
+        shell: bash
+        run: |
+          echo "=== 发布配置信息 ==="
+          echo "版本号: ${{ needs.detect.outputs.version }}"
+          echo "目标分支: ${{ needs.detect.outputs.target_branch }}"
+          echo "平台: macOS x64"
+          echo "=================="
+
+      - name: 提取版本号
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ needs.detect.outputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
+
+      - name: 使用 pnpm version 更新版本号
+        shell: bash
+        run: |
+          cd apps/desktop
+          CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "当前版本号: $CURRENT_VERSION"
+          echo "目标版本号: $TARGET_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "版本号不同，更新版本号为: $TARGET_VERSION"
+            pnpm version $TARGET_VERSION --no-git-tag-version
+          else
+            echo "版本号相同，跳过更新（支持重复发布）"
+          fi
+
+          echo "当前 package.json 中的版本号:"
+          grep '"version"' package.json
+
+      - name: 安装依赖
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 WASM 模块
+        shell: bash
+        run: |
+          echo "构建 macOS x64 WASM 模块"
+          cd packages/wasm
+          # 尝试使用 sccache，如果失败则自动降级到标准构建
+          export RUSTC_WRAPPER=sccache
+          npx napi build --target x86_64-apple-darwin --platform --release || {
+            echo "⚠️ sccache 构建失败，降级到标准构建（不使用缓存）"
+            unset RUSTC_WRAPPER
+            npx napi build --target x86_64-apple-darwin --platform --release
+          }
+          echo "WASM 模块构建完成"
+        env:
+          SCCACHE_GHA_ENABLED: 'true'
+          RUST_BACKTRACE: '1'
+          SCCACHE_NO_DAEMON: '1'
+
+      - name: 验证 WASM 模块
+        shell: bash
+        run: |
+          echo "=== 验证 WASM 模块构建结果 ==="
+          expected_file="pixuli-wasm.darwin-x64.node"
+          echo "期望的二进制文件: $expected_file"
+
+          if [ -f "packages/wasm/$expected_file" ]; then
+            echo "✅ 找到期望的二进制文件: $expected_file"
+            ls -la "packages/wasm/$expected_file"
+          else
+            echo "❌ 未找到期望的二进制文件: $expected_file"
+            ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
+            exit 1
+          fi
+          echo "=== WASM 模块验证完成 ==="
+
+      - name: 构建前端资源
+        shell: bash
+        run: |
+          echo "构建前端资源 (TypeScript & Vite)"
+          cd apps/desktop
+          pnpm run build:web
+
+      - name: 构建桌面应用
+        shell: bash
+        run: |
+          echo "构建 macOS x64 桌面应用"
+          cd apps/desktop
+          npx electron-builder --mac --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }}
+          path: |
             apps/desktop/release/*.dmg
+            !apps/desktop/release/*.blockmap
+            !apps/desktop/release/*.yml
+            !apps/desktop/release/*.map
+          retention-days: 30
+
+  build-mac-arm64:
+    name: 构建 macOS ARM64
+    needs: detect
+    if: needs.detect.outputs.do_mac_arm64 == 'true'
+    runs-on: macos-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.target_branch }}
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 获取 pnpm store 目录
+        shell: bash
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: 设置 Rust/Cargo 缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: 安装 sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: 设置 Cargo target 目录缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/wasm/target/
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('packages/wasm/Cargo.lock', 'packages/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
+
+      - name: 显示发布配置
+        shell: bash
+        run: |
+          echo "=== 发布配置信息 ==="
+          echo "版本号: ${{ needs.detect.outputs.version }}"
+          echo "目标分支: ${{ needs.detect.outputs.target_branch }}"
+          echo "平台: macOS ARM64"
+          echo "=================="
+
+      - name: 提取版本号
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ needs.detect.outputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
+
+      - name: 使用 pnpm version 更新版本号
+        shell: bash
+        run: |
+          cd apps/desktop
+          CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "当前版本号: $CURRENT_VERSION"
+          echo "目标版本号: $TARGET_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "版本号不同，更新版本号为: $TARGET_VERSION"
+            pnpm version $TARGET_VERSION --no-git-tag-version
+          else
+            echo "版本号相同，跳过更新（支持重复发布）"
+          fi
+
+          echo "当前 package.json 中的版本号:"
+          grep '"version"' package.json
+
+      - name: 安装依赖
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 WASM 模块
+        shell: bash
+        run: |
+          echo "构建 macOS ARM64 WASM 模块"
+          cd packages/wasm
+          # 尝试使用 sccache，如果失败则自动降级到标准构建
+          export RUSTC_WRAPPER=sccache
+          npx napi build --target aarch64-apple-darwin --platform --release || {
+            echo "⚠️ sccache 构建失败，降级到标准构建（不使用缓存）"
+            unset RUSTC_WRAPPER
+            npx napi build --target aarch64-apple-darwin --platform --release
+          }
+          echo "WASM 模块构建完成"
+        env:
+          SCCACHE_GHA_ENABLED: 'true'
+          RUST_BACKTRACE: '1'
+          SCCACHE_NO_DAEMON: '1'
+
+      - name: 验证 WASM 模块
+        shell: bash
+        run: |
+          echo "=== 验证 WASM 模块构建结果 ==="
+              expected_file="pixuli-wasm.darwin-arm64.node"
+          echo "期望的二进制文件: $expected_file"
+
+            if [ -f "packages/wasm/$expected_file" ]; then
+              echo "✅ 找到期望的二进制文件: $expected_file"
+              ls -la "packages/wasm/$expected_file"
+            else
+              echo "❌ 未找到期望的二进制文件: $expected_file"
+              ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
+              exit 1
+            fi
+          echo "=== WASM 模块验证完成 ==="
+
+      - name: 构建前端资源
+        shell: bash
+        run: |
+          echo "构建前端资源 (TypeScript & Vite)"
+          cd apps/desktop
+          pnpm run build:web
+
+      - name: 构建桌面应用
+        shell: bash
+        run: |
+          echo "构建 macOS ARM64 桌面应用"
+          cd apps/desktop
+          npx electron-builder --mac --arm64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }}
+          path: |
+            apps/desktop/release/*.dmg
+            !apps/desktop/release/*.blockmap
+            !apps/desktop/release/*.yml
+            !apps/desktop/release/*.map
+          retention-days: 30
+
+  build-linux:
+    name: 构建 Linux
+    needs: detect
+    if: needs.detect.outputs.do_linux == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.target_branch }}
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 获取 pnpm store 目录
+        shell: bash
+        id: pnpm-cache
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 设置 pnpm 缓存
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: 设置 Rust/Cargo 缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: 安装 sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: 设置 Cargo target 目录缓存
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/wasm/target/
+          key: ${{ runner.os }}-wasm-target-${{ hashFiles('packages/wasm/Cargo.lock', 'packages/wasm/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-wasm-target-
+
+      - name: 显示发布配置
+        shell: bash
+        run: |
+          echo "=== 发布配置信息 ==="
+          echo "版本号: ${{ needs.detect.outputs.version }}"
+          echo "目标分支: ${{ needs.detect.outputs.target_branch }}"
+          echo "平台: Linux x64"
+          echo "=================="
+
+      - name: 提取版本号
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ needs.detect.outputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+          echo "标签版本: v$VERSION"
+
+      - name: 使用 pnpm version 更新版本号
+        shell: bash
+        run: |
+          cd apps/desktop
+          CURRENT_VERSION=$(grep '"version"' package.json | cut -d'"' -f4)
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+
+          echo "当前版本号: $CURRENT_VERSION"
+          echo "目标版本号: $TARGET_VERSION"
+
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            echo "版本号不同，更新版本号为: $TARGET_VERSION"
+            pnpm version $TARGET_VERSION --no-git-tag-version
+          else
+            echo "版本号相同，跳过更新（支持重复发布）"
+          fi
+
+          echo "当前 package.json 中的版本号:"
+          grep '"version"' package.json
+
+      - name: 安装依赖
+        shell: bash
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 WASM 模块
+        shell: bash
+        run: |
+          echo "构建 Linux x64 WASM 模块"
+          cd packages/wasm
+          # 尝试使用 sccache，如果失败则自动降级到标准构建
+          export RUSTC_WRAPPER=sccache
+          npx napi build --target x86_64-unknown-linux-gnu --platform --release || {
+            echo "⚠️ sccache 构建失败，降级到标准构建（不使用缓存）"
+            unset RUSTC_WRAPPER
+            npx napi build --target x86_64-unknown-linux-gnu --platform --release
+          }
+          echo "WASM 模块构建完成"
+        env:
+          SCCACHE_GHA_ENABLED: 'true'
+          RUST_BACKTRACE: '1'
+          SCCACHE_NO_DAEMON: '1'
+
+      - name: 验证 WASM 模块
+        shell: bash
+        run: |
+          echo "=== 验证 WASM 模块构建结果 ==="
+          expected_file="pixuli-wasm.linux-x64-gnu.node"
+          echo "期望的二进制文件: $expected_file"
+
+          if [ -f "packages/wasm/$expected_file" ]; then
+            echo "✅ 找到期望的二进制文件: $expected_file"
+            ls -la "packages/wasm/$expected_file"
+          else
+            echo "❌ 未找到期望的二进制文件: $expected_file"
+            ls -la packages/wasm/*.node 2>/dev/null || echo "未找到任何 .node 文件"
+            exit 1
+          fi
+          echo "=== WASM 模块验证完成 ==="
+
+      - name: 构建前端资源
+        shell: bash
+        run: |
+          echo "构建前端资源 (TypeScript & Vite)"
+          cd apps/desktop
+          pnpm run build:web
+
+      - name: 构建桌面应用
+        shell: bash
+        run: |
+          echo "构建 Linux x64 桌面应用"
+          cd apps/desktop
+            npx electron-builder --linux --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-desktop-linux-v${{ steps.version.outputs.VERSION }}
+          path: |
             apps/desktop/release/*.AppImage
             !apps/desktop/release/*.blockmap
             !apps/desktop/release/*.yml
@@ -247,9 +763,15 @@ jobs:
           retention-days: 30
 
   skip-release:
-    needs: build-and-release
+    needs: [detect, build-win, build-mac-x64, build-mac-arm64, build-linux]
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.is-publish == 'false' }}
+    if: |
+      always() &&
+      needs.detect.outputs.is_publish == 'false' &&
+      (needs.build-win.result == 'success' || needs.build-win.result == 'skipped') &&
+      (needs.build-mac-x64.result == 'success' || needs.build-mac-x64.result == 'skipped') &&
+      (needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped') &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped')
     steps:
       - name: 跳过发布
         shell: bash
@@ -260,19 +782,26 @@ jobs:
           echo "================"
 
   prepare-release:
-    needs: build-and-release
+    needs: [detect, build-win, build-mac-x64, build-mac-arm64, build-linux]
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.is-publish == 'true' }}
+    if: |
+      always() &&
+      needs.detect.outputs.is_publish == 'true' &&
+      (needs.build-win.result == 'success' || needs.build-win.result == 'skipped') &&
+      (needs.build-mac-x64.result == 'success' || needs.build-mac-x64.result == 'skipped') &&
+      (needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped') &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped')
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.target_branch }}
 
       - name: 提取版本号
         id: version
         shell: bash
         run: |
-          # 从 workflow_dispatch 输入获取版本号
-          VERSION=${{ github.event.inputs.version }}
+          VERSION="${{ needs.detect.outputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
@@ -330,7 +859,7 @@ jobs:
               - 版本: v${{ steps.version.outputs.VERSION }}
               - 构建时间: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
               - 提交: ${{ github.sha }}
-              - 分支: ${{ github.ref_name }}
+              - 分支: ${{ needs.detect.outputs.target_branch }}
 
               ---
               *感谢您使用 Pixuli Desktop！如有问题或建议，欢迎在 GitHub 上反馈。*" \
@@ -341,6 +870,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 Windows 构建产物
+        if: needs.detect.outputs.do_win == 'true'
         shell: bash
         run: |
           # 查找 Windows 构建产物
@@ -351,14 +881,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 上传 macOS DMG 包
+      - name: 上传 macOS x64 DMG 包
+        if: needs.detect.outputs.do_mac_x64 == 'true'
         shell: bash
         run: |
-          # 查找 macOS DMG 构建产物
+          # 查找 macOS x64 DMG 构建产物
           find artifacts/pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
             echo "上传 macOS x64 文件: $file"
             gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
           done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传 macOS ARM64 DMG 包
+        if: needs.detect.outputs.do_mac_arm64 == 'true'
+        shell: bash
+        run: |
+          # 查找 macOS ARM64 DMG 构建产物
           find artifacts/pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }} -name "*.dmg" -type f | while read file; do
             echo "上传 macOS ARM64 文件: $file"
             gh release upload ${{ steps.version.outputs.TAG_VERSION }} "$file" --clobber
@@ -367,6 +906,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 Linux AppImage 包
+        if: needs.detect.outputs.do_linux == 'true'
         shell: bash
         run: |
           # 查找 Linux AppImage 构建产物
@@ -378,21 +918,24 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   update-version-and-publish:
-    needs: [build-and-release, prepare-release]
+    needs: [detect, prepare-release]
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.is-publish == 'true' }}
+    if: |
+      always() &&
+      needs.detect.outputs.is_publish == 'true' &&
+      needs.prepare-release.result == 'success'
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.detect.outputs.target_branch }}
 
       - name: 提取版本号
         id: version
         shell: bash
         run: |
-          # 从 workflow_dispatch 输入获取版本号
-          VERSION=${{ github.event.inputs.version }}
+          VERSION="${{ needs.detect.outputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
@@ -413,7 +956,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git pull origin main --rebase
+          git pull origin ${{ needs.detect.outputs.target_branch }} --rebase
 
       - name: 检查并更新版本号
         shell: bash
@@ -447,7 +990,7 @@ jobs:
             echo "版本号已更新，提交更改"
             git add package.json
             git commit -m "chore: bump version to ${{ steps.version.outputs.VERSION }}"
-            git push origin main
+            git push origin ${{ needs.detect.outputs.target_branch }}
             echo "版本号更新已提交并推送"
           else
             echo "版本号未变更，跳过提交"

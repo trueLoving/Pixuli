@@ -482,9 +482,11 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         // 记录批量删除成功日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
-          imageIds,
-          imageNames: fileNames,
-          count: imageIds.length,
+          details: {
+            imageIds,
+            imageNames: fileNames,
+            count: imageIds.length,
+          },
           duration,
         });
       } catch (error) {
@@ -498,9 +500,11 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         // 记录批量删除失败日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
-          imageIds,
-          imageNames: fileNames,
-          count: imageIds.length,
+          details: {
+            imageIds,
+            imageNames: fileNames,
+            count: imageIds.length,
+          },
           error: errorMsg,
           duration,
         });
