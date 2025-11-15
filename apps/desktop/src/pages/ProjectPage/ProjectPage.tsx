@@ -27,6 +27,7 @@ export const ProjectPage: React.FC = () => {
     uploadImage,
     uploadMultipleImages,
     deleteImage,
+    deleteMultipleImages,
     updateImage,
   } = useImageStore();
 
@@ -139,6 +140,13 @@ export const ProjectPage: React.FC = () => {
     [deleteImage]
   );
 
+  const handleDeleteMultipleImages = useCallback(
+    async (imageIds: string[], fileNames: string[]) => {
+      await deleteMultipleImages(imageIds, fileNames);
+    },
+    [deleteMultipleImages]
+  );
+
   const handleUpdateImage = useCallback(
     async (data: any) => {
       await updateImage(data);
@@ -179,6 +187,7 @@ export const ProjectPage: React.FC = () => {
           batchUploadProgress={batchUploadProgress}
           images={images}
           onDeleteImage={handleDeleteImage}
+          onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
         />
       </div>

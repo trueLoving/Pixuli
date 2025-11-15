@@ -44,6 +44,10 @@ interface ImageState {
   uploadImage: (uploadData: ImageUploadData) => Promise<void>;
   uploadMultipleImages: (uploadData: MultiImageUploadData) => Promise<void>;
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
+  deleteMultipleImages: (
+    imageIds: string[],
+    fileNames: string[]
+  ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
   addImage: (image: ImageItem) => void;
   removeImage: (imageId: string) => void;
@@ -441,6 +445,62 @@ export const useImageStore = create<ImageState>((set, get) => {
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
           imageId,
           imageName: fileName,
+          error: errorMsg,
+          duration,
+        });
+      } finally {
+        // 确保 loading 状态总是被清除（双重保险）
+        set({ loading: false });
+      }
+    },
+
+    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
+      const { storageService } = get();
+      if (!storageService) {
+        set({ error: '存储配置未初始化', loading: false });
+        return;
+      }
+
+      if (imageIds.length === 0) {
+        return;
+      }
+
+      set({ loading: true, error: null });
+      const startTime = Date.now();
+      try {
+        // 批量删除
+        const deletePromises = imageIds.map((id, index) =>
+          storageService.deleteImage(id, fileNames[index])
+        );
+        await Promise.all(deletePromises);
+
+        const duration = Date.now() - startTime;
+        set(state => ({
+          images: state.images.filter(img => !imageIds.includes(img.id)),
+          loading: false,
+        }));
+
+        // 记录批量删除成功日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
+          imageIds,
+          imageNames: fileNames,
+          count: imageIds.length,
+          duration,
+        });
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        const errorMsg =
+          error instanceof Error ? error.message : '批量删除图片失败';
+        set({
+          error: errorMsg,
+          loading: false,
+        });
+
+        // 记录批量删除失败日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
+          imageIds,
+          imageNames: fileNames,
+          count: imageIds.length,
           error: errorMsg,
           duration,
         });

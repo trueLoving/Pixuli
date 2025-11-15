@@ -30,6 +30,11 @@ interface ImageBrowserProps {
   images: ImageItem[];
   /** 删除图片 */
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
+  /** 批量删除图片 */
+  onDeleteMultipleImages?: (
+    imageIds: string[],
+    fileNames: string[]
+  ) => Promise<void>;
   /** 更新图片 */
   onUpdateImage: (data: any) => Promise<void>;
 }
@@ -44,6 +49,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   batchUploadProgress,
   images,
   onDeleteImage,
+  onDeleteMultipleImages,
   onUpdateImage,
 }) => {
   return (
@@ -96,6 +102,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
               t={t}
               images={images}
               onDeleteImage={onDeleteImage}
+              onDeleteMultipleImages={onDeleteMultipleImages}
               onUpdateImage={onUpdateImage}
               getImageDimensionsFromUrl={getImageDimensionsFromUrl}
               formatFileSize={formatFileSize}

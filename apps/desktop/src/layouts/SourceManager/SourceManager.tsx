@@ -79,6 +79,7 @@ export const SourceManager: React.FC = () => {
     uploadMultipleImages,
     batchUploadProgress,
     deleteImage,
+    deleteMultipleImages,
     updateImage,
     clearError,
     setGitHubConfig,
@@ -518,6 +519,10 @@ export const SourceManager: React.FC = () => {
                 onDeleteImage={(imageId: string, fileName: string) =>
                   deleteImage(imageId, fileName)
                 }
+                onDeleteMultipleImages={(
+                  imageIds: string[],
+                  fileNames: string[]
+                ) => deleteMultipleImages(imageIds, fileNames)}
                 onUpdateImage={(data: any) => updateImage(data)}
               />
             </div>

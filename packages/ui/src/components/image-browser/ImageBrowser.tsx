@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -14,6 +15,7 @@ import {
   SHORTCUT_CATEGORIES,
 } from '../../utils/keyboardShortcuts';
 import { getSortedImages } from '../../utils/sortUtils';
+import BatchDeleteModal from './components/image-batch-delete/ImageBatchDeleteModal';
 import ImageFilter, { FilterOptions } from './image-filter/ImageFilter';
 import ImageGrid from './image-grid/ImageGrid';
 import ImageList from './image-list/ImageList';
@@ -25,6 +27,7 @@ interface ImageBrowserProps {
   images: ImageItem[];
   className?: string;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
+  onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onUpdateImage?: (data: any) => Promise<void>;
   getImageDimensionsFromUrl?: (
     url: string
@@ -37,6 +40,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   images,
   className = '',
   onDeleteImage,
+  onDeleteMultipleImages,
   onUpdateImage,
   getImageDimensionsFromUrl,
   formatFileSize,
@@ -51,6 +55,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     createDefaultFilters()
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
+  const [showBatchDeleteModal, setShowBatchDeleteModal] = useState(false);
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view);
@@ -411,6 +416,33 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     }
   }, []); // 空依赖数组，只在组件挂载时执行一次
 
+  // 打开批量删除模态框
+  const handleOpenBatchDelete = useCallback(() => {
+    setShowBatchDeleteModal(true);
+  }, []);
+
+  // 关闭批量删除模态框
+  const handleCloseBatchDelete = useCallback(() => {
+    setShowBatchDeleteModal(false);
+  }, []);
+
+  // 批量删除确认
+  const handleBatchDeleteConfirm = useCallback(
+    async (imageIds: string[], fileNames: string[]) => {
+      if (!onDeleteMultipleImages) {
+        return;
+      }
+
+      try {
+        await onDeleteMultipleImages(imageIds, fileNames);
+      } catch (error) {
+        console.error('批量删除失败:', error);
+        throw error; // 重新抛出错误，让模态框处理
+      }
+    },
+    [onDeleteMultipleImages]
+  );
+
   return (
     <div className={`image-browser ${className}`}>
       {/* 工具栏 */}
@@ -430,6 +462,29 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         </div>
 
         <div className="image-browser-controls">
+          {/* 批量删除按钮 */}
+          {onDeleteMultipleImages && filteredAndSortedImages.length > 0 && (
+            <button
+              type="button"
+              onClick={handleOpenBatchDelete}
+              style={{
+                padding: '0.375rem 0.75rem',
+                fontSize: '0.875rem',
+                border: '1px solid #dc2626',
+                borderRadius: '0.375rem',
+                backgroundColor: '#ffffff',
+                color: '#dc2626',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+              }}
+            >
+              <Trash2 style={{ width: '1rem', height: '1rem' }} />
+              批量删除
+            </button>
+          )}
+
           {/* 排序功能 */}
           <ImageSorter
             t={translate}
@@ -488,6 +543,17 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           />
         </div>
       </div>
+
+      {/* 批量删除模态框 */}
+      {onDeleteMultipleImages && (
+        <BatchDeleteModal
+          images={filteredAndSortedImages}
+          isOpen={showBatchDeleteModal}
+          onClose={handleCloseBatchDelete}
+          onConfirm={handleBatchDeleteConfirm}
+          t={translate}
+        />
+      )}
     </div>
   );
 };

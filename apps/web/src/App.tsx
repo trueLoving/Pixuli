@@ -35,6 +35,7 @@ function App() {
     uploadMultipleImages,
     batchUploadProgress,
     deleteImage,
+    deleteMultipleImages,
     updateImage,
   } = useImageStore();
 
@@ -116,6 +117,13 @@ function App() {
       await deleteImage(imageId, fileName);
     },
     [deleteImage]
+  );
+
+  const handleDeleteMultipleImages = useCallback(
+    async (imageIds: string[], fileNames: string[]) => {
+      await deleteMultipleImages(imageIds, fileNames);
+    },
+    [deleteMultipleImages]
   );
 
   const handleUpdateImage = useCallback(
@@ -369,6 +377,7 @@ function App() {
               t={t}
               images={images}
               onDeleteImage={handleDeleteImage}
+              onDeleteMultipleImages={handleDeleteMultipleImages}
               onUpdateImage={handleUpdateImage}
               getImageDimensionsFromUrl={getImageDimensionsFromUrl}
               formatFileSize={formatFileSize}

@@ -33,6 +33,10 @@ interface ImageState {
   uploadImage: (uploadData: ImageUploadData) => Promise<void>;
   uploadMultipleImages: (uploadData: MultiImageUploadData) => Promise<void>;
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
+  deleteMultipleImages: (
+    imageIds: string[],
+    fileNames: string[]
+  ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
   addImage: (image: ImageItem) => void;
   removeImage: (imageId: string) => void;
@@ -338,6 +342,59 @@ export const useImageStore = create<ImageState>((set, get) => {
       } catch (error) {
         set({
           error: error instanceof Error ? error.message : '删除图片失败',
+          loading: false,
+        });
+      }
+    },
+
+    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
+      const { storageService } = get();
+      if (!storageService) {
+        set({ error: 'GitHub 配置未初始化' });
+        return;
+      }
+
+      if (imageIds.length === 0) {
+        return;
+      }
+
+      set({ loading: true, error: null });
+      try {
+        // 检查是否在线
+        if (!navigator.onLine) {
+          // 离线模式：添加到后台同步队列
+          await backgroundSyncService.init();
+          for (let i = 0; i < imageIds.length; i++) {
+            await backgroundSyncService.addPendingOperation({
+              type: 'delete',
+              data: { imageId: imageIds[i], fileName: fileNames[i] },
+              timestamp: Date.now(),
+            });
+          }
+          await pwaService.registerBackgroundSync('sync-images');
+
+          // 立即从本地状态中移除（乐观更新）
+          set(state => ({
+            images: state.images.filter(img => !imageIds.includes(img.id)),
+            loading: false,
+            error: '删除操作已添加到同步队列，将在网络恢复后执行',
+          }));
+          return;
+        }
+
+        // 在线模式：批量删除
+        const deletePromises = imageIds.map((id, index) =>
+          storageService.deleteImage(id, fileNames[index])
+        );
+        await Promise.all(deletePromises);
+
+        set(state => ({
+          images: state.images.filter(img => !imageIds.includes(img.id)),
+          loading: false,
+        }));
+      } catch (error) {
+        set({
+          error: error instanceof Error ? error.message : '批量删除图片失败',
           loading: false,
         });
       }
