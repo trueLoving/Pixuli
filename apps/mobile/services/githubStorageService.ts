@@ -1,6 +1,7 @@
 import { ImageItem, GitHubConfig, ImageUploadData } from 'pixuli-ui/src';
 import { Octokit } from 'octokit';
 import { getImageInfoFromUri } from '../utils/imageUtils';
+import { MetadataCache } from '../utils/metadataCache';
 
 export class GitHubStorageService {
   private config: GitHubConfig;
@@ -173,6 +174,11 @@ export class GitHubStorageService {
       // 上传元数据文件
       try {
         await this.uploadImageMetadata(fileName, imageItem);
+        // 更新本地缓存
+        await MetadataCache.updateCachedMetadata(
+          fileName,
+          MetadataCache.imageItemToMetadata(imageItem)
+        );
       } catch (error) {
         console.warn(
           'Image file uploaded successfully, but metadata upload failed:',
@@ -284,6 +290,9 @@ export class GitHubStorageService {
         sha: metadataFileInfo.sha,
         branch: this.config.branch,
       });
+
+      // 从本地缓存删除
+      await MetadataCache.removeCachedMetadata(fileName);
     } catch (error) {
       console.warn(`Failed to delete metadata for ${fileName}:`, error);
       throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
@@ -335,11 +344,12 @@ export class GitHubStorageService {
   }
 
   /**
-   * 批量加载图片元数据（限制并发数）
+   * 批量加载元数据（限制并发数，支持重试）
    */
   private async loadMetadataBatch(
     imageFiles: any[],
-    batchSize: number = 5
+    batchSize: number = 5,
+    maxRetries: number = 2
   ): Promise<Map<string, any>> {
     const metadataMap = new Map<string, any>();
 
@@ -347,16 +357,35 @@ export class GitHubStorageService {
     for (let i = 0; i < imageFiles.length; i += batchSize) {
       const batch = imageFiles.slice(i, i + batchSize);
       const batchPromises = batch.map(async item => {
-        try {
-          const metadata = await this.getImageMetadata(item.name);
-          if (metadata) {
-            return { fileName: item.name, metadata };
+        let lastError: Error | null = null;
+
+        // 重试机制
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            const metadata = await this.getImageMetadata(item.name);
+            if (metadata) {
+              return { fileName: item.name, metadata };
+            }
+            return null;
+          } catch (error) {
+            lastError =
+              error instanceof Error ? error : new Error(String(error));
+            if (attempt < maxRetries) {
+              // 指数退避：等待时间 = 2^attempt * 100ms
+              await new Promise(resolve =>
+                setTimeout(resolve, Math.pow(2, attempt) * 100)
+              );
+              continue;
+            }
           }
-          return null;
-        } catch (error) {
-          console.debug(`Failed to fetch metadata for ${item.name}:`, error);
-          return null;
         }
+
+        // 所有重试都失败
+        console.debug(
+          `Failed to fetch metadata for ${item.name} after ${maxRetries + 1} attempts:`,
+          lastError
+        );
+        return null;
       });
 
       const results = await Promise.all(batchPromises);
@@ -449,46 +478,108 @@ export class GitHubStorageService {
   }
 
   /**
-   * 异步加载图片元数据并更新图片列表
+   * 异步加载图片元数据并更新图片列表（优化版：支持缓存和增量更新）
+   * @param images 图片列表
+   * @param options 加载选项
+   * @param options.forceRefresh 强制刷新，忽略缓存
+   * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
    */
-  async loadImageMetadata(images: ImageItem[]): Promise<ImageItem[]> {
+  async loadImageMetadata(
+    images: ImageItem[],
+    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+  ): Promise<ImageItem[]> {
     try {
+      const { forceRefresh = false, backgroundUpdate = true } = options || {};
+
       // 创建文件名到图片的映射
       const fileNameMap = new Map<string, ImageItem>();
       images.forEach(img => {
         fileNameMap.set(img.name, img);
       });
 
-      // 分批加载元数据（限制并发数为5）
-      const metadataMap = await this.loadMetadataBatch(
-        Array.from(fileNameMap.keys()).map(name => ({ name })),
-        5
-      );
+      const fileNames = Array.from(fileNameMap.keys());
 
-      // 更新图片信息
-      const updatedImages = images.map(img => {
-        const metadata = metadataMap.get(img.name);
-        if (metadata) {
-          return {
-            ...img,
-            id: metadata.id || img.id,
-            name: metadata.name || img.name,
-            size: metadata.size || img.size || 0,
-            width: metadata.width || 0,
-            height: metadata.height || 0,
-            tags: metadata.tags || [],
-            description: metadata.description || '',
-            createdAt: metadata.createdAt || img.createdAt,
-            updatedAt: metadata.updatedAt || img.updatedAt,
+      // 1. 如果强制刷新，跳过缓存直接加载
+      if (forceRefresh) {
+        const remoteMetadataMap = await this.loadMetadataBatch(
+          fileNames.map(name => ({ name })),
+          5
+        );
+
+        // 更新缓存
+        const metadataToCache = new Map();
+        remoteMetadataMap.forEach((metadata, fileName) => {
+          const metadataWithTimestamp = {
+            ...metadata,
+            cacheTimestamp: Date.now(),
           };
+          metadataToCache.set(fileName, metadataWithTimestamp);
+        });
+        await MetadataCache.updateCachedMetadataBatch(metadataToCache);
+
+        // 合并远程数据
+        return images.map(img => {
+          const remote = remoteMetadataMap.get(img.name);
+          if (remote) {
+            return MetadataCache.mergeMetadataToImage(img, remote);
+          }
+          return img;
+        });
+      }
+
+      // 2. 先从缓存加载
+      const cachedMetadata =
+        await MetadataCache.getCachedMetadataBatch(fileNames);
+
+      // 3. 合并缓存数据到图片列表（立即返回，不等待远程）
+      let updatedImages = images.map(img => {
+        const cached = cachedMetadata.get(img.name);
+        if (cached) {
+          return MetadataCache.mergeMetadataToImage(img, cached);
         }
         return img;
       });
 
+      // 4. 找出需要从远程加载的文件
+      // 如果启用后台更新，只加载真正需要更新的（无效或缺失的）
+      // 如果禁用后台更新，只加载缺失的（缓存中没有的）
+      const filesToFetch = backgroundUpdate
+        ? await MetadataCache.getFilesToUpdate(fileNames)
+        : fileNames.filter(fileName => !cachedMetadata.has(fileName));
+
+      // 5. 如果有需要更新的文件，从远程加载（后台异步）
+      if (filesToFetch.length > 0) {
+        // 后台异步加载，不阻塞返回
+        this.loadMetadataBatch(
+          filesToFetch.map(name => ({ name })),
+          5
+        )
+          .then(async remoteMetadataMap => {
+            // 更新缓存
+            const metadataToCache = new Map();
+            remoteMetadataMap.forEach((metadata, fileName) => {
+              const metadataWithTimestamp = {
+                ...metadata,
+                cacheTimestamp: Date.now(),
+              };
+              metadataToCache.set(fileName, metadataWithTimestamp);
+            });
+            await MetadataCache.updateCachedMetadataBatch(metadataToCache);
+
+            // 注意：这里不更新 images，因为已经返回了
+            // 如果需要实时更新，可以通过回调或事件通知
+          })
+          .catch(error => {
+            console.debug('Background metadata update failed:', error);
+            // 后台更新失败不影响已返回的数据
+          });
+      }
+
+      // 6. 立即返回（使用缓存数据）
       return updatedImages;
     } catch (error) {
       console.error('Load image metadata failed:', error);
-      // 即使加载元数据失败，也返回原始图片列表
+      // 即使加载元数据失败，也返回原始图片列表（可能包含缓存数据）
       return images;
     }
   }
@@ -567,7 +658,7 @@ export class GitHubStorageService {
       }
 
       // 更新元数据文件，保留现有的尺寸等信息
-      await this.updateImageMetadata(fileName, {
+      const updatedMetadata = {
         id: imageId,
         name: metadata.name || fileName,
         description:
@@ -578,7 +669,12 @@ export class GitHubStorageService {
         height: existingMetadata?.height || 0,
         updatedAt: metadata.updatedAt,
         createdAt: existingMetadata?.createdAt || new Date().toISOString(),
-      });
+      };
+
+      await this.updateImageMetadata(fileName, updatedMetadata);
+
+      // 更新本地缓存
+      await MetadataCache.updateCachedMetadata(fileName, updatedMetadata);
     } catch (error) {
       console.error('Update image info failed:', error);
       throw new Error(

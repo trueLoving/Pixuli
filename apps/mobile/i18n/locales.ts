@@ -90,11 +90,37 @@ export const mobileLocales = {
       editFailed: '编辑失败',
       editBeforeUpload: '上传前编辑',
       gettingDimensions: '获取尺寸中...',
+      refreshMetadata: '刷新元数据',
+      refreshMetadataSuccess: '元数据刷新成功',
+      refreshMetadataFailed: '刷新元数据失败',
     },
     app: {
       welcome: '欢迎使用 pixuli',
       description: '请先配置 GitHub 存储服务以开始使用图片管理功能',
       configureGitHub: '配置 GitHub',
+    },
+    search: {
+      placeholder: '搜索图片名称、描述或标签...',
+      filter: {
+        title: '筛选',
+        tags: '标签',
+        dimensions: '尺寸',
+        minWidth: '最小宽度',
+        minHeight: '最小高度',
+        maxWidth: '最大宽度',
+        maxHeight: '最大高度',
+        clear: '清除',
+        apply: '应用',
+      },
+      sort: {
+        title: '排序',
+        dateDesc: '日期（最新）',
+        dateAsc: '日期（最旧）',
+        nameAsc: '名称（A-Z）',
+        nameDesc: '名称（Z-A）',
+        sizeDesc: '大小（最大）',
+        sizeAsc: '大小（最小）',
+      },
     },
     github: {
       config: {
@@ -224,12 +250,38 @@ export const mobileLocales = {
       editFailed: 'Edit failed',
       editBeforeUpload: 'Edit Before Upload',
       gettingDimensions: 'Getting dimensions...',
+      refreshMetadata: 'Refresh Metadata',
+      refreshMetadataSuccess: 'Metadata refreshed successfully',
+      refreshMetadataFailed: 'Failed to refresh metadata',
     },
     app: {
       welcome: 'Welcome to Pixuli',
       description:
         'Please configure GitHub storage service to start using image management features',
       configureGitHub: 'Configure GitHub',
+    },
+    search: {
+      placeholder: 'Search by name, description, or tags...',
+      filter: {
+        title: 'Filter',
+        tags: 'Tags',
+        dimensions: 'Dimensions',
+        minWidth: 'Min Width',
+        minHeight: 'Min Height',
+        maxWidth: 'Max Width',
+        maxHeight: 'Max Height',
+        clear: 'Clear',
+        apply: 'Apply',
+      },
+      sort: {
+        title: 'Sort',
+        dateDesc: 'Date (Newest)',
+        dateAsc: 'Date (Oldest)',
+        nameAsc: 'Name (A-Z)',
+        nameDesc: 'Name (Z-A)',
+        sizeDesc: 'Size (Largest)',
+        sizeAsc: 'Size (Smallest)',
+      },
     },
     github: {
       config: {

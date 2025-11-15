@@ -14,6 +14,7 @@ import { ImageItem } from 'pixuli-ui/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
+import { showSuccess, showError } from '@/utils/toast';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;
@@ -26,6 +27,7 @@ interface ImageBrowserProps {
   initialIndex: number;
   onClose: () => void;
   onDelete: (image: ImageItem) => Promise<void>;
+  onRefreshMetadata?: (image: ImageItem) => Promise<ImageItem | null>;
 }
 
 export function ImageBrowser({
@@ -34,10 +36,12 @@ export function ImageBrowser({
   initialIndex,
   onClose,
   onDelete,
+  onRefreshMetadata,
 }: ImageBrowserProps) {
   const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [deleting, setDeleting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
@@ -160,6 +164,28 @@ export function ImageBrowser({
     }
   };
 
+  const handleRefreshMetadata = async () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage || !onRefreshMetadata) return;
+
+    setRefreshing(true);
+    try {
+      const updatedImage = await onRefreshMetadata(currentImage);
+      if (updatedImage) {
+        // 刷新成功，显示提示
+        showSuccess(t('image.refreshMetadataSuccess') || '元数据刷新成功');
+        // 如果元数据面板是打开的，保持打开状态以显示新数据
+        // 父组件会更新 images prop，组件会自动重新渲染显示新数据
+      } else {
+        showError(t('image.refreshMetadataFailed') || '刷新元数据失败');
+      }
+    } catch (error) {
+      showError(t('image.refreshMetadataFailed') || '刷新元数据失败');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   if (!visible || images.length === 0) {
     return null;
   }
@@ -187,12 +213,27 @@ export function ImageBrowser({
             {currentIndex + 1} / {images.length}
           </ThemedText>
           <View style={styles.headerActions}>
+            {onRefreshMetadata && (
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={handleRefreshMetadata}
+                disabled={deleting || refreshing}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                {refreshing ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
+                )}
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.headerButton}
               onPress={() => {
                 setShowMetadata(prev => !prev);
               }}
-              disabled={deleting}
+              disabled={deleting || refreshing}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
@@ -205,7 +246,7 @@ export function ImageBrowser({
             <TouchableOpacity
               style={styles.headerButton}
               onPress={handleDelete}
-              disabled={deleting}
+              disabled={deleting || refreshing}
             >
               {deleting ? (
                 <ActivityIndicator size="small" color="#fff" />

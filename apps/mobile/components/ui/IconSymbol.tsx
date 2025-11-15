@@ -35,6 +35,14 @@ const MAPPING = {
   'checkmark.circle.fill': 'check-circle',
   'arrow.up.circle': 'arrow-circle-up',
   'arrow.down.circle': 'arrow-circle-down',
+  // Search and Filter icons
+  magnifyingglass: 'search',
+  'xmark.circle.fill': 'cancel',
+  'line.3.horizontal.decrease.circle': 'filter-list',
+  'arrow.up.arrow.down': 'swap-vert',
+  checkmark: 'check',
+  plus: 'add',
+  'arrow.clockwise': 'refresh',
 } as IconMapping;
 
 /**
