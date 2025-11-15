@@ -253,3 +253,152 @@ export function createImagePreviewUrl(file: File): string {
 export function revokeImagePreviewUrl(url: string): void {
   URL.revokeObjectURL(url);
 }
+
+/**
+ * 压缩图片文件
+ * @param file 原始图片文件
+ * @param options 压缩选项
+ * @returns Promise<ImageCompressionResult> 压缩结果
+ */
+export async function compressImage(
+  file: File,
+  options: {
+    quality?: number;
+    maxWidth?: number;
+    maxHeight?: number;
+    maintainAspectRatio?: boolean;
+    outputFormat?: 'image/jpeg' | 'image/png' | 'image/webp';
+    minSizeToCompress?: number;
+  } = {}
+): Promise<{
+  compressedFile: File;
+  originalSize: number;
+  compressedSize: number;
+  compressionRatio: number;
+  originalDimensions: { width: number; height: number };
+  compressedDimensions: { width: number; height: number };
+}> {
+  const {
+    quality = 0.8,
+    maxWidth,
+    maxHeight,
+    maintainAspectRatio = true,
+    outputFormat = 'image/jpeg',
+    minSizeToCompress,
+  } = options;
+
+  // 如果设置了最小压缩大小，且文件小于该大小，直接返回原文件
+  if (minSizeToCompress && file.size < minSizeToCompress) {
+    const dimensions = await getImageDimensions(file);
+    return {
+      compressedFile: file,
+      originalSize: file.size,
+      compressedSize: file.size,
+      compressionRatio: 0,
+      originalDimensions: dimensions,
+      compressedDimensions: dimensions,
+    };
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      try {
+        // 获取原始尺寸
+        const originalWidth = img.naturalWidth || img.width;
+        const originalHeight = img.naturalHeight || img.height;
+        const originalDimensions = {
+          width: originalWidth,
+          height: originalHeight,
+        };
+
+        // 计算压缩后的尺寸
+        let targetWidth = originalWidth;
+        let targetHeight = originalHeight;
+
+        if (maxWidth || maxHeight) {
+          const calculatedDimensions = calculateDisplayDimensions(
+            originalWidth,
+            originalHeight,
+            maxWidth,
+            maxHeight,
+            maintainAspectRatio
+          );
+          targetWidth = calculatedDimensions.width;
+          targetHeight = calculatedDimensions.height;
+        }
+
+        // 创建 canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('无法创建 Canvas 上下文'));
+          return;
+        }
+
+        // 绘制图片到 canvas
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+        // 转换为 Blob
+        canvas.toBlob(
+          blob => {
+            URL.revokeObjectURL(objectUrl);
+
+            if (!blob) {
+              reject(new Error('图片压缩失败：无法生成 Blob'));
+              return;
+            }
+
+            // 创建压缩后的文件
+            const fileName = file.name;
+            const fileExtension = outputFormat.split('/')[1] || 'jpg';
+            const compressedFileName =
+              fileName.replace(/\.[^/.]+$/, '') + '.' + fileExtension;
+
+            const compressedFile = new File([blob], compressedFileName, {
+              type: outputFormat,
+              lastModified: Date.now(),
+            });
+
+            const compressionRatio =
+              ((file.size - blob.size) / file.size) * 100;
+
+            resolve({
+              compressedFile,
+              originalSize: file.size,
+              compressedSize: blob.size,
+              compressionRatio,
+              originalDimensions,
+              compressedDimensions: {
+                width: targetWidth,
+                height: targetHeight,
+              },
+            });
+          },
+          outputFormat,
+          quality
+        );
+      } catch (error) {
+        URL.revokeObjectURL(objectUrl);
+        reject(
+          new Error(
+            `图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
+          )
+        );
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('图片加载失败'));
+    };
+
+    img.src = objectUrl;
+  });
+}

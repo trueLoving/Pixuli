@@ -338,6 +338,15 @@ function App() {
               onUploadMultipleImages={uploadMultipleImages}
               loading={loading}
               batchUploadProgress={batchUploadProgress}
+              enableCompression={true}
+              compressionOptions={{
+                quality: 0.8,
+                maxWidth: 1920,
+                maxHeight: 1080,
+                maintainAspectRatio: true,
+                outputFormat: 'image/jpeg',
+                minSizeToCompress: 100 * 1024, // 只压缩大于 100KB 的文件
+              }}
             />
           </div>
 

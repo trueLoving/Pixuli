@@ -15,8 +15,8 @@ interface ImageCropModalProps {
   src: string;
   fileName: string;
   originalFile: File;
-  onCropComplete: (croppedFile: File) => void;
-  onSkipCrop: (originalFile: File) => void;
+  onCropComplete: (croppedFile: File) => void | Promise<void>;
+  onSkipCrop: (originalFile: File) => void | Promise<void>;
   onCancel: () => void;
   t?: (key: string) => string;
   aspectRatio?: number;
@@ -204,7 +204,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     try {
       const croppedFile = await generateCroppedImage();
       if (croppedFile) {
-        onCropComplete(croppedFile);
+        await onCropComplete(croppedFile);
       }
     } catch (error) {
       console.error('裁剪图片时出错:', error);
@@ -212,8 +212,8 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   };
 
   // 跳过裁剪，直接使用原图
-  const handleSkipCrop = () => {
-    onSkipCrop(originalFile);
+  const handleSkipCrop = async () => {
+    await onSkipCrop(originalFile);
   };
 
   return (
