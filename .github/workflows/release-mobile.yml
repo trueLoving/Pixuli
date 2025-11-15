@@ -23,8 +23,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PNPM_VERSION: 9
-  NODE_VERSION: 20
+  PNPM_VERSION: 10
+  NODE_VERSION: 22
 
 jobs:
   detect:
@@ -35,7 +35,11 @@ jobs:
       do_ios: ${{ steps.set.outputs.do_ios }}
       is_tag: ${{ steps.set.outputs.is_tag }}
       release_enabled: ${{ steps.set.outputs.release_enabled }}
+      version: ${{ steps.set.outputs.version }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Resolve inputs
         id: set
         shell: bash
@@ -57,10 +61,27 @@ jobs:
           IS_TAG=false
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then IS_TAG=true; fi
 
+          # 提取版本号：从 tag 或 app.json
+          if [[ "$IS_TAG" == "true" ]]; then
+            # 从 tag 提取版本号（去掉 v 前缀）
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            VERSION="${VERSION#refs/tags/}"
+          else
+            # 从 app.json 读取版本号
+            VERSION=$(grep -o '"version": "[^"]*"' apps/mobile/app.json | cut -d'"' -f4)
+          fi
+
+          # 如果版本号为空，使用默认值
+          if [[ -z "$VERSION" ]]; then
+            VERSION="1.0.0"
+          fi
+
           echo "do_android=$DO_ANDROID" >> $GITHUB_OUTPUT
           echo "do_ios=$DO_IOS" >> $GITHUB_OUTPUT
           echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
           echo "release_enabled=$RELEASE_INPUT" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "检测到的版本号: $VERSION"
 
   android:
     name: Android build
@@ -125,6 +146,40 @@ jobs:
         run: npx expo prebuild --platform android --clean
         working-directory: apps/mobile
 
+      - name: Extract version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${{ needs.detect.outputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "版本号: $VERSION"
+
+      - name: Configure APK output filename
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          BUILD_GRADLE="android/app/build.gradle"
+
+          # 检查 build.gradle 是否已包含 applicationVariants 配置
+          if grep -q "applicationVariants.all" "$BUILD_GRADLE"; then
+            echo "build.gradle 已包含 applicationVariants 配置，更新版本号"
+            # 更新现有配置中的版本号
+            sed -i "s/def apkName = \"Pixuli_[^\"]*\"/def apkName = \"Pixuli_${VERSION}\"/" "$BUILD_GRADLE"
+          else
+            echo "添加 applicationVariants 配置到 build.gradle"
+            # 使用 printf 构建配置内容，避免 heredoc 的 YAML 缩进问题
+            printf '\n// 配置 APK 输出文件名\n' >> "$BUILD_GRADLE"
+            printf 'android.applicationVariants.all { variant ->\n' >> "$BUILD_GRADLE"
+            printf '    variant.outputs.all { output ->\n' >> "$BUILD_GRADLE"
+            printf '        def apkName = "Pixuli_%s.apk"\n' "$VERSION" >> "$BUILD_GRADLE"
+            printf '        outputFileName = apkName\n' >> "$BUILD_GRADLE"
+            printf '    }\n' >> "$BUILD_GRADLE"
+            printf '}\n' >> "$BUILD_GRADLE"
+          fi
+
+          echo "APK 输出文件名已配置为: Pixuli_${VERSION}.apk"
+        working-directory: apps/mobile
+
       - name: Cache Gradle build cache
         uses: actions/cache@v4
         with:
@@ -141,7 +196,8 @@ jobs:
         id: build
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon
+          # 启用 daemon、并行构建和构建缓存以优化构建速度
+          ./gradlew assembleRelease --parallel --build-cache --daemon
           echo "构建完成，退出码: $?"
         working-directory: apps/mobile
 
@@ -149,8 +205,12 @@ jobs:
         id: afp
         shell: bash
         run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          EXPECTED_APK_NAME="Pixuli_${VERSION}.apk"
+
           echo "=== 查找 APK 文件 ==="
           echo "当前工作目录: $(pwd)"
+          echo "期望的 APK 文件名: $EXPECTED_APK_NAME"
 
           # 检查 android 目录是否存在
           if [ ! -d "android" ]; then
@@ -164,34 +224,29 @@ jobs:
           APK_DIR="android/app/build/outputs/apk/release"
           echo "查找目录: $APK_DIR"
 
-          # 检查构建输出目录结构
-          echo "=== 检查构建输出目录结构 ==="
-          if [ -d "android/app/build" ]; then
-            echo "android/app/build 目录存在"
-            find android/app/build -type d -name "outputs" 2>/dev/null | head -5 || echo "未找到 outputs 目录"
-          else
-            echo "android/app/build 目录不存在"
-          fi
-
-          if [ -d "android/app/build/outputs" ]; then
-            echo "android/app/build/outputs 目录存在"
-            ls -la android/app/build/outputs/ || echo "无法列出 outputs 目录"
-          fi
-
           if [ ! -d "$APK_DIR" ]; then
             echo "错误: APK 目录不存在: $APK_DIR"
             echo "搜索所有可能的 APK 位置:"
             find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
-            echo "搜索所有 build 目录:"
-            find android -type d -name "build" 2>/dev/null | head -10
             exit 1
           fi
 
           echo "APK 目录内容:"
           ls -la "$APK_DIR" || echo "目录为空"
 
-          # 查找 APK 文件（相对于当前目录 apps/mobile）
-          APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
+          # 优先查找期望的文件名，如果不存在则查找任何 APK 文件
+          APK_FILE=""
+          if [ -f "$APK_DIR/$EXPECTED_APK_NAME" ]; then
+            APK_FILE="$APK_DIR/$EXPECTED_APK_NAME"
+            echo "✓ 找到期望的 APK 文件: $EXPECTED_APK_NAME"
+          else
+            echo "未找到期望的文件名，搜索所有 APK 文件:"
+            APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
+            if [ -n "$APK_FILE" ]; then
+              echo "找到 APK 文件: $APK_FILE"
+              echo "警告: 文件名不符合预期格式，期望: $EXPECTED_APK_NAME"
+            fi
+          fi
 
           if [ -z "$APK_FILE" ]; then
             echo "错误: 未找到 APK 文件"
@@ -207,8 +262,6 @@ jobs:
           APK_FILE="${APK_FILE#./}"
 
           # 转换为相对于项目根目录的路径
-          # 当前在 apps/mobile，APK_FILE 应该是 android/app/build/... 格式
-          # 所以完整路径是 apps/mobile/android/app/build/...
           APK_RELATIVE_PATH="apps/mobile/$APK_FILE"
 
           echo "相对路径: $APK_RELATIVE_PATH"
@@ -222,7 +275,6 @@ jobs:
             echo "绝对路径: $ABSOLUTE_PATH"
             if [ -f "$ABSOLUTE_PATH" ]; then
               echo "✓ 绝对路径文件存在"
-              # 从绝对路径提取相对路径
               PROJECT_ROOT="${GITHUB_WORKSPACE:-/home/runner/work/Pixuli/Pixuli}"
               APK_RELATIVE_PATH="${ABSOLUTE_PATH#$PROJECT_ROOT/}"
               echo "计算后的相对路径: $APK_RELATIVE_PATH"
@@ -230,6 +282,7 @@ jobs:
           fi
 
           echo "apk=$APK_RELATIVE_PATH" >> $GITHUB_OUTPUT
+          echo "apk_name=$EXPECTED_APK_NAME" >> $GITHUB_OUTPUT
         working-directory: apps/mobile
 
       - name: Upload Android artifact
