@@ -6,7 +6,6 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-  UpyunConfig,
 } from 'pixuli-ui/src';
 import { create } from 'zustand';
 import { GitHubStorageService } from '../services/githubStorageService';
@@ -15,11 +14,6 @@ import {
   saveGitHubConfig,
   clearGitHubConfig,
 } from '../config/github';
-import {
-  loadUpyunConfig,
-  saveUpyunConfig,
-  clearUpyunConfig,
-} from '../config/upyun';
 
 export type SortOption =
   | 'date-desc'
@@ -44,9 +38,8 @@ interface ImageState {
   loading: boolean;
   error: string | null;
   githubConfig: GitHubConfig | null;
-  upyunConfig: UpyunConfig | null;
   storageService: GitHubStorageService | null;
-  storageType: 'github' | 'upyun' | null;
+  storageType: 'github' | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Search and Filter
@@ -58,8 +51,6 @@ interface ImageState {
   initialize: () => Promise<void>;
   setGitHubConfig: (config: GitHubConfig) => Promise<void>;
   clearGitHubConfig: () => Promise<void>;
-  setUpyunConfig: (config: UpyunConfig) => Promise<void>;
-  clearUpyunConfig: () => Promise<void>;
   initializeStorage: () => void;
   loadImages: () => Promise<void>;
   uploadImage: (uploadData: {
@@ -98,7 +89,6 @@ export const useImageStore = create<ImageState>((set, get) => ({
   loading: false,
   error: null,
   githubConfig: null,
-  upyunConfig: null,
   storageService: null,
   storageType: null,
   batchUploadProgress: null,
@@ -109,17 +99,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
   // 初始化（异步加载配置）
   initialize: async () => {
     const initialGitHubConfig = await loadGitHubConfig();
-    const initialUpyunConfig = await loadUpyunConfig();
 
-    const storageType = initialUpyunConfig
-      ? 'upyun'
-      : initialGitHubConfig
-        ? 'github'
-        : null;
+    const storageType = initialGitHubConfig ? 'github' : null;
 
     set({
       githubConfig: initialGitHubConfig,
-      upyunConfig: initialUpyunConfig,
       storageType,
     });
 
@@ -131,7 +115,6 @@ export const useImageStore = create<ImageState>((set, get) => ({
         console.error('Failed to initialize github storage service:', error);
       }
     }
-    // TODO: 实现 UpyunStorageService
   },
 
   setGitHubConfig: async (config: GitHubConfig) => {
@@ -148,27 +131,10 @@ export const useImageStore = create<ImageState>((set, get) => ({
     }
   },
 
-  setUpyunConfig: async (config: UpyunConfig) => {
-    await saveUpyunConfig(config);
-    set({ upyunConfig: config, storageType: 'upyun' });
-    get().initializeStorage();
-  },
-
-  clearUpyunConfig: async () => {
-    await clearUpyunConfig();
-    const { storageType } = get();
-    if (storageType === 'upyun') {
-      set({ storageService: null, storageType: null, upyunConfig: null });
-    }
-  },
-
   initializeStorage: () => {
-    const { githubConfig, upyunConfig, storageType } = get();
+    const { githubConfig, storageType } = get();
 
-    if (storageType === 'upyun' && upyunConfig) {
-      // TODO: 实现 UpyunStorageService
-      console.warn('Upyun storage service not implemented yet');
-    } else if (storageType === 'github' && githubConfig) {
+    if (storageType === 'github' && githubConfig) {
       try {
         const storageService = new GitHubStorageService(githubConfig);
         set({ storageService });
@@ -184,7 +150,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
     if (!storageService) {
       set({
-        error: `${storageType === 'upyun' ? '又拍云' : 'GitHub'} 配置未初始化`,
+        error: 'GitHub 配置未初始化',
       });
       return;
     }

@@ -63,13 +63,6 @@ export default function SettingsScreen() {
         ? `${githubConfig.owner}/${githubConfig.repo}`
         : t('settings.github.notConfigured'),
     },
-    // 可以添加更多设置项
-    // {
-    //   id: 'upyun',
-    //   title: t('settings.upyun.title'),
-    //   icon: 'cloud',
-    //   route: '/(tabs)/settings/upyun',
-    // },
   ];
 
   const handleSettingPress = (route: string) => {
