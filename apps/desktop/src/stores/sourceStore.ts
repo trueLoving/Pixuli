@@ -1,8 +1,10 @@
+import { UpyunConfig } from '@packages/ui/src';
 import { create } from 'zustand';
 
 export interface GitHubSourceConfig {
   id: string;
   name: string;
+  type: 'github';
   owner: string;
   repo: string;
   branch: string;
@@ -12,35 +14,100 @@ export interface GitHubSourceConfig {
   updatedAt: number;
 }
 
+export interface GiteeSourceConfig {
+  id: string;
+  name: string;
+  type: 'gitee';
+  owner: string;
+  repo: string;
+  branch: string;
+  token: string;
+  path: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface UpyunSourceConfig {
+  id: string;
+  name: string;
+  type: 'upyun';
+  operator: string;
+  password: string;
+  bucket: string;
+  domain: string;
+  path: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type SourceConfig =
+  | GitHubSourceConfig
+  | GiteeSourceConfig
+  | UpyunSourceConfig;
+
 type SourceState = {
-  sources: GitHubSourceConfig[];
+  sources: SourceConfig[];
   addSource: (
-    input: Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
-  ) => GitHubSourceConfig;
+    input:
+      | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
+      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
+      | Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
+  ) => SourceConfig;
   updateSource: (
     id: string,
-    input: Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt'>>
+    input:
+      | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
+      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>
+      | Partial<Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'type'>>
   ) => void;
   removeSource: (id: string) => void;
-  getSourceById: (id: string) => GitHubSourceConfig | undefined;
+  getSourceById: (id: string) => SourceConfig | undefined;
   openProjectWindow: (id: string) => Promise<void>;
 };
 
-const STORAGE_KEY = 'pixuli.github.sources.v1';
+const STORAGE_KEY = 'pixuli.sources.v2';
 
-function loadSources(): GitHubSourceConfig[] {
+function loadSources(): SourceConfig[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      // 尝试迁移旧数据
+      const oldKey = 'pixuli.github.sources.v1';
+      const oldRaw = localStorage.getItem(oldKey);
+      if (oldRaw) {
+        try {
+          const oldData = JSON.parse(oldRaw);
+          if (Array.isArray(oldData)) {
+            // 迁移旧数据，添加 type 字段
+            const migrated = oldData.map((s: any) => ({
+              ...s,
+              type: 'github' as const,
+            }));
+            saveSources(migrated);
+            localStorage.removeItem(oldKey);
+            return migrated;
+          }
+        } catch {
+          // ignore migration error
+        }
+      }
+      return [];
+    }
     const data = JSON.parse(raw);
     if (!Array.isArray(data)) return [];
-    return data as GitHubSourceConfig[];
+    // 确保所有源都有 type 字段（兼容旧数据）
+    return data.map((s: any) => {
+      if (!s.type) {
+        return { ...s, type: 'github' };
+      }
+      return s;
+    }) as SourceConfig[];
   } catch {
     return [];
   }
 }
 
-function saveSources(sources: GitHubSourceConfig[]) {
+function saveSources(sources: SourceConfig[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sources));
   } catch {
@@ -55,12 +122,12 @@ export const useSourceStore = create<SourceState>((set, get) => {
     sources: initial,
     addSource: input => {
       const now = Date.now();
-      const source: GitHubSourceConfig = {
+      const source: SourceConfig = {
         id: Math.random().toString(36).slice(2, 10),
         createdAt: now,
         updatedAt: now,
         ...input,
-      };
+      } as SourceConfig;
       const next = [...get().sources, source];
       set({ sources: next });
       saveSources(next);

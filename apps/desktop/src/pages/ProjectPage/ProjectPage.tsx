@@ -27,6 +27,7 @@ export const ProjectPage: React.FC = () => {
     uploadImage,
     uploadMultipleImages,
     deleteImage,
+    deleteMultipleImages,
     updateImage,
   } = useImageStore();
 
@@ -58,7 +59,7 @@ export const ProjectPage: React.FC = () => {
   useEffect(() => {
     if (!projectSourceId) return;
     const src = sourceStore.getSourceById(projectSourceId);
-    if (src) {
+    if (src && src.type === 'github') {
       setGitHubConfig({
         owner: src.owner,
         repo: src.repo,
@@ -66,8 +67,16 @@ export const ProjectPage: React.FC = () => {
         token: src.token,
         path: src.path,
       } as any);
+    } else if (src && src.type === 'upyun') {
+      setUpyunConfig({
+        operator: src.operator,
+        password: src.password,
+        bucket: src.bucket,
+        domain: src.domain,
+        path: src.path,
+      });
     }
-  }, [projectSourceId, sourceStore, setGitHubConfig]);
+  }, [projectSourceId, sourceStore, setGitHubConfig, setUpyunConfig]);
 
   // 初始化存储服务
   useEffect(() => {
@@ -131,6 +140,13 @@ export const ProjectPage: React.FC = () => {
     [deleteImage]
   );
 
+  const handleDeleteMultipleImages = useCallback(
+    async (imageIds: string[], fileNames: string[]) => {
+      await deleteMultipleImages(imageIds, fileNames);
+    },
+    [deleteMultipleImages]
+  );
+
   const handleUpdateImage = useCallback(
     async (data: any) => {
       await updateImage(data);
@@ -171,6 +187,7 @@ export const ProjectPage: React.FC = () => {
           batchUploadProgress={batchUploadProgress}
           images={images}
           onDeleteImage={handleDeleteImage}
+          onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
         />
       </div>

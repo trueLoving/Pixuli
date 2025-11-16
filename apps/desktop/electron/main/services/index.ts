@@ -1,5 +1,6 @@
 import { registerAiHandlers } from './aiService';
 import { registerFileHandlers } from './fileService';
+import { registerGiteeHandlers } from './giteeService';
 import { registerGithubHandlers } from './githubService';
 import { registerPixuliHandlers } from './pixuliService';
 import { registerUpyunHandlers } from './upyunService';
@@ -14,6 +15,9 @@ export function registerServiceHandlers() {
 
   // Initialize GitHub service
   registerGithubHandlers();
+
+  // Initialize Gitee service
+  registerGiteeHandlers();
 
   // Initialize Pixuli service
   registerPixuliHandlers();

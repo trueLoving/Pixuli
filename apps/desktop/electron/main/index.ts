@@ -68,26 +68,28 @@ function setupContentSecurityPolicy() {
   // 开发模式的 CSP（允许 Vite dev server 和 HMR）
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
   // Electron 会在开发模式下显示警告，但这是预期的行为
+  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const devCSP =
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https: http://localhost:*; " +
+    "img-src 'self' data: blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://*; " +
+    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self';";
 
   // 生产模式的 CSP（更严格，移除 unsafe-eval）
+  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const prodCSP =
     "default-src 'self'; " +
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https:; " +
+    "img-src 'self' data: blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' https:; " +
+    "connect-src 'self' https: http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
@@ -95,17 +97,68 @@ function setupContentSecurityPolicy() {
 
   const csp = isDev ? devCSP : prodCSP;
 
+  // 拦截 Gitee raw URL 和 assets 请求，添加必要的请求头
+  defaultSession.webRequest.onBeforeRequest(
+    {
+      urls: ['https://gitee.com/*/raw/*', 'https://assets.gitee.com/*'],
+    },
+    (details, callback) => {
+      // 允许请求继续，但会在 onBeforeSendHeaders 中添加请求头
+      callback({});
+    }
+  );
+
+  // 为 Gitee 请求添加请求头
+  defaultSession.webRequest.onBeforeSendHeaders(
+    {
+      urls: ['https://gitee.com/*/raw/*', 'https://assets.gitee.com/*'],
+    },
+    (details, callback) => {
+      const requestHeaders = {
+        ...details.requestHeaders,
+        Referer: 'https://gitee.com/',
+        Origin: 'https://gitee.com',
+      };
+      callback({ requestHeaders });
+    }
+  );
+
   // 为所有请求设置 CSP（包括主文档和所有子资源）
   defaultSession.webRequest.onHeadersReceived(
     {
       urls: ['http://*/*', 'https://*/*', 'file://*/*'],
     },
     (details, callback) => {
+      const responseHeaders = { ...details.responseHeaders };
+
+      // 添加 CSP
+      responseHeaders['Content-Security-Policy'] = [csp];
+
+      // 为 Gitee assets 域名添加 CORS 头，解决跨域问题
+      // Gitee raw URL (gitee.com/owner/repo/raw/...) 会 302 重定向到 assets.gitee.com
+      // Electron 会自动跟随重定向，onHeadersReceived 会在重定向后的响应上被调用
+      // 我们只需要在 assets.gitee.com 的响应上添加 CORS 头即可
+      if (details.url.includes('assets.gitee.com')) {
+        // 确保 Access-Control-Allow-Origin 存在
+        if (!responseHeaders['Access-Control-Allow-Origin']) {
+          responseHeaders['Access-Control-Allow-Origin'] = ['*'];
+        }
+        // 允许的请求方法
+        if (!responseHeaders['Access-Control-Allow-Methods']) {
+          responseHeaders['Access-Control-Allow-Methods'] = [
+            'GET',
+            'HEAD',
+            'OPTIONS',
+          ];
+        }
+        // 允许的请求头
+        if (!responseHeaders['Access-Control-Allow-Headers']) {
+          responseHeaders['Access-Control-Allow-Headers'] = ['*'];
+        }
+      }
+
       callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [csp],
-        },
+        responseHeaders,
       });
     }
   );
@@ -131,8 +184,8 @@ async function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     // #298
     win.loadURL(VITE_DEV_SERVER_URL);
-    // Open devTool if the app is not packaged
-    win.webContents.openDevTools();
+    // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
+    // win.webContents.openDevTools();
   } else {
     win.loadFile(indexHtml);
   }
@@ -230,8 +283,8 @@ ipcMain.handle('open-win', (_, arg) => {
 
   if (VITE_DEV_SERVER_URL) {
     childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`);
-    // 开发环境下自动打开 DevTools 便于调试子窗口
-    childWindow.webContents.openDevTools();
+    // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
+    // childWindow.webContents.openDevTools();
   } else {
     childWindow.loadFile(indexHtml, { hash: arg });
   }

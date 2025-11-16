@@ -34,12 +34,28 @@ contextBridge.exposeInMainWorld('githubAPI', {
   githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
 });
 
+// --------- Expose Gitee API to the Renderer process ---------
+contextBridge.exposeInMainWorld('giteeAPI', {
+  // Gitee API
+  giteeUpload: (params: any) => ipcRenderer.invoke('gitee:upload', params),
+  giteeDelete: (params: any) => ipcRenderer.invoke('gitee:delete', params),
+  giteeGetList: (params: any) => ipcRenderer.invoke('gitee:getList', params),
+  giteeUpdateMetadata: (params: any) =>
+    ipcRenderer.invoke('gitee:updateMetadata', params),
+  giteeSetAuth: (token: string) => ipcRenderer.invoke('gitee:setAuth', token),
+  // 获取图片数据（用于解决跨域问题）
+  giteeGetImageData: (params: any) =>
+    ipcRenderer.invoke('gitee:getImageData', params),
+});
+
 // --------- Expose Upyun API to the Renderer process ---------
 contextBridge.exposeInMainWorld('upyunAPI', {
   // Upyun API
   upyunUpload: (params: any) => ipcRenderer.invoke('upyun:upload', params),
   upyunDelete: (params: any) => ipcRenderer.invoke('upyun:delete', params),
   upyunGetList: (params: any) => ipcRenderer.invoke('upyun:list', params),
+  upyunUpdateMetadata: (params: any) =>
+    ipcRenderer.invoke('upyun:updateMetadata', params),
   upyunTest: (config: any) => ipcRenderer.invoke('upyun:test', config),
 });
 

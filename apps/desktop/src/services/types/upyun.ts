@@ -54,6 +54,7 @@ export interface UpyunGetListResponse {
     time: number;
     url: string;
   }>;
+  metadataMap?: { [key: string]: any };
   error?: string;
 }
 
@@ -63,11 +64,27 @@ export interface UpyunTestResponse {
   error?: string;
 }
 
+export interface UpyunUpdateMetadataParams {
+  config: UpyunConfig;
+  fileName: string;
+  metadata: any;
+  oldFileName?: string;
+}
+
+export interface UpyunUpdateMetadataResponse {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
 // Upyun API 类型定义
 export interface UpyunAPI {
   upyunUpload: (params: UpyunUploadParams) => Promise<UpyunUploadResponse>;
   upyunDelete: (params: UpyunDeleteParams) => Promise<UpyunDeleteResponse>;
   upyunGetList: (params: UpyunGetListParams) => Promise<UpyunGetListResponse>;
+  upyunUpdateMetadata: (
+    params: UpyunUpdateMetadataParams
+  ) => Promise<UpyunUpdateMetadataResponse>;
   upyunTest: (config: UpyunConfig) => Promise<UpyunTestResponse>;
 }
 

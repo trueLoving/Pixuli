@@ -1,4 +1,9 @@
 import {
+  clearGiteeConfig,
+  loadGiteeConfig,
+  saveGiteeConfig,
+} from '@/config/gitee';
+import {
   clearGitHubConfig,
   loadGitHubConfig,
   saveGitHubConfig,
@@ -8,12 +13,14 @@ import {
   loadUpyunConfig,
   saveUpyunConfig,
 } from '@/config/upyun';
+import { GiteeStorageService } from '@/services/giteeStorageService';
 import { GitHubStorageService } from '@/services/githubStorageService';
 import { UpyunStorageService } from '@/services/upyunStorageService';
 import { LogActionType, LogStatus } from '@/services/types/log';
 import { useLogStore } from '@/stores/logStore';
 import {
   BatchUploadProgress,
+  GiteeConfig,
   GitHubConfig,
   ImageEditData,
   ImageItem,
@@ -29,14 +36,21 @@ interface ImageState {
   loading: boolean;
   error: string | null;
   githubConfig: GitHubConfig | null;
+  giteeConfig: GiteeConfig | null;
   upyunConfig: UpyunConfig | null;
-  storageService: GitHubStorageService | UpyunStorageService | null;
-  storageType: 'github' | 'upyun' | null;
+  storageService:
+    | GitHubStorageService
+    | GiteeStorageService
+    | UpyunStorageService
+    | null;
+  storageType: 'github' | 'gitee' | 'upyun' | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Actions
   setGitHubConfig: (config: GitHubConfig) => void;
   clearGitHubConfig: () => void;
+  setGiteeConfig: (config: GiteeConfig) => void;
+  clearGiteeConfig: () => void;
   setUpyunConfig: (config: UpyunConfig) => void;
   clearUpyunConfig: () => void;
   initializeStorage: () => void;
@@ -44,6 +58,10 @@ interface ImageState {
   uploadImage: (uploadData: ImageUploadData) => Promise<void>;
   uploadMultipleImages: (uploadData: MultiImageUploadData) => Promise<void>;
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
+  deleteMultipleImages: (
+    imageIds: string[],
+    fileNames: string[]
+  ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
   addImage: (image: ImageItem) => void;
   removeImage: (imageId: string) => void;
@@ -56,26 +74,33 @@ interface ImageState {
 export const useImageStore = create<ImageState>((set, get) => {
   // 在store创建时加载配置并初始化存储服务
   const initialGitHubConfig = loadGitHubConfig();
+  const initialGiteeConfig = loadGiteeConfig();
   const initialUpyunConfig = loadUpyunConfig();
 
   // 确定当前使用的存储类型
   const storageType = initialUpyunConfig
     ? 'upyun'
-    : initialGitHubConfig
-      ? 'github'
-      : null;
-  const initialConfig = initialUpyunConfig || initialGitHubConfig;
+    : initialGiteeConfig
+      ? 'gitee'
+      : initialGitHubConfig
+        ? 'github'
+        : null;
+  const initialConfig =
+    initialUpyunConfig || initialGiteeConfig || initialGitHubConfig;
 
   return {
     images: [],
     loading: false,
     error: null,
     githubConfig: initialGitHubConfig,
+    giteeConfig: initialGiteeConfig,
     upyunConfig: initialUpyunConfig,
     storageService: initialConfig
       ? storageType === 'upyun'
         ? new UpyunStorageService(initialUpyunConfig!)
-        : new GitHubStorageService(initialGitHubConfig!)
+        : storageType === 'gitee'
+          ? new GiteeStorageService(initialGiteeConfig!)
+          : new GitHubStorageService(initialGitHubConfig!)
       : null,
     storageType,
     batchUploadProgress: null,
@@ -110,6 +135,36 @@ export const useImageStore = create<ImageState>((set, get) => {
         });
     },
 
+    setGiteeConfig: (config: GiteeConfig) => {
+      set({ giteeConfig: config });
+      saveGiteeConfig(config);
+      // 切换到 Gitee 存储
+      set({ storageType: 'gitee' });
+      get().initializeStorage();
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'gitee', action: 'set' },
+        });
+    },
+
+    clearGiteeConfig: () => {
+      set({ giteeConfig: null });
+      clearGiteeConfig();
+      // 如果当前使用的是 Gitee，清除存储服务
+      const { storageType } = get();
+      if (storageType === 'gitee') {
+        set({ storageService: null, storageType: null });
+      }
+      // 记录配置变更日志
+      useLogStore
+        .getState()
+        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+          details: { type: 'gitee', action: 'clear' },
+        });
+    },
+
     setUpyunConfig: (config: UpyunConfig) => {
       set({ upyunConfig: config });
       saveUpyunConfig(config);
@@ -141,7 +196,7 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     initializeStorage: () => {
-      const { githubConfig, upyunConfig, storageType } = get();
+      const { githubConfig, giteeConfig, upyunConfig, storageType } = get();
 
       if (storageType === 'upyun' && upyunConfig) {
         try {
@@ -150,6 +205,14 @@ export const useImageStore = create<ImageState>((set, get) => {
         } catch (error) {
           console.error('Failed to initialize upyun storage service:', error);
           set({ error: '初始化又拍云存储服务失败' });
+        }
+      } else if (storageType === 'gitee' && giteeConfig) {
+        try {
+          const storageService = new GiteeStorageService(giteeConfig);
+          set({ storageService });
+        } catch (error) {
+          console.error('Failed to initialize gitee storage service:', error);
+          set({ error: '初始化Gitee存储服务失败' });
         }
       } else if (storageType === 'github' && githubConfig) {
         try {
@@ -166,8 +229,14 @@ export const useImageStore = create<ImageState>((set, get) => {
       const { storageService, storageType } = get();
 
       if (!storageService) {
+        const errorMsg =
+          storageType === 'upyun'
+            ? '又拍云'
+            : storageType === 'gitee'
+              ? 'Gitee'
+              : 'GitHub';
         set({
-          error: `${storageType === 'upyun' ? '又拍云' : 'GitHub'} 配置未初始化`,
+          error: `${errorMsg} 配置未初始化`,
         });
         return;
       }
@@ -450,6 +519,66 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
+    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
+      const { storageService } = get();
+      if (!storageService) {
+        set({ error: '存储配置未初始化', loading: false });
+        return;
+      }
+
+      if (imageIds.length === 0) {
+        return;
+      }
+
+      set({ loading: true, error: null });
+      const startTime = Date.now();
+      try {
+        // 批量删除
+        const deletePromises = imageIds.map((id, index) =>
+          storageService.deleteImage(id, fileNames[index])
+        );
+        await Promise.all(deletePromises);
+
+        const duration = Date.now() - startTime;
+        set(state => ({
+          images: state.images.filter(img => !imageIds.includes(img.id)),
+          loading: false,
+        }));
+
+        // 记录批量删除成功日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
+          details: {
+            imageIds,
+            imageNames: fileNames,
+            count: imageIds.length,
+          },
+          duration,
+        });
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        const errorMsg =
+          error instanceof Error ? error.message : '批量删除图片失败';
+        set({
+          error: errorMsg,
+          loading: false,
+        });
+
+        // 记录批量删除失败日志
+        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
+          details: {
+            imageIds,
+            imageNames: fileNames,
+            count: imageIds.length,
+          },
+          error: errorMsg,
+          duration,
+        });
+      } finally {
+        // 确保 loading 状态总是被清除（双重保险）
+        set({ loading: false });
+      }
+    },
+
     updateImage: async (editData: ImageEditData) => {
       const { storageService, images } = get();
       if (!storageService) {
@@ -466,17 +595,19 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        const metadata = {
+        // 构建完整的元数据对象（包含所有 ImageItem 属性）
+        const metadata: ImageItem = {
+          ...image,
           name: editData.name || image.name,
-          description: editData.description || image.description,
-          tags: editData.tags || image.tags,
+          description: editData.description ?? image.description,
+          tags: editData.tags ?? image.tags,
           updatedAt: new Date().toISOString(),
         };
 
         // 传递旧文件名用于重命名检测
         await storageService.updateImageInfo(
           editData.id,
-          image.name,
+          metadata.name,
           metadata,
           image.name
         );
