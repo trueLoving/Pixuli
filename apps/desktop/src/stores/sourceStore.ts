@@ -14,6 +14,19 @@ export interface GitHubSourceConfig {
   updatedAt: number;
 }
 
+export interface GiteeSourceConfig {
+  id: string;
+  name: string;
+  type: 'gitee';
+  owner: string;
+  repo: string;
+  branch: string;
+  token: string;
+  path: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface UpyunSourceConfig {
   id: string;
   name: string;
@@ -27,19 +40,24 @@ export interface UpyunSourceConfig {
   updatedAt: number;
 }
 
-export type SourceConfig = GitHubSourceConfig | UpyunSourceConfig;
+export type SourceConfig =
+  | GitHubSourceConfig
+  | GiteeSourceConfig
+  | UpyunSourceConfig;
 
 type SourceState = {
   sources: SourceConfig[];
   addSource: (
     input:
       | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
+      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
       | Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
   ) => SourceConfig;
   updateSource: (
     id: string,
     input:
       | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
+      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>
       | Partial<Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'type'>>
   ) => void;
   removeSource: (id: string) => void;

@@ -1,4 +1,8 @@
-import { GitHubConfigModal, UpyunConfigModal } from '@packages/ui/src';
+import {
+  GiteeConfigModal,
+  GitHubConfigModal,
+  UpyunConfigModal,
+} from '@packages/ui/src';
 import {
   ChevronUp,
   ChevronDown,
@@ -33,6 +37,21 @@ const emptyGH: GHForm = {
   path: '',
 };
 
+type GiteeForm = {
+  owner: string;
+  repo: string;
+  branch: string;
+  token: string;
+  path: string;
+};
+const emptyGitee: GiteeForm = {
+  owner: '',
+  repo: '',
+  branch: 'master',
+  token: '',
+  path: '',
+};
+
 type UpyunForm = {
   operator: string;
   password: string;
@@ -54,8 +73,10 @@ export const SourceManager: React.FC = () => {
     useSourceStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGhModal, setShowGhModal] = useState(false);
+  const [showGiteeModal, setShowGiteeModal] = useState(false);
   const [showUpyunModal, setShowUpyunModal] = useState(false);
   const [ghConfig, setGhConfig] = useState<GHForm>(emptyGH);
+  const [giteeConfig, setGiteeConfig] = useState<GiteeForm>(emptyGitee);
   const [upyunConfig, setUpyunConfig] = useState<UpyunForm>(emptyUpyun);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -83,6 +104,7 @@ export const SourceManager: React.FC = () => {
     updateImage,
     clearError,
     setGitHubConfig,
+    setGiteeConfig: setImageStoreGiteeConfig,
     setUpyunConfig: setImageStoreUpyunConfig,
     initializeStorage,
     loadImages,
@@ -99,6 +121,13 @@ export const SourceManager: React.FC = () => {
     setEditingId(null);
     setGhConfig(emptyGH);
     setShowGhModal(true);
+    setShowAddMenu(false);
+  };
+
+  const startCreateGitee = () => {
+    setEditingId(null);
+    setGiteeConfig(emptyGitee);
+    setShowGiteeModal(true);
     setShowAddMenu(false);
   };
 
@@ -120,6 +149,15 @@ export const SourceManager: React.FC = () => {
         path: source.path,
       });
       setShowGhModal(true);
+    } else if (source.type === 'gitee') {
+      setGiteeConfig({
+        owner: source.owner,
+        repo: source.repo,
+        branch: source.branch,
+        token: source.token,
+        path: source.path,
+      });
+      setShowGiteeModal(true);
     } else {
       setUpyunConfig({
         operator: source.operator,
@@ -146,6 +184,23 @@ export const SourceManager: React.FC = () => {
       });
     }
     setShowGhModal(false);
+    setEditingId(null);
+  };
+
+  const handleSaveGitee = (config: GiteeForm) => {
+    if (isEditing && editingId) {
+      updateSource(editingId, {
+        ...config,
+        name: `${config.owner}/${config.repo}`,
+      });
+    } else {
+      addSource({
+        type: 'gitee',
+        ...config,
+        name: `${config.owner}/${config.repo}`,
+      });
+    }
+    setShowGiteeModal(false);
     setEditingId(null);
   };
 
@@ -189,7 +244,8 @@ export const SourceManager: React.FC = () => {
                   <div
                     className="text-xs text-gray-500 truncate mt-0.5"
                     title={
-                      selectedSource.type === 'github'
+                      selectedSource.type === 'github' ||
+                      selectedSource.type === 'gitee'
                         ? t('sourceManager.repoLine', {
                             owner: selectedSource.owner,
                             repo: selectedSource.repo,
@@ -198,7 +254,8 @@ export const SourceManager: React.FC = () => {
                         : `又拍云: ${selectedSource.bucket}`
                     }
                   >
-                    {selectedSource.type === 'github' ? (
+                    {selectedSource.type === 'github' ||
+                    selectedSource.type === 'gitee' ? (
                       t('sourceManager.repoLine', {
                         owner: selectedSource.owner,
                         repo: selectedSource.repo,
@@ -281,11 +338,20 @@ export const SourceManager: React.FC = () => {
                       </button>
                       <button
                         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                        onClick={startCreateGitee}
+                      >
+                        <span className="w-4 h-4 text-center text-xs font-bold text-[#c73e1d]">
+                          码
+                        </span>
+                        Gitee 仓库
+                      </button>
+                      {/* <button
+                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                         onClick={startCreateUpyun}
                       >
                         <Cloud className="w-4 h-4" />
                         又拍云存储
-                      </button>
+                      </button> */}
                     </div>
                   </>
                 )}
@@ -345,6 +411,14 @@ export const SourceManager: React.FC = () => {
                             token: s.token,
                             path: s.path,
                           } as any);
+                        } else if (s.type === 'gitee') {
+                          setImageStoreGiteeConfig({
+                            owner: s.owner,
+                            repo: s.repo,
+                            branch: s.branch,
+                            token: s.token,
+                            path: s.path,
+                          } as any);
                         } else {
                           setImageStoreUpyunConfig({
                             operator: s.operator,
@@ -378,6 +452,10 @@ export const SourceManager: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1">
                         {s.type === 'github' ? (
                           <Github className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        ) : s.type === 'gitee' ? (
+                          <span className="w-4 h-4 text-center text-xs font-bold text-[#c73e1d] flex-shrink-0">
+                            码
+                          </span>
                         ) : (
                           <Cloud className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         )}
@@ -394,7 +472,7 @@ export const SourceManager: React.FC = () => {
 
                       {/* 仓库详细信息 */}
                       <div className="flex flex-col gap-1">
-                        {s.type === 'github' ? (
+                        {s.type === 'github' || s.type === 'gitee' ? (
                           <>
                             <div
                               className="text-xs text-gray-600 font-mono truncate"
@@ -457,7 +535,7 @@ export const SourceManager: React.FC = () => {
                           : 'opacity-0 group-hover:opacity-100'
                       }`}
                     >
-                      {s.type === 'github' && (
+                      {(s.type === 'github' || s.type === 'gitee') && (
                         <button
                           className="p-1.5 rounded-md text-gray-600 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out flex items-center justify-center"
                           onClick={e => {
@@ -591,6 +669,24 @@ export const SourceManager: React.FC = () => {
           setGhConfig(emptyGH);
           setEditingId(null);
           setShowGhModal(false);
+        }}
+        platform="desktop"
+      />
+
+      {/* Gitee 配置弹窗（新增/编辑） */}
+      <GiteeConfigModal
+        t={t}
+        isOpen={showGiteeModal}
+        onClose={() => {
+          setShowGiteeModal(false);
+          setEditingId(null);
+        }}
+        giteeConfig={giteeConfig as any}
+        onSaveConfig={(cfg: any) => handleSaveGitee(cfg)}
+        onClearConfig={() => {
+          setGiteeConfig(emptyGitee);
+          setEditingId(null);
+          setShowGiteeModal(false);
         }}
         platform="desktop"
       />

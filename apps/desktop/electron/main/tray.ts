@@ -135,10 +135,10 @@ function openCompressionWindow() {
     compressionWindow = null;
   });
 
-  // 开发模式下打开调试工具
-  if (VITE_DEV_SERVER_URL) {
-    compressionWindow.webContents.openDevTools();
-  }
+  // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
+  // if (VITE_DEV_SERVER_URL) {
+  //   compressionWindow.webContents.openDevTools();
+  // }
 }
 
 /**
@@ -186,10 +186,10 @@ function openAIAnalysisWindow() {
     aiAnalysisWindow = null;
   });
 
-  // 开发模式下打开调试工具
-  if (VITE_DEV_SERVER_URL) {
-    aiAnalysisWindow.webContents.openDevTools();
-  }
+  // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
+  // if (VITE_DEV_SERVER_URL) {
+  //   aiAnalysisWindow.webContents.openDevTools();
+  // }
 }
 
 /**
@@ -237,10 +237,10 @@ function openConversionWindow() {
     conversionWindow = null;
   });
 
-  // 开发模式下打开调试工具
-  if (VITE_DEV_SERVER_URL) {
-    conversionWindow.webContents.openDevTools();
-  }
+  // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
+  // if (VITE_DEV_SERVER_URL) {
+  //   conversionWindow.webContents.openDevTools();
+  // }
 }
 
 /**
