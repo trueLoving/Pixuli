@@ -11,6 +11,7 @@ import { ThemedText } from './ThemedText';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
 import { ImageUploadEditModal } from './ImageUploadEditModal';
+import { processImage, ImageProcessOptions } from '@/utils/imageUtils';
 
 interface ImageUploadButtonProps {
   onUploadComplete?: () => void;
@@ -45,7 +46,7 @@ export function ImageUploadButton({
 
       // 选择图片
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsMultipleSelection: true,
         quality: 1,
       });
@@ -93,15 +94,48 @@ export function ImageUploadButton({
     tags?: string[];
     width?: number;
     height?: number;
+    processOptions?: ImageProcessOptions;
   }) => {
     if (!pendingImage) return;
 
     setEditModalVisible(false);
     setUploading(true);
     try {
+      let finalUri = pendingImage.uri;
+      let finalName = pendingImage.name;
+
+      // 如果有处理选项，先处理图片
+      if (data.processOptions) {
+        try {
+          const processedResult = await processImage(
+            pendingImage.uri,
+            data.processOptions
+          );
+          finalUri = processedResult.uri;
+
+          // 更新文件名以反映格式变化
+          if (data.processOptions.format) {
+            const nameWithoutExt =
+              finalName?.replace(/\.[^/.]+$/, '') || 'image';
+            const ext =
+              data.processOptions.format === 'jpeg'
+                ? 'jpg'
+                : data.processOptions.format;
+            finalName = `${nameWithoutExt}.${ext}`;
+          }
+        } catch (processError) {
+          console.error('图片处理失败:', processError);
+          Alert.alert(
+            t('common.error'),
+            t('image.processFailed') || '图片处理失败，将上传原图'
+          );
+          // 继续使用原图上传
+        }
+      }
+
       await uploadImage({
-        uri: pendingImage.uri,
-        name: pendingImage.name,
+        uri: finalUri,
+        name: finalName,
         description: data.description,
         tags: data.tags,
       });

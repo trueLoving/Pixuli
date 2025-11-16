@@ -7,12 +7,23 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Switch,
+  Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
-import { getImageDimensionsFromUri } from '@/utils/imageUtils';
+import {
+  getImageDimensionsFromUri,
+  getFileSizeFromUri,
+  formatImageFileSize,
+  processImage,
+  ImageFormat,
+  ImageProcessOptions,
+  ImageProcessResult,
+} from '@/utils/imageUtils';
+import { ImageCropModal } from './ImageCropModal';
 
 interface ImageUploadEditModalProps {
   visible: boolean;
@@ -24,6 +35,7 @@ interface ImageUploadEditModalProps {
     tags?: string[];
     width?: number;
     height?: number;
+    processOptions?: ImageProcessOptions;
   }) => Promise<void>;
   loading?: boolean;
 }
@@ -46,6 +58,32 @@ export function ImageUploadEditModal({
   } | null>(null);
   const [loadingDimensions, setLoadingDimensions] = useState(false);
 
+  // 图片处理选项
+  const [enableProcessing, setEnableProcessing] = useState(false);
+  const [compressQuality, setCompressQuality] = useState(0.8);
+  const [targetFormat, setTargetFormat] = useState<ImageFormat | 'original'>(
+    'original'
+  );
+  const [resizeWidth, setResizeWidth] = useState<string>('');
+  const [resizeHeight, setResizeHeight] = useState<string>('');
+  const [keepAspectRatio, setKeepAspectRatio] = useState(true);
+
+  // 处理效果预览
+  const [previewResult, setPreviewResult] = useState<ImageProcessResult | null>(
+    null
+  );
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [originalFileSize, setOriginalFileSize] = useState<number | null>(null);
+
+  // 裁剪相关状态
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropArea, setCropArea] = useState<{
+    originX: number;
+    originY: number;
+    width: number;
+    height: number;
+  } | null>(null);
+
   useEffect(() => {
     if (visible && imageUri) {
       // 重置表单
@@ -53,19 +91,34 @@ export function ImageUploadEditModal({
       setTags([]);
       setTagInput('');
       setDimensions(null);
+      setEnableProcessing(false);
+      setCompressQuality(0.8);
+      setTargetFormat('original');
+      setResizeWidth('');
+      setResizeHeight('');
+      setKeepAspectRatio(true);
+      setCropArea(null);
+      setPreviewResult(null);
 
-      // 获取图片尺寸
+      // 获取图片尺寸和文件大小
       setLoadingDimensions(true);
-      getImageDimensionsFromUri(imageUri)
-        .then(dims => {
+      Promise.all([
+        getImageDimensionsFromUri(imageUri),
+        getFileSizeFromUri(imageUri),
+      ])
+        .then(([dims, size]) => {
           setDimensions(dims);
+          setOriginalFileSize(size);
         })
         .catch(error => {
-          console.warn('Failed to get image dimensions:', error);
+          console.warn('Failed to get image info:', error);
         })
         .finally(() => {
           setLoadingDimensions(false);
         });
+
+      // 重置预览结果
+      setPreviewResult(null);
     }
   }, [visible, imageUri]);
 
@@ -81,12 +134,146 @@ export function ImageUploadEditModal({
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  // 处理裁剪完成
+  const handleCropComplete = (crop: {
+    originX: number;
+    originY: number;
+    width: number;
+    height: number;
+  }) => {
+    setCropArea(crop);
+    setShowCropModal(false);
+    // 如果启用了处理，自动触发预览
+    if (enableProcessing) {
+      setTimeout(() => {
+        handlePreview();
+      }, 100);
+    }
+  };
+
+  // 构建处理选项（用于预览和保存）
+  const buildProcessOptions = (): ImageProcessOptions | undefined => {
+    // 如果有裁剪区域，即使未启用处理也要应用裁剪
+    if (cropArea) {
+      const processOptions: ImageProcessOptions = {
+        crop: cropArea,
+      };
+
+      if (enableProcessing) {
+        processOptions.compress = compressQuality;
+        processOptions.format =
+          targetFormat !== 'original' ? targetFormat : undefined;
+      }
+
+      // 添加尺寸调整
+      if (resizeWidth || resizeHeight) {
+        const width = resizeWidth ? parseInt(resizeWidth, 10) : undefined;
+        const height = resizeHeight ? parseInt(resizeHeight, 10) : undefined;
+
+        if (width || height) {
+          // 如果保持宽高比，计算另一个维度
+          if (keepAspectRatio && dimensions) {
+            if (width && !height) {
+              const aspectRatio = dimensions.width / dimensions.height;
+              processOptions.height = Math.round(width / aspectRatio);
+              processOptions.width = width;
+            } else if (height && !width) {
+              const aspectRatio = dimensions.width / dimensions.height;
+              processOptions.width = Math.round(height * aspectRatio);
+              processOptions.height = height;
+            } else if (width && height) {
+              // 两个都设置了，选择较小的缩放比例以保持宽高比
+              const scaleX = width / dimensions.width;
+              const scaleY = height / dimensions.height;
+              const scale = Math.min(scaleX, scaleY);
+              processOptions.width = Math.round(dimensions.width * scale);
+              processOptions.height = Math.round(dimensions.height * scale);
+            }
+          } else {
+            processOptions.width = width;
+            processOptions.height = height;
+          }
+          processOptions.keepAspectRatio = keepAspectRatio;
+        }
+      }
+
+      return processOptions;
+    }
+
+    if (!enableProcessing) return undefined;
+
+    const processOptions: ImageProcessOptions = {
+      compress: compressQuality,
+      format: targetFormat !== 'original' ? targetFormat : undefined,
+    };
+
+    // 添加尺寸调整
+    if (resizeWidth || resizeHeight) {
+      const width = resizeWidth ? parseInt(resizeWidth, 10) : undefined;
+      const height = resizeHeight ? parseInt(resizeHeight, 10) : undefined;
+
+      if (width || height) {
+        // 如果保持宽高比，计算另一个维度
+        if (keepAspectRatio && dimensions) {
+          if (width && !height) {
+            const aspectRatio = dimensions.width / dimensions.height;
+            processOptions.height = Math.round(width / aspectRatio);
+            processOptions.width = width;
+          } else if (height && !width) {
+            const aspectRatio = dimensions.width / dimensions.height;
+            processOptions.width = Math.round(height * aspectRatio);
+            processOptions.height = height;
+          } else if (width && height) {
+            // 两个都设置了，选择较小的缩放比例以保持宽高比
+            const scaleX = width / dimensions.width;
+            const scaleY = height / dimensions.height;
+            const scale = Math.min(scaleX, scaleY);
+            processOptions.width = Math.round(dimensions.width * scale);
+            processOptions.height = Math.round(dimensions.height * scale);
+          }
+        } else {
+          processOptions.width = width;
+          processOptions.height = height;
+        }
+        processOptions.keepAspectRatio = keepAspectRatio;
+      }
+    }
+
+    return processOptions;
+  };
+
+  // 预览处理效果
+  const handlePreview = async () => {
+    if (!enableProcessing) return;
+
+    const processOptions = buildProcessOptions();
+    if (!processOptions) return;
+
+    setPreviewLoading(true);
+    setPreviewResult(null);
+
+    try {
+      const result = await processImage(imageUri, processOptions);
+      setPreviewResult(result);
+    } catch (error) {
+      console.error('预览处理效果失败:', error);
+      Alert.alert(
+        t('common.error'),
+        t('image.previewFailed') || '预览处理效果失败'
+      );
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const handleSave = async () => {
+    const processOptions = buildProcessOptions();
     await onSave({
       description: description.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
       width: dimensions?.width,
       height: dimensions?.height,
+      processOptions,
     });
   };
 
@@ -209,9 +396,350 @@ export function ImageUploadEditModal({
                 </View>
               )}
             </View>
+
+            {/* 裁剪选项 */}
+            <View style={styles.section}>
+              <ThemedText style={styles.label}>{t('image.crop')}</ThemedText>
+              <View style={styles.cropContainer}>
+                <TouchableOpacity
+                  style={styles.cropButton}
+                  onPress={() => setShowCropModal(true)}
+                >
+                  <IconSymbol name="crop" size={20} color="#007AFF" />
+                  <ThemedText style={styles.cropButtonText}>
+                    {cropArea ? t('image.editCrop') : t('image.selectCropArea')}
+                  </ThemedText>
+                </TouchableOpacity>
+                {cropArea && (
+                  <TouchableOpacity
+                    style={styles.removeCropButton}
+                    onPress={() => {
+                      setCropArea(null);
+                      setPreviewResult(null);
+                    }}
+                  >
+                    <IconSymbol name="xmark" size={16} color="#ff3b30" />
+                    <ThemedText style={styles.removeCropText}>
+                      {t('image.removeCrop')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+              </View>
+              {cropArea && (
+                <View style={styles.cropInfo}>
+                  <ThemedText style={styles.cropInfoText}>
+                    {t('image.cropArea')}: {cropArea.width} × {cropArea.height}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
+
+            {/* 图片处理选项 */}
+            <View style={styles.section}>
+              <View style={styles.switchRow}>
+                <ThemedText style={styles.label}>
+                  {t('image.imageProcessing')}
+                </ThemedText>
+                <Switch
+                  value={enableProcessing}
+                  onValueChange={setEnableProcessing}
+                  trackColor={{ false: '#e0e0e0', true: '#007AFF' }}
+                  thumbColor="#fff"
+                />
+              </View>
+
+              {enableProcessing && (
+                <>
+                  {/* 压缩质量 */}
+                  <View style={styles.processingOption}>
+                    <ThemedText style={styles.processingLabel}>
+                      {t('image.compressQuality')}:{' '}
+                      {Math.round(compressQuality * 100)}%
+                    </ThemedText>
+                    <View style={styles.sliderContainer}>
+                      <TouchableOpacity
+                        style={styles.sliderButton}
+                        onPress={() =>
+                          setCompressQuality(
+                            Math.max(0.1, compressQuality - 0.1)
+                          )
+                        }
+                      >
+                        <ThemedText style={styles.sliderButtonText}>
+                          -
+                        </ThemedText>
+                      </TouchableOpacity>
+                      <View style={styles.sliderTrack}>
+                        <View
+                          style={[
+                            styles.sliderFill,
+                            { width: `${compressQuality * 100}%` },
+                          ]}
+                        />
+                      </View>
+                      <TouchableOpacity
+                        style={styles.sliderButton}
+                        onPress={() =>
+                          setCompressQuality(Math.min(1, compressQuality + 0.1))
+                        }
+                      >
+                        <ThemedText style={styles.sliderButtonText}>
+                          +
+                        </ThemedText>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* 格式选择 */}
+                  <View style={styles.processingOption}>
+                    <ThemedText style={styles.processingLabel}>
+                      {t('image.targetFormat')}
+                    </ThemedText>
+                    <View style={styles.formatContainer}>
+                      {(['original', 'jpeg', 'png', 'webp'] as const).map(
+                        format => (
+                          <TouchableOpacity
+                            key={format}
+                            style={[
+                              styles.formatButton,
+                              targetFormat === format &&
+                                styles.formatButtonActive,
+                            ]}
+                            onPress={() => setTargetFormat(format)}
+                          >
+                            <ThemedText
+                              style={[
+                                styles.formatButtonText,
+                                targetFormat === format &&
+                                  styles.formatButtonTextActive,
+                              ]}
+                            >
+                              {format === 'original'
+                                ? t('image.originalFormat')
+                                : format.toUpperCase()}
+                            </ThemedText>
+                          </TouchableOpacity>
+                        )
+                      )}
+                    </View>
+                  </View>
+
+                  {/* 尺寸调整 */}
+                  <View style={styles.processingOption}>
+                    <ThemedText style={styles.processingLabel}>
+                      {t('image.resize')}
+                    </ThemedText>
+                    <View style={styles.resizeContainer}>
+                      <View style={styles.resizeInputRow}>
+                        <View style={styles.resizeInputWrapper}>
+                          <ThemedText style={styles.resizeLabel}>
+                            {t('image.width')}
+                          </ThemedText>
+                          <TextInput
+                            style={styles.resizeInput}
+                            value={resizeWidth}
+                            onChangeText={setResizeWidth}
+                            placeholder={dimensions?.width.toString() || '0'}
+                            placeholderTextColor="#999"
+                            keyboardType="numeric"
+                          />
+                        </View>
+                        <ThemedText style={styles.resizeSeparator}>
+                          ×
+                        </ThemedText>
+                        <View style={styles.resizeInputWrapper}>
+                          <ThemedText style={styles.resizeLabel}>
+                            {t('image.height')}
+                          </ThemedText>
+                          <TextInput
+                            style={styles.resizeInput}
+                            value={resizeHeight}
+                            onChangeText={setResizeHeight}
+                            placeholder={dimensions?.height.toString() || '0'}
+                            placeholderTextColor="#999"
+                            keyboardType="numeric"
+                          />
+                        </View>
+                      </View>
+                      <View style={styles.aspectRatioRow}>
+                        <ThemedText style={styles.aspectRatioLabel}>
+                          {t('image.keepAspectRatio')}
+                        </ThemedText>
+                        <Switch
+                          value={keepAspectRatio}
+                          onValueChange={setKeepAspectRatio}
+                          trackColor={{ false: '#e0e0e0', true: '#007AFF' }}
+                          thumbColor="#fff"
+                        />
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* 预览按钮 */}
+                  <View style={styles.previewButtonContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.previewButton,
+                        previewLoading && styles.previewButtonDisabled,
+                      ]}
+                      onPress={handlePreview}
+                      disabled={previewLoading}
+                    >
+                      {previewLoading ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <IconSymbol name="eye" size={16} color="#fff" />
+                          <ThemedText style={styles.previewButtonText}>
+                            {t('image.previewEffect')}
+                          </ThemedText>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* 处理效果预览 */}
+                  {previewResult && (
+                    <View style={styles.previewResultContainer}>
+                      <ThemedText style={styles.previewResultTitle}>
+                        {t('image.processingEffect')}
+                      </ThemedText>
+
+                      {/* 图片对比预览 */}
+                      <View style={styles.imageComparisonContainer}>
+                        <View style={styles.imageComparisonItem}>
+                          <ThemedText style={styles.imageComparisonLabel}>
+                            {t('image.original')}
+                          </ThemedText>
+                          <Image
+                            source={{ uri: imageUri }}
+                            style={styles.previewImageSmall}
+                            contentFit="contain"
+                          />
+                        </View>
+                        <IconSymbol
+                          name="arrow.right"
+                          size={20}
+                          color="#007AFF"
+                          style={styles.comparisonArrow}
+                        />
+                        <View style={styles.imageComparisonItem}>
+                          <ThemedText style={styles.imageComparisonLabel}>
+                            {t('image.processed')}
+                          </ThemedText>
+                          <Image
+                            source={{ uri: previewResult.uri }}
+                            style={styles.previewImageSmall}
+                            contentFit="contain"
+                          />
+                        </View>
+                      </View>
+
+                      {/* 文件大小对比 */}
+                      {previewResult.originalSize !== undefined &&
+                        previewResult.size !== undefined && (
+                          <View style={styles.comparisonRow}>
+                            <View style={styles.comparisonItem}>
+                              <ThemedText style={styles.comparisonLabel}>
+                                {t('image.originalSize')}
+                              </ThemedText>
+                              <ThemedText style={styles.comparisonValue}>
+                                {formatImageFileSize(
+                                  previewResult.originalSize
+                                )}
+                              </ThemedText>
+                            </View>
+                            <IconSymbol
+                              name="arrow.right"
+                              size={16}
+                              color="#666"
+                            />
+                            <View style={styles.comparisonItem}>
+                              <ThemedText style={styles.comparisonLabel}>
+                                {t('image.processedSize')}
+                              </ThemedText>
+                              <ThemedText
+                                style={[
+                                  styles.comparisonValue,
+                                  previewResult.sizeReductionPercent &&
+                                    previewResult.sizeReductionPercent > 0 &&
+                                    styles.comparisonValueSuccess,
+                                ]}
+                              >
+                                {formatImageFileSize(previewResult.size)}
+                              </ThemedText>
+                            </View>
+                          </View>
+                        )}
+
+                      {/* 压缩信息 */}
+                      {previewResult.sizeReductionPercent !== undefined &&
+                        previewResult.sizeReductionPercent > 0 && (
+                          <View style={styles.compressionInfo}>
+                            <ThemedText style={styles.compressionText}>
+                              {t('image.sizeReduced')}:{' '}
+                              {formatImageFileSize(
+                                previewResult.sizeReduction || 0
+                              )}{' '}
+                              ({previewResult.sizeReductionPercent.toFixed(1)}%)
+                            </ThemedText>
+                          </View>
+                        )}
+
+                      {/* 尺寸对比 */}
+                      {previewResult.originalWidth !== undefined &&
+                        previewResult.originalHeight !== undefined && (
+                          <View style={styles.comparisonRow}>
+                            <View style={styles.comparisonItem}>
+                              <ThemedText style={styles.comparisonLabel}>
+                                {t('image.originalDimensions')}
+                              </ThemedText>
+                              <ThemedText style={styles.comparisonValue}>
+                                {previewResult.originalWidth} ×{' '}
+                                {previewResult.originalHeight}
+                              </ThemedText>
+                            </View>
+                            <IconSymbol
+                              name="arrow.right"
+                              size={16}
+                              color="#666"
+                            />
+                            <View style={styles.comparisonItem}>
+                              <ThemedText style={styles.comparisonLabel}>
+                                {t('image.processedDimensions')}
+                              </ThemedText>
+                              <ThemedText style={styles.comparisonValue}>
+                                {previewResult.width} × {previewResult.height}
+                              </ThemedText>
+                            </View>
+                          </View>
+                        )}
+                    </View>
+                  )}
+
+                  {/* 原始文件大小显示 */}
+                  {originalFileSize !== null && !previewResult && (
+                    <View style={styles.originalSizeInfo}>
+                      <ThemedText style={styles.originalSizeText}>
+                        {t('image.originalFileSize')}:{' '}
+                        {formatImageFileSize(originalFileSize)}
+                      </ThemedText>
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
           </ScrollView>
         </View>
       </View>
+
+      {/* 裁剪模态框 */}
+      <ImageCropModal
+        visible={showCropModal}
+        imageUri={imageUri}
+        onCropComplete={handleCropComplete}
+        onCancel={() => setShowCropModal(false)}
+      />
     </Modal>
   );
 }
@@ -336,5 +864,277 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 14,
     color: '#333',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  processingOption: {
+    marginBottom: 20,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+  },
+  processingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#333',
+  },
+  sliderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  sliderButton: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
+  },
+  sliderButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  sliderTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  sliderFill: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+    borderRadius: 4,
+  },
+  formatContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  formatButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#e0e0e0',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  formatButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  formatButtonText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  formatButtonTextActive: {
+    color: '#fff',
+  },
+  resizeContainer: {
+    gap: 12,
+  },
+  resizeInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  resizeInputWrapper: {
+    flex: 1,
+  },
+  resizeLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  resizeInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 14,
+    backgroundColor: '#fff',
+  },
+  resizeSeparator: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 20,
+  },
+  aspectRatioRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  aspectRatioLabel: {
+    fontSize: 14,
+    color: '#333',
+  },
+  previewButtonContainer: {
+    marginTop: 12,
+  },
+  previewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  previewButtonDisabled: {
+    opacity: 0.6,
+  },
+  previewButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  previewResultContainer: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  previewResultTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 12,
+  },
+  comparisonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    gap: 8,
+  },
+  comparisonItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  comparisonLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  comparisonValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  comparisonValueSuccess: {
+    color: '#28a745',
+  },
+  compressionInfo: {
+    marginTop: 8,
+    marginBottom: 12,
+    padding: 8,
+    backgroundColor: '#d4edda',
+    borderRadius: 6,
+  },
+  compressionText: {
+    fontSize: 13,
+    color: '#155724',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  originalSizeInfo: {
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 6,
+  },
+  originalSizeText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  cropContainer: {
+    gap: 12,
+  },
+  cropButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f8ff',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  cropButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  removeCropButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff5f5',
+    borderWidth: 1,
+    borderColor: '#ff3b30',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  removeCropText: {
+    color: '#ff3b30',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  cropInfo: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 6,
+  },
+  cropInfoText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  imageComparisonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    gap: 12,
+  },
+  imageComparisonItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  imageComparisonLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  previewImageSmall: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  comparisonArrow: {
+    marginHorizontal: 8,
   },
 });

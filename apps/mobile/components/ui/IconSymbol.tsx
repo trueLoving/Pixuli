@@ -43,6 +43,9 @@ const MAPPING = {
   checkmark: 'check',
   plus: 'add',
   'arrow.clockwise': 'refresh',
+  crop: 'crop',
+  'crop.rotate': 'crop-rotate',
+  eye: 'visibility',
 } as IconMapping;
 
 /**
