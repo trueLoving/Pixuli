@@ -24,7 +24,8 @@ concurrency:
 
 env:
   PNPM_VERSION: 9
-  NODE_VERSION: 20
+  NODE_VERSION: 22
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m"
 
 jobs:
   detect:
@@ -74,6 +75,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -92,8 +94,17 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            apps/mobile/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
       - name: Install dependencies (workspace)
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
         working-directory: .
 
       - name: Setup Java
@@ -114,8 +125,23 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
+      - name: Cache Expo prebuild
+        uses: actions/cache@v4
+        with:
+          path: apps/mobile/android
+          key: ${{ runner.os }}-expo-prebuild-${{ hashFiles('apps/mobile/app.json', 'apps/mobile/package.json', 'apps/mobile/app/_layout.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-expo-prebuild-
+
       - name: Generate Android native project
-        run: npx expo prebuild --platform android --clean
+        run: |
+          # 只在 android 目录不存在或配置变化时才执行 prebuild
+          if [ ! -d "android" ] || [ ! -f "android/app/build.gradle" ]; then
+            npx expo prebuild --platform android --clean
+          else
+            echo "Android 项目已存在，跳过 prebuild"
+          fi
         working-directory: apps/mobile
 
       - name: Cache Gradle build cache
@@ -125,15 +151,24 @@ jobs:
           key: ${{ runner.os }}-gradle-build-${{ hashFiles('apps/mobile/android/**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-build-
+
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
         working-directory: apps/mobile
 
       - name: Build Android (APK)
         id: build
+        env:
+          ORG_GRADLE_PROJECT_android.enableMinifyInReleaseBuilds: 'true'
+          ORG_GRADLE_PROJECT_android.enableShrinkResourcesInReleaseBuilds: 'true'
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --parallel \
+            --build-cache \
+            --max-workers=4 \
+            --warning-mode=none
           echo "构建完成，退出码: $?"
         working-directory: apps/mobile
 
