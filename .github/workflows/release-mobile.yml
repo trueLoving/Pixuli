@@ -9,9 +9,9 @@ on:
         type: choice
         options:
           - android
-          - ios
-          - both
-        default: both
+          # - ios
+          # - both
+        default: android
       releaseToGitHub:
         description: '将产物附加到 GitHub Release（仅在 tag 或手动开启时）'
         required: true
@@ -71,16 +71,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Get pnpm store directory
         shell: bash
