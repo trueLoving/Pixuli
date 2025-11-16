@@ -156,6 +156,21 @@ jobs:
         run: chmod +x android/gradlew
         working-directory: apps/mobile
 
+      - name: Configure Gradle properties
+        run: |
+          # 在 prebuild 后配置 gradle.properties 以优化构建
+          if [ -f "android/gradle.properties" ]; then
+            echo "" >> android/gradle.properties
+            echo "# CI 构建优化配置" >> android/gradle.properties
+            echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> android/gradle.properties
+            echo "org.gradle.caching=true" >> android/gradle.properties
+            echo "org.gradle.vfs.watch=true" >> android/gradle.properties
+            echo "org.gradle.workers.max=4" >> android/gradle.properties
+            echo "android.enableMinifyInReleaseBuilds=true" >> android/gradle.properties
+            echo "android.enableShrinkResourcesInReleaseBuilds=true" >> android/gradle.properties
+          fi
+        working-directory: apps/mobile
+
       - name: Build Android (APK)
         id: build
         env:
