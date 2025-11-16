@@ -11,10 +11,16 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { ImageItem } from 'pixuli-ui/src';
+import * as Sharing from 'expo-sharing';
+import * as Clipboard from 'expo-clipboard';
+// 动态加载 legacy API（运行时可用）
+// @ts-ignore
+const FileSystem = require('expo-file-system/legacy');
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import { showSuccess, showError } from '@/utils/toast';
+import { formatImageFileSize } from '@/utils/imageUtils';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;
@@ -43,6 +49,7 @@ export function ImageBrowser({
   const [deleting, setDeleting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
 
@@ -186,6 +193,100 @@ export function ImageBrowser({
     }
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const handleCopyUrl = async (url: string) => {
+    try {
+      await Clipboard.setStringAsync(url);
+      showSuccess(t('image.copyUrlSuccess') || '链接已复制到剪贴板');
+    } catch (error) {
+      showError(t('image.copyUrlFailed') || '复制链接失败');
+    }
+  };
+
+  const handleShareImageLink = async () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+
+    setSharing(true);
+    try {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert(
+          t('common.error') || '错误',
+          t('image.shareFailed') || '分享功能不可用'
+        );
+        return;
+      }
+
+      // expo-sharing 需要本地文件路径，不能直接分享远程 URL
+      // 使用 FileSystem.downloadAsync 下载图片，添加超时处理
+      const fileExtension = currentImage.name.split('.').pop() || 'jpg';
+      const fileName = `${currentImage.id || 'image'}.${fileExtension}`;
+      const localUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      // 使用 Promise.race 实现超时控制
+      const downloadPromise = FileSystem.downloadAsync(
+        currentImage.url,
+        localUri
+      );
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('下载超时，请检查网络连接'));
+        }, 30000); // 30秒超时
+      });
+
+      // 等待下载完成或超时
+      const downloadResult = await Promise.race([
+        downloadPromise,
+        timeoutPromise,
+      ]);
+
+      if (!downloadResult.uri) {
+        throw new Error('下载图片失败');
+      }
+
+      // 分享本地文件
+      await Sharing.shareAsync(downloadResult.uri, {
+        dialogTitle: currentImage.name,
+        mimeType: currentImage.type || 'image/*',
+        UTI: currentImage.type || 'public.image',
+      });
+    } catch (error) {
+      console.error('分享图片失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+
+      // 如果是用户取消分享或超时，不显示错误
+      if (
+        errorMessage.includes('cancel') ||
+        errorMessage.includes('dismissed') ||
+        errorMessage.includes('User') ||
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('aborted')
+      ) {
+        return;
+      }
+
+      showError(`${t('image.shareFailed') || '分享失败'}: ${errorMessage}`);
+    } finally {
+      setSharing(false);
+    }
+  };
+
   if (!visible || images.length === 0) {
     return null;
   }
@@ -233,7 +334,7 @@ export function ImageBrowser({
               onPress={() => {
                 setShowMetadata(prev => !prev);
               }}
-              disabled={deleting || refreshing}
+              disabled={deleting || refreshing || sharing}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
@@ -245,8 +346,21 @@ export function ImageBrowser({
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.headerButton}
+              onPress={handleShareImageLink}
+              disabled={deleting || refreshing || sharing}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              {sharing ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <IconSymbol name="paperplane.fill" size={24} color="#fff" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerButton}
               onPress={handleDelete}
-              disabled={deleting || refreshing}
+              disabled={deleting || refreshing || sharing}
             >
               {deleting ? (
                 <ActivityIndicator size="small" color="#fff" />
@@ -293,6 +407,7 @@ export function ImageBrowser({
               style={styles.metadataContent}
               showsVerticalScrollIndicator={true}
             >
+              {/* 基本信息 */}
               <View style={styles.metadataRow}>
                 <ThemedText style={styles.metadataLabel}>
                   {t('image.imageName')}:
@@ -301,6 +416,7 @@ export function ImageBrowser({
                   {currentImage.name}
                 </ThemedText>
               </View>
+
               {currentImage.width > 0 && currentImage.height > 0 && (
                 <View style={styles.metadataRow}>
                   <ThemedText style={styles.metadataLabel}>
@@ -311,6 +427,27 @@ export function ImageBrowser({
                   </ThemedText>
                 </View>
               )}
+
+              {currentImage.size > 0 && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.fileSize')}:
+                  </ThemedText>
+                  <ThemedText style={styles.metadataValue}>
+                    {formatImageFileSize(currentImage.size)}
+                  </ThemedText>
+                </View>
+              )}
+
+              <View style={styles.metadataRow}>
+                <ThemedText style={styles.metadataLabel}>
+                  {t('image.uploadTime')}:
+                </ThemedText>
+                <ThemedText style={styles.metadataValue}>
+                  {formatDate(currentImage.createdAt)}
+                </ThemedText>
+              </View>
+
               {currentImage.description && (
                 <View style={styles.metadataRow}>
                   <ThemedText style={styles.metadataLabel}>
@@ -321,6 +458,7 @@ export function ImageBrowser({
                   </ThemedText>
                 </View>
               )}
+
               {currentImage.tags && currentImage.tags.length > 0 && (
                 <View style={styles.metadataRow}>
                   <ThemedText style={styles.metadataLabel}>
@@ -335,6 +473,68 @@ export function ImageBrowser({
                   </View>
                 </View>
               )}
+
+              {/* ID、创建时间、更新时间 */}
+              <View style={styles.metadataRow}>
+                <ThemedText style={styles.metadataLabel}>
+                  {t('image.id')}:
+                </ThemedText>
+                <ThemedText style={styles.metadataValue}>
+                  {currentImage.id}
+                </ThemedText>
+              </View>
+
+              <View style={styles.metadataRow}>
+                <ThemedText style={styles.metadataLabel}>
+                  {t('image.createdAt')}:
+                </ThemedText>
+                <ThemedText style={styles.metadataValue}>
+                  {formatDate(currentImage.createdAt)}
+                </ThemedText>
+              </View>
+
+              {currentImage.updatedAt && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.updatedAt')}:
+                  </ThemedText>
+                  <ThemedText style={styles.metadataValue}>
+                    {formatDate(currentImage.updatedAt)}
+                  </ThemedText>
+                </View>
+              )}
+
+              {currentImage.type && (
+                <View style={styles.metadataRow}>
+                  <ThemedText style={styles.metadataLabel}>
+                    {t('image.type')}:
+                  </ThemedText>
+                  <ThemedText style={styles.metadataValue}>
+                    {currentImage.type}
+                  </ThemedText>
+                </View>
+              )}
+
+              {/* URL 信息 */}
+              <View style={styles.metadataRow}>
+                <ThemedText style={styles.metadataLabel}>
+                  {t('image.imageUrl')}:
+                </ThemedText>
+                <View style={styles.urlContainer}>
+                  <ThemedText style={styles.urlText} numberOfLines={1}>
+                    {currentImage.url}
+                  </ThemedText>
+                  <TouchableOpacity
+                    style={styles.urlActionButton}
+                    onPress={() => handleCopyUrl(currentImage.url)}
+                  >
+                    <IconSymbol name="link" size={16} color="#007AFF" />
+                    <ThemedText style={styles.urlActionText}>
+                      {t('image.copyUrl')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </ScrollView>
           </View>
         )}
@@ -483,6 +683,28 @@ const styles = StyleSheet.create({
   },
   tagText: {
     color: '#fff',
+    fontSize: 14,
+  },
+  urlContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  urlText: {
+    flex: 1,
+    color: '#007AFF',
+    fontSize: 14,
+  },
+  urlActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  urlActionText: {
+    color: '#007AFF',
     fontSize: 14,
   },
 });

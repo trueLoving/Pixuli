@@ -16,6 +16,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",
     "expo": "~54.0.22",
+    "expo-clipboard": "^8.0.7",
     "expo-constants": "~18.0.10",
     "expo-document-picker": "^14.0.7",
     "expo-file-system": "^19.0.17",

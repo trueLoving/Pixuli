@@ -46,6 +46,8 @@ const MAPPING = {
   crop: 'crop',
   'crop.rotate': 'crop-rotate',
   eye: 'visibility',
+  'chevron.up': 'keyboard-arrow-up',
+  'chevron.down': 'keyboard-arrow-down',
 } as IconMapping;
 
 /**
