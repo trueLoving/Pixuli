@@ -30,6 +30,11 @@ if (!i18n.isInitialized) {
     // 确保缺失的翻译键返回 key 本身，而不是 undefined
     returnEmptyString: false,
     returnNull: false,
+    // 当找不到翻译时，返回原始键（不转换大小写）
+    missingKeyHandler: (lng, ns, key) => {
+      console.warn(`Missing translation key: ${key}`);
+      return key;
+    },
   });
 }
 

@@ -19,20 +19,20 @@ TypeScript 构建，提供跨平台的图片管理、AI 分析和云端同步功
 - **格式支持** - JPEG, PNG, WebP, GIF, SVG, BMP
 - **预览功能** - 全屏预览、缩放、旋转
 
-### 🤖 AI 智能分析
-
-- **物体检测** - 识别图片中的物体
-- **场景识别** - 自动识别场景类型
-- **人脸检测** - 检测和标记人脸
-- **文字识别** - OCR 文字提取
-- **智能标签** - AI 自动生成标签
-
 ### 🔧 图片处理
 
-- **WebP 压缩** - 智能压缩优化
-- **格式转换** - 支持多种格式转换
-- **尺寸调整** - 批量调整图片尺寸
-- **质量控制** - 可调节压缩参数
+- **图片压缩** - 上传前可调节压缩质量（10%-100%），节省存储空间
+- **格式转换** - 支持 JPEG、PNG、WebP 格式转换
+- **尺寸调整** - 可自定义宽度和高度，支持保持宽高比
+- **图片裁剪** - 支持拖动裁剪框选择区域，可调整裁剪框大小
+- **处理预览** - 实时预览处理效果，显示处理前后的图片对比、文件大小、压缩率等统计信息
+
+### 📋 图片详情
+
+- **详细信息面板** - 显示文件大小、上传时间、URL、ID、创建时间、更新时间、图片类型等完整信息
+- **分享功能** - 支持分享图片链接（先下载到本地再分享，支持超时控制）
+- **复制链接** - 一键复制图片 URL 到剪贴板
+- **快捷操作** - 分享按钮集成到顶部工具栏，与删除按钮同级，操作更便捷
 
 ### ☁️ 云端同步
 
@@ -105,8 +105,7 @@ graph TB
 
 ### 环境要求
 
-- Node.js >= 20.0.0
-- React Native CLI
+- Node.js >= 22.0.0
 - Android Studio (Android 开发)
 - Xcode (iOS 开发，仅 macOS)
 - CocoaPods (iOS 依赖管理)
@@ -114,178 +113,75 @@ graph TB
 ### 安装依赖
 
 ```bash
-# 安装项目依赖
-npm install
-
-# iOS 依赖安装 (仅 macOS)
-cd ios && pod install && cd ..
+# 根目录安装项目依赖
+pnpm i
 ```
 
 ### 运行项目
 
 ```bash
-# 启动 Metro  bundler
-npm start
-
 # 运行 Android 版本
-npm run android
-
+pnpm start --android
 # 运行 iOS 版本 (仅 macOS)
-npm run ios
-```
-
-### 开发调试
-
-```bash
-# 代码检查
-npm run lint
-
-# 运行测试
-npm test
-
-# 清理缓存
-npx react-native start --reset-cache
+pnpm start --ios
 ```
 
 ## 📁 项目结构
 
 ```
 apps/mobile/
-├── src/
-│   ├── components/          # 可复用组件
-│   │   ├── common/         # 通用组件
-│   │   ├── image/          # 图片相关组件
-│   │   └── ui/             # UI 组件
-│   ├── screens/            # 页面组件
-│   │   ├── HomeScreen.tsx
-│   │   ├── ImageDetailScreen.tsx
-│   │   └── SettingsScreen.tsx
-│   ├── services/           # 业务服务
-│   │   ├── imageService.ts
-│   │   ├── aiService.ts
-│   │   └── storageService.ts
-│   ├── hooks/              # 自定义 Hooks
-│   │   ├── useImages.ts
-│   │   ├── useCamera.ts
-│   │   └── useTheme.ts
-│   ├── utils/              # 工具函数
-│   │   ├── theme.ts
-│   │   ├── permissions.ts
-│   │   └── imageUtils.ts
-│   ├── types/              # 类型定义
-│   │   └── index.ts
-│   └── stores/             # 状态管理
-│       └── imageStore.ts
-├── android/                # Android 原生代码
-├── ios/                    # iOS 原生代码
-├── App.tsx                 # 应用入口
-└── package.json
-```
-
-## 🔧 核心功能实现
-
-### 图片管理
-
-```typescript
-// 图片服务示例
-import { ImageItem } from '../types';
-
-export class ImageService {
-  async getImages(): Promise<ImageItem[]> {
-    // 获取图片列表
-  }
-
-  async uploadImage(imageUri: string): Promise<ImageItem> {
-    // 上传图片
-  }
-
-  async deleteImage(imageId: string): Promise<void> {
-    // 删除图片
-  }
-}
-```
-
-### AI 分析
-
-```typescript
-// AI 服务示例
-export class AIService {
-  async analyzeImage(imageUri: string): Promise<AnalysisResult> {
-    // AI 图片分析
-  }
-
-  async generateTags(imageUri: string): Promise<string[]> {
-    // 生成智能标签
-  }
-}
-```
-
-### 主题系统
-
-```typescript
-// 主题配置
-export const lightTheme: ThemeColors = {
-  primary: '#007AFF',
-  background: '#FFFFFF',
-  text: '#000000',
-  // ...
-};
-
-export const darkTheme: ThemeColors = {
-  primary: '#0A84FF',
-  background: '#000000',
-  text: '#FFFFFF',
-  // ...
-};
-```
-
-## 📱 平台特性
-
-### Android 特性
-
-- Material Design 3 设计语言
-- 权限管理优化
-- 后台任务处理
-- 文件系统访问
-
-### iOS 特性
-
-- Human Interface Guidelines
-- 原生导航体验
-- 相册权限管理
-- 后台应用刷新
-
-## 🔗 与 pixuli 生态集成
-
-### 共享组件
-
-- 复用 `packages/ui` 中的组件
-- 统一的设计系统和主题
-- 一致的交互体验
-
-### 业务逻辑
-
-- 共享图片处理逻辑
-- 统一的 AI 分析服务
-- GitHub 存储集成
-
-### 数据同步
-
-- 与桌面版和 Web 版数据同步
-- 云端存储一致性
-- 离线缓存策略
-
-## 🧪 测试
-
-```bash
-# 运行单元测试
-npm test
-
-# 运行 E2E 测试
-npm run test:e2e
-
-# 测试覆盖率
-npm run test:coverage
+├── app/                     # Expo Router 路由（页面）
+│   ├── _layout.tsx         # 根布局
+│   └── (tabs)/             # Tab 导航组
+│       ├── _layout.tsx     # Tab 布局
+│       ├── index.tsx       # 首页（图片列表）
+│       ├── settings.tsx    # 设置页面
+│       └── settings/       # 设置子页面
+│           └── github.tsx  # GitHub 配置页面
+├── components/             # 可复用组件
+│   ├── ImageBrowser.tsx    # 图片浏览器（全屏预览）
+│   ├── ImageGrid.tsx       # 图片网格组件
+│   ├── ImageUploadButton.tsx  # 图片上传按钮
+│   ├── ImageUploadEditModal.tsx  # 上传前编辑模态框
+│   ├── ImageEditModal.tsx  # 图片编辑模态框
+│   ├── ImageCropModal.tsx  # 图片裁剪模态框
+│   ├── SearchAndFilter.tsx # 搜索和筛选组件
+│   ├── GitHubConfigModal.tsx  # GitHub 配置模态框
+│   ├── ThemedText.tsx      # 主题文本组件
+│   ├── ThemedView.tsx      # 主题视图组件
+│   └── ui/                 # UI 组件
+│       ├── IconSymbol.tsx  # 图标组件
+│       └── IconSymbol.ios.tsx  # iOS 图标组件
+├── services/               # 业务服务
+│   └── githubStorageService.ts  # GitHub 存储服务
+├── stores/                 # 状态管理（Zustand）
+│   └── imageStore.ts       # 图片状态管理
+├── hooks/                 # 自定义 Hooks
+│   ├── useColorScheme.ts  # 颜色方案 Hook
+│   └── useThemeColor.ts   # 主题颜色 Hook
+├── utils/                 # 工具函数
+│   ├── imageUtils.ts      # 图片处理工具
+│   ├── metadataCache.ts   # 元数据缓存
+│   └── toast.ts           # 提示消息工具
+├── config/                # 配置文件
+│   ├── github.ts          # GitHub 配置
+│   └── theme.ts           # 主题配置
+├── constants/             # 常量定义
+│   └── theme.ts           # 主题常量
+├── i18n/                  # 国际化
+│   ├── index.ts           # i18n 初始化
+│   ├── locales.ts         # 翻译文本
+│   └── useI18n.ts         # i18n Hook
+├── assets/                # 静态资源
+│   └── images/            # 图片资源
+├── android/               # Android 原生代码
+├── scripts/               # 脚本文件
+│   └── generate-icons.js  # 图标生成脚本
+├── app.json              # Expo 配置
+├── package.json           # 项目依赖
+├── tsconfig.json          # TypeScript 配置
+├── FEATURE_ROADMAP.md     # 功能路线图
+└── README.md              # 项目说明
 ```
 
 ## 📦 构建发布
@@ -293,46 +189,14 @@ npm run test:coverage
 ### Android 构建
 
 ```bash
-# 生成签名 APK
-cd android
-./gradlew assembleRelease
-
-# 生成 AAB (推荐)
-./gradlew bundleRelease
+pnpm android
 ```
 
 ### iOS 构建
 
 ```bash
-# 使用 Xcode 构建
-# 或使用命令行
-npx react-native run-ios --configuration Release
+pnpm ios
 ```
-
-## 🐛 常见问题
-
-### 1. Metro 缓存问题
-
-```bash
-npx react-native start --reset-cache
-```
-
-### 2. iOS 依赖问题
-
-```bash
-cd ios && pod install && cd ..
-```
-
-### 3. Android 构建问题
-
-```bash
-cd android && ./gradlew clean && cd ..
-```
-
-### 4. 权限问题
-
-确保在 `android/app/src/main/AndroidManifest.xml` 和 `ios/mobile/Info.plist`
-中正确配置权限。
 
 ## 🤝 贡献指南
 
@@ -345,25 +209,6 @@ cd android && ./gradlew clean && cd ..
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🔗 相关链接
-
-- [pixuli Desktop](../desktop/README.md) - 桌面版应用
-- [pixuli Web](../web/README.md) - Web 版应用
-- [pixuli UI Package](../../packages/ui/README.md) - 共享 UI 组件
-- [pixuli WASM Package](../../packages/wasm/README.md) - 图片处理引擎
-- [项目主页](https://github.com/trueLoving/pixuli) - GitHub 仓库
-
-## 📊 开发进度
-
-- [x] 项目初始化
-- [x] 基础架构搭建
-- [ ] 图片管理功能
-- [ ] AI 分析集成
-- [ ] 云端同步
-- [ ] 性能优化
-- [ ] 测试覆盖
-- [ ] 应用商店发布
 
 ---
 

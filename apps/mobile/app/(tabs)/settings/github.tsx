@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useRouter, useNavigation } from 'expo-router';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,7 +7,14 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as Sharing from 'expo-sharing';
+
+// 动态加载 legacy API（运行时可用）
+// @ts-ignore
+const FileSystem = require('expo-file-system/legacy');
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -15,11 +22,29 @@ import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { GitHubConfig } from 'pixuli-ui/src';
 import { showSuccess, showError } from '@/utils/toast';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { Colors } from '@/constants/theme';
 
 export default function GitHubSettingsScreen() {
   const { t } = useI18n();
   const router = useRouter();
+  const navigation = useNavigation();
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
   const { githubConfig, setGitHubConfig, clearGitHubConfig } = useImageStore();
+
+  // 隐藏底部 tab 栏
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: { display: 'none' },
+    });
+    return () => {
+      // 恢复 tab 栏（当离开页面时）
+      navigation.setOptions({
+        tabBarStyle: undefined,
+      });
+    };
+  }, [navigation]);
 
   const [formData, setFormData] = useState<GitHubConfig>({
     owner: githubConfig?.owner || '',
@@ -55,7 +80,7 @@ export default function GitHubSettingsScreen() {
     try {
       await setGitHubConfig(formData);
       showSuccess(t('settings.github.saveSuccess'));
-      router.back();
+      router.push('/(tabs)/settings');
     } catch (error) {
       showError(
         `${t('settings.github.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
@@ -79,7 +104,7 @@ export default function GitHubSettingsScreen() {
             try {
               await clearGitHubConfig();
               showSuccess(t('settings.github.clearSuccess'));
-              router.back();
+              router.push('/(tabs)/settings');
             } catch (error) {
               showError(
                 `${t('settings.github.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
@@ -91,118 +116,392 @@ export default function GitHubSettingsScreen() {
     );
   };
 
+  // 导入配置
+  const handleImportConfig = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const file = result.assets[0];
+      if (!file) {
+        return;
+      }
+
+      // 读取文件内容
+      const fileContent = await FileSystem.readAsStringAsync(file.uri);
+      const configData = JSON.parse(fileContent);
+
+      // 验证配置格式（与 web/桌面端保持一致）
+      if (
+        !configData.config ||
+        !configData.config.owner ||
+        !configData.config.repo ||
+        !configData.config.token
+      ) {
+        showError(t('settings.github.invalidFormat'));
+        return;
+      }
+
+      // 更新表单数据
+      setFormData({
+        owner: configData.config.owner || '',
+        repo: configData.config.repo || '',
+        branch: configData.config.branch || 'main',
+        token: configData.config.token || '',
+        path: configData.config.path || 'images',
+      });
+
+      showSuccess(t('settings.github.importSuccess'));
+    } catch (error) {
+      showError(
+        `${t('settings.github.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`
+      );
+    }
+  };
+
+  // 导出配置
+  const handleExportConfig = async () => {
+    try {
+      if (!githubConfig) {
+        showError(t('settings.github.noConfigToExport'));
+        return;
+      }
+
+      const configData = {
+        version: '1.0',
+        platform: 'mobile',
+        timestamp: new Date().toISOString(),
+        config: githubConfig,
+      };
+
+      const fileName = `pixuli-github-config-${new Date().toISOString().split('T')[0]}.json`;
+      const fileContent = JSON.stringify(configData, null, 2);
+
+      // 根据平台选择保存方式
+      if (Platform.OS === 'android') {
+        // Android: 尝试直接保存到 Downloads 目录
+        try {
+          // Android 10+ 需要使用 MediaStore API，这里使用分享功能但引导用户保存
+          const tempUri = `${FileSystem.cacheDirectory}${fileName}`;
+          await FileSystem.writeAsStringAsync(tempUri, fileContent);
+
+          // 使用分享功能，但设置合适的标题引导用户保存到 Downloads
+          await Sharing.shareAsync(tempUri, {
+            mimeType: 'application/json',
+            dialogTitle: t('settings.github.export'),
+            UTI: 'public.json',
+          });
+
+          showSuccess(t('settings.github.exportSuccess'));
+        } catch (shareError) {
+          if (
+            shareError instanceof Error &&
+            (shareError.message.includes('cancel') ||
+              shareError.message.includes('dismissed') ||
+              shareError.message.includes('User'))
+          ) {
+            return;
+          }
+          showError(
+            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+          );
+        }
+      } else {
+        // iOS: 使用分享功能保存到文件应用
+        const tempUri = `${FileSystem.cacheDirectory}${fileName}`;
+        await FileSystem.writeAsStringAsync(tempUri, fileContent);
+
+        try {
+          await Sharing.shareAsync(tempUri, {
+            mimeType: 'application/json',
+            dialogTitle: t('settings.github.export'),
+            UTI: 'public.json',
+          });
+
+          showSuccess(t('settings.github.exportSuccess'));
+        } catch (shareError) {
+          if (
+            shareError instanceof Error &&
+            (shareError.message.includes('cancel') ||
+              shareError.message.includes('dismissed') ||
+              shareError.message.includes('User'))
+          ) {
+            return;
+          }
+          showError(
+            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+          );
+        }
+      }
+    } catch (error) {
+      showError(
+        `${t('settings.github.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+      );
+    }
+  };
+
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingTop: Platform.OS === 'ios' ? 50 : 16,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+      backgroundColor: colors.cardBackground,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.cardBorder,
+    },
+    backButton: {
+      padding: 8,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: '700',
+      flex: 1,
+      textAlign: 'center',
+      color: colors.text,
+    },
+    placeholder: {
+      width: 40,
+    },
+    content: {
+      flex: 1,
+    },
+    form: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    groupContainer: {
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: colorScheme === 'dark' ? 0.2 : 0.08,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    field: {
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colorScheme === 'dark' ? '#38383A' : '#E5E5E5',
+    },
+    fieldFirst: {
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    fieldLast: {
+      borderBottomWidth: 0,
+      borderBottomLeftRadius: 12,
+      borderBottomRightRadius: 12,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colorScheme === 'dark' ? '#FFFFFF' : '#333333',
+      marginBottom: 10,
+    },
+    input: {
+      fontSize: 16,
+      fontWeight: '400',
+      color: colors.text,
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: colorScheme === 'dark' ? '#38383A' : '#DDDDDD',
+      borderRadius: 8,
+      minHeight: 44,
+    },
+    hint: {
+      fontSize: 12,
+      color: colorScheme === 'dark' ? '#8E8E93' : '#666666',
+      marginTop: 6,
+      lineHeight: 16,
+    },
+    footer: {
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+      gap: 10,
+      backgroundColor: colors.background,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.cardBorder,
+    },
+    button: {
+      flex: 1,
+      paddingVertical: 14,
+      minHeight: 50,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 10,
+    },
+    importButton: {
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderWidth: 1,
+      borderColor: '#007AFF',
+    },
+    importButtonText: {
+      color: '#007AFF',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    saveButton: {
+      backgroundColor: '#007AFF',
+    },
+    saveButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    clearButton: {
+      backgroundColor: colorScheme === 'dark' ? '#1C1C1E' : '#FFFFFF',
+      borderWidth: 1,
+      borderColor: '#FF3B30',
+    },
+    clearButtonText: {
+      color: '#FF3B30',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });
+
+  const fields = [
+    {
+      key: 'owner' as const,
+      label: t('settings.github.owner'),
+      required: true,
+    },
+    { key: 'repo' as const, label: t('settings.github.repo'), required: true },
+    {
+      key: 'branch' as const,
+      label: t('settings.github.branch'),
+      required: false,
+    },
+    {
+      key: 'token' as const,
+      label: t('settings.github.token'),
+      required: true,
+      secure: true,
+      hint: t('settings.github.tokenHint'),
+    },
+    { key: 'path' as const, label: t('settings.github.path'), required: false },
+  ];
+
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
+    <ThemedView style={dynamicStyles.container}>
+      <View style={dynamicStyles.header}>
         <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
+          style={dynamicStyles.backButton}
+          onPress={() => {
+            // 直接导航到设置页面
+            router.push('/(tabs)/settings');
+          }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <IconSymbol name="chevron.left" size={24} color="#007AFF" />
+          <IconSymbol name="chevron.left" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <ThemedText type="title" style={styles.title}>
+        <ThemedText style={dynamicStyles.title}>
           {t('settings.github.title')}
         </ThemedText>
-        <View style={styles.placeholder} />
+        <View style={dynamicStyles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.form}>
-          <View style={styles.field}>
-            <ThemedText style={styles.label}>
-              {t('settings.github.owner')} *
-            </ThemedText>
-            <TextInput
-              style={styles.input}
-              value={formData.owner}
-              onChangeText={value => handleInputChange('owner', value)}
-              placeholder={t('settings.github.ownerPlaceholder')}
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <ThemedText style={styles.label}>
-              {t('settings.github.repo')} *
-            </ThemedText>
-            <TextInput
-              style={styles.input}
-              value={formData.repo}
-              onChangeText={value => handleInputChange('repo', value)}
-              placeholder={t('settings.github.repoPlaceholder')}
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-
-          <View style={styles.field}>
-            <ThemedText style={styles.label}>
-              {t('settings.github.branch')}
-            </ThemedText>
-            <TextInput
-              style={styles.input}
-              value={formData.branch}
-              onChangeText={value => handleInputChange('branch', value)}
-              placeholder={t('settings.github.branchPlaceholder')}
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-            />
-          </View>
-
-          <View style={styles.field}>
-            <ThemedText style={styles.label}>
-              {t('settings.github.token')} *
-            </ThemedText>
-            <TextInput
-              style={styles.input}
-              value={formData.token}
-              onChangeText={value => handleInputChange('token', value)}
-              placeholder={t('settings.github.tokenPlaceholder')}
-              placeholderTextColor="#999"
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <ThemedText style={styles.hint}>
-              {t('settings.github.tokenHint')}
-            </ThemedText>
-          </View>
-
-          <View style={styles.field}>
-            <ThemedText style={styles.label}>
-              {t('settings.github.path')}
-            </ThemedText>
-            <TextInput
-              style={styles.input}
-              value={formData.path}
-              onChangeText={value => handleInputChange('path', value)}
-              placeholder={t('settings.github.pathPlaceholder')}
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-            />
+      <ScrollView
+        style={dynamicStyles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 16 }}
+      >
+        <View style={dynamicStyles.form}>
+          <View style={dynamicStyles.groupContainer}>
+            {fields.map((field, index) => (
+              <View
+                key={field.key}
+                style={[
+                  dynamicStyles.field,
+                  index === 0 && dynamicStyles.fieldFirst,
+                  index === fields.length - 1 && dynamicStyles.fieldLast,
+                ]}
+              >
+                <ThemedText style={dynamicStyles.label}>
+                  {field.label} {field.required && '*'}
+                </ThemedText>
+                <TextInput
+                  style={dynamicStyles.input}
+                  value={formData[field.key]}
+                  onChangeText={value => handleInputChange(field.key, value)}
+                  placeholder={
+                    field.key === 'owner'
+                      ? t('settings.github.ownerPlaceholder')
+                      : field.key === 'repo'
+                        ? t('settings.github.repoPlaceholder')
+                        : field.key === 'branch'
+                          ? t('settings.github.branchPlaceholder')
+                          : field.key === 'token'
+                            ? t('settings.github.tokenPlaceholder')
+                            : t('settings.github.pathPlaceholder')
+                  }
+                  placeholderTextColor="#999999"
+                  secureTextEntry={field.secure}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {field.hint && (
+                  <ThemedText style={dynamicStyles.hint}>
+                    {field.hint}
+                  </ThemedText>
+                )}
+              </View>
+            ))}
           </View>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/* 底部操作按钮组 */}
+      <View style={dynamicStyles.footer}>
+        <TouchableOpacity
+          style={[dynamicStyles.button, dynamicStyles.importButton]}
+          onPress={handleImportConfig}
+          activeOpacity={0.7}
+        >
+          <ThemedText style={dynamicStyles.importButtonText}>
+            {t('settings.github.import')}
+          </ThemedText>
+        </TouchableOpacity>
         {githubConfig && (
           <TouchableOpacity
-            style={[styles.button, styles.clearButton]}
+            style={[dynamicStyles.button, dynamicStyles.clearButton]}
             onPress={handleClear}
+            activeOpacity={0.7}
           >
-            <ThemedText style={styles.clearButtonText}>
+            <ThemedText style={dynamicStyles.clearButtonText}>
               {t('settings.github.clear')}
             </ThemedText>
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[styles.button, styles.saveButton]}
+          style={[dynamicStyles.button, dynamicStyles.saveButton]}
           onPress={handleSave}
+          activeOpacity={0.8}
         >
-          <ThemedText style={styles.saveButtonText}>
+          <ThemedText style={dynamicStyles.saveButtonText}>
             {t('common.save')}
           </ThemedText>
         </TouchableOpacity>
@@ -210,87 +509,3 @@ export default function GitHubSettingsScreen() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-  },
-  placeholder: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-  },
-  form: {
-    padding: 16,
-  },
-  field: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  hint: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-  footer: {
-    flexDirection: 'row',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    gap: 12,
-  },
-  button: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  clearButton: {
-    backgroundColor: '#f0f0f0',
-  },
-  clearButtonText: {
-    color: '#d32f2f',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

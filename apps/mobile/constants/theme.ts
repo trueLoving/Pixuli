@@ -5,25 +5,37 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+const tintColorLight = '#5AC8FA'; // 淡蓝色主题
+const tintColorDark = '#5AC8FA'; // 深色模式也使用淡蓝色
 
 export const Colors = {
   light: {
     text: '#11181C',
-    background: '#fff',
+    background: '#F2F2F7',
     tint: tintColorLight,
     icon: '#687076',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
+    cardBackground: '#FFFFFF',
+    cardBorder: '#C6C6C8',
+    sectionTitle: '#8E8E93',
+    inputBackground: '#FFFFFF',
+    inputBorder: '#C6C6C8',
+    primary: tintColorLight,
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    background: '#000000',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
+    cardBackground: '#1C1C1E',
+    cardBorder: '#38383A',
+    sectionTitle: '#8E8E93',
+    inputBackground: '#1C1C1E',
+    inputBorder: '#38383A',
+    primary: tintColorDark,
   },
 };
 

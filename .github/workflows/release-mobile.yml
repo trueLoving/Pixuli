@@ -9,9 +9,9 @@ on:
         type: choice
         options:
           - android
-          - ios
-          - both
-        default: both
+          # - ios
+          # - both
+        default: android
       releaseToGitHub:
         description: '将产物附加到 GitHub Release（仅在 tag 或手动开启时）'
         required: true
@@ -23,8 +23,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PNPM_VERSION: 10
+  PNPM_VERSION: 9
   NODE_VERSION: 22
+  GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m"
 
 jobs:
   detect:
@@ -52,37 +53,16 @@ jobs:
             PLATFORM="both"
             RELEASE_INPUT="true"
           fi
-
           DO_ANDROID=false
           DO_IOS=false
           if [[ "$PLATFORM" == "android" || "$PLATFORM" == "both" ]]; then DO_ANDROID=true; fi
           if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "both" ]]; then DO_IOS=true; fi
-
           IS_TAG=false
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then IS_TAG=true; fi
-
-          # 提取版本号：从 tag 或 app.json
-          if [[ "$IS_TAG" == "true" ]]; then
-            # 从 tag 提取版本号（去掉 v 前缀）
-            VERSION="${GITHUB_REF#refs/tags/v}"
-            VERSION="${VERSION#refs/tags/}"
-          else
-            # 从 app.json 读取版本号
-            VERSION=$(grep -o '"version": "[^"]*"' apps/mobile/app.json | cut -d'"' -f4)
-          fi
-
-          # 如果版本号为空，使用默认值
-          if [[ -z "$VERSION" ]]; then
-            VERSION="1.0.0"
-          fi
-
           echo "do_android=$DO_ANDROID" >> $GITHUB_OUTPUT
           echo "do_ios=$DO_IOS" >> $GITHUB_OUTPUT
           echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
           echo "release_enabled=$RELEASE_INPUT" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "检测到的版本号: $VERSION"
-
   android:
     name: Android build
     needs: detect
@@ -95,22 +75,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
 
       - name: Get pnpm store directory
         shell: bash
         id: pnpm-cache
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -118,9 +98,17 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            apps/mobile/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
       - name: Install dependencies (workspace)
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
         working-directory: .
 
       - name: Setup Java
@@ -142,8 +130,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Cache Expo prebuild
+        uses: actions/cache@v4
+        with:
+          path: apps/mobile/android
+          key: ${{ runner.os }}-expo-prebuild-${{ hashFiles('apps/mobile/app.json', 'apps/mobile/package.json', 'apps/mobile/app/_layout.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-expo-prebuild-
+
       - name: Generate Android native project
-        run: npx expo prebuild --platform android --clean
+        run: |
+          # 只在 android 目录不存在或配置变化时才执行 prebuild
+          if [ ! -d "android" ] || [ ! -f "android/app/build.gradle" ]; then
+            npx expo prebuild --platform android --clean
+          else
+            echo "Android 项目已存在，跳过 prebuild"
+          fi
         working-directory: apps/mobile
 
       - name: Extract version
@@ -192,12 +194,34 @@ jobs:
         run: chmod +x android/gradlew
         working-directory: apps/mobile
 
+      - name: Configure Gradle properties
+        run: |
+          # 在 prebuild 后配置 gradle.properties 以优化构建
+          if [ -f "android/gradle.properties" ]; then
+            echo "" >> android/gradle.properties
+            echo "# CI 构建优化配置" >> android/gradle.properties
+            echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8" >> android/gradle.properties
+            echo "org.gradle.caching=true" >> android/gradle.properties
+            echo "org.gradle.vfs.watch=true" >> android/gradle.properties
+            echo "org.gradle.workers.max=4" >> android/gradle.properties
+            echo "android.enableMinifyInReleaseBuilds=true" >> android/gradle.properties
+            echo "android.enableShrinkResourcesInReleaseBuilds=true" >> android/gradle.properties
+          fi
+        working-directory: apps/mobile
+
       - name: Build Android (APK)
         id: build
+        env:
+          ORG_GRADLE_PROJECT_android.enableMinifyInReleaseBuilds: 'true'
+          ORG_GRADLE_PROJECT_android.enableShrinkResourcesInReleaseBuilds: 'true'
         run: |
           cd android
-          # 启用 daemon、并行构建和构建缓存以优化构建速度
-          ./gradlew assembleRelease --parallel --build-cache --daemon
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --parallel \
+            --build-cache \
+            --max-workers=4 \
+            --warning-mode=none
           echo "构建完成，退出码: $?"
         working-directory: apps/mobile
 
@@ -210,8 +234,6 @@ jobs:
 
           echo "=== 查找 APK 文件 ==="
           echo "当前工作目录: $(pwd)"
-          echo "期望的 APK 文件名: $EXPECTED_APK_NAME"
-
           # 检查 android 目录是否存在
           if [ ! -d "android" ]; then
             echo "错误: android 目录不存在"
@@ -219,51 +241,43 @@ jobs:
             ls -la
             exit 1
           fi
-
           # 使用相对于 apps/mobile 的路径
           APK_DIR="android/app/build/outputs/apk/release"
           echo "查找目录: $APK_DIR"
-
+          # 检查构建输出目录结构
+          echo "=== 检查构建输出目录结构 ==="
+          if [ -d "android/app/build" ]; then
+            echo "android/app/build 目录存在"
+            find android/app/build -type d -name "outputs" 2>/dev/null | head -5 || echo "未找到 outputs 目录"
+          else
+            echo "android/app/build 目录不存在"
+          fi
+          if [ -d "android/app/build/outputs" ]; then
+            echo "android/app/build/outputs 目录存在"
+            ls -la android/app/build/outputs/ || echo "无法列出 outputs 目录"
+          fi
           if [ ! -d "$APK_DIR" ]; then
             echo "错误: APK 目录不存在: $APK_DIR"
             echo "搜索所有可能的 APK 位置:"
             find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
             exit 1
           fi
-
           echo "APK 目录内容:"
           ls -la "$APK_DIR" || echo "目录为空"
-
-          # 优先查找期望的文件名，如果不存在则查找任何 APK 文件
-          APK_FILE=""
-          if [ -f "$APK_DIR/$EXPECTED_APK_NAME" ]; then
-            APK_FILE="$APK_DIR/$EXPECTED_APK_NAME"
-            echo "✓ 找到期望的 APK 文件: $EXPECTED_APK_NAME"
-          else
-            echo "未找到期望的文件名，搜索所有 APK 文件:"
-            APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
-            if [ -n "$APK_FILE" ]; then
-              echo "找到 APK 文件: $APK_FILE"
-              echo "警告: 文件名不符合预期格式，期望: $EXPECTED_APK_NAME"
-            fi
-          fi
-
+          # 查找 APK 文件（相对于当前目录 apps/mobile）
+          APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
           if [ -z "$APK_FILE" ]; then
             echo "错误: 未找到 APK 文件"
             echo "搜索所有可能的 APK 位置:"
             find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
             exit 1
           fi
-
           echo "找到 APK 文件: $APK_FILE"
           echo "文件大小: $(du -h "$APK_FILE" | cut -f1)"
-
           # 确保路径是相对于 apps/mobile 的（去掉开头的 ./ 如果有）
           APK_FILE="${APK_FILE#./}"
-
           # 转换为相对于项目根目录的路径
           APK_RELATIVE_PATH="apps/mobile/$APK_FILE"
-
           echo "相对路径: $APK_RELATIVE_PATH"
           echo "验证路径是否存在:"
           if [ -f "$APK_RELATIVE_PATH" ]; then
@@ -280,7 +294,6 @@ jobs:
               echo "计算后的相对路径: $APK_RELATIVE_PATH"
             fi
           fi
-
           echo "apk=$APK_RELATIVE_PATH" >> $GITHUB_OUTPUT
           echo "apk_name=$EXPECTED_APK_NAME" >> $GITHUB_OUTPUT
         working-directory: apps/mobile
@@ -336,12 +349,10 @@ jobs:
         run: |
           pnpm dlx eas-cli build --platform ios --non-interactive --no-wait
           # 由于 EAS 云端构建，此处仅输出提交信息与链接
-
       - name: Upload EAS build info
         if: always()
         run: |
           echo "EAS iOS 构建已触发，登录 Expo 查看进度与产物下载。" > eas-ios-info.txt
-
       - name: Upload iOS build info artifact
         uses: actions/upload-artifact@v4
         with:

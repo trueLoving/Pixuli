@@ -11,6 +11,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { ImageGrid } from '@/components/ImageGrid';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { ImageBrowser } from '@/components/ImageBrowser';
+import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
 import { ImageItem } from 'pixuli-ui/src';
@@ -21,12 +22,16 @@ export default function HomeScreen() {
   const router = useRouter();
   const {
     images,
+    filteredImages,
     loading,
     error,
     loadImages,
     storageType,
     githubConfig,
     deleteImage,
+    searchQuery,
+    filterOptions,
+    refreshImageMetadata,
   } = useImageStore();
   const [refreshing, setRefreshing] = useState(false);
   const [browserVisible, setBrowserVisible] = useState(false);
@@ -46,7 +51,7 @@ export default function HomeScreen() {
   };
 
   const handleImagePress = (image: ImageItem) => {
-    const index = images.findIndex(img => img.id === image.id);
+    const index = filteredImages.findIndex(img => img.id === image.id);
     if (index !== -1) {
       setBrowserIndex(index);
       setBrowserVisible(true);
@@ -56,7 +61,7 @@ export default function HomeScreen() {
   const handleDeleteImage = async (image: ImageItem) => {
     await deleteImage(image.id, image.name);
     // 如果删除后没有图片了，关闭浏览器
-    if (images.length <= 1) {
+    if (filteredImages.length <= 1) {
       setBrowserVisible(false);
     }
   };
@@ -96,12 +101,33 @@ export default function HomeScreen() {
     );
   }
 
+  const displayImages =
+    filteredImages.length > 0 ||
+    searchQuery ||
+    Object.keys(filterOptions).length > 0
+      ? filteredImages
+      : images;
+  const hasActiveSearchOrFilter =
+    searchQuery.trim().length > 0 ||
+    (filterOptions.tags && filterOptions.tags.length > 0) ||
+    filterOptions.minWidth !== undefined ||
+    filterOptions.minHeight !== undefined ||
+    filterOptions.maxWidth !== undefined ||
+    filterOptions.maxHeight !== undefined;
+
   return (
     <ThemedView style={styles.container}>
+      {/* 搜索和筛选栏 */}
+      <SearchAndFilter />
+
       <View style={styles.header}>
         <View style={styles.titleBlock}>
           <ThemedText style={styles.subtitle}>
-            {images?.length ? `${images.length} 张` : ''}
+            {hasActiveSearchOrFilter
+              ? `${displayImages.length} / ${images.length} 张`
+              : images?.length
+                ? `${images.length} 张`
+                : ''}
           </ThemedText>
         </View>
         <View style={styles.headerActions} />
@@ -122,7 +148,7 @@ export default function HomeScreen() {
         </View>
       ) : (
         <ImageGrid
-          images={images}
+          images={displayImages}
           onImagePress={handleImagePress}
           numColumns={2}
           onRefresh={handleRefresh}
@@ -138,10 +164,11 @@ export default function HomeScreen() {
 
       <ImageBrowser
         visible={browserVisible}
-        images={images}
+        images={displayImages}
         initialIndex={browserIndex}
         onClose={() => setBrowserVisible(false)}
         onDelete={handleDeleteImage}
+        onRefreshMetadata={refreshImageMetadata}
       />
     </ThemedView>
   );
