@@ -475,7 +475,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         this.config.branch,
-        `.metadata/${metadataFileName}`
+        `${this.config.path}/.metadata/${metadataFileName}`
       );
 
       const response = await fetch(metadataUrl);
@@ -624,6 +624,7 @@ export class GiteeStorageService {
             if (metadata) {
               img.width = metadata.width || 0;
               img.height = metadata.height || 0;
+              img.size = metadata.size || img.size || 0;
               img.tags = metadata.tags || [];
               img.description = metadata.description || '';
               img.updatedAt = metadata.updatedAt || img.updatedAt;
@@ -650,6 +651,133 @@ export class GiteeStorageService {
       throw new Error(
         `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`
       );
+    }
+  }
+
+  /**
+   * 异步加载图片元数据并更新图片列表（优化版：支持缓存和增量更新）
+   * @param images 图片列表
+   * @param options 加载选项
+   * @param options.forceRefresh 强制刷新，忽略缓存
+   * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
+   */
+  async loadImageMetadata(
+    images: ImageItem[],
+    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+  ): Promise<ImageItem[]> {
+    try {
+      const { forceRefresh = false, backgroundUpdate = true } = options || {};
+
+      // 创建文件名到图片的映射
+      const fileNameMap = new Map<string, ImageItem>();
+      images.forEach(img => {
+        fileNameMap.set(img.name, img);
+      });
+
+      const fileNames = Array.from(fileNameMap.keys());
+
+      // 1. 如果强制刷新，跳过缓存直接加载
+      if (forceRefresh) {
+        const remoteMetadataMap = await this.loadMetadataBatch(
+          fileNames.map(name => ({ name })),
+          5
+        );
+
+        // 更新缓存
+        const metadataToCache = new Map();
+        remoteMetadataMap.forEach((metadata, fileName) => {
+          const metadataWithTimestamp = {
+            ...metadata,
+            cacheTimestamp: Date.now(),
+          };
+          metadataToCache.set(fileName, metadataWithTimestamp);
+        });
+        await MetadataCache.updateCachedMetadataBatch(
+          metadataToCache,
+          'gitee',
+          this.config.owner,
+          this.config.repo
+        );
+
+        // 合并远程数据
+        return images.map(img => {
+          const remote = remoteMetadataMap.get(img.name);
+          if (remote) {
+            return MetadataCache.mergeMetadataToImage(img, remote);
+          }
+          return img;
+        });
+      }
+
+      // 2. 先从缓存加载
+      const cachedMetadata = await MetadataCache.getCachedMetadataBatch(
+        fileNames,
+        'gitee',
+        this.config.owner,
+        this.config.repo
+      );
+
+      // 3. 合并缓存数据到图片列表（立即返回，不等待远程）
+      let updatedImages = images.map(img => {
+        const cached = cachedMetadata.get(img.name);
+        if (cached) {
+          return MetadataCache.mergeMetadataToImage(img, cached);
+        }
+        return img;
+      });
+
+      // 4. 找出需要从远程加载的文件
+      // 如果启用后台更新，只加载真正需要更新的（无效或缺失的）
+      // 如果禁用后台更新，只加载缺失的（缓存中没有的）
+      const filesToFetch = backgroundUpdate
+        ? await MetadataCache.getFilesToUpdate(
+            fileNames,
+            undefined,
+            'gitee',
+            this.config.owner,
+            this.config.repo
+          )
+        : fileNames.filter(fileName => !cachedMetadata.has(fileName));
+
+      // 5. 如果有需要更新的文件，从远程加载（后台异步）
+      if (filesToFetch.length > 0) {
+        // 后台异步加载，不阻塞返回
+        this.loadMetadataBatch(
+          filesToFetch.map(name => ({ name })),
+          5
+        )
+          .then(async remoteMetadataMap => {
+            // 更新缓存
+            const metadataToCache = new Map();
+            remoteMetadataMap.forEach((metadata, fileName) => {
+              const metadataWithTimestamp = {
+                ...metadata,
+                cacheTimestamp: Date.now(),
+              };
+              metadataToCache.set(fileName, metadataWithTimestamp);
+            });
+            await MetadataCache.updateCachedMetadataBatch(
+              metadataToCache,
+              'gitee',
+              this.config.owner,
+              this.config.repo
+            );
+
+            // 注意：这里不更新 images，因为已经返回了
+            // 如果需要实时更新，可以通过回调或事件通知
+          })
+          .catch(error => {
+            console.debug('Background metadata update failed:', error);
+            // 后台更新失败不影响已返回的数据
+          });
+      }
+
+      // 6. 立即返回（使用缓存数据）
+      return updatedImages;
+    } catch (error) {
+      console.error('Load image metadata failed:', error);
+      // 即使加载元数据失败，也返回原始图片列表（可能包含缓存数据）
+      return images;
     }
   }
 
