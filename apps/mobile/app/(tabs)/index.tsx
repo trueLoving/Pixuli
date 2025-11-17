@@ -149,7 +149,7 @@ export default function HomeScreen() {
       {/* 搜索和筛选栏 */}
       <SearchAndFilter />
 
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.cardBorder }]}>
         <View style={styles.titleBlock}>
           <ThemedText style={styles.subtitle}>
             {hasActiveSearchOrFilter
@@ -161,7 +161,13 @@ export default function HomeScreen() {
         </View>
         <View style={styles.headerActions}>
           <TouchableOpacity
-            style={styles.sourceButton}
+            style={[
+              styles.sourceButton,
+              {
+                backgroundColor: colors.inputBackground,
+                borderColor: colors.inputBorder,
+              },
+            ]}
             onPress={() => setSourceSwitchVisible(true)}
             activeOpacity={0.7}
           >
@@ -171,7 +177,11 @@ export default function HomeScreen() {
               color={colors.primary}
               style={styles.sourceIcon}
             />
-            <ThemedText style={styles.sourceText} numberOfLines={1}>
+            <ThemedText
+              style={[styles.sourceText, { color: colors.text }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {currentSource?.display || t('app.notConfigured')}
             </ThemedText>
             <IconSymbol
@@ -404,7 +414,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   titleBlock: {
     flexDirection: 'column',
@@ -429,16 +438,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#F0F0F0',
+    borderWidth: 1,
     gap: 6,
-    maxWidth: 150,
+    alignSelf: 'flex-start',
   },
   sourceIcon: {
     marginRight: 2,
   },
   sourceText: {
     fontSize: 12,
-    color: '#333',
     fontWeight: '500',
   },
   modalOverlay: {
@@ -470,7 +478,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   sourceOptionActive: {
-    backgroundColor: '#F0F8FF',
+    backgroundColor: 'rgba(90, 200, 250, 0.1)',
   },
   sourceOptionLeft: {
     flexDirection: 'row',
@@ -480,6 +488,7 @@ const styles = StyleSheet.create({
   },
   sourceOptionInfo: {
     flex: 1,
+    minWidth: 0,
   },
   sourceOptionName: {
     fontSize: 16,
@@ -488,6 +497,7 @@ const styles = StyleSheet.create({
   },
   sourceOptionDesc: {
     fontSize: 13,
+    flexShrink: 1,
   },
   modalCloseButton: {
     marginTop: 16,
