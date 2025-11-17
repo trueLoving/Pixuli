@@ -40,7 +40,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { githubConfig, storageType } = useImageStore();
+  const { githubConfig, giteeConfig, storageType } = useImageStore();
   const currentThemeMode = useThemeMode();
 
   // 切换主题
@@ -62,6 +62,15 @@ export default function SettingsScreen() {
       description: githubConfig
         ? `${githubConfig.owner}/${githubConfig.repo}`
         : t('settings.github.notConfigured'),
+    },
+    {
+      id: 'gitee',
+      title: t('settings.gitee.title'),
+      icon: 'link',
+      route: '/(tabs)/settings/gitee',
+      description: giteeConfig
+        ? `${giteeConfig.owner}/${giteeConfig.repo}`
+        : t('settings.gitee.notConfigured'),
     },
   ];
 

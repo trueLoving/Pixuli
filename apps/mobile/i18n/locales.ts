@@ -69,6 +69,41 @@ export const mobileLocales = {
         exportHint:
           '请在分享对话框中选择保存位置（如：文件应用、下载文件夹或云存储）',
       },
+      gitee: {
+        title: 'Gitee 配置',
+        notConfigured: '未配置',
+        owner: '用户名',
+        repo: '仓库名',
+        branch: '分支',
+        token: 'Token',
+        path: '路径',
+        ownerPlaceholder: '请输入 Gitee 用户名',
+        repoPlaceholder: '请输入仓库名称',
+        branchPlaceholder: 'master',
+        tokenPlaceholder: '请输入 Gitee Token',
+        pathPlaceholder: 'images',
+        requiredFields: '请填写所有必填字段',
+        saveSuccess: '配置保存成功',
+        saveFailed: '配置保存失败',
+        clear: '清除配置',
+        clearConfirm: '确认清除',
+        clearConfirmMessage: '确定要清除 Gitee 配置吗？',
+        clearSuccess: '配置已清除',
+        clearFailed: '清除配置失败',
+        tokenHint:
+          'Token 用于访问 Gitee API，需要授予 projects 和 repo 权限，请妥善保管',
+        import: '导入',
+        export: '导出',
+        importSuccess: '配置导入成功',
+        importFailed: '配置导入失败',
+        exportSuccess: '配置导出成功',
+        exportFailed: '配置导出失败',
+        noConfigToExport: '没有可导出的配置',
+        invalidFormat: '配置文件格式不正确',
+        exportReady: '配置文件已准备好',
+        exportHint:
+          '请在分享对话框中选择保存位置（如：文件应用、下载文件夹或云存储）',
+      },
     },
     image: {
       title: '图片管理',
@@ -142,8 +177,8 @@ export const mobileLocales = {
     },
     app: {
       welcome: '欢迎使用 pixuli',
-      description: '请先配置 GitHub 存储服务以开始使用图片管理功能',
-      configureGitHub: '配置 GitHub',
+      description: '请先配置存储服务以开始使用图片管理功能',
+      configureStorage: '配置存储',
     },
     search: {
       placeholder: '搜索图片名称、描述或标签...',
@@ -349,8 +384,8 @@ export const mobileLocales = {
     app: {
       welcome: 'Welcome to Pixuli',
       description:
-        'Please configure GitHub storage service to start using image management features',
-      configureGitHub: 'Configure GitHub',
+        'Please configure storage service to start using image management features',
+      configureStorage: 'Configure Storage',
     },
     search: {
       placeholder: 'Search by name, description, or tags...',

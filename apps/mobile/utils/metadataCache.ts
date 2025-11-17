@@ -1,10 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ImageItem } from 'pixuli-ui/src';
 
-const METADATA_CACHE_KEY = 'pixuli-metadata-cache';
+const METADATA_CACHE_KEY_PREFIX = 'pixuli-metadata-cache';
 const METADATA_CACHE_VERSION = '1.0';
 const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24小时过期
 const CACHE_ITEM_EXPIRY_MS = 60 * 60 * 1000; // 单个缓存项1小时过期
+
+/**
+ * 生成缓存键（包含仓库源信息，避免不同源的数据混淆）
+ */
+function getCacheKey(storageType: string, owner: string, repo: string): string {
+  return `${METADATA_CACHE_KEY_PREFIX}-${storageType}-${owner}-${repo}`;
+}
 
 interface CachedMetadata {
   version: string;
@@ -31,24 +38,56 @@ interface ImageMetadata {
  * Metadata 缓存工具类
  */
 export class MetadataCache {
-  private static cache: CachedMetadata | null = null;
-  private static cachePromise: Promise<CachedMetadata | null> | null = null;
+  private static cacheMap: Map<string, CachedMetadata> = new Map();
+  private static cachePromiseMap: Map<string, Promise<CachedMetadata | null>> =
+    new Map();
+  private static currentCacheKey: string | null = null;
+
+  /**
+   * 设置当前使用的缓存键（根据仓库源）
+   */
+  static setCurrentCacheKey(
+    storageType: string,
+    owner: string,
+    repo: string
+  ): void {
+    this.currentCacheKey = getCacheKey(storageType, owner, repo);
+  }
+
+  /**
+   * 获取当前缓存键
+   */
+  private static getCurrentCacheKey(): string {
+    if (!this.currentCacheKey) {
+      throw new Error('Cache key not set. Call setCurrentCacheKey first.');
+    }
+    return this.currentCacheKey;
+  }
 
   /**
    * 加载缓存
    */
-  static async loadCache(): Promise<CachedMetadata | null> {
-    if (this.cache) {
-      return this.cache;
+  static async loadCache(
+    storageType?: string,
+    owner?: string,
+    repo?: string
+  ): Promise<CachedMetadata | null> {
+    const cacheKey =
+      storageType && owner && repo
+        ? getCacheKey(storageType, owner, repo)
+        : this.getCurrentCacheKey();
+
+    if (this.cacheMap.has(cacheKey)) {
+      return this.cacheMap.get(cacheKey) || null;
     }
 
-    if (this.cachePromise) {
-      return this.cachePromise;
+    if (this.cachePromiseMap.has(cacheKey)) {
+      return this.cachePromiseMap.get(cacheKey) || null;
     }
 
-    this.cachePromise = (async () => {
+    const promise = (async () => {
       try {
-        const cached = await AsyncStorage.getItem(METADATA_CACHE_KEY);
+        const cached = await AsyncStorage.getItem(cacheKey);
         if (!cached) {
           return null;
         }
@@ -61,38 +100,41 @@ export class MetadataCache {
           Date.now() - parsed.timestamp > CACHE_EXPIRY_MS
         ) {
           // 缓存过期或版本不匹配，清除缓存
-          await this.clearCache();
+          await this.clearCache(cacheKey);
           return null;
         }
 
-        this.cache = parsed;
+        this.cacheMap.set(cacheKey, parsed);
         return parsed;
       } catch (error) {
         console.error('Failed to load metadata cache:', error);
         return null;
       } finally {
-        this.cachePromise = null;
+        this.cachePromiseMap.delete(cacheKey);
       }
     })();
 
-    return this.cachePromise;
+    this.cachePromiseMap.set(cacheKey, promise);
+    return promise;
   }
 
   /**
    * 保存缓存
    */
   static async saveCache(
-    metadata: Record<string, ImageMetadata>
+    metadata: Record<string, ImageMetadata>,
+    cacheKey?: string
   ): Promise<void> {
     try {
+      const key = cacheKey || this.getCurrentCacheKey();
       const cache: CachedMetadata = {
         version: METADATA_CACHE_VERSION,
         timestamp: Date.now(),
         metadata,
       };
 
-      this.cache = cache;
-      await AsyncStorage.setItem(METADATA_CACHE_KEY, JSON.stringify(cache));
+      this.cacheMap.set(key, cache);
+      await AsyncStorage.setItem(key, JSON.stringify(cache));
     } catch (error) {
       console.error('Failed to save metadata cache:', error);
     }
@@ -187,16 +229,19 @@ export class MetadataCache {
    * 获取单个图片的缓存 metadata（带验证）
    */
   static async getCachedMetadata(
-    fileName: string
+    fileName: string,
+    storageType?: string,
+    owner?: string,
+    repo?: string
   ): Promise<ImageMetadata | null> {
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
     const metadata = cache?.metadata[fileName] || null;
 
     // 验证有效性
     if (!this.isValidMetadata(metadata)) {
       // 如果无效，从缓存中移除
       if (metadata) {
-        await this.removeCachedMetadata(fileName);
+        await this.removeCachedMetadata(fileName, storageType, owner, repo);
       }
       return null;
     }
@@ -208,9 +253,12 @@ export class MetadataCache {
    * 批量获取缓存的 metadata（带验证）
    */
   static async getCachedMetadataBatch(
-    fileNames: string[]
+    fileNames: string[],
+    storageType?: string,
+    owner?: string,
+    repo?: string
   ): Promise<Map<string, ImageMetadata>> {
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
     const result = new Map<string, ImageMetadata>();
     const invalidFiles: string[] = [];
 
@@ -231,9 +279,11 @@ export class MetadataCache {
     // 异步清理无效缓存
     if (invalidFiles.length > 0) {
       invalidFiles.forEach(fileName => {
-        this.removeCachedMetadata(fileName).catch(() => {
-          // 忽略清理错误
-        });
+        this.removeCachedMetadata(fileName, storageType, owner, repo).catch(
+          () => {
+            // 忽略清理错误
+          }
+        );
       });
     }
 
@@ -245,7 +295,10 @@ export class MetadataCache {
    */
   static async updateCachedMetadata(
     fileName: string,
-    metadata: ImageMetadata
+    metadata: ImageMetadata,
+    storageType?: string,
+    owner?: string,
+    repo?: string
   ): Promise<void> {
     // 添加缓存时间戳和校验和
     const metadataWithValidation: ImageMetadata = {
@@ -254,7 +307,11 @@ export class MetadataCache {
       checksum: this.calculateChecksum(metadata),
     };
 
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
+    const cacheKey =
+      storageType && owner && repo
+        ? getCacheKey(storageType, owner, repo)
+        : this.getCurrentCacheKey();
     const updatedCache: CachedMetadata = cache || {
       version: METADATA_CACHE_VERSION,
       timestamp: Date.now(),
@@ -263,16 +320,23 @@ export class MetadataCache {
 
     updatedCache.metadata[fileName] = metadataWithValidation;
     updatedCache.timestamp = Date.now();
-    await this.saveCache(updatedCache.metadata);
+    await this.saveCache(updatedCache.metadata, cacheKey);
   }
 
   /**
    * 批量更新 metadata 缓存（带校验和）
    */
   static async updateCachedMetadataBatch(
-    metadataMap: Map<string, ImageMetadata>
+    metadataMap: Map<string, ImageMetadata>,
+    storageType?: string,
+    owner?: string,
+    repo?: string
   ): Promise<void> {
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
+    const cacheKey =
+      storageType && owner && repo
+        ? getCacheKey(storageType, owner, repo)
+        : this.getCurrentCacheKey();
     const updatedCache: CachedMetadata = cache || {
       version: METADATA_CACHE_VERSION,
       timestamp: Date.now(),
@@ -289,32 +353,65 @@ export class MetadataCache {
     });
 
     updatedCache.timestamp = Date.now();
-    await this.saveCache(updatedCache.metadata);
+    await this.saveCache(updatedCache.metadata, cacheKey);
   }
 
   /**
    * 删除单个 metadata 缓存
    */
-  static async removeCachedMetadata(fileName: string): Promise<void> {
-    const cache = await this.loadCache();
+  static async removeCachedMetadata(
+    fileName: string,
+    storageType?: string,
+    owner?: string,
+    repo?: string
+  ): Promise<void> {
+    const cache = await this.loadCache(storageType, owner, repo);
+    const cacheKey =
+      storageType && owner && repo
+        ? getCacheKey(storageType, owner, repo)
+        : this.getCurrentCacheKey();
     if (!cache) {
       return;
     }
 
     delete cache.metadata[fileName];
     cache.timestamp = Date.now();
-    await this.saveCache(cache.metadata);
+    await this.saveCache(cache.metadata, cacheKey);
   }
 
   /**
-   * 清除所有缓存
+   * 清除指定缓存（如果未指定则清除当前缓存）
    */
-  static async clearCache(): Promise<void> {
+  static async clearCache(cacheKey?: string): Promise<void> {
     try {
-      this.cache = null;
-      await AsyncStorage.removeItem(METADATA_CACHE_KEY);
+      const key = cacheKey || this.getCurrentCacheKey();
+      this.cacheMap.delete(key);
+      await AsyncStorage.removeItem(key);
     } catch (error) {
       console.error('Failed to clear metadata cache:', error);
+    }
+  }
+
+  /**
+   * 清除所有缓存（用于清理所有仓库源的缓存）
+   */
+  static async clearAllCaches(): Promise<void> {
+    try {
+      // 获取所有以 METADATA_CACHE_KEY_PREFIX 开头的键
+      const allKeys = await AsyncStorage.getAllKeys();
+      const cacheKeys = allKeys.filter(key =>
+        key.startsWith(METADATA_CACHE_KEY_PREFIX)
+      );
+
+      if (cacheKeys.length > 0) {
+        await AsyncStorage.multiRemove(cacheKeys);
+      }
+
+      this.cacheMap.clear();
+      this.cachePromiseMap.clear();
+      this.currentCacheKey = null;
+    } catch (error) {
+      console.error('Failed to clear all metadata caches:', error);
     }
   }
 
@@ -323,9 +420,12 @@ export class MetadataCache {
    */
   static async getFilesToUpdate(
     fileNames: string[],
-    remoteMetadata?: Map<string, ImageMetadata>
+    remoteMetadata?: Map<string, ImageMetadata>,
+    storageType?: string,
+    owner?: string,
+    repo?: string
   ): Promise<string[]> {
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
     if (!cache) {
       return fileNames; // 没有缓存，全部需要更新
     }
@@ -396,14 +496,18 @@ export class MetadataCache {
   /**
    * 验证缓存数据的完整性（用于调试和监控）
    */
-  static async validateCacheIntegrity(): Promise<{
+  static async validateCacheIntegrity(
+    storageType?: string,
+    owner?: string,
+    repo?: string
+  ): Promise<{
     total: number;
     valid: number;
     invalid: number;
     expired: number;
     invalidFiles: string[];
   }> {
-    const cache = await this.loadCache();
+    const cache = await this.loadCache(storageType, owner, repo);
     if (!cache) {
       return {
         total: 0,

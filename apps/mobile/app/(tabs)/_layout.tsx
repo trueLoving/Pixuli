@@ -43,6 +43,13 @@ export default function TabLayout() {
           href: null, // 隐藏此路由，不显示在底部导航栏
         }}
       />
+
+      <Tabs.Screen
+        name="settings/gitee"
+        options={{
+          href: null, // 隐藏此路由，不显示在底部导航栏
+        }}
+      />
     </Tabs>
   );
 }

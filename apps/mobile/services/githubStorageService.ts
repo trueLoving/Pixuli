@@ -177,7 +177,10 @@ export class GitHubStorageService {
         // 更新本地缓存
         await MetadataCache.updateCachedMetadata(
           fileName,
-          MetadataCache.imageItemToMetadata(imageItem)
+          MetadataCache.imageItemToMetadata(imageItem),
+          'github',
+          this.config.owner,
+          this.config.repo
         );
       } catch (error) {
         console.warn(
@@ -292,7 +295,12 @@ export class GitHubStorageService {
       });
 
       // 从本地缓存删除
-      await MetadataCache.removeCachedMetadata(fileName);
+      await MetadataCache.removeCachedMetadata(
+        fileName,
+        'github',
+        this.config.owner,
+        this.config.repo
+      );
     } catch (error) {
       console.warn(`Failed to delete metadata for ${fileName}:`, error);
       throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
@@ -515,7 +523,12 @@ export class GitHubStorageService {
           };
           metadataToCache.set(fileName, metadataWithTimestamp);
         });
-        await MetadataCache.updateCachedMetadataBatch(metadataToCache);
+        await MetadataCache.updateCachedMetadataBatch(
+          metadataToCache,
+          'github',
+          this.config.owner,
+          this.config.repo
+        );
 
         // 合并远程数据
         return images.map(img => {
@@ -528,8 +541,12 @@ export class GitHubStorageService {
       }
 
       // 2. 先从缓存加载
-      const cachedMetadata =
-        await MetadataCache.getCachedMetadataBatch(fileNames);
+      const cachedMetadata = await MetadataCache.getCachedMetadataBatch(
+        fileNames,
+        'github',
+        this.config.owner,
+        this.config.repo
+      );
 
       // 3. 合并缓存数据到图片列表（立即返回，不等待远程）
       let updatedImages = images.map(img => {
@@ -544,7 +561,13 @@ export class GitHubStorageService {
       // 如果启用后台更新，只加载真正需要更新的（无效或缺失的）
       // 如果禁用后台更新，只加载缺失的（缓存中没有的）
       const filesToFetch = backgroundUpdate
-        ? await MetadataCache.getFilesToUpdate(fileNames)
+        ? await MetadataCache.getFilesToUpdate(
+            fileNames,
+            undefined,
+            'github',
+            this.config.owner,
+            this.config.repo
+          )
         : fileNames.filter(fileName => !cachedMetadata.has(fileName));
 
       // 5. 如果有需要更新的文件，从远程加载（后台异步）
@@ -564,7 +587,12 @@ export class GitHubStorageService {
               };
               metadataToCache.set(fileName, metadataWithTimestamp);
             });
-            await MetadataCache.updateCachedMetadataBatch(metadataToCache);
+            await MetadataCache.updateCachedMetadataBatch(
+              metadataToCache,
+              'github',
+              this.config.owner,
+              this.config.repo
+            );
 
             // 注意：这里不更新 images，因为已经返回了
             // 如果需要实时更新，可以通过回调或事件通知
@@ -674,7 +702,13 @@ export class GitHubStorageService {
       await this.updateImageMetadata(fileName, updatedMetadata);
 
       // 更新本地缓存
-      await MetadataCache.updateCachedMetadata(fileName, updatedMetadata);
+      await MetadataCache.updateCachedMetadata(
+        fileName,
+        updatedMetadata,
+        'github',
+        this.config.owner,
+        this.config.repo
+      );
     } catch (error) {
       console.error('Update image info failed:', error);
       throw new Error(
