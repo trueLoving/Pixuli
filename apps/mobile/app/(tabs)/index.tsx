@@ -153,9 +153,9 @@ export default function HomeScreen() {
         <View style={styles.titleBlock}>
           <ThemedText style={styles.subtitle}>
             {hasActiveSearchOrFilter
-              ? `${displayImages.length} / ${images.length} 张`
+              ? `${displayImages.length} / ${images.length} ${t('app.imageCount')}`
               : images?.length
-                ? `${images.length} 张`
+                ? `${images.length} ${t('app.imageCount')}`
                 : ''}
           </ThemedText>
         </View>
@@ -172,7 +172,7 @@ export default function HomeScreen() {
               style={styles.sourceIcon}
             />
             <ThemedText style={styles.sourceText} numberOfLines={1}>
-              {currentSource?.display || '未配置'}
+              {currentSource?.display || t('app.notConfigured')}
             </ThemedText>
             <IconSymbol
               name="chevron.down"
@@ -243,7 +243,7 @@ export default function HomeScreen() {
             ]}
           >
             <ThemedText style={[styles.modalTitle, { color: colors.text }]}>
-              切换仓库源
+              {t('app.switchSource')}
             </ThemedText>
 
             <TouchableOpacity
@@ -260,13 +260,13 @@ export default function HomeScreen() {
                     setGitHubConfig(githubConfig);
                     loadImages();
                   } else {
-                    Alert.alert('提示', '请先在设置中配置 GitHub 仓库', [
+                    Alert.alert(t('app.tip'), t('app.configureGitHubFirst'), [
                       {
-                        text: '取消',
+                        text: t('common.cancel'),
                         style: 'cancel',
                       },
                       {
-                        text: '去配置',
+                        text: t('app.goToConfigure'),
                         onPress: () => {
                           router.push('/(tabs)/settings/github');
                         },
@@ -300,7 +300,7 @@ export default function HomeScreen() {
                   >
                     {githubConfig
                       ? `${githubConfig.owner}/${githubConfig.repo}`
-                      : '未配置'}
+                      : t('app.notConfigured')}
                   </ThemedText>
                 </View>
               </View>
@@ -326,13 +326,13 @@ export default function HomeScreen() {
                     setGiteeConfig(giteeConfig);
                     loadImages();
                   } else {
-                    Alert.alert('提示', '请先在设置中配置 Gitee 仓库', [
+                    Alert.alert(t('app.tip'), t('app.configureGiteeFirst'), [
                       {
-                        text: '取消',
+                        text: t('common.cancel'),
                         style: 'cancel',
                       },
                       {
-                        text: '去配置',
+                        text: t('app.goToConfigure'),
                         onPress: () => {
                           router.push('/(tabs)/settings/gitee');
                         },
@@ -366,7 +366,7 @@ export default function HomeScreen() {
                   >
                     {giteeConfig
                       ? `${giteeConfig.owner}/${giteeConfig.repo}`
-                      : '未配置'}
+                      : t('app.notConfigured')}
                   </ThemedText>
                 </View>
               </View>
@@ -383,7 +383,9 @@ export default function HomeScreen() {
               style={styles.modalCloseButton}
               onPress={() => setSourceSwitchVisible(false)}
             >
-              <ThemedText style={styles.modalCloseText}>取消</ThemedText>
+              <ThemedText style={styles.modalCloseText}>
+                {t('common.cancel')}
+              </ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </TouchableOpacity>

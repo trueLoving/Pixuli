@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 
@@ -31,6 +32,7 @@ export default function GitHubSettingsScreen() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
   const { githubConfig, setGitHubConfig, clearGitHubConfig } = useImageStore();
 
   // 隐藏底部 tab 栏
@@ -62,6 +64,15 @@ export default function GitHubSettingsScreen() {
         branch: githubConfig.branch || 'main',
         token: githubConfig.token || '',
         path: githubConfig.path || 'images',
+      });
+    } else {
+      // 当配置被清除时，清空表单
+      setFormData({
+        owner: '',
+        repo: '',
+        branch: 'main',
+        token: '',
+        path: 'images',
       });
     }
   }, [githubConfig]);
@@ -255,7 +266,7 @@ export default function GitHubSettingsScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingTop: Platform.OS === 'ios' ? 50 : 16,
+      paddingTop: Math.max(insets.top + 8, 16),
       paddingHorizontal: 16,
       paddingBottom: 16,
       backgroundColor: colors.cardBackground,

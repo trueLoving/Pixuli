@@ -8,6 +8,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { IconSymbol } from './ui/IconSymbol';
@@ -24,6 +25,7 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
   const { t } = useI18n();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
   const {
     searchQuery,
     filterOptions,
@@ -159,7 +161,13 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
   });
 
   return (
-    <View style={[styles.container, dynamicStyles.searchContainer]}>
+    <View
+      style={[
+        styles.container,
+        dynamicStyles.searchContainer,
+        { paddingTop: Math.max(insets.top + 8, 12) },
+      ]}
+    >
       {/* 搜索栏 */}
       <View style={styles.searchRow}>
         <View style={styles.searchInputContainer}>

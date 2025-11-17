@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 
@@ -31,6 +32,7 @@ export default function GiteeSettingsScreen() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
   const { giteeConfig, setGiteeConfig, clearGiteeConfig } = useImageStore();
 
   // 隐藏底部 tab 栏
@@ -92,7 +94,7 @@ export default function GiteeSettingsScreen() {
       router.push('/(tabs)/settings');
     } catch (error) {
       showError(
-        `${t('settings.gitee.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${t('settings.gitee.saveFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
       );
     }
   };
@@ -116,7 +118,7 @@ export default function GiteeSettingsScreen() {
               router.push('/(tabs)/settings');
             } catch (error) {
               showError(
-                `${t('settings.gitee.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+                `${t('settings.gitee.clearFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
               );
             }
           },
@@ -169,7 +171,7 @@ export default function GiteeSettingsScreen() {
       showSuccess(t('settings.gitee.importSuccess'));
     } catch (error) {
       showError(
-        `${t('settings.gitee.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`
+        `${t('settings.gitee.importFailed')}: ${error instanceof Error ? error.message : t('common.fileFormatError')}`
       );
     }
   };
@@ -215,7 +217,7 @@ export default function GiteeSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`
           );
         }
       } else {
@@ -241,13 +243,13 @@ export default function GiteeSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`
           );
         }
       }
     } catch (error) {
       showError(
-        `${t('settings.gitee.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${t('settings.gitee.exportFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
       );
     }
   };
@@ -261,7 +263,7 @@ export default function GiteeSettingsScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingTop: Platform.OS === 'ios' ? 50 : 16,
+      paddingTop: Math.max(insets.top + 8, 16),
       paddingHorizontal: 16,
       paddingBottom: 16,
       backgroundColor: colors.cardBackground,
@@ -486,7 +488,9 @@ export default function GiteeSettingsScreen() {
           onPress={handleImportConfig}
           activeOpacity={0.7}
         >
-          <ThemedText style={dynamicStyles.importButtonText}>导入</ThemedText>
+          <ThemedText style={dynamicStyles.importButtonText}>
+            {t('settings.gitee.import')}
+          </ThemedText>
         </TouchableOpacity>
         {giteeConfig && (
           <TouchableOpacity
@@ -494,7 +498,9 @@ export default function GiteeSettingsScreen() {
             onPress={handleClear}
             activeOpacity={0.7}
           >
-            <ThemedText style={dynamicStyles.clearButtonText}>清除</ThemedText>
+            <ThemedText style={dynamicStyles.clearButtonText}>
+              {t('settings.gitee.clear')}
+            </ThemedText>
           </TouchableOpacity>
         )}
         <TouchableOpacity
