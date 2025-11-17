@@ -34,13 +34,47 @@ export function ImageUploadButton({
     name?: string;
   } | null>(null);
 
-  const pickImage = async () => {
+  const takePhoto = async () => {
+    try {
+      // 请求相机权限
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(t('common.error'), t('image.cameraPermissionDenied'));
+        return;
+      }
+
+      // 拍照
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: false,
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        const asset = result.assets[0];
+        // 生成文件名（使用时间戳）
+        const timestamp = new Date().getTime();
+        const fileName = `photo_${timestamp}.jpg`;
+
+        setPendingImage({
+          uri: asset.uri,
+          name: fileName,
+        });
+        setEditModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Camera error:', error);
+      Alert.alert(t('common.error'), t('image.uploadFailed'));
+    }
+  };
+
+  const pickImageFromLibrary = async () => {
     try {
       // 请求权限
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(t('common.error'), '需要访问相册权限');
+        Alert.alert(t('common.error'), t('image.mediaLibraryPermissionDenied'));
         return;
       }
 
@@ -85,8 +119,30 @@ export function ImageUploadButton({
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      Alert.alert(t('common.error'), '选择图片失败');
+      Alert.alert(t('common.error'), t('image.uploadFailed'));
     }
+  };
+
+  const showImageSourcePicker = () => {
+    Alert.alert(
+      t('image.selectImageSource'),
+      '',
+      [
+        {
+          text: t('image.takePhoto'),
+          onPress: takePhoto,
+        },
+        {
+          text: t('image.chooseFromLibrary'),
+          onPress: pickImageFromLibrary,
+        },
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleUploadWithMetadata = async (data: {
@@ -158,7 +214,7 @@ export function ImageUploadButton({
             styles.fabLabelContainer,
             (loading || uploading) && styles.buttonDisabled,
           ]}
-          onPress={pickImage}
+          onPress={showImageSourcePicker}
           disabled={loading || uploading}
           accessibilityLabel={t('image.upload')}
           activeOpacity={0.8}
@@ -176,7 +232,7 @@ export function ImageUploadButton({
             compact && styles.buttonCompact,
             (loading || uploading) && styles.buttonDisabled,
           ]}
-          onPress={pickImage}
+          onPress={showImageSourcePicker}
           disabled={loading || uploading}
           accessibilityLabel={t('image.upload')}
         >
