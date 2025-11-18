@@ -153,6 +153,29 @@ export default defineConfig({
   },
   server: {
     port: 5500,
+    proxy: {
+      // 代理 Gitee 图片请求，解决跨域问题
+      '/api/gitee-proxy': {
+        target: 'https://gitee.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: path => path.replace(/^\/api\/gitee-proxy/, ''),
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
+            // 添加必要的请求头
+            proxyReq.setHeader('Referer', 'https://gitee.com/');
+            proxyReq.setHeader('Origin', 'https://gitee.com');
+          });
+          proxy.on('proxyRes', (proxyRes, _req, _res) => {
+            // 添加 CORS 响应头
+            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+            proxyRes.headers['Access-Control-Allow-Methods'] =
+              'GET, HEAD, OPTIONS';
+            proxyRes.headers['Access-Control-Allow-Headers'] = '*';
+          });
+        },
+      },
+    },
   },
   build: {
     target: 'esnext',

@@ -1,6 +1,7 @@
 import type {
   BatchUploadProgress,
   GitHubConfig,
+  GiteeConfig,
   ImageEditData,
   ImageItem,
   ImageUploadData,
@@ -13,21 +14,34 @@ import {
   loadGitHubConfig,
   saveGitHubConfig,
 } from '../config/github';
+import {
+  clearGiteeConfig,
+  loadGiteeConfig,
+  saveGiteeConfig,
+} from '../config/gitee';
 import { GitHubStorageService } from '../services/githubStorage';
+import { GiteeStorageService } from '../services/giteeStorage';
 import { backgroundSyncService } from '../services/backgroundSyncService';
 import { pwaService } from '../services/pwaService';
+
+type StorageService = GitHubStorageService | GiteeStorageService;
+type StorageType = 'github' | 'gitee';
 
 interface ImageState {
   images: ImageItem[];
   loading: boolean;
   error: string | null;
+  storageType: StorageType | null;
   githubConfig: GitHubConfig | null;
-  storageService: GitHubStorageService | null;
+  giteeConfig: GiteeConfig | null;
+  storageService: StorageService | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Actions
   setGitHubConfig: (config: GitHubConfig) => void;
+  setGiteeConfig: (config: GiteeConfig) => void;
   clearGitHubConfig: () => void;
+  clearGiteeConfig: () => void;
   initializeStorage: () => void;
   loadImages: () => Promise<void>;
   uploadImage: (uploadData: ImageUploadData) => Promise<void>;
@@ -48,42 +62,79 @@ interface ImageState {
 
 export const useImageStore = create<ImageState>((set, get) => {
   // 在store创建时加载配置并初始化存储服务
-  const initialConfig = loadGitHubConfig();
+  const initialGitHubConfig = loadGitHubConfig();
+  const initialGiteeConfig = loadGiteeConfig();
+
+  // 优先使用 Gitee 配置，如果没有则使用 GitHub 配置
+  const initialStorageType: StorageType | null = initialGiteeConfig
+    ? 'gitee'
+    : initialGitHubConfig
+      ? 'github'
+      : null;
+
+  const initialStorageService: StorageService | null = initialGiteeConfig
+    ? new GiteeStorageService(initialGiteeConfig)
+    : initialGitHubConfig
+      ? new GitHubStorageService(initialGitHubConfig)
+      : null;
 
   return {
     images: [],
     loading: false,
     error: null,
-    githubConfig: initialConfig,
-    storageService: initialConfig
-      ? new GitHubStorageService(initialConfig)
-      : null,
+    storageType: initialStorageType,
+    githubConfig: initialGitHubConfig,
+    giteeConfig: initialGiteeConfig,
+    storageService: initialStorageService,
     batchUploadProgress: null,
 
     setGitHubConfig: (config: GitHubConfig) => {
-      set({ githubConfig: config });
+      set({
+        githubConfig: config,
+        giteeConfig: null, // 清除 Gitee 配置
+        storageType: 'github',
+      });
       saveGitHubConfig(config);
+      clearGiteeConfig(); // 清除 Gitee 配置
+      get().initializeStorage();
+    },
+
+    setGiteeConfig: (config: GiteeConfig) => {
+      set({
+        giteeConfig: config,
+        githubConfig: null, // 清除 GitHub 配置
+        storageType: 'gitee',
+      });
+      saveGiteeConfig(config);
+      clearGitHubConfig(); // 清除 GitHub 配置
       get().initializeStorage();
     },
 
     initializeStorage: () => {
-      const { githubConfig } = get();
-      if (githubConfig) {
-        try {
+      const { githubConfig, giteeConfig, storageType } = get();
+      try {
+        if (storageType === 'gitee' && giteeConfig) {
+          const storageService = new GiteeStorageService(giteeConfig);
+          set({ storageService });
+        } else if (storageType === 'github' && githubConfig) {
           const storageService = new GitHubStorageService(githubConfig);
           set({ storageService });
-        } catch (error) {
-          console.error('Failed to initialize storage service:', error);
-          set({ error: '初始化存储服务失败' });
+        } else {
+          set({ storageService: null });
         }
+      } catch (error) {
+        console.error('Failed to initialize storage service:', error);
+        set({ error: '初始化存储服务失败' });
       }
     },
 
     loadImages: async () => {
-      const { storageService } = get();
+      const { storageService, storageType } = get();
 
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -119,9 +170,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadImage: async (uploadData: ImageUploadData) => {
-      const { storageService } = get();
+      const { storageService, storageType } = get();
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -180,9 +233,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
-      const { storageService } = get();
+      const { storageService, storageType } = get();
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -305,9 +360,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     deleteImage: async (imageId: string, fileName: string) => {
-      const { storageService } = get();
+      const { storageService, storageType } = get();
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -348,9 +405,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
-      const { storageService } = get();
+      const { storageService, storageType } = get();
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -401,9 +460,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     updateImage: async (editData: ImageEditData) => {
-      const { storageService, images } = get();
+      const { storageService, images, storageType } = get();
       if (!storageService) {
-        set({ error: 'GitHub 配置未初始化' });
+        set({
+          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+        });
         return;
       }
 
@@ -509,6 +570,18 @@ export const useImageStore = create<ImageState>((set, get) => {
       clearGitHubConfig();
       set({
         githubConfig: null,
+        storageType: null,
+        storageService: null,
+        images: [],
+        error: null,
+      });
+    },
+
+    clearGiteeConfig: () => {
+      clearGiteeConfig();
+      set({
+        giteeConfig: null,
+        storageType: null,
         storageService: null,
         images: [],
         error: null,

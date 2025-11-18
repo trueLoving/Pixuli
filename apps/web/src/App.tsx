@@ -2,6 +2,7 @@ import {
   formatFileSize,
   getImageDimensionsFromUrl,
   GitHubConfigModal,
+  GiteeConfigModal,
   ImageBrowser,
   ImageUpload,
   KeyboardHelpModal,
@@ -26,11 +27,15 @@ function App() {
     images,
     loading,
     error,
+    storageType,
     githubConfig,
+    giteeConfig,
     loadImages,
     clearError,
     setGitHubConfig,
+    setGiteeConfig,
     clearGitHubConfig,
+    clearGiteeConfig,
     uploadImage,
     uploadMultipleImages,
     batchUploadProgress,
@@ -101,16 +106,24 @@ function App() {
 
   const handleSaveConfig = useCallback(
     (config: any) => {
-      setGitHubConfig(config);
+      if (storageType === 'gitee') {
+        setGiteeConfig(config);
+      } else {
+        setGitHubConfig(config);
+      }
       setShowConfigModal(false);
     },
-    [setGitHubConfig]
+    [setGitHubConfig, setGiteeConfig, storageType]
   );
 
   const handleClearConfig = useCallback(() => {
-    clearGitHubConfig();
+    if (storageType === 'gitee') {
+      clearGiteeConfig();
+    } else {
+      clearGitHubConfig();
+    }
     setShowConfigModal(false);
-  }, [clearGitHubConfig]);
+  }, [clearGitHubConfig, clearGiteeConfig, storageType]);
 
   const handleDeleteImage = useCallback(
     async (imageId: string, fileName: string) => {
@@ -151,17 +164,31 @@ function App() {
 
   // 初始化存储服务
   useEffect(() => {
-    if (githubConfig) {
-      const { initializeStorage } = useImageStore.getState();
+    const { storageType, githubConfig, giteeConfig, initializeStorage } =
+      useImageStore.getState();
+    if (
+      (storageType === 'github' && githubConfig) ||
+      (storageType === 'gitee' && giteeConfig)
+    ) {
       initializeStorage();
       handleLoadImages();
     }
-  }, [githubConfig, handleLoadImages]);
+  }, [storageType, githubConfig, giteeConfig, handleLoadImages]);
 
   // 页面加载时初始化
   useEffect(() => {
-    const { githubConfig, initializeStorage } = useImageStore.getState();
-    if (githubConfig && !useImageStore.getState().storageService) {
+    const {
+      storageType,
+      githubConfig,
+      giteeConfig,
+      storageService,
+      initializeStorage,
+    } = useImageStore.getState();
+    if (
+      !storageService &&
+      ((storageType === 'github' && githubConfig) ||
+        (storageType === 'gitee' && giteeConfig))
+    ) {
       initializeStorage();
     }
   }, []);
@@ -210,7 +237,7 @@ function App() {
     handleOpenConfigModal,
   ]);
 
-  if (!githubConfig) {
+  if (!githubConfig && !giteeConfig) {
     return (
       <div
         className="h-screen flex items-center justify-center p-4"
@@ -228,21 +255,46 @@ function App() {
           {isDemoMode && <Demo t={t} onExitDemo={exitDemoMode} />}
 
           <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
-          <button
-            onClick={handleOpenConfigModal}
-            className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            {t('app.configureGitHub')}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => {
+                useImageStore.setState({ storageType: 'github' });
+                setShowConfigModal(true);
+              }}
+              className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {t('app.configureGitHub')}
+            </button>
+            <button
+              onClick={() => {
+                useImageStore.setState({ storageType: 'gitee' });
+                setShowConfigModal(true);
+              }}
+              className="px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              配置 Gitee
+            </button>
+          </div>
         </div>
 
         {/* GitHub 配置模态框 */}
         <GitHubConfigModal
-          isOpen={showConfigModal}
+          isOpen={showConfigModal && storageType !== 'gitee'}
           onClose={handleCloseConfigModal}
           githubConfig={githubConfig}
           onSaveConfig={handleSaveConfig}
           onClearConfig={handleClearConfig}
+          t={t}
+        />
+
+        {/* Gitee 配置模态框 */}
+        <GiteeConfigModal
+          isOpen={showConfigModal && storageType === 'gitee'}
+          onClose={handleCloseConfigModal}
+          giteeConfig={giteeConfig}
+          onSaveConfig={handleSaveConfig}
+          onClearConfig={handleClearConfig}
+          platform="web"
           t={t}
         />
       </div>
@@ -266,7 +318,10 @@ function App() {
                 {t('app.title')}
               </h1>
               <div className="text-sm text-gray-500 hidden sm:block">
-                {t('app.repository')}: {githubConfig.owner}/{githubConfig.repo}
+                {t('app.repository')}:{' '}
+                {storageType === 'gitee'
+                  ? `${giteeConfig?.owner}/${giteeConfig?.repo}`
+                  : `${githubConfig?.owner}/${githubConfig?.repo}`}
               </div>
               {isDemoMode && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
@@ -388,11 +443,22 @@ function App() {
 
       {/* GitHub 配置模态框 */}
       <GitHubConfigModal
-        isOpen={showConfigModal}
+        isOpen={showConfigModal && storageType === 'github'}
         onClose={handleCloseConfigModal}
         githubConfig={githubConfig}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
+        t={t}
+      />
+
+      {/* Gitee 配置模态框 */}
+      <GiteeConfigModal
+        isOpen={showConfigModal && storageType === 'gitee'}
+        onClose={handleCloseConfigModal}
+        giteeConfig={giteeConfig}
+        onSaveConfig={handleSaveConfig}
+        onClearConfig={handleClearConfig}
+        platform="web"
         t={t}
       />
 

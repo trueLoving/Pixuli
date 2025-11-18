@@ -9,6 +9,11 @@
       content="Pixuli Web - 基于 GitHub 的智能图片管理 Web 应用"
     />
     <meta name="theme-color" content="#2563eb" />
+    <!-- Content Security Policy: 允许 Gitee 图片加载 -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://gitee.com https://assets.gitee.com https://raw.githubusercontent.com https: http:; font-src 'self' data:; connect-src 'self' https://api.github.com https://gitee.com https://api.gitee.com https: http:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+    />
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <title>Pixuli Web</title>
