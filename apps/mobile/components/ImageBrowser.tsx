@@ -16,6 +16,9 @@ import * as Clipboard from 'expo-clipboard';
 // 动态加载 legacy API（运行时可用）
 // @ts-ignore
 const FileSystem = require('expo-file-system/legacy');
+// 动态加载 expo-media-library（如果可用）
+const MediaLibrary = require('expo-media-library');
+
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
@@ -50,6 +53,8 @@ export function ImageBrowser({
   const [refreshing, setRefreshing] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
 
@@ -287,6 +292,132 @@ export function ImageBrowser({
     }
   };
 
+  const handleSaveToLocal = async () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+
+    // 检查是否安装了 expo-media-library
+    if (!MediaLibrary) {
+      Alert.alert(
+        t('common.error') || '错误',
+        t('image.saveToLocalFailed') ||
+          '保存功能不可用，请安装 expo-media-library'
+      );
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // 请求相册权限
+      let permissionResponse;
+      try {
+        permissionResponse = await MediaLibrary.requestPermissionsAsync();
+      } catch (permissionError) {
+        // 处理权限请求错误（如 Android 配置问题）
+        const errorMessage =
+          permissionError instanceof Error
+            ? permissionError.message
+            : '未知错误';
+        if (
+          errorMessage.includes('AUDIO permission') ||
+          errorMessage.includes('AndroidManifest')
+        ) {
+          showError(
+            t('image.saveToLocalFailed') ||
+              '保存图片失败：请确保应用已正确配置媒体库权限。在开发环境中，可能需要创建开发构建（development build）才能使用此功能。'
+          );
+        } else {
+          showError(
+            `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+          );
+        }
+        return;
+      }
+
+      if (!permissionResponse || permissionResponse.status !== 'granted') {
+        showError(
+          t('image.saveToLocalPermissionDenied') ||
+            '需要相册权限才能保存图片，请在设置中授予权限'
+        );
+        return;
+      }
+
+      // 下载图片到本地缓存
+      const fileExtension = currentImage.name.split('.').pop() || 'jpg';
+      const fileName = `${currentImage.id || 'image'}_${Date.now()}.${fileExtension}`;
+      const localUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      // 使用 Promise.race 实现超时控制
+      const downloadPromise = FileSystem.downloadAsync(
+        currentImage.url,
+        localUri
+      );
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('下载超时，请检查网络连接'));
+        }, 30000); // 30秒超时
+      });
+
+      // 等待下载完成或超时
+      const downloadResult = await Promise.race([
+        downloadPromise,
+        timeoutPromise,
+      ]);
+
+      if (!downloadResult.uri) {
+        throw new Error('下载图片失败');
+      }
+
+      // 保存到相册
+      await MediaLibrary.createAssetAsync(downloadResult.uri);
+      showSuccess(t('image.saveToLocalSuccess') || '图片已保存到相册');
+    } catch (error) {
+      console.error('保存图片失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      showError(
+        `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLongPress = () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+    setShowActionSheet(true);
+  };
+
+  const handleCloseActionSheet = () => {
+    setShowActionSheet(false);
+  };
+
+  const handleActionSave = async () => {
+    setShowActionSheet(false);
+    await handleSaveToLocal();
+  };
+
+  const handleActionDelete = () => {
+    setShowActionSheet(false);
+    handleDelete();
+  };
+
+  const handleActionShare = async () => {
+    setShowActionSheet(false);
+    await handleShareImageLink();
+  };
+
+  const handleActionViewMetadata = () => {
+    setShowActionSheet(false);
+    setShowMetadata(prev => !prev);
+  };
+
+  const handleActionRefreshMetadata = async () => {
+    setShowActionSheet(false);
+    await handleRefreshMetadata();
+  };
+
   if (!visible || images.length === 0) {
     return null;
   }
@@ -314,59 +445,14 @@ export function ImageBrowser({
             {currentIndex + 1} / {images.length}
           </ThemedText>
           <View style={styles.headerActions}>
-            {onRefreshMetadata && (
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleRefreshMetadata}
-                disabled={deleting || refreshing}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                {refreshing ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
-                )}
-              </TouchableOpacity>
-            )}
             <TouchableOpacity
               style={styles.headerButton}
-              onPress={() => {
-                setShowMetadata(prev => !prev);
-              }}
-              disabled={deleting || refreshing || sharing}
+              onPress={() => setShowActionSheet(true)}
+              disabled={deleting || refreshing || sharing || saving}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <IconSymbol
-                name={showMetadata ? 'info.circle.fill' : 'info.circle'}
-                size={24}
-                color="#fff"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleShareImageLink}
-              disabled={deleting || refreshing || sharing}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              {sharing ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <IconSymbol name="paperplane.fill" size={24} color="#fff" />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleDelete}
-              disabled={deleting || refreshing || sharing}
-            >
-              {deleting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <IconSymbol name="trash" size={24} color="#fff" />
-              )}
+              <IconSymbol name="line.3.horizontal" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -387,8 +473,17 @@ export function ImageBrowser({
             <TouchableOpacity
               key={image.id}
               style={styles.imageContainer}
-              onPress={onClose}
+              onPress={() => {
+                // 如果元数据面板打开，先关闭元数据面板；否则关闭浏览器
+                if (showMetadata) {
+                  setShowMetadata(false);
+                } else {
+                  onClose();
+                }
+              }}
+              onLongPress={handleLongPress}
               activeOpacity={1}
+              delayLongPress={500}
             >
               <Image
                 source={{ uri: image.url }}
@@ -403,6 +498,19 @@ export function ImageBrowser({
         {/* 元数据信息面板 */}
         {showMetadata && currentImage && (
           <View style={styles.metadataContainer}>
+            {/* 元数据面板标题栏 */}
+            <View style={styles.metadataHeader}>
+              <ThemedText style={styles.metadataHeaderTitle}>
+                {t('image.metadata') || '元数据'}
+              </ThemedText>
+              <TouchableOpacity
+                style={styles.metadataHeaderCloseButton}
+                onPress={() => setShowMetadata(false)}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="xmark" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
             <ScrollView
               style={styles.metadataContent}
               showsVerticalScrollIndicator={true}
@@ -569,6 +677,141 @@ export function ImageBrowser({
             ))}
           </ScrollView>
         </View>
+
+        {/* 底部操作弹窗 */}
+        <Modal
+          visible={showActionSheet}
+          transparent
+          animationType="slide"
+          onRequestClose={handleCloseActionSheet}
+        >
+          <TouchableOpacity
+            style={styles.actionSheetOverlay}
+            activeOpacity={1}
+            onPress={handleCloseActionSheet}
+          >
+            <View style={styles.actionSheetContainer} pointerEvents="box-none">
+              <View style={styles.actionSheetContent} pointerEvents="box-none">
+                {/* 保存到本地按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionSave}
+                  disabled={saving || deleting || sharing || !MediaLibrary}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.saveToLocal') || '保存到本地'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 分享按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionShare}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {sharing ? (
+                    <ActivityIndicator size="small" color="#007AFF" />
+                  ) : null}
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.shareImage') || '分享'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 查看元数据按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionViewMetadata}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {/* <IconSymbol
+                    name={showMetadata ? 'info.circle.fill' : 'info.circle'}
+                    size={24}
+                    color="#007AFF"
+                  /> */}
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {showMetadata
+                      ? t('image.hideFullMetadata') || '隐藏元数据'
+                      : t('image.viewFullMetadata') || '查看元数据'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 刷新元数据按钮 */}
+                {onRefreshMetadata && (
+                  <TouchableOpacity
+                    style={styles.actionSheetButton}
+                    onPress={handleActionRefreshMetadata}
+                    disabled={saving || deleting || sharing || refreshing}
+                    activeOpacity={0.7}
+                  >
+                    {/* {refreshing ? (
+                      <ActivityIndicator size="small" color="#007AFF" />
+                    ) : (
+                      <IconSymbol
+                        name="arrow.clockwise"
+                        size={24}
+                        color="#007AFF"
+                      />
+                    )} */}
+                    <ThemedText style={styles.actionSheetButtonText}>
+                      {t('image.refreshMetadata') || '刷新元数据'}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+
+                {/* 分隔线 */}
+                <View style={styles.actionSheetDivider} />
+
+                {/* 删除按钮 */}
+                <TouchableOpacity
+                  style={[
+                    styles.actionSheetButton,
+                    styles.actionSheetButtonDanger,
+                  ]}
+                  onPress={handleActionDelete}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {deleting ? (
+                    <ActivityIndicator size="small" color="#FF3B30" />
+                  ) : null}
+                  <ThemedText
+                    style={[
+                      styles.actionSheetButtonText,
+                      styles.actionSheetButtonTextDanger,
+                    ]}
+                  >
+                    {t('common.delete') || '删除'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 分隔线 */}
+                <View style={styles.actionSheetDivider} />
+
+                {/* 取消按钮 */}
+                <TouchableOpacity
+                  style={[
+                    styles.actionSheetButton,
+                    styles.actionSheetButtonCancel,
+                  ]}
+                  onPress={handleCloseActionSheet}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText
+                    style={[
+                      styles.actionSheetButtonText,
+                      styles.actionSheetButtonTextCancel,
+                    ]}
+                  >
+                    {t('common.cancel') || '取消'}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </Modal>
   );
@@ -650,12 +893,32 @@ const styles = StyleSheet.create({
   metadataContainer: {
     height: 200,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    padding: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
+  metadataHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  metadataHeaderTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  metadataHeaderCloseButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   metadataContent: {
     flex: 1,
+    padding: 16,
   },
   metadataRow: {
     marginBottom: 12,
@@ -706,5 +969,53 @@ const styles = StyleSheet.create({
   urlActionText: {
     color: '#007AFF',
     fontSize: 14,
+  },
+  actionSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionSheetContainer: {
+    paddingBottom: 34,
+    paddingHorizontal: 16,
+  },
+  actionSheetContent: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  actionSheetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    gap: 12,
+  },
+  actionSheetButtonDanger: {
+    borderBottomWidth: 0,
+  },
+  actionSheetDivider: {
+    height: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  actionSheetButtonCancel: {
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+  },
+  actionSheetButtonText: {
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '400',
+  },
+  actionSheetButtonTextDanger: {
+    color: '#FF3B30',
+  },
+  actionSheetButtonTextCancel: {
+    color: '#000',
+    fontWeight: '600',
   },
 });
