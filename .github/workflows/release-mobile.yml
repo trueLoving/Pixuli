@@ -12,6 +12,11 @@ on:
           # - ios
           # - both
         default: android
+      version:
+        description: '指定版本号（例如：1.0.0）。如果为空，将从 tag 或 package.json 中获取'
+        required: false
+        type: string
+        default: ''
       releaseToGitHub:
         description: '将产物附加到 GitHub Release（仅在 tag 或手动开启时）'
         required: true
@@ -48,10 +53,12 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             PLATFORM="${{ github.event.inputs.platform }}"
             RELEASE_INPUT="${{ github.event.inputs.releaseToGitHub }}"
+            VERSION_INPUT="${{ github.event.inputs.version }}"
           else
             # tag push 默认 both，发布 release
             PLATFORM="both"
             RELEASE_INPUT="true"
+            VERSION_INPUT=""
           fi
           DO_ANDROID=false
           DO_IOS=false
@@ -59,10 +66,40 @@ jobs:
           if [[ "$PLATFORM" == "ios" || "$PLATFORM" == "both" ]]; then DO_IOS=true; fi
           IS_TAG=false
           if [[ "${{ startsWith(github.ref, 'refs/tags/') }}" == "true" ]]; then IS_TAG=true; fi
+
+          # 解析版本号
+          VERSION=""
+          # 1. 优先使用输入的版本号
+          if [[ -n "$VERSION_INPUT" ]]; then
+            VERSION="$VERSION_INPUT"
+            echo "使用输入的版本号: $VERSION"
+          # 2. 如果是 tag，从 tag 名称中提取版本号
+          elif [[ "$IS_TAG" == "true" ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            # 去掉可能的 'v' 前缀
+            VERSION="${TAG_NAME#v}"
+            echo "从 tag 提取版本号: $VERSION"
+          # 3. 从 package.json 中读取版本号作为后备
+          else
+            if [[ -f "apps/mobile/package.json" ]]; then
+              VERSION=$(node -p "require('./apps/mobile/package.json').version" 2>/dev/null || echo "")
+              if [[ -n "$VERSION" ]]; then
+                echo "从 package.json 读取版本号: $VERSION"
+              fi
+            fi
+          fi
+
+          # 如果仍然没有版本号，使用默认值
+          if [[ -z "$VERSION" ]]; then
+            VERSION="1.0.0"
+            echo "使用默认版本号: $VERSION"
+          fi
+
           echo "do_android=$DO_ANDROID" >> $GITHUB_OUTPUT
           echo "do_ios=$DO_IOS" >> $GITHUB_OUTPUT
           echo "is_tag=$IS_TAG" >> $GITHUB_OUTPUT
           echo "release_enabled=$RELEASE_INPUT" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
   android:
     name: Android build
     needs: detect
@@ -129,7 +166,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
       - name: Cache Expo prebuild
         uses: actions/cache@v4
         with:
@@ -137,7 +173,6 @@ jobs:
           key: ${{ runner.os }}-expo-prebuild-${{ hashFiles('apps/mobile/app.json', 'apps/mobile/package.json', 'apps/mobile/app/_layout.tsx') }}
           restore-keys: |
             ${{ runner.os }}-expo-prebuild-
-
       - name: Generate Android native project
         run: |
           # 只在 android 目录不存在或配置变化时才执行 prebuild
@@ -155,18 +190,17 @@ jobs:
           VERSION="${{ needs.detect.outputs.version }}"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "版本号: $VERSION"
-
       - name: Configure APK output filename
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           BUILD_GRADLE="android/app/build.gradle"
-
           # 检查 build.gradle 是否已包含 applicationVariants 配置
           if grep -q "applicationVariants.all" "$BUILD_GRADLE"; then
             echo "build.gradle 已包含 applicationVariants 配置，更新版本号"
-            # 更新现有配置中的版本号
-            sed -i "s/def apkName = \"Pixuli_[^\"]*\"/def apkName = \"Pixuli_${VERSION}\"/" "$BUILD_GRADLE"
+            # 更新现有配置中的版本号，确保包含 .apk 扩展名
+            # 匹配带或不带 .apk 的旧配置，统一替换为带 .apk 的新配置
+            sed -i "s/def apkName = \"Pixuli_[^\"]*\"/def apkName = \"Pixuli_${VERSION}.apk\"/" "$BUILD_GRADLE"
           else
             echo "添加 applicationVariants 配置到 build.gradle"
             # 使用 printf 构建配置内容，避免 heredoc 的 YAML 缩进问题
@@ -178,7 +212,6 @@ jobs:
             printf '    }\n' >> "$BUILD_GRADLE"
             printf '}\n' >> "$BUILD_GRADLE"
           fi
-
           echo "APK 输出文件名已配置为: Pixuli_${VERSION}.apk"
         working-directory: apps/mobile
 
@@ -189,7 +222,6 @@ jobs:
           key: ${{ runner.os }}-gradle-build-${{ hashFiles('apps/mobile/android/**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-build-
-
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
         working-directory: apps/mobile
@@ -231,7 +263,6 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.VERSION }}"
           EXPECTED_APK_NAME="Pixuli_${VERSION}.apk"
-
           echo "=== 查找 APK 文件 ==="
           echo "当前工作目录: $(pwd)"
           # 检查 android 目录是否存在
@@ -265,11 +296,38 @@ jobs:
           echo "APK 目录内容:"
           ls -la "$APK_DIR" || echo "目录为空"
           # 查找 APK 文件（相对于当前目录 apps/mobile）
+          # 首先尝试查找带 .apk 扩展名的文件
           APK_FILE=$(find "$APK_DIR" -name "*.apk" -type f | head -n1)
+          # 如果没有找到，尝试查找不带扩展名的文件（可能是配置问题导致的）
+          if [ -z "$APK_FILE" ]; then
+            echo "未找到 .apk 文件，尝试查找不带扩展名的文件..."
+            EXPECTED_NAME="Pixuli_${VERSION}"
+            if [ -f "$APK_DIR/$EXPECTED_NAME" ]; then
+              APK_FILE="$APK_DIR/$EXPECTED_NAME"
+              echo "找到不带扩展名的文件: $APK_FILE"
+              # 重命名为带 .apk 扩展名的文件
+              mv "$APK_FILE" "$APK_DIR/${EXPECTED_NAME}.apk"
+              APK_FILE="$APK_DIR/${EXPECTED_NAME}.apk"
+              echo "已重命名为: $APK_FILE"
+            else
+              # 查找任何可能的 APK 文件（按大小判断，通常 APK 文件较大）
+              APK_FILE=$(find "$APK_DIR" -type f -size +1M ! -name "*.json" ! -name "*.txt" | head -n1)
+              if [ -n "$APK_FILE" ]; then
+                echo "找到可能的 APK 文件（按大小）: $APK_FILE"
+                # 如果文件名不包含 .apk，添加扩展名
+                if [[ "$APK_FILE" != *.apk ]]; then
+                  mv "$APK_FILE" "${APK_FILE}.apk"
+                  APK_FILE="${APK_FILE}.apk"
+                  echo "已添加 .apk 扩展名: $APK_FILE"
+                fi
+              fi
+            fi
+          fi
           if [ -z "$APK_FILE" ]; then
             echo "错误: 未找到 APK 文件"
             echo "搜索所有可能的 APK 位置:"
             find android -name "*.apk" -type f 2>/dev/null || echo "未找到任何 APK 文件"
+            find android/app/build/outputs/apk -type f -size +1M 2>/dev/null || echo "未找到任何大文件"
             exit 1
           fi
           echo "找到 APK 文件: $APK_FILE"
