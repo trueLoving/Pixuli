@@ -84,9 +84,6 @@ class GiteeService {
       options.body = JSON.stringify(bodyWithoutToken);
     }
 
-    console.log('fetch url', url);
-    console.log('fetch options', options);
-
     const response = await fetch(url, options);
 
     if (!response.ok) {
