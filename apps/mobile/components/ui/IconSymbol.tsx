@@ -48,6 +48,8 @@ const MAPPING = {
   eye: 'visibility',
   'chevron.up': 'keyboard-arrow-up',
   'chevron.down': 'keyboard-arrow-down',
+  ellipsis: 'more-vert',
+  'line.3.horizontal': 'more-vert',
 } as IconMapping;
 
 /**

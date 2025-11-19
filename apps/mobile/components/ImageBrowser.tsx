@@ -13,9 +13,20 @@ import { Image } from 'expo-image';
 import { ImageItem } from 'pixuli-ui/src';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 // 动态加载 legacy API（运行时可用）
 // @ts-ignore
 const FileSystem = require('expo-file-system/legacy');
+// 动态加载 expo-media-library（如果可用）
+const MediaLibrary = require('expo-media-library');
+
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
@@ -26,6 +37,206 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;
 const THUMBNAIL_MARGIN = 8;
 const IMAGE_AREA_HEIGHT = SCREEN_HEIGHT - 200; // 减去 header 和 thumbnail 区域
+
+// 图片状态接口
+interface ImageTransformState {
+  scale: number;
+  translateX: number;
+  translateY: number;
+  rotation: number; // 0, 90, 180, 270
+}
+
+// 默认变换状态
+const DEFAULT_TRANSFORM: ImageTransformState = {
+  scale: 1,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+};
+
+// 可缩放图片组件
+interface ZoomableImageProps {
+  image: ImageItem;
+  transform: ImageTransformState;
+  onTransformChange: (updates: Partial<ImageTransformState>) => void;
+  onPress: () => void;
+  onLongPress: () => void;
+}
+
+function ZoomableImage({
+  image,
+  transform,
+  onTransformChange,
+  onPress,
+  onLongPress,
+}: ZoomableImageProps) {
+  const scale = useSharedValue(transform.scale);
+  const translateX = useSharedValue(transform.translateX);
+  const translateY = useSharedValue(transform.translateY);
+  const savedScale = useSharedValue(1);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+  const lastTapTime = useRef<number>(0);
+  const lastTapX = useSharedValue(0);
+  const lastTapY = useSharedValue(0);
+
+  // 同步外部状态变化
+  useEffect(() => {
+    if (scale.value !== transform.scale) {
+      scale.value = withSpring(transform.scale);
+      savedScale.value = transform.scale;
+    }
+    if (translateX.value !== transform.translateX) {
+      translateX.value = withSpring(transform.translateX);
+      savedTranslateX.value = transform.translateX;
+    }
+    if (translateY.value !== transform.translateY) {
+      translateY.value = withSpring(transform.translateY);
+      savedTranslateY.value = transform.translateY;
+    }
+  }, [
+    transform.scale,
+    transform.translateX,
+    transform.translateY,
+    transform.rotation,
+  ]);
+
+  // 应用旋转
+  const rotationValue = transform.rotation;
+
+  // 更新外部状态
+  const updateTransform = (updates: Partial<ImageTransformState>) => {
+    onTransformChange(updates);
+  };
+
+  // 双击手势
+  const doubleTapGesture = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(event => {
+      // 双击：放大或缩小
+      if (scale.value > 1.1) {
+        // 如果已放大，则缩小
+        scale.value = withSpring(1);
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+        savedScale.value = 1;
+        savedTranslateX.value = 0;
+        savedTranslateY.value = 0;
+        runOnJS(updateTransform)({ scale: 1, translateX: 0, translateY: 0 });
+      } else {
+        // 如果未放大，则放大到2倍
+        const newScale = 2;
+        scale.value = withSpring(newScale);
+        savedScale.value = newScale;
+        runOnJS(updateTransform)({ scale: newScale });
+      }
+    });
+
+  // 缩放手势
+  const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      // 开始缩放时，保存当前状态
+      savedScale.value = scale.value;
+    })
+    .onUpdate(event => {
+      const newScale = savedScale.value * event.scale;
+      // 限制缩放范围在 1-5 倍之间
+      const clampedScale = Math.max(1, Math.min(5, newScale));
+      scale.value = clampedScale;
+    })
+    .onEnd(() => {
+      savedScale.value = scale.value;
+      runOnJS(updateTransform)({ scale: scale.value });
+    });
+
+  // 拖拽手势
+  const panGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10]) // 需要移动至少10像素才激活
+    .activeOffsetY([-10, 10])
+    .onStart(() => {
+      // 开始拖拽时，保存当前状态
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+    })
+    .onUpdate(event => {
+      if (scale.value > 1) {
+        // 只有在放大时才允许拖拽
+        const newTranslateX = savedTranslateX.value + event.translationX;
+        const newTranslateY = savedTranslateY.value + event.translationY;
+
+        // 限制拖拽范围（防止图片拖出边界太远）
+        const maxTranslate = SCREEN_WIDTH * 0.5;
+        translateX.value = Math.max(
+          -maxTranslate,
+          Math.min(maxTranslate, newTranslateX)
+        );
+        translateY.value = Math.max(
+          -maxTranslate,
+          Math.min(maxTranslate, newTranslateY)
+        );
+      }
+    })
+    .onEnd(() => {
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+      runOnJS(updateTransform)({
+        translateX: translateX.value,
+        translateY: translateY.value,
+      });
+    });
+
+  // 单击手势（用于关闭或显示元数据）
+  const singleTapGesture = Gesture.Tap()
+    .numberOfTaps(1)
+    .maxDelay(250) // 如果超过250ms才触发，可能是双击
+    .onEnd(() => {
+      runOnJS(onPress)();
+    });
+
+  // 长按手势
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(500)
+    .onEnd(() => {
+      runOnJS(onLongPress)();
+    });
+
+  // 组合手势：缩放手势和拖拽手势可以同时进行
+  // 单击/双击和长按使用 Race 竞争
+  const composedGesture = Gesture.Simultaneous(
+    Gesture.Simultaneous(pinchGesture, panGesture),
+    Gesture.Exclusive(
+      doubleTapGesture,
+      Gesture.Race(singleTapGesture, longPressGesture)
+    )
+  );
+
+  // 动画样式
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+        { rotate: `${rotationValue}deg` },
+      ],
+    };
+  });
+
+  return (
+    <View style={styles.imageContainer}>
+      <GestureDetector gesture={composedGesture}>
+        <Animated.View style={[styles.imageWrapper, animatedStyle]}>
+          <Image
+            source={{ uri: image.url }}
+            style={styles.image}
+            contentFit="contain"
+            transition={200}
+          />
+        </Animated.View>
+      </GestureDetector>
+    </View>
+  );
+}
 
 interface ImageBrowserProps {
   visible: boolean;
@@ -50,8 +261,50 @@ export function ImageBrowser({
   const [refreshing, setRefreshing] = useState(false);
   const [showMetadata, setShowMetadata] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showActionSheet, setShowActionSheet] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const thumbnailScrollRef = useRef<ScrollView>(null);
+
+  // 为每张图片维护变换状态
+  const [imageTransforms, setImageTransforms] = useState<
+    Record<string, ImageTransformState>
+  >({});
+
+  // 获取或初始化图片的变换状态
+  const getImageTransform = (imageId: string): ImageTransformState => {
+    return imageTransforms[imageId] || { ...DEFAULT_TRANSFORM };
+  };
+
+  // 更新图片的变换状态
+  const updateImageTransform = (
+    imageId: string,
+    updates: Partial<ImageTransformState>
+  ) => {
+    setImageTransforms(prev => ({
+      ...prev,
+      [imageId]: {
+        ...getImageTransform(imageId),
+        ...updates,
+      },
+    }));
+  };
+
+  // 重置图片的变换状态
+  const resetImageTransform = (imageId: string) => {
+    setImageTransforms(prev => {
+      const newTransforms = { ...prev };
+      delete newTransforms[imageId];
+      return newTransforms;
+    });
+  };
+
+  // 旋转图片
+  const rotateImage = (imageId: string) => {
+    const currentTransform = getImageTransform(imageId);
+    const newRotation = (currentTransform.rotation + 90) % 360;
+    updateImageTransform(imageId, { rotation: newRotation });
+  };
 
   useEffect(() => {
     if (visible) {
@@ -287,6 +540,146 @@ export function ImageBrowser({
     }
   };
 
+  const handleSaveToLocal = async () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+
+    // 检查是否安装了 expo-media-library
+    if (!MediaLibrary) {
+      Alert.alert(
+        t('common.error') || '错误',
+        t('image.saveToLocalFailed') ||
+          '保存功能不可用，请安装 expo-media-library'
+      );
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // 请求相册权限
+      let permissionResponse;
+      try {
+        permissionResponse = await MediaLibrary.requestPermissionsAsync();
+      } catch (permissionError) {
+        // 处理权限请求错误（如 Android 配置问题）
+        const errorMessage =
+          permissionError instanceof Error
+            ? permissionError.message
+            : '未知错误';
+        if (
+          errorMessage.includes('AUDIO permission') ||
+          errorMessage.includes('AndroidManifest')
+        ) {
+          showError(
+            t('image.saveToLocalFailed') ||
+              '保存图片失败：请确保应用已正确配置媒体库权限。在开发环境中，可能需要创建开发构建（development build）才能使用此功能。'
+          );
+        } else {
+          showError(
+            `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+          );
+        }
+        return;
+      }
+
+      if (!permissionResponse || permissionResponse.status !== 'granted') {
+        showError(
+          t('image.saveToLocalPermissionDenied') ||
+            '需要相册权限才能保存图片，请在设置中授予权限'
+        );
+        return;
+      }
+
+      // 下载图片到本地缓存
+      const fileExtension = currentImage.name.split('.').pop() || 'jpg';
+      const fileName = `${currentImage.id || 'image'}_${Date.now()}.${fileExtension}`;
+      const localUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      // 使用 Promise.race 实现超时控制
+      const downloadPromise = FileSystem.downloadAsync(
+        currentImage.url,
+        localUri
+      );
+
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('下载超时，请检查网络连接'));
+        }, 30000); // 30秒超时
+      });
+
+      // 等待下载完成或超时
+      const downloadResult = await Promise.race([
+        downloadPromise,
+        timeoutPromise,
+      ]);
+
+      if (!downloadResult.uri) {
+        throw new Error('下载图片失败');
+      }
+
+      // 保存到相册
+      await MediaLibrary.createAssetAsync(downloadResult.uri);
+      showSuccess(t('image.saveToLocalSuccess') || '图片已保存到相册');
+    } catch (error) {
+      console.error('保存图片失败:', error);
+      const errorMessage = error instanceof Error ? error.message : '未知错误';
+      showError(
+        `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLongPress = () => {
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+    setShowActionSheet(true);
+  };
+
+  const handleCloseActionSheet = () => {
+    setShowActionSheet(false);
+  };
+
+  const handleActionSave = async () => {
+    setShowActionSheet(false);
+    await handleSaveToLocal();
+  };
+
+  const handleActionDelete = () => {
+    setShowActionSheet(false);
+    handleDelete();
+  };
+
+  const handleActionShare = async () => {
+    setShowActionSheet(false);
+    await handleShareImageLink();
+  };
+
+  const handleActionViewMetadata = () => {
+    setShowActionSheet(false);
+    setShowMetadata(prev => !prev);
+  };
+
+  const handleActionRefreshMetadata = async () => {
+    setShowActionSheet(false);
+    await handleRefreshMetadata();
+  };
+
+  const handleActionRotate = () => {
+    setShowActionSheet(false);
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+    rotateImage(currentImage.id);
+  };
+
+  const handleActionReset = () => {
+    setShowActionSheet(false);
+    const currentImage = images[currentIndex];
+    if (!currentImage) return;
+    resetImageTransform(currentImage.id);
+  };
+
   if (!visible || images.length === 0) {
     return null;
   }
@@ -314,59 +707,14 @@ export function ImageBrowser({
             {currentIndex + 1} / {images.length}
           </ThemedText>
           <View style={styles.headerActions}>
-            {onRefreshMetadata && (
-              <TouchableOpacity
-                style={styles.headerButton}
-                onPress={handleRefreshMetadata}
-                disabled={deleting || refreshing}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                {refreshing ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <IconSymbol name="arrow.clockwise" size={24} color="#fff" />
-                )}
-              </TouchableOpacity>
-            )}
             <TouchableOpacity
               style={styles.headerButton}
-              onPress={() => {
-                setShowMetadata(prev => !prev);
-              }}
-              disabled={deleting || refreshing || sharing}
+              onPress={() => setShowActionSheet(true)}
+              disabled={deleting || refreshing || sharing || saving}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <IconSymbol
-                name={showMetadata ? 'info.circle.fill' : 'info.circle'}
-                size={24}
-                color="#fff"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleShareImageLink}
-              disabled={deleting || refreshing || sharing}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              {sharing ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <IconSymbol name="paperplane.fill" size={24} color="#fff" />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleDelete}
-              disabled={deleting || refreshing || sharing}
-            >
-              {deleting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <IconSymbol name="trash" size={24} color="#fff" />
-              )}
+              <IconSymbol name="line.3.horizontal" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -382,27 +730,45 @@ export function ImageBrowser({
             styles.imageScrollView,
             showMetadata && styles.imageScrollViewWithMetadata,
           ]}
+          scrollEnabled={true}
         >
           {images.map((image, index) => (
-            <TouchableOpacity
+            <ZoomableImage
               key={image.id}
-              style={styles.imageContainer}
-              onPress={onClose}
-              activeOpacity={1}
-            >
-              <Image
-                source={{ uri: image.url }}
-                style={styles.image}
-                contentFit="contain"
-                transition={200}
-              />
-            </TouchableOpacity>
+              image={image}
+              transform={getImageTransform(image.id)}
+              onTransformChange={updates =>
+                updateImageTransform(image.id, updates)
+              }
+              onPress={() => {
+                // 如果元数据面板打开，先关闭元数据面板；否则关闭浏览器
+                if (showMetadata) {
+                  setShowMetadata(false);
+                } else {
+                  onClose();
+                }
+              }}
+              onLongPress={handleLongPress}
+            />
           ))}
         </ScrollView>
 
         {/* 元数据信息面板 */}
         {showMetadata && currentImage && (
           <View style={styles.metadataContainer}>
+            {/* 元数据面板标题栏 */}
+            <View style={styles.metadataHeader}>
+              <ThemedText style={styles.metadataHeaderTitle}>
+                {t('image.metadata') || '元数据'}
+              </ThemedText>
+              <TouchableOpacity
+                style={styles.metadataHeaderCloseButton}
+                onPress={() => setShowMetadata(false)}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="xmark" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
             <ScrollView
               style={styles.metadataContent}
               showsVerticalScrollIndicator={true}
@@ -569,6 +935,174 @@ export function ImageBrowser({
             ))}
           </ScrollView>
         </View>
+
+        {/* 底部操作弹窗 */}
+        <Modal
+          visible={showActionSheet}
+          transparent
+          animationType="slide"
+          onRequestClose={handleCloseActionSheet}
+        >
+          <TouchableOpacity
+            style={styles.actionSheetOverlay}
+            activeOpacity={1}
+            onPress={handleCloseActionSheet}
+          >
+            <View style={styles.actionSheetContainer} pointerEvents="box-none">
+              <View style={styles.actionSheetContent} pointerEvents="box-none">
+                {/* 保存到本地按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionSave}
+                  disabled={saving || deleting || sharing || !MediaLibrary}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.saveToLocal') || '保存到本地'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 分享按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionShare}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {sharing ? (
+                    <ActivityIndicator size="small" color="#007AFF" />
+                  ) : null}
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.shareImage') || '分享'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 查看元数据按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionViewMetadata}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {/* <IconSymbol
+                    name={showMetadata ? 'info.circle.fill' : 'info.circle'}
+                    size={24}
+                    color="#007AFF"
+                  /> */}
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {showMetadata
+                      ? t('image.hideFullMetadata') || '隐藏元数据'
+                      : t('image.viewFullMetadata') || '查看元数据'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 刷新元数据按钮 */}
+                {onRefreshMetadata && (
+                  <TouchableOpacity
+                    style={styles.actionSheetButton}
+                    onPress={handleActionRefreshMetadata}
+                    disabled={saving || deleting || sharing || refreshing}
+                    activeOpacity={0.7}
+                  >
+                    {/* {refreshing ? (
+                      <ActivityIndicator size="small" color="#007AFF" />
+                    ) : (
+                      <IconSymbol
+                        name="arrow.clockwise"
+                        size={24}
+                        color="#007AFF"
+                      />
+                    )} */}
+                    <ThemedText style={styles.actionSheetButtonText}>
+                      {t('image.refreshMetadata') || '刷新元数据'}
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+
+                {/* 分隔线 */}
+                <View style={styles.actionSheetDivider} />
+
+                {/* 旋转图片按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionRotate}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol name="rotate.right" size={24} color="#007AFF" />
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.rotate') || '旋转'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 重置变换按钮 */}
+                <TouchableOpacity
+                  style={styles.actionSheetButton}
+                  onPress={handleActionReset}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol
+                    name="arrow.counterclockwise"
+                    size={24}
+                    color="#007AFF"
+                  />
+                  <ThemedText style={styles.actionSheetButtonText}>
+                    {t('image.resetTransform') || '重置'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 分隔线 */}
+                <View style={styles.actionSheetDivider} />
+
+                {/* 删除按钮 */}
+                <TouchableOpacity
+                  style={[
+                    styles.actionSheetButton,
+                    styles.actionSheetButtonDanger,
+                  ]}
+                  onPress={handleActionDelete}
+                  disabled={saving || deleting || sharing}
+                  activeOpacity={0.7}
+                >
+                  {deleting ? (
+                    <ActivityIndicator size="small" color="#FF3B30" />
+                  ) : null}
+                  <ThemedText
+                    style={[
+                      styles.actionSheetButtonText,
+                      styles.actionSheetButtonTextDanger,
+                    ]}
+                  >
+                    {t('common.delete') || '删除'}
+                  </ThemedText>
+                </TouchableOpacity>
+
+                {/* 分隔线 */}
+                <View style={styles.actionSheetDivider} />
+
+                {/* 取消按钮 */}
+                <TouchableOpacity
+                  style={[
+                    styles.actionSheetButton,
+                    styles.actionSheetButtonCancel,
+                  ]}
+                  onPress={handleCloseActionSheet}
+                  activeOpacity={0.7}
+                >
+                  <ThemedText
+                    style={[
+                      styles.actionSheetButtonText,
+                      styles.actionSheetButtonTextCancel,
+                    ]}
+                  >
+                    {t('common.cancel') || '取消'}
+                  </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </Modal>
   );
@@ -614,6 +1148,13 @@ const styles = StyleSheet.create({
     height: IMAGE_AREA_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  imageWrapper: {
+    width: SCREEN_WIDTH,
+    height: IMAGE_AREA_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
     width: SCREEN_WIDTH,
@@ -650,12 +1191,32 @@ const styles = StyleSheet.create({
   metadataContainer: {
     height: 200,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    padding: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
+  metadataHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  metadataHeaderTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  metadataHeaderCloseButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   metadataContent: {
     flex: 1,
+    padding: 16,
   },
   metadataRow: {
     marginBottom: 12,
@@ -706,5 +1267,53 @@ const styles = StyleSheet.create({
   urlActionText: {
     color: '#007AFF',
     fontSize: 14,
+  },
+  actionSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionSheetContainer: {
+    paddingBottom: 34,
+    paddingHorizontal: 16,
+  },
+  actionSheetContent: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  actionSheetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    gap: 12,
+  },
+  actionSheetButtonDanger: {
+    borderBottomWidth: 0,
+  },
+  actionSheetDivider: {
+    height: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  actionSheetButtonCancel: {
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+  },
+  actionSheetButtonText: {
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '400',
+  },
+  actionSheetButtonTextDanger: {
+    color: '#FF3B30',
+  },
+  actionSheetButtonTextCancel: {
+    color: '#000',
+    fontWeight: '600',
   },
 });
