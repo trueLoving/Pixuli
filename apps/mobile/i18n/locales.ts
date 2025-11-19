@@ -186,6 +186,8 @@ export const mobileLocales = {
       updatedAt: '更新时间',
       createdAt: '创建时间',
       id: 'ID',
+      rotate: '旋转',
+      resetTransform: '重置',
     },
     app: {
       welcome: '欢迎使用 pixuli',
@@ -448,6 +450,8 @@ export const mobileLocales = {
       updatedAt: 'Updated At',
       createdAt: 'Created At',
       id: 'ID',
+      rotate: 'Rotate',
+      resetTransform: 'Reset',
     },
     app: {
       welcome: 'Welcome to Pixuli',
