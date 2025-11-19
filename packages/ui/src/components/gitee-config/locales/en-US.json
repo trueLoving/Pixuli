@@ -1,0 +1,56 @@
+{
+  "gitee": {
+    "config": {
+      "title": "Gitee Configuration",
+      "username": "Username/Organization",
+      "usernamePlaceholder": "Enter Gitee username or organization name",
+      "repository": "Repository Name",
+      "repositoryPlaceholder": "Enter repository name",
+      "branch": "Branch",
+      "branchPlaceholder": "master",
+      "path": "Path",
+      "pathPlaceholder": "images",
+      "token": "Personal Access Token",
+      "tokenPlaceholder": "Enter Gitee personal access token",
+      "tokenDescription": "Token is used to access Gitee API, please keep it safe. You can generate a personal access token in Gitee settings.",
+      "import": "Import",
+      "export": "Export",
+      "clearConfig": "Clear Config",
+      "saveConfig": "Save Config",
+      "close": "Close",
+      "required": "*"
+    },
+    "help": {
+      "title": "Help Information",
+      "tokenGuide": {
+        "title": "📋 How to Get Personal Access Token",
+        "step1": "1. Log in to your Gitee account",
+        "step2": "2. Go to Settings → Security Settings → Private Tokens",
+        "step3": "3. Click Generate New Token",
+        "step4": "4. Check required permissions (at least projects and repo permissions)",
+        "step5": "5. Copy the generated token and keep it safe"
+      },
+      "importExport": {
+        "title": "🔄 Config Import/Export",
+        "export": "Export: Save current configuration as JSON file",
+        "import": "Import: Restore configuration from JSON file",
+        "crossPlatform": "Support cross-platform configuration migration",
+        "backup": "Can be used for configuration backup and restore"
+      }
+    }
+  },
+  "messages": {
+    "configSaved": "Gitee configuration saved successfully!",
+    "configCleared": "Gitee configuration cleared successfully!",
+    "configExported": "Gitee configuration exported successfully!",
+    "configImported": "Gitee configuration imported successfully!",
+    "saveFailed": "Failed to save configuration",
+    "clearFailed": "Failed to clear configuration",
+    "exportFailed": "Failed to export configuration",
+    "importFailed": "Failed to import configuration",
+    "invalidFormat": "Configuration file format is incorrect",
+    "noConfigToExport": "No configuration to export",
+    "unknownError": "Unknown error",
+    "fileFormatError": "File format error"
+  }
+}

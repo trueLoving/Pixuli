@@ -124,7 +124,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         }
       } catch (error) {
         console.error('Failed to initialize storage service:', error);
-        set({ error: '初始化存储服务失败' });
+        set({ error: 'errors.initStorageFailed' });
       }
     },
 
@@ -132,8 +132,9 @@ export const useImageStore = create<ImageState>((set, get) => {
       const { storageService, storageType } = get();
 
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
@@ -161,7 +162,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         set({ images: uniqueImages, loading: false });
       } catch (error) {
         const errorMsg =
-          error instanceof Error ? error.message : '加载图片失败';
+          error instanceof Error ? error.message : 'errors.loadImagesFailed';
         set({
           error: errorMsg,
           loading: false,
@@ -172,8 +173,9 @@ export const useImageStore = create<ImageState>((set, get) => {
     uploadImage: async (uploadData: ImageUploadData) => {
       const { storageService, storageType } = get();
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
@@ -235,8 +237,9 @@ export const useImageStore = create<ImageState>((set, get) => {
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
       const { storageService, storageType } = get();
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
@@ -362,8 +365,9 @@ export const useImageStore = create<ImageState>((set, get) => {
     deleteImage: async (imageId: string, fileName: string) => {
       const { storageService, storageType } = get();
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
@@ -407,8 +411,9 @@ export const useImageStore = create<ImageState>((set, get) => {
     deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
       const { storageService, storageType } = get();
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
@@ -462,15 +467,16 @@ export const useImageStore = create<ImageState>((set, get) => {
     updateImage: async (editData: ImageEditData) => {
       const { storageService, images, storageType } = get();
       if (!storageService) {
+        const provider = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
-          error: `${storageType === 'gitee' ? 'Gitee' : 'GitHub'} 配置未初始化`,
+          error: `errors.configNotInitialized|${provider}`,
         });
         return;
       }
 
       const image = images.find(img => img.id === editData.id);
       if (!image) {
-        set({ error: '图片不存在' });
+        set({ error: 'errors.imageNotFound' });
         return;
       }
 
@@ -529,7 +535,8 @@ export const useImageStore = create<ImageState>((set, get) => {
         }));
       } catch (error) {
         set({
-          error: error instanceof Error ? error.message : '更新图片失败',
+          error:
+            error instanceof Error ? error.message : 'errors.updateImageFailed',
           loading: false,
         });
       }

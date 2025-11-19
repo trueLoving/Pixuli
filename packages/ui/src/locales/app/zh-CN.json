@@ -3,8 +3,9 @@
     "title": "Pixuli",
     "subtitle": "专业的图片管理与存储解决方案",
     "welcome": "欢迎使用 Pixuli",
-    "description": "请先配置 GitHub 仓库信息以开始使用",
+    "description": "请先配置 GitHub 或 Gitee 仓库信息以开始使用",
     "configureGitHub": "配置 GitHub",
+    "configureGitee": "配置 Gitee",
     "repository": "仓库",
     "imageLibrary": "图片库",
     "images": "张图片",
@@ -48,5 +49,12 @@
     "importFailed": "导入配置失败",
     "invalidFormat": "配置文件格式不正确",
     "noConfigToExport": "没有可导出的配置"
+  },
+  "errors": {
+    "configNotInitialized": "{{provider}} 配置未初始化",
+    "loadImagesFailed": "加载图片失败",
+    "updateImageFailed": "更新图片失败",
+    "initStorageFailed": "初始化存储服务失败",
+    "imageNotFound": "图片不存在"
   }
 }

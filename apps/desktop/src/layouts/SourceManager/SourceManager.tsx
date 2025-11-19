@@ -251,7 +251,7 @@ export const SourceManager: React.FC = () => {
                             repo: selectedSource.repo,
                             branch: selectedSource.branch,
                           })
-                        : `又拍云: ${selectedSource.bucket}`
+                        : `${t('sourceManager.upyunPrefix')}: ${selectedSource.bucket}`
                     }
                   >
                     {selectedSource.type === 'github' ||
@@ -262,7 +262,10 @@ export const SourceManager: React.FC = () => {
                         branch: selectedSource.branch,
                       })
                     ) : (
-                      <>又拍云: {selectedSource.bucket}</>
+                      <>
+                        {t('sourceManager.upyunPrefix')}:{' '}
+                        {selectedSource.bucket}
+                      </>
                     )}
                   </div>
                 </div>
@@ -334,7 +337,7 @@ export const SourceManager: React.FC = () => {
                         onClick={startCreateGitHub}
                       >
                         <Github className="w-4 h-4" />
-                        GitHub 仓库
+                        {t('sourceManager.githubRepo')}
                       </button>
                       <button
                         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
@@ -343,14 +346,14 @@ export const SourceManager: React.FC = () => {
                         <span className="w-4 h-4 text-center text-xs font-bold text-[#c73e1d]">
                           码
                         </span>
-                        Gitee 仓库
+                        {t('sourceManager.giteeRepo')}
                       </button>
                       {/* <button
                         className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
                         onClick={startCreateUpyun}
                       >
                         <Cloud className="w-4 h-4" />
-                        又拍云存储
+                        {t('sourceManager.upyunStorage')}
                       </button> */}
                     </div>
                   </>
@@ -493,7 +496,9 @@ export const SourceManager: React.FC = () => {
                                 className="text-xs text-gray-500 truncate flex items-center gap-1"
                                 title={s.path}
                               >
-                                <span className="text-gray-400">路径:</span>
+                                <span className="text-gray-400">
+                                  {t('sourceManager.path')}:
+                                </span>
                                 <span>{s.path}</span>
                               </div>
                             )}
@@ -502,15 +507,17 @@ export const SourceManager: React.FC = () => {
                           <>
                             <div
                               className="text-xs text-gray-600 truncate"
-                              title={`Bucket: ${s.bucket}`}
+                              title={`${t('sourceManager.bucket')}: ${s.bucket}`}
                             >
-                              Bucket: {s.bucket}
+                              {t('sourceManager.bucket')}: {s.bucket}
                             </div>
                             <div
                               className="text-xs text-gray-500 truncate flex items-center gap-1"
                               title={s.domain}
                             >
-                              <span className="text-gray-400">域名:</span>
+                              <span className="text-gray-400">
+                                {t('sourceManager.domain')}:
+                              </span>
                               <span>{s.domain}</span>
                             </div>
                             {s.path && (
@@ -518,7 +525,9 @@ export const SourceManager: React.FC = () => {
                                 className="text-xs text-gray-500 truncate flex items-center gap-1"
                                 title={s.path}
                               >
-                                <span className="text-gray-400">路径:</span>
+                                <span className="text-gray-400">
+                                  {t('sourceManager.path')}:
+                                </span>
                                 <span>{s.path}</span>
                               </div>
                             )}

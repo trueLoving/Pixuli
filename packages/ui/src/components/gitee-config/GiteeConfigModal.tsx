@@ -55,7 +55,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
       );
     }
   };
@@ -71,7 +71,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
       );
     }
   };
@@ -106,7 +106,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       showSuccess(translate('messages.configExported'));
     } catch (error) {
       showError(
-        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
       );
     }
   };
@@ -149,7 +149,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
           showSuccess(translate('messages.configImported'));
         } catch (error) {
           showError(
-            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`
+            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : translate('messages.fileFormatError')}`
           );
         }
       };
@@ -213,12 +213,14 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
           <div className="gitee-config-modal-header">
             <div className="gitee-config-modal-title">
               <span className="gitee-config-modal-title-icon">码云</span>
-              <h2 className="gitee-config-modal-title-text">Gitee 配置</h2>
+              <h2 className="gitee-config-modal-title-text">
+                {translate('gitee.config.title')}
+              </h2>
             </div>
             <button
               onClick={onClose}
               className="gitee-config-modal-close"
-              aria-label="关闭"
+              aria-label={translate('gitee.config.close')}
             >
               <X className="gitee-config-modal-close-icon" />
             </button>
@@ -230,19 +232,19 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
               <button
                 onClick={handleImportConfig}
                 className="gitee-config-modal-action-button"
-                title="导入配置"
+                title={translate('gitee.config.import')}
               >
                 <Upload className="w-4 h-4" />
-                <span>导入</span>
+                <span>{translate('gitee.config.import')}</span>
               </button>
               {giteeConfig && (
                 <button
                   onClick={handleExportConfig}
                   className="gitee-config-modal-action-button"
-                  title="导出配置"
+                  title={translate('gitee.config.export')}
                 >
                   <Download className="w-4 h-4" />
-                  <span>导出</span>
+                  <span>{translate('gitee.config.export')}</span>
                 </button>
               )}
             </div>
@@ -251,10 +253,10 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                 <button
                   onClick={handleClearConfig}
                   className="gitee-config-modal-action-button gitee-config-modal-action-button-danger"
-                  title="清除配置"
+                  title={translate('gitee.config.clearConfig')}
                 >
                   <Trash2 className="w-4 h-4" />
-                  <span>清除配置</span>
+                  <span>{translate('gitee.config.clearConfig')}</span>
                 </button>
               )}
             </div>
@@ -272,14 +274,18 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                 <div className="gitee-config-form-row">
                   <div className="gitee-config-form-group">
                     <label className="gitee-config-form-label">
-                      用户名/组织名{' '}
-                      <span className="gitee-config-form-required">*</span>
+                      {translate('gitee.config.username')}{' '}
+                      <span className="gitee-config-form-required">
+                        {translate('gitee.config.required')}
+                      </span>
                     </label>
                     <input
                       type="text"
                       value={formData.owner}
                       onChange={e => handleInputChange('owner', e.target.value)}
-                      placeholder="请输入 Gitee 用户名或组织名"
+                      placeholder={translate(
+                        'gitee.config.usernamePlaceholder'
+                      )}
                       className="gitee-config-form-input"
                       required
                     />
@@ -287,14 +293,18 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
 
                   <div className="gitee-config-form-group">
                     <label className="gitee-config-form-label">
-                      仓库名{' '}
-                      <span className="gitee-config-form-required">*</span>
+                      {translate('gitee.config.repository')}{' '}
+                      <span className="gitee-config-form-required">
+                        {translate('gitee.config.required')}
+                      </span>
                     </label>
                     <input
                       type="text"
                       value={formData.repo}
                       onChange={e => handleInputChange('repo', e.target.value)}
-                      placeholder="请输入仓库名"
+                      placeholder={translate(
+                        'gitee.config.repositoryPlaceholder'
+                      )}
                       className="gitee-config-form-input"
                       required
                     />
@@ -304,7 +314,10 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                 <div className="gitee-config-form-row">
                   <div className="gitee-config-form-group">
                     <label className="gitee-config-form-label">
-                      分支 <span className="gitee-config-form-required">*</span>
+                      {translate('gitee.config.branch')}{' '}
+                      <span className="gitee-config-form-required">
+                        {translate('gitee.config.required')}
+                      </span>
                     </label>
                     <input
                       type="text"
@@ -312,7 +325,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                       onChange={e =>
                         handleInputChange('branch', e.target.value)
                       }
-                      placeholder="master"
+                      placeholder={translate('gitee.config.branchPlaceholder')}
                       className="gitee-config-form-input"
                       required
                     />
@@ -320,13 +333,16 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
 
                   <div className="gitee-config-form-group">
                     <label className="gitee-config-form-label">
-                      路径 <span className="gitee-config-form-required">*</span>
+                      {translate('gitee.config.path')}{' '}
+                      <span className="gitee-config-form-required">
+                        {translate('gitee.config.required')}
+                      </span>
                     </label>
                     <input
                       type="text"
                       value={formData.path}
                       onChange={e => handleInputChange('path', e.target.value)}
-                      placeholder="images"
+                      placeholder={translate('gitee.config.pathPlaceholder')}
                       className="gitee-config-form-input"
                       required
                     />
@@ -335,51 +351,56 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
 
                 <div className="gitee-config-form-group">
                   <label className="gitee-config-form-label">
-                    个人访问令牌{' '}
-                    <span className="gitee-config-form-required">*</span>
+                    {translate('gitee.config.token')}{' '}
+                    <span className="gitee-config-form-required">
+                      {translate('gitee.config.required')}
+                    </span>
                   </label>
                   <input
                     type="password"
                     value={formData.token}
                     onChange={e => handleInputChange('token', e.target.value)}
-                    placeholder="请输入 Gitee 个人访问令牌"
+                    placeholder={translate('gitee.config.tokenPlaceholder')}
                     className="gitee-config-form-input"
                     required
                   />
                   <p className="gitee-config-form-description">
-                    Token 用于访问 Gitee API，请妥善保管。可在 Gitee
-                    设置中生成个人访问令牌。
+                    {translate('gitee.config.tokenDescription')}
                   </p>
                 </div>
               </div>
 
               {/* 帮助信息 */}
               <div className="gitee-config-form-section">
-                <h3 className="gitee-config-form-section-title">帮助信息</h3>
+                <h3 className="gitee-config-form-section-title">
+                  {translate('gitee.help.title')}
+                </h3>
 
                 <div className="gitee-config-help">
                   <div className="gitee-config-help-item">
                     <h4 className="gitee-config-help-item-title">
-                      📋 如何获取个人访问令牌
+                      {translate('gitee.help.tokenGuide.title')}
                     </h4>
                     <ul className="gitee-config-help-item-list">
-                      <li>1. 登录 Gitee 账号</li>
-                      <li>2. 进入「设置」→「安全设置」→「私人令牌」</li>
-                      <li>3. 点击「生成新令牌」</li>
-                      <li>4. 勾选需要的权限（至少需要 projects、repo 权限）</li>
-                      <li>5. 复制生成的令牌并妥善保存</li>
+                      <li>{translate('gitee.help.tokenGuide.step1')}</li>
+                      <li>{translate('gitee.help.tokenGuide.step2')}</li>
+                      <li>{translate('gitee.help.tokenGuide.step3')}</li>
+                      <li>{translate('gitee.help.tokenGuide.step4')}</li>
+                      <li>{translate('gitee.help.tokenGuide.step5')}</li>
                     </ul>
                   </div>
 
                   <div className="gitee-config-help-item">
                     <h4 className="gitee-config-help-item-title">
-                      🔄 配置导入/导出
+                      {translate('gitee.help.importExport.title')}
                     </h4>
                     <ul className="gitee-config-help-item-list">
-                      <li>导出：将当前配置保存为 JSON 文件</li>
-                      <li>导入：从 JSON 文件恢复配置</li>
-                      <li>支持跨平台配置迁移</li>
-                      <li>可用于配置备份和恢复</li>
+                      <li>{translate('gitee.help.importExport.export')}</li>
+                      <li>{translate('gitee.help.importExport.import')}</li>
+                      <li>
+                        {translate('gitee.help.importExport.crossPlatform')}
+                      </li>
+                      <li>{translate('gitee.help.importExport.backup')}</li>
                     </ul>
                   </div>
                 </div>
@@ -396,7 +417,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                 </button>
                 <button type="submit" className="gitee-config-form-save-button">
                   <Save className="w-4 h-4" />
-                  <span>保存配置</span>
+                  <span>{translate('gitee.config.saveConfig')}</span>
                 </button>
               </div>
             </form>

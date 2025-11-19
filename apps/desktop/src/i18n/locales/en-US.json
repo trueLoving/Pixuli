@@ -15,6 +15,17 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "loading": "Loading data...",
-    "imageCount": "images"
+    "imageCount": "images",
+    "githubRepo": "GitHub Repository",
+    "giteeRepo": "Gitee Repository",
+    "upyunStorage": "Upyun Storage",
+    "upyunPrefix": "Upyun",
+    "path": "Path",
+    "domain": "Domain",
+    "bucket": "Bucket",
+    "repository": "Repository"
+  },
+  "header": {
+    "operationLog": "Operation Log"
   }
 }

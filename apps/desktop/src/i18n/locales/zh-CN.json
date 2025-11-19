@@ -6,7 +6,7 @@
     "openInNewWindow": "在新窗口打开",
     "edit": "修改",
     "delete": "删除",
-    "empty": "还没有配置任何仓库源，点击“新增”按钮开始配置。",
+    "empty": "还没有配置任何仓库源，点击‘新增’按钮开始配置。",
     "emptyTitle": "还没有配置仓库源",
     "selectSource": "请在上方列表中选择一个仓库源以查看图片",
     "selectSourceTitle": "请选择仓库源",
@@ -15,6 +15,17 @@
     "collapse": "收起",
     "expand": "展开",
     "loading": "正在加载数据...",
-    "imageCount": "张图片"
+    "imageCount": "张图片",
+    "githubRepo": "GitHub 仓库",
+    "giteeRepo": "Gitee 仓库",
+    "upyunStorage": "又拍云存储",
+    "upyunPrefix": "又拍云",
+    "path": "路径",
+    "domain": "域名",
+    "bucket": "Bucket",
+    "repository": "仓库"
+  },
+  "header": {
+    "operationLog": "操作日志"
   }
 }

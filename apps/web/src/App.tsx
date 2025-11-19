@@ -272,7 +272,7 @@ function App() {
               }}
               className="px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              配置 Gitee
+              {t('app.configureGitee')}
             </button>
           </div>
         </div>
@@ -382,7 +382,16 @@ function App() {
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center justify-between">
-                <p className="text-red-800">{error}</p>
+                <p className="text-red-800">
+                  {error.includes('|')
+                    ? (() => {
+                        const [key, provider] = error.split('|');
+                        return t(key, { provider });
+                      })()
+                    : error.startsWith('errors.')
+                      ? t(error)
+                      : error}
+                </p>
                 <button
                   onClick={clearError}
                   className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"

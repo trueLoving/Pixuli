@@ -3,8 +3,9 @@
     "title": "Pixuli",
     "subtitle": "Professional Image Management and Storage Solution",
     "welcome": "Welcome to Pixuli",
-    "description": "Please configure GitHub repository information to get started",
+    "description": "Please configure GitHub or Gitee repository information to get started",
     "configureGitHub": "Configure GitHub",
+    "configureGitee": "Configure Gitee",
     "repository": "Repository",
     "imageLibrary": "Image Library",
     "images": "images",
@@ -48,5 +49,12 @@
     "importFailed": "Failed to import configuration",
     "invalidFormat": "Configuration file format is incorrect",
     "noConfigToExport": "No configuration to export"
+  },
+  "errors": {
+    "configNotInitialized": "{{provider}} configuration not initialized",
+    "loadImagesFailed": "Failed to load images",
+    "updateImageFailed": "Failed to update image",
+    "initStorageFailed": "Failed to initialize storage service",
+    "imageNotFound": "Image not found"
   }
 }

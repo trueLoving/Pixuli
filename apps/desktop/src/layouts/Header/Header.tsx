@@ -127,11 +127,14 @@ const Header: React.FC<HeaderProps> = ({
               <div className="text-sm text-gray-500 hidden sm:block">
                 {storageType === 'github' && githubConfig && (
                   <>
-                    仓库: {githubConfig.owner}/{githubConfig.repo}
+                    {t('sourceManager.repository')}: {githubConfig.owner}/
+                    {githubConfig.repo}
                   </>
                 )}
                 {storageType === 'upyun' && upyunConfig && (
-                  <>又拍云: {upyunConfig.bucket}</>
+                  <>
+                    {t('sourceManager.upyunPrefix')}: {upyunConfig.bucket}
+                  </>
                 )}
               </div>
             )}
@@ -176,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
             <button
               onClick={handleOpenOperationLog}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              title="操作日志"
+              title={t('header.operationLog')}
             >
               <FileText className="w-5 h-5" />
             </button>

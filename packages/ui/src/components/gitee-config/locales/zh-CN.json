@@ -1,0 +1,56 @@
+{
+  "gitee": {
+    "config": {
+      "title": "Gitee 配置",
+      "username": "用户名/组织名",
+      "usernamePlaceholder": "请输入 Gitee 用户名或组织名",
+      "repository": "仓库名",
+      "repositoryPlaceholder": "请输入仓库名",
+      "branch": "分支",
+      "branchPlaceholder": "master",
+      "path": "路径",
+      "pathPlaceholder": "images",
+      "token": "个人访问令牌",
+      "tokenPlaceholder": "请输入 Gitee 个人访问令牌",
+      "tokenDescription": "Token 用于访问 Gitee API，请妥善保管。可在 Gitee 设置中生成个人访问令牌。",
+      "import": "导入",
+      "export": "导出",
+      "clearConfig": "清除配置",
+      "saveConfig": "保存配置",
+      "close": "关闭",
+      "required": "*"
+    },
+    "help": {
+      "title": "帮助信息",
+      "tokenGuide": {
+        "title": "📋 如何获取个人访问令牌",
+        "step1": "1. 登录 Gitee 账号",
+        "step2": "2. 进入「设置」→「安全设置」→「私人令牌」",
+        "step3": "3. 点击「生成新令牌」",
+        "step4": "4. 勾选需要的权限（至少需要 projects、repo 权限）",
+        "step5": "5. 复制生成的令牌并妥善保存"
+      },
+      "importExport": {
+        "title": "🔄 配置导入/导出",
+        "export": "导出：将当前配置保存为 JSON 文件",
+        "import": "导入：从 JSON 文件恢复配置",
+        "crossPlatform": "支持跨平台配置迁移",
+        "backup": "可用于配置备份和恢复"
+      }
+    }
+  },
+  "messages": {
+    "configSaved": "Gitee 配置已成功保存！",
+    "configCleared": "Gitee 配置已成功清除！",
+    "configExported": "Gitee 配置已成功导出！",
+    "configImported": "Gitee 配置已成功导入！",
+    "saveFailed": "保存配置失败",
+    "clearFailed": "清除配置失败",
+    "exportFailed": "导出配置失败",
+    "importFailed": "导入配置失败",
+    "invalidFormat": "配置文件格式不正确",
+    "noConfigToExport": "没有可导出的配置",
+    "unknownError": "未知错误",
+    "fileFormatError": "文件格式错误"
+  }
+}
