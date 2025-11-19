@@ -68,15 +68,15 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
   // 过渡效果状态
   const [transitioning, setTransitioning] = useState(false);
-  const [nextIndex, setNextIndex] = useState<number | null>(null);
 
   // 背景音乐
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   // 定时器
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
   // 过滤后的图片列表（根据播放模式）
   const getFilteredImages = useCallback(() => {
@@ -155,7 +155,6 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     // 播放背景音乐
     if (config.backgroundMusic && audioRef.current) {
       audioRef.current.play().catch(console.error);
-      setIsMusicPlaying(true);
     }
   }, [filteredImages.length, config.backgroundMusic]);
 
@@ -174,7 +173,6 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     // 暂停背景音乐
     if (audioRef.current) {
       audioRef.current.pause();
-      setIsMusicPlaying(false);
     }
   }, []);
 
@@ -196,7 +194,6 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      setIsMusicPlaying(false);
     }
   }, []);
 

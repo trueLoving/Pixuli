@@ -1,5 +1,3 @@
-import { ImageItem } from '../../types/image';
-
 /** 播放模式 */
 export type PlayMode = 'sequential' | 'random' | 'loop';
 
