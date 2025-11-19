@@ -11,17 +11,17 @@ export const HomePage: React.FC = () => {
   const {
     storageType,
     githubConfig,
-    upyunConfig,
+    giteeConfig,
     loading,
     loadImages,
     setGitHubConfig,
     clearGitHubConfig,
-    setUpyunConfig,
-    clearUpyunConfig,
+    setGiteeConfig,
+    clearGiteeConfig,
   } = useImageStore();
 
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
+  const [showGiteeConfigModal, setShowGiteeConfigModal] = useState(false);
 
   const handleLoadImages = useCallback(async () => {
     try {
@@ -37,14 +37,6 @@ export const HomePage: React.FC = () => {
 
   const handleCloseConfigModal = useCallback(() => {
     setShowConfigModal(false);
-  }, []);
-
-  const handleOpenUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(true);
-  }, []);
-
-  const handleCloseUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(false);
   }, []);
 
   const handleSaveConfig = useCallback(
@@ -65,7 +57,7 @@ export const HomePage: React.FC = () => {
       <Header
         storageType={storageType}
         githubConfig={githubConfig}
-        upyunConfig={upyunConfig}
+        giteeConfig={giteeConfig}
         loading={loading}
         t={t}
         currentLanguage={getCurrentLanguage()}
@@ -74,8 +66,8 @@ export const HomePage: React.FC = () => {
         onLoadImages={handleLoadImages}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
-        onSetUpyunConfig={setUpyunConfig}
-        onClearUpyunConfig={clearUpyunConfig}
+        onSetGiteeConfig={setGiteeConfig}
+        onClearGiteeConfig={clearGiteeConfig}
         onAnalysisComplete={result => {
           console.log('AI 分析完成:', result);
         }}

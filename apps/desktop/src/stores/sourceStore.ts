@@ -1,4 +1,3 @@
-import { UpyunConfig } from '@packages/ui/src';
 import { create } from 'zustand';
 
 export interface GitHubSourceConfig {
@@ -27,23 +26,7 @@ export interface GiteeSourceConfig {
   updatedAt: number;
 }
 
-export interface UpyunSourceConfig {
-  id: string;
-  name: string;
-  type: 'upyun';
-  operator: string;
-  password: string;
-  bucket: string;
-  domain: string;
-  path: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export type SourceConfig =
-  | GitHubSourceConfig
-  | GiteeSourceConfig
-  | UpyunSourceConfig;
+export type SourceConfig = GitHubSourceConfig | GiteeSourceConfig;
 
 type SourceState = {
   sources: SourceConfig[];
@@ -51,14 +34,12 @@ type SourceState = {
     input:
       | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
       | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
-      | Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
   ) => SourceConfig;
   updateSource: (
     id: string,
     input:
       | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
       | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>
-      | Partial<Omit<UpyunSourceConfig, 'id' | 'createdAt' | 'type'>>
   ) => void;
   removeSource: (id: string) => void;
   getSourceById: (id: string) => SourceConfig | undefined;

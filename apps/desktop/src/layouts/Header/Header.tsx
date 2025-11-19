@@ -5,7 +5,7 @@ import { OperationLogModal, VersionInfoModal } from '../../features';
 
 interface HeaderProps {
   /** 存储类型 */
-  storageType: 'github' | 'upyun' | null;
+  storageType: 'github' | 'gitee' | null;
   /** GitHub 配置 */
   githubConfig?: {
     owner: string;
@@ -14,12 +14,12 @@ interface HeaderProps {
     token: string;
     path: string;
   } | null;
-  /** 又拍云配置 */
-  upyunConfig?: {
-    bucket: string;
-    operator: string;
-    password: string;
-    domain: string;
+  /** Gitee 配置 */
+  giteeConfig?: {
+    owner: string;
+    repo: string;
+    branch: string;
+    token: string;
     path: string;
   } | null;
   /** 是否正在加载 */
@@ -42,10 +42,10 @@ interface HeaderProps {
   onSaveConfig: (config: any) => void;
   /** 清除 GitHub 配置 */
   onClearConfig: () => void;
-  /** 设置又拍云配置 */
-  onSetUpyunConfig: (config: any) => void;
-  /** 清除又拍云配置 */
-  onClearUpyunConfig: () => void;
+  /** 设置 Gitee 配置 */
+  onSetGiteeConfig: (config: any) => void;
+  /** 清除 Gitee 配置 */
+  onClearGiteeConfig: () => void;
   /** AI 分析完成回调 */
   onAnalysisComplete: (result: any) => void;
   /** 是否为项目窗口模式（项目窗口显示仓库信息，主页面不显示） */
@@ -55,7 +55,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({
   storageType,
   githubConfig,
-  upyunConfig,
+  giteeConfig,
   loading,
   t,
   currentLanguage,
@@ -131,9 +131,10 @@ const Header: React.FC<HeaderProps> = ({
                     {githubConfig.repo}
                   </>
                 )}
-                {storageType === 'upyun' && upyunConfig && (
+                {storageType === 'gitee' && giteeConfig && (
                   <>
-                    {t('sourceManager.upyunPrefix')}: {upyunConfig.bucket}
+                    {t('sourceManager.repository')}: {giteeConfig.owner}/
+                    {giteeConfig.repo}
                   </>
                 )}
               </div>

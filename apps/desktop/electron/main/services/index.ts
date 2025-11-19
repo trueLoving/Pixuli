@@ -3,7 +3,6 @@ import { registerFileHandlers } from './fileService';
 import { registerGiteeHandlers } from './giteeService';
 import { registerGithubHandlers } from './githubService';
 import { registerPixuliHandlers } from './pixuliService';
-import { registerUpyunHandlers } from './upyunService';
 import { registerWasmHandlers } from './wasmService';
 
 export function registerServiceHandlers() {
@@ -21,9 +20,6 @@ export function registerServiceHandlers() {
 
   // Initialize Pixuli service
   registerPixuliHandlers();
-
-  // Initialize Upyun service
-  registerUpyunHandlers();
 
   // Initialize WASM handlers
   registerWasmHandlers();

@@ -48,17 +48,6 @@ contextBridge.exposeInMainWorld('giteeAPI', {
     ipcRenderer.invoke('gitee:getImageData', params),
 });
 
-// --------- Expose Upyun API to the Renderer process ---------
-contextBridge.exposeInMainWorld('upyunAPI', {
-  // Upyun API
-  upyunUpload: (params: any) => ipcRenderer.invoke('upyun:upload', params),
-  upyunDelete: (params: any) => ipcRenderer.invoke('upyun:delete', params),
-  upyunGetList: (params: any) => ipcRenderer.invoke('upyun:list', params),
-  upyunUpdateMetadata: (params: any) =>
-    ipcRenderer.invoke('upyun:updateMetadata', params),
-  upyunTest: (config: any) => ipcRenderer.invoke('upyun:test', config),
-});
-
 // --------- Expose WASM API to the Renderer process ---------
 contextBridge.exposeInMainWorld('wasmAPI', {
   plus100: (input: number) => ipcRenderer.invoke('wasm:plus100', input),

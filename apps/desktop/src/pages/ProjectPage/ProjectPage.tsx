@@ -15,15 +15,15 @@ export const ProjectPage: React.FC = () => {
     loading,
     error,
     githubConfig,
-    upyunConfig,
+    giteeConfig,
     storageType,
     batchUploadProgress,
     loadImages,
     clearError,
     setGitHubConfig,
     clearGitHubConfig,
-    setUpyunConfig,
-    clearUpyunConfig,
+    setGiteeConfig,
+    clearGiteeConfig,
     uploadImage,
     uploadMultipleImages,
     deleteImage,
@@ -32,7 +32,7 @@ export const ProjectPage: React.FC = () => {
   } = useImageStore();
 
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showUpyunConfigModal, setShowUpyunConfigModal] = useState(false);
+  const [showGiteeConfigModal, setShowGiteeConfigModal] = useState(false);
 
   // 项目窗口判断与参数解析
   const [projectSourceId] = useState<string | null>(() => {
@@ -67,23 +67,23 @@ export const ProjectPage: React.FC = () => {
         token: src.token,
         path: src.path,
       } as any);
-    } else if (src && src.type === 'upyun') {
-      setUpyunConfig({
-        operator: src.operator,
-        password: src.password,
-        bucket: src.bucket,
-        domain: src.domain,
+    } else if (src && src.type === 'gitee') {
+      setGiteeConfig({
+        owner: src.owner,
+        repo: src.repo,
+        branch: src.branch,
+        token: src.token,
         path: src.path,
-      });
+      } as any);
     }
-  }, [projectSourceId, sourceStore, setGitHubConfig, setUpyunConfig]);
+  }, [projectSourceId, sourceStore, setGitHubConfig, setGiteeConfig]);
 
   // 初始化存储服务
   useEffect(() => {
     if (!projectSourceId) return;
     if (
       useImageStore.getState().githubConfig ||
-      useImageStore.getState().upyunConfig
+      useImageStore.getState().giteeConfig
     ) {
       const { initializeStorage } = useImageStore.getState();
       initializeStorage();
@@ -94,10 +94,10 @@ export const ProjectPage: React.FC = () => {
   // 页面加载时初始化
   useEffect(() => {
     if (!projectSourceId) return;
-    const { githubConfig, upyunConfig, initializeStorage } =
+    const { githubConfig, giteeConfig, initializeStorage } =
       useImageStore.getState();
     if (
-      (githubConfig || upyunConfig) &&
+      (githubConfig || giteeConfig) &&
       !useImageStore.getState().storageService
     ) {
       initializeStorage();
@@ -110,14 +110,6 @@ export const ProjectPage: React.FC = () => {
 
   const handleCloseConfigModal = useCallback(() => {
     setShowConfigModal(false);
-  }, []);
-
-  const handleOpenUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(true);
-  }, []);
-
-  const handleCloseUpyunConfigModal = useCallback(() => {
-    setShowUpyunConfigModal(false);
   }, []);
 
   const handleSaveConfig = useCallback(
@@ -159,7 +151,7 @@ export const ProjectPage: React.FC = () => {
       <Header
         storageType={storageType}
         githubConfig={githubConfig}
-        upyunConfig={upyunConfig}
+        giteeConfig={giteeConfig}
         loading={loading}
         t={t}
         currentLanguage={getCurrentLanguage()}
@@ -168,8 +160,8 @@ export const ProjectPage: React.FC = () => {
         onLoadImages={handleLoadImages}
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
-        onSetUpyunConfig={setUpyunConfig}
-        onClearUpyunConfig={clearUpyunConfig}
+        onSetGiteeConfig={setGiteeConfig}
+        onClearGiteeConfig={clearGiteeConfig}
         onAnalysisComplete={result => {
           console.log('AI 分析完成:', result);
         }}

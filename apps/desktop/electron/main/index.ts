@@ -68,7 +68,6 @@ function setupContentSecurityPolicy() {
   // 开发模式的 CSP（允许 Vite dev server 和 HMR）
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
   // Electron 会在开发模式下显示警告，但这是预期的行为
-  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const devCSP =
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
@@ -82,7 +81,6 @@ function setupContentSecurityPolicy() {
     "form-action 'self';";
 
   // 生产模式的 CSP（更严格，移除 unsafe-eval）
-  // img-src 允许 HTTP 协议以支持又拍云等存储服务的图片加载
   const prodCSP =
     "default-src 'self'; " +
     "script-src 'self'; " +

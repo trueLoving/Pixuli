@@ -312,6 +312,6 @@ const handleImportConfig = (event: React.ChangeEvent<HTMLInputElement>) => {
 
 ## 🔗 相关组件
 
-- [UpyunConfigModal](./upyun-config-modal.md) - 又拍云配置模态框
+- [GiteeConfigModal](./gitee-config-modal.md) - Gitee 配置模态框
 - [KeyboardHelpModal](./keyboard-help-modal.md) - 键盘快捷键帮助模态框
 - [ImageBrowser](./image-browser.md) - 图片浏览器组件

@@ -18,7 +18,6 @@ UI 组件库中所有可用的国际化 key 值，方便开发者进行自定义
 | `app.imageLibrary`    | 图片库                             | Image Library                                                 | 图片库标题      |
 | `app.images`          | 张图片                             | images                                                        | 图片数量单位    |
 | `app.loadingImages`   | 正在加载图片...                    | Loading images...                                             | 加载状态        |
-| `app.configureUpyun`  | 配置又拍云                         | Configure Upyun                                               | 又拍云配置按钮  |
 
 #### 演示模式 (app.demoMode)
 
@@ -31,15 +30,14 @@ UI 组件库中所有可用的国际化 key 值，方便开发者进行自定义
 
 ### 🧭 导航 (navigation)
 
-| Key                        | 中文       | English        | 说明           |
-| -------------------------- | ---------- | -------------- | -------------- |
-| `navigation.settings`      | 设置       | Settings       | 设置按钮       |
-| `navigation.upyunSettings` | 又拍云设置 | Upyun Settings | 又拍云设置按钮 |
-| `navigation.refresh`       | 刷新       | Refresh        | 刷新按钮       |
-| `navigation.search`        | 搜索       | Search         | 搜索按钮       |
-| `navigation.filter`        | 筛选       | Filter         | 筛选按钮       |
-| `navigation.help`          | 帮助       | Help           | 帮助按钮       |
-| `navigation.play`          | 播放       | Play           | 播放按钮       |
+| Key                   | 中文 | English  | 说明     |
+| --------------------- | ---- | -------- | -------- |
+| `navigation.settings` | 设置 | Settings | 设置按钮 |
+| `navigation.refresh`  | 刷新 | Refresh  | 刷新按钮 |
+| `navigation.search`   | 搜索 | Search   | 搜索按钮 |
+| `navigation.filter`   | 筛选 | Filter   | 筛选按钮 |
+| `navigation.help`     | 帮助 | Help     | 帮助按钮 |
+| `navigation.play`     | 播放 | Play     | 播放按钮 |
 
 ### 🌍 语言 (language)
 
@@ -109,36 +107,6 @@ UI 组件库中所有可用的国际化 key 值，方便开发者进行自定义
 | `github.help.importExport.import`        | 导入：从 JSON 文件加载配置                        | Import: Load configuration from JSON file                              | 导入说明           |
 | `github.help.importExport.crossPlatform` | 跨平台：支持桌面端和 Web 端配置互导               | Cross-platform: Support configuration exchange between desktop and web | 跨平台说明         |
 | `github.help.importExport.backup`        | 备份：建议定期导出配置作为备份                    | Backup: Recommend regular export of configuration as backup            | 备份说明           |
-
-### ☁️ 又拍云配置 (upyun)
-
-#### 基础配置 (upyun.config)
-
-| Key                        | 中文           | English                     | 说明         |
-| -------------------------- | -------------- | --------------------------- | ------------ |
-| `upyun.config.title`       | 又拍云存储配置 | Upyun Storage Configuration | 配置标题     |
-| `upyun.config.import`      | 导入           | Import                      | 导入按钮     |
-| `upyun.config.export`      | 导出           | Export                      | 导出按钮     |
-| `upyun.config.clearConfig` | 清除配置       | Clear Configuration         | 清除配置按钮 |
-| `upyun.config.saveConfig`  | 保存配置       | Save Configuration          | 保存配置按钮 |
-| `upyun.config.required`    | \*             | \*                          | 必填标记     |
-
-#### 配置帮助 (upyun.help)
-
-| Key                                     | 中文                                | English                                                                | 说明             |
-| --------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------- | ---------------- |
-| `upyun.help.title`                      | 配置帮助                            | Configuration Help                                                     | 帮助标题         |
-| `upyun.help.credentials.title`          | 如何获取又拍云凭证？                | How to get Upyun credentials?                                          | 凭证获取指南标题 |
-| `upyun.help.credentials.step1`          | 1. 登录又拍云控制台                 | 1. Login to Upyun console                                              | 步骤1            |
-| `upyun.help.credentials.step2`          | 2. 进入服务管理 → 云存储            | 2. Go to Service Management → Cloud Storage                            | 步骤2            |
-| `upyun.help.credentials.step3`          | 3. 创建或选择存储空间               | 3. Create or select storage space                                      | 步骤3            |
-| `upyun.help.credentials.step4`          | 4. 在操作员管理中创建操作员         | 4. Create operator in Operator Management                              | 步骤4            |
-| `upyun.help.credentials.step5`          | 5. 获取操作员名称和密码             | 5. Get operator name and password                                      | 步骤5            |
-| `upyun.help.importExport.title`         | 配置导入/导出                       | Configuration Import/Export                                            | 导入导出标题     |
-| `upyun.help.importExport.export`        | 导出：将当前配置保存为 JSON 文件    | Export: Save current configuration as JSON file                        | 导出说明         |
-| `upyun.help.importExport.import`        | 导入：从 JSON 文件加载配置          | Import: Load configuration from JSON file                              | 导入说明         |
-| `upyun.help.importExport.crossPlatform` | 跨平台：支持桌面端和 Web 端配置互导 | Cross-platform: Support configuration exchange between desktop and web | 跨平台说明       |
-| `upyun.help.importExport.backup`        | 备份：建议定期导出配置作为备份      | Backup: Recommend regular export of configuration as backup            | 备份说明         |
 
 ### 💾 存储管理 (storage)
 

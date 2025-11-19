@@ -9,12 +9,10 @@
     "repository": "仓库",
     "imageLibrary": "图片库",
     "images": "张图片",
-    "loadingImages": "正在加载图片...",
-    "configureUpyun": "配置又拍云"
+    "loadingImages": "正在加载图片..."
   },
   "navigation": {
     "settings": "设置",
-    "upyunSettings": "又拍云设置",
     "refresh": "刷新",
     "search": "搜索",
     "filter": "筛选",

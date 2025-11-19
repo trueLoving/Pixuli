@@ -9,12 +9,10 @@
     "repository": "Repository",
     "imageLibrary": "Image Library",
     "images": "images",
-    "loadingImages": "Loading images...",
-    "configureUpyun": "Configure Upyun"
+    "loadingImages": "Loading images..."
   },
   "navigation": {
     "settings": "Settings",
-    "upyunSettings": "Upyun Settings",
     "refresh": "Refresh",
     "search": "Search",
     "filter": "Filter",

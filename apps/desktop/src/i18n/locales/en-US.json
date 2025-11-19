@@ -18,8 +18,6 @@
     "imageCount": "images",
     "githubRepo": "GitHub Repository",
     "giteeRepo": "Gitee Repository",
-    "upyunStorage": "Upyun Storage",
-    "upyunPrefix": "Upyun",
     "path": "Path",
     "domain": "Domain",
     "bucket": "Bucket",

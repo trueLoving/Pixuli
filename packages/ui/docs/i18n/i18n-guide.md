@@ -101,7 +101,6 @@ const t = defaultTranslate({
 
 - `github.config.title` - GitHub 配置标题
 - `github.config.saveConfig` - 保存配置
-- `upyun.config.title` - 又拍云配置标题
 
 ## 🔧 高级用法
 

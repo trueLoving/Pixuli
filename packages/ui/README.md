@@ -30,7 +30,7 @@ import { ImageBrowser } from 'pixuli-ui/src'
 - **ImageEditModal**: 图片编辑模态框，编辑图片名称、描述、标签等信息
 - **ImagePreviewModal**: 图片预览模态框，支持全屏预览功能
 - **GitHubConfigModal**: GitHub 配置模态框，配置 GitHub 仓库存储
-- **UpyunConfigModal**: 又拍云配置模态框，配置又拍云存储服务
+- **GiteeConfigModal**: Gitee 配置模态框，配置 Gitee 仓库存储
 - **KeyboardHelpModal**: 键盘快捷键帮助模态框
 - **ImageSearch**: 图片搜索组件，支持按名称、标签等条件搜索
 

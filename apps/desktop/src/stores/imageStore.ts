@@ -8,14 +8,8 @@ import {
   loadGitHubConfig,
   saveGitHubConfig,
 } from '@/config/github';
-import {
-  clearUpyunConfig,
-  loadUpyunConfig,
-  saveUpyunConfig,
-} from '@/config/upyun';
 import { GiteeStorageService } from '@/services/giteeStorageService';
 import { GitHubStorageService } from '@/services/githubStorageService';
-import { UpyunStorageService } from '@/services/upyunStorageService';
 import { LogActionType, LogStatus } from '@/services/types/log';
 import { useLogStore } from '@/stores/logStore';
 import {
@@ -27,7 +21,6 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-  UpyunConfig,
 } from '@packages/ui/src';
 import { create } from 'zustand';
 
@@ -37,13 +30,8 @@ interface ImageState {
   error: string | null;
   githubConfig: GitHubConfig | null;
   giteeConfig: GiteeConfig | null;
-  upyunConfig: UpyunConfig | null;
-  storageService:
-    | GitHubStorageService
-    | GiteeStorageService
-    | UpyunStorageService
-    | null;
-  storageType: 'github' | 'gitee' | 'upyun' | null;
+  storageService: GitHubStorageService | GiteeStorageService | null;
+  storageType: 'github' | 'gitee' | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Actions
@@ -51,8 +39,6 @@ interface ImageState {
   clearGitHubConfig: () => void;
   setGiteeConfig: (config: GiteeConfig) => void;
   clearGiteeConfig: () => void;
-  setUpyunConfig: (config: UpyunConfig) => void;
-  clearUpyunConfig: () => void;
   initializeStorage: () => void;
   loadImages: () => Promise<void>;
   uploadImage: (uploadData: ImageUploadData) => Promise<void>;
@@ -75,18 +61,14 @@ export const useImageStore = create<ImageState>((set, get) => {
   // 在store创建时加载配置并初始化存储服务
   const initialGitHubConfig = loadGitHubConfig();
   const initialGiteeConfig = loadGiteeConfig();
-  const initialUpyunConfig = loadUpyunConfig();
 
   // 确定当前使用的存储类型
-  const storageType = initialUpyunConfig
-    ? 'upyun'
-    : initialGiteeConfig
-      ? 'gitee'
-      : initialGitHubConfig
-        ? 'github'
-        : null;
-  const initialConfig =
-    initialUpyunConfig || initialGiteeConfig || initialGitHubConfig;
+  const storageType = initialGiteeConfig
+    ? 'gitee'
+    : initialGitHubConfig
+      ? 'github'
+      : null;
+  const initialConfig = initialGiteeConfig || initialGitHubConfig;
 
   return {
     images: [],
@@ -94,13 +76,10 @@ export const useImageStore = create<ImageState>((set, get) => {
     error: null,
     githubConfig: initialGitHubConfig,
     giteeConfig: initialGiteeConfig,
-    upyunConfig: initialUpyunConfig,
     storageService: initialConfig
-      ? storageType === 'upyun'
-        ? new UpyunStorageService(initialUpyunConfig!)
-        : storageType === 'gitee'
-          ? new GiteeStorageService(initialGiteeConfig!)
-          : new GitHubStorageService(initialGitHubConfig!)
+      ? storageType === 'gitee'
+        ? new GiteeStorageService(initialGiteeConfig!)
+        : new GitHubStorageService(initialGitHubConfig!)
       : null,
     storageType,
     batchUploadProgress: null,
@@ -165,48 +144,10 @@ export const useImageStore = create<ImageState>((set, get) => {
         });
     },
 
-    setUpyunConfig: (config: UpyunConfig) => {
-      set({ upyunConfig: config });
-      saveUpyunConfig(config);
-      // 切换到又拍云存储
-      set({ storageType: 'upyun' });
-      get().initializeStorage();
-      // 记录配置变更日志
-      useLogStore
-        .getState()
-        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'upyun', action: 'set' },
-        });
-    },
-
-    clearUpyunConfig: () => {
-      set({ upyunConfig: null });
-      clearUpyunConfig();
-      // 如果当前使用的是又拍云，清除存储服务
-      const { storageType } = get();
-      if (storageType === 'upyun') {
-        set({ storageService: null, storageType: null });
-      }
-      // 记录配置变更日志
-      useLogStore
-        .getState()
-        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'upyun', action: 'clear' },
-        });
-    },
-
     initializeStorage: () => {
-      const { githubConfig, giteeConfig, upyunConfig, storageType } = get();
+      const { githubConfig, giteeConfig, storageType } = get();
 
-      if (storageType === 'upyun' && upyunConfig) {
-        try {
-          const storageService = new UpyunStorageService(upyunConfig);
-          set({ storageService });
-        } catch (error) {
-          console.error('Failed to initialize upyun storage service:', error);
-          set({ error: '初始化又拍云存储服务失败' });
-        }
-      } else if (storageType === 'gitee' && giteeConfig) {
+      if (storageType === 'gitee' && giteeConfig) {
         try {
           const storageService = new GiteeStorageService(giteeConfig);
           set({ storageService });
@@ -229,12 +170,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       const { storageService, storageType } = get();
 
       if (!storageService) {
-        const errorMsg =
-          storageType === 'upyun'
-            ? '又拍云'
-            : storageType === 'gitee'
-              ? 'Gitee'
-              : 'GitHub';
+        const errorMsg = storageType === 'gitee' ? 'Gitee' : 'GitHub';
         set({
           error: `${errorMsg} 配置未初始化`,
         });

@@ -100,10 +100,6 @@ GitHub 配置模态框，用于配置 GitHub 存储。
 - 配置验证
 - 国际化支持
 
-#### [UpyunConfigModal](./upyun-config-modal.md)
-
-又拍云配置模态框，用于配置又拍云存储。
-
 #### [KeyboardHelpModal](./keyboard-help-modal.md)
 
 键盘快捷键帮助模态框。
@@ -157,7 +153,7 @@ GitHub 配置模态框，用于配置 GitHub 存储。
 - **图片展示**: ImageBrowser, ImageGrid, ImageList
 - **图片上传**: ImageUpload
 - **图片编辑**: ImageEditModal
-- **配置管理**: GitHubConfigModal, UpyunConfigModal
+- **配置管理**: GitHubConfigModal, GiteeConfigModal
 - **搜索功能**: ImageSearch
 
 ### 2. 查看组件文档

@@ -18,8 +18,6 @@
     "imageCount": "张图片",
     "githubRepo": "GitHub 仓库",
     "giteeRepo": "Gitee 仓库",
-    "upyunStorage": "又拍云存储",
-    "upyunPrefix": "又拍云",
     "path": "路径",
     "domain": "域名",
     "bucket": "Bucket",

@@ -7,7 +7,6 @@ import commonEnUS from './common/en-US.json';
 // 组件语言包
 import githubConfigLocales from '../components/github-config/locales';
 import giteeConfigLocales from '../components/gitee-config/locales';
-import upyunConfigLocales from '../components/upyun-config/locales';
 import keyboardHelpLocales from '../components/keyboard-help/locales';
 import imageBrowserLocales from '../components/image-browser/locales';
 import imageUploadLocales from '../components/image-upload/locales';
@@ -56,7 +55,6 @@ export const appLocales = {
     commonZhCN,
     githubConfigLocales['zh-CN'],
     giteeConfigLocales['zh-CN'],
-    upyunConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
@@ -69,7 +67,6 @@ export const appLocales = {
     commonEnUS,
     githubConfigLocales['en-US'],
     giteeConfigLocales['en-US'],
-    upyunConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],

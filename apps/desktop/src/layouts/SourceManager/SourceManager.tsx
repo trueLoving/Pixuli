@@ -1,15 +1,10 @@
-import {
-  GiteeConfigModal,
-  GitHubConfigModal,
-  UpyunConfigModal,
-} from '@packages/ui/src';
+import { GiteeConfigModal, GitHubConfigModal } from '@packages/ui/src';
 import {
   ChevronUp,
   ChevronDown,
   ExternalLink,
   Pencil,
   Trash2,
-  Cloud,
   Github,
   Plus,
   FolderPlus,
@@ -52,21 +47,6 @@ const emptyGitee: GiteeForm = {
   path: '',
 };
 
-type UpyunForm = {
-  operator: string;
-  password: string;
-  bucket: string;
-  domain: string;
-  path: string;
-};
-const emptyUpyun: UpyunForm = {
-  operator: '',
-  password: '',
-  bucket: '',
-  domain: '',
-  path: 'images',
-};
-
 export const SourceManager: React.FC = () => {
   const { t } = useI18n();
   const { sources, addSource, updateSource, removeSource, openProjectWindow } =
@@ -74,10 +54,8 @@ export const SourceManager: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showGhModal, setShowGhModal] = useState(false);
   const [showGiteeModal, setShowGiteeModal] = useState(false);
-  const [showUpyunModal, setShowUpyunModal] = useState(false);
   const [ghConfig, setGhConfig] = useState<GHForm>(emptyGH);
   const [giteeConfig, setGiteeConfig] = useState<GiteeForm>(emptyGitee);
-  const [upyunConfig, setUpyunConfig] = useState<UpyunForm>(emptyUpyun);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(false);
@@ -105,7 +83,6 @@ export const SourceManager: React.FC = () => {
     clearError,
     setGitHubConfig,
     setGiteeConfig: setImageStoreGiteeConfig,
-    setUpyunConfig: setImageStoreUpyunConfig,
     initializeStorage,
     loadImages,
   } = useImageStore();
@@ -131,13 +108,6 @@ export const SourceManager: React.FC = () => {
     setShowAddMenu(false);
   };
 
-  const startCreateUpyun = () => {
-    setEditingId(null);
-    setUpyunConfig(emptyUpyun);
-    setShowUpyunModal(true);
-    setShowAddMenu(false);
-  };
-
   const startEdit = (source: SourceConfig) => {
     setEditingId(source.id);
     if (source.type === 'github') {
@@ -158,15 +128,6 @@ export const SourceManager: React.FC = () => {
         path: source.path,
       });
       setShowGiteeModal(true);
-    } else {
-      setUpyunConfig({
-        operator: source.operator,
-        password: source.password,
-        bucket: source.bucket,
-        domain: source.domain,
-        path: source.path,
-      });
-      setShowUpyunModal(true);
     }
   };
 
@@ -204,23 +165,6 @@ export const SourceManager: React.FC = () => {
     setEditingId(null);
   };
 
-  const handleSaveUpyun = (config: UpyunForm) => {
-    if (isEditing && editingId) {
-      updateSource(editingId, {
-        ...config,
-        name: config.bucket,
-      });
-    } else {
-      addSource({
-        type: 'upyun',
-        ...config,
-        name: config.bucket,
-      });
-    }
-    setShowUpyunModal(false);
-    setEditingId(null);
-  };
-
   return (
     <div className="h-full bg-gray-50 flex flex-col">
       {/* 顶部：源列表 */}
@@ -243,30 +187,17 @@ export const SourceManager: React.FC = () => {
                   </div>
                   <div
                     className="text-xs text-gray-500 truncate mt-0.5"
-                    title={
-                      selectedSource.type === 'github' ||
-                      selectedSource.type === 'gitee'
-                        ? t('sourceManager.repoLine', {
-                            owner: selectedSource.owner,
-                            repo: selectedSource.repo,
-                            branch: selectedSource.branch,
-                          })
-                        : `${t('sourceManager.upyunPrefix')}: ${selectedSource.bucket}`
-                    }
+                    title={t('sourceManager.repoLine', {
+                      owner: selectedSource.owner,
+                      repo: selectedSource.repo,
+                      branch: selectedSource.branch,
+                    })}
                   >
-                    {selectedSource.type === 'github' ||
-                    selectedSource.type === 'gitee' ? (
-                      t('sourceManager.repoLine', {
-                        owner: selectedSource.owner,
-                        repo: selectedSource.repo,
-                        branch: selectedSource.branch,
-                      })
-                    ) : (
-                      <>
-                        {t('sourceManager.upyunPrefix')}:{' '}
-                        {selectedSource.bucket}
-                      </>
-                    )}
+                    {t('sourceManager.repoLine', {
+                      owner: selectedSource.owner,
+                      repo: selectedSource.repo,
+                      branch: selectedSource.branch,
+                    })}
                   </div>
                 </div>
                 {images.length > 0 && (
@@ -348,13 +279,6 @@ export const SourceManager: React.FC = () => {
                         </span>
                         {t('sourceManager.giteeRepo')}
                       </button>
-                      {/* <button
-                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                        onClick={startCreateUpyun}
-                      >
-                        <Cloud className="w-4 h-4" />
-                        {t('sourceManager.upyunStorage')}
-                      </button> */}
                     </div>
                   </>
                 )}
@@ -422,14 +346,6 @@ export const SourceManager: React.FC = () => {
                             token: s.token,
                             path: s.path,
                           } as any);
-                        } else {
-                          setImageStoreUpyunConfig({
-                            operator: s.operator,
-                            password: s.password,
-                            bucket: s.bucket,
-                            domain: s.domain,
-                            path: s.path,
-                          });
                         }
                         initializeStorage();
                         await loadImages();
@@ -455,12 +371,10 @@ export const SourceManager: React.FC = () => {
                       <div className="flex items-center gap-2 mb-1">
                         {s.type === 'github' ? (
                           <Github className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        ) : s.type === 'gitee' ? (
+                        ) : (
                           <span className="w-4 h-4 text-center text-xs font-bold text-[#c73e1d] flex-shrink-0">
                             码
                           </span>
-                        ) : (
-                          <Cloud className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         )}
                         <div
                           className="text-sm font-semibold text-gray-900 truncate"
@@ -475,63 +389,30 @@ export const SourceManager: React.FC = () => {
 
                       {/* 仓库详细信息 */}
                       <div className="flex flex-col gap-1">
-                        {s.type === 'github' || s.type === 'gitee' ? (
-                          <>
-                            <div
-                              className="text-xs text-gray-600 font-mono truncate"
-                              title={t('sourceManager.repoLine', {
-                                owner: s.owner,
-                                repo: s.repo,
-                                branch: s.branch,
-                              })}
-                            >
-                              {t('sourceManager.repoLine', {
-                                owner: s.owner,
-                                repo: s.repo,
-                                branch: s.branch,
-                              })}
-                            </div>
-                            {s.path && (
-                              <div
-                                className="text-xs text-gray-500 truncate flex items-center gap-1"
-                                title={s.path}
-                              >
-                                <span className="text-gray-400">
-                                  {t('sourceManager.path')}:
-                                </span>
-                                <span>{s.path}</span>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div
-                              className="text-xs text-gray-600 truncate"
-                              title={`${t('sourceManager.bucket')}: ${s.bucket}`}
-                            >
-                              {t('sourceManager.bucket')}: {s.bucket}
-                            </div>
-                            <div
-                              className="text-xs text-gray-500 truncate flex items-center gap-1"
-                              title={s.domain}
-                            >
-                              <span className="text-gray-400">
-                                {t('sourceManager.domain')}:
-                              </span>
-                              <span>{s.domain}</span>
-                            </div>
-                            {s.path && (
-                              <div
-                                className="text-xs text-gray-500 truncate flex items-center gap-1"
-                                title={s.path}
-                              >
-                                <span className="text-gray-400">
-                                  {t('sourceManager.path')}:
-                                </span>
-                                <span>{s.path}</span>
-                              </div>
-                            )}
-                          </>
+                        <div
+                          className="text-xs text-gray-600 font-mono truncate"
+                          title={t('sourceManager.repoLine', {
+                            owner: s.owner,
+                            repo: s.repo,
+                            branch: s.branch,
+                          })}
+                        >
+                          {t('sourceManager.repoLine', {
+                            owner: s.owner,
+                            repo: s.repo,
+                            branch: s.branch,
+                          })}
+                        </div>
+                        {s.path && (
+                          <div
+                            className="text-xs text-gray-500 truncate flex items-center gap-1"
+                            title={s.path}
+                          >
+                            <span className="text-gray-400">
+                              {t('sourceManager.path')}:
+                            </span>
+                            <span>{s.path}</span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -696,24 +577,6 @@ export const SourceManager: React.FC = () => {
           setGiteeConfig(emptyGitee);
           setEditingId(null);
           setShowGiteeModal(false);
-        }}
-        platform="desktop"
-      />
-
-      {/* 又拍云配置弹窗（新增/编辑） */}
-      <UpyunConfigModal
-        t={t}
-        isOpen={showUpyunModal}
-        onClose={() => {
-          setShowUpyunModal(false);
-          setEditingId(null);
-        }}
-        upyunConfig={upyunConfig}
-        onSaveConfig={(cfg: any) => handleSaveUpyun(cfg)}
-        onClearConfig={() => {
-          setUpyunConfig(emptyUpyun);
-          setEditingId(null);
-          setShowUpyunModal(false);
         }}
         platform="desktop"
       />

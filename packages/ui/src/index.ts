@@ -9,7 +9,6 @@
 export * from './types/image';
 export * from './types/github';
 export * from './types/gitee';
-export * from './types/upyun';
 
 // 类型导出
 export type {
@@ -38,7 +37,6 @@ export * from './hooks';
 // 组件导出
 export { default as GitHubConfigModal } from './components/github-config/GitHubConfigModal';
 export { default as GiteeConfigModal } from './components/gitee-config/GiteeConfigModal';
-export { default as UpyunConfigModal } from './components/upyun-config/UpyunConfigModal';
 export { default as KeyboardHelpModal } from './components/keyboard-help/KeyboardHelpModal';
 export { default as ImageUpload } from './components/image-upload/ImageUpload';
 export { default as ImageSearch } from './components/image-search/ImageSearch';
