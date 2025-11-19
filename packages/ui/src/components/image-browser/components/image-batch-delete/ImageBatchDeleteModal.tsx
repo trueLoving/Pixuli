@@ -24,7 +24,16 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
   onConfirm,
   t,
 }) => {
-  const translate = t || defaultTranslate;
+  const translate = (key: string, params?: Record<string, any>) => {
+    const transFn = t || defaultTranslate;
+    let text = transFn(key);
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, String(v));
+      });
+    }
+    return text;
+  };
   const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(
     new Set()
   );
@@ -75,33 +84,37 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
     setIsDeleting(true);
 
     // 显示删除中的提示
-    const loadingToast = showLoading(
-      `正在删除 ${selectedImageIds.size} 张图片...`,
-      {
-        getMessage: () => `正在删除 ${selectedImageIds.size} 张图片...`,
-      }
-    );
+    const deletingMessage = translate('image.batchDelete.deletingCount', {
+      count: selectedImageIds.size,
+    });
+    const loadingToast = showLoading(deletingMessage, {
+      getMessage: () => deletingMessage,
+    });
 
     try {
       await onConfirm(ids, names);
 
       // 删除成功
-      updateLoadingToSuccess(
-        String(loadingToast),
-        `成功删除 ${selectedImageIds.size} 张图片`,
-        {
-          getMessage: () => `成功删除 ${selectedImageIds.size} 张图片`,
-        }
-      );
+      const successMessage = translate('image.batchDelete.deleteSuccess', {
+        count: selectedImageIds.size,
+      });
+      updateLoadingToSuccess(String(loadingToast), successMessage, {
+        getMessage: () => successMessage,
+      });
 
       // 关闭模态框
       onClose();
     } catch (error) {
       // 删除失败
       const errorMessage =
-        error instanceof Error ? error.message : '批量删除失败，请重试';
-      updateLoadingToError(String(loadingToast), `删除失败: ${errorMessage}`, {
-        getMessage: () => `删除失败: ${errorMessage}`,
+        error instanceof Error
+          ? error.message
+          : translate('image.batchDelete.deleteFailed');
+      const deleteErrorMessage = translate('image.batchDelete.deleteError', {
+        error: errorMessage,
+      });
+      updateLoadingToError(String(loadingToast), deleteErrorMessage, {
+        getMessage: () => deleteErrorMessage,
       });
     } finally {
       setIsDeleting(false);
@@ -135,7 +148,9 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         <div className="image-batch-delete-modal-header">
-          <h3 className="image-batch-delete-modal-title">批量删除图片</h3>
+          <h3 className="image-batch-delete-modal-title">
+            {translate('image.batchDelete.title')}
+          </h3>
           <button
             onClick={onClose}
             className="image-batch-delete-modal-close"
@@ -154,10 +169,15 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
               className="image-batch-delete-modal-select-all"
               disabled={isDeleting}
             >
-              {selectedImageIds.size === images.length ? '取消全选' : '全选'}
+              {selectedImageIds.size === images.length
+                ? translate('image.batchDelete.deselectAll')
+                : translate('image.batchDelete.selectAll')}
             </button>
             <span className="image-batch-delete-modal-count">
-              已选择: {selectedImageIds.size} / {images.length}
+              {translate('image.batchDelete.selectedCount', {
+                selected: selectedImageIds.size,
+                total: images.length,
+              })}
             </span>
           </div>
 
@@ -165,7 +185,7 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
           <div className="image-batch-delete-modal-image-list">
             {images.length === 0 ? (
               <div className="image-batch-delete-modal-empty">
-                <p>没有图片可删除</p>
+                <p>{translate('image.batchDelete.noImages')}</p>
               </div>
             ) : (
               images.map(image => {
@@ -221,7 +241,7 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
             className="image-batch-delete-modal-cancel"
             disabled={isDeleting}
           >
-            取消
+            {translate('image.batchDelete.cancel')}
           </button>
           <button
             type="button"
@@ -232,12 +252,13 @@ const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                删除中...
+                {translate('image.batchDelete.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                删除选中 ({selectedImageIds.size})
+                {translate('image.batchDelete.deleteSelected')} (
+                {selectedImageIds.size})
               </>
             )}
           </button>

@@ -1,0 +1,91 @@
+{
+  "slideShow": {
+    "title": "Slide Show",
+    "description": "Play images in slide show mode",
+    "open": "Open Slide Show",
+    "close": "Close",
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "previous": "Previous",
+    "next": "Next",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit Fullscreen",
+    "player": {
+      "title": "Slide Show Player",
+      "noImages": "No images to play",
+      "imageInfo": "Image Info",
+      "currentImage": "Current Image",
+      "totalImages": "{total} images",
+      "imageName": "Name",
+      "imageSize": "Size",
+      "imageDimensions": "Dimensions",
+      "controls": {
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop",
+        "previous": "Previous",
+        "next": "Next",
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit Fullscreen",
+        "settings": "Settings",
+        "export": "Export Slide Show"
+      }
+    },
+    "settings": {
+      "title": "Slide Show Settings",
+      "playback": {
+        "title": "Playback Settings",
+        "interval": "Interval (seconds)",
+        "playMode": "Play Mode",
+        "playModeSequential": "Sequential",
+        "playModeRandom": "Random",
+        "playModeLoop": "Loop",
+        "autoPlay": "Auto Play",
+        "loop": "Loop"
+      },
+      "transition": {
+        "title": "Transition Effects",
+        "effect": "Transition Effect",
+        "effectFade": "Fade",
+        "effectSlide": "Slide",
+        "effectZoom": "Zoom",
+        "effectBlur": "Blur",
+        "effectRotate": "Rotate",
+        "effectNone": "None",
+        "duration": "Transition Duration (ms)"
+      },
+      "music": {
+        "title": "Background Music",
+        "enable": "Enable Background Music",
+        "selectFile": "Select Music File",
+        "volume": "Volume",
+        "noFile": "No music file selected",
+        "fileSelected": "Selected: {fileName}",
+        "supportedFormats": "Supported formats: MP3, WAV, OGG, M4A"
+      },
+      "display": {
+        "title": "Display Settings",
+        "showImageInfo": "Show Image Info",
+        "fullscreen": "Fullscreen Play"
+      },
+      "save": "Save Settings",
+      "cancel": "Cancel",
+      "reset": "Reset to Default"
+    },
+    "export": {
+      "title": "Export Slide Show",
+      "format": "Export Format",
+      "formatVideo": "Video File (MP4)",
+      "formatPDF": "PDF File",
+      "formatHTML": "HTML File",
+      "fileName": "File Name",
+      "export": "Export",
+      "cancel": "Cancel",
+      "exporting": "Exporting...",
+      "success": "Export successful",
+      "failed": "Export failed: {error}",
+      "selectFolder": "Select Save Location"
+    }
+  }
+}

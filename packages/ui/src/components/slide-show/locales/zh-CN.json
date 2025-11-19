@@ -1,0 +1,91 @@
+{
+  "slideShow": {
+    "title": "幻灯片播放",
+    "description": "以幻灯片模式播放图片",
+    "open": "打开幻灯片",
+    "close": "关闭",
+    "play": "播放",
+    "pause": "暂停",
+    "stop": "停止",
+    "previous": "上一张",
+    "next": "下一张",
+    "fullscreen": "全屏",
+    "exitFullscreen": "退出全屏",
+    "player": {
+      "title": "幻灯片播放器",
+      "noImages": "没有可播放的图片",
+      "imageInfo": "图片信息",
+      "currentImage": "当前图片",
+      "totalImages": "共 {total} 张",
+      "imageName": "名称",
+      "imageSize": "大小",
+      "imageDimensions": "尺寸",
+      "controls": {
+        "play": "播放",
+        "pause": "暂停",
+        "stop": "停止",
+        "previous": "上一张",
+        "next": "下一张",
+        "fullscreen": "全屏",
+        "exitFullscreen": "退出全屏",
+        "settings": "设置",
+        "export": "导出幻灯片"
+      }
+    },
+    "settings": {
+      "title": "幻灯片设置",
+      "playback": {
+        "title": "播放设置",
+        "interval": "播放间隔（秒）",
+        "playMode": "播放模式",
+        "playModeSequential": "顺序播放",
+        "playModeRandom": "随机播放",
+        "playModeLoop": "循环播放",
+        "autoPlay": "自动播放",
+        "loop": "循环播放"
+      },
+      "transition": {
+        "title": "过渡效果",
+        "effect": "过渡效果",
+        "effectFade": "淡入淡出",
+        "effectSlide": "滑动",
+        "effectZoom": "缩放",
+        "effectBlur": "模糊",
+        "effectRotate": "旋转",
+        "effectNone": "无",
+        "duration": "过渡持续时间（毫秒）"
+      },
+      "music": {
+        "title": "背景音乐",
+        "enable": "启用背景音乐",
+        "selectFile": "选择音乐文件",
+        "volume": "音量",
+        "noFile": "未选择音乐文件",
+        "fileSelected": "已选择: {fileName}",
+        "supportedFormats": "支持格式: MP3, WAV, OGG, M4A"
+      },
+      "display": {
+        "title": "显示设置",
+        "showImageInfo": "显示图片信息",
+        "fullscreen": "全屏播放"
+      },
+      "save": "保存设置",
+      "cancel": "取消",
+      "reset": "重置为默认值"
+    },
+    "export": {
+      "title": "导出幻灯片",
+      "format": "导出格式",
+      "formatVideo": "视频文件 (MP4)",
+      "formatPDF": "PDF 文件",
+      "formatHTML": "HTML 文件",
+      "fileName": "文件名",
+      "export": "导出",
+      "cancel": "取消",
+      "exporting": "正在导出...",
+      "success": "导出成功",
+      "failed": "导出失败: {error}",
+      "selectFolder": "选择保存位置"
+    }
+  }
+}

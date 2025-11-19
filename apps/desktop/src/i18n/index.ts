@@ -10,6 +10,8 @@ import {
   imageConverterLocales,
   versionInfoLocales,
 } from '../features';
+// 从 packages/ui 导入幻灯片语言包
+import { slideShowLocales } from '@packages/ui/src';
 import { desktopLocales } from './locales';
 
 const resources = {
@@ -21,6 +23,7 @@ const resources = {
       aiAnalysisLocales['zh-CN'],
       imageCompressionLocales['zh-CN'],
       imageConverterLocales['zh-CN'],
+      slideShowLocales['zh-CN'],
       versionInfoLocales['zh-CN']
     ),
   },
@@ -32,6 +35,7 @@ const resources = {
       aiAnalysisLocales['en-US'],
       imageCompressionLocales['en-US'],
       imageConverterLocales['en-US'],
+      slideShowLocales['en-US'],
       versionInfoLocales['en-US']
     ),
   },

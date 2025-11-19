@@ -123,6 +123,22 @@
       "dimensions": "Dimensions",
       "gettingDimensions": "Getting...",
       "tagsExample": "e.g.: landscape, nature, mountain, photography"
+    },
+    "batchDelete": {
+      "button": "Batch Delete",
+      "title": "Batch Delete Images",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "selected": "Selected",
+      "selectedCount": "Selected: {selected} / {total}",
+      "noImages": "No images to delete",
+      "cancel": "Cancel",
+      "deleteSelected": "Delete Selected",
+      "deleting": "Deleting...",
+      "deletingCount": "Deleting {count} images...",
+      "deleteSuccess": "Successfully deleted {count} images",
+      "deleteFailed": "Batch delete failed, please try again",
+      "deleteError": "Delete failed: {error}"
     }
   }
 }

@@ -123,6 +123,22 @@
       "dimensions": "尺寸",
       "gettingDimensions": "获取中...",
       "tagsExample": "例如：风景, 自然, 山水, 摄影"
+    },
+    "batchDelete": {
+      "button": "批量删除",
+      "title": "批量删除图片",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "selected": "已选择",
+      "selectedCount": "已选择: {selected} / {total}",
+      "noImages": "没有图片可删除",
+      "cancel": "取消",
+      "deleteSelected": "删除选中",
+      "deleting": "删除中...",
+      "deletingCount": "正在删除 {count} 张图片...",
+      "deleteSuccess": "成功删除 {count} 张图片",
+      "deleteFailed": "批量删除失败，请重试",
+      "deleteError": "删除失败: {error}"
     }
   }
 }

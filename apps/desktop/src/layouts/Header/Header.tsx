@@ -1,6 +1,7 @@
 import { KeyboardHelpModal, LanguageSwitcher } from '@packages/ui/src';
-import { FileText, HelpCircle, Info, RefreshCw } from 'lucide-react';
+import { FileText, HelpCircle, Info, Play, RefreshCw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { SlideShowPlayer } from '@packages/ui/src';
 import { OperationLogModal, VersionInfoModal } from '../../features';
 
 interface HeaderProps {
@@ -50,6 +51,8 @@ interface HeaderProps {
   onAnalysisComplete: (result: any) => void;
   /** 是否为项目窗口模式（项目窗口显示仓库信息，主页面不显示） */
   isProjectWindow?: boolean;
+  /** 图片列表（用于幻灯片播放） */
+  images?: any[];
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -63,11 +66,13 @@ const Header: React.FC<HeaderProps> = ({
   onLanguageChange,
   onLoadImages,
   isProjectWindow = false,
+  images = [],
 }) => {
   // 模态框状态管理
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [showOperationLog, setShowOperationLog] = useState(false);
+  const [showSlideShow, setShowSlideShow] = useState(false);
 
   const handleOpenKeyboardHelp = () => setShowKeyboardHelp(true);
   const handleCloseKeyboardHelp = () => setShowKeyboardHelp(false);
@@ -167,6 +172,16 @@ const Header: React.FC<HeaderProps> = ({
                 />
               </button>
             )}
+            {/* 幻灯片播放按钮 */}
+            {isProjectWindow && images.length > 0 && (
+              <button
+                onClick={() => setShowSlideShow(true)}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                title={t('slideShow.open')}
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            )}
 
             {/* 键盘帮助 */}
             <button
@@ -215,6 +230,14 @@ const Header: React.FC<HeaderProps> = ({
         t={t}
         isOpen={showVersionInfo}
         onClose={handleCloseVersionInfo}
+      />
+
+      {/* 幻灯片播放器 */}
+      <SlideShowPlayer
+        isOpen={showSlideShow}
+        onClose={() => setShowSlideShow(false)}
+        images={images}
+        t={t}
       />
     </header>
   );

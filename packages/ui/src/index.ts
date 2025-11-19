@@ -52,6 +52,17 @@ export {
   ImageUrlModal,
   ImageEditModal,
 } from './components/image-browser';
+export {
+  SlideShowPlayer,
+  SlideShowSettings,
+  slideShowLocales,
+} from './components/slide-show';
+export type {
+  PlayMode,
+  TransitionEffect,
+  SlideShowConfig,
+  SlideShowPlayerState,
+} from './components/slide-show';
 
 // 语言包导出
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

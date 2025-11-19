@@ -1,0 +1,543 @@
+/* 幻灯片播放器样式 */
+.slide-show-player {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.slide-show-player.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* 图片容器 */
+.slide-show-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 图片包装器 */
+.slide-show-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 当前图片 */
+.slide-show-current-image {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* 下一张图片（预加载） */
+.slide-show-next-image {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+}
+
+/* 过渡效果 */
+.slide-show-transition-fade {
+  transition: opacity var(--transition-duration, 500ms) ease-in-out;
+}
+
+.slide-show-transition-slide-left {
+  transition: transform var(--transition-duration, 500ms) ease-in-out;
+  transform: translateX(0);
+}
+
+.slide-show-transition-slide-right {
+  transition: transform var(--transition-duration, 500ms) ease-in-out;
+  transform: translateX(0);
+}
+
+.slide-show-transition-zoom {
+  transition: transform var(--transition-duration, 500ms) ease-in-out;
+  transform: scale(1);
+}
+
+.slide-show-transition-blur {
+  transition: filter var(--transition-duration, 500ms) ease-in-out;
+  filter: blur(0);
+}
+
+.slide-show-transition-rotate {
+  transition: transform var(--transition-duration, 500ms) ease-in-out;
+  transform: rotate(0deg);
+}
+
+/* 控制栏 */
+.slide-show-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  z-index: 10;
+}
+
+/* 控制按钮组 */
+.slide-show-control-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* 控制按钮 */
+.slide-show-control-button {
+  padding: 0.75rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.slide-show-control-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.slide-show-control-button:active {
+  transform: scale(0.95);
+}
+
+.slide-show-control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 进度条 */
+.slide-show-progress {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.slide-show-progress-bar {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.1s linear;
+}
+
+/* 图片信息面板 */
+.slide-show-image-info-panel {
+  position: absolute;
+  top: 4rem;
+  right: 1rem;
+  width: 320px;
+  max-width: calc(100vw - 2rem);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  overflow: hidden;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-show-image-info-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slide-show-image-info-panel-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slide-show-image-info-close {
+  padding: 0.25rem;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-show-image-info-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.slide-show-image-info-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+}
+
+.slide-show-image-info-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.slide-show-image-info-label {
+  color: rgba(255, 255, 255, 0.7);
+  flex-shrink: 0;
+}
+
+.slide-show-image-info-value {
+  color: white;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+
+/* 顶部按钮组 */
+.slide-show-top-buttons {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+/* 信息按钮 */
+.slide-show-info-button {
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-show-info-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+/* 关闭按钮 */
+.slide-show-close-button {
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-show-close-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+/* 无图片提示 */
+.slide-show-no-images {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: white;
+  gap: 1rem;
+}
+
+.slide-show-no-images-icon {
+  width: 4rem;
+  height: 4rem;
+  opacity: 0.5;
+}
+
+.slide-show-no-images-text {
+  font-size: 1.25rem;
+  opacity: 0.7;
+}
+
+/* 设置模态框 */
+.slide-show-settings-modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.slide-show-settings-content {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.slide-show-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.slide-show-settings-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.slide-show-settings-close {
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.slide-show-settings-close:hover {
+  color: #111827;
+}
+
+.slide-show-settings-section {
+  margin-bottom: 2rem;
+}
+
+.slide-show-settings-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.slide-show-settings-field {
+  margin-bottom: 1rem;
+}
+
+.slide-show-settings-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.slide-show-settings-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+
+.slide-show-settings-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.slide-show-settings-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background-color: white;
+  transition: border-color 0.2s;
+}
+
+.slide-show-settings-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.slide-show-settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.slide-show-settings-checkbox input {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}
+
+.slide-show-settings-checkbox label {
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.slide-show-settings-range {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.slide-show-settings-range-value {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.slide-show-settings-file-input {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.slide-show-settings-file-button {
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.slide-show-settings-file-button:hover {
+  background-color: #2563eb;
+}
+
+.slide-show-settings-file-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+  flex: 1;
+}
+
+.slide-show-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.slide-show-settings-button {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.slide-show-settings-button-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.slide-show-settings-button-primary:hover {
+  background-color: #2563eb;
+}
+
+.slide-show-settings-button-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.slide-show-settings-button-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .slide-show-controls {
+    padding: 1rem;
+  }
+
+  .slide-show-control-buttons {
+    gap: 0.5rem;
+  }
+
+  .slide-show-control-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .slide-show-image-info-panel {
+    width: calc(100vw - 2rem);
+    max-width: 320px;
+    right: 1rem;
+    top: 4rem;
+  }
+
+  .slide-show-image-info-panel-content {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .slide-show-settings-content {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+}

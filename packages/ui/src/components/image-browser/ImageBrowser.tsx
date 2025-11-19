@@ -481,7 +481,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
               }}
             >
               <Trash2 style={{ width: '1rem', height: '1rem' }} />
-              批量删除
+              {translate('image.batchDelete.button')}
             </button>
           )}
 

@@ -11,3 +11,6 @@ export { imageCompressionLocales } from './image-compression/locales';
 export { imageConverterLocales } from './image-converter/locales';
 export { operationLogLocales } from './operation-log/locales';
 export { versionInfoLocales } from './version-info/locales';
+
+// 从 packages/ui 导出幻灯片组件
+export { SlideShowPlayer, slideShowLocales } from '@packages/ui/src';

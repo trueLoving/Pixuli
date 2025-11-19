@@ -8,13 +8,14 @@ import {
   KeyboardHelpModal,
   keyboardManager,
   LanguageSwitcher,
+  SlideShowPlayer,
   Toaster,
 } from '@packages/ui/src';
-import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
+import { HelpCircle, Info, Play, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { Demo, useDemoMode, VersionInfoModal } from './components';
-import { OfflineIndicator, PWAInstallPrompt } from './components/pwa';
+import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
@@ -47,6 +48,7 @@ function App() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [showSlideShow, setShowSlideShow] = useState(false);
 
   // 键盘快捷键分类数据 - 使用 useMemo 优化性能
   const keyboardCategories = useMemo(
@@ -339,6 +341,16 @@ function App() {
                 currentTitle={t('language.current')}
                 showBackdrop={true}
               />
+              {/* 幻灯片播放按钮 */}
+              {images.length > 0 && (
+                <button
+                  onClick={() => setShowSlideShow(true)}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  title={t('slideShow.open')}
+                >
+                  <Play className="w-5 h-5" />
+                </button>
+              )}
               <button
                 onClick={handleOpenVersionInfo}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -486,11 +498,18 @@ function App() {
         t={t}
       />
 
+      {/* 幻灯片播放器 */}
+      <SlideShowPlayer
+        isOpen={showSlideShow}
+        onClose={() => setShowSlideShow(false)}
+        images={images}
+        t={t}
+      />
+
       <Toaster />
 
       {/* PWA 功能组件 */}
       <PWAInstallPrompt />
-      <OfflineIndicator />
     </div>
   );
 }

@@ -166,6 +166,7 @@ export const ProjectPage: React.FC = () => {
           console.log('AI 分析完成:', result);
         }}
         isProjectWindow={true}
+        images={images}
       />
 
       <div className="flex-1 overflow-hidden">

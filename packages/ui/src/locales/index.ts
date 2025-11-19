@@ -12,6 +12,7 @@ import imageBrowserLocales from '../components/image-browser/locales';
 import imageUploadLocales from '../components/image-upload/locales';
 import imageSearchLocales from '../components/image-search/locales';
 import languageSwitcherLocales from '../components/language-switcher/locales';
+import slideShowLocales from '../components/slide-show/locales';
 
 /**
  * 深层合并对象
@@ -59,7 +60,8 @@ export const appLocales = {
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
     imageSearchLocales['zh-CN'],
-    languageSwitcherLocales['zh-CN']
+    languageSwitcherLocales['zh-CN'],
+    slideShowLocales['zh-CN']
   ),
   'en-US': deepMerge(
     {},
@@ -71,7 +73,8 @@ export const appLocales = {
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
     imageSearchLocales['en-US'],
-    languageSwitcherLocales['en-US']
+    languageSwitcherLocales['en-US'],
+    slideShowLocales['en-US']
   ),
 };
 
