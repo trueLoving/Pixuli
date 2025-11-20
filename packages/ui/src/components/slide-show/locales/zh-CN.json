@@ -15,6 +15,7 @@
       "title": "幻灯片播放器",
       "noImages": "没有可播放的图片",
       "imageInfo": "图片信息",
+      "imageList": "图片列表",
       "currentImage": "当前图片",
       "totalImages": "共 {total} 张",
       "imageName": "名称",

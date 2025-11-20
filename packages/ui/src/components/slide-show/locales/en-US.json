@@ -15,6 +15,7 @@
       "title": "Slide Show Player",
       "noImages": "No images to play",
       "imageInfo": "Image Info",
+      "imageList": "Image List",
       "currentImage": "Current Image",
       "totalImages": "{total} images",
       "imageName": "Name",

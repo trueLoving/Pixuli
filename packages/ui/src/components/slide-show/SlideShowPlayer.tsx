@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Download,
   Info,
+  List,
   Maximize,
   Minimize,
   Pause,
@@ -58,6 +59,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showImageInfo, setShowImageInfo] = useState(false);
+  const [showImageList, setShowImageList] = useState(false);
 
   // 播放状态
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -77,6 +79,10 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null
   );
+
+  // 图片列表滚动容器引用
+  const imageListRef = useRef<HTMLDivElement | null>(null);
+  const currentImageItemRef = useRef<HTMLDivElement | null>(null);
 
   // 过滤后的图片列表（根据播放模式）
   const getFilteredImages = useCallback(() => {
@@ -359,8 +365,49 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       setCurrentIndex(0);
       setProgress(0);
       setShowImageInfo(false);
+      setShowImageList(false);
     }
   }, [isOpen, handleStop]);
+
+  // 当当前图片改变时，自动滚动到对应的列表项
+  useEffect(() => {
+    if (showImageList && currentImageItemRef.current && imageListRef.current) {
+      const container = imageListRef.current;
+      const item = currentImageItemRef.current;
+
+      // 计算需要滚动的距离
+      const scrollTop = container.scrollTop;
+      const itemTop = item.offsetTop;
+      const itemHeight = item.offsetHeight;
+      const containerHeight = container.clientHeight;
+
+      // 如果当前项不在可视区域内，则滚动到中心位置
+      if (
+        itemTop < scrollTop ||
+        itemTop + itemHeight > scrollTop + containerHeight
+      ) {
+        container.scrollTo({
+          top: itemTop - containerHeight / 2 + itemHeight / 2,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [currentIndex, showImageList]);
+
+  // 点击列表中的图片切换到该图片
+  const handleImageItemClick = useCallback(
+    (index: number) => {
+      if (index !== currentIndex) {
+        setTransitioning(true);
+        setProgress(0);
+        setTimeout(() => {
+          setCurrentIndex(index);
+          setTransitioning(false);
+        }, config.transitionDuration);
+      }
+    },
+    [currentIndex, config.transitionDuration]
+  );
 
   // 应用过渡效果样式
   const getTransitionClass = (effect: TransitionEffect) => {
@@ -587,6 +634,17 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       >
         {/* 顶部按钮组 */}
         <div className="slide-show-top-buttons">
+          {/* 图片列表按钮 */}
+          <button
+            onClick={() => setShowImageList(!showImageList)}
+            className={`slide-show-info-button ${
+              showImageList ? 'active' : ''
+            }`}
+            title={translate('slideShow.player.imageList')}
+          >
+            <List className="w-5 h-5" />
+          </button>
+
           {/* 图片信息按钮 */}
           <button
             onClick={() => setShowImageInfo(!showImageInfo)}
@@ -605,6 +663,54 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* 图片列表面板 */}
+        {showImageList && (
+          <div className="slide-show-image-list-panel">
+            <div className="slide-show-image-list-panel-header">
+              <div className="slide-show-image-list-title">
+                {translate('slideShow.player.imageList')}
+              </div>
+              <button
+                onClick={() => setShowImageList(false)}
+                className="slide-show-image-list-close"
+                title={translate('slideShow.close')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="slide-show-image-list-content" ref={imageListRef}>
+              {filteredImages.map((image, index) => (
+                <div
+                  key={`${image.url}-${index}`}
+                  ref={index === currentIndex ? currentImageItemRef : null}
+                  className={`slide-show-image-list-item ${
+                    index === currentIndex ? 'active' : ''
+                  }`}
+                  onClick={() => handleImageItemClick(index)}
+                  title={image.name}
+                >
+                  <img
+                    src={image.url}
+                    alt={image.name}
+                    className="slide-show-image-list-thumbnail"
+                    loading="lazy"
+                    onError={e => {
+                      // 如果图片加载失败，显示占位符
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                  <div className="slide-show-image-list-item-overlay">
+                    <span className="slide-show-image-list-item-number">
+                      {index + 1}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 图片信息面板 */}
         {showImageInfo && currentImage && (
@@ -661,7 +767,11 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         )}
 
         {/* 图片容器 */}
-        <div className="slide-show-image-container">
+        <div
+          className={`slide-show-image-container ${
+            showImageList ? 'with-image-list' : ''
+          }`}
+        >
           <div className="slide-show-image-wrapper">
             <img
               src={currentImage.url}
