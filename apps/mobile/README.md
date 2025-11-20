@@ -1,23 +1,74 @@
-# 📱 Pixuli Mobile - 智能图片管理移动应用
+# Pixuli Mobile - 智能图片管理移动应用
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![React Native](https://img.shields.io/badge/React%20Native-0.82.0-blue.svg)](https://reactnative.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)](https://www.typescriptlang.org/)
 
-## 📖 项目简介
+## 📖 项目概述
 
-pixuli Mobile 是 pixuli 智能图片管理生态系统的移动端应用，基于 React Native +
-TypeScript 构建，提供跨平台的图片管理、AI 分析和云端同步功能。
+**Pixuli Mobile** 是 Pixuli Monorepo 中的移动应用部分，基于 React Native +
+TypeScript 构建的跨平台智能图片管理移动应用。
 
 ## ✨ 主要功能
 
+```mermaid
+graph TB
+    A[Pixuli Mobile] --> B[图片管理]
+    A --> C[图片处理]
+    A --> D[云端存储]
+    A --> E[搜索筛选]
+    A --> F[相机集成]
+
+    B --> B1[智能浏览]
+    B --> B2[单张上传]
+    B --> B3[批量删除]
+    B --> B4[全屏预览]
+    B --> B5[元数据编辑]
+    B --> B6[下拉刷新]
+
+    C --> C1[图片压缩]
+    C --> C2[格式转换]
+    C --> C3[尺寸调整]
+    C --> C4[图片裁剪]
+    C --> C5[处理预览]
+
+    D --> D1[GitHub 集成]
+    D --> D2[Gitee 集成]
+    D --> D3[配置管理]
+    D --> D4[版本控制]
+    D --> D5[元数据缓存]
+
+    E --> E1[搜索功能]
+    E --> E2[标签筛选]
+    E --> E3[尺寸筛选]
+    E --> E4[日期筛选]
+    E --> E5[排序功能]
+
+    F --> F1[直接拍照]
+    F --> F2[拍照后编辑]
+    F --> F3[权限管理]
+
+    style A fill:#e3f2fd
+    style B fill:#e8f5e8
+    style C fill:#fff3e0
+    style D fill:#f3e5f5
+    style E fill:#fce4ec
+    style F fill:#e1f5fe
+```
+
+## 🎯 主要功能模块
+
 ### 🖼️ 图片管理
 
-- **智能浏览** - 网格布局展示图片，支持懒加载
-- **拍照上传** - 支持相机拍照和相册选择
-- **批量操作** - 批量上传、删除、重命名
+- **智能浏览** - 2列网格布局展示图片，支持懒加载
+- **单张上传** - 支持相机拍照和相册选择上传
+- **批量删除** - 支持批量删除图片，批量删除确认
 - **格式支持** - JPEG, PNG, WebP, GIF, SVG, BMP
-- **预览功能** - 全屏预览、缩放、旋转
+- **全屏预览** - 支持左右滑动浏览，底部缩略图导航
+- **下拉刷新** - 支持下拉刷新图片列表
+- **元数据查看** - 查看图片名称、尺寸、描述、标签等完整信息
+- **元数据编辑** - 编辑图片名称、描述和标签
+- **删除功能** - 支持单张和批量删除
 
 ### 🔧 图片处理
 
@@ -33,13 +84,38 @@ TypeScript 构建，提供跨平台的图片管理、AI 分析和云端同步功
 - **分享功能** - 支持分享图片链接（先下载到本地再分享，支持超时控制）
 - **复制链接** - 一键复制图片 URL 到剪贴板
 - **快捷操作** - 分享按钮集成到顶部工具栏，与删除按钮同级，操作更便捷
+- **元数据刷新** - 支持刷新单个图片的元数据
+
+### 🔍 搜索和筛选
+
+- **搜索功能** - 按名称、描述、标签搜索图片
+- **标签筛选** - 支持按标签筛选图片
+- **尺寸筛选** - 支持按最小/最大宽度和高度筛选
+- **日期筛选** - 支持按创建时间范围筛选
+- **排序功能** - 支持按日期、名称、大小排序
 
 ### ☁️ 云端同步
 
 - **GitHub 集成** - 使用 GitHub 仓库存储
-- **离线同步** - 支持离线浏览和同步
+- **Gitee 集成** - 支持 Gitee 仓库存储
+- **配置管理** - 支持 GitHub 和 Gitee 配置的导入、导出和清除
+- **配置共存** - GitHub 和 Gitee 配置可共存，互不影响
+- **自动切换** - 清除一个配置时自动切换到另一个配置（如果存在）
 - **版本控制** - 利用 Git 版本管理
-- **团队协作** - 支持多人协作
+- **元数据缓存** - 优化元数据加载，支持缓存机制
+
+### 📷 相机集成
+
+- **直接拍照** - 支持相机直接拍照上传
+- **拍照后编辑** - 拍照后即时编辑（描述、标签）
+- **图片来源选择** - 支持选择拍照或相册
+- **权限管理** - 相机权限自动请求
+
+### 🎨 主题和国际化
+
+- **主题切换** - 支持浅色/深色/自动主题切换
+- **多语言支持** - 支持中文和英文界面
+- **语言切换** - 实时切换界面语言
 
 ## 🛠️ 技术架构
 
@@ -110,23 +186,52 @@ graph TB
 - Xcode (iOS 开发，仅 macOS)
 - CocoaPods (iOS 依赖管理)
 
-### 安装依赖
+### 安装和运行
 
 ```bash
-# 根目录安装项目依赖
-pnpm i
-```
+# 从项目根目录
+cd pixuli
 
-### 运行项目
+# 安装所有依赖
+pnpm install
 
-```bash
-# 运行 Android 版本
+# 进入 mobile 应用目录
+cd apps/mobile
+
+# 开发模式 Android
 pnpm start --android
-# 运行 iOS 版本 (仅 macOS)
+
+# 开发模式 iOS (仅 macOS)
 pnpm start --ios
 ```
 
-## 📁 项目结构
+### 移动应用特性
+
+**核心功能**：
+
+- ✅ **图片管理**：智能浏览、单张上传、批量删除、全屏预览
+- ✅ **图片处理**：压缩、格式转换、尺寸调整、图片裁剪
+- ✅ **云端存储**：GitHub 和 Gitee 双存储支持
+- ✅ **搜索筛选**：按名称、描述、标签搜索，支持多维度筛选
+- ✅ **相机集成**：直接拍照上传，拍照后即时编辑
+- ✅ **主题切换**：支持浅色/深色/自动主题切换
+- ✅ **国际化支持**：中文和英文界面切换
+- ✅ **元数据缓存**：优化元数据加载，支持缓存机制
+
+**优势**：
+
+- ✅ 跨平台支持（iOS 和 Android）
+- ✅ 原生性能体验
+- ✅ 相机直接集成
+- ✅ 离线元数据缓存
+- ✅ 响应式设计
+
+**支持平台**：
+
+- 📱 iOS (需要 macOS 开发环境)
+- 🤖 Android
+
+## 📦 项目结构
 
 ```
 apps/mobile/
@@ -137,7 +242,8 @@ apps/mobile/
 │       ├── index.tsx       # 首页（图片列表）
 │       ├── settings.tsx    # 设置页面
 │       └── settings/       # 设置子页面
-│           └── github.tsx  # GitHub 配置页面
+│           ├── github.tsx  # GitHub 配置页面
+│           └── gitee.tsx   # Gitee 配置页面
 ├── components/             # 可复用组件
 │   ├── ImageBrowser.tsx    # 图片浏览器（全屏预览）
 │   ├── ImageGrid.tsx       # 图片网格组件
@@ -146,14 +252,14 @@ apps/mobile/
 │   ├── ImageEditModal.tsx  # 图片编辑模态框
 │   ├── ImageCropModal.tsx  # 图片裁剪模态框
 │   ├── SearchAndFilter.tsx # 搜索和筛选组件
-│   ├── GitHubConfigModal.tsx  # GitHub 配置模态框
 │   ├── ThemedText.tsx      # 主题文本组件
 │   ├── ThemedView.tsx      # 主题视图组件
 │   └── ui/                 # UI 组件
 │       ├── IconSymbol.tsx  # 图标组件
 │       └── IconSymbol.ios.tsx  # iOS 图标组件
 ├── services/               # 业务服务
-│   └── githubStorageService.ts  # GitHub 存储服务
+│   ├── githubStorageService.ts  # GitHub 存储服务
+│   └── giteeStorageService.ts   # Gitee 存储服务
 ├── stores/                 # 状态管理（Zustand）
 │   └── imageStore.ts       # 图片状态管理
 ├── hooks/                 # 自定义 Hooks
@@ -165,6 +271,7 @@ apps/mobile/
 │   └── toast.ts           # 提示消息工具
 ├── config/                # 配置文件
 │   ├── github.ts          # GitHub 配置
+│   ├── gitee.ts           # Gitee 配置
 │   └── theme.ts           # 主题配置
 ├── constants/             # 常量定义
 │   └── theme.ts           # 主题常量
@@ -175,6 +282,7 @@ apps/mobile/
 ├── assets/                # 静态资源
 │   └── images/            # 图片资源
 ├── android/               # Android 原生代码
+├── ios/                   # iOS 原生代码
 ├── scripts/               # 脚本文件
 │   └── generate-icons.js  # 图标生成脚本
 ├── app.json              # Expo 配置
@@ -184,32 +292,35 @@ apps/mobile/
 └── README.md              # 项目说明
 ```
 
-## 📦 构建发布
+## 🔧 开发指南
 
-### Android 构建
+### 脚本命令
 
-```bash
-pnpm android
-```
+- `pnpm start` - 启动开发服务器
+- `pnpm start --android` - 启动 Android 开发
+- `pnpm start --ios` - 启动 iOS 开发（仅 macOS）
+- `pnpm android` - 构建 Android 应用
+- `pnpm ios` - 构建 iOS 应用（仅 macOS）
 
-### iOS 构建
+### 核心依赖
 
-```bash
-pnpm ios
-```
+- **React Native** - 跨平台移动应用框架
+- **Expo** - React Native 开发工具链
+- **TypeScript** - 类型安全的 JavaScript
+- **Zustand** - 状态管理
+- **React Navigation** - 导航管理
+- **pixuli-ui** - 共享 UI 组件库
 
-## 🤝 贡献指南
+## 🙏 致谢
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+- [React Native](https://reactnative.dev/) - 跨平台移动应用框架
+- [Expo](https://expo.dev/) - React Native 开发工具链
+- [React](https://reactjs.org/) - 用户界面库
+- [TypeScript](https://www.typescriptlang.org/) - 类型安全的 JavaScript
+- [Zustand](https://zustand-demo.pmnd.rs/) - 状态管理
+- [React Navigation](https://reactnavigation.org/) - 导航管理
+- [i18next](https://www.i18next.com/) - 国际化框架
 
 ---
 
-**pixuli Mobile** - 让图片管理更智能，让创作更高效！ 📱✨
+⭐ 如果这个项目对您有帮助，请给我们一个星标！
