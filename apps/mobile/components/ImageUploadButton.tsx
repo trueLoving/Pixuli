@@ -78,44 +78,20 @@ export function ImageUploadButton({
         return;
       }
 
-      // 选择图片
+      // 选择图片（限制只能选择一张）
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
-        allowsMultipleSelection: true,
+        allowsMultipleSelection: false, // 禁用多选
         quality: 1,
       });
 
-      if (!result.canceled && result.assets) {
-        // 如果只有一张图片，显示编辑模态框
-        if (result.assets.length === 1 && result.assets[0].uri) {
-          setPendingImage({
-            uri: result.assets[0].uri,
-            name: result.assets[0].fileName || undefined,
-          });
-          setEditModalVisible(true);
-        } else {
-          // 多张图片直接上传（暂不支持批量编辑）
-          setUploading(true);
-          try {
-            for (const asset of result.assets) {
-              if (asset.uri) {
-                await uploadImage({
-                  uri: asset.uri,
-                  name: asset.fileName || undefined,
-                  description: undefined,
-                  tags: undefined,
-                });
-              }
-            }
-            onUploadComplete?.();
-            Alert.alert(t('common.success'), t('image.uploadSuccess'));
-          } catch (error) {
-            Alert.alert(t('common.error'), t('image.uploadFailed'));
-            console.error('Upload error:', error);
-          } finally {
-            setUploading(false);
-          }
-        }
+      if (!result.canceled && result.assets && result.assets[0]?.uri) {
+        const asset = result.assets[0];
+        setPendingImage({
+          uri: asset.uri,
+          name: asset.fileName || undefined,
+        });
+        setEditModalVisible(true);
       }
     } catch (error) {
       console.error('Image picker error:', error);

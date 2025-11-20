@@ -13,14 +13,6 @@ import { Image } from 'expo-image';
 import { ImageItem } from 'pixuli-ui/src';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
 // 动态加载 legacy API（运行时可用）
 // @ts-ignore
 const FileSystem = require('expo-file-system/legacy');
@@ -40,21 +32,15 @@ const IMAGE_AREA_HEIGHT = SCREEN_HEIGHT - 200; // 减去 header 和 thumbnail �
 
 // 图片状态接口
 interface ImageTransformState {
-  scale: number;
-  translateX: number;
-  translateY: number;
   rotation: number; // 0, 90, 180, 270
 }
 
 // 默认变换状态
 const DEFAULT_TRANSFORM: ImageTransformState = {
-  scale: 1,
-  translateX: 0,
-  translateY: 0,
   rotation: 0,
 };
 
-// 可缩放图片组件
+// 图片组件
 interface ZoomableImageProps {
   image: ImageItem;
   transform: ImageTransformState;
@@ -70,170 +56,30 @@ function ZoomableImage({
   onPress,
   onLongPress,
 }: ZoomableImageProps) {
-  const scale = useSharedValue(transform.scale);
-  const translateX = useSharedValue(transform.translateX);
-  const translateY = useSharedValue(transform.translateY);
-  const savedScale = useSharedValue(1);
-  const savedTranslateX = useSharedValue(0);
-  const savedTranslateY = useSharedValue(0);
-  const lastTapTime = useRef<number>(0);
-  const lastTapX = useSharedValue(0);
-  const lastTapY = useSharedValue(0);
-
-  // 同步外部状态变化
-  useEffect(() => {
-    if (scale.value !== transform.scale) {
-      scale.value = withSpring(transform.scale);
-      savedScale.value = transform.scale;
-    }
-    if (translateX.value !== transform.translateX) {
-      translateX.value = withSpring(transform.translateX);
-      savedTranslateX.value = transform.translateX;
-    }
-    if (translateY.value !== transform.translateY) {
-      translateY.value = withSpring(transform.translateY);
-      savedTranslateY.value = transform.translateY;
-    }
-  }, [
-    transform.scale,
-    transform.translateX,
-    transform.translateY,
-    transform.rotation,
-  ]);
-
   // 应用旋转
   const rotationValue = transform.rotation;
 
-  // 更新外部状态
-  const updateTransform = (updates: Partial<ImageTransformState>) => {
-    onTransformChange(updates);
-  };
-
-  // 双击手势
-  const doubleTapGesture = Gesture.Tap()
-    .numberOfTaps(2)
-    .onEnd(event => {
-      // 双击：放大或缩小
-      if (scale.value > 1.1) {
-        // 如果已放大，则缩小
-        scale.value = withSpring(1);
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-        savedScale.value = 1;
-        savedTranslateX.value = 0;
-        savedTranslateY.value = 0;
-        runOnJS(updateTransform)({ scale: 1, translateX: 0, translateY: 0 });
-      } else {
-        // 如果未放大，则放大到2倍
-        const newScale = 2;
-        scale.value = withSpring(newScale);
-        savedScale.value = newScale;
-        runOnJS(updateTransform)({ scale: newScale });
-      }
-    });
-
-  // 缩放手势
-  const pinchGesture = Gesture.Pinch()
-    .onStart(() => {
-      // 开始缩放时，保存当前状态
-      savedScale.value = scale.value;
-    })
-    .onUpdate(event => {
-      const newScale = savedScale.value * event.scale;
-      // 限制缩放范围在 1-5 倍之间
-      const clampedScale = Math.max(1, Math.min(5, newScale));
-      scale.value = clampedScale;
-    })
-    .onEnd(() => {
-      savedScale.value = scale.value;
-      runOnJS(updateTransform)({ scale: scale.value });
-    });
-
-  // 拖拽手势
-  const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10]) // 需要移动至少10像素才激活
-    .activeOffsetY([-10, 10])
-    .onStart(() => {
-      // 开始拖拽时，保存当前状态
-      savedTranslateX.value = translateX.value;
-      savedTranslateY.value = translateY.value;
-    })
-    .onUpdate(event => {
-      if (scale.value > 1) {
-        // 只有在放大时才允许拖拽
-        const newTranslateX = savedTranslateX.value + event.translationX;
-        const newTranslateY = savedTranslateY.value + event.translationY;
-
-        // 限制拖拽范围（防止图片拖出边界太远）
-        const maxTranslate = SCREEN_WIDTH * 0.5;
-        translateX.value = Math.max(
-          -maxTranslate,
-          Math.min(maxTranslate, newTranslateX)
-        );
-        translateY.value = Math.max(
-          -maxTranslate,
-          Math.min(maxTranslate, newTranslateY)
-        );
-      }
-    })
-    .onEnd(() => {
-      savedTranslateX.value = translateX.value;
-      savedTranslateY.value = translateY.value;
-      runOnJS(updateTransform)({
-        translateX: translateX.value,
-        translateY: translateY.value,
-      });
-    });
-
-  // 单击手势（用于关闭或显示元数据）
-  const singleTapGesture = Gesture.Tap()
-    .numberOfTaps(1)
-    .maxDelay(250) // 如果超过250ms才触发，可能是双击
-    .onEnd(() => {
-      runOnJS(onPress)();
-    });
-
-  // 长按手势
-  const longPressGesture = Gesture.LongPress()
-    .minDuration(500)
-    .onEnd(() => {
-      runOnJS(onLongPress)();
-    });
-
-  // 组合手势：缩放手势和拖拽手势可以同时进行
-  // 单击/双击和长按使用 Race 竞争
-  const composedGesture = Gesture.Simultaneous(
-    Gesture.Simultaneous(pinchGesture, panGesture),
-    Gesture.Exclusive(
-      doubleTapGesture,
-      Gesture.Race(singleTapGesture, longPressGesture)
-    )
-  );
-
-  // 动画样式
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { scale: scale.value },
-        { rotate: `${rotationValue}deg` },
-      ],
-    };
-  });
-
   return (
     <View style={styles.imageContainer}>
-      <GestureDetector gesture={composedGesture}>
-        <Animated.View style={[styles.imageWrapper, animatedStyle]}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        style={styles.imageWrapper}
+      >
+        <View
+          style={{
+            transform: [{ rotate: `${rotationValue}deg` }],
+          }}
+        >
           <Image
             source={{ uri: image.url }}
             style={styles.image}
             contentFit="contain"
             transition={200}
           />
-        </Animated.View>
-      </GestureDetector>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -288,22 +134,6 @@ export function ImageBrowser({
         ...updates,
       },
     }));
-  };
-
-  // 重置图片的变换状态
-  const resetImageTransform = (imageId: string) => {
-    setImageTransforms(prev => {
-      const newTransforms = { ...prev };
-      delete newTransforms[imageId];
-      return newTransforms;
-    });
-  };
-
-  // 旋转图片
-  const rotateImage = (imageId: string) => {
-    const currentTransform = getImageTransform(imageId);
-    const newRotation = (currentTransform.rotation + 90) % 360;
-    updateImageTransform(imageId, { rotation: newRotation });
   };
 
   useEffect(() => {
@@ -666,20 +496,6 @@ export function ImageBrowser({
     await handleRefreshMetadata();
   };
 
-  const handleActionRotate = () => {
-    setShowActionSheet(false);
-    const currentImage = images[currentIndex];
-    if (!currentImage) return;
-    rotateImage(currentImage.id);
-  };
-
-  const handleActionReset = () => {
-    setShowActionSheet(false);
-    const currentImage = images[currentIndex];
-    if (!currentImage) return;
-    resetImageTransform(currentImage.id);
-  };
-
   if (!visible || images.length === 0) {
     return null;
   }
@@ -1018,39 +834,6 @@ export function ImageBrowser({
                     </ThemedText>
                   </TouchableOpacity>
                 )}
-
-                {/* 分隔线 */}
-                <View style={styles.actionSheetDivider} />
-
-                {/* 旋转图片按钮 */}
-                <TouchableOpacity
-                  style={styles.actionSheetButton}
-                  onPress={handleActionRotate}
-                  disabled={saving || deleting || sharing}
-                  activeOpacity={0.7}
-                >
-                  <IconSymbol name="rotate.right" size={24} color="#007AFF" />
-                  <ThemedText style={styles.actionSheetButtonText}>
-                    {t('image.rotate') || '旋转'}
-                  </ThemedText>
-                </TouchableOpacity>
-
-                {/* 重置变换按钮 */}
-                <TouchableOpacity
-                  style={styles.actionSheetButton}
-                  onPress={handleActionReset}
-                  disabled={saving || deleting || sharing}
-                  activeOpacity={0.7}
-                >
-                  <IconSymbol
-                    name="arrow.counterclockwise"
-                    size={24}
-                    color="#007AFF"
-                  />
-                  <ThemedText style={styles.actionSheetButtonText}>
-                    {t('image.resetTransform') || '重置'}
-                  </ThemedText>
-                </TouchableOpacity>
 
                 {/* 分隔线 */}
                 <View style={styles.actionSheetDivider} />
