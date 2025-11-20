@@ -122,6 +122,7 @@ export function ImageUploadButton({
   };
 
   const handleUploadWithMetadata = async (data: {
+    name?: string;
     description?: string;
     tags?: string[];
     width?: number;
@@ -134,7 +135,8 @@ export function ImageUploadButton({
     setUploading(true);
     try {
       let finalUri = pendingImage.uri;
-      let finalName = pendingImage.name;
+      // 优先使用用户重命名的文件名，否则使用原始文件名
+      let finalName = data.name || pendingImage.name;
 
       // 如果有处理选项，先处理图片
       if (data.processOptions) {

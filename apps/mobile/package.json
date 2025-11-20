@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Pixuli - 智能图片管理移动应用",
   "scripts": {
-    "start": "expo start",
+    "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "generate-icons": "node scripts/generate-icons.js"
@@ -28,6 +28,7 @@
     "expo-localization": "^17.0.7",
     "expo-media-library": "^18.2.0",
     "expo-router": "~6.0.14",
+    "expo-screen-orientation": "^9.0.7",
     "expo-secure-store": "~15.0.7",
     "expo-sharing": "^14.0.7",
     "expo-splash-screen": "~31.0.10",

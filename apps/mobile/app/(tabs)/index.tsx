@@ -162,21 +162,6 @@ export default function HomeScreen() {
           </ThemedText>
         </View>
         <View style={styles.headerActions}>
-          {displayImages.length > 0 && (
-            <TouchableOpacity
-              style={[
-                styles.headerActionButton,
-                {
-                  backgroundColor: colors.inputBackground,
-                  borderColor: colors.inputBorder,
-                },
-              ]}
-              onPress={() => setSlideShowVisible(true)}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="play.fill" size={20} color={colors.primary} />
-            </TouchableOpacity>
-          )}
           <TouchableOpacity
             style={[
               styles.sourceButton,
@@ -207,6 +192,22 @@ export default function HomeScreen() {
               color={colors.sectionTitle}
             />
           </TouchableOpacity>
+          {displayImages.length > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.slideShowButton,
+                {
+                  backgroundColor: colors.inputBackground,
+                },
+              ]}
+              onPress={() => setSlideShowVisible(true)}
+              activeOpacity={0.7}
+              accessibilityLabel={t('image.slideShowButton')}
+              accessibilityHint={t('image.slideShowButtonHint')}
+            >
+              <IconSymbol name="play.fill" size={18} color={colors.primary} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -473,6 +474,13 @@ const styles = StyleSheet.create({
   sourceText: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  slideShowButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,

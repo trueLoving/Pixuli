@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Image } from 'expo-image';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { ImageItem } from 'pixuli-ui/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
@@ -64,7 +65,7 @@ export function SlideShowPlayer({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showImageInfo, setShowImageInfo] = useState(config.showImageInfo);
+  const [showImageInfo, setShowImageInfo] = useState(false); // 默认不显示元数据
   const [showControls, setShowControls] = useState(true);
   const [showImageList, setShowImageList] = useState(true); // 默认显示图片列表
 
@@ -228,15 +229,38 @@ export function SlideShowPlayer({
     };
   }, [isPlaying, isPaused, config.interval, playNext, filteredImages.length]);
 
+  // 屏幕方向锁定：打开时锁定为横向，关闭时恢复
+  useEffect(() => {
+    if (visible) {
+      // 锁定为横向
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.LANDSCAPE
+      ).catch(err => console.warn('Failed to lock screen orientation:', err));
+    } else {
+      // 恢复为自动（允许旋转）
+      ScreenOrientation.unlockAsync().catch(err =>
+        console.warn('Failed to unlock screen orientation:', err)
+      );
+      handleStop();
+      setCurrentIndex(initialIndex);
+    }
+
+    // 清理函数：组件卸载时恢复方向
+    return () => {
+      if (visible) {
+        ScreenOrientation.unlockAsync().catch(err =>
+          console.warn('Failed to unlock screen orientation:', err)
+        );
+      }
+    };
+  }, [visible, initialIndex, handleStop]);
+
   // 初始化时如果启用自动播放，则开始播放
   useEffect(() => {
     if (visible && config.autoPlay && filteredImages.length > 0) {
       setIsPlaying(true);
-    } else if (!visible) {
-      handleStop();
-      setCurrentIndex(initialIndex);
     }
-  }, [visible, config.autoPlay, filteredImages.length, initialIndex]);
+  }, [visible, config.autoPlay, filteredImages.length]);
 
   // 切换显示控制栏
   const toggleControls = () => {
@@ -246,6 +270,11 @@ export function SlideShowPlayer({
   // 切换显示图片列表
   const toggleImageList = () => {
     setShowImageList(!showImageList);
+  };
+
+  // 切换显示元数据
+  const toggleMetadata = () => {
+    setShowImageInfo(!showImageInfo);
   };
 
   // 点击列表中的图片
@@ -346,8 +375,8 @@ export function SlideShowPlayer({
 
           {/* 右侧主图片显示区域 */}
           <View style={styles.mainImageArea}>
-            {/* 顶部控制栏 */}
-            <View style={styles.topBar}>
+            {/* 右上角操作按钮 */}
+            <View style={styles.topRightButtons}>
               <TouchableOpacity
                 style={styles.topBarButton}
                 onPress={toggleImageList}
@@ -359,9 +388,17 @@ export function SlideShowPlayer({
                   color={showImageList ? '#007AFF' : '#fff'}
                 />
               </TouchableOpacity>
-              <ThemedText style={styles.imageCounter}>
-                {currentIndex + 1} / {filteredImages.length}
-              </ThemedText>
+              <TouchableOpacity
+                style={styles.topBarButton}
+                onPress={toggleMetadata}
+                activeOpacity={0.7}
+              >
+                <IconSymbol
+                  name="info.circle"
+                  size={24}
+                  color={showImageInfo ? '#007AFF' : '#fff'}
+                />
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.topBarButton}
                 onPress={onClose}
@@ -370,6 +407,95 @@ export function SlideShowPlayer({
                 <IconSymbol name="xmark" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
+
+            {/* 元数据展示面板 */}
+            {showImageInfo && currentImage && (
+              <View style={styles.metadataPanel}>
+                <View style={styles.metadataHeader}>
+                  <ThemedText style={styles.metadataTitle}>
+                    {t('image.metadata')}
+                  </ThemedText>
+                  <TouchableOpacity
+                    style={styles.metadataCloseButton}
+                    onPress={toggleMetadata}
+                    activeOpacity={0.7}
+                  >
+                    <IconSymbol name="xmark" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView
+                  style={styles.metadataContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.metadataItem}>
+                    <ThemedText style={styles.metadataLabel}>
+                      {t('image.imageName')}
+                    </ThemedText>
+                    <ThemedText style={styles.metadataValue}>
+                      {currentImage.name}
+                    </ThemedText>
+                  </View>
+                  {currentImage.description && (
+                    <View style={styles.metadataItem}>
+                      <ThemedText style={styles.metadataLabel}>
+                        {t('image.description')}
+                      </ThemedText>
+                      <ThemedText style={styles.metadataValue}>
+                        {currentImage.description}
+                      </ThemedText>
+                    </View>
+                  )}
+                  <View style={styles.metadataItem}>
+                    <ThemedText style={styles.metadataLabel}>
+                      {t('image.dimensions')}
+                    </ThemedText>
+                    <ThemedText style={styles.metadataValue}>
+                      {currentImage.width} × {currentImage.height}
+                    </ThemedText>
+                  </View>
+                  <View style={styles.metadataItem}>
+                    <ThemedText style={styles.metadataLabel}>
+                      {t('image.fileSize')}
+                    </ThemedText>
+                    <ThemedText style={styles.metadataValue}>
+                      {(currentImage.size / 1024).toFixed(2)} KB
+                    </ThemedText>
+                  </View>
+                  <View style={styles.metadataItem}>
+                    <ThemedText style={styles.metadataLabel}>
+                      {t('image.type')}
+                    </ThemedText>
+                    <ThemedText style={styles.metadataValue}>
+                      {currentImage.type}
+                    </ThemedText>
+                  </View>
+                  {currentImage.tags && currentImage.tags.length > 0 && (
+                    <View style={styles.metadataItem}>
+                      <ThemedText style={styles.metadataLabel}>
+                        {t('image.tags')}
+                      </ThemedText>
+                      <View style={styles.metadataTags}>
+                        {currentImage.tags.map((tag, index) => (
+                          <View key={index} style={styles.metadataTag}>
+                            <ThemedText style={styles.metadataTagText}>
+                              {tag}
+                            </ThemedText>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                  <View style={styles.metadataItem}>
+                    <ThemedText style={styles.metadataLabel}>
+                      {t('image.createdAt')}
+                    </ThemedText>
+                    <ThemedText style={styles.metadataValue}>
+                      {new Date(currentImage.createdAt).toLocaleString()}
+                    </ThemedText>
+                  </View>
+                </ScrollView>
+              </View>
+            )}
 
             {/* 主图片显示 */}
             <TouchableOpacity
@@ -391,6 +517,7 @@ export function SlideShowPlayer({
             {showControls && (
               <View style={styles.bottomControls}>
                 <View style={styles.controlsRow}>
+                  {/* 上一页按钮 */}
                   <TouchableOpacity
                     style={styles.controlButton}
                     onPress={playPrevious}
@@ -402,41 +529,43 @@ export function SlideShowPlayer({
                     </ThemedText>
                   </TouchableOpacity>
 
-                  <View style={styles.playControls}>
-                    {isPlaying && !isPaused ? (
-                      <TouchableOpacity
-                        style={styles.playButton}
-                        onPress={handlePause}
-                        activeOpacity={0.7}
-                      >
-                        <ThemedText style={styles.playButtonText}>
-                          {t('image.slideShowPause') || '暂停'}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.playButton}
-                        onPress={handlePlay}
-                        activeOpacity={0.7}
-                      >
-                        <ThemedText style={styles.playButtonText}>
-                          {t('image.slideShowPlay') || '播放'}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    )}
-                    {isPlaying && (
-                      <TouchableOpacity
-                        style={styles.stopButton}
-                        onPress={handleStop}
-                        activeOpacity={0.7}
-                      >
-                        <ThemedText style={styles.stopButtonText}>
-                          {t('image.slideShowStop') || '停止'}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    )}
-                  </View>
+                  {/* 播放/暂停按钮 */}
+                  {isPlaying && !isPaused ? (
+                    <TouchableOpacity
+                      style={styles.playButton}
+                      onPress={handlePause}
+                      activeOpacity={0.7}
+                    >
+                      <ThemedText style={styles.playButtonText}>
+                        {t('image.slideShowPause') || '暂停'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.playButton}
+                      onPress={handlePlay}
+                      activeOpacity={0.7}
+                    >
+                      <ThemedText style={styles.playButtonText}>
+                        {t('image.slideShowPlay') || '播放'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
 
+                  {/* 停止按钮 */}
+                  {isPlaying && (
+                    <TouchableOpacity
+                      style={styles.stopButton}
+                      onPress={handleStop}
+                      activeOpacity={0.7}
+                    >
+                      <ThemedText style={styles.stopButtonText}>
+                        {t('image.slideShowStop') || '停止'}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )}
+
+                  {/* 下一页按钮 */}
                   <TouchableOpacity
                     style={styles.controlButton}
                     onPress={playNext}
@@ -539,26 +668,97 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
   },
-  topBar: {
+  // 右上角操作按钮
+  topRightButtons: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    paddingTop: 8,
+    paddingRight: 8,
+    paddingBottom: 8,
+    zIndex: 10,
+    gap: 8,
   },
   topBarButton: {
     width: 44,
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 22,
   },
-  imageCounter: {
+  // 元数据面板
+  metadataPanel: {
+    position: 'absolute',
+    top: 60,
+    right: 8,
+    width: 280,
+    maxHeight: '70%',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    zIndex: 10,
+    overflow: 'hidden',
+  },
+  metadataHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  metadataTitle: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  metadataCloseButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  metadataContent: {
+    maxHeight: '60%',
+    padding: 16,
+  },
+  metadataItem: {
+    marginBottom: 16,
+  },
+  metadataLabel: {
+    color: '#999',
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  metadataValue: {
+    color: '#fff',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  metadataTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  metadataTag: {
+    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 122, 255, 0.4)',
+  },
+  metadataTagText: {
+    color: '#007AFF',
+    fontSize: 12,
+    fontWeight: '500',
   },
   imageContainer: {
     flex: 1,
@@ -583,9 +783,10 @@ const styles = StyleSheet.create({
   },
   controlsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
+    flexWrap: 'wrap',
   },
   controlButton: {
     paddingHorizontal: 16,

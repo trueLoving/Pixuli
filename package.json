@@ -3,6 +3,7 @@
   "description": "Pixuli - 智能图片管理应用 Monorepo",
   "private": true,
   "scripts": {
+    "dev:mobile": "pnpm run --filter pixuli-mobile dev",
     "build:wasm": "pnpm run --filter pixuli-wasm build",
     "dev:web": "pnpm run --filter pixuli-web dev",
     "build:web": "pnpm run --filter pixuli-web build",

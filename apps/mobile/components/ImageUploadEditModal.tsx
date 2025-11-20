@@ -31,6 +31,7 @@ interface ImageUploadEditModalProps {
   imageName?: string;
   onClose: () => void;
   onSave: (data: {
+    name?: string;
     description?: string;
     tags?: string[];
     width?: number;
@@ -52,6 +53,7 @@ export function ImageUploadEditModal({
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [fileName, setFileName] = useState('');
   const [dimensions, setDimensions] = useState<{
     width: number;
     height: number;
@@ -99,6 +101,14 @@ export function ImageUploadEditModal({
       setKeepAspectRatio(true);
       setCropArea(null);
       setPreviewResult(null);
+
+      // 初始化文件名（从 imageName 中提取不含扩展名的部分）
+      if (imageName) {
+        const nameWithoutExt = imageName.replace(/\.[^/.]+$/, '');
+        setFileName(nameWithoutExt);
+      } else {
+        setFileName('');
+      }
 
       // 获取图片尺寸和文件大小
       setLoadingDimensions(true);
@@ -268,7 +278,28 @@ export function ImageUploadEditModal({
 
   const handleSave = async () => {
     const processOptions = buildProcessOptions();
+
+    // 构建最终文件名：如果有用户输入的文件名，则使用它；否则使用原始文件名
+    let finalFileName: string | undefined;
+    if (fileName.trim()) {
+      const trimmedFileName = fileName.trim();
+      // 检查用户输入的文件名是否已经包含扩展名
+      const hasExtension = /\.\w+$/.test(trimmedFileName);
+
+      if (hasExtension) {
+        // 如果已经包含扩展名，直接使用
+        finalFileName = trimmedFileName;
+      } else {
+        // 如果没有扩展名，从原始文件名中提取扩展名
+        const originalExt = imageName ? imageName.split('.').pop() : 'jpg';
+        finalFileName = `${trimmedFileName}.${originalExt}`;
+      }
+    } else if (imageName) {
+      finalFileName = imageName;
+    }
+
     await onSave({
+      name: finalFileName,
       description: description.trim() || undefined,
       tags: tags.length > 0 ? tags : undefined,
       width: dimensions?.width,
@@ -341,6 +372,27 @@ export function ImageUploadEditModal({
                   {dimensions.height}
                 </ThemedText>
               ) : null}
+            </View>
+
+            {/* File Name */}
+            <View style={styles.section}>
+              <ThemedText style={styles.label}>
+                {t('image.fileName')}
+              </ThemedText>
+              <TextInput
+                style={styles.fileNameInput}
+                value={fileName}
+                onChangeText={setFileName}
+                placeholder={t('image.fileNamePlaceholder')}
+                placeholderTextColor="#999"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {imageName && (
+                <ThemedText style={styles.fileNameHint}>
+                  {t('image.renameImage')}: {imageName}
+                </ThemedText>
+              )}
             </View>
 
             {/* Description */}
@@ -823,6 +875,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 100,
     backgroundColor: '#f9f9f9',
+  },
+  fileNameInput: {
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  fileNameHint: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   tagInputContainer: {
     flexDirection: 'row',
