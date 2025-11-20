@@ -13,6 +13,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { ImageGrid } from '@/components/ImageGrid';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { ImageBrowser } from '@/components/ImageBrowser';
+import { SlideShowPlayer } from '@/components/SlideShowPlayer';
 import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
@@ -42,6 +43,7 @@ export default function HomeScreen() {
   const [browserVisible, setBrowserVisible] = useState(false);
   const [browserIndex, setBrowserIndex] = useState(0);
   const [sourceSwitchVisible, setSourceSwitchVisible] = useState(false);
+  const [slideShowVisible, setSlideShowVisible] = useState(false);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
@@ -160,6 +162,21 @@ export default function HomeScreen() {
           </ThemedText>
         </View>
         <View style={styles.headerActions}>
+          {displayImages.length > 0 && (
+            <TouchableOpacity
+              style={[
+                styles.headerActionButton,
+                {
+                  backgroundColor: colors.inputBackground,
+                  borderColor: colors.inputBorder,
+                },
+              ]}
+              onPress={() => setSlideShowVisible(true)}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="play.fill" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[
               styles.sourceButton,
@@ -229,6 +246,14 @@ export default function HomeScreen() {
         onClose={() => setBrowserVisible(false)}
         onDelete={handleDeleteImage}
         onRefreshMetadata={refreshImageMetadata}
+      />
+
+      {/* 幻灯片播放器 */}
+      <SlideShowPlayer
+        visible={slideShowVisible}
+        images={displayImages}
+        initialIndex={0}
+        onClose={() => setSlideShowVisible(false)}
       />
 
       {/* 仓库源切换模态框 */}

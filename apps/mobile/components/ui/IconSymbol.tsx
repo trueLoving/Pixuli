@@ -50,6 +50,9 @@ const MAPPING = {
   'chevron.down': 'keyboard-arrow-down',
   ellipsis: 'more-vert',
   'line.3.horizontal': 'more-vert',
+  'play.fill': 'play-arrow',
+  'pause.fill': 'pause',
+  'stop.fill': 'stop',
 } as IconMapping;
 
 /**
