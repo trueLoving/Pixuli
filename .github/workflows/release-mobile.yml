@@ -364,11 +364,13 @@ jobs:
           if-no-files-found: error
 
       - name: Attach to GitHub Release
-        if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
+        if: needs.detect.outputs.release_enabled == 'true' && needs.detect.outputs.is_tag == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ steps.afp.outputs.apk }}
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -418,7 +420,7 @@ jobs:
           path: eas-ios-info.txt
 
       - name: Attach info to GitHub Release
-        if: needs.detect.outputs.release_enabled == 'true' && (needs.detect.outputs.is_tag == 'true' || github.event_name == 'workflow_dispatch')
+        if: needs.detect.outputs.release_enabled == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: |
