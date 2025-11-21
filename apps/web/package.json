@@ -1,6 +1,6 @@
 {
   "name": "pixuli-web",
-  "version": "1.3.0",
+  "version": "1.0.0",
   "description": "Pixuli Web - 智能图片管理 Web 应用",
   "private": true,
   "type": "module",

@@ -1,0 +1,49 @@
+# 依赖
+node_modules
+.pnpm-store
+
+# 构建产物
+dist
+dev-dist
+
+# 开发文件
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 编辑器
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# 测试
+coverage
+.nyc_output
+
+# 其他
+*.md
+!README.md
+.eslintrc*
+.prettierrc*
+tsconfig*.json
+vite.config.ts
+tailwind.config.js
+postcss.config.cjs
+vercel.json
