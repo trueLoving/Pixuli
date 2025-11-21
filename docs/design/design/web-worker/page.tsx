@@ -1,4 +1,4 @@
-import PageLayout from '../../../components/PageLayout';
+import PageLayout from '../../../src/components/PageLayout';
 
 export default function WebWorkerDesignPage() {
   return (

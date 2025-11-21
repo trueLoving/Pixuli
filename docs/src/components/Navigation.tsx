@@ -59,29 +59,10 @@ export default function Navigation() {
             </a>
           </li>
           <li className="nav-item">
-            <a href="/#features" className="nav-link">
-              功能特色
+            <a href="/tutorial" className="nav-link">
+              使用教程
             </a>
           </li>
-          <li className="nav-item">
-            <a href="/#download" className="nav-link">
-              下载
-            </a>
-          </li>
-          <li className="nav-item">
-            <a href="/#about" className="nav-link">
-              关于
-            </a>
-          </li>
-          {/* <li className="nav-item">
-            <a href="/products" className="nav-link">产品矩阵</a>
-          </li>
-          <li className="nav-item">
-            <a href="/tutorial" className="nav-link">使用教程</a>
-          </li>
-          <li className="nav-item">
-            <a href="/keyboard" className="nav-link">键盘功能</a>
-          </li> */}
         </ul>
         <div className="nav-toggle">
           <span className="bar"></span>

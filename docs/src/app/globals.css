@@ -880,9 +880,7 @@ body {
 .footer-bottom {
   border-top: 1px solid #4a5568;
   padding-top: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
 }
 
 .copyright {

@@ -60,9 +60,9 @@ export default function ProductsPage() {
                   <strong>Pixuli Mobile</strong>
                 </td>
                 <td>iOS, Android</td>
-                <td>📋 规划中</td>
+                <td>✅ Android 已发布 | 📋 iOS 开发中</td>
                 <td>移动端应用</td>
-                <td>拍照上传、移动浏览、离线同步</td>
+                <td>拍照上传、移动浏览、离线同步、幻灯片播放</td>
               </tr>
             </tbody>
           </table>
@@ -87,7 +87,7 @@ export default function ProductsPage() {
                 </td>
                 <td>React + TypeScript</td>
                 <td>用户界面</td>
-                <td>18.2.0</td>
+                <td>19.1.0</td>
               </tr>
               <tr>
                 <td>
@@ -117,9 +117,17 @@ export default function ProductsPage() {
                 <td>
                   <strong>存储</strong>
                 </td>
-                <td>GitHub API</td>
+                <td>GitHub API / Gitee API</td>
                 <td>云端存储</td>
                 <td>最新版</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>移动</strong>
+                </td>
+                <td>React Native + Expo</td>
+                <td>跨平台移动应用</td>
+                <td>0.81.5</td>
               </tr>
             </tbody>
           </table>
@@ -325,42 +333,6 @@ export default function ProductsPage() {
 
         <hr />
 
-        <h2>🎯 目标用户</h2>
-
-        <h3>个人用户</h3>
-        <ul>
-          <li>
-            <strong>摄影师</strong> - 专业图片管理和处理
-          </li>
-          <li>
-            <strong>设计师</strong> - 素材整理和批量处理
-          </li>
-          <li>
-            <strong>内容创作者</strong> - 社交媒体图片管理
-          </li>
-          <li>
-            <strong>普通用户</strong> - 个人照片整理
-          </li>
-        </ul>
-
-        <h3>企业用户</h3>
-        <ul>
-          <li>
-            <strong>设计团队</strong> - 协作和版本管理
-          </li>
-          <li>
-            <strong>营销部门</strong> - 素材库管理
-          </li>
-          <li>
-            <strong>电商平台</strong> - 商品图片处理
-          </li>
-          <li>
-            <strong>媒体公司</strong> - 内容资产管理
-          </li>
-        </ul>
-
-        <hr />
-
         <h2>🔗 相关资源</h2>
 
         <h3>下载链接</h3>
@@ -387,104 +359,10 @@ export default function ProductsPage() {
           </li>
         </ul>
 
-        <h3>技术支持</h3>
-        <ul>
-          <li>
-            <a href="https://github.com/trueLoving/Pixuli/issues">问题反馈</a> -
-            GitHub Issues
-          </li>
-          <li>
-            <a href="https://github.com/trueLoving/Pixuli/discussions">
-              功能建议
-            </a>{' '}
-            - 社区讨论
-          </li>
-          <li>
-            <a href="https://github.com/trueLoving/Pixuli/releases">更新日志</a>{' '}
-            - 版本更新
-          </li>
-          <li>
-            <a href="https://github.com/trueLoving/Pixuli/wiki">开发文档</a> -
-            技术文档
-          </li>
-        </ul>
-
-        <hr />
-
-        <h2>📊 统计数据</h2>
-
-        <h3>当前版本</h3>
-        <ul>
-          <li>
-            <strong>版本号</strong>: v1.1.0
-          </li>
-          <li>
-            <strong>下载量</strong>: 10,000+
-          </li>
-          <li>
-            <strong>活跃用户</strong>: 5,000+
-          </li>
-          <li>
-            <strong>GitHub Stars</strong>: 500+
-          </li>
-        </ul>
-
-        <h3>技术指标</h3>
-        <ul>
-          <li>
-            <strong>启动时间</strong>: &lt; 2秒
-          </li>
-          <li>
-            <strong>内存占用</strong>: &lt; 100MB
-          </li>
-          <li>
-            <strong>支持格式</strong>: 15+ 种
-          </li>
-          <li>
-            <strong>处理速度</strong>: 100+ 图片/分钟
-          </li>
-        </ul>
-
-        <hr />
-
-        <h2>🏆 竞争优势</h2>
-
-        <h3>技术优势</h3>
-        <ul>
-          <li>
-            <strong>跨平台</strong> - 支持桌面端和 Web 端
-          </li>
-          <li>
-            <strong>开源透明</strong> - 完全开源，社区驱动
-          </li>
-          <li>
-            <strong>高性能</strong> - Rust + Node.js 混合架构
-          </li>
-          <li>
-            <strong>易用性</strong> - 直观的用户界面
-          </li>
-        </ul>
-
-        <h3>功能优势</h3>
-        <ul>
-          <li>
-            <strong>一体化</strong> - 管理、处理、存储一体化
-          </li>
-          <li>
-            <strong>云端集成</strong> - GitHub 深度集成
-          </li>
-          <li>
-            <strong>批量处理</strong> - 高效的批量操作
-          </li>
-          <li>
-            <strong>隐私安全</strong> - 本地优先，数据安全
-          </li>
-        </ul>
-
         <hr />
 
         <p>
-          <em>最后更新：2025年10月</em>
+          <em>最后更新：2025年11月</em>
         </p>
       </div>
     </PageLayout>

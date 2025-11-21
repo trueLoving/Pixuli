@@ -6,13 +6,15 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://pixuli.app'),
   title: 'Pixuli - 智能图片管理应用',
   description:
-    'Pixuli 是一款现代化的跨平台图片管理桌面应用，提供智能图片分析、自动标签生成、批量处理等功能。',
-  keywords: '图片管理,AI图片分析,桌面应用,Electron,智能标签',
+    'Pixuli 是一款现代化的跨平台图片管理应用，提供桌面端、Web 端和移动端三种使用方式，支持智能图片处理、格式转换、批量操作和云端存储等功能。',
+  keywords:
+    '图片管理,图片处理,桌面应用,Web应用,移动应用,Electron,React,React Native,智能图片',
   openGraph: {
     type: 'website',
     url: 'https://pixuli-docs.vercel.app/',
     title: 'Pixuli - 智能图片管理应用',
-    description: '现代化的跨平台图片管理桌面应用，AI驱动的智能图片分析和管理',
+    description:
+      '现代化的跨平台图片管理应用，提供桌面端、Web 端和移动端三种使用方式，支持智能图片处理、格式转换、批量操作和云端存储等功能',
     images: [
       {
         url: '/images/og-image.png',
@@ -25,7 +27,8 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Pixuli - 智能图片管理应用',
-    description: '现代化的跨平台图片管理桌面应用，AI驱动的智能图片分析和管理',
+    description:
+      '现代化的跨平台图片管理应用，提供桌面端、Web 端和移动端三种使用方式，支持智能图片处理、格式转换、批量操作和云端存储等功能',
     images: ['/images/og-image.png'],
   },
 };
