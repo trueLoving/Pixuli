@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "lucide-react": "^0.263.1",
+    "pptxgenjs": "^4.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.2.3",

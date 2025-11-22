@@ -23,6 +23,7 @@ import {
   SlideShowConfig,
   TransitionEffect,
 } from './types';
+import PptxGenJS from 'pptxgenjs';
 
 interface SlideShowPlayerProps {
   /** 是否打开 */
@@ -60,6 +61,9 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [showImageInfo, setShowImageInfo] = useState(false);
   const [showImageList, setShowImageList] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'html' | 'ppt'>('html');
+  const [isExporting, setIsExporting] = useState(false);
 
   // 播放状态
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -427,12 +431,80 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     }
   };
 
-  // 导出幻灯片
-  const handleExport = useCallback(() => {
-    if (filteredImages.length === 0) return;
+  // 将图片 URL 转换为 base64
+  const imageUrlToBase64 = useCallback(async (url: string): Promise<string> => {
+    try {
+      // 检测是否在 Electron 环境中
+      const isElectron =
+        typeof window !== 'undefined' &&
+        ((window as any).githubAPI || (window as any).giteeAPI);
 
-    // 创建HTML内容
-    const htmlContent = `<!DOCTYPE html>
+      if (isElectron) {
+        // 在 Electron 环境中，使用 IPC 获取图片数据以避免跨域问题
+        try {
+          const isGitee = url.includes('gitee.com');
+          const isGitHub =
+            url.includes('github.com') || url.includes('githubusercontent.com');
+
+          if (isGitee && (window as any).giteeAPI?.giteeGetImageData) {
+            const result = await (window as any).giteeAPI.giteeGetImageData({
+              url,
+            });
+            return result.data;
+          } else if (
+            isGitHub &&
+            (window as any).githubAPI?.githubGetImageData
+          ) {
+            const result = await (window as any).githubAPI.githubGetImageData({
+              url,
+            });
+            return result.data;
+          }
+        } catch (ipcError) {
+          console.warn(
+            'IPC image fetch failed, falling back to fetch:',
+            ipcError
+          );
+          // 如果 IPC 失败，回退到 fetch
+        }
+      }
+
+      // 使用 fetch 获取图片（Web 端或 IPC 失败时的回退方案）
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch image: ${response.status} ${response.statusText}`
+        );
+      }
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Failed to convert image to base64:', error);
+      // 如果转换失败，返回原始 URL（对于 HTML 导出，这会导致图片无法显示，但至少不会崩溃）
+      throw error;
+    }
+  }, []);
+
+  // 导出 HTML 格式
+  const exportHTML = useCallback(
+    async (
+      imagesWithBase64: Array<{
+        base64: string;
+        name: string;
+        size: number;
+        width: number;
+        height: number;
+      }>
+    ) => {
+      const htmlContent = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -516,19 +588,11 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     </div>
   </div>
   <script>
-    const images = ${JSON.stringify(
-      filteredImages.map(img => ({
-        url: img.url,
-        name: img.name,
-        size: img.size,
-        width: img.width,
-        height: img.height,
-      }))
-    )};
+    const images = ${JSON.stringify(imagesWithBase64)};
     let currentIndex = 0;
     let isPlaying = ${config.autoPlay ? 'true' : 'false'};
     let intervalId = null;
-    const interval = ${config.interval};
+    const interval = ${config.interval * 1000};
 
     function updateSlide() {
       const img = document.getElementById('slideImage');
@@ -536,7 +600,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       const counter = document.getElementById('slideCounter');
 
       if (images[currentIndex]) {
-        img.src = images[currentIndex].url;
+        img.src = images[currentIndex].base64;
         info.innerHTML = \`<strong>\${images[currentIndex].name}</strong><br>
           大小: \${(images[currentIndex].size / 1024).toFixed(2)} KB<br>
           尺寸: \${images[currentIndex].width} × \${images[currentIndex].height}\`;
@@ -586,17 +650,172 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 </body>
 </html>`;
 
-    // 创建Blob并下载
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `幻灯片_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [filteredImages, config.autoPlay, config.interval]);
+      // 创建Blob并下载
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `幻灯片_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+    [config.autoPlay, config.interval]
+  );
+
+  // 导出 PPT 格式
+  const exportPPT = useCallback(
+    async (
+      imagesWithBase64: Array<{
+        base64: string;
+        name: string;
+        width: number;
+        height: number;
+      }>
+    ) => {
+      const pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_WIDE';
+
+      for (const image of imagesWithBase64) {
+        const slide = pptx.addSlide();
+
+        // 计算图片尺寸以保持宽高比并适应幻灯片
+        const slideWidth = 10; // 英寸
+        const slideHeight = 7.5; // 英寸
+        const imageAspectRatio = image.width / image.height;
+        const slideAspectRatio = slideWidth / slideHeight;
+
+        let imgWidth = slideWidth;
+        let imgHeight = slideHeight;
+        let x = 0;
+        let y = 0;
+
+        if (imageAspectRatio > slideAspectRatio) {
+          // 图片更宽，以宽度为准
+          imgHeight = slideWidth / imageAspectRatio;
+          y = (slideHeight - imgHeight) / 2;
+        } else {
+          // 图片更高，以高度为准
+          imgWidth = slideHeight * imageAspectRatio;
+          x = (slideWidth - imgWidth) / 2;
+        }
+
+        // pptxgenjs 需要完整的 data URL 格式
+        slide.addImage({
+          data: image.base64,
+          x: x,
+          y: y,
+          w: imgWidth,
+          h: imgHeight,
+        });
+
+        // 添加图片名称作为标题
+        if (image.name) {
+          slide.addText(image.name, {
+            x: 0.5,
+            y: 0.2,
+            w: slideWidth - 1,
+            h: 0.5,
+            fontSize: 18,
+            color: '363636',
+            align: 'center',
+          });
+        }
+      }
+
+      await pptx.writeFile({
+        fileName: `幻灯片_${new Date().toISOString().split('T')[0]}.pptx`,
+      });
+    },
+    []
+  );
+
+  // 导出幻灯片
+  const handleExport = useCallback(async () => {
+    if (filteredImages.length === 0) return;
+
+    setIsExporting(true);
+    try {
+      // 转换所有图片为 base64，允许部分失败
+      const imagesWithBase64 = await Promise.allSettled(
+        filteredImages.map(async img => {
+          try {
+            const base64 = await imageUrlToBase64(img.url);
+            return {
+              base64,
+              name: img.name,
+              size: img.size,
+              width: img.width,
+              height: img.height,
+            };
+          } catch (error) {
+            console.error(
+              `Failed to convert image ${img.name} to base64:`,
+              error
+            );
+            throw error;
+          }
+        })
+      );
+
+      // 过滤出成功转换的图片
+      const successfulImages = imagesWithBase64
+        .filter(
+          (
+            result
+          ): result is PromiseFulfilledResult<{
+            base64: string;
+            name: string;
+            size: number;
+            width: number;
+            height: number;
+          }> => result.status === 'fulfilled'
+        )
+        .map(result => result.value);
+
+      // 检查是否有成功的图片
+      if (successfulImages.length === 0) {
+        throw new Error('所有图片转换失败，无法导出');
+      }
+
+      // 如果有部分失败，提示用户
+      const failedCount = imagesWithBase64.length - successfulImages.length;
+      if (failedCount > 0) {
+        console.warn(
+          `${failedCount} 张图片转换失败，将导出 ${successfulImages.length} 张图片`
+        );
+      }
+
+      if (exportFormat === 'html') {
+        await exportHTML(successfulImages);
+      } else if (exportFormat === 'ppt') {
+        await exportPPT(successfulImages);
+      }
+
+      // 显示成功消息
+      if (failedCount === 0) {
+        // 所有图片都成功，可以显示成功消息（如果需要）
+      } else {
+        alert(
+          `导出完成，但 ${failedCount} 张图片转换失败，已导出 ${successfulImages.length} 张图片`
+        );
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert(translate('slideShow.export.failed', { error: String(error) }));
+    } finally {
+      setIsExporting(false);
+      setShowExportDialog(false);
+    }
+  }, [
+    filteredImages,
+    exportFormat,
+    imageUrlToBase64,
+    exportHTML,
+    exportPPT,
+    translate,
+  ]);
 
   if (!isOpen) return null;
 
@@ -903,9 +1122,10 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
             </button>
 
             <button
-              onClick={handleExport}
+              onClick={() => setShowExportDialog(true)}
               className="slide-show-control-button"
               title={translate('slideShow.player.controls.export')}
+              disabled={isExporting}
             >
               <Download className="w-4 h-4" />
               <span>{translate('slideShow.player.controls.export')}</span>
@@ -923,6 +1143,75 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
           onConfigChange={setConfig}
           t={translate}
         />
+      )}
+
+      {/* 导出对话框 */}
+      {showExportDialog && (
+        <div className="slide-show-export-dialog-overlay">
+          <div className="slide-show-export-dialog">
+            <div className="slide-show-export-dialog-header">
+              <h3>{translate('slideShow.export.title')}</h3>
+              <button
+                onClick={() => setShowExportDialog(false)}
+                className="slide-show-export-dialog-close"
+                disabled={isExporting}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="slide-show-export-dialog-content">
+              <div className="slide-show-export-format-group">
+                <label>{translate('slideShow.export.format')}</label>
+                <div className="slide-show-export-format-options">
+                  <label className="slide-show-export-format-option">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="html"
+                      checked={exportFormat === 'html'}
+                      onChange={e =>
+                        setExportFormat(e.target.value as 'html' | 'ppt')
+                      }
+                      disabled={isExporting}
+                    />
+                    <span>{translate('slideShow.export.formatHTML')}</span>
+                  </label>
+                  <label className="slide-show-export-format-option">
+                    <input
+                      type="radio"
+                      name="exportFormat"
+                      value="ppt"
+                      checked={exportFormat === 'ppt'}
+                      onChange={e =>
+                        setExportFormat(e.target.value as 'html' | 'ppt')
+                      }
+                      disabled={isExporting}
+                    />
+                    <span>{translate('slideShow.export.formatPPT')}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="slide-show-export-dialog-footer">
+              <button
+                onClick={() => setShowExportDialog(false)}
+                className="slide-show-export-dialog-button cancel"
+                disabled={isExporting}
+              >
+                {translate('slideShow.export.cancel')}
+              </button>
+              <button
+                onClick={handleExport}
+                className="slide-show-export-dialog-button primary"
+                disabled={isExporting}
+              >
+                {isExporting
+                  ? translate('slideShow.export.exporting')
+                  : translate('slideShow.export.export')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -80,6 +80,7 @@
       "formatVideo": "Video File (MP4)",
       "formatPDF": "PDF File",
       "formatHTML": "HTML File",
+      "formatPPT": "PowerPoint File (PPTX)",
       "fileName": "File Name",
       "export": "Export",
       "cancel": "Cancel",

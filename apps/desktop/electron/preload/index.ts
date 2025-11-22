@@ -32,6 +32,9 @@ contextBridge.exposeInMainWorld('githubAPI', {
   githubUpdateMetadata: (params: any) =>
     ipcRenderer.invoke('github:updateMetadata', params),
   githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
+  // 获取图片数据（用于解决跨域问题）
+  githubGetImageData: (params: any) =>
+    ipcRenderer.invoke('github:getImageData', params),
 });
 
 // --------- Expose Gitee API to the Renderer process ---------

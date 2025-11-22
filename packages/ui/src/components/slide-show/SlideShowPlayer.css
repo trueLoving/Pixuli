@@ -685,6 +685,188 @@
   background-color: rgba(59, 130, 246, 0.9);
 }
 
+/* 导出对话框 */
+.slide-show-export-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-show-export-dialog {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-show-export-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.slide-show-export-dialog-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.slide-show-export-dialog-close {
+  padding: 0.5rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+}
+
+.slide-show-export-dialog-close:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.slide-show-export-dialog-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slide-show-export-dialog-content {
+  padding: 1.5rem;
+}
+
+.slide-show-export-format-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.slide-show-export-format-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.slide-show-export-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slide-show-export-format-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slide-show-export-format-option:hover:not(:has(input:disabled)) {
+  border-color: #3b82f6;
+  background-color: #f0f9ff;
+}
+
+.slide-show-export-format-option:has(input:checked) {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.slide-show-export-format-option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slide-show-export-format-option input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.slide-show-export-format-option span {
+  font-size: 0.875rem;
+  color: #374151;
+  flex: 1;
+}
+
+.slide-show-export-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.slide-show-export-dialog-button {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.slide-show-export-dialog-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slide-show-export-dialog-button.cancel {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.slide-show-export-dialog-button.cancel:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.slide-show-export-dialog-button.primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.slide-show-export-dialog-button.primary:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .slide-show-image-container.with-image-list {

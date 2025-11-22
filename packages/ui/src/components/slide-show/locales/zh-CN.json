@@ -80,6 +80,7 @@
       "formatVideo": "视频文件 (MP4)",
       "formatPDF": "PDF 文件",
       "formatHTML": "HTML 文件",
+      "formatPPT": "PowerPoint 文件 (PPTX)",
       "fileName": "文件名",
       "export": "导出",
       "cancel": "取消",

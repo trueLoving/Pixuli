@@ -493,4 +493,40 @@ export function registerGithubHandlers() {
       throw error;
     }
   });
+
+  // 获取图片数据（用于在 Electron 中解决跨域问题）
+  ipcMain.handle('github:getImageData', async (event, params: any) => {
+    try {
+      const { url } = params;
+      if (!url) {
+        throw new Error('URL 参数缺失');
+      }
+
+      // 在主进程中获取图片数据，避免跨域问题
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `获取图片失败: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const base64 = buffer.toString('base64');
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+
+      return {
+        data: `data:${contentType};base64,${base64}`,
+        contentType,
+      };
+    } catch (error) {
+      console.error('GitHub get image data failed:', error);
+      throw error;
+    }
+  });
 }
