@@ -13,7 +13,11 @@
   "scripts": {
     "dev": "vite",
     "build:web": "tsc && vite build",
-    "build": "tsc && vite build && electron-builder"
+    "build": "tsc && vite build && electron-builder",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": ["electron", "vite", "react", "typescript", "图片管理"],
   "author": "trueLoving",
