@@ -117,8 +117,13 @@ export class KeyboardShortcutManager {
       if (!this.isEnabled) return;
 
       // 如果焦点在输入框、文本区域或可编辑元素上，跳过快捷键
-      const target = event.target as HTMLElement;
-      if (this.isEditableElement(target)) return;
+      const target = event.target;
+      if (
+        target &&
+        target instanceof HTMLElement &&
+        this.isEditableElement(target)
+      )
+        return;
 
       const key = this.generateKey({
         key: event.key,

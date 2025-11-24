@@ -51,10 +51,11 @@ export function filterImages(
  */
 export function getFilterStats(images: ImageItem[], filters: FilterOptions) {
   const filteredImages = filterImages(images, filters);
-  const hasFilters =
+  const hasFilters = !!(
     filters.searchTerm ||
     filters.selectedTypes.length > 0 ||
-    filters.selectedTags.length > 0;
+    filters.selectedTags.length > 0
+  );
 
   return {
     total: images.length,

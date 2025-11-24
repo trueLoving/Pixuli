@@ -1,4 +1,4 @@
-import PageLayout from '../../../src/components/PageLayout';
+import PageLayout from '../../components/PageLayout';
 
 export default function AIImageAnalysisPage() {
   return (

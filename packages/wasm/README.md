@@ -1,6 +1,6 @@
 # Pixuli WASM
 
-Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。
+Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。包括转换、压缩、分析、编辑处理
 
 ## 功能特性
 
