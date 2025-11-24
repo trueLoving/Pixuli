@@ -17,6 +17,7 @@ export type {
   SortOrder,
   FilterOptions,
 } from './components/image-browser';
+export type { BrowseMode } from './components/browse-mode-switcher';
 export type { ImageSearchProps } from './components/image-search/ImageSearch';
 export type {
   Language,
@@ -63,6 +64,9 @@ export type {
   SlideShowConfig,
   SlideShowPlayerState,
 } from './components/slide-show';
+export { PhotoWall } from './components/photo-wall';
+export { Gallery3D } from './components/gallery-3d';
+export { BrowseModeSwitcher } from './components/browse-mode-switcher';
 
 // 语言包导出
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

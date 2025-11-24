@@ -26,6 +26,8 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
+        '**/server/**',
+        '**docs/**',
         '**/node_modules/**',
         '**/dist/**',
         '**/build/**',

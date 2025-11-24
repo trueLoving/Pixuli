@@ -1,5 +1,8 @@
 import {
+  BrowseMode,
+  BrowseModeSwitcher,
   formatFileSize,
+  Gallery3D,
   getImageDimensionsFromUrl,
   GitHubConfigModal,
   GiteeConfigModal,
@@ -8,10 +11,11 @@ import {
   KeyboardHelpModal,
   keyboardManager,
   LanguageSwitcher,
+  PhotoWall,
   SlideShowPlayer,
   Toaster,
 } from '@packages/ui/src';
-import { HelpCircle, Info, Play, RefreshCw, Settings } from 'lucide-react';
+import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { Demo, useDemoMode, VersionInfoModal } from './components';
@@ -48,7 +52,7 @@ function App() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
-  const [showSlideShow, setShowSlideShow] = useState(false);
+  const [browseMode, setBrowseMode] = useState<BrowseMode>('file');
 
   // 键盘快捷键分类数据 - 使用 useMemo 优化性能
   const keyboardCategories = useMemo(
@@ -333,6 +337,14 @@ function App() {
             </div>
 
             <div className="flex items-center space-x-3">
+              {/* 浏览模式切换器 */}
+              {images.length > 0 && (
+                <BrowseModeSwitcher
+                  currentMode={browseMode}
+                  onModeChange={setBrowseMode}
+                  t={t}
+                />
+              )}
               <LanguageSwitcher
                 currentLanguage={getCurrentLanguage()}
                 availableLanguages={getAvailableLanguages()}
@@ -341,16 +353,6 @@ function App() {
                 currentTitle={t('language.current')}
                 showBackdrop={true}
               />
-              {/* 幻灯片播放按钮 */}
-              {images.length > 0 && (
-                <button
-                  onClick={() => setShowSlideShow(true)}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                  title={t('slideShow.open')}
-                >
-                  <Play className="w-5 h-5" />
-                </button>
-              )}
               <button
                 onClick={handleOpenVersionInfo}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
@@ -449,15 +451,17 @@ function App() {
 
           {/* 图片浏览 */}
           <div className="min-h-0">
-            <ImageBrowser
-              t={t}
-              images={images}
-              onDeleteImage={handleDeleteImage}
-              onDeleteMultipleImages={handleDeleteMultipleImages}
-              onUpdateImage={handleUpdateImage}
-              getImageDimensionsFromUrl={getImageDimensionsFromUrl}
-              formatFileSize={formatFileSize}
-            />
+            {browseMode === 'file' && (
+              <ImageBrowser
+                t={t}
+                images={images}
+                onDeleteImage={handleDeleteImage}
+                onDeleteMultipleImages={handleDeleteMultipleImages}
+                onUpdateImage={handleUpdateImage}
+                getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+                formatFileSize={formatFileSize}
+              />
+            )}
           </div>
         </div>
       </main>
@@ -499,12 +503,32 @@ function App() {
       />
 
       {/* 幻灯片播放器 */}
-      <SlideShowPlayer
-        isOpen={showSlideShow}
-        onClose={() => setShowSlideShow(false)}
-        images={images}
-        t={t}
-      />
+      {browseMode === 'slide' && (
+        <SlideShowPlayer
+          isOpen={true}
+          onClose={() => setBrowseMode('file')}
+          images={images}
+          t={t}
+        />
+      )}
+
+      {/* 照片墙模式 - 全屏 */}
+      {browseMode === 'wall' && (
+        <PhotoWall
+          images={images}
+          t={t}
+          onClose={() => setBrowseMode('file')}
+        />
+      )}
+
+      {/* 3D画廊模式 - 全屏 */}
+      {browseMode === 'gallery3d' && (
+        <Gallery3D
+          images={images}
+          t={t}
+          onClose={() => setBrowseMode('file')}
+        />
+      )}
 
       <Toaster />
 

@@ -1,0 +1,213 @@
+.browse-mode-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.browse-mode-select-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 160px;
+  width: 100%;
+}
+
+.browse-mode-select-button:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.browse-mode-select-button:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.browse-mode-select-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.browse-mode-select-content .browse-mode-icon {
+  transition:
+    transform 0.3s ease,
+    color 0.2s ease;
+}
+
+.browse-mode-select-button:hover .browse-mode-select-content .browse-mode-icon {
+  transform: scale(1.1);
+}
+
+.browse-mode-select-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.browse-mode-chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #6b7280;
+}
+
+.browse-mode-chevron.open {
+  transform: rotate(180deg);
+}
+
+.browse-mode-select-button:hover .browse-mode-chevron {
+  color: #374151;
+}
+
+.browse-mode-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  overflow: hidden;
+  min-width: 100%;
+  width: max-content;
+  white-space: nowrap;
+  animation: dropdownFadeIn 0.2s ease forwards;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.browse-mode-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  min-width: max-content;
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: slideInItem 0.3s ease forwards;
+  position: relative;
+}
+
+@keyframes slideInItem {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.browse-mode-dropdown-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+  transform: translateX(4px);
+}
+
+.browse-mode-dropdown-item:hover .browse-mode-icon {
+  transform: scale(1.15);
+  color: #2563eb;
+}
+
+.browse-mode-dropdown-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+  position: relative;
+}
+
+.browse-mode-dropdown-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #2563eb;
+  border-radius: 0 2px 2px 0;
+  animation: slideInActive 0.3s ease;
+}
+
+@keyframes slideInActive {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 3px;
+    opacity: 1;
+  }
+}
+
+.browse-mode-dropdown-item.active .browse-mode-icon {
+  color: #2563eb;
+  transform: scale(1.1);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.browse-mode-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.browse-mode-dropdown-label {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  transition: color 0.2s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .browse-mode-select-button {
+    min-width: 120px;
+    padding: 6px 10px;
+  }
+
+  .browse-mode-select-label {
+    font-size: 13px;
+  }
+}
