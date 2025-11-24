@@ -51,11 +51,10 @@ export function formatDateTime(
       }
     } else {
       // 只包含日期的格式：YYYY-MM-DD
-      return date.toLocaleDateString(locale, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
   } catch (error) {
     console.warn('Failed to format date:', error);
@@ -116,6 +115,13 @@ export function formatRelativeTime(
 ): string {
   try {
     const date = new Date(dateString);
+
+    // 检查日期是否有效
+    if (isNaN(date.getTime())) {
+      // 如果日期无效，返回当前日期的格式化字符串
+      return formatDate(new Date().toISOString(), locale);
+    }
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSeconds = Math.floor(diffMs / 1000);
@@ -151,6 +157,15 @@ export function formatRelativeTime(
     }
   } catch (error) {
     console.warn('Failed to format relative time:', error);
-    return formatDate(dateString, locale);
+    // 如果出错，尝试返回当前日期，如果还是失败则返回默认格式
+    try {
+      return formatDate(new Date().toISOString(), locale);
+    } catch {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
   }
 }
