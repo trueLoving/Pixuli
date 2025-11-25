@@ -21,6 +21,9 @@
       "imageName": "名称",
       "imageSize": "大小",
       "imageDimensions": "尺寸",
+      "imageUrl": "地址",
+      "copyUrl": "复制地址",
+      "urlCopied": "已复制",
       "controls": {
         "play": "播放",
         "pause": "暂停",

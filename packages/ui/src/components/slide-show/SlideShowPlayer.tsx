@@ -4,6 +4,7 @@ import { slideShowLocales } from './locales';
 import {
   ChevronLeft,
   ChevronRight,
+  Copy,
   Download,
   Info,
   List,
@@ -60,10 +61,12 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showImageInfo, setShowImageInfo] = useState(false);
+  const [isImageInfoClosing, setIsImageInfoClosing] = useState(false);
   const [showImageList, setShowImageList] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [exportFormat, setExportFormat] = useState<'html' | 'ppt'>('html');
   const [isExporting, setIsExporting] = useState(false);
+  const [urlCopied, setUrlCopied] = useState(false);
 
   // 播放状态
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -369,9 +372,52 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       setCurrentIndex(0);
       setProgress(0);
       setShowImageInfo(false);
+      setIsImageInfoClosing(false);
       setShowImageList(false);
+      setUrlCopied(false);
     }
   }, [isOpen, handleStop]);
+
+  // 处理元数据面板关闭（带动画）
+  const handleCloseImageInfo = useCallback(() => {
+    setIsImageInfoClosing(true);
+    setTimeout(() => {
+      setShowImageInfo(false);
+      setIsImageInfoClosing(false);
+    }, 300); // 与 CSS 动画时长一致
+  }, []);
+
+  // 复制 URL
+  const handleCopyUrl = useCallback(async () => {
+    const image = filteredImages[currentIndex];
+    if (!image) return;
+    try {
+      await navigator.clipboard.writeText(image.url);
+      setUrlCopied(true);
+      setTimeout(() => {
+        setUrlCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      // 降级方案：使用传统方法
+      const textArea = document.createElement('textarea');
+      textArea.value = image.url;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setUrlCopied(true);
+        setTimeout(() => {
+          setUrlCopied(false);
+        }, 2000);
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+      }
+      document.body.removeChild(textArea);
+    }
+  }, [filteredImages, currentIndex]);
 
   // 当当前图片改变时，自动滚动到对应的列表项
   useEffect(() => {
@@ -933,13 +979,17 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
         {/* 图片信息面板 */}
         {showImageInfo && currentImage && (
-          <div className="slide-show-image-info-panel">
+          <div
+            className={`slide-show-image-info-panel ${
+              isImageInfoClosing ? 'slide-show-image-info-panel-closing' : ''
+            }`}
+          >
             <div className="slide-show-image-info-panel-header">
               <div className="slide-show-image-info-title">
                 {translate('slideShow.player.imageInfo')}
               </div>
               <button
-                onClick={() => setShowImageInfo(false)}
+                onClick={handleCloseImageInfo}
                 className="slide-show-image-info-close"
                 title={translate('slideShow.close')}
               >
@@ -970,6 +1020,29 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
                 <span className="slide-show-image-info-value">
                   {currentImage.width} × {currentImage.height}
                 </span>
+              </div>
+              <div className="slide-show-image-info-item">
+                <span className="slide-show-image-info-label">
+                  {translate('slideShow.player.imageUrl')}:
+                </span>
+                <div className="slide-show-image-info-url-container">
+                  <span className="slide-show-image-info-url-value">
+                    {currentImage.url}
+                  </span>
+                  <button
+                    onClick={handleCopyUrl}
+                    className="slide-show-image-info-copy-button"
+                    title={translate('slideShow.player.copyUrl')}
+                  >
+                    {urlCopied ? (
+                      <span className="slide-show-image-info-copy-success">
+                        {translate('slideShow.player.urlCopied')}
+                      </span>
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="slide-show-image-info-item">
                 <span className="slide-show-image-info-label">

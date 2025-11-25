@@ -21,6 +21,9 @@
       "imageName": "Name",
       "imageSize": "Size",
       "imageDimensions": "Dimensions",
+      "imageUrl": "URL",
+      "copyUrl": "Copy URL",
+      "urlCopied": "Copied",
       "controls": {
         "play": "Play",
         "pause": "Pause",
