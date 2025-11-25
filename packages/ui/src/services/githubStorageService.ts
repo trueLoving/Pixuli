@@ -1,15 +1,16 @@
-import type {
-  GitHubConfig,
-  ImageItem,
-  ImageUploadData,
-} from '@packages/ui/src';
+import type { ImageItem, ImageUploadData } from '../types/image';
+import type { GitHubConfig } from '../types/github';
+import type { PlatformAdapter } from './giteeStorageService';
+import { DefaultPlatformAdapter } from './giteeStorageService';
 
 export class GitHubStorageService {
   private config: GitHubConfig;
   private baseUrl = 'https://api.github.com';
+  private platformAdapter: PlatformAdapter;
 
-  constructor(config: GitHubConfig) {
+  constructor(config: GitHubConfig, platformAdapter?: PlatformAdapter) {
     this.config = config;
+    this.platformAdapter = platformAdapter || new DefaultPlatformAdapter();
   }
 
   private async makeGitHubRequest(endpoint: string, options: RequestInit = {}) {
@@ -17,7 +18,7 @@ export class GitHubStorageService {
     const headers = {
       Authorization: `token ${this.config.token}`,
       Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'Pixuli-Web',
+      'User-Agent': 'Pixuli',
       ...options.headers,
     };
 
@@ -38,14 +39,14 @@ export class GitHubStorageService {
 
   /**
    * 获取图片尺寸信息
-   * @param file 图片文件
+   * @param file 图片文件（web/desktop）或 URI（mobile）
    * @returns Promise<{ width: number; height: number }> 图片尺寸信息
    */
   async getImageDimensions(
-    file: File
+    file: File | string
   ): Promise<{ width: number; height: number }> {
     try {
-      return await this.getImageInfo(file);
+      return await this.platformAdapter.getImageDimensions(file);
     } catch (error) {
       console.warn(
         'Failed to get image dimensions, using default values:',
@@ -58,18 +59,18 @@ export class GitHubStorageService {
 
   /**
    * 步骤1：上传图片文件到 GitHub
-   * @param file 图片文件
+   * @param file 图片文件（web/desktop）或 URI（mobile）
    * @param fileName 文件名
    * @param description 图片描述
    * @returns Promise<{ sha: string; download_url: string; html_url: string }> GitHub API 响应
    */
   private async uploadImageFile(
-    file: File,
+    file: File | string,
     fileName: string,
     description?: string
   ): Promise<{ sha: string; download_url: string; html_url: string }> {
     // 将文件转换为 base64
-    const base64Content = await this.fileToBase64(file);
+    const base64Content = await this.platformAdapter.fileToBase64(file);
 
     // 构建文件路径
     const filePath = `${this.config.path}/${fileName}`;
@@ -124,14 +125,31 @@ export class GitHubStorageService {
    * @param uploadData 上传数据
    * @returns Promise<ImageItem> 上传后的图片信息
    */
-  async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+  async uploadImage(
+    uploadData:
+      | ImageUploadData
+      | { uri: string; name?: string; description?: string; tags?: string[] }
+  ): Promise<ImageItem> {
     try {
-      const { file, name, description, tags } = uploadData;
-      const fileName = name || file.name;
+      // 兼容 web/desktop 的 File 和 mobile 的 URI
+      const file = 'file' in uploadData ? uploadData.file : uploadData.uri;
+      const name = uploadData.name;
+      const description = uploadData.description;
+      const tags = uploadData.tags;
+
+      // 从 file 或 URI 中提取文件名
+      let fileName: string;
+      if (typeof file === 'string') {
+        fileName = name || file.split('/').pop() || 'image.jpg';
+      } else {
+        fileName = name || file.name;
+      }
 
       // ========== 准备阶段：获取图片尺寸信息 ==========
       // 在上传前获取图片尺寸，作为元数据的一部分
       const imageDimensions = await this.getImageDimensions(file);
+      const fileSize = await this.platformAdapter.getFileSize(file);
+      const mimeType = await this.platformAdapter.getMimeType(file, fileName);
 
       // ========== 步骤1：上传图片文件 ==========
       const uploadResponse = await this.uploadImageFile(
@@ -149,10 +167,10 @@ export class GitHubStorageService {
         name: fileName,
         url: uploadResponse.download_url,
         githubUrl: uploadResponse.html_url,
-        size: file.size,
+        size: fileSize,
         width: imageDimensions.width,
         height: imageDimensions.height,
-        type: file.type,
+        type: mimeType,
         tags: tags || [],
         description: description || '',
         createdAt: new Date().toISOString(),
@@ -527,52 +545,49 @@ export class GitHubStorageService {
     }
   }
 
-  // 辅助方法：文件转 base64
-  private async fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        // 移除 data:image/...;base64, 前缀
-        const base64Content = base64.split(',')[1];
-        resolve(base64Content);
-      };
-      reader.onerror = error => reject(error);
-    });
-  }
+  /**
+   * 异步加载图片元数据并更新图片列表
+   * @param images 图片列表
+   * @param options 加载选项
+   * @param options.forceRefresh 强制刷新，忽略缓存
+   * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
+   */
+  async loadImageMetadata(
+    images: ImageItem[],
+    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+  ): Promise<ImageItem[]> {
+    try {
+      // const { forceRefresh = false } = options || {};
 
-  // 辅助方法：获取图片信息
-  private async getImageInfo(
-    file: File
-  ): Promise<{ width: number; height: number }> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
+      // 批量获取元数据
+      const metadataPromises = images.map(async img => {
+        try {
+          const metadata = await this.getImageMetadata(img.name);
+          if (metadata) {
+            return {
+              ...img,
+              size: metadata.size || img.size || 0,
+              width: metadata.width || img.width || 0,
+              height: metadata.height || img.height || 0,
+              tags: metadata.tags || img.tags || [],
+              description: metadata.description || img.description || '',
+              updatedAt: metadata.updatedAt || img.updatedAt,
+              createdAt: metadata.createdAt || img.createdAt,
+            };
+          }
+          return img;
+        } catch (error) {
+          console.debug(`Failed to load metadata for ${img.name}:`, error);
+          return img;
+        }
+      });
 
-      // 设置超时，避免图片加载时间过长
-      const timeout = setTimeout(() => {
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('获取图片尺寸超时'));
-      }, 10000); // 10秒超时
-
-      img.onload = () => {
-        clearTimeout(timeout);
-        URL.revokeObjectURL(objectUrl);
-        resolve({
-          width: img.naturalWidth || img.width,
-          height: img.naturalHeight || img.height,
-        });
-      };
-
-      img.onerror = () => {
-        clearTimeout(timeout);
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('图片加载失败，无法获取尺寸'));
-      };
-
-      img.src = objectUrl;
-    });
+      return await Promise.all(metadataPromises);
+    } catch (error) {
+      console.error('Load image metadata failed:', error);
+      // 即使加载元数据失败，也返回原始图片列表
+      return images;
+    }
   }
 
   // 辅助方法：判断是否为图片文件

@@ -5,7 +5,7 @@ import {
   LogStatus,
   LogQueryOptions,
   LogStatistics,
-} from '@/services/types/log';
+} from '@/services/types';
 import { create } from 'zustand';
 
 interface LogState {

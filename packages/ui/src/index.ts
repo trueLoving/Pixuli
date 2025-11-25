@@ -10,6 +10,14 @@ export * from './types/image';
 export * from './types/github';
 export * from './types/gitee';
 
+// Services 导出
+export {
+  GiteeStorageService,
+  DefaultPlatformAdapter,
+} from './services/giteeStorageService';
+export type { PlatformAdapter } from './services/giteeStorageService';
+export { GitHubStorageService } from './services/githubStorageService';
+
 // 类型导出
 export type {
   ViewMode,

@@ -19,8 +19,7 @@ import {
   loadGiteeConfig,
   saveGiteeConfig,
 } from '../config/gitee';
-import { GitHubStorageService } from '../services/githubStorage';
-import { GiteeStorageService } from '../services/giteeStorage';
+import { GitHubStorageService, GiteeStorageService } from '@packages/ui/src';
 import { backgroundSyncService } from '../services/backgroundSyncService';
 import { pwaService } from '../services/pwaService';
 

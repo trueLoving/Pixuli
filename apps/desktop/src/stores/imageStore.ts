@@ -8,9 +8,8 @@ import {
   loadGitHubConfig,
   saveGitHubConfig,
 } from '@/config/github';
-import { GiteeStorageService } from '@/services/giteeStorageService';
-import { GitHubStorageService } from '@/services/githubStorageService';
-import { LogActionType, LogStatus } from '@/services/types/log';
+import { GiteeStorageService, GitHubStorageService } from '@packages/ui/src';
+import { LogActionType, LogStatus } from '@/services/types';
 import { useLogStore } from '@/stores/logStore';
 import {
   BatchUploadProgress,
@@ -544,8 +543,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         await storageService.updateImageInfo(
           editData.id,
           metadata.name,
-          metadata,
-          image.name
+          metadata
         );
 
         const duration = Date.now() - startTime;

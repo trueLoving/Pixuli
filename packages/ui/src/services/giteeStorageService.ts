@@ -1,11 +1,180 @@
-import type { GiteeConfig, ImageItem, ImageUploadData } from '@packages/ui/src';
+import type { GiteeConfig } from '../types/gitee';
+import type { ImageItem, ImageUploadData } from '../types/image';
+
+/**
+ * 平台适配接口
+ * 不同平台（web、desktop、mobile）可以实现此接口来适配各自的特殊需求
+ */
+export interface PlatformAdapter {
+  /**
+   * 获取图片尺寸信息
+   * @param file 图片文件（web/desktop）或 URI（mobile）
+   */
+  getImageDimensions(
+    file: File | string
+  ): Promise<{ width: number; height: number }>;
+
+  /**
+   * 将文件转换为 base64
+   * @param file 图片文件（web/desktop）或 URI（mobile）
+   */
+  fileToBase64(file: File | string): Promise<string>;
+
+  /**
+   * 获取文件大小
+   * @param file 图片文件（web/desktop）或 URI（mobile）
+   */
+  getFileSize(file: File | string): Promise<number>;
+
+  /**
+   * 获取 MIME 类型
+   * @param file 图片文件（web/desktop）或 URI（mobile）
+   * @param fileName 文件名
+   */
+  getMimeType(file: File | string, fileName: string): Promise<string>;
+}
+
+/**
+ * 默认平台适配器（用于 web 端）
+ */
+export class DefaultPlatformAdapter implements PlatformAdapter {
+  async getImageDimensions(
+    file: File | string
+  ): Promise<{ width: number; height: number }> {
+    if (typeof file === 'string') {
+      // Mobile 端 URI 处理
+      return new Promise((resolve, _reject) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({
+            width: img.naturalWidth || img.width || 0,
+            height: img.naturalHeight || img.height || 0,
+          });
+        };
+        img.onerror = () => {
+          resolve({ width: 0, height: 0 });
+        };
+        img.src = file;
+      });
+    }
+
+    // Web/Desktop 端 File 处理
+    return new Promise((resolve, _reject) => {
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+        resolve({ width: 0, height: 0 });
+      }, 10000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        resolve({
+          width: img.naturalWidth || img.width,
+          height: img.naturalHeight || img.height,
+        });
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(objectUrl);
+        resolve({ width: 0, height: 0 });
+      };
+
+      img.src = objectUrl;
+    });
+  }
+
+  async fileToBase64(file: File | string): Promise<string> {
+    if (typeof file === 'string') {
+      // Mobile 端 URI 处理
+      try {
+        const response = await fetch(file);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('Failed to convert URI to base64:', error);
+        throw new Error('文件读取失败');
+      }
+    }
+
+    // Web/Desktop 端 File 处理
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result as string;
+        const base64Content = base64.split(',')[1];
+        resolve(base64Content);
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  async getFileSize(file: File | string): Promise<number> {
+    if (typeof file === 'string') {
+      // Mobile 端 URI 处理
+      try {
+        const response = await fetch(file, { method: 'HEAD' });
+        const contentLength = response.headers.get('content-length');
+        if (contentLength) {
+          return parseInt(contentLength, 10);
+        }
+        return 0;
+      } catch {
+        return 0;
+      }
+    }
+
+    // Web/Desktop 端 File 处理
+    return file.size;
+  }
+
+  async getMimeType(file: File | string, fileName: string): Promise<string> {
+    if (typeof file === 'string') {
+      // Mobile 端：从文件名推断
+      return this.getMimeTypeFromFileName(fileName);
+    }
+
+    // Web/Desktop 端：优先使用文件的 type，否则从文件名推断
+    return file.type || this.getMimeTypeFromFileName(fileName);
+  }
+
+  private getMimeTypeFromFileName(fileName: string): string {
+    const extension = fileName
+      .toLowerCase()
+      .substring(fileName.lastIndexOf('.'));
+    const mimeTypes: Record<string, string> = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.bmp': 'image/bmp',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+    };
+    return mimeTypes[extension] || 'image/jpeg';
+  }
+}
 
 export class GiteeStorageService {
   private config: GiteeConfig;
   private baseUrl = 'https://gitee.com/api/v5';
+  private platformAdapter: PlatformAdapter;
 
-  constructor(config: GiteeConfig) {
+  constructor(config: GiteeConfig, platformAdapter?: PlatformAdapter) {
     this.config = config;
+    this.platformAdapter = platformAdapter || new DefaultPlatformAdapter();
   }
 
   /**
@@ -24,21 +193,43 @@ export class GiteeStorageService {
     path: string
   ): string {
     // Gitee raw URL 格式: https://gitee.com/{owner}/{repo}/raw/{branch}/{path}
-    // 注意：path 需要正确编码，但不需要对整个路径进行编码
     const encodedPath = path
       .split('/')
       .map(segment => encodeURIComponent(segment))
       .join('/');
     const rawPath = `/${owner}/${repo}/raw/${encodeURIComponent(branch)}/${encodedPath}`;
 
-    // 使用代理 URL 避免跨域问题
+    // 使用代理 URL 避免跨域问题（仅 web 端）
     // 开发环境：使用 Vite 代理
     // 生产环境：如果配置了代理服务器，可通过环境变量启用
-    const isDev = import.meta.env.DEV;
-    const useProxy = isDev || import.meta.env.VITE_USE_GITEE_PROXY === 'true';
+    // 注意：React Native 环境不支持 import.meta，需要特殊处理
+    if (typeof window !== 'undefined' && !(window as any).ipcRenderer) {
+      // 检测是否为 React Native 环境
+      const isReactNative =
+        typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 
-    if (useProxy) {
-      return `/api/gitee-proxy${rawPath}`;
+      // 仅在非 React Native 的 web 环境中尝试使用代理
+      if (!isReactNative) {
+        // 通过检查 location.hostname 来判断是否为开发环境（localhost）
+        // 或者通过检查全局变量或 localStorage 来获取代理配置
+        const isDev =
+          typeof window !== 'undefined' &&
+          window.location &&
+          (window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1');
+
+        // 检查是否有代理配置（通过全局变量或 localStorage）
+        const hasProxyConfig =
+          (typeof window !== 'undefined' &&
+            typeof localStorage !== 'undefined' &&
+            localStorage.getItem('VITE_USE_GITEE_PROXY') === 'true') ||
+          (typeof window !== 'undefined' &&
+            (window as any).__VITE_USE_GITEE_PROXY__ === true);
+
+        if (isDev || hasProxyConfig) {
+          return `/api/gitee-proxy${rawPath}`;
+        }
+      }
     }
 
     return `https://gitee.com${rawPath}`;
@@ -123,14 +314,14 @@ export class GiteeStorageService {
 
   /**
    * 获取图片尺寸信息
-   * @param file 图片文件
+   * @param file 图片文件（web/desktop）或 URI（mobile）
    * @returns Promise<{ width: number; height: number }> 图片尺寸信息
    */
   async getImageDimensions(
-    file: File
+    file: File | string
   ): Promise<{ width: number; height: number }> {
     try {
-      return await this.getImageInfo(file);
+      return await this.platformAdapter.getImageDimensions(file);
     } catch (error) {
       console.warn(
         'Failed to get image dimensions, using default values:',
@@ -143,18 +334,18 @@ export class GiteeStorageService {
 
   /**
    * 步骤1：上传图片文件到 Gitee
-   * @param file 图片文件
+   * @param file 图片文件（web/desktop）或 URI（mobile）
    * @param fileName 文件名
    * @param description 图片描述
    * @returns Promise<{ sha: string; downloadUrl: string; htmlUrl: string }> Gitee API 响应
    */
   private async uploadImageFile(
-    file: File,
+    file: File | string,
     fileName: string,
     description?: string
   ): Promise<{ sha: string; downloadUrl: string; htmlUrl: string }> {
     // 将文件转换为 base64
-    const base64Content = await this.fileToBase64(file);
+    const base64Content = await this.platformAdapter.fileToBase64(file);
 
     // 构建文件路径
     const filePath = `${this.config.path}/${fileName}`;
@@ -226,14 +417,31 @@ export class GiteeStorageService {
    * @param uploadData 上传数据
    * @returns Promise<ImageItem> 上传后的图片信息
    */
-  async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+  async uploadImage(
+    uploadData:
+      | ImageUploadData
+      | { uri: string; name?: string; description?: string; tags?: string[] }
+  ): Promise<ImageItem> {
     try {
-      const { file, name, description, tags } = uploadData;
-      const fileName = name || file.name;
+      // 兼容 web/desktop 的 File 和 mobile 的 URI
+      const file = 'file' in uploadData ? uploadData.file : uploadData.uri;
+      const name = uploadData.name;
+      const description = uploadData.description;
+      const tags = uploadData.tags;
+
+      // 从 file 或 URI 中提取文件名
+      let fileName: string;
+      if (typeof file === 'string') {
+        fileName = name || file.split('/').pop() || 'image.jpg';
+      } else {
+        fileName = name || file.name;
+      }
 
       // ========== 准备阶段：获取图片尺寸信息 ==========
       // 在上传前获取图片尺寸，作为元数据的一部分
       const imageDimensions = await this.getImageDimensions(file);
+      const fileSize = await this.platformAdapter.getFileSize(file);
+      const mimeType = await this.platformAdapter.getMimeType(file, fileName);
 
       // ========== 步骤1：上传图片文件 ==========
       const uploadResponse = await this.uploadImageFile(
@@ -251,10 +459,10 @@ export class GiteeStorageService {
         name: fileName,
         url: uploadResponse.downloadUrl,
         githubUrl: uploadResponse.htmlUrl,
-        size: file.size,
+        size: fileSize,
         width: imageDimensions.width,
         height: imageDimensions.height,
-        type: file.type,
+        type: mimeType,
         tags: tags || [],
         description: description || '',
         createdAt: new Date().toISOString(),
@@ -652,52 +860,81 @@ export class GiteeStorageService {
     return `${nameWithoutExt}.metadata${extension}.json`;
   }
 
-  // 辅助方法：文件转 base64
-  private async fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        // 移除 data:image/...;base64, 前缀
-        const base64Content = base64.split(',')[1];
-        resolve(base64Content);
-      };
-      reader.onerror = error => reject(error);
-    });
+  /**
+   * 获取图片元数据
+   */
+  private async getImageMetadata(fileName: string): Promise<any | null> {
+    try {
+      const metadataFileName = this.getMetadataFileName(fileName);
+      // 使用 Gitee raw URL 直接获取文件内容
+      const metadataUrl = this.getRawUrl(
+        this.config.owner,
+        this.config.repo,
+        this.config.branch,
+        `${this.config.path}/.metadata/${metadataFileName}`
+      );
+
+      const response = await fetch(metadataUrl);
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.status}`);
+      }
+
+      const metadataContent = await response.json();
+      return metadataContent;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      return null;
+    }
   }
 
-  // 辅助方法：获取图片信息
-  private async getImageInfo(
-    file: File
-  ): Promise<{ width: number; height: number }> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
+  /**
+   * 异步加载图片元数据并更新图片列表
+   * @param images 图片列表
+   * @param options 加载选项
+   * @param options.forceRefresh 强制刷新，忽略缓存
+   * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
+   */
+  async loadImageMetadata(
+    images: ImageItem[],
+    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+  ): Promise<ImageItem[]> {
+    try {
+      // 批量获取元数据
+      const metadataPromises = images.map(async img => {
+        try {
+          const metadata = await this.getImageMetadata(img.name);
+          if (metadata) {
+            return {
+              ...img,
+              size: metadata.size || img.size || 0,
+              width: metadata.width || img.width || 0,
+              height: metadata.height || img.height || 0,
+              tags: metadata.tags || img.tags || [],
+              description: metadata.description || img.description || '',
+              updatedAt: metadata.updatedAt || img.updatedAt,
+              createdAt: metadata.createdAt || img.createdAt,
+            };
+          }
+          return img;
+        } catch (error) {
+          console.debug(`Failed to load metadata for ${img.name}:`, error);
+          return img;
+        }
+      });
 
-      // 设置超时，避免图片加载时间过长
-      const timeout = setTimeout(() => {
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('获取图片尺寸超时'));
-      }, 10000); // 10秒超时
-
-      img.onload = () => {
-        clearTimeout(timeout);
-        URL.revokeObjectURL(objectUrl);
-        resolve({
-          width: img.naturalWidth || img.width,
-          height: img.naturalHeight || img.height,
-        });
-      };
-
-      img.onerror = () => {
-        clearTimeout(timeout);
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('图片加载失败，无法获取尺寸'));
-      };
-
-      img.src = objectUrl;
-    });
+      return await Promise.all(metadataPromises);
+    } catch (error) {
+      console.error('Load image metadata failed:', error);
+      // 即使加载元数据失败，也返回原始图片列表
+      return images;
+    }
   }
 
   // 辅助方法：判断是否为图片文件
