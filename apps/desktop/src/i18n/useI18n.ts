@@ -1,4 +1,4 @@
-import { updateAllToasts } from '@packages/ui/src';
+import { updateAllToasts } from '@packages/common/src';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 

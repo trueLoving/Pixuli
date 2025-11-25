@@ -1,7 +1,7 @@
-import { KeyboardHelpModal, LanguageSwitcher } from '@packages/ui/src';
+import { KeyboardHelpModal, LanguageSwitcher } from '@packages/common/src';
 import { FileText, HelpCircle, Info, Play, RefreshCw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { SlideShowPlayer } from '@packages/ui/src';
+import { SlideShowPlayer } from '@packages/common/src';
 import { OperationLogModal, VersionInfoModal } from '../../features';
 
 interface HeaderProps {

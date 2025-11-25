@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 // 导入packages/ui的语言包
-import { deepMerge, enUS, zhCN } from '@packages/ui/src';
+import { deepMerge, enUS, zhCN } from '@packages/common/src';
 // 导入桌面端功能模块语言包
 import {
   aiAnalysisLocales,
@@ -11,7 +11,7 @@ import {
   versionInfoLocales,
 } from '../features';
 // 从 packages/ui 导入幻灯片语言包
-import { slideShowLocales } from '@packages/ui/src';
+import { slideShowLocales } from '@packages/common/src';
 import { desktopLocales } from './locales';
 
 const resources = {

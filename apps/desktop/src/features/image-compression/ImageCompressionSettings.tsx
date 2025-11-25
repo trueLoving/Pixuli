@@ -3,7 +3,7 @@ import {
   formatFileSize,
   getAutoCompressionOptions,
 } from '@/services/imageCompressService';
-import { defaultTranslate } from '@packages/ui/src';
+import { defaultTranslate } from '@packages/common/src';
 import { FileImage, HardDrive, Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 import zhCN from './locales/zh-CN.json';

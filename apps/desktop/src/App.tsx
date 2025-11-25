@@ -2,7 +2,7 @@ import {
   COMMON_SHORTCUTS,
   keyboardManager,
   SHORTCUT_CATEGORIES,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { useEffect, useState } from 'react';
 import './App.css';
 import { useI18n } from './i18n/useI18n';

@@ -1,4 +1,4 @@
-import type { GiteeConfig } from '@packages/ui/src';
+import type { GiteeConfig } from '@packages/common/src';
 
 // 默认 Gitee 配置
 export const DEFAULT_GITEE_CONFIG: Partial<GiteeConfig> = {

@@ -1,5 +1,5 @@
 // TODO: 只对图片的信息进行分析（标签和描述），不进行额外的操作
-import { Toaster } from '@packages/ui/src';
+import { Toaster } from '@packages/common/src';
 import React, { useEffect, useState } from 'react';
 import { AIAnalysisModal } from '../../features';
 import { useI18n } from '../../i18n/useI18n';

@@ -3,7 +3,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
 // 导入packages/ui的语言包
-import { enUS, zhCN, deepMerge } from '@packages/ui/src';
+import { enUS, zhCN, deepMerge } from '@packages/common/src';
 // 导入web端组件的语言包
 import { demoLocales, versionInfoLocales, pwaLocales } from '../components';
 

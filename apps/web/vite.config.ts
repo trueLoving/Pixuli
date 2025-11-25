@@ -211,9 +211,9 @@ export default defineConfig({
           if (id.includes('octokit')) {
             return 'github';
           }
-          // Pixuli UI共享组件 - 单独分包
-          if (id.includes('pixuli-ui')) {
-            return 'ui';
+          // Pixuli Common 共享库 - 单独分包
+          if (id.includes('pixuli-common')) {
+            return 'common';
           }
           // 其他第三方库 - 统一分包
           if (id.includes('node_modules')) {
