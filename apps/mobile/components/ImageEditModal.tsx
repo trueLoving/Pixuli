@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { ImageItem, ImageEditData } from 'pixuli-ui/src';
+import { ImageItem, ImageEditData } from 'pixuli-common/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';

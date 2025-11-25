@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-common/src';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 // 动态加载 legacy API（运行时可用）

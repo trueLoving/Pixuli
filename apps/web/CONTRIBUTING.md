@@ -130,7 +130,7 @@ apps/web/
 - **Octokit** - GitHub API 客户端
 - **React Hot Toast** - 通知组件
 - **i18next** - 国际化框架
-- **@packages/ui** - 共享 UI 组件库
+- **pixulicommon** - 三端共享模块
 
 ## 📝 代码规范
 

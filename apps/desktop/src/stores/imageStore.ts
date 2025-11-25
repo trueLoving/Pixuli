@@ -8,7 +8,10 @@ import {
   loadGitHubConfig,
   saveGitHubConfig,
 } from '@/config/github';
-import { GiteeStorageService, GitHubStorageService } from '@packages/ui/src';
+import {
+  GiteeStorageService,
+  GitHubStorageService,
+} from '@packages/common/src';
 import { LogActionType, LogStatus } from '@/services/types';
 import { useLogStore } from '@/stores/logStore';
 import {
@@ -20,7 +23,7 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { create } from 'zustand';
 
 interface ImageState {

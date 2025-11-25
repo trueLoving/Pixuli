@@ -7,7 +7,7 @@ import type {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { create } from 'zustand';
 import {
   clearGitHubConfig,
@@ -19,7 +19,10 @@ import {
   loadGiteeConfig,
   saveGiteeConfig,
 } from '../config/gitee';
-import { GitHubStorageService, GiteeStorageService } from '@packages/ui/src';
+import {
+  GitHubStorageService,
+  GiteeStorageService,
+} from '@packages/common/src';
 import { backgroundSyncService } from '../services/backgroundSyncService';
 import { pwaService } from '../services/pwaService';
 

@@ -7,7 +7,7 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-} from 'pixuli-ui/src';
+} from 'pixuli-common/src';
 import { create } from 'zustand';
 import { GitHubStorageService } from '../services/githubStorageService';
 import { GiteeStorageService } from '../services/giteeStorageService';

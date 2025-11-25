@@ -1,4 +1,4 @@
-import { ImageItem, GitHubConfig, ImageUploadData } from 'pixuli-ui/src';
+import { ImageItem, GitHubConfig, ImageUploadData } from 'pixuli-common/src';
 import { Octokit } from 'octokit';
 import { getImageInfoFromUri } from '../utils/imageUtils';
 import { MetadataCache } from '../utils/metadataCache';

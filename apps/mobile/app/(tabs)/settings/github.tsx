@@ -21,7 +21,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { GitHubConfig } from 'pixuli-ui/src';
+import { GitHubConfig } from 'pixuli-common/src';
 import { showSuccess, showError } from '@/utils/toast';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';

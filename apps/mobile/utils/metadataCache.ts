@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-common/src';
 
 const METADATA_CACHE_KEY_PREFIX = 'pixuli-metadata-cache';
 const METADATA_CACHE_VERSION = '1.0';

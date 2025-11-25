@@ -11,7 +11,7 @@ import {
   showInfo,
   showSuccess,
   useEscapeKey,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { Upload, X, Zap } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import './ImageCompression.css';

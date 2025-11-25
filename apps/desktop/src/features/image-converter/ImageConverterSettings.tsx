@@ -1,5 +1,5 @@
 import { ImageConvertService } from '@/services/imageConvertService';
-import { defaultTranslate } from '@packages/ui/src';
+import { defaultTranslate } from '@packages/common/src';
 import { Info, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
 import zhCN from './locales/zh-CN.json';

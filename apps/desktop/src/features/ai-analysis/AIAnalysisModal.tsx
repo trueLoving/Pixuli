@@ -1,4 +1,4 @@
-import { defaultTranslate, useEscapeKey } from '@packages/ui/src';
+import { defaultTranslate, useEscapeKey } from '@packages/common/src';
 import { FolderOpen, Loader2, Play, Upload, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import './AIAnalysisModal.css';

@@ -1,4 +1,4 @@
-import { ImageItem, GiteeConfig } from 'pixuli-ui/src';
+import { ImageItem, GiteeConfig } from 'pixuli-common/src';
 import { getImageInfoFromUri } from '../utils/imageUtils';
 import { MetadataCache } from '../utils/metadataCache';
 

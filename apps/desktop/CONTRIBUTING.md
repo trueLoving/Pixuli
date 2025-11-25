@@ -199,7 +199,7 @@ graph TB
 - **Zustand** - 状态管理
 - **pixuli-wasm** - 核心 WASM 模块（图片处理引擎）
 - **i18next** - 国际化框架
-- **@packages/ui** - 共享 UI 组件库
+- **pixuli-common** - 三端共享模块
 
 ## 📝 代码规范
 

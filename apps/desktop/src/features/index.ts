@@ -13,4 +13,4 @@ export { operationLogLocales } from './operation-log/locales';
 export { versionInfoLocales } from './version-info/locales';
 
 // 从 packages/ui 导出幻灯片组件
-export { SlideShowPlayer, slideShowLocales } from '@packages/ui/src';
+export { SlideShowPlayer, slideShowLocales } from '@packages/common/src';

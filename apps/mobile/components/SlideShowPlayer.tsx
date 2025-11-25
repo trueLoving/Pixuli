@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-common/src';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';

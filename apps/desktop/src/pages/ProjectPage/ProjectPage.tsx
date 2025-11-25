@@ -1,4 +1,4 @@
-import { Toaster } from '@packages/ui/src';
+import { Toaster } from '@packages/common/src';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/useI18n';
 import Header from '../../layouts/Header/Header';

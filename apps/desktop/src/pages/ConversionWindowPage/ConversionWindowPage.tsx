@@ -1,5 +1,5 @@
 // TODO: 只转换图片的类型，不对图片的大小进行处理
-import { Toaster } from '@packages/ui/src';
+import { Toaster } from '@packages/common/src';
 import React, { useEffect, useState } from 'react';
 import { ImageConverter } from '../../features';
 import { useI18n } from '../../i18n/useI18n';

@@ -6,7 +6,7 @@ import {
   View,
   RefreshControl,
 } from 'react-native';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-common/src';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 

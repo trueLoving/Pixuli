@@ -5,7 +5,7 @@ import {
   showInfo,
   showSuccess,
   useEscapeKey,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { FileImage, RefreshCw, Upload, X } from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import './ImageConverter.css';

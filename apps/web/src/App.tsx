@@ -14,7 +14,7 @@ import {
   PhotoWall,
   SlideShowPlayer,
   Toaster,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';

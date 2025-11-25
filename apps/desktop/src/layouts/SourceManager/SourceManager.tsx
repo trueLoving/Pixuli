@@ -1,4 +1,4 @@
-import { GiteeConfigModal, GitHubConfigModal } from '@packages/ui/src';
+import { GiteeConfigModal, GitHubConfigModal } from '@packages/common/src';
 import {
   ChevronUp,
   ChevronDown,

@@ -1,4 +1,4 @@
-import { GiteeConfig } from '@packages/ui/src';
+import { GiteeConfig } from '@packages/common/src';
 
 const GITEE_CONFIG_KEY = 'pixuli-gitee-config';
 

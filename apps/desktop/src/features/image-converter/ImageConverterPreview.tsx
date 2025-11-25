@@ -1,4 +1,4 @@
-import { defaultTranslate } from '@packages/ui/src';
+import { defaultTranslate } from '@packages/common/src';
 import {
   Clock,
   Download,

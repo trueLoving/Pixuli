@@ -1,4 +1,4 @@
-import { GitHubConfig } from '@packages/ui/src';
+import { GitHubConfig } from '@packages/common/src';
 
 const GITHUB_CONFIG_KEY = 'pixuli-github-config';
 

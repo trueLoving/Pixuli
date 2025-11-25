@@ -17,7 +17,7 @@ import { SlideShowPlayer } from '@/components/SlideShowPlayer';
 import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
-import { ImageItem } from 'pixuli-ui/src';
+import { ImageItem } from 'pixuli-common/src';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';

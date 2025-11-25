@@ -7,7 +7,7 @@ import {
   ImageUpload,
   ImageUploadData,
   MultiImageUploadData,
-} from '@packages/ui/src';
+} from '@packages/common/src';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
 

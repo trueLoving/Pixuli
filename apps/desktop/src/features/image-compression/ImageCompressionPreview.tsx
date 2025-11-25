@@ -2,7 +2,7 @@ import {
   CompressionResult,
   formatFileSize,
 } from '@/services/imageCompressService';
-import { defaultTranslate } from '@packages/ui/src';
+import { defaultTranslate } from '@packages/common/src';
 import {
   AlertCircle,
   CheckCircle,
