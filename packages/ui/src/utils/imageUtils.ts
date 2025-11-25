@@ -255,6 +255,22 @@ export function revokeImagePreviewUrl(url: string): void {
 }
 
 /**
+ * 将代理 URL 转换为真实的 Gitee URL
+ * 用于在界面上显示可访问的真实 URL
+ * @param url 可能是代理 URL 或真实 URL
+ * @returns 真实的 Gitee URL
+ */
+export function getRealGiteeUrl(url: string): string {
+  // 检查是否是代理 URL
+  if (url.startsWith('/api/gitee-proxy/')) {
+    // 移除代理前缀，添加 Gitee 域名
+    return `https://gitee.com${url.replace('/api/gitee-proxy', '')}`;
+  }
+  // 如果已经是真实 URL 或其他格式，直接返回
+  return url;
+}
+
+/**
  * 压缩图片文件
  * @param file 原始图片文件
  * @param options 压缩选项

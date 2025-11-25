@@ -1,6 +1,7 @@
 import { ImageItem } from '../../types/image';
 import { defaultTranslate } from '../../locales';
 import { slideShowLocales } from './locales';
+import { getRealGiteeUrl } from '../../utils/imageUtils';
 import {
   ChevronLeft,
   ChevronRight,
@@ -387,12 +388,14 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
     }, 300); // 与 CSS 动画时长一致
   }, []);
 
-  // 复制 URL
+  // 复制 URL（使用真实 URL）
   const handleCopyUrl = useCallback(async () => {
     const image = filteredImages[currentIndex];
     if (!image) return;
+    // 获取真实 URL（如果是代理 URL，则转换为真实 URL）
+    const realUrl = getRealGiteeUrl(image.url);
     try {
-      await navigator.clipboard.writeText(image.url);
+      await navigator.clipboard.writeText(realUrl);
       setUrlCopied(true);
       setTimeout(() => {
         setUrlCopied(false);
@@ -401,7 +404,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       console.error('Failed to copy URL:', error);
       // 降级方案：使用传统方法
       const textArea = document.createElement('textarea');
-      textArea.value = image.url;
+      textArea.value = realUrl;
       textArea.style.position = 'fixed';
       textArea.style.opacity = '0';
       document.body.appendChild(textArea);
@@ -1027,7 +1030,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
                 </span>
                 <div className="slide-show-image-info-url-container">
                   <span className="slide-show-image-info-url-value">
-                    {currentImage.url}
+                    {getRealGiteeUrl(currentImage.url)}
                   </span>
                   <button
                     onClick={handleCopyUrl}

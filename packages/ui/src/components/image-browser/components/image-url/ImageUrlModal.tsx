@@ -2,6 +2,7 @@ import { ExternalLink, X } from 'lucide-react';
 import React from 'react';
 import { defaultTranslate } from '../../../../locales';
 import { ImageItem } from '../../../../types/image';
+import { getRealGiteeUrl } from '../../../../utils/imageUtils';
 import './ImageUrlModal.css';
 
 interface ImageUrlModalProps {
@@ -37,22 +38,26 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
   };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
+    // 对于 URL 类型，如果是 Gitee 代理 URL，转换为真实 URL
+    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
     if (onCopyUrl) {
-      await onCopyUrl(url, type);
+      await onCopyUrl(realUrl, type);
     } else {
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(realUrl);
       } catch (error) {
         console.error('Failed to copy URL:', error);
       }
     }
   };
 
-  const handleOpenUrl = (url: string) => {
+  const handleOpenUrl = (url: string, type: 'url' | 'githubUrl' = 'url') => {
+    // 对于 URL 类型，如果是 Gitee 代理 URL，转换为真实 URL
+    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
     if (onOpenUrl) {
-      onOpenUrl(url);
+      onOpenUrl(realUrl);
     } else {
-      window.open(url, '_blank');
+      window.open(realUrl, '_blank');
     }
   };
 
@@ -96,7 +101,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
             <div className="image-url-modal-input-group">
               <input
                 type="text"
-                value={image.url}
+                value={getRealGiteeUrl(image.url)}
                 readOnly
                 className="image-url-modal-input"
               />
@@ -136,7 +141,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
                   {translate('image.grid.copy')}
                 </button>
                 <button
-                  onClick={() => handleOpenUrl(image.githubUrl)}
+                  onClick={() => handleOpenUrl(image.githubUrl, 'githubUrl')}
                   className="image-url-modal-button image-url-modal-button-secondary"
                 >
                   <ExternalLink className="w-4 h-4" />

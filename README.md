@@ -29,7 +29,7 @@ Pixuli 是一个基于 Monorepo 架构的图片管理解决方案，支持多平
 - **移动端**：React Native + Expo
 - **图片处理**：Rust (WASM) + NAPI-RS
 - **状态管理**：Zustand
-- **UI 组件**：共享组件库 (@packages/ui)
+- **UI 组件**：共享组件库
 - **云端存储**：GitHub / Gitee
 
 ## ✨ 主要功能

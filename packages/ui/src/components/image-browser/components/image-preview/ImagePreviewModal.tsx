@@ -3,6 +3,7 @@ import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '../../../../locales';
 import { ImageItem } from '../../../../types/image';
 import './ImagePreviewModal.css';
+import { getRealGiteeUrl } from '../../../../utils/imageUtils';
 
 interface ImagePreviewModalProps {
   image: ImageItem | null;
@@ -91,11 +92,12 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   };
 
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
+    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
     if (onCopyUrl) {
-      await onCopyUrl(url, type);
+      await onCopyUrl(realUrl, type);
     } else {
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(realUrl);
       } catch (error) {
         console.error('Failed to copy URL:', error);
       }
@@ -103,10 +105,11 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   };
 
   const handleOpenUrl = (url: string) => {
+    const realUrl = getRealGiteeUrl(url);
     if (onOpenUrl) {
-      onOpenUrl(url);
+      onOpenUrl(realUrl);
     } else {
-      window.open(url, '_blank');
+      window.open(realUrl, '_blank');
     }
   };
 
