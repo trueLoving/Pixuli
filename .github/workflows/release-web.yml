@@ -33,6 +33,20 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
       - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -50,15 +64,22 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != 'latest' }}
+            # 主要标签：直接使用输入的版本作为镜像标签
+            type=raw,value=${{ inputs.version }}
+            # 如果输入的是版本号（非 latest），同时添加 latest 标签以便于使用
+            type=raw,value=latest,enable=${{ inputs.version != 'latest' }}
 
-      - name: 构建 Docker 镜像
+      - name: 构建应用
+        env:
+          CI: true
+        run: |
+          # 在 CI 环境下构建应用，生成 dist 目录
+          # 环境变量 CI=true 确保构建过程无交互式提示
+          echo "🔨 开始构建应用..."
+          pnpm build:web
+          echo "✅ 应用构建完成"
+
+      - name: 构建和推送 Docker 镜像（多平台）
         uses: docker/build-push-action@v5
         with:
           context: .
