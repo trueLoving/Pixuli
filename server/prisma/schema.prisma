@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// 图片表
+model Image {
+  id          String   @id @default(uuid())
+  filename    String   @db.VarChar(255)
+  originalName String  @db.VarChar(255)
+  mimeType    String   @db.VarChar(100)
+  title       String?  @db.VarChar(500)
+  metadata    Json     // 元数据（包含 size, width, height, description, tags 等）
+  path        String   @db.VarChar(500) // 文件存储路径
+  url         String   @db.VarChar(500) // 访问 URL
+  uploadDate  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([uploadDate])
+  @@index([mimeType])
+  @@index([title])
+  @@map("images")
+}

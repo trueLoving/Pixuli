@@ -12,11 +12,23 @@ dist
 dist-ssr
 dist-electron
 release
+build
 *.local
 
 # Editor directories and files
 .vscode/.debug.env
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 .DS_Store
 *.suo
 *.ntvs*
@@ -108,6 +120,10 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -170,3 +186,10 @@ dev-dist
 # 测试相关
 coverage/
 .nyc_output/
+
+# Temporary directories
+.temp
+.tmp
+
+# Uploads
+/uploads
