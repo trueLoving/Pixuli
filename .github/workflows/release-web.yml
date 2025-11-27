@@ -1,4 +1,4 @@
-name: 构建和发布 Pixuli Web Docker 镜像
+name: 发布 Pixuli Web Docker 镜像
 
 on:
   workflow_dispatch:
@@ -9,8 +9,8 @@ on:
         default: 'latest'
       push:
         description: '是否推送到 Docker Registry'
-        required: false
-        default: 'true'
+        required: true
+        default: true
         type: boolean
 
 concurrency:
@@ -18,12 +18,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/pixuli-web
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/pixuli-web
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   build-and-push:
@@ -33,16 +32,16 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: 设置 Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
-
-      - name: 安装 pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
@@ -50,13 +49,12 @@ jobs:
       - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 登录到 GitHub Container Registry
-        if: ${{ inputs.push == 'true' }}
+      - name: 登录到 Docker Hub
+        if: ${{ inputs.push }}
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: 提取元数据
         id: meta
@@ -84,7 +82,7 @@ jobs:
         with:
           context: .
           file: ./apps/web/Dockerfile
-          push: ${{ inputs.push == 'true' }}
+          push: ${{ inputs.push }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -92,7 +90,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: 生成摘要
-        if: ${{ inputs.push == 'true' }}
+        if: ${{ inputs.push }}
         run: |
           echo "## 🐳 Docker 镜像构建完成" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -103,10 +101,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 拉取镜像" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.IMAGE_NAME }}:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 运行容器" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker run -d -p 8080:80 --name pixuli-web ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker run -d -p 8080:80 --name pixuli-web ${{ env.IMAGE_NAME }}:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
