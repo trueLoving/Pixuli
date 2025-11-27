@@ -10,6 +10,23 @@ datasource db {
   provider = "mysql"
 }
 
+// API Key 表（用于认证）
+model ApiKey {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(255) // API Key 名称/描述
+  key         String   @db.VarChar(255) @unique // API Key 值（哈希后的）
+  keyHash     String   @db.VarChar(255) // 存储哈希值用于验证
+  isActive    Boolean  @default(true) // 是否激活
+  lastUsedAt  DateTime? // 最后使用时间
+  expiresAt   DateTime? // 过期时间（可选）
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([keyHash])
+  @@index([isActive])
+  @@map("api_keys")
+}
+
 // 图片表
 model Image {
   id          String   @id @default(uuid())
