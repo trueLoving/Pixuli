@@ -1,67 +1,74 @@
-# Pixuli Desktop - 智能图片管理桌面应用
+English | [中文](./README-ZH.md)
+
+# Pixuli Desktop - Intelligent Image Management Desktop Application
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
 
-## 📖 项目概述
+## 📖 Project Overview
 
-**Pixuli Desktop**
-是一款基于 Electron 构建的跨平台智能图片管理桌面应用。它集成了强大的图片管理、处理和云端存储功能，帮助您高效地组织、处理和存储图片。
+**Pixuli Desktop** is a cross-platform intelligent image management desktop
+application built with Electron. It integrates powerful image management,
+processing, and cloud storage features to help you efficiently organize,
+process, and store images.
 
-**核心技术**：Electron + React + TypeScript + Rust (WASM)
+**Core Technology**: Electron + React + TypeScript + Rust (WASM)
 
-## ✨ 主要功能
+## ✨ Key Features
 
-| 功能模块          | 子功能      | 功能描述                                       |
-| ----------------- | ----------- | ---------------------------------------------- |
-| 📸 **图片管理**   | 智能浏览    | 网格布局展示，支持懒加载，流畅浏览大量图片     |
-|                   | 拖拽上传    | 支持单张和批量图片上传                         |
-|                   | 批量操作    | 批量上传和删除，实时显示操作进度               |
-|                   | 标签系统    | 自定义标签，支持多标签管理和过滤               |
-|                   | 搜索功能    | 按名称、描述、标签快速查找                     |
-|                   | 元数据编辑  | 编辑图片名称、描述和标签                       |
-|                   | 全屏预览    | 支持缩放和旋转操作                             |
-| 🔧 **图片处理**   | WebP 压缩   | 可调节压缩质量（10%-100%），平衡质量和文件大小 |
-|                   | 格式转换    | 支持 JPEG、PNG、WebP 三种格式相互转换          |
-|                   | 尺寸调整    | 自定义宽度和高度，支持保持宽高比               |
-|                   | 批量处理    | 批量压缩和格式转换                             |
-|                   | 实时预览    | 处理前预览效果，显示压缩前后对比               |
-| ☁️ **云端存储**   | GitHub 集成 | 使用 GitHub 仓库作为图片存储后端               |
-|                   | Gitee 集成  | 支持 Gitee 仓库，为国内用户提供更快访问        |
-|                   | 存储源切换  | 灵活在 GitHub 和 Gitee 之间切换                |
-|                   | 配置管理    | 支持配置的导入、导出和清除                     |
-|                   | 版本控制    | 利用 Git 版本控制，完整记录操作历史            |
-| 🪟 **多窗口模式** | 主窗口      | 源管理和项目列表的主要界面                     |
-|                   | 项目窗口    | 独立的图片浏览和管理窗口                       |
-|                   | 压缩窗口    | 专门的图片压缩功能窗口                         |
-|                   | 转换窗口    | 独立的格式转换窗口                             |
-| 📋 **操作日志**   | 操作记录    | 自动记录所有上传、删除、编辑等操作             |
-|                   | 日志查看    | 便捷查看历史操作详情                           |
-|                   | 日志导出    | 支持导出操作日志，方便备份和分析               |
-| ⌨️ **快捷键**     | 键盘快捷键  | 丰富的键盘快捷键支持，提升操作效率             |
-| 🌐 **国际化**     | 多语言支持  | 完整的中文和英文界面切换                       |
-| 🎨 **主题**       | 主题切换    | 支持浅色/深色主题切换                          |
+| Feature Module              | Sub-feature              | Description                                                                          |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| 📸 **Image Management**     | Smart Browsing           | Grid layout display with lazy loading for smooth browsing of large image collections |
+|                             | Drag & Drop Upload       | Support for single and batch image uploads                                           |
+|                             | Batch Operations         | Batch upload and delete with real-time progress display                              |
+|                             | Tag System               | Custom tags with multi-tag management and filtering                                  |
+|                             | Search                   | Quick search by name, description, and tags                                          |
+|                             | Metadata Editing         | Edit image name, description, and tags                                               |
+|                             | Full-screen Preview      | Support for zoom and rotation operations                                             |
+| 🔧 **Image Processing**     | WebP Compression         | Adjustable compression quality (10%-100%), balancing quality and file size           |
+|                             | Format Conversion        | Support for JPEG, PNG, WebP format conversion                                        |
+|                             | Size Adjustment          | Custom width and height with aspect ratio preservation                               |
+|                             | Batch Processing         | Batch compression and format conversion                                              |
+|                             | Real-time Preview        | Preview effects before processing, show before/after comparison                      |
+| ☁️ **Cloud Storage**        | GitHub Integration       | Use GitHub repositories as image storage backend                                     |
+|                             | Gitee Integration        | Support Gitee repositories for faster access in China                                |
+|                             | Storage Source Switching | Flexible switching between GitHub and Gitee                                          |
+|                             | Configuration Management | Support for configuration import, export, and clear                                  |
+|                             | Version Control          | Leverage Git version control with complete operation history                         |
+| 🪟 **Multi-window Mode**    | Main Window              | Primary interface for source management and project list                             |
+|                             | Project Window           | Independent image browsing and management window                                     |
+|                             | Compression Window       | Dedicated image compression feature window                                           |
+|                             | Conversion Window        | Independent format conversion window                                                 |
+| 📋 **Operation Log**        | Operation Recording      | Automatically record all upload, delete, edit operations                             |
+|                             | Log Viewing              | Convenient viewing of historical operation details                                   |
+|                             | Log Export               | Support for exporting operation logs for backup and analysis                         |
+| ⌨️ **Keyboard Shortcuts**   | Keyboard Shortcuts       | Rich keyboard shortcut support for improved efficiency                               |
+| 🌐 **Internationalization** | Multi-language Support   | Complete Chinese and English interface switching                                     |
+| 🎨 **Theme**                | Theme Switching          | Support for light/dark theme switching                                               |
 
-**支持平台**：🍎 macOS (x64, ARM64) | 🪟 Windows (x64)
+**Supported Platforms**: 🍎 macOS (x64, ARM64) | 🪟 Windows (x64)
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-想要开始使用 Pixuli Desktop？请查看我们的[开发文档](CONTRIBUTING.md)。
+Want to start using Pixuli Desktop? Check out our
+[Contributing Guide](../../CONTRIBUTING.md).
 
-## 🤝 参与贡献
+## 🤝 Contributing
 
-我们欢迎所有形式的贡献！如果您想参与项目开发，请查看 [贡献指南](CONTRIBUTING.md)
-了解详细信息。
+We welcome all forms of contributions! If you'd like to contribute to the
+project, please check the [Contributing Guide](../../CONTRIBUTING.md) for
+details.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- [Electron](https://electronjs.org/) - 跨平台桌面应用框架
-- [React](https://reactjs.org/) - 用户界面库
-- [Rust](https://www.rust-lang.org/) - 高性能系统编程语言
-- [NAPI-RS](https://napi.rs/) - Node.js 原生模块绑定
-- [image-rs](https://github.com/image-rs/image) - Rust 图片处理库
-- [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
+- [Electron](https://electronjs.org/) - Cross-platform desktop application
+  framework
+- [React](https://reactjs.org/) - User interface library
+- [Rust](https://www.rust-lang.org/) - High-performance systems programming
+  language
+- [NAPI-RS](https://napi.rs/) - Node.js native module bindings
+- [image-rs](https://github.com/image-rs/image) - Rust image processing library
 
 ---
 
-⭐ 如果这个项目对您有帮助，请给我们一个星标！
+⭐ If this project is helpful to you, please give us a star!

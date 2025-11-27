@@ -1,4 +1,9 @@
-# Pixuli - 智能图片管理应用
+English | [中文](./README-ZH.md)
+
+# Pixuli - Intelligent Image Management Application
+
+> **Name Origin**: Pixuli is a combination of **Picture** + **uli**,
+> representing our vision of intelligent and user-friendly image management.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
@@ -6,163 +11,177 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-1.0.0-blue.svg)](https://pixuli-web.vercel.app/)
 [![Documentation](https://img.shields.io/badge/Documentation-1.0.0-green.svg)](https://pixuli-docs.vercel.app/)
 
-## 📖 项目初衷
+## 📖 Project Origin
 
-Pixuli 项目来源于两个原因：
+The Pixuli project originated from two reasons:
 
-1. **实际需求**：在运营博客网站时遇到的图片管理问题，需要统一存储、智能压缩和批量处理能力。
-2. **项目经历**：基于之前使用 Vue3 开发图片管理应用的经验，决定使用 React 技术栈重新实现，体验不同框架的设计理念，并在此基础上进行功能扩展和优化。
+1. **Practical Need**: Image management issues encountered while operating a
+   blog website, requiring unified storage, intelligent compression, and batch
+   processing capabilities.
+2. **Project Experience**: Based on previous experience developing an image
+   management application with Vue3, decided to reimplement using the React
+   technology stack to experience different framework design philosophies, and
+   expand and optimize functionality on this basis.
 
-## 🖼️ 项目概述
+## 🖼️ Project Overview
 
-Pixuli 是一个基于 Monorepo 架构的图片管理解决方案，支持多平台部署：
+Pixuli is an image management solution based on a Monorepo architecture,
+supporting multi-platform deployment:
 
-- **🖥️ 桌面端**：基于 Electron + React + TypeScript + Rust
-  (WASM) 构建的跨平台桌面应用
-- **🌐 Web 端**：基于 Vite + React + TypeScript 构建的 Web 应用，支持 PWA
-- **📱 移动端**：基于 React Native + Expo 构建的移动应用
+- **🖥️ Desktop**: Cross-platform desktop application built with Electron +
+  React + TypeScript + Rust (WASM)
+- **🌐 Web**: Web application built with Vite + React + TypeScript, supporting
+  PWA
+- **📱 Mobile**: Mobile application built with React Native + Expo
 
-**核心技术栈**：
+**Core Technology Stack**:
 
-- **前端**：React 19.1.0 + TypeScript + Vite
-- **桌面端**：Electron
-- **移动端**：React Native + Expo
-- **图片处理**：Rust (WASM) + NAPI-RS
-- **状态管理**：Zustand
-- **UI 组件**：共享组件库
-- **云端存储**：GitHub / Gitee
+- **Frontend**: React 19.1.0 + TypeScript + Vite
+- **Desktop**: Electron
+- **Mobile**: React Native + Expo
+- **Image Processing**: Rust (WASM) + NAPI-RS
+- **State Management**: Zustand
+- **UI Components**: Shared component library
+- **Cloud Storage**: GitHub / Gitee
 
-## ✨ 主要功能
+## ✨ Key Features
 
-| 功能模块        | 功能描述                                                                           |
-| --------------- | ---------------------------------------------------------------------------------- |
-| 📸 **图片管理** | 智能浏览、拖拽上传、批量操作、标签系统、搜索功能、元数据编辑、全屏预览、幻灯片播放 |
-| 🔧 **图片处理** | WebP 压缩、格式转换、尺寸调整、批量处理、上传前压缩                                |
-| ☁️ **云端存储** | GitHub 集成、Gitee 集成、存储源切换、配置管理、版本控制、元数据存储                |
-| 🎨 **用户体验** | 主题切换、多语言支持、键盘快捷键、响应式设计、PWA 支持                             |
+| Feature Module          | Description                                                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 📸 **Image Management** | Smart browsing, drag-and-drop upload, batch operations, tagging system, search functionality, metadata editing, fullscreen preview, slideshow playback |
+| 🔧 **Image Processing** | WebP compression, format conversion, size adjustment, batch processing, pre-upload compression                                                         |
+| ☁️ **Cloud Storage**    | GitHub integration, Gitee integration, storage source switching, configuration management, version control, metadata storage                           |
+| 🎨 **User Experience**  | Theme switching, multi-language support, keyboard shortcuts, responsive design, PWA support                                                            |
 
-## 🏗️ 项目结构
+## 🏗️ Project Structure
 
 ```
 Pixuli/
-├── apps/                     # 应用程序
-│   ├── desktop/               # 桌面端应用 (Electron + React)
-│   ├── web/                   # Web 端应用 (Vite + React)
-│   └── mobile/                # 移动端应用 (React Native + Expo)
-├── packages/                 # 共享包
-│   ├── ui/                    # UI 组件库
-│   └── wasm/                  # WASM 模块 (Rust)
-├── docs/                     # 文档网站
-├── benchmark/                # 性能测试
-└── pnpm-workspace.yaml       # 工作空间配置
+├── apps/                     # Applications
+│   ├── desktop/               # Desktop application (Electron + React)
+│   ├── web/                   # Web application (Vite + React)
+│   └── mobile/                # Mobile application (React Native + Expo)
+├── packages/                 # Shared packages
+│   ├── ui/                    # UI component library
+│   └── wasm/                  # WASM module (Rust)
+├── docs/                     # Documentation website
+├── benchmark/                # Performance testing
+└── pnpm-workspace.yaml       # Workspace configuration
 ```
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Requirements
 
 - **Node.js** >= 22.0.0
-- **pnpm** >= 8.0.0 (必需，项目仅支持 pnpm)
+- **pnpm** >= 8.0.0 (Required, project only supports pnpm)
 - **Git** >= 2.0.0
-- **Rust** >= 1.70.0 (用于构建 WASM 模块，仅桌面端需要)
-- **Android Studio** (用于 Android 开发，仅移动端需要)
-- **XCode** (用于 IOS 开发，仅移动端需要)
+- **Rust** >= 1.70.0 (For building WASM modules, desktop only)
+- **Android Studio** (For Android development, mobile only)
+- **XCode** (For iOS development, mobile only)
 
-### 安装和运行
+### Installation and Running
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone https://github.com/trueLoving/Pixuli.git
 cd Pixuli
 
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 构建 WASM 模块 (仅桌面端需要)
+# Build WASM module (desktop only)
 pnpm build:wasm
 
-# 启动开发模式
-pnpm dev:web      # Web 端 (http://localhost:5500)
-pnpm dev:desktop  # 桌面端
-pnpm dev:mobile --android   # 移动端 Android
-pnpm dev:mobile --ios   # 移动端 IOS
+# Start development mode
+pnpm dev:web      # Web (http://localhost:5500)
+pnpm dev:desktop  # Desktop
+pnpm dev:mobile --android   # Mobile Android
+pnpm dev:mobile --ios   # Mobile iOS
 ```
 
-### 详细开发指南
+### Detailed Development Guide
 
-想要了解更多开发细节？请查看各端的开发文档：
+Want to learn more about development details? Check out our contributing guide:
 
-- **[桌面端开发指南](./apps/desktop/CONTRIBUTING.md)** - 桌面端环境配置、开发流程、项目结构
-- **[Web 端开发指南](./apps/web/CONTRIBUTING.md)** -
-  Web 端环境配置、开发流程、项目结构
-- **[移动端开发指南](./apps/mobile/CONTRIBUTING.md)** - 移动端环境配置、开发流程、项目结构
+- **[Contributing Guide](./CONTRIBUTING.md)** - Complete development guide
+  covering all platforms (Desktop, Web, Mobile)
+- **[Contributing Guide (中文)](./CONTRIBUTING-ZH.md)** - 完整的开发指南，涵盖所有平台（桌面端、Web 端、移动端）
 
-## 📦 制品下载
+## 📦 Downloads
 
-### 🖥️ 桌面端
+### 🖥️ Desktop
 
-桌面端应用支持 Windows 和 macOS 平台，可通过以下方式获取：
+Desktop application supports Windows and macOS platforms, available through:
 
-| 平台                    | 下载方式                                                         | 说明                                |
+| Platform                | Download Method                                                  | Description                         |
 | ----------------------- | ---------------------------------------------------------------- | ----------------------------------- |
-| **Windows**             | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | 下载 `.exe` 安装包                  |
-| **macOS Intel**         | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | 下载 `mac-x64` 版本的 `.dmg` 文件   |
-| **macOS Apple Silicon** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | 下载 `mac-arm64` 版本的 `.dmg` 文件 |
+| **Windows**             | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `.exe` installer           |
+| **macOS Intel**         | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `mac-x64` version `.dmg`   |
+| **macOS Apple Silicon** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `mac-arm64` version `.dmg` |
 
-**系统要求**：
+**System Requirements**:
 
-- Windows: Windows 10/11 (64位), 4GB RAM, 2GB 可用磁盘空间
-- macOS: macOS 10.15+, 4GB RAM, 2GB 可用磁盘空间
+- Windows: Windows 10/11 (64-bit), 4GB RAM, 2GB available disk space
+- macOS: macOS 10.15+, 4GB RAM, 2GB available disk space
 
-### 🌐 Web 端
+### 🌐 Web
 
-Web 端应用支持在线访问和 Docker 部署：
+Web application supports online access and Docker deployment:
 
-| 方式         | 链接/说明                                   | 说明               |
-| ------------ | ------------------------------------------- | ------------------ |
-| **在线访问** | [Live Demo](https://pixuli-web.vercel.app/) | 直接访问，无需安装 |
+| Method            | Link/Description                                             | Description                             |
+| ----------------- | ------------------------------------------------------------ | --------------------------------------- |
+| **Online Access** | [Live Demo](https://pixuli-web.vercel.app/)                  | Direct access, no installation required |
+| **Docker**        | [Docker Hub](https://hub.docker.com/r/trueloving/pixuli-web) | Deploy using Docker                     |
 
-### 📱 移动端
+#### Docker Deployment
 
-移动端应用支持 iOS 和 Android 平台，可通过以下方式获取：
+```bash
+# Pull and run the latest version
+docker run -d -p 8080:80 --name pixuli-web trueloving/pixuli-web:latest
 
-| 平台        | 下载方式                                                         | 说明               |
-| ----------- | ---------------------------------------------------------------- | ------------------ |
-| **Android** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | 下载 `.apk` 安装包 |
+# Or use a specific version
+docker run -d -p 8080:80 --name pixuli-web trueloving/pixuli-web:1.0.0
+```
 
-**系统要求**：
+### 📱 Mobile
 
-- Android: Android 8.0 (API 26) 或更高版本
+Mobile application supports iOS and Android platforms, available through:
 
-## 📚 文档
+| Platform    | Download Method                                                  | Description               |
+| ----------- | ---------------------------------------------------------------- | ------------------------- |
+| **Android** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `.apk` installer |
 
-| 文档类型     | 文档链接                                         | 描述                 |
-| ------------ | ------------------------------------------------ | -------------------- |
-| **功能文档** | [桌面端文档](./apps/desktop/README.md)           | 桌面端功能和使用说明 |
-|              | [Web 端文档](./apps/web/README.md)               | Web 端功能和使用说明 |
-|              | [移动端文档](./apps/mobile/README.md)            | 移动端功能和使用说明 |
-| **开发文档** | [桌面端开发指南](./apps/desktop/CONTRIBUTING.md) | 桌面端开发指南       |
-|              | [Web 端开发指南](./apps/web/CONTRIBUTING.md)     | Web 端开发指南       |
-|              | [移动端开发指南](./apps/mobile/CONTRIBUTING.md)  | 移动端开发指南       |
-| **路线图**   | [桌面端路线图](./apps/desktop/ROADMAP.md)        | 桌面端功能规划       |
-|              | [Web 端路线图](./apps/web/ROADMAP.md)            | Web 端功能规划       |
-|              | [移动端路线图](./apps/mobile/ROADMAP.md)         | 移动端功能规划       |
-| **更新日志** | [桌面端更新日志](./apps/desktop/CHANGELOG.md)    | 桌面端版本更新历史   |
-|              | [Web 端更新日志](./apps/web/CHANGELOG.md)        | Web 端版本更新历史   |
-|              | [移动端更新日志](./apps/mobile/CHANGELOG.md)     | 移动端版本更新历史   |
+**System Requirements**:
 
-## 🙏 致谢
+- Android: Android 8.0 (API 26) or higher
 
-- [Electron](https://electronjs.org/) - 跨平台桌面应用框架
-- [React](https://reactjs.org/) - 用户界面库
-- [React Native](https://reactnative.dev/) - 移动应用框架
-- [Vite](https://vitejs.dev/) - 快速构建工具
-- [Rust](https://www.rust-lang.org/) - 高性能系统编程语言
-- [NAPI-RS](https://napi.rs/) - Node.js 原生模块绑定
-- [image-rs](https://github.com/image-rs/image) - Rust 图片处理库
-- [Zustand](https://zustand-demo.pmnd.rs/) - 轻量级状态管理
-- [pnpm](https://pnpm.io/) - 快速、节省磁盘空间的包管理器
+## 📚 Documentation
+
+| Documentation Type   | Documentation Link                                | Description                |
+| -------------------- | ------------------------------------------------- | -------------------------- |
+| **Feature Docs**     | [Desktop Documentation](./apps/desktop/README.md) | Desktop features and usage |
+|                      | [Web Documentation](./apps/web/README.md)         | Web features and usage     |
+|                      | [Mobile Documentation](./apps/mobile/README.md)   | Mobile features and usage  |
+| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)           | Complete development guide |
+|                      | [Contributing Guide (中文)](./CONTRIBUTING-ZH.md) | 完整的开发指南             |
+| **Changelog**        | [Changelog](./CHANGELOG.md)                       | Complete version history   |
+|                      | [Changelog (中文)](./CHANGELOG-ZH.md)             | 完整的版本更新历史         |
+
+## 🙏 Acknowledgments
+
+- [Electron](https://electronjs.org/) - Cross-platform desktop application
+  framework
+- [React](https://reactjs.org/) - User interface library
+- [React Native](https://reactnative.dev/) - Mobile application framework
+- [Vite](https://vitejs.dev/) - Fast build tool
+- [Rust](https://www.rust-lang.org/) - High-performance systems programming
+  language
+- [NAPI-RS](https://napi.rs/) - Node.js native module bindings
+- [image-rs](https://github.com/image-rs/image) - Rust image processing library
+- [Zustand](https://zustand-demo.pmnd.rs/) - Lightweight state management
+- [pnpm](https://pnpm.io/) - Fast, disk space efficient package manager
 
 ---
 
-⭐ 如果这个项目对您有帮助，请给我们一个星标！
+⭐ If this project is helpful to you, please give us a star!

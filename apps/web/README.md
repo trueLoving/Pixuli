@@ -1,318 +1,340 @@
-# Pixuli Web - 智能图片管理 Web 应用
+English | [中文](./README-ZH.md)
+
+# Pixuli Web - Intelligent Image Management Web Application
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
 
-## 📖 项目概述
+## 📖 Project Overview
 
-**Pixuli Web** 是一款基于 React + TypeScript +
-Vite 构建的智能图片管理 Web 应用。使用 GitHub 和 Gitee 作为存储后端，提供完整的图片管理、上传、浏览和编辑功能。
+**Pixuli Web** is an intelligent image management web application built with
+React + TypeScript + Vite. Using GitHub and Gitee as storage backends, it
+provides complete image management, upload, browsing, and editing capabilities.
 
-**核心技术**：React + TypeScript + Vite
+**Core Technology**: React + TypeScript + Vite
 
-## ✨ 主要功能
+## ✨ Key Features
 
-| 功能模块        | 子功能       | 功能描述                                     |
-| --------------- | ------------ | -------------------------------------------- |
-| 📸 **图片管理** | 智能浏览     | 网格布局展示，支持懒加载和响应式布局         |
-|                 | 拖拽上传     | 支持单张和批量图片上传                       |
-|                 | 批量操作     | 批量上传和删除，实时显示操作进度             |
-|                 | 标签系统     | 自定义标签，支持多标签管理和过滤             |
-|                 | 搜索功能     | 按名称、描述、标签快速查找                   |
-|                 | 元数据编辑   | 编辑图片名称、描述和标签                     |
-|                 | 全屏预览     | 支持缩放和旋转操作                           |
-|                 | 幻灯片播放   | 支持幻灯片模式浏览图片                       |
-| 🔧 **图片处理** | 上传前压缩   | 可配置压缩选项（质量、尺寸、格式等）         |
-| ☁️ **云端存储** | GitHub 集成  | 使用 GitHub 仓库作为图片存储后端             |
-|                 | Gitee 集成   | 支持 Gitee 仓库，为国内用户提供更快访问      |
-|                 | 存储源切换   | 灵活在 GitHub 和 Gitee 之间切换              |
-|                 | 配置管理     | 支持配置的导入、导出和清除                   |
-|                 | 版本控制     | 利用 Git 版本控制，完整记录操作历史          |
-|                 | 元数据存储   | 将图片元数据存储为隐藏文件                   |
-| 📱 **PWA 功能** | 安装到主屏幕 | 支持将应用安装到主屏幕，提供类似原生应用体验 |
-|                 | 离线支持     | 支持离线访问和后台同步                       |
-| ⌨️ **快捷键**   | 键盘快捷键   | 丰富的键盘快捷键支持，提升操作效率           |
-| 🌐 **国际化**   | 多语言支持   | 完整的中文和英文界面切换                     |
-| 🎨 **主题**     | 主题切换     | 支持浅色/深色主题切换                        |
+| Feature Module              | Sub-feature              | Description                                                                     |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------------------- |
+| 📸 **Image Management**     | Smart Browsing           | Grid layout display with lazy loading and responsive layout                     |
+|                             | Drag & Drop Upload       | Support for single and batch image uploads                                      |
+|                             | Batch Operations         | Batch upload and delete with real-time progress display                         |
+|                             | Tag System               | Custom tags with multi-tag management and filtering                             |
+|                             | Search                   | Quick search by name, description, and tags                                     |
+|                             | Metadata Editing         | Edit image name, description, and tags                                          |
+|                             | Full-screen Preview      | Support for zoom and rotation operations                                        |
+|                             | Slide Show               | Support for slide show mode to browse images                                    |
+| 🔧 **Image Processing**     | Pre-upload Compression   | Configurable compression options (quality, size, format, etc.)                  |
+| ☁️ **Cloud Storage**        | GitHub Integration       | Use GitHub repositories as image storage backend                                |
+|                             | Gitee Integration        | Support Gitee repositories for faster access in China                           |
+|                             | Storage Source Switching | Flexible switching between GitHub and Gitee                                     |
+|                             | Configuration Management | Support for configuration import, export, and clear                             |
+|                             | Version Control          | Leverage Git version control with complete operation history                    |
+|                             | Metadata Storage         | Store image metadata as hidden files                                            |
+| 📱 **PWA Features**         | Install to Home Screen   | Support for installing the app to home screen, providing native-like experience |
+|                             | Offline Support          | Support for offline access and background sync                                  |
+| ⌨️ **Keyboard Shortcuts**   | Keyboard Shortcuts       | Rich keyboard shortcut support for improved efficiency                          |
+| 🌐 **Internationalization** | Multi-language Support   | Complete Chinese and English interface switching                                |
+| 🎨 **Theme**                | Theme Switching          | Support for light/dark theme switching                                          |
 
-**支持平台**：🌐 现代浏览器（Chrome、Firefox、Safari、Edge 等）|
-📱 移动浏览器（iOS Safari、Chrome Mobile 等）
+**Supported Platforms**: 🌐 Modern browsers (Chrome, Firefox, Safari, Edge,
+etc.) | 📱 Mobile browsers (iOS Safari, Chrome Mobile, etc.)
 
-## 📸 功能详解
+## 📸 Feature Details
 
-### 图片管理
+### Image Management
 
-Pixuli Web 提供强大的图片管理功能，让您轻松组织和浏览图片：
+Pixuli Web provides powerful image management features to help you easily
+organize and browse images:
 
-| 功能           | 描述                                   |
-| -------------- | -------------------------------------- |
-| **智能浏览**   | 网格布局展示，支持懒加载和响应式布局   |
-| **拖拽上传**   | 支持单张和批量图片上传，直观的拖拽操作 |
-| **批量操作**   | 批量上传和删除，实时显示操作进度       |
-| **标签系统**   | 自定义标签，支持多标签管理和过滤       |
-| **搜索功能**   | 按名称、描述、标签快速查找图片         |
-| **元数据编辑** | 编辑图片名称、描述和标签               |
-| **全屏预览**   | 沉浸式全屏预览体验，支持缩放和旋转操作 |
-| **幻灯片播放** | 支持幻灯片模式浏览图片，多种过渡效果   |
+| Feature                 | Description                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| **Smart Browsing**      | Grid layout display with lazy loading and responsive layout                        |
+| **Drag & Drop Upload**  | Support for single and batch image uploads with intuitive drag-and-drop operations |
+| **Batch Operations**    | Batch upload and delete with real-time progress display                            |
+| **Tag System**          | Custom tags with multi-tag management and filtering                                |
+| **Search**              | Quick search by name, description, and tags                                        |
+| **Metadata Editing**    | Edit image name, description, and tags                                             |
+| **Full-screen Preview** | Immersive full-screen preview experience with zoom and rotation support            |
+| **Slide Show**          | Support for slide show mode to browse images with multiple transition effects      |
 
-### 图片处理
+### Image Processing
 
-上传前图片处理，优化存储空间：
+Pre-upload image processing to optimize storage space:
 
-| 功能           | 描述                                 |
-| -------------- | ------------------------------------ |
-| **上传前压缩** | 可配置压缩选项（质量、尺寸、格式等） |
+| Feature                    | Description                                                    |
+| -------------------------- | -------------------------------------------------------------- |
+| **Pre-upload Compression** | Configurable compression options (quality, size, format, etc.) |
 
-### 云端存储
+### Cloud Storage
 
-基于 Git 的版本控制存储方案，提供安全可靠的云端存储服务：
+Version-controlled storage solution based on Git, providing secure and reliable
+cloud storage services:
 
-| 功能            | 描述                                                    |
-| --------------- | ------------------------------------------------------- |
-| **GitHub 集成** | 使用 GitHub 仓库作为图片存储后端                        |
-| **Gitee 集成**  | 支持 Gitee 仓库，为国内用户提供更快访问                 |
-| **存储源切换**  | 灵活在 GitHub 和 Gitee 之间切换存储源                   |
-| **配置管理**    | 支持配置的导入、导出和清除，方便迁移和备份              |
-| **版本控制**    | 充分利用 Git 的版本控制功能，所有操作都有完整的历史记录 |
-| **元数据存储**  | 将图片元数据存储为隐藏文件                              |
+| Feature                      | Description                                                                       |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| **GitHub Integration**       | Use GitHub repositories as image storage backend                                  |
+| **Gitee Integration**        | Support Gitee repositories for faster access in China                             |
+| **Storage Source Switching** | Flexible switching between GitHub and Gitee storage sources                       |
+| **Configuration Management** | Support for configuration import, export, and clear for easy migration and backup |
+| **Version Control**          | Fully leverage Git version control with complete operation history                |
+| **Metadata Storage**         | Store image metadata as hidden files                                              |
 
-### PWA 功能
+### PWA Features
 
-渐进式 Web 应用特性，提供类似原生应用的体验：
+Progressive Web App features providing native-like experience:
 
-| 功能             | 描述                                         |
-| ---------------- | -------------------------------------------- |
-| **安装到主屏幕** | 支持将应用安装到主屏幕，提供类似原生应用体验 |
-| **离线支持**     | 支持离线访问和后台同步                       |
+| Feature                    | Description                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| **Install to Home Screen** | Support for installing the app to home screen, providing native-like experience |
+| **Offline Support**        | Support for offline access and background sync                                  |
 
-### 用户体验
+### User Experience
 
-注重细节的用户体验设计，让使用更加便捷：
+User experience design focused on details for more convenient use:
 
-| 功能           | 描述                               |
-| -------------- | ---------------------------------- |
-| **键盘快捷键** | 丰富的键盘快捷键支持，提升操作效率 |
-| **响应式设计** | 适配桌面和移动设备                 |
-| **Toast 通知** | 实时反馈操作结果                   |
-| **加载状态**   | 显示上传和处理进度                 |
-| **主题切换**   | 支持浅色/深色主题切换              |
-| **国际化支持** | 完整的中文和英文界面切换           |
+| Feature                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| **Keyboard Shortcuts**   | Rich keyboard shortcut support for improved efficiency |
+| **Responsive Design**    | Adapted for desktop and mobile devices                 |
+| **Toast Notifications**  | Real-time feedback on operation results                |
+| **Loading States**       | Display upload and processing progress                 |
+| **Theme Switching**      | Support for light/dark theme switching                 |
+| **Internationalization** | Complete Chinese and English interface switching       |
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-想要开始使用 Pixuli Web？请查看我们的[开发文档](CONTRIBUTING.md)。
+Want to start using Pixuli Web? Check out our
+[Contributing Guide](../../CONTRIBUTING.md).
 
-## 🐳 Docker 本地构建
+## 🐳 Docker Local Build
 
-### 前置要求
+### Prerequisites
 
-- 已安装 Docker（版本 >= 20.10）
-- 已安装 Node.js（版本 >= 22.0.0）和 pnpm（版本 >= 8.0.0）
-- 确保 Docker 服务正在运行
+- Docker installed (version >= 20.10)
+- Node.js (version >= 22.0.0) and pnpm (version >= 8.0.0) installed
+- Ensure Docker service is running
 
-### 构建流程说明
+### Build Process
 
-**优化后的构建流程**：
+**Optimized build process**:
 
-1. 先在本地构建应用（生成 `dist` 目录）
-2. 然后将构建产物复制到 Docker 镜像中
-3. 使用 Nginx 提供静态文件服务
+1. First build the application locally (generate `dist` directory)
+2. Then copy the build artifacts to the Docker image
+3. Use Nginx to serve static files
 
-**优势**：
+**Advantages**:
 
-- ✅ 镜像体积更小（仅包含 Nginx，不包含 Node.js 构建环境）
-- ✅ 构建速度更快（本地构建可以利用缓存）
-- ✅ 减少镜像层数，优化存储空间
+- ✅ Smaller image size (only includes Nginx, not Node.js build environment)
+- ✅ Faster build speed (local build can utilize cache)
+- ✅ Reduced image layers, optimized storage space
 
-### 使用构建脚本（推荐）
+### Using Build Script (Recommended)
 
-1. **赋予脚本执行权限**：
+1. **Grant script execution permission**:
 
    ```bash
    chmod +x apps/web/build-docker.sh
    ```
 
-2. **执行构建脚本**：
+2. **Execute build script**:
 
    ```bash
-   # 使用默认标签 latest（脚本会自动检测并构建应用）
+   # Use default tag latest (script will automatically detect and build the application)
    ./apps/web/build-docker.sh
 
-   # 或指定版本标签
+   # Or specify version tag
    ./apps/web/build-docker.sh 1.0.0
    ```
 
-   脚本会自动执行以下步骤：
-   - 检查是否存在 `dist` 目录
-   - 如果不存在，自动执行 `pnpm build:web` 构建应用
-   - 构建 Docker 镜像
+   The script will automatically execute the following steps:
+   - Check if `dist` directory exists
+   - If not, automatically execute `pnpm build:web` to build the application
+   - Build Docker image
 
-3. **运行容器**：
+3. **Run container**:
 
    ```bash
    docker run -d -p 8080:80 --name pixuli-web pixuli-web:latest
    ```
 
-4. **访问应用**：打开浏览器访问 `http://localhost:8080`
+4. **Access application**: Open browser and visit `http://localhost:8080`
 
-### 手动构建
+### Manual Build
 
-如果不想使用脚本，也可以手动执行：
+If you don't want to use the script, you can also build manually:
 
 ```bash
-# 步骤 1: 在项目根目录构建应用
+# Step 1: Build application in project root directory
 pnpm build:web
 
-# 步骤 2: 构建 Docker 镜像（确保 dist 目录已存在）
+# Step 2: Build Docker image (ensure dist directory exists)
 docker build -f apps/web/Dockerfile -t pixuli-web:latest .
 
-# 步骤 3: 运行容器
+# Step 3: Run container
 docker run -d -p 8080:80 --name pixuli-web pixuli-web:latest
 ```
 
-### 常用 Docker 命令
+### Common Docker Commands
 
 ```bash
-# 查看运行中的容器
+# View running containers
 docker ps
 
-# 查看容器日志
+# View container logs
 docker logs -f pixuli-web
 
-# 停止容器
+# Stop container
 docker stop pixuli-web
 
-# 启动已停止的容器
+# Start stopped container
 docker start pixuli-web
 
-# 删除容器
+# Remove container
 docker rm pixuli-web
 
-# 删除镜像
+# Remove image
 docker rmi pixuli-web:latest
 
-# 查看镜像列表和大小
+# View image list and sizes
 docker images | grep pixuli-web
 ```
 
-### 构建说明
+### Build Notes
 
-- **构建上下文**：构建上下文为项目根目录，Dockerfile 位于 `apps/web/Dockerfile`
-- **构建产物**：需要先执行 `pnpm build:web` 生成 `apps/web/dist` 目录
-- **镜像内容**：仅包含 Nginx 和静态文件，不包含 Node.js 构建环境和启动脚本
-- **镜像大小**：优化后镜像大小约 20-30MB（仅包含 Nginx Alpine 和静态文件）
-- **端口映射**：容器内部使用 80 端口，映射到主机的 8080 端口（可自定义）
+- **Build Context**: Build context is project root directory, Dockerfile is
+  located at `apps/web/Dockerfile`
+- **Build Artifacts**: Need to execute `pnpm build:web` first to generate
+  `apps/web/dist` directory
+- **Image Contents**: Only includes Nginx and static files, not Node.js build
+  environment and startup scripts
+- **Image Size**: Optimized image size is approximately 20-30MB (only includes
+  Nginx Alpine and static files)
+- **Port Mapping**: Container uses port 80 internally, mapped to host port 8080
+  (customizable)
 
-### 环境变量配置
+### Environment Variable Configuration
 
-环境变量需要在**构建时**通过 `.env`
-文件配置。Vite 会在构建时将环境变量注入到应用代码中。
+Environment variables need to be configured through `.env` file **at build
+time**. Vite will inject environment variables into application code during
+build.
 
-#### 配置步骤
+#### Configuration Steps
 
-1. **创建环境变量文件**：
+1. **Create environment variable file**:
 
    ```bash
-   # 在 apps/web 目录下复制示例文件
+   # Copy example file in apps/web directory
    cd apps/web
    cp env.example .env
 
-   # 编辑配置文件
+   # Edit configuration file
    nano .env
    ```
 
-2. **配置环境变量**：
+2. **Configure environment variables**:
 
-   编辑 `.env` 文件，设置需要的环境变量：
+   Edit `.env` file and set required environment variables:
 
    ```bash
-   # 演示模式设置
+   # Demo mode settings
    VITE_DEMO_MODE=false
 
-   # GitHub 演示配置
+   # GitHub demo configuration
    VITE_DEMO_GITHUB_OWNER=your-owner
    VITE_DEMO_GITHUB_REPO=your-repo
    VITE_DEMO_GITHUB_BRANCH=main
    VITE_DEMO_GITHUB_TOKEN=your-token
    VITE_DEMO_GITHUB_PATH=/images
 
-   # Gitee 演示配置
+   # Gitee demo configuration
    VITE_DEMO_GITEE_OWNER=your-owner
    VITE_DEMO_GITEE_REPO=your-repo
    VITE_DEMO_GITEE_BRANCH=main
    VITE_DEMO_GITEE_TOKEN=your-token
    VITE_DEMO_GITEE_PATH=/images
 
-   # Gitee 代理配置
+   # Gitee proxy configuration
    VITE_USE_GITEE_PROXY=true
    ```
 
-3. **重新构建应用和镜像**：
+3. **Rebuild application and image**:
 
    ```bash
-   # 构建应用（会自动读取 .env 文件）
+   # Build application (will automatically read .env file)
    pnpm build:web
 
-   # 构建 Docker 镜像
+   # Build Docker image
    ./apps/web/build-docker.sh
    ```
 
-#### 支持的环境变量
+#### Supported Environment Variables
 
-参考 `apps/web/env.example` 文件，支持以下环境变量：
+Refer to `apps/web/env.example` file, the following environment variables are
+supported:
 
-- `VITE_DEMO_MODE` - 演示模式开关
-- `VITE_DEMO_GITHUB_OWNER` - GitHub 仓库所有者
-- `VITE_DEMO_GITHUB_REPO` - GitHub 仓库名称
-- `VITE_DEMO_GITHUB_BRANCH` - GitHub 分支名称
-- `VITE_DEMO_GITHUB_TOKEN` - GitHub 访问令牌
-- `VITE_DEMO_GITHUB_PATH` - GitHub 图片路径
-- `VITE_DEMO_GITEE_OWNER` - Gitee 仓库所有者
-- `VITE_DEMO_GITEE_REPO` - Gitee 仓库名称
-- `VITE_DEMO_GITEE_BRANCH` - Gitee 分支名称
-- `VITE_DEMO_GITEE_TOKEN` - Gitee 访问令牌
-- `VITE_DEMO_GITEE_PATH` - Gitee 图片路径
-- `VITE_USE_GITEE_PROXY` - 是否使用 Gitee 代理
+- `VITE_DEMO_MODE` - Demo mode switch
+- `VITE_DEMO_GITHUB_OWNER` - GitHub repository owner
+- `VITE_DEMO_GITHUB_REPO` - GitHub repository name
+- `VITE_DEMO_GITHUB_BRANCH` - GitHub branch name
+- `VITE_DEMO_GITHUB_TOKEN` - GitHub access token
+- `VITE_DEMO_GITHUB_PATH` - GitHub image path
+- `VITE_DEMO_GITEE_OWNER` - Gitee repository owner
+- `VITE_DEMO_GITEE_REPO` - Gitee repository name
+- `VITE_DEMO_GITEE_BRANCH` - Gitee branch name
+- `VITE_DEMO_GITEE_TOKEN` - Gitee access token
+- `VITE_DEMO_GITEE_PATH` - Gitee image path
+- `VITE_USE_GITEE_PROXY` - Whether to use Gitee proxy
 
-#### 环境变量注入机制
+#### Environment Variable Injection Mechanism
 
-- Vite 会在构建时读取 `.env` 文件中以 `VITE_` 开头的环境变量
-- 环境变量会被注入到构建产物中，通过 `import.meta.env` 访问
-- 环境变量在构建时确定，运行时无法修改
+- Vite will read environment variables starting with `VITE_` from `.env` file
+  during build
+- Environment variables will be injected into build artifacts and accessed via
+  `import.meta.env`
+- Environment variables are determined at build time and cannot be modified at
+  runtime
 
-在应用代码中访问：
+Access in application code:
 
 ```typescript
-// 访问环境变量
+// Access environment variables
 const demoMode = import.meta.env.VITE_DEMO_MODE;
 const githubOwner = import.meta.env.VITE_DEMO_GITHUB_OWNER;
 ```
 
-### 注意事项
+### Notes
 
-- 如果修改了源代码，需要重新执行 `pnpm build:web` 后再构建 Docker 镜像
-- `dist` 目录会被复制到镜像中，确保构建产物是最新的
-- 构建脚本会自动检测 `dist` 目录，如果不存在会提示是否构建
-- **环境变量在构建时注入**，修改 `.env` 文件后需要重新构建应用和镜像才能生效
-- `.env` 文件应放在 `apps/web/` 目录下，Vite 会自动读取
-- 建议将 `.env` 添加到 `.gitignore` 中，避免提交敏感信息
+- If you modify source code, you need to re-execute `pnpm build:web` before
+  building Docker image
+- `dist` directory will be copied to the image, ensure build artifacts are up to
+  date
+- Build script will automatically detect `dist` directory and prompt if it
+  doesn't exist
+- **Environment variables are injected at build time**, modifications to `.env`
+  file require rebuilding application and image to take effect
+- `.env` file should be placed in `apps/web/` directory, Vite will automatically
+  read it
+- It's recommended to add `.env` to `.gitignore` to avoid committing sensitive
+  information
 
-## 🤝 参与贡献
+## 🤝 Contributing
 
-我们欢迎所有形式的贡献！如果您想参与项目开发，请查看 [贡献指南](CONTRIBUTING.md)
-了解详细信息。
+We welcome all forms of contributions! If you'd like to contribute to the
+project, please check the [Contributing Guide](../../CONTRIBUTING.md) for
+details.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-- [React](https://reactjs.org/) - 用户界面库
-- [Vite](https://vitejs.dev/) - 构建工具
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
-- [Octokit](https://octokit.github.io/) - GitHub API 客户端
-- [Lucide React](https://lucide.dev/) - 图标库
-- [React Hot Toast](https://react-hot-toast.com/) - 通知组件
-- [Zustand](https://zustand-demo.pmnd.rs/) - 状态管理
-- [i18next](https://www.i18next.com/) - 国际化框架
+- [React](https://reactjs.org/) - User interface library
+- [Vite](https://vitejs.dev/) - Build tool
+- [Octokit](https://octokit.github.io/) - GitHub API client
+- [Lucide React](https://lucide.dev/) - Icon library
+- [React Hot Toast](https://react-hot-toast.com/) - Notification component
+- [Zustand](https://zustand-demo.pmnd.rs/) - State management
+- [i18next](https://www.i18next.com/) - Internationalization framework
 
 ---
 
-⭐ 如果这个项目对您有帮助，请给我们一个星标！
+⭐ If this project is helpful to you, please give us a star!
