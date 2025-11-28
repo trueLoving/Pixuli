@@ -29,43 +29,21 @@ export class GiteeStorageService {
     path: string,
   ): string {
     // Gitee raw URL 格式: https://gitee.com/{owner}/{repo}/raw/{branch}/{path}
+    // 注意：path 需要正确编码，但不需要对整个路径进行编码
     const encodedPath = path
       .split('/')
       .map(segment => encodeURIComponent(segment))
       .join('/');
     const rawPath = `/${owner}/${repo}/raw/${encodeURIComponent(branch)}/${encodedPath}`;
 
-    // 使用代理 URL 避免跨域问题（仅 web 端）
+    // 使用代理 URL 避免跨域问题
     // 开发环境：使用 Vite 代理
     // 生产环境：如果配置了代理服务器，可通过环境变量启用
-    // 注意：React Native 环境不支持 import.meta，需要特殊处理
-    if (typeof window !== 'undefined' && !(window as any).ipcRenderer) {
-      // 检测是否为 React Native 环境
-      const isReactNative =
-        typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+    const isDev = import.meta.env.DEV;
+    const useProxy = isDev || import.meta.env.VITE_USE_GITEE_PROXY === 'true';
 
-      // 仅在非 React Native 的 web 环境中尝试使用代理
-      if (!isReactNative) {
-        // 通过检查 location.hostname 来判断是否为开发环境（localhost）
-        // 或者通过检查全局变量或 localStorage 来获取代理配置
-        const isDev =
-          typeof window !== 'undefined' &&
-          window.location &&
-          (window.location.hostname === 'localhost' ||
-            window.location.hostname === '127.0.0.1');
-
-        // 检查是否有代理配置（通过全局变量或 localStorage）
-        const hasProxyConfig =
-          (typeof window !== 'undefined' &&
-            typeof localStorage !== 'undefined' &&
-            localStorage.getItem('VITE_USE_GITEE_PROXY') === 'true') ||
-          (typeof window !== 'undefined' &&
-            (window as any).__VITE_USE_GITEE_PROXY__ === true);
-
-        if (isDev || hasProxyConfig) {
-          return `/api/gitee-proxy${rawPath}`;
-        }
-      }
+    if (useProxy) {
+      return `/api/gitee-proxy${rawPath}`;
     }
 
     return `https://gitee.com${rawPath}`;
