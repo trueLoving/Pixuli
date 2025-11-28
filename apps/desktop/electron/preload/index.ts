@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
     const [channel, listener] = args;
     return ipcRenderer.on(channel, (event, ...args) =>
-      listener(event, ...args)
+      listener(event, ...args),
     );
   },
   off(...args: Parameters<typeof ipcRenderer.off>) {
@@ -21,34 +21,6 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args;
     return ipcRenderer.invoke(channel, ...omit);
   },
-});
-
-// --------- Expose Github API to the Renderer process ---------
-contextBridge.exposeInMainWorld('githubAPI', {
-  // Github API
-  githubUpload: (params: any) => ipcRenderer.invoke('github:upload', params),
-  githubDelete: (params: any) => ipcRenderer.invoke('github:delete', params),
-  githubGetList: (params: any) => ipcRenderer.invoke('github:getList', params),
-  githubUpdateMetadata: (params: any) =>
-    ipcRenderer.invoke('github:updateMetadata', params),
-  githubSetAuth: (token: string) => ipcRenderer.invoke('github:setAuth', token),
-  // 获取图片数据（用于解决跨域问题）
-  githubGetImageData: (params: any) =>
-    ipcRenderer.invoke('github:getImageData', params),
-});
-
-// --------- Expose Gitee API to the Renderer process ---------
-contextBridge.exposeInMainWorld('giteeAPI', {
-  // Gitee API
-  giteeUpload: (params: any) => ipcRenderer.invoke('gitee:upload', params),
-  giteeDelete: (params: any) => ipcRenderer.invoke('gitee:delete', params),
-  giteeGetList: (params: any) => ipcRenderer.invoke('gitee:getList', params),
-  giteeUpdateMetadata: (params: any) =>
-    ipcRenderer.invoke('gitee:updateMetadata', params),
-  giteeSetAuth: (token: string) => ipcRenderer.invoke('gitee:setAuth', token),
-  // 获取图片数据（用于解决跨域问题）
-  giteeGetImageData: (params: any) =>
-    ipcRenderer.invoke('gitee:getImageData', params),
 });
 
 // --------- Expose WASM API to the Renderer process ---------
