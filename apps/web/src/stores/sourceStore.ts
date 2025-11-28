@@ -1,6 +1,4 @@
 import { create } from 'zustand';
-import type { GitHubConfig } from '@packages/common/src/types/github';
-import type { GiteeConfig } from '@packages/common/src/types/gitee';
 
 export interface GitHubSourceConfig {
   id: string;

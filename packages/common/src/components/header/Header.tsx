@@ -1,4 +1,4 @@
-import { Grid, HelpCircle, Info, List, RefreshCw, Upload } from 'lucide-react';
+import { Grid, List, RefreshCw, Upload } from 'lucide-react';
 import React from 'react';
 import { defaultTranslate } from '../../locales';
 import {
@@ -18,8 +18,6 @@ interface HeaderProps {
   onRefresh?: () => void;
   loading?: boolean;
   onSettings?: () => void;
-  onVersionInfo?: () => void;
-  onHelp?: () => void;
   currentLanguage?: string;
   availableLanguages?: Language[];
   onLanguageChange?: (language: string) => void;
@@ -36,8 +34,6 @@ const Header: React.FC<HeaderProps> = ({
   onRefresh,
   loading = false,
   onSettings,
-  onVersionInfo,
-  onHelp,
   currentLanguage,
   availableLanguages,
   onLanguageChange,
@@ -47,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="app-header">
-      <div className="header-center">
+      <div className="header-left">
         <SearchBar
           value={searchQuery}
           onChange={onSearchChange}
@@ -74,29 +70,6 @@ const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {hasConfig && viewMode && onViewModeChange && (
-          <div className="header-view-toggle">
-            <button
-              onClick={() => onViewModeChange('grid')}
-              className={`header-view-button ${
-                viewMode === 'grid' ? 'active' : ''
-              }`}
-              title={translate('header.viewMode.grid')}
-            >
-              <Grid size={18} />
-            </button>
-            <button
-              onClick={() => onViewModeChange('list')}
-              className={`header-view-button ${
-                viewMode === 'list' ? 'active' : ''
-              }`}
-              title={translate('header.viewMode.list')}
-            >
-              <List size={18} />
-            </button>
-          </div>
-        )}
-
         {hasConfig && onRefresh && (
           <button
             onClick={onRefresh}
@@ -105,26 +78,6 @@ const Header: React.FC<HeaderProps> = ({
             title={`${translate('navigation.refresh')} (F5)`}
           >
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          </button>
-        )}
-
-        {onVersionInfo && (
-          <button
-            onClick={onVersionInfo}
-            className="header-button icon-only"
-            title={translate('version.title')}
-          >
-            <Info size={18} />
-          </button>
-        )}
-
-        {onHelp && (
-          <button
-            onClick={onHelp}
-            className="header-button icon-only"
-            title={`${translate('navigation.help')} (F1)`}
-          >
-            <HelpCircle size={18} />
           </button>
         )}
 

@@ -2,6 +2,7 @@ import {
   BrowseMode,
   EmptyState,
   formatFileSize,
+  FullScreenLoading,
   Gallery3D,
   getImageDimensionsFromUrl,
   GitHubConfigModal,
@@ -13,6 +14,7 @@ import {
   keyboardManager,
   PhotoWall,
   Sidebar,
+  SidebarFilter,
   SidebarView,
   SlideShowPlayer,
   Toaster,
@@ -71,6 +73,7 @@ function App() {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [browseMode, setBrowseMode] = useState<BrowseMode>('file');
   const [currentView, setCurrentView] = useState<SidebarView>('photos');
+  const [currentFilter, setCurrentFilter] = useState<SidebarFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -218,25 +221,91 @@ function App() {
     setEditingSourceId(null);
   }, [editingSourceId, removeSource, setSelectedSourceId]);
 
+  // 处理编辑仓库源
+  const handleEditSource = useCallback(
+    (sourceId: string) => {
+      const source = sources.find(s => s.id === sourceId);
+      if (source) {
+        setEditingSourceId(sourceId);
+        // 设置存储类型
+        useImageStore.setState({ storageType: source.type });
+        // 设置配置
+        if (source.type === 'github') {
+          setGitHubConfig({
+            owner: source.owner,
+            repo: source.repo,
+            branch: source.branch,
+            token: source.token,
+            path: source.path,
+          });
+        } else {
+          setGiteeConfig({
+            owner: source.owner,
+            repo: source.repo,
+            branch: source.branch,
+            token: source.token,
+            path: source.path,
+          });
+        }
+        // 打开配置模态框
+        setShowConfigModal(true);
+      }
+    },
+    [sources, setGitHubConfig, setGiteeConfig],
+  );
+
+  // 处理删除仓库源
+  const handleDeleteSource = useCallback(
+    (sourceId: string) => {
+      // 确认删除
+      if (window.confirm(t('sidebar.confirmDeleteSource'))) {
+        removeSource(sourceId);
+        // 如果删除的是当前选中的源，清除选中状态
+        if (selectedSourceId === sourceId) {
+          setSelectedSourceId(null);
+        }
+      }
+    },
+    [removeSource, selectedSourceId, setSelectedSourceId, t],
+  );
+
   const handleDeleteImage = useCallback(
     async (imageId: string, fileName: string) => {
-      await deleteImage(imageId, fileName);
+      try {
+        await deleteImage(imageId, fileName);
+        // 删除后重新加载图片列表
+        await handleLoadImages();
+      } catch (error) {
+        console.error('Failed to delete image:', error);
+      }
     },
-    [deleteImage],
+    [deleteImage, handleLoadImages],
   );
 
   const handleDeleteMultipleImages = useCallback(
     async (imageIds: string[], fileNames: string[]) => {
-      await deleteMultipleImages(imageIds, fileNames);
+      try {
+        await deleteMultipleImages(imageIds, fileNames);
+        // 删除后重新加载图片列表
+        await handleLoadImages();
+      } catch (error) {
+        console.error('Failed to delete multiple images:', error);
+      }
     },
-    [deleteMultipleImages],
+    [deleteMultipleImages, handleLoadImages],
   );
 
   const handleUpdateImage = useCallback(
     async (data: any) => {
-      await updateImage(data);
+      try {
+        await updateImage(data);
+        // 更新后重新加载图片列表
+        await handleLoadImages();
+      } catch (error) {
+        console.error('Failed to update image:', error);
+      }
     },
-    [updateImage],
+    [updateImage, handleLoadImages],
   );
 
   const handleOpenKeyboardHelp = useCallback(() => {
@@ -379,11 +448,13 @@ function App() {
     };
 
     const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
+    const handleOpenVersionInfoEvent = () => handleOpenVersionInfo();
     const handleRefreshImages = () => handleLoadImages();
     const handleOpenConfig = () => handleOpenConfigModal();
 
     window.addEventListener('closeModals', handleCloseModals);
     window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent);
+    window.addEventListener('openVersionInfo', handleOpenVersionInfoEvent);
     window.addEventListener('refreshImages', handleRefreshImages);
     window.addEventListener('openConfig', handleOpenConfig);
 
@@ -394,6 +465,7 @@ function App() {
         'openKeyboardHelp',
         handleOpenKeyboardHelpEvent,
       );
+      window.removeEventListener('openVersionInfo', handleOpenVersionInfoEvent);
       window.removeEventListener('refreshImages', handleRefreshImages);
       window.removeEventListener('openConfig', handleOpenConfig);
     };
@@ -403,9 +475,10 @@ function App() {
     showKeyboardHelp,
     showVersionInfo,
     handleCloseConfigModal,
+    handleOpenKeyboardHelp,
+    handleOpenVersionInfo,
     handleCloseKeyboardHelp,
     handleCloseVersionInfo,
-    handleOpenKeyboardHelp,
     handleLoadImages,
     handleOpenConfigModal,
   ]);
@@ -421,9 +494,15 @@ function App() {
       <Sidebar
         currentView={currentView}
         onViewChange={setCurrentView}
+        browseMode={browseMode}
+        onBrowseModeChange={setBrowseMode}
+        currentFilter={currentFilter}
+        onFilterChange={setCurrentFilter}
         sources={sidebarSources}
         selectedSourceId={selectedSourceId}
         onSourceSelect={handleSourceSelect}
+        onSourceEdit={handleEditSource}
+        onSourceDelete={handleDeleteSource}
         hasConfig={hasConfig}
         onAddSource={handleAddSource}
         collapsed={sidebarCollapsed}
@@ -456,8 +535,6 @@ function App() {
           onRefresh={handleLoadImages}
           loading={loading}
           onSettings={handleOpenConfigModal}
-          onVersionInfo={handleOpenVersionInfo}
-          onHelp={handleOpenKeyboardHelp}
           currentLanguage={getCurrentLanguage()}
           availableLanguages={getAvailableLanguages()}
           onLanguageChange={changeLanguage}
@@ -710,6 +787,12 @@ function App() {
 
       {/* PWA 功能组件 */}
       <PWAInstallPrompt />
+
+      {/* 全屏 Loading - 数据请求时显示 */}
+      <FullScreenLoading
+        visible={loading}
+        text={loading ? t('app.loadingImages') : undefined}
+      />
     </div>
   );
 }

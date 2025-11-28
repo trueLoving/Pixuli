@@ -13,10 +13,11 @@
 }
 
 .header-left {
-  flex-shrink: 0;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .header-logo-icon {
@@ -48,6 +49,12 @@
   flex: 1;
   max-width: 600px;
   margin: 0 auto;
+}
+
+/* 搜索框在左侧时的样式 */
+.header-left .search-bar {
+  max-width: 600px;
+  width: 100%;
 }
 
 .header-right {
@@ -147,6 +154,15 @@
   .app-header {
     padding: 0 1rem;
     gap: 1rem;
+  }
+
+  .header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-left .search-bar {
+    max-width: none;
   }
 
   .header-center {

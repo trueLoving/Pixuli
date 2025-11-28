@@ -1,11 +1,9 @@
 import {
-  BookOpen,
   Github,
   GitBranch,
   HelpCircle,
   Image as ImageIcon,
   Play,
-  Settings,
 } from 'lucide-react';
 import React from 'react';
 import { defaultTranslate } from '../../locales';
@@ -96,12 +94,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           <HelpCircle className="w-4 h-4" />
           <span>{translate('emptyState.needHelp')}</span>
           <a
-            href="#"
-            onClick={e => {
-              e.preventDefault();
-              // 可以打开帮助文档或触发帮助事件
-              window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-            }}
+            href="https://pixuli-docs.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="help-link"
           >
             {translate('emptyState.viewDocs')}

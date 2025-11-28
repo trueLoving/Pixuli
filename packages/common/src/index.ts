@@ -70,10 +70,12 @@ export { PhotoWall } from './components/photo-wall';
 export { Gallery3D } from './components/gallery-3d';
 export { BrowseModeSwitcher } from './components/browse-mode-switcher';
 export { default as Sidebar } from './components/sidebar/Sidebar';
-export type { SidebarView } from './components/sidebar';
+export type { SidebarView, SidebarFilter } from './components/sidebar';
 export { default as Header } from './components/header/Header';
 export { default as EmptyState } from './components/empty-state/EmptyState';
 export { default as SearchBar } from './components/search/SearchBar';
+export { FullScreenLoading } from './components/fullscreen-loading';
+export type { FullScreenLoadingProps } from './components/fullscreen-loading';
 
 // 语言包导出
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

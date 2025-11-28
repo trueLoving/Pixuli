@@ -8,7 +8,7 @@
   flex-direction: column;
   position: relative;
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 10;
   transition:
     transform 0.3s ease,
     width 0.3s ease;
@@ -234,12 +234,20 @@
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
+/* 折叠状态 - 筛选选项 */
+.sidebar-collapsed-filters {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
 /* 折叠状态 - 底部操作 */
 .sidebar-collapsed-footer {
   padding: 0.5rem 0;
   border-top: 1px solid var(--border-color, #e5e7eb);
   display: flex;
   justify-content: center;
+  margin-top: auto;
 }
 
 .sidebar-toggle {
@@ -321,10 +329,18 @@
   color: var(--text-primary, #111827);
 }
 
-.sidebar-nav {
-  flex: 1;
-  overflow-y: auto;
+/* 侧边栏区域 */
+.sidebar-section {
   padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
+}
+
+.sidebar-nav {
+  padding: 0.25rem 0;
 }
 
 .sidebar-nav-item {
@@ -567,6 +583,61 @@
 .sidebar-footer {
   border-top: 1px solid var(--border-color, #e5e7eb);
   padding: 0.5rem 0;
+}
+
+/* 右键菜单 */
+.sidebar-context-menu {
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  padding: 0.25rem 0;
+  z-index: 10000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #111827);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  text-align: left;
+}
+
+.sidebar-context-menu-item:hover {
+  background: var(--hover-bg, #f3f4f6);
+}
+
+.sidebar-context-menu-item-danger {
+  color: #dc2626;
+}
+
+.sidebar-context-menu-item-danger:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.sidebar-context-menu-item svg {
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */

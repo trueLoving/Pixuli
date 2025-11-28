@@ -4,12 +4,20 @@ import {
   Heart,
   HelpCircle,
   Image as ImageIcon,
+  Info,
+  Keyboard,
+  LayoutGrid,
   Lock,
+  Play,
   Plus,
   Tag,
+  FileText,
+  Edit,
+  Trash2,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { defaultTranslate } from '../../locales';
+import type { BrowseMode } from '../browse-mode-switcher';
 import './Sidebar.css';
 
 export type SidebarView =
@@ -18,6 +26,8 @@ export type SidebarView =
   | 'tags'
   | 'favorites'
   | 'settings';
+
+export type SidebarFilter = 'all' | 'tags' | 'favorites';
 
 export interface SidebarSource {
   id: string;
@@ -30,11 +40,19 @@ export interface SidebarSource {
 }
 
 interface SidebarProps {
-  currentView: SidebarView;
-  onViewChange: (view: SidebarView) => void;
+  currentView?: SidebarView;
+  onViewChange?: (view: SidebarView) => void;
+  // 浏览模式相关
+  browseMode?: BrowseMode;
+  onBrowseModeChange?: (mode: BrowseMode) => void;
+  // 筛选相关
+  currentFilter?: SidebarFilter;
+  onFilterChange?: (filter: SidebarFilter) => void;
   sources: SidebarSource[];
   selectedSourceId: string | null;
   onSourceSelect: (id: string) => void;
+  onSourceEdit?: (id: string) => void;
+  onSourceDelete?: (id: string) => void;
   hasConfig: boolean;
   onAddSource: () => void;
   collapsed?: boolean;
@@ -82,9 +100,15 @@ const NavItem: React.FC<NavItemProps> = ({
 const Sidebar: React.FC<SidebarProps> = ({
   currentView,
   onViewChange,
+  browseMode = 'file',
+  onBrowseModeChange,
+  currentFilter = 'all',
+  onFilterChange,
   sources,
   selectedSourceId,
   onSourceSelect,
+  onSourceEdit,
+  onSourceDelete,
   hasConfig,
   onAddSource,
   collapsed = false,
@@ -93,6 +117,119 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const translate = t || defaultTranslate;
   const [sourcesExpanded, setSourcesExpanded] = useState(true);
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    sourceId: string;
+  } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+
+  // 浏览模式配置
+  const browseModes: Array<{
+    mode: BrowseMode;
+    icon: React.ReactNode;
+    label: string;
+  }> = [
+    {
+      mode: 'file',
+      icon: <FileText size={20} />,
+      label: translate('browseMode.file'),
+    },
+    {
+      mode: 'slide',
+      icon: <Play size={20} />,
+      label: translate('browseMode.slide'),
+    },
+    {
+      mode: 'wall',
+      icon: <LayoutGrid size={20} />,
+      label: translate('browseMode.wall'),
+    },
+    {
+      mode: 'gallery3d',
+      icon: <ImageIcon size={20} />,
+      label: translate('browseMode.gallery3d'),
+    },
+  ];
+
+  // 筛选选项配置
+  const filters: Array<{
+    filter: SidebarFilter;
+    icon: React.ReactNode;
+    label: string;
+  }> = [
+    {
+      filter: 'all',
+      icon: <ImageIcon size={20} />,
+      label: translate('sidebar.all'),
+    },
+    {
+      filter: 'tags',
+      icon: <Tag size={20} />,
+      label: translate('sidebar.tags'),
+    },
+    {
+      filter: 'favorites',
+      icon: <Heart size={20} />,
+      label: translate('sidebar.favorites'),
+    },
+  ];
+
+  // 处理右键菜单
+  const handleContextMenu = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    sourceId: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      sourceId,
+    });
+  };
+
+  // 关闭右键菜单
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  // 处理编辑
+  const handleEdit = (sourceId: string) => {
+    if (onSourceEdit) {
+      onSourceEdit(sourceId);
+    }
+    closeContextMenu();
+  };
+
+  // 处理删除
+  const handleDelete = (sourceId: string) => {
+    if (onSourceDelete) {
+      onSourceDelete(sourceId);
+    }
+    closeContextMenu();
+  };
+
+  // 点击外部关闭右键菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target as Node)
+      ) {
+        closeContextMenu();
+      }
+    };
+
+    if (contextMenu?.visible) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [contextMenu?.visible]);
 
   if (collapsed) {
     return (
@@ -112,61 +249,52 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* 主要导航 - 折叠状态 */}
+        {/* 浏览模式导航 - 折叠状态 */}
         <nav className="sidebar-collapsed-nav">
-          <button
-            className={`sidebar-collapsed-item ${
-              currentView === 'photos' ? 'active' : ''
-            } ${!hasConfig ? 'disabled' : ''}`}
-            onClick={hasConfig ? () => onViewChange('photos') : undefined}
-            disabled={!hasConfig}
-            title={translate('sidebar.photos')}
-          >
-            <ImageIcon size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.photos')}
-            </span>
-          </button>
-          <button
-            className={`sidebar-collapsed-item ${
-              currentView === 'explore' ? 'active' : ''
-            } ${!hasConfig ? 'disabled' : ''}`}
-            onClick={hasConfig ? () => onViewChange('explore') : undefined}
-            disabled={!hasConfig}
-            title={translate('sidebar.explore')}
-          >
-            <Compass size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.explore')}
-            </span>
-          </button>
-          <button
-            className={`sidebar-collapsed-item ${
-              currentView === 'tags' ? 'active' : ''
-            } ${!hasConfig ? 'disabled' : ''}`}
-            onClick={hasConfig ? () => onViewChange('tags') : undefined}
-            disabled={!hasConfig}
-            title={translate('sidebar.tags')}
-          >
-            <Tag size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.tags')}
-            </span>
-          </button>
-          <button
-            className={`sidebar-collapsed-item ${
-              currentView === 'favorites' ? 'active' : ''
-            } ${!hasConfig ? 'disabled' : ''}`}
-            onClick={hasConfig ? () => onViewChange('favorites') : undefined}
-            disabled={!hasConfig}
-            title={translate('sidebar.favorites')}
-          >
-            <Heart size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.favorites')}
-            </span>
-          </button>
+          {browseModes.map(mode => (
+            <button
+              key={mode.mode}
+              className={`sidebar-collapsed-item ${
+                browseMode === mode.mode ? 'active' : ''
+              } ${!hasConfig ? 'disabled' : ''}`}
+              onClick={
+                hasConfig && onBrowseModeChange
+                  ? () => onBrowseModeChange(mode.mode)
+                  : undefined
+              }
+              disabled={!hasConfig}
+              title={mode.label}
+            >
+              {React.cloneElement(mode.icon as React.ReactElement, {
+                size: 28,
+              })}
+              <span className="sidebar-collapsed-tooltip">{mode.label}</span>
+            </button>
+          ))}
         </nav>
+
+        {/* 筛选选项 - 折叠状态 */}
+        {hasConfig && onFilterChange && (
+          <nav className="sidebar-collapsed-nav sidebar-collapsed-filters">
+            {filters.map(filter => (
+              <button
+                key={filter.filter}
+                className={`sidebar-collapsed-item ${
+                  currentFilter === filter.filter ? 'active' : ''
+                }`}
+                onClick={() => onFilterChange(filter.filter)}
+                title={filter.label}
+              >
+                {React.cloneElement(filter.icon as React.ReactElement, {
+                  size: 24,
+                })}
+                <span className="sidebar-collapsed-tooltip">
+                  {filter.label}
+                </span>
+              </button>
+            ))}
+          </nav>
+        )}
 
         {/* 仓库源 - 折叠状态 */}
         {sources.length > 0 && (
@@ -178,6 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   selectedSourceId === source.id ? 'active' : ''
                 }`}
                 onClick={() => onSourceSelect(source.id)}
+                onContextMenu={e => handleContextMenu(e, source.id)}
                 title={`${source.name}\n${source.owner}/${source.repo}`}
               >
                 {source.type === 'github' ? (
@@ -221,16 +350,69 @@ const Sidebar: React.FC<SidebarProps> = ({
           <button
             className="sidebar-collapsed-item"
             onClick={() => {
-              window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+              window.open('https://pixuli-docs.vercel.app/', '_blank');
             }}
-            title={translate('sidebar.help')}
+            title={translate('sidebar.docs')}
           >
             <HelpCircle size={28} />
             <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.help')}
+              {translate('sidebar.docs')}
+            </span>
+          </button>
+          <button
+            className="sidebar-collapsed-item"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+            }}
+            title={translate('sidebar.keyboardShortcuts')}
+          >
+            <Keyboard size={28} />
+            <span className="sidebar-collapsed-tooltip">
+              {translate('sidebar.keyboardShortcuts')}
+            </span>
+          </button>
+          <button
+            className="sidebar-collapsed-item"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openVersionInfo'));
+            }}
+            title={translate('sidebar.versionInfo')}
+          >
+            <Info size={28} />
+            <span className="sidebar-collapsed-tooltip">
+              {translate('sidebar.versionInfo')}
             </span>
           </button>
         </div>
+
+        {/* 右键菜单 - 折叠状态 */}
+        {contextMenu?.visible && (
+          <div
+            ref={contextMenuRef}
+            className="sidebar-context-menu"
+            style={{
+              position: 'fixed',
+              left: contextMenu.x,
+              top: contextMenu.y,
+              zIndex: 10000,
+            }}
+          >
+            <button
+              className="sidebar-context-menu-item"
+              onClick={() => handleEdit(contextMenu.sourceId)}
+            >
+              <Edit size={16} />
+              <span>{translate('sidebar.editSource')}</span>
+            </button>
+            <button
+              className="sidebar-context-menu-item sidebar-context-menu-item-danger"
+              onClick={() => handleDelete(contextMenu.sourceId)}
+            >
+              <Trash2 size={16} />
+              <span>{translate('sidebar.deleteSource')}</span>
+            </button>
+          </div>
+        )}
       </aside>
     );
   }
@@ -258,44 +440,56 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* 主要导航 */}
-      <nav className="sidebar-nav">
-        <NavItem
-          icon={<ImageIcon size={20} />}
-          label={translate('sidebar.photos')}
-          active={currentView === 'photos'}
-          disabled={!hasConfig}
-          onClick={() => onViewChange('photos')}
-          tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
-        />
-        <NavItem
-          icon={<Compass size={20} />}
-          label={translate('sidebar.explore')}
-          active={currentView === 'explore'}
-          disabled={!hasConfig}
-          onClick={() => onViewChange('explore')}
-          tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
-        />
-        <NavItem
-          icon={<Tag size={20} />}
-          label={translate('sidebar.tags')}
-          active={currentView === 'tags'}
-          disabled={!hasConfig}
-          onClick={() => onViewChange('tags')}
-          tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
-        />
-        <NavItem
-          icon={<Heart size={20} />}
-          label={translate('sidebar.favorites')}
-          active={currentView === 'favorites'}
-          disabled={!hasConfig}
-          onClick={() => onViewChange('favorites')}
-          tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
-        />
-      </nav>
+      {/* 浏览模式导航 */}
+      <div className="sidebar-section">
+        <div className="sidebar-section-header">
+          <span className="sidebar-section-title">
+            {translate('sidebar.browseMode')}
+          </span>
+        </div>
+        <nav className="sidebar-nav">
+          {browseModes.map(mode => (
+            <NavItem
+              key={mode.mode}
+              icon={mode.icon}
+              label={mode.label}
+              active={browseMode === mode.mode}
+              disabled={!hasConfig}
+              onClick={
+                hasConfig && onBrowseModeChange
+                  ? () => onBrowseModeChange(mode.mode)
+                  : undefined
+              }
+              tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* 筛选选项 */}
+      {hasConfig && onFilterChange && (
+        <div className="sidebar-section">
+          <div className="sidebar-section-header">
+            <span className="sidebar-section-title">
+              {translate('sidebar.filter')}
+            </span>
+          </div>
+          <nav className="sidebar-nav">
+            {filters.map(filter => (
+              <NavItem
+                key={filter.filter}
+                icon={filter.icon}
+                label={filter.label}
+                active={currentFilter === filter.filter}
+                onClick={() => onFilterChange(filter.filter)}
+              />
+            ))}
+          </nav>
+        </div>
+      )}
 
       {/* 仓库源列表 */}
-      <div className="sidebar-sources">
+      <div className="sidebar-section sidebar-sources">
         <div className="sidebar-section-header">
           <span className="sidebar-section-title">
             {translate('sidebar.sources')}
@@ -331,6 +525,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   selectedSourceId === source.id ? 'active' : ''
                 }`}
                 onClick={() => onSourceSelect(source.id)}
+                onContextMenu={e => handleContextMenu(e, source.id)}
                 title={`${source.owner}/${source.repo}`}
               >
                 <div className="sidebar-source-icon">
@@ -357,13 +552,58 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="sidebar-footer">
         <NavItem
           icon={<HelpCircle size={20} />}
-          label={translate('sidebar.help')}
+          label={translate('sidebar.docs')}
           onClick={() => {
-            // 触发帮助事件
+            // 打开文档链接
+            window.open('https://pixuli-docs.vercel.app/', '_blank');
+          }}
+        />
+        <NavItem
+          icon={<Keyboard size={20} />}
+          label={translate('sidebar.keyboardShortcuts')}
+          onClick={() => {
+            // 触发快捷键说明事件
             window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
           }}
         />
+        <NavItem
+          icon={<Info size={20} />}
+          label={translate('sidebar.versionInfo')}
+          onClick={() => {
+            // 触发版本信息事件
+            window.dispatchEvent(new CustomEvent('openVersionInfo'));
+          }}
+        />
       </div>
+
+      {/* 右键菜单 */}
+      {contextMenu?.visible && (
+        <div
+          ref={contextMenuRef}
+          className="sidebar-context-menu"
+          style={{
+            position: 'fixed',
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 10000,
+          }}
+        >
+          <button
+            className="sidebar-context-menu-item"
+            onClick={() => handleEdit(contextMenu.sourceId)}
+          >
+            <Edit size={16} />
+            <span>{translate('sidebar.editSource')}</span>
+          </button>
+          <button
+            className="sidebar-context-menu-item sidebar-context-menu-item-danger"
+            onClick={() => handleDelete(contextMenu.sourceId)}
+          >
+            <Trash2 size={16} />
+            <span>{translate('sidebar.deleteSource')}</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 };
