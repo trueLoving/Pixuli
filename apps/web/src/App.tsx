@@ -1,38 +1,39 @@
 import {
   BrowseMode,
-  BrowseModeSwitcher,
+  EmptyState,
   formatFileSize,
   Gallery3D,
   getImageDimensionsFromUrl,
   GitHubConfigModal,
   GiteeConfigModal,
+  Header,
   ImageBrowser,
   ImageUpload,
   KeyboardHelpModal,
   keyboardManager,
-  LanguageSwitcher,
   PhotoWall,
+  Sidebar,
+  SidebarView,
   SlideShowPlayer,
   Toaster,
   VersionInfoModal,
   type VersionInfo,
 } from '@packages/common/src';
-import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
+import { Github, RefreshCw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { Demo, useDemoMode } from './components';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
 import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
+import { useSourceStore } from './stores/sourceStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
 
 function App() {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
     useI18n();
-  const { isDemoMode, exitDemoMode } = useDemoMode();
   const {
     images,
     loading,
@@ -54,12 +55,50 @@ function App() {
     updateImage,
   } = useImageStore();
 
+  const {
+    sources,
+    selectedSourceId,
+    addSource,
+    updateSource,
+    removeSource,
+    setSelectedSourceId,
+  } = useSourceStore();
+
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showSourceTypeMenu, setShowSourceTypeMenu] = useState(false);
+  const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [browseMode, setBrowseMode] = useState<BrowseMode>('file');
+  const [currentView, setCurrentView] = useState<SidebarView>('photos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // 键盘快捷键分类数据 - 使用 useMemo 优化性能
+  // 判断是否有配置
+  const hasConfig = sources.length > 0;
+
+  // 获取当前选中的源
+  const selectedSource = useMemo(() => {
+    return selectedSourceId
+      ? sources.find(s => s.id === selectedSourceId)
+      : sources[0] || null;
+  }, [sources, selectedSourceId]);
+
+  // 构建仓库源列表（用于侧边栏）
+  const sidebarSources = useMemo(() => {
+    return sources.map(source => ({
+      id: source.id,
+      name: source.name || `${source.owner}/${source.repo}`,
+      type: source.type,
+      owner: source.owner,
+      repo: source.repo,
+      path: source.path,
+      active: selectedSourceId === source.id,
+    }));
+  }, [sources, selectedSourceId]);
+
+  // 键盘快捷键分类数据
   const keyboardCategories = useMemo(
     () => [
       {
@@ -117,24 +156,67 @@ function App() {
 
   const handleSaveConfig = useCallback(
     (config: any) => {
-      if (storageType === 'gitee') {
-        setGiteeConfig(config);
+      let sourceId: string;
+      if (editingSourceId) {
+        // 编辑现有源
+        updateSource(editingSourceId, {
+          ...config,
+          name: config.name || `${config.owner}/${config.repo}`,
+        });
+        sourceId = editingSourceId;
       } else {
-        setGitHubConfig(config);
+        // 添加新源
+        const newSource = addSource({
+          type: storageType!,
+          name: `${config.owner}/${config.repo}`,
+          ...config,
+        });
+        sourceId = newSource.id;
+        setSelectedSourceId(newSource.id);
       }
       setShowConfigModal(false);
+      setEditingSourceId(null);
+
+      // 切换到保存的源并加载图片
+      const sourceConfig = {
+        owner: config.owner,
+        repo: config.repo,
+        branch: config.branch,
+        token: config.token,
+        path: config.path,
+      };
+
+      if (storageType === 'github') {
+        setGitHubConfig(sourceConfig);
+      } else {
+        setGiteeConfig(sourceConfig);
+      }
+
+      // 延迟加载，确保配置已更新
+      setTimeout(() => {
+        handleLoadImages();
+      }, 100);
     },
-    [setGitHubConfig, setGiteeConfig, storageType],
+    [
+      editingSourceId,
+      storageType,
+      addSource,
+      updateSource,
+      setSelectedSourceId,
+      setGitHubConfig,
+      setGiteeConfig,
+      handleLoadImages,
+    ],
   );
 
   const handleClearConfig = useCallback(() => {
-    if (storageType === 'gitee') {
-      clearGiteeConfig();
-    } else {
-      clearGitHubConfig();
+    if (editingSourceId) {
+      removeSource(editingSourceId);
+      setSelectedSourceId(null);
     }
     setShowConfigModal(false);
-  }, [clearGitHubConfig, clearGiteeConfig, storageType]);
+    setEditingSourceId(null);
+  }, [editingSourceId, removeSource, setSelectedSourceId]);
 
   const handleDeleteImage = useCallback(
     async (imageId: string, fileName: string) => {
@@ -173,6 +255,87 @@ function App() {
     setShowVersionInfo(false);
   }, []);
 
+  const handleAddSource = useCallback(() => {
+    // 显示仓库类型选择菜单
+    setShowSourceTypeMenu(true);
+  }, []);
+
+  const handleSelectSourceType = useCallback((type: 'github' | 'gitee') => {
+    setEditingSourceId(null);
+    useImageStore.setState({ storageType: type });
+    setShowSourceTypeMenu(false);
+    setShowConfigModal(true);
+  }, []);
+
+  const handleCloseSourceTypeMenu = useCallback(() => {
+    setShowSourceTypeMenu(false);
+  }, []);
+
+  const handleSourceSelect = useCallback(
+    (id: string) => {
+      const source = sources.find(s => s.id === id);
+      if (source) {
+        setSelectedSourceId(id);
+        const sourceConfig =
+          source.type === 'github'
+            ? {
+                owner: source.owner,
+                repo: source.repo,
+                branch: source.branch,
+                token: source.token,
+                path: source.path,
+              }
+            : {
+                owner: source.owner,
+                repo: source.repo,
+                branch: source.branch,
+                token: source.token,
+                path: source.path,
+              };
+        if (source.type === 'github') {
+          setGitHubConfig(sourceConfig);
+        } else {
+          setGiteeConfig(sourceConfig);
+        }
+        handleLoadImages();
+      }
+    },
+    [
+      sources,
+      setSelectedSourceId,
+      setGitHubConfig,
+      setGiteeConfig,
+      handleLoadImages,
+    ],
+  );
+
+  // 初始化：如果没有选中源但有源列表，自动选中第一个
+  useEffect(() => {
+    if (!selectedSourceId && sources.length > 0) {
+      setSelectedSourceId(sources[0].id);
+    }
+  }, [selectedSourceId, sources, setSelectedSourceId]);
+
+  // 初始化：如果有选中的源，自动加载配置
+  useEffect(() => {
+    if (selectedSource) {
+      const sourceConfig = {
+        owner: selectedSource.owner,
+        repo: selectedSource.repo,
+        branch: selectedSource.branch,
+        token: selectedSource.token,
+        path: selectedSource.path,
+      };
+      if (selectedSource.type === 'github') {
+        setGitHubConfig(sourceConfig);
+        useImageStore.setState({ storageType: 'github' });
+      } else {
+        setGiteeConfig(sourceConfig);
+        useImageStore.setState({ storageType: 'gitee' });
+      }
+    }
+  }, [selectedSource, setGitHubConfig, setGiteeConfig]);
+
   // 初始化存储服务
   useEffect(() => {
     const { storageType, githubConfig, giteeConfig, initializeStorage } =
@@ -204,12 +367,11 @@ function App() {
     }
   }, []);
 
-  // 注册键盘快捷键 - 使用事件驱动模式
+  // 注册键盘快捷键
   useEffect(() => {
     const shortcuts = createKeyboardShortcuts(t);
     keyboardManager.registerBatch(shortcuts);
 
-    // 事件监听器
     const handleCloseModals = () => {
       if (showConfigModal) handleCloseConfigModal();
       else if (showKeyboardHelp) handleCloseKeyboardHelp();
@@ -248,234 +410,229 @@ function App() {
     handleOpenConfigModal,
   ]);
 
-  if (!githubConfig && !giteeConfig) {
-    return (
-      <div
-        className="h-screen flex items-center justify-center p-4"
-        style={{ backgroundColor: 'var(--app-theme-background-primary)' }}
-      >
-        <div className="text-center w-full max-w-md">
-          <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-            <Settings className="w-10 h-10 text-blue-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            {t('app.welcome')}
-          </h1>
-          <p className="text-gray-600 mb-8 text-lg">{t('app.subtitle')}</p>
+  return (
+    <div
+      className="h-screen flex overflow-hidden"
+      style={{
+        backgroundColor: 'var(--app-theme-background-primary, #ffffff)',
+      }}
+    >
+      {/* 左侧：侧边栏菜单 */}
+      <Sidebar
+        currentView={currentView}
+        onViewChange={setCurrentView}
+        sources={sidebarSources}
+        selectedSourceId={selectedSourceId}
+        onSourceSelect={handleSourceSelect}
+        hasConfig={hasConfig}
+        onAddSource={handleAddSource}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        t={t}
+      />
 
-          {isDemoMode && <Demo t={t} onExitDemo={exitDemoMode} />}
+      {/* 右侧：主内容区域 */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* 顶部：Header */}
+        <Header
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onUpload={
+            hasConfig
+              ? () => {
+                  // 触发上传（可以通过事件或直接调用）
+                  const uploadArea =
+                    document.querySelector('.image-upload-area');
+                  uploadArea?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                  });
+                }
+              : undefined
+          }
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          hasConfig={hasConfig}
+          onRefresh={handleLoadImages}
+          loading={loading}
+          onSettings={handleOpenConfigModal}
+          onVersionInfo={handleOpenVersionInfo}
+          onHelp={handleOpenKeyboardHelp}
+          currentLanguage={getCurrentLanguage()}
+          availableLanguages={getAvailableLanguages()}
+          onLanguageChange={changeLanguage}
+          t={t}
+        />
 
-          <p className="text-gray-500 mb-6 text-base">{t('app.description')}</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => {
+        {/* 底部：图片浏览区 */}
+        <main className="flex-1 overflow-y-auto bg-white">
+          {!hasConfig ? (
+            // 未配置：显示引导界面
+            <EmptyState
+              onAddGitHub={() => {
                 useImageStore.setState({ storageType: 'github' });
                 setShowConfigModal(true);
               }}
-              className="px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              {t('app.configureGitHub')}
-            </button>
-            <button
-              onClick={() => {
+              onAddGitee={() => {
                 useImageStore.setState({ storageType: 'gitee' });
                 setShowConfigModal(true);
               }}
-              className="px-8 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-offset-2 text-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              {t('app.configureGitee')}
-            </button>
-          </div>
-        </div>
-
-        {/* GitHub 配置模态框 */}
-        <GitHubConfigModal
-          isOpen={showConfigModal && storageType !== 'gitee'}
-          onClose={handleCloseConfigModal}
-          githubConfig={githubConfig}
-          onSaveConfig={handleSaveConfig}
-          onClearConfig={handleClearConfig}
-          t={t}
-        />
-
-        {/* Gitee 配置模态框 */}
-        <GiteeConfigModal
-          isOpen={showConfigModal && storageType === 'gitee'}
-          onClose={handleCloseConfigModal}
-          giteeConfig={giteeConfig}
-          onSaveConfig={handleSaveConfig}
-          onClearConfig={handleClearConfig}
-          platform="web"
-          t={t}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="h-screen flex flex-col"
-      style={{ backgroundColor: 'var(--app-theme-background-primary)' }}
-    >
-      {/* 顶部导航栏 */}
-      <header
-        className="shadow-sm border-b flex-shrink-0"
-        style={{ backgroundColor: 'var(--app-theme-background-secondary)' }}
-      >
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-gray-900">
-                {t('app.title')}
-              </h1>
-              <div className="text-sm text-gray-500 hidden sm:block">
-                {t('app.repository')}:{' '}
-                {storageType === 'gitee'
-                  ? `${giteeConfig?.owner}/${giteeConfig?.repo}`
-                  : `${githubConfig?.owner}/${githubConfig?.repo}`}
-              </div>
-              {isDemoMode && (
-                <div className="flex items-center space-x-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                  <span>{t('app.demoMode.title')}</span>
+              t={t}
+            />
+          ) : (
+            // 已配置：显示正常内容
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+              {/* 错误提示 */}
+              {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <p className="text-red-800">
+                      {error.includes('|')
+                        ? (() => {
+                            const [key, provider] = error.split('|');
+                            return t(key, { provider });
+                          })()
+                        : error.startsWith('errors.')
+                          ? t(error)
+                          : error}
+                    </p>
+                    <button
+                      onClick={clearError}
+                      className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
 
-            <div className="flex items-center space-x-3">
-              {/* 浏览模式切换器 */}
-              {images.length > 0 && (
-                <BrowseModeSwitcher
-                  currentMode={browseMode}
-                  onModeChange={setBrowseMode}
+              {/* 图片上传区域 */}
+              <div className="mb-4">
+                <ImageUpload
                   t={t}
+                  onUploadImage={uploadImage}
+                  onUploadMultipleImages={uploadMultipleImages}
+                  loading={loading}
+                  batchUploadProgress={batchUploadProgress}
+                  enableCompression={true}
+                  compressionOptions={{
+                    quality: 0.8,
+                    maxWidth: 1920,
+                    maxHeight: 1080,
+                    maintainAspectRatio: true,
+                    outputFormat: 'image/jpeg',
+                    minSizeToCompress: 100 * 1024,
+                  }}
                 />
-              )}
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
-              <button
-                onClick={handleOpenVersionInfo}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={t('version.title')}
-              >
-                <Info className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleOpenConfigModal}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.settings')} (Ctrl+,)`}
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleLoadImages}
-                disabled={loading}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.refresh')} (F5)`}
-              >
-                <RefreshCw
-                  className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`}
-                />
-              </button>
-              <button
-                onClick={handleOpenKeyboardHelp}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                title={`${t('navigation.help')} (F1)`}
-              >
-                <HelpCircle className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+              </div>
 
-      {/* 主内容区域 - 可滚动 */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-          {/* 错误提示 */}
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <p className="text-red-800">
-                  {error.includes('|')
-                    ? (() => {
-                        const [key, provider] = error.split('|');
-                        return t(key, { provider });
-                      })()
-                    : error.startsWith('errors.')
-                      ? t(error)
-                      : error}
-                </p>
-                <button
-                  onClick={clearError}
-                  className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
-                >
-                  ×
-                </button>
+              {/* 图片统计和操作区域 */}
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {t('app.imageLibrary')} ({images.length} {t('app.images')})
+                </h2>
+                {loading && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>{t('app.loadingImages')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 图片浏览 */}
+              <div className="min-h-0">
+                {browseMode === 'file' && (
+                  <ImageBrowser
+                    t={t}
+                    images={images}
+                    onDeleteImage={handleDeleteImage}
+                    onDeleteMultipleImages={handleDeleteMultipleImages}
+                    onUpdateImage={handleUpdateImage}
+                    getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+                    formatFileSize={formatFileSize}
+                  />
+                )}
               </div>
             </div>
           )}
+        </main>
+      </div>
 
-          {/* 图片上传区域 */}
-          <div className="mb-4">
-            <ImageUpload
-              t={t}
-              onUploadImage={uploadImage}
-              onUploadMultipleImages={uploadMultipleImages}
-              loading={loading}
-              batchUploadProgress={batchUploadProgress}
-              enableCompression={true}
-              compressionOptions={{
-                quality: 0.8,
-                maxWidth: 1920,
-                maxHeight: 1080,
-                maintainAspectRatio: true,
-                outputFormat: 'image/jpeg',
-                minSizeToCompress: 100 * 1024, // 只压缩大于 100KB 的文件
-              }}
-            />
-          </div>
-
-          {/* 图片统计和操作区域 */}
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {t('app.imageLibrary')} ({images.length} {t('app.images')})
-            </h2>
-            {loading && (
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>{t('app.loadingImages')}</span>
-              </div>
-            )}
-          </div>
-
-          {/* 图片浏览 */}
-          <div className="min-h-0">
-            {browseMode === 'file' && (
-              <ImageBrowser
-                t={t}
-                images={images}
-                onDeleteImage={handleDeleteImage}
-                onDeleteMultipleImages={handleDeleteMultipleImages}
-                onUpdateImage={handleUpdateImage}
-                getImageDimensionsFromUrl={getImageDimensionsFromUrl}
-                formatFileSize={formatFileSize}
-              />
-            )}
+      {/* 仓库类型选择菜单 */}
+      {showSourceTypeMenu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t('sidebar.selectSourceType')}
+              </h3>
+              <button
+                onClick={handleCloseSourceTypeMenu}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <button
+                onClick={() => handleSelectSourceType('github')}
+                className="w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+              >
+                <div className="flex-shrink-0 w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center group-hover:bg-gray-800 transition-colors">
+                  <Github size={24} className="text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-semibold text-gray-900">GitHub</div>
+                  <div className="text-sm text-gray-500">
+                    {t('sidebar.githubDescription')}
+                  </div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleSelectSourceType('gitee')}
+                className="w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 transition-all group"
+              >
+                <div className="flex-shrink-0 w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center group-hover:bg-red-700 transition-colors">
+                  <span className="text-white font-bold text-sm">码</span>
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-semibold text-gray-900">Gitee</div>
+                  <div className="text-sm text-gray-500">
+                    {t('sidebar.giteeDescription')}
+                  </div>
+                </div>
+              </button>
+            </div>
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={handleCloseSourceTypeMenu}
+                className="w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
           </div>
         </div>
-      </main>
+      )}
 
       {/* GitHub 配置模态框 */}
       <GitHubConfigModal
-        isOpen={showConfigModal && storageType === 'github'}
-        onClose={handleCloseConfigModal}
-        githubConfig={githubConfig}
+        isOpen={showConfigModal && storageType !== 'gitee'}
+        onClose={() => {
+          handleCloseConfigModal();
+          setEditingSourceId(null);
+        }}
+        githubConfig={
+          editingSourceId && selectedSource?.type === 'github'
+            ? {
+                owner: selectedSource.owner,
+                repo: selectedSource.repo,
+                branch: selectedSource.branch,
+                token: selectedSource.token,
+                path: selectedSource.path,
+              }
+            : githubConfig
+        }
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
         t={t}
@@ -484,8 +641,21 @@ function App() {
       {/* Gitee 配置模态框 */}
       <GiteeConfigModal
         isOpen={showConfigModal && storageType === 'gitee'}
-        onClose={handleCloseConfigModal}
-        giteeConfig={giteeConfig}
+        onClose={() => {
+          handleCloseConfigModal();
+          setEditingSourceId(null);
+        }}
+        giteeConfig={
+          editingSourceId && selectedSource?.type === 'gitee'
+            ? {
+                owner: selectedSource.owner,
+                repo: selectedSource.repo,
+                branch: selectedSource.branch,
+                token: selectedSource.token,
+                path: selectedSource.path,
+              }
+            : giteeConfig
+        }
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
         platform="web"

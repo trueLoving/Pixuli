@@ -1,3 +1,19 @@
+/* CSS 变量定义 */
+:root {
+  --sidebar-bg: #fafafa;
+  --header-bg: #ffffff;
+  --primary-color: #3b82f6;
+  --primary-color-dark: #2563eb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+  --hover-bg: #f3f4f6;
+  --active-bg: #eff6ff;
+  --card-bg: #ffffff;
+  --search-bg: #f3f4f6;
+  --search-bg-focused: #ffffff;
+}
+
 /* 基础样式重置 */
 * {
   box-sizing: border-box;

@@ -71,5 +71,58 @@
     "updateImageFailed": "更新图片失败",
     "initStorageFailed": "初始化存储服务失败",
     "imageNotFound": "图片不存在"
+  },
+  "sidebar": {
+    "photos": "照片",
+    "explore": "探索",
+    "tags": "标签",
+    "favorites": "收藏",
+    "settings": "设置",
+    "help": "帮助",
+    "sources": "仓库源",
+    "addSource": "添加仓库源",
+    "collapse": "收起",
+    "expand": "展开",
+    "needSource": "请先添加仓库源",
+    "selectSourceType": "选择仓库类型",
+    "githubDescription": "使用 GitHub 仓库存储图片",
+    "giteeDescription": "使用 Gitee 仓库存储图片",
+    "emptyState": {
+      "text": "还没有仓库源",
+      "addSource": "添加仓库源"
+    }
+  },
+  "emptyState": {
+    "title": "欢迎使用 Pixuli",
+    "description": "开始管理您的图片库，首先需要添加一个仓库源",
+    "addGitHub": "配置 GitHub",
+    "addGitee": "配置 Gitee",
+    "tryDemo": "体验 Demo 模式",
+    "quickStart": "快速开始",
+    "step1": {
+      "title": "选择存储平台",
+      "description": "选择 GitHub 或 Gitee 作为图片存储仓库"
+    },
+    "step2": {
+      "title": "填写仓库信息",
+      "description": "输入仓库所有者、仓库名、分支和访问令牌"
+    },
+    "step3": {
+      "title": "开始使用",
+      "description": "配置完成后即可上传和管理图片"
+    },
+    "needHelp": "需要帮助？",
+    "viewDocs": "查看文档"
+  },
+  "header": {
+    "search": {
+      "placeholder": "搜索图片...",
+      "placeholderDisabled": "添加仓库源后即可搜索图片"
+    },
+    "upload": "上传",
+    "viewMode": {
+      "grid": "网格",
+      "list": "列表"
+    }
   }
 }
