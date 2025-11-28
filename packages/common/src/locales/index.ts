@@ -1,9 +1,6 @@
-// 应用级语言包
+// 应用级语言包（已包含 common 通用词汇）
 import appZhCN from './app/zh-CN.json';
 import appEnUS from './app/en-US.json';
-// 通用语言包
-import commonZhCN from './common/zh-CN.json';
-import commonEnUS from './common/en-US.json';
 // 组件语言包
 import githubConfigLocales from '../components/github-config/locales';
 import giteeConfigLocales from '../components/gitee-config/locales';
@@ -14,6 +11,9 @@ import imageUploadLocales from '../components/image-upload/locales';
 import imageSearchLocales from '../components/image-search/locales';
 import languageSwitcherLocales from '../components/language-switcher/locales';
 import slideShowLocales from '../components/slide-show/locales';
+import browseModeSwitcherLocales from '../components/browse-mode-switcher/locales';
+import photoWallLocales from '../components/photo-wall/locales';
+import gallery3dLocales from '../components/gallery-3d/locales';
 
 /**
  * 深层合并对象
@@ -54,7 +54,6 @@ export const appLocales = {
   'zh-CN': deepMerge(
     {},
     appZhCN,
-    commonZhCN,
     githubConfigLocales['zh-CN'],
     giteeConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
@@ -64,11 +63,13 @@ export const appLocales = {
     imageSearchLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
     slideShowLocales['zh-CN'],
+    browseModeSwitcherLocales['zh-CN'],
+    photoWallLocales['zh-CN'],
+    gallery3dLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
     appEnUS,
-    commonEnUS,
     githubConfigLocales['en-US'],
     giteeConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
@@ -78,13 +79,16 @@ export const appLocales = {
     imageSearchLocales['en-US'],
     languageSwitcherLocales['en-US'],
     slideShowLocales['en-US'],
+    browseModeSwitcherLocales['en-US'],
+    photoWallLocales['en-US'],
+    gallery3dLocales['en-US'],
   ),
 };
 
 // 导出应用级语言包（不含组件语言包）
 export const appOnlyLocales = {
-  'zh-CN': deepMerge({}, appZhCN, commonZhCN),
-  'en-US': deepMerge({}, appEnUS, commonEnUS),
+  'zh-CN': deepMerge({}, appZhCN),
+  'en-US': deepMerge({}, appEnUS),
 };
 
 /**

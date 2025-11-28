@@ -1,9 +1,9 @@
 import zhCN from './zh-CN.json';
 import enUS from './en-US.json';
 
-export const commonLocales = {
+export const photoWallLocales = {
   'zh-CN': zhCN,
   'en-US': enUS,
 };
 
-export default commonLocales;
+export default photoWallLocales;

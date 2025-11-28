@@ -1,4 +1,21 @@
 {
+  "common": {
+    "save": "Save",
+    "update": "Update",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "yes": "Yes",
+    "no": "No",
+    "unknownError": "Unknown error"
+  },
   "app": {
     "title": "Pixuli",
     "subtitle": "Professional Image Management and Storage Solution",
@@ -54,20 +71,5 @@
     "updateImageFailed": "Failed to update image",
     "initStorageFailed": "Failed to initialize storage service",
     "imageNotFound": "Image not found"
-  },
-  "#": "后续需要移动到对应组件中",
-  "browseMode": {
-    "file": "File Mode",
-    "slide": "Slide Show Mode",
-    "wall": "Photo Wall Mode",
-    "gallery3d": "3D Gallery Mode"
-  },
-  "photoWall": {
-    "noImages": "No images"
-  },
-  "gallery3d": {
-    "noImages": "No images",
-    "previous": "Previous",
-    "next": "Next"
   }
 }

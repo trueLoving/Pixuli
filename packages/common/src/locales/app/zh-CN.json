@@ -1,4 +1,21 @@
 {
+  "common": {
+    "save": "保存",
+    "update": "更新",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "confirm": "确认",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "yes": "是",
+    "no": "否",
+    "unknownError": "未知错误"
+  },
   "app": {
     "title": "Pixuli",
     "subtitle": "专业的图片管理与存储解决方案",
@@ -54,20 +71,5 @@
     "updateImageFailed": "更新图片失败",
     "initStorageFailed": "初始化存储服务失败",
     "imageNotFound": "图片不存在"
-  },
-  "#": "后续需要移动到对应组件中",
-  "browseMode": {
-    "file": "文件模式",
-    "slide": "幻灯片模式",
-    "wall": "照片墙模式",
-    "gallery3d": "3D画廊模式"
-  },
-  "photoWall": {
-    "noImages": "暂无图片"
-  },
-  "gallery3d": {
-    "noImages": "暂无图片",
-    "previous": "上一张",
-    "next": "下一张"
   }
 }

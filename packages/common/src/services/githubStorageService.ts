@@ -1,7 +1,7 @@
 import type { ImageItem, ImageUploadData } from '../types/image';
 import type { GitHubConfig } from '../types/github';
-import type { PlatformAdapter } from './giteeStorageService';
-import { DefaultPlatformAdapter } from './giteeStorageService';
+import type { PlatformAdapter } from './platformAdapter';
+import { DefaultPlatformAdapter } from './platformAdapter';
 
 export class GitHubStorageService {
   private config: GitHubConfig;
@@ -30,7 +30,7 @@ export class GitHubStorageService {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.message || `GitHub API error: ${response.status}`
+        errorData.message || `GitHub API error: ${response.status}`,
       );
     }
 
@@ -43,14 +43,14 @@ export class GitHubStorageService {
    * @returns Promise<{ width: number; height: number }> 图片尺寸信息
    */
   async getImageDimensions(
-    file: File | string
+    file: File | string,
   ): Promise<{ width: number; height: number }> {
     try {
       return await this.platformAdapter.getImageDimensions(file);
     } catch (error) {
       console.warn(
         'Failed to get image dimensions, using default values:',
-        error
+        error,
       );
       // 如果获取尺寸失败，使用默认值 0，后续可以通过 URL 获取
       return { width: 0, height: 0 };
@@ -67,7 +67,7 @@ export class GitHubStorageService {
   private async uploadImageFile(
     file: File | string,
     fileName: string,
-    description?: string
+    description?: string,
   ): Promise<{ sha: string; download_url: string; html_url: string }> {
     // 将文件转换为 base64
     const base64Content = await this.platformAdapter.fileToBase64(file);
@@ -85,7 +85,7 @@ export class GitHubStorageService {
           content: base64Content,
           branch: this.config.branch,
         }),
-      }
+      },
     );
 
     return {
@@ -103,7 +103,7 @@ export class GitHubStorageService {
    */
   private async uploadImageMetadata(
     fileName: string,
-    metadata: ImageItem
+    metadata: ImageItem,
   ): Promise<void> {
     try {
       await this.updateImageMetadata(fileName, metadata);
@@ -128,7 +128,7 @@ export class GitHubStorageService {
   async uploadImage(
     uploadData:
       | ImageUploadData
-      | { uri: string; name?: string; description?: string; tags?: string[] }
+      | { uri: string; name?: string; description?: string; tags?: string[] },
   ): Promise<ImageItem> {
     try {
       // 兼容 web/desktop 的 File 和 mobile 的 URI
@@ -155,7 +155,7 @@ export class GitHubStorageService {
       const uploadResponse = await this.uploadImageFile(
         file,
         fileName,
-        description
+        description,
       );
 
       // ========== 构建图片元数据对象 ==========
@@ -186,10 +186,10 @@ export class GitHubStorageService {
         // 因为图片文件已经成功上传，元数据可以在后续补充
         console.warn(
           'Image file uploaded successfully, but metadata upload failed:',
-          error
+          error,
         );
         console.warn(
-          'You can update metadata later or it will be fetched from the image URL'
+          'You can update metadata later or it will be fetched from the image URL',
         );
       }
 
@@ -207,7 +207,7 @@ export class GitHubStorageService {
 
       // 首先获取文件的SHA
       const fileInfo = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`,
       );
 
       // 删除文件
@@ -220,7 +220,7 @@ export class GitHubStorageService {
             sha: fileInfo.sha,
             branch: this.config.branch,
           }),
-        }
+        },
       );
 
       // 删除对应的元数据文件
@@ -246,7 +246,7 @@ export class GitHubStorageService {
       let metadataFileInfo: any;
       try {
         metadataFileInfo = await this.makeGitHubRequest(
-          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`,
         );
       } catch (error: any) {
         // 如果文件不存在（404错误），直接返回，不需要删除
@@ -285,7 +285,7 @@ export class GitHubStorageService {
             sha: metadataFileInfo.sha,
             branch: this.config.branch,
           }),
-        }
+        },
       );
     } catch (error) {
       // 删除元数据失败不应该阻止图片删除，只记录警告
@@ -298,12 +298,12 @@ export class GitHubStorageService {
   async getImageList(): Promise<ImageItem[]> {
     try {
       const response = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${this.config.path}?ref=${this.config.branch}`
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${this.config.path}?ref=${this.config.branch}`,
       );
 
       // 过滤出图片文件
       const imageFiles = response.filter(
-        (item: any) => this.isImageFile(item.name) && item.type === 'file'
+        (item: any) => this.isImageFile(item.name) && item.type === 'file',
       );
 
       const images = await Promise.all(
@@ -331,7 +331,7 @@ export class GitHubStorageService {
             createdAt: metadata?.createdAt || new Date().toISOString(),
             updatedAt: metadata?.updatedAt || new Date().toISOString(),
           };
-        })
+        }),
       );
 
       // 检查重复ID
@@ -340,11 +340,11 @@ export class GitHubStorageService {
           acc[img.id] = (acc[img.id] || 0) + 1;
           return acc;
         },
-        {}
+        {},
       );
 
       const duplicateIds = Object.entries(idCounts).filter(
-        ([_, count]) => (count as number) > 1
+        ([_, count]) => (count as number) > 1,
       );
       if (duplicateIds.length > 0) {
         console.warn('发现重复的图片ID:', duplicateIds);
@@ -372,7 +372,7 @@ export class GitHubStorageService {
   async updateImageInfo(
     _imageId: string,
     fileName: string,
-    metadata: any
+    metadata: any,
   ): Promise<void> {
     try {
       // 更新元数据文件
@@ -386,7 +386,7 @@ export class GitHubStorageService {
   // 更新图片元数据文件
   private async updateImageMetadata(
     fileName: string,
-    metadata: any
+    metadata: any,
   ): Promise<void> {
     try {
       const metadataFileName = this.getMetadataFileName(fileName);
@@ -414,7 +414,7 @@ export class GitHubStorageService {
       let fileExists = false;
       try {
         const existingFile = await this.makeGitHubRequest(
-          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`,
         );
         // 如果返回的是数组（目录内容），说明文件不存在
         if (Array.isArray(existingFile)) {
@@ -463,7 +463,7 @@ export class GitHubStorageService {
           {
             method: 'PUT',
             body: JSON.stringify(requestBody),
-          }
+          },
         );
       } catch (error: any) {
         // 如果错误是因为 SHA 不匹配，重新获取最新的 SHA 并重试
@@ -472,7 +472,7 @@ export class GitHubStorageService {
           try {
             // 重新获取最新的 SHA
             const latestFile = await this.makeGitHubRequest(
-              `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`
+              `/repos/${this.config.owner}/${this.config.repo}/contents/${metadataFilePath}?ref=${this.config.branch}`,
             );
             if (latestFile.sha) {
               // 使用最新的 SHA 重试
@@ -487,7 +487,7 @@ export class GitHubStorageService {
                 {
                   method: 'PUT',
                   body: JSON.stringify(retryRequestBody),
-                }
+                },
               );
             } else {
               throw error;
@@ -554,7 +554,7 @@ export class GitHubStorageService {
    */
   async loadImageMetadata(
     images: ImageItem[],
-    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean },
   ): Promise<ImageItem[]> {
     try {
       // const { forceRefresh = false } = options || {};
