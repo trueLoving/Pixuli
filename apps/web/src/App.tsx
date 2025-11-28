@@ -47,8 +47,6 @@ function App() {
     clearError,
     setGitHubConfig,
     setGiteeConfig,
-    clearGitHubConfig,
-    clearGiteeConfig,
     uploadImage,
     uploadMultipleImages,
     batchUploadProgress,
@@ -159,14 +157,12 @@ function App() {
 
   const handleSaveConfig = useCallback(
     (config: any) => {
-      let sourceId: string;
       if (editingSourceId) {
         // 编辑现有源
         updateSource(editingSourceId, {
           ...config,
           name: config.name || `${config.owner}/${config.repo}`,
         });
-        sourceId = editingSourceId;
       } else {
         // 添加新源
         const newSource = addSource({
@@ -174,7 +170,6 @@ function App() {
           name: `${config.owner}/${config.repo}`,
           ...config,
         });
-        sourceId = newSource.id;
         setSelectedSourceId(newSource.id);
       }
       setShowConfigModal(false);

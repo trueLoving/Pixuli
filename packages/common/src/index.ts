@@ -45,6 +45,9 @@ export { default as LanguageSwitcher } from './components/language-switcher/Lang
 export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
 export type { VersionInfo } from './components/version-info';
 export { versionInfoLocales } from './components/version-info/locales';
+export { sidebarLocales } from './components/sidebar/locales';
+export { headerLocales } from './components/header/locales';
+export { emptyStateLocales } from './components/empty-state/locales';
 export {
   ImageBrowser,
   ImageGrid,

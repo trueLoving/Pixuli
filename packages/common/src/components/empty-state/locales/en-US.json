@@ -1,0 +1,24 @@
+{
+  "emptyState": {
+    "title": "Welcome to Pixuli",
+    "description": "Start managing your image library by adding a repository source",
+    "addGitHub": "Configure GitHub",
+    "addGitee": "Configure Gitee",
+    "tryDemo": "Try Demo Mode",
+    "quickStart": "Quick Start",
+    "step1": {
+      "title": "Choose Storage Platform",
+      "description": "Select GitHub or Gitee as your image storage repository"
+    },
+    "step2": {
+      "title": "Fill Repository Info",
+      "description": "Enter repository owner, name, branch, and access token"
+    },
+    "step3": {
+      "title": "Start Using",
+      "description": "After configuration, you can upload and manage images"
+    },
+    "needHelp": "Need help?",
+    "viewDocs": "View Docs"
+  }
+}

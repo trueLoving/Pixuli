@@ -1,5 +1,4 @@
 import {
-  Compass,
   Github,
   Heart,
   HelpCircle,
@@ -98,8 +97,6 @@ const NavItem: React.FC<NavItemProps> = ({
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
-  currentView,
-  onViewChange,
   browseMode = 'file',
   onBrowseModeChange,
   currentFilter = 'all',
@@ -116,7 +113,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   t,
 }) => {
   const translate = t || defaultTranslate;
-  const [sourcesExpanded, setSourcesExpanded] = useState(true);
   const [contextMenu, setContextMenu] = useState<{
     visible: boolean;
     x: number;
@@ -265,9 +261,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               disabled={!hasConfig}
               title={mode.label}
             >
-              {React.cloneElement(mode.icon as React.ReactElement, {
-                size: 28,
-              })}
+              {React.cloneElement(
+                mode.icon as React.ReactElement<{ size?: number }>,
+                {
+                  size: 28,
+                },
+              )}
               <span className="sidebar-collapsed-tooltip">{mode.label}</span>
             </button>
           ))}
@@ -285,9 +284,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => onFilterChange(filter.filter)}
                 title={filter.label}
               >
-                {React.cloneElement(filter.icon as React.ReactElement, {
-                  size: 24,
-                })}
+                {React.cloneElement(
+                  filter.icon as React.ReactElement<{ size?: number }>,
+                  {
+                    size: 24,
+                  },
+                )}
                 <span className="sidebar-collapsed-tooltip">
                   {filter.label}
                 </span>

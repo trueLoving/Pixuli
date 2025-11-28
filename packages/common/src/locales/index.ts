@@ -14,6 +14,9 @@ import slideShowLocales from '../components/slide-show/locales';
 import browseModeSwitcherLocales from '../components/browse-mode-switcher/locales';
 import photoWallLocales from '../components/photo-wall/locales';
 import gallery3dLocales from '../components/gallery-3d/locales';
+import sidebarLocales from '../components/sidebar/locales';
+import headerLocales from '../components/header/locales';
+import emptyStateLocales from '../components/empty-state/locales';
 
 /**
  * 深层合并对象
@@ -66,6 +69,9 @@ export const appLocales = {
     browseModeSwitcherLocales['zh-CN'],
     photoWallLocales['zh-CN'],
     gallery3dLocales['zh-CN'],
+    sidebarLocales['zh-CN'],
+    headerLocales['zh-CN'],
+    emptyStateLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -82,6 +88,9 @@ export const appLocales = {
     browseModeSwitcherLocales['en-US'],
     photoWallLocales['en-US'],
     gallery3dLocales['en-US'],
+    sidebarLocales['en-US'],
+    headerLocales['en-US'],
+    emptyStateLocales['en-US'],
   ),
 };
 

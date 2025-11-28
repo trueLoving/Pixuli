@@ -1,4 +1,4 @@
-import { Grid, List, RefreshCw, Upload } from 'lucide-react';
+import { RefreshCw, Upload } from 'lucide-react';
 import React from 'react';
 import { defaultTranslate } from '../../locales';
 import {
@@ -28,12 +28,9 @@ const Header: React.FC<HeaderProps> = ({
   searchQuery,
   onSearchChange,
   onUpload,
-  viewMode,
-  onViewModeChange,
   hasConfig,
   onRefresh,
   loading = false,
-  onSettings,
   currentLanguage,
   availableLanguages,
   onLanguageChange,
