@@ -4,11 +4,7 @@ import {
   getImageInfo,
   getImageDimensionsFromUrl,
   isImageFile,
-  getImageType,
-  formatImageFileSize,
   calculateDisplayDimensions,
-  createImagePreviewUrl,
-  revokeImagePreviewUrl,
   compressImage,
 } from '../imageUtils';
 
@@ -32,36 +28,6 @@ describe('imageUtils', () => {
     it('应该返回false对于非图片文件', () => {
       const file = new File([''], 'test.txt', { type: 'text/plain' });
       expect(isImageFile(file)).toBe(false);
-    });
-  });
-
-  describe('getImageType', () => {
-    it('应该返回图片类型', () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      expect(getImageType(file)).toBe('image/jpeg');
-    });
-
-    it('应该返回默认类型对于未知类型', () => {
-      const file = new File([''], 'test.unknown', { type: '' });
-      expect(getImageType(file)).toBe('image/unknown');
-    });
-  });
-
-  describe('formatImageFileSize', () => {
-    it('应该格式化0字节', () => {
-      expect(formatImageFileSize(0)).toBe('0 B');
-    });
-
-    it('应该格式化字节', () => {
-      expect(formatImageFileSize(500)).toBe('500 B');
-    });
-
-    it('应该格式化KB', () => {
-      expect(formatImageFileSize(1024)).toBe('1 KB');
-    });
-
-    it('应该格式化MB', () => {
-      expect(formatImageFileSize(1024 * 1024)).toBe('1 MB');
     });
   });
 
@@ -100,23 +66,6 @@ describe('imageUtils', () => {
       const result = calculateDisplayDimensions(200, 100);
       expect(result.width).toBe(200);
       expect(result.height).toBe(100);
-    });
-  });
-
-  describe('createImagePreviewUrl', () => {
-    it('应该创建预览URL', () => {
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const url = createImagePreviewUrl(file);
-      expect(global.URL.createObjectURL).toHaveBeenCalledWith(file);
-      expect(url).toBe('blob:mock-url');
-    });
-  });
-
-  describe('revokeImagePreviewUrl', () => {
-    it('应该撤销预览URL', () => {
-      const url = 'blob:mock-url';
-      revokeImagePreviewUrl(url);
-      expect(global.URL.revokeObjectURL).toHaveBeenCalledWith(url);
     });
   });
 

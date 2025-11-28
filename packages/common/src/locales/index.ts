@@ -8,6 +8,7 @@ import commonEnUS from './common/en-US.json';
 import githubConfigLocales from '../components/github-config/locales';
 import giteeConfigLocales from '../components/gitee-config/locales';
 import keyboardHelpLocales from '../components/keyboard-help/locales';
+import versionInfoLocales from '../components/version-info/locales';
 import imageBrowserLocales from '../components/image-browser/locales';
 import imageUploadLocales from '../components/image-upload/locales';
 import imageSearchLocales from '../components/image-search/locales';
@@ -57,11 +58,12 @@ export const appLocales = {
     githubConfigLocales['zh-CN'],
     giteeConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
+    versionInfoLocales['zh-CN'],
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
     imageSearchLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
-    slideShowLocales['zh-CN']
+    slideShowLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -70,11 +72,12 @@ export const appLocales = {
     githubConfigLocales['en-US'],
     giteeConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
+    versionInfoLocales['en-US'],
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
     imageSearchLocales['en-US'],
     languageSwitcherLocales['en-US'],
-    slideShowLocales['en-US']
+    slideShowLocales['en-US'],
   ),
 };
 
@@ -92,7 +95,7 @@ export const appOnlyLocales = {
  */
 export const defaultTranslate = (
   key: string,
-  langs?: Record<string, any>
+  langs?: Record<string, any>,
 ): string => {
   const keys = key.split('.');
   let value: any = langs || appLocales['zh-CN'];

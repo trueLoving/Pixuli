@@ -14,11 +14,16 @@ import {
   PhotoWall,
   SlideShowPlayer,
   Toaster,
+  VersionInfoModal,
+  type VersionInfo,
 } from '@packages/common/src';
 import { HelpCircle, Info, RefreshCw, Settings } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { Demo, useDemoMode, VersionInfoModal } from './components';
+import { Demo, useDemoMode } from './components';
+
+// 声明全局版本信息
+declare const __VERSION_INFO__: VersionInfo;
 import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
@@ -90,7 +95,7 @@ function App() {
         ],
       },
     ],
-    [t]
+    [t],
   );
 
   // 使用 useCallback 优化回调函数
@@ -119,7 +124,7 @@ function App() {
       }
       setShowConfigModal(false);
     },
-    [setGitHubConfig, setGiteeConfig, storageType]
+    [setGitHubConfig, setGiteeConfig, storageType],
   );
 
   const handleClearConfig = useCallback(() => {
@@ -135,21 +140,21 @@ function App() {
     async (imageId: string, fileName: string) => {
       await deleteImage(imageId, fileName);
     },
-    [deleteImage]
+    [deleteImage],
   );
 
   const handleDeleteMultipleImages = useCallback(
     async (imageIds: string[], fileNames: string[]) => {
       await deleteMultipleImages(imageIds, fileNames);
     },
-    [deleteMultipleImages]
+    [deleteMultipleImages],
   );
 
   const handleUpdateImage = useCallback(
     async (data: any) => {
       await updateImage(data);
     },
-    [updateImage]
+    [updateImage],
   );
 
   const handleOpenKeyboardHelp = useCallback(() => {
@@ -225,7 +230,7 @@ function App() {
       window.removeEventListener('closeModals', handleCloseModals);
       window.removeEventListener(
         'openKeyboardHelp',
-        handleOpenKeyboardHelpEvent
+        handleOpenKeyboardHelpEvent,
       );
       window.removeEventListener('refreshImages', handleRefreshImages);
       window.removeEventListener('openConfig', handleOpenConfig);
@@ -500,6 +505,7 @@ function App() {
         isOpen={showVersionInfo}
         onClose={handleCloseVersionInfo}
         t={t}
+        versionInfo={__VERSION_INFO__}
       />
 
       {/* 幻灯片播放器 */}

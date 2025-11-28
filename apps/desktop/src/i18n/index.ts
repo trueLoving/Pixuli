@@ -8,12 +8,10 @@ import {
   aiAnalysisLocales,
   imageCompressionLocales,
   imageConverterLocales,
-  versionInfoLocales,
 } from '../features';
-// 从 packages/ui 导入幻灯片语言包
-import { slideShowLocales } from '@packages/common/src';
 import { desktopLocales } from './locales';
 
+// zhCN 和 enUS 已经包含了所有组件语言包（包括 versionInfoLocales 和 slideShowLocales）
 const resources = {
   'zh-CN': {
     translation: deepMerge(
@@ -23,8 +21,6 @@ const resources = {
       aiAnalysisLocales['zh-CN'],
       imageCompressionLocales['zh-CN'],
       imageConverterLocales['zh-CN'],
-      slideShowLocales['zh-CN'],
-      versionInfoLocales['zh-CN']
     ),
   },
   'en-US': {
@@ -35,8 +31,6 @@ const resources = {
       aiAnalysisLocales['en-US'],
       imageCompressionLocales['en-US'],
       imageConverterLocales['en-US'],
-      slideShowLocales['en-US'],
-      versionInfoLocales['en-US']
     ),
   },
 };

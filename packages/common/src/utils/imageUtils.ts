@@ -22,23 +22,8 @@ export interface ImageInfo extends ImageDimensions {
 export function getImageDimensions(file: File): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-
-    img.onload = () => {
-      resolve({
-        width: img.width,
-        height: img.height,
-      });
-    };
-
-    img.onerror = () => {
-      reject(new Error('图片加载失败'));
-    };
-
-    // 创建对象URL
     const objectUrl = URL.createObjectURL(file);
-    img.src = objectUrl;
 
-    // 图片加载完成后清理对象URL
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
       resolve({
@@ -46,6 +31,13 @@ export function getImageDimensions(file: File): Promise<ImageDimensions> {
         height: img.height,
       });
     };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('图片加载失败'));
+    };
+
+    img.src = objectUrl;
   });
 }
 
@@ -57,39 +49,7 @@ export function getImageDimensions(file: File): Promise<ImageDimensions> {
 export function getImageInfo(file: File): Promise<ImageInfo> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-
-    img.onload = () => {
-      const width = img.width;
-      const height = img.height;
-      const naturalWidth = img.naturalWidth || width;
-      const naturalHeight = img.naturalHeight || height;
-      const aspectRatio = width / height;
-
-      let orientation: 'landscape' | 'portrait' | 'square';
-      if (width > height) {
-        orientation = 'landscape';
-      } else if (width < height) {
-        orientation = 'portrait';
-      } else {
-        orientation = 'square';
-      }
-
-      resolve({
-        width,
-        height,
-        naturalWidth,
-        naturalHeight,
-        aspectRatio,
-        orientation,
-      });
-    };
-
-    img.onerror = () => {
-      reject(new Error('图片加载失败'));
-    };
-
     const objectUrl = URL.createObjectURL(file);
-    img.src = objectUrl;
 
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
@@ -117,6 +77,13 @@ export function getImageInfo(file: File): Promise<ImageInfo> {
         orientation,
       });
     };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('图片加载失败'));
+    };
+
+    img.src = objectUrl;
   });
 }
 
@@ -126,7 +93,7 @@ export function getImageInfo(file: File): Promise<ImageInfo> {
  * @returns Promise<ImageDimensions> 图片尺寸信息
  */
 export function getImageDimensionsFromUrl(
-  url: string
+  url: string,
 ): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -158,30 +125,6 @@ export function isImageFile(file: File): boolean {
 }
 
 /**
- * 获取图片文件类型
- * @param file 图片文件
- * @returns string 图片类型
- */
-export function getImageType(file: File): string {
-  return file.type || 'image/unknown';
-}
-
-/**
- * 格式化文件大小
- * @param bytes 字节数
- * @returns string 格式化后的大小
- */
-export function formatImageFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
-
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-/**
  * 计算图片的显示尺寸
  * @param originalWidth 原始宽度
  * @param originalHeight 原始高度
@@ -195,7 +138,7 @@ export function calculateDisplayDimensions(
   originalHeight: number,
   maxWidth?: number,
   maxHeight?: number,
-  keepAspectRatio: boolean = true
+  keepAspectRatio: boolean = true,
 ): ImageDimensions {
   let width = originalWidth;
   let height = originalHeight;
@@ -238,23 +181,6 @@ export function calculateDisplayDimensions(
 }
 
 /**
- * 创建图片预览URL
- * @param file 图片文件
- * @returns string 预览URL
- */
-export function createImagePreviewUrl(file: File): string {
-  return URL.createObjectURL(file);
-}
-
-/**
- * 清理图片预览URL
- * @param url 预览URL
- */
-export function revokeImagePreviewUrl(url: string): void {
-  URL.revokeObjectURL(url);
-}
-
-/**
  * 将代理 URL 转换为真实的 Gitee URL
  * 用于在界面上显示可访问的真实 URL
  * @param url 可能是代理 URL 或真实 URL
@@ -285,7 +211,7 @@ export async function compressImage(
     maintainAspectRatio?: boolean;
     outputFormat?: 'image/jpeg' | 'image/png' | 'image/webp';
     minSizeToCompress?: number;
-  } = {}
+  } = {},
 ): Promise<{
   compressedFile: File;
   originalSize: number;
@@ -340,7 +266,7 @@ export async function compressImage(
             originalHeight,
             maxWidth,
             maxHeight,
-            maintainAspectRatio
+            maintainAspectRatio,
           );
           targetWidth = calculatedDimensions.width;
           targetHeight = calculatedDimensions.height;
@@ -398,14 +324,14 @@ export async function compressImage(
             });
           },
           outputFormat,
-          quality
+          quality,
         );
       } catch (error) {
         URL.revokeObjectURL(objectUrl);
         reject(
           new Error(
-            `图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`
-          )
+            `图片压缩失败: ${error instanceof Error ? error.message : '未知错误'}`,
+          ),
         );
       }
     };

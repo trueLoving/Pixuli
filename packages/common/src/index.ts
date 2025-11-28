@@ -51,6 +51,9 @@ export { default as ImageUpload } from './components/image-upload/ImageUpload';
 export { default as ImageSearch } from './components/image-search/ImageSearch';
 export { default as Toaster } from './components/toaster/Toaster';
 export { default as LanguageSwitcher } from './components/language-switcher/LanguageSwitcher';
+export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
+export type { VersionInfo } from './components/version-info';
+export { versionInfoLocales } from './components/version-info/locales';
 export {
   ImageBrowser,
   ImageGrid,

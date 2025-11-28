@@ -11,19 +11,20 @@ export interface VersionInfo {
     vite: string;
     typescript: string;
     tailwindcss: string;
-    electron: string;
+    electron?: string;
   };
   dependencies: {
     'lucide-react': string;
     'react-i18next': string;
     zustand: string;
-    octokit: string;
-    'pixuli-wasm': string;
+    octokit?: string;
+    'pixuli-wasm'?: string;
     'react-dropzone': string;
     'react-hot-toast': string;
-    'react-image-crop': string;
+    'react-image-crop'?: string;
+    [key: string]: string | undefined;
   };
-  environment: {
+  environment?: {
     node: string;
     platform: string;
     arch: string;

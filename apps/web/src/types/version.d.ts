@@ -1,32 +1,5 @@
-// 版本信息类型定义
-export interface VersionInfo {
-  version: string;
-  name: string;
-  description: string;
-  buildTime: string;
-  buildTimestamp: number;
-  frameworks: {
-    react: string;
-    vite: string;
-    typescript: string;
-    tailwindcss: string;
-  };
-  dependencies: {
-    'lucide-react': string;
-    'react-i18next': string;
-    zustand: string;
-    octokit: string;
-  };
-  environment: {
-    node: string;
-    platform: string;
-    arch: string;
-  };
-  git: {
-    commit: string;
-    branch: string;
-  };
-}
+// 版本信息类型定义 - 从 packages/common 导入
+import type { VersionInfo } from '@packages/common/src';
 
 // 全局变量声明
 declare global {

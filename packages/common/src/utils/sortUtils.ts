@@ -11,10 +11,10 @@ import type {
  * @param sortOrder 排序顺序
  * @returns 排序后的图片数组
  */
-export function sortImages(
+function sortImages(
   images: ImageItem[],
   sortField: SortField,
-  sortOrder: SortOrder
+  sortOrder: SortOrder,
 ): ImageItem[] {
   const sortedImages = [...images];
 
@@ -63,35 +63,7 @@ export function sortImages(
 export function getSortedImages(
   images: ImageItem[],
   sortField: SortField = 'createdAt',
-  sortOrder: SortOrder = 'desc'
+  sortOrder: SortOrder = 'desc',
 ): ImageItem[] {
   return sortImages(images, sortField, sortOrder);
-}
-
-/**
- * 获取排序描述文本
- * @param sortField 排序字段
- * @param sortOrder 排序顺序
- * @returns 排序描述文本
- */
-export function getSortDescription(
-  sortField: SortField,
-  sortOrder: SortOrder
-): string {
-  let fieldText = '';
-  switch (sortField) {
-    case 'createdAt':
-      fieldText = '上传时间';
-      break;
-    case 'name':
-      fieldText = '文件名称';
-      break;
-    case 'size':
-      fieldText = '文件大小';
-      break;
-    default:
-      fieldText = '未知字段';
-  }
-  const orderText = sortOrder === 'asc' ? '升序' : '降序';
-  return `按${fieldText}${orderText}排列`;
 }

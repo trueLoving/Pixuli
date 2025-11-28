@@ -3,28 +3,17 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
 // 导入packages/ui的语言包
+// zhCN 和 enUS 已经包含了所有组件语言包（包括 versionInfoLocales）
 import { enUS, zhCN, deepMerge } from '@packages/common/src';
 // 导入web端组件的语言包
-import { demoLocales, versionInfoLocales, pwaLocales } from '../components';
+import { demoLocales, pwaLocales } from '../components';
 
 const resources = {
   'zh-CN': {
-    translation: deepMerge(
-      {},
-      zhCN,
-      demoLocales['zh-CN'],
-      versionInfoLocales['zh-CN'],
-      pwaLocales['zh-CN']
-    ),
+    translation: deepMerge({}, zhCN, demoLocales['zh-CN'], pwaLocales['zh-CN']),
   },
   'en-US': {
-    translation: deepMerge(
-      {},
-      enUS,
-      demoLocales['en-US'],
-      versionInfoLocales['en-US'],
-      pwaLocales['en-US']
-    ),
+    translation: deepMerge({}, enUS, demoLocales['en-US'], pwaLocales['en-US']),
   },
 };
 

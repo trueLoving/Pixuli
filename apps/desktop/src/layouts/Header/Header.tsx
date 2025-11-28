@@ -1,8 +1,16 @@
-import { KeyboardHelpModal, LanguageSwitcher } from '@packages/common/src';
+import {
+  KeyboardHelpModal,
+  LanguageSwitcher,
+  VersionInfoModal,
+  type VersionInfo,
+} from '@packages/common/src';
 import { FileText, HelpCircle, Info, Play, RefreshCw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SlideShowPlayer } from '@packages/common/src';
-import { OperationLogModal, VersionInfoModal } from '../../features';
+import { OperationLogModal } from '../../features';
+
+// 声明全局版本信息
+declare const __VERSION_INFO__: VersionInfo;
 
 interface HeaderProps {
   /** 存储类型 */
@@ -230,6 +238,7 @@ const Header: React.FC<HeaderProps> = ({
         t={t}
         isOpen={showVersionInfo}
         onClose={handleCloseVersionInfo}
+        versionInfo={__VERSION_INFO__}
       />
 
       {/* 幻灯片播放器 */}
