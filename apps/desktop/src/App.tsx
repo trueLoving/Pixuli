@@ -87,7 +87,7 @@ function App() {
         description: t('keyboard.shortcuts.focusSearch'),
         action: () => {
           const searchInput = document.querySelector(
-            'input[placeholder*="' + t('image.search.placeholder') + '"]'
+            'input[placeholder*="' + t('image.search.placeholder') + '"]',
           ) as HTMLInputElement;
           if (searchInput) {
             searchInput.focus();
@@ -136,8 +136,8 @@ function App() {
     return <HomePage />;
   }
 
-  // 项目窗口：显示图片浏览
-  return <ProjectPage />;
+  // 项目窗口：显示图片浏览，传递 projectSourceId
+  return <ProjectPage projectSourceId={projectSourceId} />;
 }
 
 export default App;

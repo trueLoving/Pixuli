@@ -22,6 +22,7 @@
     "all": "All",
     "editSource": "Edit",
     "deleteSource": "Delete",
+    "openInWindow": "Open in Separate Window",
     "confirmDeleteSource": "Are you sure you want to delete this source?",
     "comingSoon": "Coming Soon",
     "disabled": "Disabled",

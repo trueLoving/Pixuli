@@ -23,7 +23,13 @@ import { useSourceStore } from '../../stores/sourceStore';
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
 
-export const ProjectPage: React.FC = () => {
+interface ProjectPageProps {
+  projectSourceId: string | null;
+}
+
+export const ProjectPage: React.FC<ProjectPageProps> = ({
+  projectSourceId,
+}) => {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
     useI18n();
   const sourceStore = useSourceStore();
@@ -58,18 +64,6 @@ export const ProjectPage: React.FC = () => {
     createDefaultFilters(),
   );
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
-
-  // 项目窗口判断与参数解析
-  const [projectSourceId] = useState<string | null>(() => {
-    const hash = window.location.hash;
-    if (hash.startsWith('#project')) {
-      const idx = hash.indexOf('?');
-      const query = idx >= 0 ? new URLSearchParams(hash.slice(idx + 1)) : null;
-      const id = query?.get('id');
-      return id || null;
-    }
-    return null;
-  });
 
   // 同步搜索查询到筛选条件
   useEffect(() => {
@@ -148,11 +142,18 @@ export const ProjectPage: React.FC = () => {
     }
   }, [loadImages]);
 
-  // 根据 projectSourceId 设置 GitHub 配置
+  // 根据 projectSourceId 设置仓库源配置并初始化
   useEffect(() => {
     if (!projectSourceId) return;
+
     const src = sourceStore.getSourceById(projectSourceId);
-    if (src && src.type === 'github') {
+    if (!src) {
+      console.error(`Source not found: ${projectSourceId}`);
+      return;
+    }
+
+    // 根据源类型设置配置
+    if (src.type === 'github') {
       setGitHubConfig({
         owner: src.owner,
         repo: src.repo,
@@ -160,7 +161,9 @@ export const ProjectPage: React.FC = () => {
         token: src.token,
         path: src.path,
       } as any);
-    } else if (src && src.type === 'gitee') {
+      // 设置存储类型为 GitHub
+      useImageStore.setState({ storageType: 'github' });
+    } else if (src.type === 'gitee') {
       setGiteeConfig({
         owner: src.owner,
         repo: src.repo,
@@ -168,34 +171,26 @@ export const ProjectPage: React.FC = () => {
         token: src.token,
         path: src.path,
       } as any);
+      // 设置存储类型为 Gitee
+      useImageStore.setState({ storageType: 'gitee' });
     }
   }, [projectSourceId, sourceStore, setGitHubConfig, setGiteeConfig]);
 
-  // 初始化存储服务
+  // 初始化存储服务并加载图片
   useEffect(() => {
     if (!projectSourceId) return;
-    if (
-      useImageStore.getState().githubConfig ||
-      useImageStore.getState().giteeConfig
-    ) {
-      const { initializeStorage } = useImageStore.getState();
-      initializeStorage();
+
+    const state = useImageStore.getState();
+    // 等待配置设置完成后再初始化
+    if (state.githubConfig || state.giteeConfig) {
+      // 如果存储服务未初始化，则初始化
+      if (!state.storageService) {
+        state.initializeStorage();
+      }
+      // 加载图片
       handleLoadImages();
     }
-  }, [projectSourceId, handleLoadImages]);
-
-  // 页面加载时初始化
-  useEffect(() => {
-    if (!projectSourceId) return;
-    const { githubConfig, giteeConfig, initializeStorage } =
-      useImageStore.getState();
-    if (
-      (githubConfig || giteeConfig) &&
-      !useImageStore.getState().storageService
-    ) {
-      initializeStorage();
-    }
-  }, [projectSourceId]);
+  }, [projectSourceId, githubConfig, giteeConfig, handleLoadImages]);
 
   const handleOpenConfigModal = useCallback(() => {
     setShowConfigModal(true);
@@ -392,9 +387,20 @@ export const ProjectPage: React.FC = () => {
         versionInfo={__VERSION_INFO__}
       />
 
+      {/* 幻灯片播放器 */}
+      {browseMode === 'slide' && (
+        <SlideShowPlayer
+          isOpen={true}
+          onClose={() => setBrowseMode('file')}
+          images={images}
+          t={t}
+        />
+      )}
+
       <Toaster />
     </div>
   );
 };
 
 export default ProjectPage;
+export type { ProjectPageProps };

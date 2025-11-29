@@ -301,11 +301,34 @@ app.on('before-quit', () => {
   destroyTray();
 });
 
-// New window example arg: new windows url
+// 打开新窗口的 IPC 处理器
+// arg 格式: "project?id=xxx" 或 "compression" 或 "conversion" 或 "ai-analysis"
 ipcMain.handle('open-win', (_, arg) => {
   const appIcon = getAppIcon();
 
+  // 解析参数，确定窗口标题
+  let windowTitle = `${APP_NAME} - 智能图片管理工具 v${APP_VERSION}`;
+  if (arg.startsWith('project')) {
+    // 项目窗口：解析 sourceId 并设置标题
+    const idx = arg.indexOf('?');
+    if (idx >= 0) {
+      const query = new URLSearchParams(arg.slice(idx + 1));
+      const sourceId = query.get('id');
+      if (sourceId) {
+        // 可以在这里获取源信息并设置更具体的标题
+        windowTitle = `${APP_NAME} - 项目窗口 v${APP_VERSION}`;
+      }
+    }
+  } else if (arg === 'compression') {
+    windowTitle = '图片压缩 - Pixuli';
+  } else if (arg === 'conversion') {
+    windowTitle = '图片转换 - Pixuli';
+  } else if (arg === 'ai-analysis') {
+    windowTitle = 'AI 图片分析 - Pixuli';
+  }
+
   const childWindow = new BrowserWindow({
+    title: windowTitle,
     icon: appIcon,
     webPreferences: {
       preload,
@@ -318,12 +341,19 @@ ipcMain.handle('open-win', (_, arg) => {
   });
 
   if (VITE_DEV_SERVER_URL) {
+    // 开发模式：通过 URL hash 传递参数
     childWindow.loadURL(`${VITE_DEV_SERVER_URL}#${arg}`);
     // DevTools 可以通过快捷键手动打开（Cmd+Option+I 或 Ctrl+Shift+I）
     // childWindow.webContents.openDevTools();
   } else {
+    // 生产模式：通过 hash 选项传递参数
     childWindow.loadFile(indexHtml, { hash: arg });
   }
+
+  // 页面加载完成后确保标题正确显示
+  childWindow.webContents.on('did-finish-load', () => {
+    childWindow.setTitle(windowTitle);
+  });
 });
 
 // 注册服务处理程序

@@ -10,6 +10,7 @@ import {
   KeyboardHelpModal,
   Sidebar,
   SidebarFilter,
+  SlideShowPlayer,
   Toaster,
   VersionInfoModal,
   formatFileSize,
@@ -344,6 +345,7 @@ export const HomePage: React.FC = () => {
         onSourceSelect={handleSourceSelect}
         onSourceEdit={handleEditSource}
         onSourceDelete={handleDeleteSource}
+        onSourceOpenInWindow={openProjectWindow}
         hasConfig={hasConfig}
         onAddSource={handleAddSource}
         collapsed={sidebarCollapsed}
@@ -566,6 +568,16 @@ export const HomePage: React.FC = () => {
         onClose={() => setShowVersionInfo(false)}
         versionInfo={__VERSION_INFO__}
       />
+
+      {/* 幻灯片播放器 */}
+      {browseMode === 'slide' && (
+        <SlideShowPlayer
+          isOpen={true}
+          onClose={() => setBrowseMode('file')}
+          images={images}
+          t={t}
+        />
+      )}
 
       <Toaster />
     </div>
