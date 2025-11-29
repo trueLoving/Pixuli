@@ -486,11 +486,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Logo/Header */}
       <div className="sidebar-header">
         <div className="sidebar-logo-container">
-          <img
-            src="/icon-192x192.png"
-            alt="Pixuli"
-            className="sidebar-logo-icon"
-          />
+          <img src="/icon.png" alt="Pixuli" className="sidebar-logo-icon" />
           <span className="sidebar-logo-text">Pixuli</span>
         </div>
         {onToggleCollapse && (

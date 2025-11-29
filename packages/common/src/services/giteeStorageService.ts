@@ -5,12 +5,24 @@ import { DefaultPlatformAdapter } from './platformAdapter';
 
 export class GiteeStorageService {
   private config: GiteeConfig;
+  private platform: 'web' | 'desktop' | 'mobile';
   private baseUrl = 'https://gitee.com/api/v5';
   private platformAdapter: PlatformAdapter;
 
-  constructor(config: GiteeConfig, platformAdapter?: PlatformAdapter) {
+  constructor(
+    config: GiteeConfig,
+    options: {
+      platform: 'web' | 'desktop' | 'mobile';
+      platformAdapter?: PlatformAdapter;
+    } = {
+      platform: 'web',
+      platformAdapter: new DefaultPlatformAdapter(),
+    },
+  ) {
     this.config = config;
-    this.platformAdapter = platformAdapter || new DefaultPlatformAdapter();
+    this.platform = options.platform || 'web';
+    this.platformAdapter =
+      options.platformAdapter || new DefaultPlatformAdapter();
   }
 
   /**
@@ -41,8 +53,8 @@ export class GiteeStorageService {
     // 生产环境：如果配置了代理服务器，可通过环境变量启用
     const isDev = import.meta.env.DEV;
     const useProxy = isDev || import.meta.env.VITE_USE_GITEE_PROXY === 'true';
-
-    if (useProxy) {
+    const isWeb = this.platform === 'web';
+    if (useProxy && isWeb) {
       return `/api/gitee-proxy${rawPath}`;
     }
 

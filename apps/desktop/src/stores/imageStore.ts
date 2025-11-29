@@ -48,7 +48,7 @@ interface ImageState {
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
   deleteMultipleImages: (
     imageIds: string[],
-    fileNames: string[]
+    fileNames: string[],
   ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
   addImage: (image: ImageItem) => void;
@@ -80,8 +80,10 @@ export const useImageStore = create<ImageState>((set, get) => {
     giteeConfig: initialGiteeConfig,
     storageService: initialConfig
       ? storageType === 'gitee'
-        ? new GiteeStorageService(initialGiteeConfig!)
-        : new GitHubStorageService(initialGitHubConfig!)
+        ? new GiteeStorageService(initialGiteeConfig!, { platform: 'desktop' })
+        : new GitHubStorageService(initialGitHubConfig!, {
+            platform: 'desktop',
+          })
       : null,
     storageType,
     batchUploadProgress: null,
@@ -151,7 +153,9 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       if (storageType === 'gitee' && giteeConfig) {
         try {
-          const storageService = new GiteeStorageService(giteeConfig);
+          const storageService = new GiteeStorageService(giteeConfig, {
+            platform: 'desktop',
+          });
           set({ storageService });
         } catch (error) {
           console.error('Failed to initialize gitee storage service:', error);
@@ -159,7 +163,9 @@ export const useImageStore = create<ImageState>((set, get) => {
         }
       } else if (storageType === 'github' && githubConfig) {
         try {
-          const storageService = new GitHubStorageService(githubConfig);
+          const storageService = new GitHubStorageService(githubConfig, {
+            platform: 'desktop',
+          });
           set({ storageService });
         } catch (error) {
           console.error('Failed to initialize github storage service:', error);
@@ -310,7 +316,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                             status: 'uploading',
                             message: '正在上传...',
                           }
-                        : item
+                        : item,
                     ),
                   }
                 : null,
@@ -344,7 +350,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                             progress: 100,
                             message: '上传成功',
                           }
-                        : item
+                        : item,
                     ),
                   }
                 : null,
@@ -363,7 +369,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                     items: state.batchUploadProgress.items.map(item =>
                       item.id === itemId
                         ? { ...item, status: 'error', message: errorMessage }
-                        : item
+                        : item,
                     ),
                   }
                 : null,
@@ -473,7 +479,7 @@ export const useImageStore = create<ImageState>((set, get) => {
       try {
         // 批量删除
         const deletePromises = imageIds.map((id, index) =>
-          storageService.deleteImage(id, fileNames[index])
+          storageService.deleteImage(id, fileNames[index]),
         );
         await Promise.all(deletePromises);
 
@@ -546,13 +552,13 @@ export const useImageStore = create<ImageState>((set, get) => {
         await storageService.updateImageInfo(
           editData.id,
           metadata.name,
-          metadata
+          metadata,
         );
 
         const duration = Date.now() - startTime;
         set(state => ({
           images: state.images.map(img =>
-            img.id === editData.id ? { ...img, ...metadata } : img
+            img.id === editData.id ? { ...img, ...metadata } : img,
           ),
           loading: false,
         }));

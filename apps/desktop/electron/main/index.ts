@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, shell, session } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  nativeImage,
+  shell,
+  session,
+} from 'electron';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -103,7 +110,7 @@ function setupContentSecurityPolicy() {
     (details, callback) => {
       // 允许请求继续，但会在 onBeforeSendHeaders 中添加请求头
       callback({});
-    }
+    },
   );
 
   // 为 Gitee 请求添加请求头
@@ -118,7 +125,7 @@ function setupContentSecurityPolicy() {
         Origin: 'https://gitee.com',
       };
       callback({ requestHeaders });
-    }
+    },
   );
 
   // 为所有请求设置 CSP（包括主文档和所有子资源）
@@ -158,14 +165,42 @@ function setupContentSecurityPolicy() {
       callback({
         responseHeaders,
       });
-    }
+    },
   );
 }
 
+/**
+ * 获取应用图标
+ * 尝试多个可能的路径，返回 NativeImage 对象
+ */
+function getAppIcon(): Electron.NativeImage {
+  const iconPaths = [
+    path.join(process.env.VITE_PUBLIC || '', 'icon.png'),
+    path.join(RENDERER_DIST, 'icon.png'),
+    path.join(process.env.APP_ROOT || '', 'public', 'icon.png'),
+  ];
+
+  for (const iconPath of iconPaths) {
+    try {
+      const icon = nativeImage.createFromPath(iconPath);
+      if (!icon.isEmpty()) {
+        return icon;
+      }
+    } catch (error) {
+      // 继续尝试下一个路径
+    }
+  }
+
+  // 如果所有路径都失败，返回空图标
+  return nativeImage.createEmpty();
+}
+
 async function createWindow() {
+  const appIcon = getAppIcon();
+
   win = new BrowserWindow({
     title: `${APP_NAME} - 智能图片管理工具 v${APP_VERSION}`,
-    icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
+    icon: appIcon,
     webPreferences: {
       preload,
       contextIsolation: true,
@@ -268,7 +303,10 @@ app.on('before-quit', () => {
 
 // New window example arg: new windows url
 ipcMain.handle('open-win', (_, arg) => {
+  const appIcon = getAppIcon();
+
   const childWindow = new BrowserWindow({
+    icon: appIcon,
     webPreferences: {
       preload,
       contextIsolation: true,

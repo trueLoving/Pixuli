@@ -7,10 +7,23 @@ export class GitHubStorageService {
   private config: GitHubConfig;
   private baseUrl = 'https://api.github.com';
   private platformAdapter: PlatformAdapter;
+  // @ts-ignore
+  private platform: 'web' | 'desktop' | 'mobile';
 
-  constructor(config: GitHubConfig, platformAdapter?: PlatformAdapter) {
+  constructor(
+    config: GitHubConfig,
+    options: {
+      platform: 'web' | 'desktop' | 'mobile';
+      platformAdapter?: PlatformAdapter;
+    } = {
+      platform: 'web',
+      platformAdapter: new DefaultPlatformAdapter(),
+    },
+  ) {
     this.config = config;
-    this.platformAdapter = platformAdapter || new DefaultPlatformAdapter();
+    this.platformAdapter =
+      options.platformAdapter || new DefaultPlatformAdapter();
+    this.platform = options.platform || 'web';
   }
 
   private async makeGitHubRequest(endpoint: string, options: RequestInit = {}) {

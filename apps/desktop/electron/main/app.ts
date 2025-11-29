@@ -1,13 +1,45 @@
-import { app, BrowserWindow, dialog, Menu } from 'electron';
+import { app, BrowserWindow, dialog, Menu, nativeImage } from 'electron';
+import { createRequire } from 'node:module';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import os from 'os';
 
 // 设置应用名称和顶部菜单
 export function setApp(
   win: BrowserWindow,
   APP_NAME: string,
-  APP_VERSION: string
+  APP_VERSION: string,
 ) {
+  // 获取应用图标
+  function getAppIcon(): Electron.NativeImage {
+    const require = createRequire(import.meta.url);
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const APP_ROOT = path.join(__dirname, '../..');
+    const VITE_PUBLIC =
+      process.env.VITE_PUBLIC || path.join(APP_ROOT, 'public');
+    const RENDERER_DIST = path.join(APP_ROOT, 'dist');
+
+    const iconPaths = [
+      path.join(VITE_PUBLIC, 'icon.png'),
+      path.join(RENDERER_DIST, 'icon.png'),
+      path.join(APP_ROOT, 'public', 'icon.png'),
+    ];
+
+    for (const iconPath of iconPaths) {
+      try {
+        const icon = nativeImage.createFromPath(iconPath);
+        if (!icon.isEmpty()) {
+          return icon;
+        }
+      } catch (error) {
+        // 继续尝试下一个路径
+      }
+    }
+
+    // 如果所有路径都失败，返回空图标
+    return nativeImage.createEmpty();
+  }
+
   // 显示关于对话框
   function showAboutDialog() {
     const aboutInfo = `
@@ -21,6 +53,8 @@ export function setApp(
   操作系统: ${os.type()} ${os.arch()} ${os.release()}
     `.trim();
 
+    const appIcon = getAppIcon();
+
     dialog
       .showMessageBox(win!, {
         type: 'info',
@@ -30,7 +64,7 @@ export function setApp(
         buttons: ['OK', 'Copy'],
         defaultId: 0,
         cancelId: 0,
-        icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
+        icon: appIcon,
       })
       .then(result => {
         if (result.response === 1) {

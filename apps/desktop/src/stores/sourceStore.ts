@@ -30,19 +30,21 @@ export type SourceConfig = GitHubSourceConfig | GiteeSourceConfig;
 
 type SourceState = {
   sources: SourceConfig[];
+  selectedSourceId: string | null;
   addSource: (
     input:
       | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
-      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
+      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>,
   ) => SourceConfig;
   updateSource: (
     id: string,
     input:
       | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
-      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>
+      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>,
   ) => void;
   removeSource: (id: string) => void;
   getSourceById: (id: string) => SourceConfig | undefined;
+  setSelectedSourceId: (id: string | null) => void;
   openProjectWindow: (id: string) => Promise<void>;
 };
 
@@ -96,11 +98,35 @@ function saveSources(sources: SourceConfig[]) {
   }
 }
 
+const SELECTED_SOURCE_KEY = 'pixuli.selectedSourceId';
+
+function loadSelectedSourceId(): string | null {
+  try {
+    return localStorage.getItem(SELECTED_SOURCE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveSelectedSourceId(id: string | null) {
+  try {
+    if (id) {
+      localStorage.setItem(SELECTED_SOURCE_KEY, id);
+    } else {
+      localStorage.removeItem(SELECTED_SOURCE_KEY);
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export const useSourceStore = create<SourceState>((set, get) => {
   const initial = loadSources();
+  const initialSelectedId = loadSelectedSourceId();
 
   return {
     sources: initial,
+    selectedSourceId: initialSelectedId,
     addSource: input => {
       const now = Date.now();
       const source: SourceConfig = {
@@ -116,7 +142,7 @@ export const useSourceStore = create<SourceState>((set, get) => {
     },
     updateSource: (id, input) => {
       const next = get().sources.map(s =>
-        s.id === id ? { ...s, ...input, updatedAt: Date.now() } : s
+        s.id === id ? { ...s, ...input, updatedAt: Date.now() } : s,
       );
       set({ sources: next });
       saveSources(next);
@@ -127,12 +153,16 @@ export const useSourceStore = create<SourceState>((set, get) => {
       saveSources(next);
     },
     getSourceById: id => get().sources.find(s => s.id === id),
+    setSelectedSourceId: id => {
+      set({ selectedSourceId: id });
+      saveSelectedSourceId(id);
+    },
     openProjectWindow: async id => {
       const ipcRenderer = (window as any).ipcRenderer;
       if (ipcRenderer && ipcRenderer.invoke) {
         await ipcRenderer.invoke(
           'open-win',
-          `project?id=${encodeURIComponent(id)}`
+          `project?id=${encodeURIComponent(id)}`,
         );
       }
     },
