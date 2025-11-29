@@ -21,10 +21,12 @@ interface ImageFilterProps {
   images: ImageItem[];
   currentFilters: FilterOptions;
   onFiltersChange: (
-    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions)
+    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
   ) => void;
   className?: string;
   t?: (key: string) => string;
+  /** 是否隐藏搜索框（用于与Header搜索框合并） */
+  hideSearch?: boolean;
 }
 
 const ImageFilter: React.FC<ImageFilterProps> = ({
@@ -33,13 +35,14 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
   onFiltersChange,
   className = '',
   t,
+  hideSearch = false,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
   const [isExpanded, setIsExpanded] = useState(false);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [localSearchTerm, setLocalSearchTerm] = useState(
-    currentFilters.searchTerm
+    currentFilters.searchTerm,
   );
 
   // 获取所有可用的图片类型
@@ -87,7 +90,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
         }));
       }, 300); // 300ms防抖延迟
     },
-    [onFiltersChange]
+    [onFiltersChange],
   );
 
   // 组件卸载时清理定时器
@@ -113,7 +116,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
         };
       });
     },
-    [onFiltersChange]
+    [onFiltersChange],
   );
 
   // 处理标签筛选变化 - 使用函数式更新避免依赖currentFilters
@@ -130,7 +133,7 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
         };
       });
     },
-    [onFiltersChange]
+    [onFiltersChange],
   );
 
   // 清除所有筛选条件
@@ -218,22 +221,24 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
       {/* 筛选内容 */}
       {isExpanded && (
         <div className="image-filter-content">
-          {/* 搜索筛选 */}
-          <div className="image-filter-section">
-            <label className="image-filter-label">
-              {translate('image.filter.searchImages')}
-            </label>
-            <div className="image-filter-search">
-              <Search className="image-filter-search-icon" />
-              <input
-                type="text"
-                placeholder={translate('image.filter.searchPlaceholder')}
-                value={localSearchTerm}
-                onChange={e => handleSearchChange(e.target.value)}
-                className="image-filter-input"
-              />
+          {/* 搜索筛选 - 如果hideSearch为true则不显示 */}
+          {!hideSearch && (
+            <div className="image-filter-section">
+              <label className="image-filter-label">
+                {translate('image.filter.searchImages')}
+              </label>
+              <div className="image-filter-search">
+                <Search className="image-filter-search-icon" />
+                <input
+                  type="text"
+                  placeholder={translate('image.filter.searchPlaceholder')}
+                  value={localSearchTerm}
+                  onChange={e => handleSearchChange(e.target.value)}
+                  className="image-filter-input"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 类型筛选 */}
           {availableTypes.length > 0 && (
@@ -293,12 +298,12 @@ const ImageFilter: React.FC<ImageFilterProps> = ({
             <span>
               {translate('image.filter.showingImagesCount').replace(
                 '{count}',
-                filterStats.filtered.toString()
+                filterStats.filtered.toString(),
               )}
               {filterStats.hasFilters &&
                 translate('image.filter.totalImagesCount').replace(
                   '{count}',
-                  filterStats.total.toString()
+                  filterStats.total.toString(),
                 )}
             </span>
             {filterStats.hasFilters && (

@@ -21,6 +21,8 @@ import {
   VersionInfoModal,
   type VersionInfo,
 } from '@packages/common/src';
+import type { FilterOptions } from '@packages/common/src/components/image-browser/image-filter/ImageFilter';
+import { createDefaultFilters } from '@packages/common/src/utils/filterUtils';
 import { Github, RefreshCw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
@@ -75,6 +77,17 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [externalFilters, setExternalFilters] = useState<FilterOptions>(
+    createDefaultFilters(),
+  );
+
+  // 同步搜索查询到筛选条件
+  useEffect(() => {
+    setExternalFilters(prev => ({
+      ...prev,
+      searchTerm: searchQuery,
+    }));
+  }, [searchQuery]);
 
   // 判断是否有配置
   const hasConfig = sources.length > 0;
@@ -511,19 +524,6 @@ function App() {
         <Header
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onUpload={
-            hasConfig
-              ? () => {
-                  // 触发上传（可以通过事件或直接调用）
-                  const uploadArea =
-                    document.querySelector('.image-upload-area');
-                  uploadArea?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center',
-                  });
-                }
-              : undefined
-          }
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           hasConfig={hasConfig}
@@ -534,6 +534,10 @@ function App() {
           availableLanguages={getAvailableLanguages()}
           onLanguageChange={changeLanguage}
           t={t}
+          images={images}
+          externalFilters={externalFilters}
+          onFiltersChange={setExternalFilters}
+          showFilter={true}
         />
 
         {/* 底部：图片浏览区 */}
@@ -622,6 +626,9 @@ function App() {
                     onUpdateImage={handleUpdateImage}
                     getImageDimensionsFromUrl={getImageDimensionsFromUrl}
                     formatFileSize={formatFileSize}
+                    externalSearchQuery={searchQuery}
+                    externalFilters={externalFilters}
+                    hideFilter={true}
                   />
                 )}
               </div>

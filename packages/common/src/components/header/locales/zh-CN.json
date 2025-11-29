@@ -5,6 +5,8 @@
       "placeholderDisabled": "添加仓库源后即可搜索图片"
     },
     "upload": "上传",
+    "filter": "筛选",
+    "clearFilters": "清除筛选",
     "viewMode": {
       "grid": "网格",
       "list": "列表"

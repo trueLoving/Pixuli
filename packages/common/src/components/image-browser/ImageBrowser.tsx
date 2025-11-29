@@ -30,10 +30,16 @@ interface ImageBrowserProps {
   onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onUpdateImage?: (data: any) => Promise<void>;
   getImageDimensionsFromUrl?: (
-    url: string
+    url: string,
   ) => Promise<{ width: number; height: number }>;
   formatFileSize?: (size: number) => string;
   t?: (key: string) => string;
+  /** 外部搜索查询（用于与Header搜索框同步，可选） */
+  externalSearchQuery?: string;
+  /** 外部筛选条件（用于与Header筛选同步，可选） */
+  externalFilters?: FilterOptions;
+  /** 是否隐藏筛选功能（默认false，web端传true） */
+  hideFilter?: boolean;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
@@ -45,6 +51,9 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   getImageDimensionsFromUrl,
   formatFileSize,
   t,
+  externalSearchQuery,
+  externalFilters,
+  hideFilter = false,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -52,10 +61,27 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc');
   const [currentFilters, setCurrentFilters] = useState<FilterOptions>(
-    createDefaultFilters()
+    createDefaultFilters(),
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
   const [showBatchDeleteModal, setShowBatchDeleteModal] = useState(false);
+
+  // 同步外部搜索查询到筛选条件
+  useEffect(() => {
+    if (externalSearchQuery !== undefined) {
+      setCurrentFilters(prev => ({
+        ...prev,
+        searchTerm: externalSearchQuery,
+      }));
+    }
+  }, [externalSearchQuery]);
+
+  // 同步外部筛选条件（如果提供）
+  useEffect(() => {
+    if (externalFilters !== undefined) {
+      setCurrentFilters(externalFilters);
+    }
+  }, [externalFilters]);
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view);
@@ -88,7 +114,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     (filters: FilterOptions | ((prev: FilterOptions) => FilterOptions)) => {
       setCurrentFilters(filters);
     },
-    []
+    [],
   );
 
   // 使用 useRef 缓存上一次的计算结果和依赖项
@@ -208,7 +234,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     // 使用 setTimeout 确保 DOM 更新完成后再滚动
     setTimeout(() => {
       const selectedElement = document.querySelector(
-        `[data-image-index="${index}"]`
+        `[data-image-index="${index}"]`,
       );
       if (selectedElement) {
         // 尝试找到滚动容器
@@ -273,7 +299,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             const colsPerRow = getGridColumnsPerRow();
             newIndex = Math.min(
               totalImages - 1,
-              selectedImageIndex + colsPerRow
+              selectedImageIndex + colsPerRow,
             );
           } else {
             // 列表视图：下一个
@@ -303,7 +329,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       currentView,
       getGridColumnsPerRow,
       scrollToSelectedItem,
-    ]
+    ],
   );
 
   // 处理图片选择的通用函数
@@ -312,7 +338,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       setSelectedImageIndex(index);
       scrollToSelectedItem(index);
     },
-    [scrollToSelectedItem]
+    [scrollToSelectedItem],
   );
 
   // 键盘快捷键注册
@@ -440,7 +466,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         throw error; // 重新抛出错误，让模态框处理
       }
     },
-    [onDeleteMultipleImages]
+    [onDeleteMultipleImages],
   );
 
   return (
@@ -502,15 +528,18 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         </div>
       </div>
 
-      {/* 筛选区域 */}
-      <div className="image-browser-filter-section">
-        <ImageFilter
-          t={translate}
-          images={images}
-          currentFilters={currentFilters}
-          onFiltersChange={handleFiltersChange}
-        />
-      </div>
+      {/* 筛选区域 - 如果hideFilter为true则不显示 */}
+      {!hideFilter && (
+        <div className="image-browser-filter-section">
+          <ImageFilter
+            t={translate}
+            images={images}
+            currentFilters={currentFilters}
+            onFiltersChange={handleFiltersChange}
+            hideSearch={externalSearchQuery !== undefined}
+          />
+        </div>
+      )}
 
       {/* 内容区域 */}
       <div className="image-browser-content">
