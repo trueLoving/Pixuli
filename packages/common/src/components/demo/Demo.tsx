@@ -1,5 +1,12 @@
-import { ChevronDown, Github, Play } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronDown,
+  Github,
+  Play,
+  Sparkles,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import './Demo.css';
 
 // 演示环境工具函数
 export interface DemoConfig {
@@ -18,18 +25,18 @@ export interface DemoConfig {
 // 检测是否为演示环境
 export function isDemoEnvironment(): boolean {
   // 检测优先级：
-  // 1. 环境变量 VITE_DEMO_MODE
-  // 2. URL 参数 ?demo=true
-  // 3. localStorage 标记
+  // 1. 环境变量 VITE_DEMO_MODE（主要方式）
+  // 2. URL 参数 ?demo=true（开发/测试用）
+  // 3. localStorage 标记（用户手动启用）
 
-  // 环境变量检测
+  // 环境变量检测（主要控制方式）
   const envDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
-  // URL 参数检测
+  // URL 参数检测（用于开发测试）
   const urlParams = new URLSearchParams(window.location.search);
   const urlDemoMode = urlParams.get('demo') === 'true';
 
-  // localStorage 检测
+  // localStorage 检测（用户手动启用）
   const localStorageDemo = localStorage.getItem('pixuli-demo-mode') === 'true';
 
   return envDemoMode || urlDemoMode || localStorageDemo;
@@ -51,11 +58,11 @@ export function getDemoGitHubConfig(): DemoConfig {
     platform: 'web',
     timestamp: new Date().toISOString(),
     config: {
-      owner: import.meta.env.VITE_DEMO_GITHUB_OWNER,
-      repo: import.meta.env.VITE_DEMO_GITHUB_REPO,
-      branch: import.meta.env.VITE_DEMO_GITHUB_BRANCH,
-      token: import.meta.env.VITE_DEMO_GITHUB_TOKEN,
-      path: import.meta.env.VITE_DEMO_GITHUB_PATH,
+      owner: import.meta.env.VITE_DEMO_GITHUB_OWNER || '',
+      repo: import.meta.env.VITE_DEMO_GITHUB_REPO || '',
+      branch: import.meta.env.VITE_DEMO_GITHUB_BRANCH || 'main',
+      token: import.meta.env.VITE_DEMO_GITHUB_TOKEN || '',
+      path: import.meta.env.VITE_DEMO_GITHUB_PATH || '',
     },
   };
 }
@@ -67,11 +74,11 @@ export function getDemoGiteeConfig(): DemoConfig {
     platform: 'web',
     timestamp: new Date().toISOString(),
     config: {
-      owner: import.meta.env.VITE_DEMO_GITEE_OWNER,
-      repo: import.meta.env.VITE_DEMO_GITEE_REPO,
-      branch: import.meta.env.VITE_DEMO_GITEE_BRANCH,
-      token: import.meta.env.VITE_DEMO_GITEE_TOKEN,
-      path: import.meta.env.VITE_DEMO_GITEE_PATH,
+      owner: import.meta.env.VITE_DEMO_GITEE_OWNER || '',
+      repo: import.meta.env.VITE_DEMO_GITEE_REPO || '',
+      branch: import.meta.env.VITE_DEMO_GITEE_BRANCH || 'master',
+      token: import.meta.env.VITE_DEMO_GITEE_TOKEN || '',
+      path: import.meta.env.VITE_DEMO_GITEE_PATH || '',
     },
   };
 }
@@ -141,8 +148,8 @@ export function importConfigFromFile(file: File): Promise<DemoConfig> {
         reject(
           new Error(
             '配置文件解析失败: ' +
-              (error instanceof Error ? error.message : '未知错误')
-          )
+              (error instanceof Error ? error.message : '未知错误'),
+          ),
         );
       }
     };
@@ -173,6 +180,7 @@ interface DemoProps {
 export function Demo({ t, onExitDemo }: DemoProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const envConfigured = isEnvConfigured();
 
   const handleDownloadGitHub = useCallback(() => {
     downloadDemoGitHubConfig();
@@ -210,67 +218,99 @@ export function Demo({ t, onExitDemo }: DemoProps) {
   }, [showDropdown, handleClickOutside]);
 
   return (
-    <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-      <div className="flex items-center space-x-2 mb-2">
-        <Play className="w-5 h-5 text-purple-600" />
-        <h3 className="text-lg font-semibold text-purple-800">
-          {t('app.demoMode.title')}
-        </h3>
-      </div>
-      <p className="text-purple-700 text-sm mb-3">
-        {t('app.demoMode.description')}
-      </p>
-      <div className="flex justify-center space-x-3">
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
-          >
-            <Play className="w-4 h-4" />
-            <span>{t('app.demoMode.downloadDemo')}</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-          {showDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
-              <button
-                onClick={handleDownloadGitHub}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors"
-              >
-                <Github className="w-5 h-5 text-gray-700 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">
-                    {t('app.demoMode.downloadGitHub')}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {t('app.demoMode.downloadGitHubDesc')}
-                  </div>
-                </div>
-              </button>
-              <button
-                onClick={handleDownloadGitee}
-                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 transition-colors border-t border-gray-100"
-              >
-                <span className="w-5 h-5 text-gray-700 text-lg flex-shrink-0 flex items-center justify-center">
-                  码云
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900">
-                    {t('app.demoMode.downloadGitee')}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {t('app.demoMode.downloadGiteeDesc')}
-                  </div>
-                </div>
-              </button>
+    <div className="demo-banner">
+      <div className="demo-banner-inner">
+        {/* 头部：标题和说明 */}
+        <div className="demo-banner-header">
+          <div className="demo-banner-header-left">
+            <div className="demo-banner-icon">
+              <Sparkles className="demo-banner-icon-svg" />
             </div>
-          )}
+            <div className="demo-banner-title-block">
+              <h3 className="demo-banner-title">
+                {t('app.demoMode.title')}
+                <span className="demo-banner-badge">Demo</span>
+              </h3>
+              <p className="demo-banner-desc">
+                {t('app.demoMode.description')}
+              </p>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={handleExitDemoMode}
-          className="px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
-        >
-          {t('app.demoMode.exitDemo')}
-        </button>
+
+        {!envConfigured && (
+          <div className="demo-banner-warning">
+            <AlertTriangle size={16} className="demo-banner-warning-icon" />
+            <span className="demo-banner-warning-text">
+              {t('app.demoMode.missingConfig')}
+            </span>
+          </div>
+        )}
+
+        {/* 操作按钮区域 */}
+        <div className="demo-banner-actions">
+          <div className="demo-banner-dropdown" ref={dropdownRef}>
+            <button
+              onClick={() => envConfigured && setShowDropdown(!showDropdown)}
+              disabled={!envConfigured}
+              className={`demo-banner-btn demo-banner-btn-primary${
+                envConfigured ? '' : ' demo-banner-btn-disabled'
+              }`}
+            >
+              <Play className="demo-banner-btn-icon" />
+              <span className="demo-banner-btn-text">
+                {t('app.demoMode.downloadDemo')}
+              </span>
+              <ChevronDown
+                className={`demo-banner-btn-chevron${
+                  showDropdown ? ' demo-banner-btn-chevron-open' : ''
+                }`}
+              />
+            </button>
+            {showDropdown && envConfigured && (
+              <div className="demo-banner-menu">
+                <button
+                  onClick={handleDownloadGitHub}
+                  className="demo-banner-menu-item"
+                >
+                  <div className="demo-banner-menu-icon">
+                    <Github className="demo-banner-menu-icon-svg" />
+                  </div>
+                  <div className="demo-banner-menu-text">
+                    <div className="demo-banner-menu-title">
+                      {t('app.demoMode.downloadGitHub')}
+                    </div>
+                    <div className="demo-banner-menu-desc">
+                      {t('app.demoMode.downloadGitHubDesc')}
+                    </div>
+                  </div>
+                </button>
+                <button
+                  onClick={handleDownloadGitee}
+                  className="demo-banner-menu-item demo-banner-menu-item--bordered"
+                >
+                  <div className="demo-banner-menu-icon">
+                    <span className="demo-banner-menu-gitee">码</span>
+                  </div>
+                  <div className="demo-banner-menu-text">
+                    <div className="demo-banner-menu-title">
+                      {t('app.demoMode.downloadGitee')}
+                    </div>
+                    <div className="demo-banner-menu-desc">
+                      {t('app.demoMode.downloadGiteeDesc')}
+                    </div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleExitDemoMode}
+            className="demo-banner-btn demo-banner-btn-secondary"
+          >
+            {t('app.demoMode.exitDemo')}
+          </button>
+        </div>
       </div>
     </div>
   );

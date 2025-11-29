@@ -79,6 +79,13 @@ export { default as EmptyState } from './components/empty-state/EmptyState';
 export { default as SearchBar } from './components/search/SearchBar';
 export { FullScreenLoading } from './components/fullscreen-loading';
 export type { FullScreenLoadingProps } from './components/fullscreen-loading';
+export {
+  Demo,
+  useDemoMode,
+  downloadDemoConfig,
+  importConfigFromFile,
+} from './components/demo/Demo';
+export { demoLocales } from './components/demo/locales';
 
 // 语言包导出
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';
