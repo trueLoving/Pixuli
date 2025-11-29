@@ -17,6 +17,7 @@ import gallery3dLocales from '../components/gallery-3d/locales';
 import sidebarLocales from '../components/sidebar/locales';
 import headerLocales from '../components/header/locales';
 import emptyStateLocales from '../components/empty-state/locales';
+import demoLocales from '../components/demo/locales';
 
 /**
  * 深层合并对象
@@ -72,6 +73,7 @@ export const appLocales = {
     sidebarLocales['zh-CN'],
     headerLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
+    demoLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -91,6 +93,7 @@ export const appLocales = {
     sidebarLocales['en-US'],
     headerLocales['en-US'],
     emptyStateLocales['en-US'],
+    demoLocales['en-US'],
   ),
 };
 

@@ -29,11 +29,16 @@ import './App.css';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
+import { Demo, useDemoMode } from './components/index';
 import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
+import {
+  getDemoGitHubConfig,
+  getDemoGiteeConfig,
+} from '@packages/common/src/components/demo/Demo';
 
 function App() {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
@@ -49,6 +54,8 @@ function App() {
     clearError,
     setGitHubConfig,
     setGiteeConfig,
+    clearGitHubConfig,
+    clearGiteeConfig,
     uploadImage,
     uploadMultipleImages,
     batchUploadProgress,
@@ -65,6 +72,9 @@ function App() {
     removeSource,
     setSelectedSourceId,
   } = useSourceStore();
+
+  // Demo 模式管理
+  const { isDemoMode, exitDemoMode } = useDemoMode();
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showSourceTypeMenu, setShowSourceTypeMenu] = useState(false);
@@ -413,6 +423,41 @@ function App() {
     }
   }, [selectedSource, setGitHubConfig, setGiteeConfig]);
 
+  // Demo 模式：自动加载 Demo 配置
+  useEffect(() => {
+    if (isDemoMode && !hasConfig && !githubConfig && !giteeConfig) {
+      // 优先使用 GitHub Demo 配置
+      const demoGitHubConfig = getDemoGitHubConfig();
+      if (
+        demoGitHubConfig.config.owner &&
+        demoGitHubConfig.config.repo &&
+        demoGitHubConfig.config.token
+      ) {
+        setGitHubConfig(demoGitHubConfig.config);
+        useImageStore.setState({ storageType: 'github' });
+        return;
+      }
+
+      // 如果没有 GitHub 配置，尝试使用 Gitee Demo 配置
+      const demoGiteeConfig = getDemoGiteeConfig();
+      if (
+        demoGiteeConfig.config.owner &&
+        demoGiteeConfig.config.repo &&
+        demoGiteeConfig.config.token
+      ) {
+        setGiteeConfig(demoGiteeConfig.config);
+        useImageStore.setState({ storageType: 'gitee' });
+      }
+    }
+  }, [
+    isDemoMode,
+    hasConfig,
+    githubConfig,
+    giteeConfig,
+    setGitHubConfig,
+    setGiteeConfig,
+  ]);
+
   // 初始化存储服务
   useEffect(() => {
     const { storageType, githubConfig, giteeConfig, initializeStorage } =
@@ -425,6 +470,15 @@ function App() {
       handleLoadImages();
     }
   }, [storageType, githubConfig, giteeConfig, handleLoadImages]);
+
+  // 退出 Demo 模式时的处理
+  const handleExitDemo = useCallback(() => {
+    // 清除所有配置
+    clearGitHubConfig();
+    clearGiteeConfig();
+    useImageStore.setState({ storageType: null, images: [] });
+    exitDemoMode();
+  }, [clearGitHubConfig, clearGiteeConfig, exitDemoMode]);
 
   // 页面加载时初始化
   useEffect(() => {
@@ -544,17 +598,21 @@ function App() {
         <main className="flex-1 overflow-y-auto bg-white">
           {!hasConfig ? (
             // 未配置：显示引导界面
-            <EmptyState
-              onAddGitHub={() => {
-                useImageStore.setState({ storageType: 'github' });
-                setShowConfigModal(true);
-              }}
-              onAddGitee={() => {
-                useImageStore.setState({ storageType: 'gitee' });
-                setShowConfigModal(true);
-              }}
-              t={t}
-            />
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+              {/* Demo 模式提示 */}
+              {isDemoMode && <Demo t={t} onExitDemo={handleExitDemo} />}
+              <EmptyState
+                onAddGitHub={() => {
+                  useImageStore.setState({ storageType: 'github' });
+                  setShowConfigModal(true);
+                }}
+                onAddGitee={() => {
+                  useImageStore.setState({ storageType: 'gitee' });
+                  setShowConfigModal(true);
+                }}
+                t={t}
+              />
+            </div>
           ) : (
             // 已配置：显示正常内容
             <div className="w-full px-4 sm:px-6 lg:px-8 py-4">

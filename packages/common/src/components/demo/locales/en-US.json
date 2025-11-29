@@ -1,0 +1,15 @@
+{
+  "app": {
+    "demoMode": {
+      "title": "Demo Mode",
+      "description": "You are using the demo environment. You can download pre-configured demo configuration files to quickly experience all features of Pixuli.",
+      "downloadDemo": "Download Demo Config",
+      "downloadGitHub": "Download GitHub Demo Config",
+      "downloadGitHubDesc": "GitHub repository configuration",
+      "downloadGitee": "Download Gitee Demo Config",
+      "downloadGiteeDesc": "Gitee repository configuration",
+      "exitDemo": "Exit Demo Mode",
+      "missingConfig": "Demo repositories are not configured yet. Please set the environment variables in your .env file first."
+    }
+  }
+}

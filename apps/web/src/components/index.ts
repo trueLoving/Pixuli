@@ -3,7 +3,7 @@ export {
   useDemoMode,
   downloadDemoConfig,
   importConfigFromFile,
-} from './demo/Demo';
+  demoLocales,
+} from '@packages/common/src';
 
-export { demoLocales } from './demo/locales';
 export { pwaLocales } from './pwa/locales';
