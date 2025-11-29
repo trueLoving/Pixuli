@@ -31,6 +31,6 @@
       "@packages/*": ["../../packages/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../common/src/types/**/*", "../common/src/vite-env.d.ts"],
   "exclude": ["**/__tests__/**"]
 }

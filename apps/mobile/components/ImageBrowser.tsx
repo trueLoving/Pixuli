@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { ImageItem } from 'pixuli-common/src';
+import { ImageItem } from '@packages/common/src/index.native';
 import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
 // 动态加载 legacy API（运行时可用）
@@ -125,7 +125,7 @@ export function ImageBrowser({
   // 更新图片的变换状态
   const updateImageTransform = (
     imageId: string,
-    updates: Partial<ImageTransformState>
+    updates: Partial<ImageTransformState>,
   ) => {
     setImageTransforms(prev => ({
       ...prev,
@@ -227,14 +227,14 @@ export function ImageBrowser({
             } catch (error) {
               Alert.alert(
                 t('common.error') || '错误',
-                t('image.deleteFailed') || '删除失败'
+                t('image.deleteFailed') || '删除失败',
               );
             } finally {
               setDeleting(false);
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -310,7 +310,7 @@ export function ImageBrowser({
       if (!isAvailable) {
         Alert.alert(
           t('common.error') || '错误',
-          t('image.shareFailed') || '分享功能不可用'
+          t('image.shareFailed') || '分享功能不可用',
         );
         return;
       }
@@ -324,7 +324,7 @@ export function ImageBrowser({
       // 使用 Promise.race 实现超时控制
       const downloadPromise = FileSystem.downloadAsync(
         currentImage.url,
-        localUri
+        localUri,
       );
 
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -379,7 +379,7 @@ export function ImageBrowser({
       Alert.alert(
         t('common.error') || '错误',
         t('image.saveToLocalFailed') ||
-          '保存功能不可用，请安装 expo-media-library'
+          '保存功能不可用，请安装 expo-media-library',
       );
       return;
     }
@@ -402,11 +402,11 @@ export function ImageBrowser({
         ) {
           showError(
             t('image.saveToLocalFailed') ||
-              '保存图片失败：请确保应用已正确配置媒体库权限。在开发环境中，可能需要创建开发构建（development build）才能使用此功能。'
+              '保存图片失败：请确保应用已正确配置媒体库权限。在开发环境中，可能需要创建开发构建（development build）才能使用此功能。',
           );
         } else {
           showError(
-            `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+            `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`,
           );
         }
         return;
@@ -415,7 +415,7 @@ export function ImageBrowser({
       if (!permissionResponse || permissionResponse.status !== 'granted') {
         showError(
           t('image.saveToLocalPermissionDenied') ||
-            '需要相册权限才能保存图片，请在设置中授予权限'
+            '需要相册权限才能保存图片，请在设置中授予权限',
         );
         return;
       }
@@ -428,7 +428,7 @@ export function ImageBrowser({
       // 使用 Promise.race 实现超时控制
       const downloadPromise = FileSystem.downloadAsync(
         currentImage.url,
-        localUri
+        localUri,
       );
 
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -454,7 +454,7 @@ export function ImageBrowser({
       console.error('保存图片失败:', error);
       const errorMessage = error instanceof Error ? error.message : '未知错误';
       showError(
-        `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`
+        `${t('image.saveToLocalFailed') || '保存图片失败'}: ${errorMessage}`,
       );
     } finally {
       setSaving(false);

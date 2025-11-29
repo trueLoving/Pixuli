@@ -151,6 +151,14 @@ export default defineConfig({
       '@packages': path.resolve(__dirname, '../../packages'),
     },
   },
+  optimizeDeps: {
+    exclude: [
+      'react-native',
+      '@react-native-async-storage/async-storage',
+      'expo-file-system',
+      'expo-sharing',
+    ],
+  },
   server: {
     open: true,
     port: 5500,
@@ -185,9 +193,24 @@ export default defineConfig({
     cssCodeSplit: true,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      external: [
+        'react-native',
+        '@react-native-async-storage/async-storage',
+        'expo-file-system',
+        'expo-sharing',
+      ],
       output: {
         // 代码分包策略
         manualChunks: id => {
+          // 排除 React Native 相关模块
+          if (
+            id.includes('react-native') ||
+            id.includes('@react-native-async-storage') ||
+            id.includes('expo-file-system') ||
+            id.includes('expo-sharing')
+          ) {
+            return;
+          }
           // React核心 - 单独分包
           if (id.includes('react') || id.includes('react-dom')) {
             return 'react';
@@ -226,6 +249,14 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
+    },
+    commonjsOptions: {
+      exclude: [
+        'react-native',
+        '@react-native-async-storage/async-storage',
+        'expo-file-system',
+        'expo-sharing',
+      ],
     },
   },
   define: {

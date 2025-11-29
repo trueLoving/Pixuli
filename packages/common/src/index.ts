@@ -75,16 +75,26 @@ export { BrowseModeSwitcher } from './components/browse-mode-switcher';
 export { default as Sidebar } from './components/sidebar/Sidebar';
 export type { SidebarView, SidebarFilter } from './components/sidebar';
 export { default as Header } from './components/header/Header';
-export { default as EmptyState } from './components/empty-state/EmptyState';
+// EmptyState 组件 - Web 版本
+export { default as EmptyState } from './components/empty-state/web/EmptyState.web';
+export type { EmptyStateProps } from './components/empty-state/common/types';
 export { default as SearchBar } from './components/search/SearchBar';
 export { FullScreenLoading } from './components/fullscreen-loading';
 export type { FullScreenLoadingProps } from './components/fullscreen-loading';
+// Demo 组件 - Web 版本
 export {
-  Demo,
+  default as Demo,
   useDemoMode,
-  downloadDemoConfig,
+  downloadDemoGitHubConfig,
+  downloadDemoGiteeConfig,
   importConfigFromFile,
-} from './components/demo/Demo';
+  isDemoEnvironment,
+  setDemoMode,
+  getDemoGitHubConfig,
+  getDemoGiteeConfig,
+  isEnvConfigured,
+} from './components/demo/web/Demo.web';
+export type { DemoConfig, DemoProps } from './components/demo/common/types';
 export { demoLocales } from './components/demo/locales';
 
 // 语言包导出

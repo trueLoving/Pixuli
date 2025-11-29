@@ -7,7 +7,7 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-} from 'pixuli-common/src';
+} from '@packages/common/src/index.native';
 import { create } from 'zustand';
 import { GitHubStorageService } from '../services/githubStorageService';
 import { GiteeStorageService } from '../services/giteeStorageService';
@@ -71,7 +71,7 @@ interface ImageState {
     tags?: string[];
   }) => Promise<void>;
   uploadMultipleImages: (
-    uploadData: MultiImageUploadData & { uris: string[] }
+    uploadData: MultiImageUploadData & { uris: string[] },
   ) => Promise<void>;
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
@@ -140,7 +140,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         MetadataCache.setCurrentCacheKey(
           'gitee',
           initialGiteeConfig.owner,
-          initialGiteeConfig.repo
+          initialGiteeConfig.repo,
         );
         set({ storageService });
       } catch (error) {
@@ -249,7 +249,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         MetadataCache.setCurrentCacheKey(
           'github',
           githubConfig.owner,
-          githubConfig.repo
+          githubConfig.repo,
         );
         set({ storageService });
       } catch (error) {
@@ -263,7 +263,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         MetadataCache.setCurrentCacheKey(
           'gitee',
           giteeConfig.owner,
-          giteeConfig.repo
+          giteeConfig.repo,
         );
         set({ storageService });
       } catch (error) {
@@ -319,7 +319,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
             const updatedUniqueImages = imagesWithMetadata.reduce(
               (acc: ImageItem[], current) => {
                 const existingIndex = acc.findIndex(
-                  img => img.id === current.id
+                  img => img.id === current.id,
                 );
                 if (existingIndex === -1) {
                   acc.push(current);
@@ -333,7 +333,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
                 }
                 return acc;
               },
-              []
+              [],
             );
             // 更新图片列表（包含元数据）
             set({ images: updatedUniqueImages });
@@ -386,7 +386,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   uploadMultipleImages: async (
-    uploadData: MultiImageUploadData & { uris: string[] }
+    uploadData: MultiImageUploadData & { uris: string[] },
   ) => {
     const { storageService } = get();
     if (!storageService) {
@@ -438,7 +438,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
                           status: 'uploading',
                           message: '正在上传...',
                         }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -468,7 +468,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
                           progress: 100,
                           message: '上传成功',
                         }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -486,7 +486,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
                   items: state.batchUploadProgress.items.map(item =>
                     item.id === itemId
                       ? { ...item, status: 'error', message: errorMessage }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -560,12 +560,12 @@ export const useImageStore = create<ImageState>((set, get) => ({
         editData.id,
         image.name,
         metadata,
-        image.name
+        image.name,
       );
 
       set(state => ({
         images: state.images.map(img =>
-          img.id === editData.id ? { ...img, ...metadata } : img
+          img.id === editData.id ? { ...img, ...metadata } : img,
         ),
         loading: false,
       }));
@@ -644,7 +644,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         const nameMatch = image.name.toLowerCase().includes(query);
         const descMatch = image.description?.toLowerCase().includes(query);
         const tagMatch = image.tags.some(tag =>
-          tag.toLowerCase().includes(query)
+          tag.toLowerCase().includes(query),
         );
         return nameMatch || descMatch || tagMatch;
       });
@@ -653,43 +653,43 @@ export const useImageStore = create<ImageState>((set, get) => ({
     // 应用筛选
     if (filterOptions.tags && filterOptions.tags.length > 0) {
       filtered = filtered.filter(image =>
-        filterOptions.tags!.some(tag => image.tags.includes(tag))
+        filterOptions.tags!.some(tag => image.tags.includes(tag)),
       );
     }
 
     if (filterOptions.minWidth !== undefined) {
       filtered = filtered.filter(
-        image => image.width >= filterOptions.minWidth!
+        image => image.width >= filterOptions.minWidth!,
       );
     }
 
     if (filterOptions.minHeight !== undefined) {
       filtered = filtered.filter(
-        image => image.height >= filterOptions.minHeight!
+        image => image.height >= filterOptions.minHeight!,
       );
     }
 
     if (filterOptions.maxWidth !== undefined) {
       filtered = filtered.filter(
-        image => image.width <= filterOptions.maxWidth!
+        image => image.width <= filterOptions.maxWidth!,
       );
     }
 
     if (filterOptions.maxHeight !== undefined) {
       filtered = filtered.filter(
-        image => image.height <= filterOptions.maxHeight!
+        image => image.height <= filterOptions.maxHeight!,
       );
     }
 
     if (filterOptions.dateFrom) {
       filtered = filtered.filter(
-        image => image.createdAt >= filterOptions.dateFrom!
+        image => image.createdAt >= filterOptions.dateFrom!,
       );
     }
 
     if (filterOptions.dateTo) {
       filtered = filtered.filter(
-        image => image.createdAt <= filterOptions.dateTo!
+        image => image.createdAt <= filterOptions.dateTo!,
       );
     }
 
@@ -749,7 +749,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         // 更新 store 中的图片
         set(state => ({
           images: state.images.map(img =>
-            img.id === image.id ? updatedImage : img
+            img.id === image.id ? updatedImage : img,
           ),
         }));
 
