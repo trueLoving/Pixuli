@@ -64,8 +64,10 @@ interface NavItemProps {
   label: string;
   active?: boolean;
   disabled?: boolean;
+  comingSoon?: boolean;
   onClick?: () => void;
   tooltip?: string;
+  t?: (key: string) => string;
 }
 
 const NavItem: React.FC<NavItemProps> = ({
@@ -73,22 +75,37 @@ const NavItem: React.FC<NavItemProps> = ({
   label,
   active,
   disabled,
+  comingSoon,
   onClick,
   tooltip,
+  t,
 }) => {
+  const translate = t || defaultTranslate;
+  const finalTooltip = comingSoon
+    ? translate('sidebar.comingSoon')
+    : tooltip || (disabled ? translate('sidebar.disabled') : undefined);
+
   return (
     <button
       className={`sidebar-nav-item ${active ? 'active' : ''} ${
         disabled ? 'disabled' : ''
-      }`}
+      } ${comingSoon ? 'coming-soon' : ''}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      title={tooltip}
+      title={finalTooltip}
     >
       <span className="sidebar-nav-icon">{icon}</span>
       <span className="sidebar-nav-label">{label}</span>
-      {disabled && (
-        <span className="sidebar-nav-badge" title={tooltip}>
+      {comingSoon && (
+        <span
+          className="sidebar-nav-badge coming-soon-badge"
+          title={finalTooltip}
+        >
+          <Lock size={12} />
+        </span>
+      )}
+      {disabled && !comingSoon && (
+        <span className="sidebar-nav-badge" title={finalTooltip}>
           <Lock size={12} />
         </span>
       )}
@@ -126,6 +143,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     mode: BrowseMode;
     icon: React.ReactNode;
     label: string;
+    disabled?: boolean;
+    comingSoon?: boolean;
   }> = [
     {
       mode: 'file',
@@ -141,11 +160,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       mode: 'wall',
       icon: <LayoutGrid size={20} />,
       label: translate('browseMode.wall'),
+      disabled: true,
+      comingSoon: true,
     },
     {
       mode: 'gallery3d',
       icon: <ImageIcon size={20} />,
       label: translate('browseMode.gallery3d'),
+      disabled: true,
+      comingSoon: true,
     },
   ];
 
@@ -154,6 +177,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     filter: SidebarFilter;
     icon: React.ReactNode;
     label: string;
+    disabled?: boolean;
+    comingSoon?: boolean;
   }> = [
     {
       filter: 'all',
@@ -164,11 +189,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       filter: 'tags',
       icon: <Tag size={20} />,
       label: translate('sidebar.tags'),
+      disabled: true,
+      comingSoon: true,
     },
     {
       filter: 'favorites',
       icon: <Heart size={20} />,
       label: translate('sidebar.favorites'),
+      disabled: true,
+      comingSoon: true,
     },
   ];
 
@@ -252,14 +281,20 @@ const Sidebar: React.FC<SidebarProps> = ({
               key={mode.mode}
               className={`sidebar-collapsed-item ${
                 browseMode === mode.mode ? 'active' : ''
-              } ${!hasConfig ? 'disabled' : ''}`}
+              } ${!hasConfig || mode.disabled ? 'disabled' : ''} ${
+                mode.comingSoon ? 'coming-soon' : ''
+              }`}
               onClick={
-                hasConfig && onBrowseModeChange
+                hasConfig && !mode.disabled && onBrowseModeChange
                   ? () => onBrowseModeChange(mode.mode)
                   : undefined
               }
-              disabled={!hasConfig}
-              title={mode.label}
+              disabled={!hasConfig || mode.disabled}
+              title={
+                mode.comingSoon
+                  ? `${mode.label} - ${translate('sidebar.comingSoon')}`
+                  : mode.label
+              }
             >
               {React.cloneElement(
                 mode.icon as React.ReactElement<{ size?: number }>,
@@ -267,7 +302,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                   size: 28,
                 },
               )}
-              <span className="sidebar-collapsed-tooltip">{mode.label}</span>
+              {mode.comingSoon && (
+                <Lock
+                  size={14}
+                  className="sidebar-collapsed-coming-soon-icon"
+                />
+              )}
+              <span className="sidebar-collapsed-tooltip">
+                {mode.label}
+                {mode.comingSoon && ` (${translate('sidebar.comingSoon')})`}
+              </span>
             </button>
           ))}
         </nav>
@@ -280,9 +324,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 key={filter.filter}
                 className={`sidebar-collapsed-item ${
                   currentFilter === filter.filter ? 'active' : ''
+                } ${filter.disabled ? 'disabled' : ''} ${
+                  filter.comingSoon ? 'coming-soon' : ''
                 }`}
-                onClick={() => onFilterChange(filter.filter)}
-                title={filter.label}
+                onClick={
+                  !filter.disabled
+                    ? () => onFilterChange(filter.filter)
+                    : undefined
+                }
+                disabled={filter.disabled}
+                title={
+                  filter.comingSoon
+                    ? `${filter.label} - ${translate('sidebar.comingSoon')}`
+                    : filter.label
+                }
               >
                 {React.cloneElement(
                   filter.icon as React.ReactElement<{ size?: number }>,
@@ -290,8 +345,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                     size: 24,
                   },
                 )}
+                {filter.comingSoon && (
+                  <Lock
+                    size={12}
+                    className="sidebar-collapsed-coming-soon-icon"
+                  />
+                )}
                 <span className="sidebar-collapsed-tooltip">
                   {filter.label}
+                  {filter.comingSoon && ` (${translate('sidebar.comingSoon')})`}
                 </span>
               </button>
             ))}
@@ -456,13 +518,21 @@ const Sidebar: React.FC<SidebarProps> = ({
               icon={mode.icon}
               label={mode.label}
               active={browseMode === mode.mode}
-              disabled={!hasConfig}
+              disabled={!hasConfig || mode.disabled}
+              comingSoon={mode.comingSoon}
               onClick={
-                hasConfig && onBrowseModeChange
+                hasConfig && !mode.disabled && onBrowseModeChange
                   ? () => onBrowseModeChange(mode.mode)
                   : undefined
               }
-              tooltip={!hasConfig ? translate('sidebar.needSource') : undefined}
+              tooltip={
+                mode.comingSoon
+                  ? translate('sidebar.comingSoon')
+                  : !hasConfig
+                    ? translate('sidebar.needSource')
+                    : undefined
+              }
+              t={t}
             />
           ))}
         </nav>
@@ -483,7 +553,19 @@ const Sidebar: React.FC<SidebarProps> = ({
                 icon={filter.icon}
                 label={filter.label}
                 active={currentFilter === filter.filter}
-                onClick={() => onFilterChange(filter.filter)}
+                disabled={filter.disabled}
+                comingSoon={filter.comingSoon}
+                onClick={
+                  !filter.disabled
+                    ? () => onFilterChange(filter.filter)
+                    : undefined
+                }
+                tooltip={
+                  filter.comingSoon
+                    ? translate('sidebar.comingSoon')
+                    : undefined
+                }
+                t={t}
               />
             ))}
           </nav>

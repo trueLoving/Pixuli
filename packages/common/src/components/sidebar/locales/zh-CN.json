@@ -23,6 +23,8 @@
     "editSource": "编辑",
     "deleteSource": "删除",
     "confirmDeleteSource": "确定要删除此仓库源吗？",
+    "comingSoon": "正在开发中",
+    "disabled": "已禁用",
     "emptyState": {
       "text": "还没有仓库源",
       "addSource": "添加仓库源"

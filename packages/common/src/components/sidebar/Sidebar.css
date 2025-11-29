@@ -107,6 +107,26 @@
   cursor: not-allowed;
 }
 
+.sidebar-collapsed-item.coming-soon {
+  position: relative;
+}
+
+.sidebar-collapsed-item.coming-soon:hover {
+  opacity: 0.6;
+}
+
+.sidebar-collapsed-coming-soon-icon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  color: var(--warning-color, #f59e0b);
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
 /* 折叠状态 - Tooltip */
 .sidebar-collapsed-tooltip {
   position: absolute;
@@ -373,6 +393,19 @@
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.sidebar-nav-item.coming-soon {
+  position: relative;
+}
+
+.sidebar-nav-item.coming-soon:hover {
+  opacity: 0.7;
+}
+
+.coming-soon-badge {
+  background: var(--warning-color, #f59e0b);
+  color: white;
 }
 
 .sidebar-nav-icon {
