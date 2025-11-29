@@ -6,15 +6,9 @@ import {
   Play,
 } from 'lucide-react';
 import React from 'react';
-import { defaultTranslate } from '../../locales';
+import { defaultTranslate } from '../../../locales';
+import type { EmptyStateProps } from '../common/types';
 import './EmptyState.css';
-
-interface EmptyStateProps {
-  onAddGitHub: () => void;
-  onAddGitee: () => void;
-  onTryDemo?: () => void;
-  t?: (key: string) => string;
-}
 
 const EmptyState: React.FC<EmptyStateProps> = ({
   onAddGitHub,

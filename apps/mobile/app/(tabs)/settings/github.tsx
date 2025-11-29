@@ -21,7 +21,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { GitHubConfig } from 'pixuli-common/src';
+import { GitHubConfig } from '@packages/common/src/index.native';
 import { showSuccess, showError } from '@/utils/toast';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';
@@ -94,7 +94,7 @@ export default function GitHubSettingsScreen() {
       router.push('/(tabs)/settings');
     } catch (error) {
       showError(
-        `${t('settings.github.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${t('settings.github.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   };
@@ -118,12 +118,12 @@ export default function GitHubSettingsScreen() {
               router.push('/(tabs)/settings');
             } catch (error) {
               showError(
-                `${t('settings.github.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+                `${t('settings.github.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -171,7 +171,7 @@ export default function GitHubSettingsScreen() {
       showSuccess(t('settings.github.importSuccess'));
     } catch (error) {
       showError(
-        `${t('settings.github.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`
+        `${t('settings.github.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`,
       );
     }
   };
@@ -220,7 +220,7 @@ export default function GitHubSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`,
           );
         }
       } else {
@@ -246,13 +246,13 @@ export default function GitHubSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`
+            `${t('settings.github.exportFailed')}: ${shareError instanceof Error ? shareError.message : '未知错误'}`,
           );
         }
       }
     } catch (error) {
       showError(
-        `${t('settings.github.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${t('settings.github.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   };

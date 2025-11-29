@@ -1,4 +1,8 @@
-import { ImageItem, GitHubConfig, ImageUploadData } from 'pixuli-common/src';
+import {
+  ImageItem,
+  GitHubConfig,
+  ImageUploadData,
+} from '@packages/common/src/index.native';
 import { Octokit } from 'octokit';
 import { getImageInfoFromUri } from '../utils/imageUtils';
 import { MetadataCache } from '../utils/metadataCache';
@@ -135,7 +139,7 @@ export class GitHubStorageService {
           content: base64Content,
           branch: this.config.branch,
           ...(existingSha && { sha: existingSha }),
-        }
+        },
       );
 
       // 获取图片信息
@@ -180,12 +184,12 @@ export class GitHubStorageService {
           MetadataCache.imageItemToMetadata(imageItem),
           'github',
           this.config.owner,
-          this.config.repo
+          this.config.repo,
         );
       } catch (error) {
         console.warn(
           'Image file uploaded successfully, but metadata upload failed:',
-          error
+          error,
         );
         // 元数据上传失败不应该阻止整个上传流程
         // 可以稍后更新元数据或从图片 URL 获取
@@ -195,7 +199,7 @@ export class GitHubStorageService {
     } catch (error) {
       console.error('Upload image failed:', error);
       throw new Error(
-        `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -239,7 +243,7 @@ export class GitHubStorageService {
     } catch (error) {
       console.error('Delete image failed:', error);
       throw new Error(
-        `删除图片失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `删除图片失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -299,7 +303,7 @@ export class GitHubStorageService {
         fileName,
         'github',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
     } catch (error) {
       console.warn(`Failed to delete metadata for ${fileName}:`, error);
@@ -357,7 +361,7 @@ export class GitHubStorageService {
   private async loadMetadataBatch(
     imageFiles: any[],
     batchSize: number = 5,
-    maxRetries: number = 2
+    maxRetries: number = 2,
   ): Promise<Map<string, any>> {
     const metadataMap = new Map<string, any>();
 
@@ -381,7 +385,7 @@ export class GitHubStorageService {
             if (attempt < maxRetries) {
               // 指数退避：等待时间 = 2^attempt * 100ms
               await new Promise(resolve =>
-                setTimeout(resolve, Math.pow(2, attempt) * 100)
+                setTimeout(resolve, Math.pow(2, attempt) * 100),
               );
               continue;
             }
@@ -391,7 +395,7 @@ export class GitHubStorageService {
         // 所有重试都失败
         console.debug(
           `Failed to fetch metadata for ${item.name} after ${maxRetries + 1} attempts:`,
-          lastError
+          lastError,
         );
         return null;
       });
@@ -425,7 +429,7 @@ export class GitHubStorageService {
 
       // 筛选出图片文件
       const imageFiles = response.data.filter(
-        item => this.isImageFile(item.name) && item.type === 'file'
+        item => this.isImageFile(item.name) && item.type === 'file',
       );
 
       if (imageFiles.length === 0) {
@@ -454,11 +458,11 @@ export class GitHubStorageService {
           acc[img.id] = (acc[img.id] || 0) + 1;
           return acc;
         },
-        {}
+        {},
       );
 
       const duplicateIds = Object.entries(idCounts).filter(
-        ([_, count]) => count > 1
+        ([_, count]) => count > 1,
       );
 
       if (duplicateIds.length > 0) {
@@ -480,7 +484,7 @@ export class GitHubStorageService {
     } catch (error) {
       console.error('Get image list failed:', error);
       throw new Error(
-        `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -494,7 +498,7 @@ export class GitHubStorageService {
    */
   async loadImageMetadata(
     images: ImageItem[],
-    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean },
   ): Promise<ImageItem[]> {
     try {
       const { forceRefresh = false, backgroundUpdate = true } = options || {};
@@ -511,7 +515,7 @@ export class GitHubStorageService {
       if (forceRefresh) {
         const remoteMetadataMap = await this.loadMetadataBatch(
           fileNames.map(name => ({ name })),
-          5
+          5,
         );
 
         // 更新缓存
@@ -527,7 +531,7 @@ export class GitHubStorageService {
           metadataToCache,
           'github',
           this.config.owner,
-          this.config.repo
+          this.config.repo,
         );
 
         // 合并远程数据
@@ -545,7 +549,7 @@ export class GitHubStorageService {
         fileNames,
         'github',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
 
       // 3. 合并缓存数据到图片列表（立即返回，不等待远程）
@@ -566,7 +570,7 @@ export class GitHubStorageService {
             undefined,
             'github',
             this.config.owner,
-            this.config.repo
+            this.config.repo,
           )
         : fileNames.filter(fileName => !cachedMetadata.has(fileName));
 
@@ -575,7 +579,7 @@ export class GitHubStorageService {
         // 后台异步加载，不阻塞返回
         this.loadMetadataBatch(
           filesToFetch.map(name => ({ name })),
-          5
+          5,
         )
           .then(async remoteMetadataMap => {
             // 更新缓存
@@ -591,7 +595,7 @@ export class GitHubStorageService {
               metadataToCache,
               'github',
               this.config.owner,
-              this.config.repo
+              this.config.repo,
             );
 
             // 注意：这里不更新 images，因为已经返回了
@@ -624,7 +628,7 @@ export class GitHubStorageService {
       tags?: string[];
       updatedAt: string;
     },
-    oldFileName?: string
+    oldFileName?: string,
   ): Promise<void> {
     try {
       const filePath = `${this.config.path}/${fileName}`;
@@ -681,7 +685,7 @@ export class GitHubStorageService {
       } catch (error) {
         console.debug(
           `Failed to get existing metadata for ${fileName}:`,
-          error
+          error,
         );
       }
 
@@ -707,12 +711,12 @@ export class GitHubStorageService {
         updatedMetadata,
         'github',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
     } catch (error) {
       console.error('Update image info failed:', error);
       throw new Error(
-        `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -722,7 +726,7 @@ export class GitHubStorageService {
    */
   private async uploadImageMetadata(
     fileName: string,
-    metadata: ImageItem
+    metadata: ImageItem,
   ): Promise<void> {
     await this.updateImageMetadata(fileName, metadata);
   }
@@ -732,7 +736,7 @@ export class GitHubStorageService {
    */
   private async updateImageMetadata(
     fileName: string,
-    metadata: any
+    metadata: any,
   ): Promise<void> {
     try {
       const metadataFileName = this.getMetadataFileName(fileName);

@@ -1,4 +1,4 @@
-import { ImageItem, GiteeConfig } from 'pixuli-common/src';
+import { ImageItem, GiteeConfig } from '@packages/common/src/index.native';
 import { getImageInfoFromUri } from '../utils/imageUtils';
 import { MetadataCache } from '../utils/metadataCache';
 
@@ -89,7 +89,7 @@ export class GiteeStorageService {
     owner: string,
     repo: string,
     branch: string,
-    path: string
+    path: string,
   ): string {
     const encodedPath = path
       .split('/')
@@ -104,7 +104,7 @@ export class GiteeStorageService {
   private async makeRequest(
     method: string,
     path: string,
-    body?: any
+    body?: any,
   ): Promise<any> {
     if (!this.config.token) {
       throw new Error('Gitee 认证未设置');
@@ -153,11 +153,11 @@ export class GiteeStorageService {
         // 如果是 401 错误，提供更详细的错误信息
         if (response.status === 401) {
           throw new Error(
-            `Gitee API 认证失败 (401): 请检查 Token 是否正确，并确保 Token 具有 projects 和 repo 权限。错误详情: ${errorText}`
+            `Gitee API 认证失败 (401): 请检查 Token 是否正确，并确保 Token 具有 projects 和 repo 权限。错误详情: ${errorText}`,
           );
         }
         throw new Error(
-          `Gitee API 错误: ${response.status} ${response.statusText} - ${errorText}`
+          `Gitee API 错误: ${response.status} ${response.statusText} - ${errorText}`,
         );
       }
 
@@ -183,7 +183,7 @@ export class GiteeStorageService {
     owner: string,
     repo: string,
     path: string,
-    branch: string
+    branch: string,
   ): Promise<string | null> {
     try {
       const pathWithRef = `/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`;
@@ -224,7 +224,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         filePath,
-        this.config.branch
+        this.config.branch,
       );
 
       const requestBody: any = {
@@ -243,7 +243,7 @@ export class GiteeStorageService {
       const response = await this.makeRequest(
         'POST',
         `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(filePath)}`,
-        requestBody
+        requestBody,
       );
 
       // 使用 raw URL 替代 API 返回的 download_url，避免跨域问题
@@ -251,7 +251,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         this.config.branch,
-        filePath
+        filePath,
       );
 
       // 获取图片信息
@@ -310,12 +310,12 @@ export class GiteeStorageService {
           this.config.owner,
           this.config.repo,
           metadataPath,
-          this.config.branch
+          this.config.branch,
         );
 
         // 将字符串转换为 base64（移动端不支持 Buffer）
         const base64Content = btoa(
-          unescape(encodeURIComponent(metadataContent))
+          unescape(encodeURIComponent(metadataContent)),
         );
 
         const metadataRequestBody: any = {
@@ -335,13 +335,13 @@ export class GiteeStorageService {
           await this.makeRequest(
             'PUT',
             `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataPath)}`,
-            metadataRequestBody
+            metadataRequestBody,
           );
         } else {
           await this.makeRequest(
             'POST',
             `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataPath)}`,
-            metadataRequestBody
+            metadataRequestBody,
           );
         }
 
@@ -351,12 +351,12 @@ export class GiteeStorageService {
           MetadataCache.imageItemToMetadata(imageItem),
           'gitee',
           this.config.owner,
-          this.config.repo
+          this.config.repo,
         );
       } catch (metadataError) {
         console.warn(
           'Image file uploaded successfully, but metadata upload failed:',
-          metadataError
+          metadataError,
         );
       }
 
@@ -364,7 +364,7 @@ export class GiteeStorageService {
     } catch (error) {
       console.error('Upload image failed:', error);
       throw new Error(
-        `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `上传图片失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -381,7 +381,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         filePath,
-        this.config.branch
+        this.config.branch,
       );
 
       if (!sha) {
@@ -396,7 +396,7 @@ export class GiteeStorageService {
           message: `Delete image: ${fileName}`,
           sha,
           branch: this.config.branch,
-        }
+        },
       );
 
       // 删除元数据文件
@@ -408,7 +408,7 @@ export class GiteeStorageService {
     } catch (error) {
       console.error('Delete image failed:', error);
       throw new Error(
-        `删除图片失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `删除图片失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -425,7 +425,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         metadataFilePath,
-        this.config.branch
+        this.config.branch,
       );
 
       if (!metadataSha) {
@@ -440,7 +440,7 @@ export class GiteeStorageService {
           message: `Delete metadata for image: ${fileName}`,
           sha: metadataSha,
           branch: this.config.branch,
-        }
+        },
       );
 
       // 从本地缓存删除
@@ -448,7 +448,7 @@ export class GiteeStorageService {
         fileName,
         'gitee',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
     } catch (error) {
       console.warn(`Failed to delete metadata for ${fileName}:`, error);
@@ -475,7 +475,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         this.config.branch,
-        `${this.config.path}/.metadata/${metadataFileName}`
+        `${this.config.path}/.metadata/${metadataFileName}`,
       );
 
       const response = await fetch(metadataUrl);
@@ -504,7 +504,7 @@ export class GiteeStorageService {
   private async loadMetadataBatch(
     imageFiles: any[],
     batchSize: number = 5,
-    maxRetries: number = 2
+    maxRetries: number = 2,
   ): Promise<Map<string, any>> {
     const metadataMap = new Map<string, any>();
 
@@ -525,7 +525,7 @@ export class GiteeStorageService {
               error instanceof Error ? error : new Error(String(error));
             if (attempt < maxRetries) {
               await new Promise(resolve =>
-                setTimeout(resolve, Math.pow(2, attempt) * 100)
+                setTimeout(resolve, Math.pow(2, attempt) * 100),
               );
               continue;
             }
@@ -553,7 +553,7 @@ export class GiteeStorageService {
     try {
       const response = await this.makeRequest(
         'GET',
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.config.path)}?ref=${this.config.branch}`
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.config.path)}?ref=${this.config.branch}`,
       );
 
       if (!Array.isArray(response)) {
@@ -562,7 +562,7 @@ export class GiteeStorageService {
 
       // 筛选出图片文件
       const imageFiles = response.filter((item: any) =>
-        this.isImageFile(item.name)
+        this.isImageFile(item.name),
       );
 
       if (imageFiles.length === 0) {
@@ -577,7 +577,7 @@ export class GiteeStorageService {
           this.config.owner,
           this.config.repo,
           this.config.branch,
-          `${this.config.path}/${item.name}`
+          `${this.config.path}/${item.name}`,
         ),
         githubUrl: item.html_url || '',
         size: item.size || 0,
@@ -596,11 +596,11 @@ export class GiteeStorageService {
           acc[img.id] = (acc[img.id] || 0) + 1;
           return acc;
         },
-        {}
+        {},
       );
 
       const duplicateIds = Object.entries(idCounts).filter(
-        ([_, count]) => count > 1
+        ([_, count]) => count > 1,
       );
       if (duplicateIds.length > 0) {
         const processedImages = images.map((img: ImageItem, index: number) => {
@@ -636,7 +636,7 @@ export class GiteeStorageService {
                 MetadataCache.imageItemToMetadata(img),
                 'gitee',
                 this.config.owner,
-                this.config.repo
+                this.config.repo,
               );
             }
           });
@@ -649,7 +649,7 @@ export class GiteeStorageService {
     } catch (error) {
       console.error('Get image list failed:', error);
       throw new Error(
-        `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `获取图片列表失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }
@@ -663,7 +663,7 @@ export class GiteeStorageService {
    */
   async loadImageMetadata(
     images: ImageItem[],
-    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean }
+    options?: { forceRefresh?: boolean; backgroundUpdate?: boolean },
   ): Promise<ImageItem[]> {
     try {
       const { forceRefresh = false, backgroundUpdate = true } = options || {};
@@ -680,7 +680,7 @@ export class GiteeStorageService {
       if (forceRefresh) {
         const remoteMetadataMap = await this.loadMetadataBatch(
           fileNames.map(name => ({ name })),
-          5
+          5,
         );
 
         // 更新缓存
@@ -696,7 +696,7 @@ export class GiteeStorageService {
           metadataToCache,
           'gitee',
           this.config.owner,
-          this.config.repo
+          this.config.repo,
         );
 
         // 合并远程数据
@@ -714,7 +714,7 @@ export class GiteeStorageService {
         fileNames,
         'gitee',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
 
       // 3. 合并缓存数据到图片列表（立即返回，不等待远程）
@@ -735,7 +735,7 @@ export class GiteeStorageService {
             undefined,
             'gitee',
             this.config.owner,
-            this.config.repo
+            this.config.repo,
           )
         : fileNames.filter(fileName => !cachedMetadata.has(fileName));
 
@@ -744,7 +744,7 @@ export class GiteeStorageService {
         // 后台异步加载，不阻塞返回
         this.loadMetadataBatch(
           filesToFetch.map(name => ({ name })),
-          5
+          5,
         )
           .then(async remoteMetadataMap => {
             // 更新缓存
@@ -760,7 +760,7 @@ export class GiteeStorageService {
               metadataToCache,
               'gitee',
               this.config.owner,
-              this.config.repo
+              this.config.repo,
             );
 
             // 注意：这里不更新 images，因为已经返回了
@@ -788,7 +788,7 @@ export class GiteeStorageService {
     imageId: string,
     fileName: string,
     metadata: any,
-    oldFileName?: string
+    oldFileName?: string,
   ): Promise<void> {
     try {
       const metadataToUpdate = {
@@ -813,7 +813,7 @@ export class GiteeStorageService {
         this.config.owner,
         this.config.repo,
         metadataPath,
-        this.config.branch
+        this.config.branch,
       );
 
       // 将字符串转换为 base64（移动端不支持 Buffer）
@@ -836,13 +836,13 @@ export class GiteeStorageService {
         await this.makeRequest(
           'PUT',
           `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataPath)}`,
-          requestBody
+          requestBody,
         );
       } else {
         await this.makeRequest(
           'POST',
           `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataPath)}`,
-          requestBody
+          requestBody,
         );
       }
 
@@ -852,12 +852,12 @@ export class GiteeStorageService {
         MetadataCache.imageItemToMetadata(metadataToUpdate as ImageItem),
         'gitee',
         this.config.owner,
-        this.config.repo
+        this.config.repo,
       );
     } catch (error) {
       console.error('Update image info failed:', error);
       throw new Error(
-        `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`
+        `更新图片信息失败: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   }

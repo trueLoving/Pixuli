@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { ImageItem } from 'pixuli-common/src';
+import { ImageItem } from '@packages/common/src/index.native';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
@@ -138,7 +138,7 @@ export function SlideShowPlayer({
       fadeAnim,
       slideAnim,
       zoomAnim,
-    ]
+    ],
   );
 
   // 播放下一张
@@ -234,12 +234,12 @@ export function SlideShowPlayer({
     if (visible) {
       // 锁定为横向
       ScreenOrientation.lockAsync(
-        ScreenOrientation.OrientationLock.LANDSCAPE
+        ScreenOrientation.OrientationLock.LANDSCAPE,
       ).catch(err => console.warn('Failed to lock screen orientation:', err));
     } else {
       // 恢复为自动（允许旋转）
       ScreenOrientation.unlockAsync().catch(err =>
-        console.warn('Failed to unlock screen orientation:', err)
+        console.warn('Failed to unlock screen orientation:', err),
       );
       handleStop();
       setCurrentIndex(initialIndex);
@@ -249,7 +249,7 @@ export function SlideShowPlayer({
     return () => {
       if (visible) {
         ScreenOrientation.unlockAsync().catch(err =>
-          console.warn('Failed to unlock screen orientation:', err)
+          console.warn('Failed to unlock screen orientation:', err),
         );
       }
     };

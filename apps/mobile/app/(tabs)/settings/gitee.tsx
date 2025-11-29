@@ -21,7 +21,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { GiteeConfig } from 'pixuli-common/src';
+import { GiteeConfig } from '@packages/common/src/index.native';
 import { showSuccess, showError } from '@/utils/toast';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';
@@ -94,7 +94,7 @@ export default function GiteeSettingsScreen() {
       router.push('/(tabs)/settings');
     } catch (error) {
       showError(
-        `${t('settings.gitee.saveFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
+        `${t('settings.gitee.saveFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
       );
     }
   };
@@ -118,12 +118,12 @@ export default function GiteeSettingsScreen() {
               router.push('/(tabs)/settings');
             } catch (error) {
               showError(
-                `${t('settings.gitee.clearFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
+                `${t('settings.gitee.clearFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -171,7 +171,7 @@ export default function GiteeSettingsScreen() {
       showSuccess(t('settings.gitee.importSuccess'));
     } catch (error) {
       showError(
-        `${t('settings.gitee.importFailed')}: ${error instanceof Error ? error.message : t('common.fileFormatError')}`
+        `${t('settings.gitee.importFailed')}: ${error instanceof Error ? error.message : t('common.fileFormatError')}`,
       );
     }
   };
@@ -217,7 +217,7 @@ export default function GiteeSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`
+            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`,
           );
         }
       } else {
@@ -243,13 +243,13 @@ export default function GiteeSettingsScreen() {
             return;
           }
           showError(
-            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`
+            `${t('settings.gitee.exportFailed')}: ${shareError instanceof Error ? shareError.message : t('common.unknownError')}`,
           );
         }
       }
     } catch (error) {
       showError(
-        `${t('settings.gitee.exportFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`
+        `${t('settings.gitee.exportFailed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
       );
     }
   };

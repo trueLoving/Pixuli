@@ -17,7 +17,7 @@ import { SlideShowPlayer } from '@/components/SlideShowPlayer';
 import { SearchAndFilter } from '@/components/SearchAndFilter';
 import { useImageStore } from '@/stores/imageStore';
 import { useI18n } from '@/i18n/useI18n';
-import { ImageItem } from 'pixuli-common/src';
+import { ImageItem, EmptyState } from '@packages/common/src/index.native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';
@@ -106,28 +106,11 @@ export default function HomeScreen() {
   if (!storageType || !currentSource) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedView style={styles.emptyContainer}>
-          <IconSymbol
-            name="gear"
-            size={64}
-            color="#007AFF"
-            style={styles.emptyIcon}
-          />
-          <ThemedText type="title" style={styles.emptyTitle}>
-            {t('app.welcome') || '欢迎使用 Pixuli'}
-          </ThemedText>
-          <ThemedText style={styles.emptyDescription}>
-            {t('app.description') || '请先配置存储服务以开始使用图片管理功能'}
-          </ThemedText>
-          <TouchableOpacity
-            style={styles.configButton}
-            onPress={handleGoToSettings}
-          >
-            <ThemedText style={styles.configButtonText}>
-              {t('app.configureStorage') || '配置存储服务'}
-            </ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+        <EmptyState
+          onAddGitHub={() => router.push('/(tabs)/settings/github')}
+          onAddGitee={() => router.push('/(tabs)/settings/gitee')}
+          t={t}
+        />
       </ThemedView>
     );
   }
@@ -558,37 +541,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#c62828',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  emptyIcon: {
-    marginBottom: 24,
-  },
-  emptyTitle: {
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    fontSize: 16,
-    opacity: 0.7,
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  configButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 8,
-  },
-  configButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,

@@ -1,6 +1,5 @@
 import {
   BrowseMode,
-  EmptyState,
   formatFileSize,
   FullScreenLoading,
   Gallery3D,
@@ -21,6 +20,7 @@ import {
   VersionInfoModal,
   type VersionInfo,
 } from '@packages/common/src';
+import EmptyState from '@packages/common/src/components/empty-state/web/EmptyState.web';
 import type { FilterOptions } from '@packages/common/src/components/image-browser/image-filter/ImageFilter';
 import { createDefaultFilters } from '@packages/common/src/utils/filterUtils';
 import { Github, RefreshCw, X } from 'lucide-react';
@@ -29,7 +29,7 @@ import './App.css';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
-import { Demo, useDemoMode } from './components/index';
+import { useDemoMode, Demo } from '@packages/common/src/index';
 import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
@@ -38,7 +38,7 @@ import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
 import {
   getDemoGitHubConfig,
   getDemoGiteeConfig,
-} from '@packages/common/src/components/demo/Demo';
+} from '@packages/common/src/index';
 
 function App() {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =

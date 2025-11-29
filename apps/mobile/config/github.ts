@@ -1,4 +1,4 @@
-import { GitHubConfig } from 'pixuli-common/src';
+import { GitHubConfig } from '@packages/common/src/index.native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GITHUB_CONFIG_KEY = 'pixuli-github-config';

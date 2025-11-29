@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ImageItem } from 'pixuli-common/src';
+import { ImageItem } from '@packages/common/src/index.native';
 
 const METADATA_CACHE_KEY_PREFIX = 'pixuli-metadata-cache';
 const METADATA_CACHE_VERSION = '1.0';
@@ -49,7 +49,7 @@ export class MetadataCache {
   static setCurrentCacheKey(
     storageType: string,
     owner: string,
-    repo: string
+    repo: string,
   ): void {
     this.currentCacheKey = getCacheKey(storageType, owner, repo);
   }
@@ -70,7 +70,7 @@ export class MetadataCache {
   static async loadCache(
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<CachedMetadata | null> {
     const cacheKey =
       storageType && owner && repo
@@ -123,7 +123,7 @@ export class MetadataCache {
    */
   static async saveCache(
     metadata: Record<string, ImageMetadata>,
-    cacheKey?: string
+    cacheKey?: string,
   ): Promise<void> {
     try {
       const key = cacheKey || this.getCurrentCacheKey();
@@ -232,7 +232,7 @@ export class MetadataCache {
     fileName: string,
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<ImageMetadata | null> {
     const cache = await this.loadCache(storageType, owner, repo);
     const metadata = cache?.metadata[fileName] || null;
@@ -256,7 +256,7 @@ export class MetadataCache {
     fileNames: string[],
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<Map<string, ImageMetadata>> {
     const cache = await this.loadCache(storageType, owner, repo);
     const result = new Map<string, ImageMetadata>();
@@ -282,7 +282,7 @@ export class MetadataCache {
         this.removeCachedMetadata(fileName, storageType, owner, repo).catch(
           () => {
             // 忽略清理错误
-          }
+          },
         );
       });
     }
@@ -298,7 +298,7 @@ export class MetadataCache {
     metadata: ImageMetadata,
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<void> {
     // 添加缓存时间戳和校验和
     const metadataWithValidation: ImageMetadata = {
@@ -330,7 +330,7 @@ export class MetadataCache {
     metadataMap: Map<string, ImageMetadata>,
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<void> {
     const cache = await this.loadCache(storageType, owner, repo);
     const cacheKey =
@@ -363,7 +363,7 @@ export class MetadataCache {
     fileName: string,
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<void> {
     const cache = await this.loadCache(storageType, owner, repo);
     const cacheKey =
@@ -400,7 +400,7 @@ export class MetadataCache {
       // 获取所有以 METADATA_CACHE_KEY_PREFIX 开头的键
       const allKeys = await AsyncStorage.getAllKeys();
       const cacheKeys = allKeys.filter(key =>
-        key.startsWith(METADATA_CACHE_KEY_PREFIX)
+        key.startsWith(METADATA_CACHE_KEY_PREFIX),
       );
 
       if (cacheKeys.length > 0) {
@@ -423,7 +423,7 @@ export class MetadataCache {
     remoteMetadata?: Map<string, ImageMetadata>,
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<string[]> {
     const cache = await this.loadCache(storageType, owner, repo);
     if (!cache) {
@@ -499,7 +499,7 @@ export class MetadataCache {
   static async validateCacheIntegrity(
     storageType?: string,
     owner?: string,
-    repo?: string
+    repo?: string,
   ): Promise<{
     total: number;
     valid: number;
@@ -567,7 +567,7 @@ export class MetadataCache {
    */
   static mergeMetadataToImage(
     image: ImageItem,
-    metadata: ImageMetadata
+    metadata: ImageMetadata,
   ): ImageItem {
     return {
       ...image,

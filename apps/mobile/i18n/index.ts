@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 // 直接从 locales 导入，避免导入 toast 相关的内容
-import { deepMerge, enUS, zhCN } from 'pixuli-common/src/locales';
+import { deepMerge, enUS, zhCN } from '@packages/common/src/index.native';
 // 导入移动端语言包
 import { mobileLocales } from './locales';
 

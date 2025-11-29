@@ -425,6 +425,19 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
+    optionalDependencies:
+      '@react-native-async-storage/async-storage':
+        specifier: ^2.1.0
+        version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
+      expo-file-system:
+        specifier: ^19.0.17
+        version: 19.0.17(expo@54.0.23)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
+      expo-sharing:
+        specifier: ^14.0.7
+        version: 14.0.7(expo@54.0.23)
+      react-native:
+        specifier: ^0.81.0
+        version: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
 
   packages/wasm:
     devDependencies:

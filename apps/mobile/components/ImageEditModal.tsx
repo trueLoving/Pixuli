@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { ImageItem, ImageEditData } from 'pixuli-common/src';
+import { ImageItem, ImageEditData } from '@packages/common/src/index.native';
 import { ThemedText } from './ThemedText';
 import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
@@ -67,7 +67,7 @@ export function ImageEditModal({
     } catch (error) {
       Alert.alert(
         t('common.error'),
-        error instanceof Error ? error.message : t('image.editFailed')
+        error instanceof Error ? error.message : t('image.editFailed'),
       );
     }
   };
