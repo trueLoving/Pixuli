@@ -1,0 +1,24 @@
+{
+  "emptyState": {
+    "title": "欢迎使用 Pixuli",
+    "description": "开始管理您的图片库，首先需要添加一个仓库源",
+    "addGitHub": "配置 GitHub",
+    "addGitee": "配置 Gitee",
+    "tryDemo": "体验 Demo 模式",
+    "quickStart": "快速开始",
+    "step1": {
+      "title": "选择存储平台",
+      "description": "选择 GitHub 或 Gitee 作为图片存储仓库"
+    },
+    "step2": {
+      "title": "填写仓库信息",
+      "description": "输入仓库所有者、仓库名、分支和访问令牌"
+    },
+    "step3": {
+      "title": "开始使用",
+      "description": "配置完成后即可上传和管理图片"
+    },
+    "needHelp": "需要帮助？",
+    "viewDocs": "查看文档"
+  }
+}

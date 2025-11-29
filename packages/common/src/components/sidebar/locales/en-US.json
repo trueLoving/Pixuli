@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "photos": "Photos",
+    "explore": "Explore",
+    "tags": "Tags",
+    "favorites": "Favorites",
+    "settings": "Settings",
+    "help": "Help",
+    "docs": "Docs",
+    "keyboardShortcuts": "Shortcuts",
+    "versionInfo": "Version Info",
+    "sources": "Sources",
+    "addSource": "Add Source",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "needSource": "Please add a source first",
+    "selectSourceType": "Select Repository Type",
+    "githubDescription": "Store images in GitHub repository",
+    "giteeDescription": "Store images in Gitee repository",
+    "browseMode": "Browse Mode",
+    "filter": "Filter",
+    "all": "All",
+    "editSource": "Edit",
+    "deleteSource": "Delete",
+    "confirmDeleteSource": "Are you sure you want to delete this source?",
+    "comingSoon": "Coming Soon",
+    "disabled": "Disabled",
+    "emptyState": {
+      "text": "No sources yet",
+      "addSource": "Add Source"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "sidebar": {
+    "photos": "照片",
+    "explore": "探索",
+    "tags": "标签",
+    "favorites": "收藏",
+    "settings": "设置",
+    "help": "帮助",
+    "docs": "文档",
+    "keyboardShortcuts": "快捷键",
+    "versionInfo": "版本信息",
+    "sources": "仓库源",
+    "addSource": "添加仓库源",
+    "collapse": "收起",
+    "expand": "展开",
+    "needSource": "请先添加仓库源",
+    "selectSourceType": "选择仓库类型",
+    "githubDescription": "使用 GitHub 仓库存储图片",
+    "giteeDescription": "使用 Gitee 仓库存储图片",
+    "browseMode": "浏览模式",
+    "filter": "筛选",
+    "all": "全部",
+    "editSource": "编辑",
+    "deleteSource": "删除",
+    "confirmDeleteSource": "确定要删除此仓库源吗？",
+    "comingSoon": "正在开发中",
+    "disabled": "已禁用",
+    "emptyState": {
+      "text": "还没有仓库源",
+      "addSource": "添加仓库源"
+    }
+  }
+}

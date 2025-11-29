@@ -1,0 +1,189 @@
+/* EmptyState 样式 */
+.empty-state-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 3rem 2rem;
+  width: 100%;
+}
+
+.empty-state-content {
+  max-width: 600px;
+  text-align: center;
+  width: 100%;
+}
+
+.empty-state-icon {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.empty-state-icon-svg {
+  color: var(--text-secondary, #9ca3af);
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 1rem;
+}
+
+.empty-state-description {
+  font-size: 1.125rem;
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.empty-state-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.empty-state-button.primary {
+  background: var(--primary-color, #3b82f6);
+  color: white;
+}
+
+.empty-state-button.primary:hover {
+  background: var(--primary-color-dark, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.empty-state-button.secondary {
+  background: var(--secondary-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.empty-state-button.secondary:hover {
+  background: var(--hover-bg, #e5e7eb);
+  border-color: var(--border-color-dark, #d1d5db);
+}
+
+.empty-state-guide {
+  text-align: left;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.guide-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary, #111827);
+  text-align: center;
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.guide-step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--primary-color, #3b82f6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.step-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary, #111827);
+}
+
+.step-content p {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-state-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+.help-link {
+  color: var(--primary-color, #3b82f6);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.help-link:hover {
+  color: var(--primary-color-dark, #2563eb);
+  text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .empty-state-container {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state-title {
+    font-size: 1.5rem;
+  }
+
+  .empty-state-description {
+    font-size: 1rem;
+  }
+
+  .empty-state-actions {
+    flex-direction: column;
+  }
+
+  .empty-state-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .empty-state-guide {
+    padding: 1.5rem;
+  }
+}

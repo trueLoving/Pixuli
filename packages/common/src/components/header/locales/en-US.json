@@ -1,0 +1,15 @@
+{
+  "header": {
+    "search": {
+      "placeholder": "Search images...",
+      "placeholderDisabled": "Add a source to search images"
+    },
+    "upload": "Upload",
+    "filter": "Filter",
+    "clearFilters": "Clear Filters",
+    "viewMode": {
+      "grid": "Grid",
+      "list": "List"
+    }
+  }
+}

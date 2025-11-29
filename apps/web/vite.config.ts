@@ -7,7 +7,7 @@ import { execSync } from 'child_process';
 
 // 读取 package.json
 const packageJson = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8')
+  fs.readFileSync(path.resolve(__dirname, './package.json'), 'utf8'),
 );
 
 // 读取依赖的真实版本
@@ -17,7 +17,7 @@ function getRealVersion(packageName: string, isDevDependency = false): string {
       __dirname,
       'node_modules',
       packageName,
-      'package.json'
+      'package.json',
     );
     const packageInfo = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     return packageInfo.version;
@@ -152,6 +152,7 @@ export default defineConfig({
     },
   },
   server: {
+    open: true,
     port: 5500,
     proxy: {
       // 代理 Gitee 图片请求，解决跨域问题

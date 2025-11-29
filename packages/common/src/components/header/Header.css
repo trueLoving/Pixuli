@@ -1,0 +1,328 @@
+/* Header 样式 */
+.app-header {
+  height: 64px;
+  background: var(--header-bg, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 50;
+  gap: 1.5rem;
+}
+
+.header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header-logo-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.header-left:hover .header-logo-icon {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin: 0;
+  letter-spacing: -0.02em;
+  transition: color 0.2s ease;
+}
+
+.header-center {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 搜索框在左侧时的样式 */
+.header-left .search-bar {
+  max-width: 600px;
+  width: 100%;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.header-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.header-button:hover:not(:disabled) {
+  background: var(--hover-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border-color: var(--border-color-dark, #d1d5db);
+}
+
+.header-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.header-button.primary {
+  background: var(--primary-color, #3b82f6);
+  color: white;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.header-button.primary:hover:not(:disabled) {
+  background: var(--primary-color-dark, #2563eb);
+  border-color: var(--primary-color-dark, #2563eb);
+}
+
+.header-button.icon-only {
+  padding: 0.5rem;
+  min-width: 36px;
+  justify-content: center;
+}
+
+.header-button-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .header-button-label {
+    display: inline;
+  }
+}
+
+.header-view-toggle {
+  display: flex;
+  align-items: center;
+  background: var(--view-toggle-bg, #f3f4f6);
+  border-radius: 6px;
+  padding: 0.25rem;
+  gap: 0.25rem;
+}
+
+.header-view-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-view-button:hover {
+  background: var(--hover-bg, #e5e7eb);
+  color: var(--text-primary, #111827);
+}
+
+.header-view-button.active {
+  background: var(--primary-color, #3b82f6);
+  color: white;
+}
+
+/* 筛选功能样式 */
+.header-filter-wrapper {
+  position: relative;
+}
+
+.header-filter-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  min-width: 36px;
+  height: 36px;
+  background: var(--button-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.header-filter-button:hover {
+  background: var(--hover-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.header-filter-button.active {
+  background: var(--primary-color, #3b82f6);
+  color: white;
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.header-filter-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.header-filter-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-width: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.header-filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.header-filter-panel-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.header-filter-clear {
+  font-size: 0.75rem;
+  color: var(--primary-color, #3b82f6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.header-filter-clear:hover {
+  background: var(--hover-bg, #f3f4f6);
+}
+
+.header-filter-section {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.header-filter-section:last-child {
+  border-bottom: none;
+}
+
+.header-filter-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.header-filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.header-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+  cursor: pointer;
+  padding: 0.375rem 0.75rem;
+  background: var(--button-bg, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.header-filter-option:hover {
+  background: var(--hover-bg, #f3f4f6);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+.header-filter-option input[type='checkbox'] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.header-filter-option input[type='checkbox']:checked + span {
+  color: var(--primary-color, #3b82f6);
+  font-weight: 500;
+}
+
+.header-filter-option:has(input[type='checkbox']:checked) {
+  background: var(--primary-color-light, #dbeafe);
+  border-color: var(--primary-color, #3b82f6);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-left .search-bar {
+    max-width: none;
+  }
+
+  .header-center {
+    max-width: none;
+    margin: 0;
+  }
+
+  .app-title {
+    font-size: 1rem;
+  }
+
+  .header-filter-panel {
+    min-width: 240px;
+    max-width: 320px;
+  }
+}

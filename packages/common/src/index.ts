@@ -45,6 +45,9 @@ export { default as LanguageSwitcher } from './components/language-switcher/Lang
 export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
 export type { VersionInfo } from './components/version-info';
 export { versionInfoLocales } from './components/version-info/locales';
+export { sidebarLocales } from './components/sidebar/locales';
+export { headerLocales } from './components/header/locales';
+export { emptyStateLocales } from './components/empty-state/locales';
 export {
   ImageBrowser,
   ImageGrid,
@@ -69,6 +72,13 @@ export type {
 export { PhotoWall } from './components/photo-wall';
 export { Gallery3D } from './components/gallery-3d';
 export { BrowseModeSwitcher } from './components/browse-mode-switcher';
+export { default as Sidebar } from './components/sidebar/Sidebar';
+export type { SidebarView, SidebarFilter } from './components/sidebar';
+export { default as Header } from './components/header/Header';
+export { default as EmptyState } from './components/empty-state/EmptyState';
+export { default as SearchBar } from './components/search/SearchBar';
+export { FullScreenLoading } from './components/fullscreen-loading';
+export type { FullScreenLoadingProps } from './components/fullscreen-loading';
 
 // 语言包导出
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';
