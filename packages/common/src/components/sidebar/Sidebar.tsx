@@ -1,4 +1,5 @@
 import {
+  ExternalLink,
   Github,
   Heart,
   HelpCircle,
@@ -52,6 +53,7 @@ interface SidebarProps {
   onSourceSelect: (id: string) => void;
   onSourceEdit?: (id: string) => void;
   onSourceDelete?: (id: string) => void;
+  onSourceOpenInWindow?: (id: string) => void;
   hasConfig: boolean;
   onAddSource: () => void;
   collapsed?: boolean;
@@ -123,6 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSourceSelect,
   onSourceEdit,
   onSourceDelete,
+  onSourceOpenInWindow,
   hasConfig,
   onAddSource,
   collapsed = false,
@@ -237,6 +240,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     closeContextMenu();
   };
 
+  // 处理在单独窗口打开
+  const handleOpenInWindow = (sourceId: string) => {
+    if (onSourceOpenInWindow) {
+      onSourceOpenInWindow(sourceId);
+    }
+    closeContextMenu();
+  };
+
   // 点击外部关闭右键菜单
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -267,7 +278,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             title={translate('sidebar.expand')}
           >
             <img
-              src="/icon-192x192.png"
+              src="/icon.png"
               alt="Pixuli"
               className="sidebar-collapsed-logo"
             />
@@ -461,6 +472,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               zIndex: 10000,
             }}
           >
+            {onSourceOpenInWindow && (
+              <button
+                className="sidebar-context-menu-item"
+                onClick={() => handleOpenInWindow(contextMenu.sourceId)}
+              >
+                <ExternalLink size={16} />
+                <span>{translate('sidebar.openInWindow')}</span>
+              </button>
+            )}
             <button
               className="sidebar-context-menu-item"
               onClick={() => handleEdit(contextMenu.sourceId)}
@@ -486,11 +506,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Logo/Header */}
       <div className="sidebar-header">
         <div className="sidebar-logo-container">
-          <img
-            src="/icon-192x192.png"
-            alt="Pixuli"
-            className="sidebar-logo-icon"
-          />
+          <img src="/icon.png" alt="Pixuli" className="sidebar-logo-icon" />
           <span className="sidebar-logo-text">Pixuli</span>
         </div>
         {onToggleCollapse && (
@@ -672,6 +688,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             zIndex: 10000,
           }}
         >
+          {onSourceOpenInWindow && (
+            <button
+              className="sidebar-context-menu-item"
+              onClick={() => handleOpenInWindow(contextMenu.sourceId)}
+            >
+              <ExternalLink size={16} />
+              <span>{translate('sidebar.openInWindow')}</span>
+            </button>
+          )}
           <button
             className="sidebar-context-menu-item"
             onClick={() => handleEdit(contextMenu.sourceId)}

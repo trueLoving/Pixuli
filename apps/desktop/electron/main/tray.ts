@@ -14,13 +14,39 @@ const indexHtml = path.join(__dirname, '../../dist/index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 /**
+ * 获取应用图标
+ * 尝试多个可能的路径，返回 NativeImage 对象
+ */
+function getAppIcon(): Electron.NativeImage {
+  const iconPaths = [
+    path.join(__dirname, '../../public/icon.png'),
+    path.join(__dirname, '../../dist/icon.png'),
+    path.join(process.env.VITE_PUBLIC || '', 'icon.png'),
+  ];
+
+  for (const iconPath of iconPaths) {
+    try {
+      const icon = nativeImage.createFromPath(iconPath);
+      if (!icon.isEmpty()) {
+        return icon;
+      }
+    } catch (error) {
+      // 继续尝试下一个路径
+    }
+  }
+
+  // 如果所有路径都失败，返回空图标
+  return nativeImage.createEmpty();
+}
+
+/**
  * 创建系统托盘
  * @param win 主窗口引用
  * @param onQuitCallback 退出回调函数
  */
 export function createTray(
   win: BrowserWindow | null,
-  onQuitCallback?: () => void
+  onQuitCallback?: () => void,
 ) {
   if (tray) {
     return; // 如果托盘已存在，则不再创建
@@ -102,12 +128,15 @@ function openCompressionWindow() {
   }
 
   // 创建新窗口
+  const appIcon = getAppIcon();
+
   compressionWindow = new BrowserWindow({
     title: '图片压缩 - Pixuli',
     width: 1000,
     height: 700,
     minWidth: 800,
     minHeight: 600,
+    icon: appIcon,
     webPreferences: {
       preload,
       contextIsolation: true,
@@ -153,12 +182,15 @@ function openAIAnalysisWindow() {
   }
 
   // 创建新窗口
+  const appIcon = getAppIcon();
+
   aiAnalysisWindow = new BrowserWindow({
     title: 'AI 图片分析 - Pixuli',
     width: 1000,
     height: 700,
     minWidth: 800,
     minHeight: 600,
+    icon: appIcon,
     webPreferences: {
       preload,
       contextIsolation: true,
@@ -204,12 +236,15 @@ function openConversionWindow() {
   }
 
   // 创建新窗口
+  const appIcon = getAppIcon();
+
   conversionWindow = new BrowserWindow({
     title: '图片转换 - Pixuli',
     width: 1000,
     height: 700,
     minWidth: 800,
     minHeight: 600,
+    icon: appIcon,
     webPreferences: {
       preload,
       contextIsolation: true,
