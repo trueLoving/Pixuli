@@ -90,12 +90,14 @@ export { BrowseModeSwitcher } from './components/browse-mode-switcher';
 // 布局组件
 export { default as Sidebar } from './components/sidebar/Sidebar';
 export { default as Header } from './components/header/Header';
+export { default as HeaderSearch } from './components/header-search';
 export { default as EmptyState } from './components/empty-state/web/EmptyState.web';
 
 // 功能组件
 export { default as KeyboardHelpModal } from './components/keyboard-help/KeyboardHelpModal';
 export { default as Toaster } from './components/toaster/Toaster';
 export { default as LanguageSwitcher } from './components/language-switcher/LanguageSwitcher';
+export { default as RefreshButton } from './components/refresh-button';
 export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
 export { FullScreenLoading } from './components/fullscreen-loading';
 

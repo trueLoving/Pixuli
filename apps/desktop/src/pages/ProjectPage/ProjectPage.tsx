@@ -4,9 +4,12 @@ import {
   GitHubConfigModal,
   GiteeConfigModal,
   Header,
+  HeaderSearch,
   ImageBrowser,
   ImageUpload,
   KeyboardHelpModal,
+  LanguageSwitcher,
+  RefreshButton,
   Toaster,
   VersionInfoModal,
   formatFileSize,
@@ -257,19 +260,38 @@ export const ProjectPage: React.FC<ProjectPageProps> = ({
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* 顶部：Header */}
         <Header
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          hasConfig={hasConfig}
-          onRefresh={handleLoadImages}
-          loading={loading}
-          currentLanguage={getCurrentLanguage()}
-          availableLanguages={getAvailableLanguages()}
-          onLanguageChange={changeLanguage}
-          t={t}
-          images={images}
-          externalFilters={externalFilters}
-          onFiltersChange={setExternalFilters}
-          showFilter={true}
+          leftActions={
+            <HeaderSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              hasConfig={hasConfig}
+              images={images}
+              externalFilters={externalFilters}
+              onFiltersChange={setExternalFilters}
+              showFilter={true}
+              t={t}
+            />
+          }
+          rightActions={
+            <>
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
+              {hasConfig && (
+                <RefreshButton
+                  onRefresh={handleLoadImages}
+                  loading={loading}
+                  disabled={!hasConfig}
+                  t={t}
+                />
+              )}
+            </>
+          }
         />
 
         {/* 底部：图片浏览区 */}

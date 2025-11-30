@@ -1,0 +1,10 @@
+{
+  "headerSearch": {
+    "search": {
+      "placeholder": "搜索图片...",
+      "placeholderDisabled": "添加仓库源后即可搜索图片"
+    },
+    "filter": "筛选",
+    "clearFilters": "清除筛选"
+  }
+}

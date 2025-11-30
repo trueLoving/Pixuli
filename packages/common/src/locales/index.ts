@@ -16,6 +16,7 @@ import photoWallLocales from '../components/photo-wall/locales';
 import gallery3dLocales from '../components/gallery-3d/locales';
 import sidebarLocales from '../components/sidebar/locales';
 import headerLocales from '../components/header/locales';
+import headerSearchLocales from '../components/header-search/locales';
 import emptyStateLocales from '../components/empty-state/locales';
 import demoLocales from '../components/demo/locales';
 
@@ -72,6 +73,7 @@ export const appLocales = {
     gallery3dLocales['zh-CN'],
     sidebarLocales['zh-CN'],
     headerLocales['zh-CN'],
+    headerSearchLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
     demoLocales['zh-CN'],
   ),
@@ -92,6 +94,7 @@ export const appLocales = {
     gallery3dLocales['en-US'],
     sidebarLocales['en-US'],
     headerLocales['en-US'],
+    headerSearchLocales['en-US'],
     emptyStateLocales['en-US'],
     demoLocales['en-US'],
   ),

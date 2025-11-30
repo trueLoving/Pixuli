@@ -6,8 +6,11 @@ import {
   GiteeConfigModal,
   GitHubConfigModal,
   Header,
+  HeaderSearch,
   KeyboardHelpModal,
+  LanguageSwitcher,
   PhotoWall,
+  RefreshButton,
   Sidebar,
   SlideShowPlayer,
   Toaster,
@@ -75,8 +78,6 @@ function App() {
     setCurrentFilter,
     searchQuery,
     setSearchQuery,
-    viewMode,
-    setViewMode,
     sidebarCollapsed,
     setSidebarCollapsed,
     handleOpenConfigModal,
@@ -226,23 +227,39 @@ function App() {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* 顶部：Header */}
         <Header
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          hasConfig={hasConfig}
-          onRefresh={handleLoadImages}
-          loading={loading}
-          onSettings={handleOpenConfigModal}
-          currentLanguage={getCurrentLanguage()}
-          availableLanguages={getAvailableLanguages()}
-          onLanguageChange={changeLanguage}
-          t={t}
-          images={images}
-          externalFilters={externalFilters}
-          onFiltersChange={setExternalFilters}
-          showFilter={true}
-          rightActions={<DemoIcon t={t} isDemoMode={isDemoMode} />}
+          leftActions={
+            <HeaderSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              hasConfig={hasConfig}
+              images={images}
+              externalFilters={externalFilters}
+              onFiltersChange={setExternalFilters}
+              showFilter={true}
+              t={t}
+            />
+          }
+          rightActions={
+            <>
+              <DemoIcon t={t} isDemoMode={isDemoMode} />
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
+              {hasConfig && (
+                <RefreshButton
+                  onRefresh={handleLoadImages}
+                  loading={loading}
+                  disabled={!hasConfig}
+                  t={t}
+                />
+              )}
+            </>
+          }
         />
 
         {/* 底部：图片浏览区 */}
