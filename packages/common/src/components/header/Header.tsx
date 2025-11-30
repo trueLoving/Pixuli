@@ -241,17 +241,6 @@ const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="header-right">
-        {hasConfig && onRefresh && (
-          <button
-            onClick={onRefresh}
-            disabled={loading}
-            className="header-button icon-only"
-            title={`${translate('navigation.refresh')} (F5)`}
-          >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          </button>
-        )}
-
         {/* 右侧操作插槽（用于 Demo 图标等自定义组件） */}
         {rightActions}
 
@@ -264,6 +253,17 @@ const Header: React.FC<HeaderProps> = ({
             currentTitle={translate('language.current')}
             showBackdrop={true}
           />
+        )}
+
+        {hasConfig && onRefresh && (
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className="header-button icon-only"
+            title={`${translate('navigation.refresh')} (F5)`}
+          >
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          </button>
         )}
       </div>
     </header>
