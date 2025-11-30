@@ -59,14 +59,24 @@ export function useAppInitialization(
     }
   }, [isDemoMode, hasConfig, githubConfig, giteeConfig]);
 
-  // 初始化存储服务（Demo 模式下不自动加载）
+  // 初始化存储服务并加载图片（Demo 模式下不自动加载）
+  // 注意：如果使用仓库源模式，图片加载由 useSelectedSourceSync 的回调触发
   useEffect(() => {
     // Demo 模式下不自动加载图片
     if (isDemoMode) {
       return;
     }
+
+    // 如果使用仓库源模式（hasConfig），不在这里加载，由 useSelectedSourceSync 处理
+    if (hasConfig && sources.length > 0) {
+      return;
+    }
+
+    // 如果没有使用仓库源模式，使用旧的配置方式加载
     const { storageType, githubConfig, giteeConfig, initializeStorage } =
       useImageStore.getState();
+
+    // 如果有配置，初始化存储服务并加载图片
     if (
       (storageType === 'github' && githubConfig) ||
       (storageType === 'gitee' && giteeConfig)
@@ -74,7 +84,15 @@ export function useAppInitialization(
       initializeStorage();
       handleLoadImages();
     }
-  }, [storageType, githubConfig, giteeConfig, handleLoadImages, isDemoMode]);
+  }, [
+    storageType,
+    githubConfig,
+    giteeConfig,
+    handleLoadImages,
+    isDemoMode,
+    hasConfig,
+    sources,
+  ]);
 
   // 页面加载时初始化
   useEffect(() => {

@@ -7,7 +7,6 @@ import {
   Header,
   HeaderSearch,
   ImageBrowser,
-  ImageUpload,
   KeyboardHelpModal,
   LanguageSwitcher,
   RefreshButton,
@@ -15,6 +14,7 @@ import {
   SidebarFilter,
   SlideShowPlayer,
   Toaster,
+  UploadButton,
   VersionInfoModal,
   formatFileSize,
   getImageDimensionsFromUrl,
@@ -374,6 +374,24 @@ export const HomePage: React.FC = () => {
           }
           rightActions={
             <>
+              {hasConfig && (
+                <UploadButton
+                  onUploadImage={uploadImage}
+                  onUploadMultipleImages={uploadMultipleImages}
+                  loading={loading}
+                  batchUploadProgress={batchUploadProgress}
+                  enableCompression={true}
+                  compressionOptions={{
+                    quality: 0.8,
+                    maxWidth: 1920,
+                    maxHeight: 1080,
+                    maintainAspectRatio: true,
+                    outputFormat: 'image/jpeg',
+                    minSizeToCompress: 100 * 1024,
+                  }}
+                  t={t}
+                />
+              )}
               <LanguageSwitcher
                 currentLanguage={getCurrentLanguage()}
                 availableLanguages={getAvailableLanguages()}
@@ -426,26 +444,6 @@ export const HomePage: React.FC = () => {
                   </div>
                 </div>
               )}
-
-              {/* 图片上传区域 */}
-              <div className="mb-4">
-                <ImageUpload
-                  t={t}
-                  onUploadImage={uploadImage}
-                  onUploadMultipleImages={uploadMultipleImages}
-                  loading={loading}
-                  batchUploadProgress={batchUploadProgress}
-                  enableCompression={true}
-                  compressionOptions={{
-                    quality: 0.8,
-                    maxWidth: 1920,
-                    maxHeight: 1080,
-                    maintainAspectRatio: true,
-                    outputFormat: 'image/jpeg',
-                    minSizeToCompress: 100 * 1024,
-                  }}
-                />
-              </div>
 
               {/* 图片浏览 */}
               <div className="min-h-0">

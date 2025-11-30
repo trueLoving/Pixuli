@@ -98,6 +98,7 @@ export { default as KeyboardHelpModal } from './components/keyboard-help/Keyboar
 export { default as Toaster } from './components/toaster/Toaster';
 export { default as LanguageSwitcher } from './components/language-switcher/LanguageSwitcher';
 export { default as RefreshButton } from './components/refresh-button';
+export { default as UploadButton } from './components/upload-button';
 export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
 export { FullScreenLoading } from './components/fullscreen-loading';
 

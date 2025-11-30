@@ -14,6 +14,7 @@ import {
   Sidebar,
   SlideShowPlayer,
   Toaster,
+  UploadButton,
   useDemoMode,
   VersionInfoModal,
   type FilterOptions,
@@ -175,8 +176,13 @@ function App() {
     [handleDeleteSource, t],
   );
 
-  // 同步选中源到配置
-  useSelectedSourceSync(selectedSource);
+  // 同步选中源到配置，并在同步后加载图片
+  useSelectedSourceSync(selectedSource, () => {
+    // 当配置同步后，如果不在 Demo 模式，自动加载图片
+    if (!isDemoMode && hasConfig) {
+      handleLoadImages();
+    }
+  });
 
   // 应用初始化
   useAppInitialization(isDemoMode, hasConfig, handleLoadImages);
@@ -242,6 +248,24 @@ function App() {
           rightActions={
             <>
               <DemoIcon t={t} isDemoMode={isDemoMode} />
+              {hasConfig && (
+                <UploadButton
+                  onUploadImage={uploadImage}
+                  onUploadMultipleImages={uploadMultipleImages}
+                  loading={loading}
+                  batchUploadProgress={batchUploadProgress}
+                  enableCompression={true}
+                  compressionOptions={{
+                    quality: 0.8,
+                    maxWidth: 1920,
+                    maxHeight: 1080,
+                    maintainAspectRatio: true,
+                    outputFormat: 'image/jpeg',
+                    minSizeToCompress: 100 * 1024,
+                  }}
+                  t={t}
+                />
+              )}
               <LanguageSwitcher
                 currentLanguage={getCurrentLanguage()}
                 availableLanguages={getAvailableLanguages()}
@@ -272,12 +296,9 @@ function App() {
             loading={loading}
             searchQuery={searchQuery}
             externalFilters={externalFilters}
-            onUploadImage={uploadImage}
-            onUploadMultipleImages={uploadMultipleImages}
             onDeleteImage={handleDeleteImage}
             onDeleteMultipleImages={handleDeleteMultipleImages}
             onUpdateImage={handleUpdateImage}
-            batchUploadProgress={batchUploadProgress}
             onOpenConfigModal={handleOpenConfigModal}
             t={t}
           />

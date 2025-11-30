@@ -3,7 +3,6 @@ import {
   formatFileSize,
   getImageDimensionsFromUrl,
   ImageBrowser,
-  ImageUpload,
   type FilterOptions,
 } from '@packages/common/src';
 import { RefreshCw } from 'lucide-react';
@@ -18,15 +17,12 @@ interface ImageContentProps {
   loading: boolean;
   searchQuery: string;
   externalFilters: FilterOptions;
-  onUploadImage: (data: any) => Promise<void>;
-  onUploadMultipleImages: (data: any) => Promise<void>;
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
   onDeleteMultipleImages: (
     imageIds: string[],
     fileNames: string[],
   ) => Promise<void>;
   onUpdateImage: (data: any) => Promise<void>;
-  batchUploadProgress: any;
   onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, any>) => string;
 }
@@ -39,12 +35,9 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   loading,
   searchQuery,
   externalFilters,
-  onUploadImage,
-  onUploadMultipleImages,
   onDeleteImage,
   onDeleteMultipleImages,
   onUpdateImage,
-  batchUploadProgress,
   onOpenConfigModal,
   t,
 }) => {
@@ -91,26 +84,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           </div>
         </div>
       )}
-
-      {/* 图片上传区域 */}
-      <div className="mb-4">
-        <ImageUpload
-          t={t}
-          onUploadImage={onUploadImage}
-          onUploadMultipleImages={onUploadMultipleImages}
-          loading={loading}
-          batchUploadProgress={batchUploadProgress}
-          enableCompression={true}
-          compressionOptions={{
-            quality: 0.8,
-            maxWidth: 1920,
-            maxHeight: 1080,
-            maintainAspectRatio: true,
-            outputFormat: 'image/jpeg',
-            minSizeToCompress: 100 * 1024,
-          }}
-        />
-      </div>
 
       {/* 图片统计和操作区域 */}
       <div className="mb-4 flex items-center justify-between">

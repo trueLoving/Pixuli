@@ -1,0 +1,37 @@
+/* UploadButton 样式 - 与 RefreshButton 保持一致 */
+.upload-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.upload-button:hover:not(:disabled) {
+  background: var(--hover-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border-color: var(--border-color-dark, #d1d5db);
+}
+
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-button.icon-only {
+  padding: 0.5rem;
+  min-width: 36px;
+  justify-content: center;
+}
+
+.upload-button-label {
+  white-space: nowrap;
+  user-select: none;
+}
