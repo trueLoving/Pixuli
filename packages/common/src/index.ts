@@ -112,6 +112,7 @@ export {
   getDemoGiteeConfig,
   isEnvConfigured,
 } from './components/demo/web/Demo.web';
+export { default as DemoIcon } from './components/demo/web/DemoIcon.web';
 
 // ==================== 语言包导出 ====================
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

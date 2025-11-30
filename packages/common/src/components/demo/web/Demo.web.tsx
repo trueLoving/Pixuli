@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  ChevronDown,
-  Github,
-  Play,
-  Sparkles,
-} from 'lucide-react';
+import { AlertCircle, ChevronDown, Github, Play, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '../../../locales';
 import { useDemoModeCore } from '../common/hooks';
@@ -233,7 +227,7 @@ export function Demo({ t, onExitDemo }: DemoProps) {
 
         {!envConfigured && (
           <div className="demo-banner-warning">
-            <AlertTriangle size={16} className="demo-banner-warning-icon" />
+            <AlertCircle size={16} className="demo-banner-warning-icon" />
             <span className="demo-banner-warning-text">
               {translate('app.demoMode.missingConfig')}
             </span>

@@ -1,7 +1,7 @@
 import {
   BrowseMode,
   createDefaultFilters,
-  Demo,
+  DemoIcon,
   EmptyState,
   formatFileSize,
   FullScreenLoading,
@@ -73,7 +73,7 @@ function App() {
   } = useSourceStore();
 
   // Demo 模式管理
-  const { isDemoMode, exitDemoMode } = useDemoMode();
+  const { isDemoMode } = useDemoMode();
 
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showSourceTypeMenu, setShowSourceTypeMenu] = useState(false);
@@ -475,8 +475,12 @@ function App() {
     }
   }, [isDemoMode, hasConfig, githubConfig, giteeConfig]);
 
-  // 初始化存储服务
+  // 初始化存储服务（Demo 模式下不自动加载）
   useEffect(() => {
+    // Demo 模式下不自动加载图片
+    if (isDemoMode) {
+      return;
+    }
     const { storageType, githubConfig, giteeConfig, initializeStorage } =
       useImageStore.getState();
     if (
@@ -486,16 +490,7 @@ function App() {
       initializeStorage();
       handleLoadImages();
     }
-  }, [storageType, githubConfig, giteeConfig, handleLoadImages]);
-
-  // 退出 Demo 模式时的处理
-  const handleExitDemo = useCallback(() => {
-    // 清除所有配置
-    clearGitHubConfig();
-    clearGiteeConfig();
-    useImageStore.setState({ storageType: null, images: [] });
-    exitDemoMode();
-  }, [clearGitHubConfig, clearGiteeConfig, exitDemoMode]);
+  }, [storageType, githubConfig, giteeConfig, handleLoadImages, isDemoMode]);
 
   // 页面加载时初始化
   useEffect(() => {
@@ -609,6 +604,7 @@ function App() {
           externalFilters={externalFilters}
           onFiltersChange={setExternalFilters}
           showFilter={true}
+          rightActions={<DemoIcon t={t} isDemoMode={isDemoMode} />}
         />
 
         {/* 底部：图片浏览区 */}
@@ -617,7 +613,6 @@ function App() {
             // 未配置：显示引导界面
             <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
               {/* Demo 模式提示 */}
-              {isDemoMode && <Demo t={t} onExitDemo={handleExitDemo} />}
               <EmptyState
                 onAddGitHub={() => {
                   useImageStore.setState({ storageType: 'github' });

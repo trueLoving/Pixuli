@@ -2,6 +2,7 @@
   "app": {
     "demoMode": {
       "title": "Demo Mode",
+      "label": "Demo Mode - Download Demo Files",
       "description": "You are using the demo environment. You can download pre-configured demo configuration files to quickly experience all features of Pixuli.",
       "downloadDemo": "Download Demo Config",
       "downloadGitHub": "Download GitHub Demo Config",

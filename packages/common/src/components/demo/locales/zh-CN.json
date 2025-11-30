@@ -2,6 +2,7 @@
   "app": {
     "demoMode": {
       "title": "演示模式",
+      "label": "演示模式，可下载 Demo 文件",
       "description": "您正在使用演示环境，可以下载预配置的演示配置文件快速体验 Pixuli 的各项功能。",
       "downloadDemo": "下载演示配置",
       "downloadGitHub": "下载 GitHub 演示配置",

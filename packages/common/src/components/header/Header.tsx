@@ -33,6 +33,8 @@ interface HeaderProps {
   ) => void;
   /** 是否显示筛选功能（默认false，web端传true） */
   showFilter?: boolean;
+  /** 右侧操作区域插槽（用于添加自定义组件，如 Demo 图标） */
+  rightActions?: React.ReactNode;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -49,6 +51,7 @@ const Header: React.FC<HeaderProps> = ({
   externalFilters,
   onFiltersChange,
   showFilter = false,
+  rightActions,
 }) => {
   const translate = t || defaultTranslate;
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -248,6 +251,9 @@ const Header: React.FC<HeaderProps> = ({
             <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         )}
+
+        {/* 右侧操作插槽（用于 Demo 图标等自定义组件） */}
+        {rightActions}
 
         {currentLanguage && availableLanguages && onLanguageChange && (
           <LanguageSwitcher
