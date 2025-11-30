@@ -36,14 +36,26 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
 
   // 当模态框打开时，更新表单数据
   useEffect(() => {
-    if (isOpen && githubConfig) {
-      setFormData({
-        owner: githubConfig.owner || '',
-        repo: githubConfig.repo || '',
-        branch: githubConfig.branch || 'main',
-        token: githubConfig.token || '',
-        path: githubConfig.path || 'images',
-      });
+    if (isOpen) {
+      if (githubConfig) {
+        // 有配置时，填充表单数据
+        setFormData({
+          owner: githubConfig.owner || '',
+          repo: githubConfig.repo || '',
+          branch: githubConfig.branch || 'main',
+          token: githubConfig.token || '',
+          path: githubConfig.path || 'images',
+        });
+      } else {
+        // 配置被清除后，重置表单数据为空
+        setFormData({
+          owner: '',
+          repo: '',
+          branch: 'main',
+          token: '',
+          path: 'images',
+        });
+      }
     }
   }, [isOpen, githubConfig]);
 
@@ -55,7 +67,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   };
@@ -71,7 +83,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   };
@@ -106,7 +118,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
       showSuccess(translate('messages.configExported'));
     } catch (error) {
       showError(
-        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`
+        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
   };
@@ -149,7 +161,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
           showSuccess(translate('messages.configImported'));
         } catch (error) {
           showError(
-            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`
+            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : '文件格式错误'}`,
           );
         }
       };
@@ -284,7 +296,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
                       value={formData.owner}
                       onChange={e => handleInputChange('owner', e.target.value)}
                       placeholder={translate(
-                        'github.config.usernamePlaceholder'
+                        'github.config.usernamePlaceholder',
                       )}
                       className="github-config-form-input"
                       required
@@ -303,7 +315,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
                       value={formData.repo}
                       onChange={e => handleInputChange('repo', e.target.value)}
                       placeholder={translate(
-                        'github.config.repositoryPlaceholder'
+                        'github.config.repositoryPlaceholder',
                       )}
                       className="github-config-form-input"
                       required

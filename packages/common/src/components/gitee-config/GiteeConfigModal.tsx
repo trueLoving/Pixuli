@@ -29,21 +29,33 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
   const [formData, setFormData] = useState<GiteeConfig>({
     owner: giteeConfig?.owner || '',
     repo: giteeConfig?.repo || '',
-    branch: giteeConfig?.branch || 'master',
+    branch: giteeConfig?.branch || 'main',
     token: giteeConfig?.token || '',
     path: giteeConfig?.path || 'images',
   });
 
   // 当模态框打开时，更新表单数据
   useEffect(() => {
-    if (isOpen && giteeConfig) {
-      setFormData({
-        owner: giteeConfig.owner || '',
-        repo: giteeConfig.repo || '',
-        branch: giteeConfig.branch || 'master',
-        token: giteeConfig.token || '',
-        path: giteeConfig.path || 'images',
-      });
+    if (isOpen) {
+      if (giteeConfig) {
+        // 有配置时，填充表单数据
+        setFormData({
+          owner: giteeConfig.owner || '',
+          repo: giteeConfig.repo || '',
+          branch: giteeConfig.branch || 'main',
+          token: giteeConfig.token || '',
+          path: giteeConfig.path || 'images',
+        });
+      } else {
+        // 配置被清除后，重置表单数据为空
+        setFormData({
+          owner: '',
+          repo: '',
+          branch: 'main',
+          token: '',
+          path: 'images',
+        });
+      }
     }
   }, [isOpen, giteeConfig]);
 
@@ -55,7 +67,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
+        `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`,
       );
     }
   };
@@ -71,7 +83,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       onClose();
     } catch (error) {
       showError(
-        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
+        `${translate('messages.clearFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`,
       );
     }
   };
@@ -106,7 +118,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       showSuccess(translate('messages.configExported'));
     } catch (error) {
       showError(
-        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`
+        `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`,
       );
     }
   };
@@ -141,7 +153,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
           setFormData({
             owner: configData.config.owner || '',
             repo: configData.config.repo || '',
-            branch: configData.config.branch || 'master',
+            branch: configData.config.branch || 'main',
             token: configData.config.token || '',
             path: configData.config.path || 'images',
           });
@@ -149,7 +161,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
           showSuccess(translate('messages.configImported'));
         } catch (error) {
           showError(
-            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : translate('messages.fileFormatError')}`
+            `${translate('messages.importFailed')}: ${error instanceof Error ? error.message : translate('messages.fileFormatError')}`,
           );
         }
       };
@@ -284,7 +296,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                       value={formData.owner}
                       onChange={e => handleInputChange('owner', e.target.value)}
                       placeholder={translate(
-                        'gitee.config.usernamePlaceholder'
+                        'gitee.config.usernamePlaceholder',
                       )}
                       className="gitee-config-form-input"
                       required
@@ -303,7 +315,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
                       value={formData.repo}
                       onChange={e => handleInputChange('repo', e.target.value)}
                       placeholder={translate(
-                        'gitee.config.repositoryPlaceholder'
+                        'gitee.config.repositoryPlaceholder',
                       )}
                       className="gitee-config-form-input"
                       required

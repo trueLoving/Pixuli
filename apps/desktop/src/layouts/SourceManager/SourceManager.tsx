@@ -83,6 +83,8 @@ export const SourceManager: React.FC = () => {
     clearError,
     setGitHubConfig,
     setGiteeConfig: setImageStoreGiteeConfig,
+    clearGitHubConfig,
+    clearGiteeConfig,
     initializeStorage,
     loadImages,
   } = useImageStore();
@@ -489,7 +491,7 @@ export const SourceManager: React.FC = () => {
                 }
                 onDeleteMultipleImages={(
                   imageIds: string[],
-                  fileNames: string[]
+                  fileNames: string[],
                 ) => deleteMultipleImages(imageIds, fileNames)}
                 onUpdateImage={(data: any) => updateImage(data)}
               />
@@ -556,6 +558,14 @@ export const SourceManager: React.FC = () => {
         githubConfig={ghConfig as any}
         onSaveConfig={(cfg: any) => handleSaveGh(cfg)}
         onClearConfig={() => {
+          // 如果正在编辑现有源，则移除该源
+          if (editingId) {
+            removeSource(editingId);
+            setSelectedId(null);
+          }
+          // 清除 store 中的配置
+          clearGitHubConfig();
+          // 重置表单和状态
           setGhConfig(emptyGH);
           setEditingId(null);
           setShowGhModal(false);
@@ -574,6 +584,14 @@ export const SourceManager: React.FC = () => {
         giteeConfig={giteeConfig as any}
         onSaveConfig={(cfg: any) => handleSaveGitee(cfg)}
         onClearConfig={() => {
+          // 如果正在编辑现有源，则移除该源
+          if (editingId) {
+            removeSource(editingId);
+            setSelectedId(null);
+          }
+          // 清除 store 中的配置
+          clearGiteeConfig();
+          // 重置表单和状态
           setGiteeConfig(emptyGitee);
           setEditingId(null);
           setShowGiteeModal(false);

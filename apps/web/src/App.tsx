@@ -1,11 +1,16 @@
 import {
   BrowseMode,
+  createDefaultFilters,
+  Demo,
+  EmptyState,
   formatFileSize,
   FullScreenLoading,
   Gallery3D,
+  getDemoGiteeConfig,
+  getDemoGitHubConfig,
   getImageDimensionsFromUrl,
-  GitHubConfigModal,
   GiteeConfigModal,
+  GitHubConfigModal,
   Header,
   ImageBrowser,
   ImageUpload,
@@ -17,28 +22,22 @@ import {
   SidebarView,
   SlideShowPlayer,
   Toaster,
+  useDemoMode,
   VersionInfoModal,
+  type FilterOptions,
   type VersionInfo,
 } from '@packages/common/src';
-import EmptyState from '@packages/common/src/components/empty-state/web/EmptyState.web';
-import type { FilterOptions } from '@packages/common/src/components/image-browser/image-filter/ImageFilter';
-import { createDefaultFilters } from '@packages/common/src/utils/filterUtils';
 import { Github, RefreshCw, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-
-// 声明全局版本信息
-declare const __VERSION_INFO__: VersionInfo;
-import { useDemoMode, Demo } from '@packages/common/src/index';
 import { PWAInstallPrompt } from './components/pwa';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
 import { createKeyboardShortcuts } from './utils/keyboardShortcuts';
-import {
-  getDemoGitHubConfig,
-  getDemoGiteeConfig,
-} from '@packages/common/src/index';
+
+// 声明全局版本信息
+declare const __VERSION_INFO__: VersionInfo;
 
 function App() {
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
@@ -231,13 +230,28 @@ function App() {
   );
 
   const handleClearConfig = useCallback(() => {
+    // 如果正在编辑现有源，则移除该源
     if (editingSourceId) {
       removeSource(editingSourceId);
       setSelectedSourceId(null);
     }
+    // 根据存储类型清除相应的配置
+    if (storageType === 'github') {
+      clearGitHubConfig();
+    } else if (storageType === 'gitee') {
+      clearGiteeConfig();
+    }
+    // 关闭模态框并重置状态
     setShowConfigModal(false);
     setEditingSourceId(null);
-  }, [editingSourceId, removeSource, setSelectedSourceId]);
+  }, [
+    editingSourceId,
+    storageType,
+    removeSource,
+    setSelectedSourceId,
+    clearGitHubConfig,
+    clearGiteeConfig,
+  ]);
 
   // 处理编辑仓库源
   const handleEditSource = useCallback(
@@ -423,7 +437,7 @@ function App() {
     }
   }, [selectedSource, setGitHubConfig, setGiteeConfig]);
 
-  // Demo 模式：自动加载 Demo 配置
+  // Demo 模式：自动加载 Demo 配置（不保存到 localStorage）
   useEffect(() => {
     if (isDemoMode && !hasConfig && !githubConfig && !giteeConfig) {
       // 优先使用 GitHub Demo 配置
@@ -433,8 +447,13 @@ function App() {
         demoGitHubConfig.config.repo &&
         demoGitHubConfig.config.token
       ) {
-        setGitHubConfig(demoGitHubConfig.config);
-        useImageStore.setState({ storageType: 'github' });
+        // Demo 模式下直接设置到 store，不保存到 localStorage
+        useImageStore.setState({
+          githubConfig: demoGitHubConfig.config,
+          giteeConfig: null,
+          storageType: 'github',
+        });
+        useImageStore.getState().initializeStorage();
         return;
       }
 
@@ -445,18 +464,16 @@ function App() {
         demoGiteeConfig.config.repo &&
         demoGiteeConfig.config.token
       ) {
-        setGiteeConfig(demoGiteeConfig.config);
-        useImageStore.setState({ storageType: 'gitee' });
+        // Demo 模式下直接设置到 store，不保存到 localStorage
+        useImageStore.setState({
+          giteeConfig: demoGiteeConfig.config,
+          githubConfig: null,
+          storageType: 'gitee',
+        });
+        useImageStore.getState().initializeStorage();
       }
     }
-  }, [
-    isDemoMode,
-    hasConfig,
-    githubConfig,
-    giteeConfig,
-    setGitHubConfig,
-    setGiteeConfig,
-  ]);
+  }, [isDemoMode, hasConfig, githubConfig, giteeConfig]);
 
   // 初始化存储服务
   useEffect(() => {
@@ -760,15 +777,18 @@ function App() {
           setEditingSourceId(null);
         }}
         githubConfig={
-          editingSourceId && selectedSource?.type === 'github'
-            ? {
-                owner: selectedSource.owner,
-                repo: selectedSource.repo,
-                branch: selectedSource.branch,
-                token: selectedSource.token,
-                path: selectedSource.path,
-              }
-            : githubConfig
+          // Demo 模式下不显示配置
+          isDemoMode
+            ? null
+            : editingSourceId && selectedSource?.type === 'github'
+              ? {
+                  owner: selectedSource.owner,
+                  repo: selectedSource.repo,
+                  branch: selectedSource.branch,
+                  token: selectedSource.token,
+                  path: selectedSource.path,
+                }
+              : githubConfig
         }
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
@@ -783,15 +803,18 @@ function App() {
           setEditingSourceId(null);
         }}
         giteeConfig={
-          editingSourceId && selectedSource?.type === 'gitee'
-            ? {
-                owner: selectedSource.owner,
-                repo: selectedSource.repo,
-                branch: selectedSource.branch,
-                token: selectedSource.token,
-                path: selectedSource.path,
-              }
-            : giteeConfig
+          // Demo 模式下不显示配置
+          isDemoMode
+            ? null
+            : editingSourceId && selectedSource?.type === 'gitee'
+              ? {
+                  owner: selectedSource.owner,
+                  repo: selectedSource.repo,
+                  branch: selectedSource.branch,
+                  token: selectedSource.token,
+                  path: selectedSource.path,
+                }
+              : giteeConfig
         }
         onSaveConfig={handleSaveConfig}
         onClearConfig={handleClearConfig}
