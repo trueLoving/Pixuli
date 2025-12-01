@@ -106,6 +106,17 @@ export const mobileLocales = {
         exportHint:
           '请在分享对话框中选择保存位置（如：文件应用、下载文件夹或云存储）',
       },
+      about: {
+        title: '关于',
+      },
+      help: {
+        title: '帮助和文档',
+        description: '查看使用文档和常见问题',
+      },
+      version: {
+        title: '版本信息',
+        description: '查看应用版本和构建信息',
+      },
     },
     image: {
       title: '图片管理',
@@ -216,6 +227,21 @@ export const mobileLocales = {
       configureGitHubFirst: '请先在设置中配置 GitHub 仓库',
       configureGiteeFirst: '请先在设置中配置 Gitee 仓库',
       goToConfigure: '去配置',
+    },
+    version: {
+      title: '版本信息',
+      subtitle: '应用版本和构建信息',
+      appVersion: '应用版本',
+      buildNumber: '构建号',
+      platform: '平台',
+      runtimeVersion: '运行时版本',
+    },
+    help: {
+      title: '帮助和文档',
+      subtitle: '获取使用帮助和文档',
+      documentation: '使用文档',
+      faq: '常见问题',
+      github: 'GitHub 仓库',
     },
     search: {
       placeholder: '搜索图片名称、描述或标签...',
@@ -385,6 +411,17 @@ export const mobileLocales = {
         exportHint:
           'Please select a save location in the share dialog (e.g., Files app, Downloads folder, or cloud storage)',
       },
+      about: {
+        title: 'About',
+      },
+      help: {
+        title: 'Help & Documentation',
+        description: 'View documentation and FAQs',
+      },
+      version: {
+        title: 'Version Info',
+        description: 'View app version and build information',
+      },
     },
     image: {
       title: 'Image Management',
@@ -499,6 +536,21 @@ export const mobileLocales = {
       configureGiteeFirst:
         'Please configure Gitee repository in settings first',
       goToConfigure: 'Go to Configure',
+    },
+    version: {
+      title: 'Version Information',
+      subtitle: 'App version and build information',
+      appVersion: 'App Version',
+      buildNumber: 'Build Number',
+      platform: 'Platform',
+      runtimeVersion: 'Runtime Version',
+    },
+    help: {
+      title: 'Help & Documentation',
+      subtitle: 'Get help and documentation',
+      documentation: 'Documentation',
+      faq: 'FAQ',
+      github: 'GitHub Repository',
     },
     search: {
       placeholder: 'Search by name, description, or tags...',

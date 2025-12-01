@@ -5,4 +5,5 @@ export interface EmptyStateProps {
   onAddGitee: () => void;
   onTryDemo?: () => void;
   t?: (key: string) => string;
+  colorScheme?: 'light' | 'dark';
 }

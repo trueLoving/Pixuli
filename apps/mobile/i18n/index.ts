@@ -27,6 +27,8 @@ if (!i18n.isInitialized) {
       escapeValue: false, // React already does escaping
     },
     compatibilityJSON: 'v4',
+    keySeparator: '.', // 使用点号作为嵌套 key 的分隔符
+    nsSeparator: ':', // 使用冒号作为命名空间的分隔符
     // 确保缺失的翻译键返回 key 本身，而不是 undefined
     returnEmptyString: false,
     returnNull: false,

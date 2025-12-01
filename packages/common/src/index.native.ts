@@ -27,5 +27,9 @@ export {
 } from './components/demo/native/Demo.native';
 export type { DemoConfig, DemoProps } from './components/demo/common/types';
 
+// VersionInfoModal 组件（React Native 版本）
+export { default as VersionInfoModal } from './components/version-info/native/VersionInfoModal.native';
+export type { VersionInfoModalProps } from './components/version-info/native/types';
+
 // ==================== 语言包导出 ====================
 export { defaultTranslate, deepMerge, zhCN, enUS } from './locales';

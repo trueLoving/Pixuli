@@ -53,6 +53,9 @@ const MAPPING = {
   'play.fill': 'play-arrow',
   'pause.fill': 'pause',
   'stop.fill': 'stop',
+  // Help and documentation icons
+  'book.fill': 'book',
+  'questionmark.circle.fill': 'help',
 } as IconMapping;
 
 /**

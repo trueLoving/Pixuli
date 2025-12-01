@@ -1,7 +1,11 @@
 {
   "version": {
     "title": "Version Info",
-    "subtitle": "View application and dependency version details",
+    "subtitle": "App version and build information",
+    "appVersion": "App Version",
+    "buildNumber": "Build Number",
+    "platform": "Platform",
+    "runtimeVersion": "Runtime Version",
     "tabs": {
       "basic": "Basic Info",
       "frameworks": "Frameworks",

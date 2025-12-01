@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { VersionInfoModal } from '@packages/common/src/index.native';
+import { HelpModal } from '@/components/HelpModal';
 import { useI18n, useInitLanguage } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import {
@@ -42,6 +45,8 @@ export default function SettingsScreen() {
   const colors = Colors[colorScheme];
   const { githubConfig, giteeConfig, storageType } = useImageStore();
   const currentThemeMode = useThemeMode();
+  const [versionModalVisible, setVersionModalVisible] = useState(false);
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   // 切换主题
   const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
@@ -118,7 +123,11 @@ export default function SettingsScreen() {
 
   return (
     <ThemedView style={dynamicStyles.container}>
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={true}
+      >
         {/* 存储配置分组 */}
         <View style={styles.section}>
           <ThemedText style={dynamicStyles.sectionTitle}>
@@ -299,7 +308,92 @@ export default function SettingsScreen() {
             })}
           </View>
         </View>
-      </View>
+
+        {/* 关于和帮助分组 */}
+        <View style={styles.section}>
+          <ThemedText style={dynamicStyles.sectionTitle}>
+            {t('settings.about.title') || '关于'}
+          </ThemedText>
+          <View style={dynamicStyles.groupContainer}>
+            <TouchableOpacity
+              style={[
+                dynamicStyles.settingItem,
+                styles.settingItemFirst,
+                { borderBottomColor: colors.cardBorder },
+              ]}
+              onPress={() => setHelpModalVisible(true)}
+              activeOpacity={0.6}
+            >
+              <View style={styles.settingItemLeft}>
+                <View style={dynamicStyles.iconContainer}>
+                  <IconSymbol
+                    name="questionmark.circle.fill"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={dynamicStyles.settingItemTitle}>
+                    {t('settings.help.title') || '帮助和文档'}
+                  </ThemedText>
+                  <ThemedText style={dynamicStyles.settingItemDescription}>
+                    {t('settings.help.description') || '查看使用文档和常见问题'}
+                  </ThemedText>
+                </View>
+              </View>
+              <IconSymbol
+                name="chevron.right"
+                size={18}
+                color={colors.sectionTitle}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[dynamicStyles.settingItem, styles.settingItemLast]}
+              onPress={() => setVersionModalVisible(true)}
+              activeOpacity={0.6}
+            >
+              <View style={styles.settingItemLeft}>
+                <View style={dynamicStyles.iconContainer}>
+                  <IconSymbol
+                    name="info.circle.fill"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={dynamicStyles.settingItemTitle}>
+                    {t('settings.version.title') || '版本信息'}
+                  </ThemedText>
+                  <ThemedText style={dynamicStyles.settingItemDescription}>
+                    {t('settings.version.description') ||
+                      '查看应用版本和构建信息'}
+                  </ThemedText>
+                </View>
+              </View>
+              <IconSymbol
+                name="chevron.right"
+                size={18}
+                color={colors.sectionTitle}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* 版本信息模态框 */}
+      <VersionInfoModal
+        visible={versionModalVisible}
+        onClose={() => setVersionModalVisible(false)}
+        t={t}
+        colorScheme={colorScheme}
+      />
+
+      {/* 帮助模态框 */}
+      <HelpModal
+        visible={helpModalVisible}
+        onClose={() => setHelpModalVisible(false)}
+        t={t}
+      />
     </ThemedView>
   );
 }
@@ -311,7 +405,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingTop: 8,
+    paddingBottom: 32,
   },
   section: {
     marginTop: 32,

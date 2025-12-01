@@ -110,6 +110,7 @@ export default function HomeScreen() {
           onAddGitHub={() => router.push('/(tabs)/settings/github')}
           onAddGitee={() => router.push('/(tabs)/settings/gitee')}
           t={t}
+          colorScheme={colorScheme}
         />
       </ThemedView>
     );

@@ -1,7 +1,11 @@
 {
   "version": {
     "title": "版本信息",
-    "subtitle": "查看应用和依赖版本详情",
+    "subtitle": "应用版本和构建信息",
+    "appVersion": "应用版本",
+    "buildNumber": "构建号",
+    "platform": "平台",
+    "runtimeVersion": "运行时版本",
     "tabs": {
       "basic": "基本信息",
       "frameworks": "开发框架",

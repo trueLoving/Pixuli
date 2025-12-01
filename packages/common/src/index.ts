@@ -31,7 +31,7 @@ export type {
 export type { EmptyStateProps } from './components/empty-state/common/types';
 export type { FullScreenLoadingProps } from './components/fullscreen-loading';
 export type { SidebarView, SidebarFilter } from './components/sidebar';
-export type { VersionInfo } from './components/version-info';
+export type { VersionInfo } from './components/version-info/web/types';
 export type {
   PlayMode,
   TransitionEffect,
@@ -99,7 +99,7 @@ export { default as Toaster } from './components/toaster/Toaster';
 export { default as LanguageSwitcher } from './components/language-switcher/LanguageSwitcher';
 export { default as RefreshButton } from './components/refresh-button';
 export { default as UploadButton } from './components/upload-button';
-export { default as VersionInfoModal } from './components/version-info/VersionInfoModal';
+export { default as VersionInfoModal } from './components/version-info/web/VersionInfoModal';
 export { FullScreenLoading } from './components/fullscreen-loading';
 
 // Demo 组件（Web 版本）
