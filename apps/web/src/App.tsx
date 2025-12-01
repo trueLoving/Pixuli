@@ -178,8 +178,10 @@ function App() {
 
   // 同步选中源到配置，并在同步后加载图片
   useSelectedSourceSync(selectedSource, () => {
-    // 当配置同步后，如果不在 Demo 模式，自动加载图片
-    if (!isDemoMode && hasConfig) {
+    // 当配置同步后，如果有真实的仓库源配置，自动加载图片
+    // 注意：即使是在 Demo 模式下，如果用户配置了真实的仓库源，也应该加载图片
+    // Demo 模式只影响是否显示 Demo 图标和使用 Demo 配置，不应该阻止加载真实配置的图片
+    if (sources.length > 0 && selectedSource) {
       handleLoadImages();
     }
   });

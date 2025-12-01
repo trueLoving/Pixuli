@@ -9,13 +9,16 @@ export function useSelectedSourceSync(
   onConfigSynced?: () => void,
 ) {
   const { setGitHubConfig, setGiteeConfig } = useImageStore();
-  const hasSyncedRef = useRef(false);
   const lastSyncedSourceIdRef = useRef<string | null>(null);
+  const isInitialMountRef = useRef(true);
 
   useEffect(() => {
     if (selectedSource) {
-      // 避免重复同步同一个源
-      if (lastSyncedSourceIdRef.current === selectedSource.id) {
+      // 避免重复同步同一个源（但首次加载时允许同步）
+      if (
+        lastSyncedSourceIdRef.current === selectedSource.id &&
+        !isInitialMountRef.current
+      ) {
         return;
       }
 
@@ -37,16 +40,19 @@ export function useSelectedSourceSync(
       // 标记已同步，并触发回调
       // 注意：setGitHubConfig 和 setGiteeConfig 内部已经调用了 initializeStorage()
       lastSyncedSourceIdRef.current = selectedSource.id;
-      hasSyncedRef.current = true;
+      isInitialMountRef.current = false;
+
       if (onConfigSynced) {
-        // 延迟执行，确保 store 状态已更新
+        // 延迟执行，确保 store 状态已更新和存储服务已初始化
         setTimeout(() => {
+          const { storageService, initializeStorage } =
+            useImageStore.getState();
+          if (!storageService) {
+            initializeStorage();
+          }
           onConfigSynced();
-        }, 0);
+        }, 100);
       }
-    } else {
-      hasSyncedRef.current = false;
-      lastSyncedSourceIdRef.current = null;
     }
   }, [selectedSource, setGitHubConfig, setGiteeConfig, onConfigSynced]);
 }

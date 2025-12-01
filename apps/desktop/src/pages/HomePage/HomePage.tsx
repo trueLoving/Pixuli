@@ -23,7 +23,13 @@ import {
 } from '@packages/common/src';
 import { createDefaultFilters } from '@packages/common/src/utils/filterUtils';
 import { Github, X } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useI18n } from '../../i18n/useI18n';
 import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
@@ -78,6 +84,10 @@ export const HomePage: React.FC = () => {
     createDefaultFilters(),
   );
 
+  // 用于跟踪已同步的源 ID，避免重复同步
+  const lastSyncedSourceIdRef = useRef<string | null>(null);
+  const isInitialMountRef = useRef(true);
+
   // 同步搜索查询到筛选条件
   useEffect(() => {
     setExternalFilters(prev => ({
@@ -85,6 +95,13 @@ export const HomePage: React.FC = () => {
       searchTerm: searchQuery,
     }));
   }, [searchQuery]);
+
+  // 初始化：如果没有选中源但有源列表，自动选中第一个
+  useEffect(() => {
+    if (!selectedSourceId && sources.length > 0) {
+      setSelectedSourceId(sources[0].id);
+    }
+  }, [selectedSourceId, sources, setSelectedSourceId]);
 
   // 监听键盘帮助事件
   useEffect(() => {
@@ -171,6 +188,59 @@ export const HomePage: React.FC = () => {
       console.error('Failed to load images:', error);
     }
   }, [loadImages]);
+
+  // 同步选中源到配置，并在同步后加载图片
+  useEffect(() => {
+    if (selectedSource && sources.length > 0) {
+      // 避免重复同步同一个源（但首次加载时允许同步）
+      if (
+        lastSyncedSourceIdRef.current === selectedSource.id &&
+        !isInitialMountRef.current
+      ) {
+        return;
+      }
+
+      // 同步配置到 store
+      if (selectedSource.type === 'github') {
+        setGitHubConfig({
+          owner: selectedSource.owner,
+          repo: selectedSource.repo,
+          branch: selectedSource.branch,
+          token: selectedSource.token,
+          path: selectedSource.path,
+        } as any);
+        useImageStore.setState({ storageType: 'github' });
+      } else {
+        setGiteeConfig({
+          owner: selectedSource.owner,
+          repo: selectedSource.repo,
+          branch: selectedSource.branch,
+          token: selectedSource.token,
+          path: selectedSource.path,
+        } as any);
+        useImageStore.setState({ storageType: 'gitee' });
+      }
+
+      // 标记已同步
+      lastSyncedSourceIdRef.current = selectedSource.id;
+      isInitialMountRef.current = false;
+
+      // 初始化存储服务并加载图片
+      setTimeout(() => {
+        const { storageService, initializeStorage } = useImageStore.getState();
+        if (!storageService) {
+          initializeStorage();
+        }
+        handleLoadImages();
+      }, 100);
+    }
+  }, [
+    selectedSource,
+    sources.length,
+    setGitHubConfig,
+    setGiteeConfig,
+    handleLoadImages,
+  ]);
 
   const handleAddSource = useCallback(() => {
     setShowSourceTypeMenu(true);

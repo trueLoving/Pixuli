@@ -10,6 +10,7 @@ import {
   LanguageSwitcher,
   RefreshButton,
   Toaster,
+  SlideShowPlayer,
   UploadButton,
   VersionInfoModal,
   formatFileSize,
