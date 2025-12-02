@@ -6,6 +6,8 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { VersionInfoModal } from '@packages/common/src/index.native';
 import { HelpModal } from '@/components/HelpModal';
+import { ThemeModal } from '@/components/ThemeModal';
+import { LanguageModal } from '@/components/LanguageModal';
 import { useI18n, useInitLanguage } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import {
@@ -47,10 +49,34 @@ export default function SettingsScreen() {
   const currentThemeMode = useThemeMode();
   const [versionModalVisible, setVersionModalVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   // 切换主题
   const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
     await setThemeMode(mode);
+  };
+
+  // 获取当前主题的显示文本
+  const getCurrentThemeLabel = () => {
+    switch (currentThemeMode) {
+      case 'light':
+        return t('settings.theme.light');
+      case 'dark':
+        return t('settings.theme.dark');
+      case 'auto':
+        return t('settings.theme.auto');
+      default:
+        return t('settings.theme.auto');
+    }
+  };
+
+  // 获取当前语言的显示文本
+  const getCurrentLanguageLabel = () => {
+    const currentLang = getAvailableLanguages().find(
+      lang => lang.code === getCurrentLanguage(),
+    );
+    return currentLang?.name || '';
   };
 
   // 确保翻译已加载
@@ -180,73 +206,38 @@ export default function SettingsScreen() {
             {t('settings.theme.title')}
           </ThemedText>
           <View style={dynamicStyles.groupContainer}>
-            {[
-              {
-                mode: 'light' as const,
-                label: t('settings.theme.light'),
-                icon: 'sun.max.fill',
-              },
-              {
-                mode: 'dark' as const,
-                label: t('settings.theme.dark'),
-                icon: 'moon.fill',
-              },
-              {
-                mode: 'auto' as const,
-                label: t('settings.theme.auto'),
-                icon: 'circle.lefthalf.filled',
-              },
-            ].map((theme, index) => {
-              const isSelected = currentThemeMode === theme.mode;
-              return (
-                <TouchableOpacity
-                  key={theme.mode}
-                  style={[
-                    dynamicStyles.settingItem,
-                    index === 0 && styles.settingItemFirst,
-                    index === 2 && styles.settingItemLast,
-                    isSelected && dynamicStyles.settingItemSelected,
-                  ]}
-                  onPress={() => handleThemeChange(theme.mode)}
-                  activeOpacity={0.6}
-                >
-                  <View style={styles.settingItemLeft}>
-                    <View style={dynamicStyles.iconContainer}>
-                      <IconSymbol
-                        name={theme.icon as any}
-                        size={22}
-                        color={colors.primary}
-                      />
-                    </View>
-                    <View style={styles.settingItemContent}>
-                      <ThemedText style={dynamicStyles.settingItemTitle}>
-                        {theme.label}
-                      </ThemedText>
-                      {isSelected && (
-                        <ThemedText
-                          style={dynamicStyles.settingItemDescription}
-                        >
-                          {t('settings.theme.current')}
-                        </ThemedText>
-                      )}
-                    </View>
-                  </View>
-                  {isSelected ? (
-                    <IconSymbol
-                      name="checkmark.circle.fill"
-                      size={22}
-                      color="#34C759"
-                    />
-                  ) : (
-                    <IconSymbol
-                      name="chevron.right"
-                      size={18}
-                      color={colors.sectionTitle}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <TouchableOpacity
+              style={[
+                dynamicStyles.settingItem,
+                styles.settingItemFirst,
+                styles.settingItemLast,
+              ]}
+              onPress={() => setThemeModalVisible(true)}
+              activeOpacity={0.6}
+            >
+              <View style={styles.settingItemLeft}>
+                <View style={dynamicStyles.iconContainer}>
+                  <IconSymbol
+                    name="circle.lefthalf.filled"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={dynamicStyles.settingItemTitle}>
+                    {getCurrentThemeLabel()}
+                  </ThemedText>
+                  <ThemedText style={dynamicStyles.settingItemDescription}>
+                    {t('settings.theme.current')}
+                  </ThemedText>
+                </View>
+              </View>
+              <IconSymbol
+                name="chevron.right"
+                size={18}
+                color={colors.sectionTitle}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -256,56 +247,38 @@ export default function SettingsScreen() {
             {t('settings.language.title')}
           </ThemedText>
           <View style={dynamicStyles.groupContainer}>
-            {getAvailableLanguages().map((lang, index) => {
-              const isSelected = getCurrentLanguage() === lang.code;
-              return (
-                <TouchableOpacity
-                  key={lang.code}
-                  style={[
-                    dynamicStyles.settingItem,
-                    index === 0 && styles.settingItemFirst,
-                    index === getAvailableLanguages().length - 1 &&
-                      styles.settingItemLast,
-                    isSelected && dynamicStyles.settingItemSelected,
-                  ]}
-                  onPress={() => changeLanguage(lang.code)}
-                  activeOpacity={0.6}
-                >
-                  <View style={styles.settingItemLeft}>
-                    <View style={dynamicStyles.iconContainer}>
-                      <ThemedText style={styles.flagText}>
-                        {lang.flag}
-                      </ThemedText>
-                    </View>
-                    <View style={styles.settingItemContent}>
-                      <ThemedText style={dynamicStyles.settingItemTitle}>
-                        {lang.name}
-                      </ThemedText>
-                      {isSelected && (
-                        <ThemedText
-                          style={dynamicStyles.settingItemDescription}
-                        >
-                          {t('settings.language.current')}
-                        </ThemedText>
-                      )}
-                    </View>
-                  </View>
-                  {isSelected ? (
-                    <IconSymbol
-                      name="checkmark.circle.fill"
-                      size={22}
-                      color="#34C759"
-                    />
-                  ) : (
-                    <IconSymbol
-                      name="chevron.right"
-                      size={18}
-                      color={colors.sectionTitle}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <TouchableOpacity
+              style={[
+                dynamicStyles.settingItem,
+                styles.settingItemFirst,
+                styles.settingItemLast,
+              ]}
+              onPress={() => setLanguageModalVisible(true)}
+              activeOpacity={0.6}
+            >
+              <View style={styles.settingItemLeft}>
+                <View style={dynamicStyles.iconContainer}>
+                  <ThemedText style={styles.flagText}>
+                    {getAvailableLanguages().find(
+                      lang => lang.code === getCurrentLanguage(),
+                    )?.flag || '🌐'}
+                  </ThemedText>
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={dynamicStyles.settingItemTitle}>
+                    {getCurrentLanguageLabel()}
+                  </ThemedText>
+                  <ThemedText style={dynamicStyles.settingItemDescription}>
+                    {t('settings.language.current')}
+                  </ThemedText>
+                </View>
+              </View>
+              <IconSymbol
+                name="chevron.right"
+                size={18}
+                color={colors.sectionTitle}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -392,6 +365,25 @@ export default function SettingsScreen() {
       <HelpModal
         visible={helpModalVisible}
         onClose={() => setHelpModalVisible(false)}
+        t={t}
+      />
+
+      {/* 外观选择模态框 */}
+      <ThemeModal
+        visible={themeModalVisible}
+        onClose={() => setThemeModalVisible(false)}
+        currentMode={currentThemeMode}
+        onSelect={handleThemeChange}
+        t={t}
+      />
+
+      {/* 语言选择模态框 */}
+      <LanguageModal
+        visible={languageModalVisible}
+        onClose={() => setLanguageModalVisible(false)}
+        currentLanguage={getCurrentLanguage()}
+        availableLanguages={getAvailableLanguages()}
+        onSelect={changeLanguage}
         t={t}
       />
     </ThemedView>

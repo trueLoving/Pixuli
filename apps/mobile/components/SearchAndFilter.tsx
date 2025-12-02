@@ -41,37 +41,17 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const allTags = getAllTags();
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    filterOptions.tags || []
-  );
-  const [tempMinWidth, setTempMinWidth] = useState(
-    filterOptions.minWidth?.toString() || ''
-  );
-  const [tempMinHeight, setTempMinHeight] = useState(
-    filterOptions.minHeight?.toString() || ''
-  );
-  const [tempMaxWidth, setTempMaxWidth] = useState(
-    filterOptions.maxWidth?.toString() || ''
-  );
-  const [tempMaxHeight, setTempMaxHeight] = useState(
-    filterOptions.maxHeight?.toString() || ''
+    filterOptions.tags || [],
   );
 
   const hasActiveFilters =
     (filterOptions.tags && filterOptions.tags.length > 0) ||
-    filterOptions.minWidth !== undefined ||
-    filterOptions.minHeight !== undefined ||
-    filterOptions.maxWidth !== undefined ||
-    filterOptions.maxHeight !== undefined ||
     filterOptions.dateFrom !== undefined ||
     filterOptions.dateTo !== undefined;
 
   const handleApplyFilters = () => {
     const newFilters: FilterOption = {
       tags: selectedTags.length > 0 ? selectedTags : undefined,
-      minWidth: tempMinWidth ? parseInt(tempMinWidth, 10) : undefined,
-      minHeight: tempMinHeight ? parseInt(tempMinHeight, 10) : undefined,
-      maxWidth: tempMaxWidth ? parseInt(tempMaxWidth, 10) : undefined,
-      maxHeight: tempMaxHeight ? parseInt(tempMaxHeight, 10) : undefined,
     };
     setFilterOptions(newFilters);
     setFilterModalVisible(false);
@@ -80,10 +60,6 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
 
   const handleClearFilters = () => {
     setSelectedTags([]);
-    setTempMinWidth('');
-    setTempMinHeight('');
-    setTempMaxWidth('');
-    setTempMaxHeight('');
     clearFilters();
     setFilterModalVisible(false);
     onFilterChange?.();
@@ -91,7 +67,7 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag],
     );
   };
 
@@ -290,69 +266,6 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
                   </View>
                 </View>
               )}
-
-              {/* 尺寸筛选 */}
-              <View style={styles.filterSection}>
-                <ThemedText style={styles.filterSectionTitle}>
-                  {t('search.filter.dimensions')}
-                </ThemedText>
-                <View style={styles.dimensionRow}>
-                  <View style={styles.dimensionInputContainer}>
-                    <ThemedText style={styles.dimensionLabel}>
-                      {t('search.filter.minWidth')}
-                    </ThemedText>
-                    <TextInput
-                      style={[styles.dimensionInput, dynamicStyles.input]}
-                      placeholder="0"
-                      placeholderTextColor={colors.sectionTitle}
-                      value={tempMinWidth}
-                      onChangeText={setTempMinWidth}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.dimensionInputContainer}>
-                    <ThemedText style={styles.dimensionLabel}>
-                      {t('search.filter.minHeight')}
-                    </ThemedText>
-                    <TextInput
-                      style={[styles.dimensionInput, dynamicStyles.input]}
-                      placeholder="0"
-                      placeholderTextColor={colors.sectionTitle}
-                      value={tempMinHeight}
-                      onChangeText={setTempMinHeight}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-                <View style={styles.dimensionRow}>
-                  <View style={styles.dimensionInputContainer}>
-                    <ThemedText style={styles.dimensionLabel}>
-                      {t('search.filter.maxWidth')}
-                    </ThemedText>
-                    <TextInput
-                      style={[styles.dimensionInput, dynamicStyles.input]}
-                      placeholder="∞"
-                      placeholderTextColor={colors.sectionTitle}
-                      value={tempMaxWidth}
-                      onChangeText={setTempMaxWidth}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.dimensionInputContainer}>
-                    <ThemedText style={styles.dimensionLabel}>
-                      {t('search.filter.maxHeight')}
-                    </ThemedText>
-                    <TextInput
-                      style={[styles.dimensionInput, dynamicStyles.input]}
-                      placeholder="∞"
-                      placeholderTextColor={colors.sectionTitle}
-                      value={tempMaxHeight}
-                      onChangeText={setTempMaxHeight}
-                      keyboardType="numeric"
-                    />
-                  </View>
-                </View>
-              </View>
             </ScrollView>
 
             <View style={styles.modalFooter}>
@@ -555,26 +468,6 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-  },
-  dimensionRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  dimensionInputContainer: {
-    flex: 1,
-  },
-  dimensionLabel: {
-    fontSize: 14,
-    marginBottom: 8,
-    opacity: 0.7,
-  },
-  dimensionInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
   },
   modalFooter: {
     flexDirection: 'row',
