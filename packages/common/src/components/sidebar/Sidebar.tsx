@@ -158,6 +158,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       mode: 'slide',
       icon: <Play size={20} />,
       label: translate('browseMode.slide'),
+      disabled: true,
+      comingSoon: true,
     },
     {
       mode: 'wall',
