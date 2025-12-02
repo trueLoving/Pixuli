@@ -56,6 +56,16 @@ const MAPPING = {
   // Help and documentation icons
   'book.fill': 'book',
   'questionmark.circle.fill': 'help',
+  // Browse mode icons
+  'folder.fill': 'folder',
+  'square.grid.3x3.fill': 'grid-on',
+  'cube.transparent.fill': 'view-in-ar',
+  // Storage config icons
+  'plus.circle.fill': 'add-circle',
+  'trash.fill': 'delete',
+  'keyboard.fill': 'keyboard',
+  'square.grid.2x2': 'grid-view',
+  'square.grid.2x2.fill': 'grid-on',
 } as IconMapping;
 
 /**

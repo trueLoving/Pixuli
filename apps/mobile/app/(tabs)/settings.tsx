@@ -45,7 +45,6 @@ export default function SettingsScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { githubConfig, giteeConfig, storageType } = useImageStore();
   const currentThemeMode = useThemeMode();
   const [versionModalVisible, setVersionModalVisible] = useState(false);
   const [helpModalVisible, setHelpModalVisible] = useState(false);
@@ -83,31 +82,6 @@ export default function SettingsScreen() {
   if (!isReady) {
     return null;
   }
-
-  const settingsItems: SettingItem[] = [
-    {
-      id: 'github',
-      title: t('settings.github.title'),
-      icon: 'link',
-      route: '/(tabs)/settings/github',
-      description: githubConfig
-        ? `${githubConfig.owner}/${githubConfig.repo}`
-        : t('settings.github.notConfigured'),
-    },
-    {
-      id: 'gitee',
-      title: t('settings.gitee.title'),
-      icon: 'link',
-      route: '/(tabs)/settings/gitee',
-      description: giteeConfig
-        ? `${giteeConfig.owner}/${giteeConfig.repo}`
-        : t('settings.gitee.notConfigured'),
-    },
-  ];
-
-  const handleSettingPress = (route: string) => {
-    router.push(route as any);
-  };
 
   const dynamicStyles = StyleSheet.create({
     ...styles,
@@ -154,52 +128,6 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={true}
       >
-        {/* 存储配置分组 */}
-        <View style={styles.section}>
-          <ThemedText style={dynamicStyles.sectionTitle}>
-            {t('settings.storage.title')}
-          </ThemedText>
-          <View style={dynamicStyles.groupContainer}>
-            {settingsItems.map((item, index) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  dynamicStyles.settingItem,
-                  index === 0 && styles.settingItemFirst,
-                  index === settingsItems.length - 1 && styles.settingItemLast,
-                ]}
-                onPress={() => handleSettingPress(item.route)}
-                activeOpacity={0.6}
-              >
-                <View style={styles.settingItemLeft}>
-                  <View style={dynamicStyles.iconContainer}>
-                    <IconSymbol
-                      name={item.icon}
-                      size={22}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <View style={styles.settingItemContent}>
-                    <ThemedText style={dynamicStyles.settingItemTitle}>
-                      {item.title}
-                    </ThemedText>
-                    {item.description && (
-                      <ThemedText style={dynamicStyles.settingItemDescription}>
-                        {item.description}
-                      </ThemedText>
-                    )}
-                  </View>
-                </View>
-                <IconSymbol
-                  name="chevron.right"
-                  size={18}
-                  color={colors.sectionTitle}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
         {/* 外观分组 */}
         <View style={styles.section}>
           <ThemedText style={dynamicStyles.sectionTitle}>

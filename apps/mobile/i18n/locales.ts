@@ -13,16 +13,34 @@ export const mobileLocales = {
       search: '搜索',
       unknownError: '未知错误',
       fileFormatError: '文件格式错误',
+      comingSoon: '即将推出',
+    },
+    browseMode: {
+      title: '浏览模式',
+      subtitle: '选择你喜欢的浏览方式',
+      file: '文件模式',
+      fileDesc: '以文件列表形式浏览图片',
+      slide: '幻灯片模式',
+      slideDesc: '自动播放幻灯片',
+      wall: '照片墙模式',
+      wallDesc: '照片墙展示（开发中）',
+      gallery3d: '3D画廊模式',
+      gallery3dDesc: '3D画廊展示（开发中）',
     },
     tabs: {
       home: '首页',
       images: '图片',
+      browseMode: '浏览模式',
+      filter: '筛选',
       settings: '设置',
     },
     settings: {
       title: '设置',
       storage: {
         title: '存储配置',
+        add: '添加存储配置',
+        selectType: '选择仓库源类型',
+        selectTypeHint: '请选择要添加的仓库源类型',
       },
       language: {
         title: '语言',
@@ -116,6 +134,10 @@ export const mobileLocales = {
       version: {
         title: '版本信息',
         description: '查看应用版本和构建信息',
+      },
+      shortcuts: {
+        title: '快捷键',
+        description: '查看快捷键说明',
       },
     },
     image: {
@@ -217,6 +239,7 @@ export const mobileLocales = {
       slideShowButtonHint: '以幻灯片模式播放图片',
     },
     app: {
+      name: 'Pixuli',
       welcome: '欢迎使用 pixuli',
       description: '请先配置存储服务以开始使用图片管理功能',
       configureStorage: '配置存储',
@@ -316,6 +339,19 @@ export const mobileLocales = {
       search: 'Search',
       unknownError: 'Unknown error',
       fileFormatError: 'File format error',
+      comingSoon: 'Coming Soon',
+    },
+    browseMode: {
+      title: 'Browse Mode',
+      subtitle: 'Choose your preferred browsing style',
+      file: 'File Mode',
+      fileDesc: 'Browse images in file list format',
+      slide: 'Slide Show Mode',
+      slideDesc: 'Auto-play slide show',
+      wall: 'Photo Wall Mode',
+      wallDesc: 'Photo wall display (In Development)',
+      gallery3d: '3D Gallery Mode',
+      gallery3dDesc: '3D gallery display (In Development)',
     },
     tabs: {
       home: 'Home',
@@ -326,6 +362,9 @@ export const mobileLocales = {
       title: 'Settings',
       storage: {
         title: 'Storage Configuration',
+        add: 'Add Storage Configuration',
+        selectType: 'Select Repository Source Type',
+        selectTypeHint: 'Please select the repository source type to add',
       },
       language: {
         title: 'Language',
@@ -523,6 +562,7 @@ export const mobileLocales = {
       slideShowButtonHint: 'Play images in slide show mode',
     },
     app: {
+      name: 'Pixuli',
       welcome: 'Welcome to Pixuli',
       description:
         'Please configure storage service to start using image management features',
@@ -544,6 +584,11 @@ export const mobileLocales = {
       buildNumber: 'Build Number',
       platform: 'Platform',
       runtimeVersion: 'Runtime Version',
+      description: 'View app version and build information',
+    },
+    shortcuts: {
+      title: 'Keyboard Shortcuts',
+      description: 'View keyboard shortcuts',
     },
     help: {
       title: 'Help & Documentation',

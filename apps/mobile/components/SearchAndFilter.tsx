@@ -17,11 +17,19 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Colors } from '@/constants/theme';
 import { useImageStore, SortOption, FilterOption } from '@/stores/imageStore';
 
+type BrowseMode = 'file' | 'slide' | 'wall' | 'gallery3d';
+
 interface SearchAndFilterProps {
   onFilterChange?: () => void;
+  currentBrowseMode?: BrowseMode;
+  onBrowseModeChange?: (mode: BrowseMode) => void;
 }
 
-export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
+export function SearchAndFilter({
+  onFilterChange,
+  currentBrowseMode = 'file',
+  onBrowseModeChange,
+}: SearchAndFilterProps) {
   const { t } = useI18n();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -39,6 +47,7 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [browseModeModalVisible, setBrowseModeModalVisible] = useState(false);
   const allTags = getAllTags();
   const [selectedTags, setSelectedTags] = useState<string[]>(
     filterOptions.tags || [],
@@ -79,6 +88,46 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
     { value: 'size-desc', label: t('search.sort.sizeDesc') },
     { value: 'size-asc', label: t('search.sort.sizeAsc') },
   ];
+
+  const browseModes: Array<{
+    mode: BrowseMode;
+    icon: string;
+    label: string;
+    disabled?: boolean;
+  }> = [
+    {
+      mode: 'file',
+      icon: 'doc.text.fill',
+      label: t('browseMode.file') || '文件模式',
+    },
+    {
+      mode: 'slide',
+      icon: 'play.fill',
+      label: t('browseMode.slide') || '幻灯片模式',
+    },
+    {
+      mode: 'wall',
+      icon: 'square.grid.2x2.fill',
+      label: t('browseMode.wall') || '照片墙模式',
+      disabled: true,
+    },
+    {
+      mode: 'gallery3d',
+      icon: 'cube.fill',
+      label: t('browseMode.gallery3d') || '3D画廊模式',
+      disabled: true,
+    },
+  ];
+
+  const handleBrowseModeSelect = (mode: BrowseMode) => {
+    if (
+      onBrowseModeChange &&
+      !browseModes.find(m => m.mode === mode)?.disabled
+    ) {
+      onBrowseModeChange(mode);
+      setBrowseModeModalVisible(false);
+    }
+  };
 
   const dynamicStyles = StyleSheet.create({
     searchContainer: {
@@ -348,6 +397,92 @@ export function SearchAndFilter({ onFilterChange }: SearchAndFilterProps) {
           </View>
         </View>
       </Modal>
+
+      {/* 浏览模式选择模态框 */}
+      <Modal
+        visible={browseModeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setBrowseModeModalVisible(false)}
+      >
+        <View style={[styles.modalOverlay, dynamicStyles.modalContainer]}>
+          <View style={[styles.modalContent, dynamicStyles.modalContent]}>
+            <View style={[styles.modalHeader, dynamicStyles.modalHeader]}>
+              <ThemedText style={styles.modalTitle}>
+                {t('browseMode.title') || '浏览模式'}
+              </ThemedText>
+              <TouchableOpacity
+                onPress={() => setBrowseModeModalVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <IconSymbol name="xmark" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              style={styles.modalBody}
+              showsVerticalScrollIndicator={false}
+            >
+              {browseModes.map((mode, index) => {
+                const isSelected = currentBrowseMode === mode.mode;
+                const isDisabled = mode.disabled;
+                return (
+                  <TouchableOpacity
+                    key={mode.mode}
+                    style={[
+                      styles.sortOption,
+                      dynamicStyles.sortOption,
+                      isSelected && dynamicStyles.sortOptionSelected,
+                      index === browseModes.length - 1 && {
+                        borderBottomWidth: 0,
+                      },
+                    ]}
+                    onPress={() => handleBrowseModeSelect(mode.mode)}
+                    disabled={isDisabled}
+                    activeOpacity={0.6}
+                  >
+                    <View style={styles.browseModeItemLeft}>
+                      <IconSymbol
+                        name={mode.icon as any}
+                        size={22}
+                        color={
+                          isSelected ? colors.primary : colors.sectionTitle
+                        }
+                      />
+                      <ThemedText
+                        style={[
+                          styles.sortOptionText,
+                          isSelected && { color: colors.primary },
+                          isDisabled && { opacity: 0.5 },
+                        ]}
+                      >
+                        {mode.label}
+                      </ThemedText>
+                      {isDisabled && (
+                        <ThemedText
+                          style={[
+                            styles.comingSoonText,
+                            { color: colors.sectionTitle },
+                          ]}
+                        >
+                          {t('common.comingSoon') || '即将推出'}
+                        </ThemedText>
+                      )}
+                    </View>
+                    {isSelected && (
+                      <IconSymbol
+                        name="checkmark"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -416,6 +551,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  browseModeItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  comingSoonText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginLeft: 8,
   },
   modalOverlay: {
     flex: 1,
