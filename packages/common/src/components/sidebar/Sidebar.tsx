@@ -140,6 +140,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     sourceId: string;
   } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  // 性能优化：动画开始前设置 will-change，动画结束后移除
+  useEffect(() => {
+    if (!sidebarRef.current) return;
+
+    const sidebar = sidebarRef.current;
+
+    // 动画开始前：设置 will-change 启用 GPU 加速
+    sidebar.style.willChange = 'width, max-width, min-width';
+
+    const handleTransitionEnd = (e: TransitionEvent) => {
+      // 只处理 width 相关的过渡结束
+      if (
+        e.propertyName === 'width' ||
+        e.propertyName === 'min-width' ||
+        e.propertyName === 'max-width'
+      ) {
+        // 动画结束后移除 will-change，减少内存占用
+        sidebar.style.willChange = 'auto';
+      }
+    };
+
+    sidebar.addEventListener('transitionend', handleTransitionEnd);
+
+    return () => {
+      sidebar.removeEventListener('transitionend', handleTransitionEnd);
+      // 清理时也移除 will-change
+      sidebar.style.willChange = 'auto';
+    };
+  }, [collapsed]);
 
   // 浏览模式配置
   const browseModes: Array<{
@@ -271,7 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   if (collapsed) {
     return (
-      <aside className="sidebar collapsed">
+      <aside ref={sidebarRef} className="sidebar collapsed">
         {/* Logo 图标 */}
         <div className="sidebar-collapsed-header">
           <button
@@ -504,7 +535,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <aside className="sidebar">
+    <aside ref={sidebarRef} className="sidebar">
       {/* Logo/Header */}
       <div className="sidebar-header">
         <div className="sidebar-logo-container">

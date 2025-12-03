@@ -1,6 +1,8 @@
 /* Sidebar 样式 */
 .sidebar {
   width: 240px;
+  min-width: 240px;
+  max-width: 240px;
   height: 100vh;
   background: var(--sidebar-bg, #fafafa);
   border-right: 1px solid var(--border-color, #e5e7eb);
@@ -9,17 +11,57 @@
   position: relative;
   flex-shrink: 0;
   z-index: 10;
+  /* 性能优化：使用 will-change 启用 GPU 加速（动画结束后通过 JS 移除） */
+  will-change: width, max-width, min-width;
   transition:
-    transform 0.3s ease,
-    width 0.3s ease;
+    width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   overflow-x: hidden;
+  /* 限制重排范围，提升性能 */
+  contain: layout style paint;
+  /* 启用硬件加速 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sidebar.collapsed {
   width: 72px;
+  min-width: 72px;
+  max-width: 72px;
   align-items: center;
   padding: 0.5rem 0;
+}
+
+/* 折叠时隐藏文本标签，使用 opacity 和 max-width 优化性能 */
+.sidebar.collapsed .sidebar-nav-label,
+.sidebar.collapsed .sidebar-logo-text,
+.sidebar.collapsed .sidebar-section-title,
+.sidebar.collapsed .sidebar-source-name,
+.sidebar.collapsed .sidebar-source-path {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    opacity 0.2s ease 0.1s,
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+/* 展开时显示文本 */
+.sidebar:not(.collapsed) .sidebar-nav-label,
+.sidebar:not(.collapsed) .sidebar-logo-text,
+.sidebar:not(.collapsed) .sidebar-section-title,
+.sidebar:not(.collapsed) .sidebar-source-name,
+.sidebar:not(.collapsed) .sidebar-source-path {
+  opacity: 1;
+  max-width: 200px;
+  transition:
+    opacity 0.2s ease 0.1s,
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: auto;
 }
 
 /* 折叠状态 - Logo 区域 */
@@ -29,6 +71,8 @@
   justify-content: center;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
   margin-bottom: 0.5rem;
+  /* 性能优化：限制重排范围 */
+  contain: layout;
 }
 
 .sidebar-collapsed-logo-btn {
@@ -67,6 +111,8 @@
   gap: 0.25rem;
   padding: 0.5rem 0;
   flex: 1;
+  /* 性能优化：限制重排范围 */
+  contain: layout;
 }
 
 .sidebar-collapsed-item {
@@ -82,7 +128,15 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化：只过渡需要的属性，使用 GPU 加速 */
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sidebar-collapsed-item:hover:not(.disabled) {
@@ -187,7 +241,15 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化：只过渡需要的属性，使用 GPU 加速 */
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sidebar-collapsed-source-item:hover {
@@ -244,8 +306,15 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 性能优化：只过渡需要的属性，使用 GPU 加速 */
+  transition:
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  will-change: transform, background-color, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sidebar-collapsed-add-btn:hover {
@@ -324,7 +393,10 @@
   font-weight: 700;
   color: var(--text-primary, #111827);
   letter-spacing: -0.02em;
-  transition: color 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  will-change: opacity, transform;
 }
 
 .sidebar-logo {
@@ -373,9 +445,16 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  /* 性能优化：只过渡需要的属性，避免 all */
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-left 0.2s ease;
   text-align: left;
   position: relative;
+  /* 性能优化：启用 GPU 加速 */
+  will-change: background-color, transform;
+  transform: translateZ(0);
 }
 
 .sidebar-nav-item:hover:not(.disabled) {
@@ -413,12 +492,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  /* 性能优化：启用 GPU 加速 */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .sidebar-nav-label {
   flex: 1;
   font-size: 0.875rem;
   font-weight: 500;
+  /* 性能优化：使用 opacity 和 transform 优化文本显示/隐藏 */
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  will-change: opacity, transform;
 }
 
 .sidebar-nav-badge {
@@ -440,6 +527,8 @@
   justify-content: space-between;
   padding: 0.5rem 1rem;
   margin-bottom: 0.5rem;
+  /* 性能优化：限制重排范围 */
+  contain: layout;
 }
 
 .sidebar-section-title {
@@ -448,6 +537,9 @@
   text-transform: uppercase;
   color: var(--text-secondary, #6b7280);
   letter-spacing: 0.05em;
+  /* 性能优化：优化文本动画 */
+  transition: opacity 0.2s ease;
+  will-change: opacity;
 }
 
 .sidebar-add-source-btn {
@@ -460,7 +552,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  /* 性能优化：只过渡需要的属性 */
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  will-change: background-color;
+  transform: translateZ(0);
 }
 
 .sidebar-add-source-btn:hover {
@@ -530,9 +627,15 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  /* 性能优化：只过渡需要的属性 */
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   text-align: left;
   position: relative;
+  /* 性能优化：启用 GPU 加速 */
+  will-change: background-color;
+  transform: translateZ(0);
 }
 
 .sidebar-source-item:hover {
