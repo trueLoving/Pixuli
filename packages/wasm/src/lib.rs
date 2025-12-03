@@ -15,6 +15,7 @@ pub mod convert;
 pub mod image;
 pub mod compress;
 pub mod analyze;
+pub mod edit;
 
 // 重新导出主要功能
 pub use image::*;
