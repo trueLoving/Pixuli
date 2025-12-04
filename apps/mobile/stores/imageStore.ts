@@ -4,13 +4,12 @@ import {
   GiteeConfig,
   ImageEditData,
   ImageItem,
-  ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
+  GitHubStorageService,
+  GiteeStorageService,
 } from '@packages/common/src/index.native';
 import { create } from 'zustand';
-import { GitHubStorageService } from '../services/githubStorageService';
-import { GiteeStorageService } from '../services/giteeStorageService';
 import {
   loadGitHubConfig,
   saveGitHubConfig,
@@ -128,14 +127,19 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
     if (storageType === 'github' && initialGitHubConfig) {
       try {
-        const storageService = new GitHubStorageService(initialGitHubConfig);
+        const storageService = new GitHubStorageService(initialGitHubConfig, {
+          platform: 'mobile',
+        });
         set({ storageService });
       } catch (error) {
         console.error('Failed to initialize github storage service:', error);
       }
     } else if (storageType === 'gitee' && initialGiteeConfig) {
       try {
-        const storageService = new GiteeStorageService(initialGiteeConfig);
+        const storageService = new GiteeStorageService(initialGiteeConfig, {
+          platform: 'mobile',
+          useProxy: false, // 移动端不使用代理
+        });
         // 设置当前缓存键，确保元数据缓存按仓库源隔离
         MetadataCache.setCurrentCacheKey(
           'gitee',
@@ -244,7 +248,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
     if (storageType === 'github' && githubConfig) {
       try {
-        const storageService = new GitHubStorageService(githubConfig);
+        const storageService = new GitHubStorageService(githubConfig, {
+          platform: 'mobile',
+        });
         // 设置当前缓存键，确保元数据缓存按仓库源隔离
         MetadataCache.setCurrentCacheKey(
           'github',
@@ -258,7 +264,10 @@ export const useImageStore = create<ImageState>((set, get) => ({
       }
     } else if (storageType === 'gitee' && giteeConfig) {
       try {
-        const storageService = new GiteeStorageService(giteeConfig);
+        const storageService = new GiteeStorageService(giteeConfig, {
+          platform: 'mobile',
+          useProxy: false, // 移动端不使用代理
+        });
         // 设置当前缓存键，确保元数据缓存按仓库源隔离
         MetadataCache.setCurrentCacheKey(
           'gitee',
@@ -292,18 +301,21 @@ export const useImageStore = create<ImageState>((set, get) => ({
       const images = await storageService.getImageList();
 
       // 去重：确保每个图片ID只出现一次
-      const uniqueImages = images.reduce((acc: ImageItem[], current) => {
-        const existingIndex = acc.findIndex(img => img.id === current.id);
-        if (existingIndex === -1) {
-          acc.push(current);
-        } else {
-          const existing = acc[existingIndex];
-          if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
-            acc[existingIndex] = current;
+      const uniqueImages = images.reduce(
+        (acc: ImageItem[], current: ImageItem) => {
+          const existingIndex = acc.findIndex(img => img.id === current.id);
+          if (existingIndex === -1) {
+            acc.push(current);
+          } else {
+            const existing = acc[existingIndex];
+            if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
+              acc[existingIndex] = current;
+            }
           }
-        }
-        return acc;
-      }, []);
+          return acc;
+        },
+        [],
+      );
 
       // 先设置基础图片列表，让页面快速显示
       set({ images: uniqueImages, loading: false });
@@ -556,12 +568,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         updatedAt: new Date().toISOString(),
       };
 
-      await storageService.updateImageInfo(
-        editData.id,
-        image.name,
-        metadata,
-        image.name,
-      );
+      await storageService.updateImageInfo(editData.id, image.name, metadata);
 
       set(state => ({
         images: state.images.map(img =>

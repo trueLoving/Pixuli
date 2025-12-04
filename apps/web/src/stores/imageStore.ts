@@ -51,7 +51,7 @@ interface ImageState {
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
   deleteMultipleImages: (
     imageIds: string[],
-    fileNames: string[]
+    fileNames: string[],
   ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
   addImage: (image: ImageItem) => void;
@@ -74,10 +74,19 @@ export const useImageStore = create<ImageState>((set, get) => {
       ? 'github'
       : null;
 
+  // 根据环境变量决定是否使用代理（开发环境默认使用代理）
+  const useProxy =
+    import.meta.env.DEV || import.meta.env.VITE_USE_GITEE_PROXY === 'true';
+
   const initialStorageService: StorageService | null = initialGiteeConfig
-    ? new GiteeStorageService(initialGiteeConfig)
+    ? new GiteeStorageService(initialGiteeConfig, {
+        platform: 'web',
+        useProxy,
+      })
     : initialGitHubConfig
-      ? new GitHubStorageService(initialGitHubConfig)
+      ? new GitHubStorageService(initialGitHubConfig, {
+          platform: 'web',
+        })
       : null;
 
   return {
@@ -115,11 +124,21 @@ export const useImageStore = create<ImageState>((set, get) => {
     initializeStorage: () => {
       const { githubConfig, giteeConfig, storageType } = get();
       try {
+        // 根据环境变量决定是否使用代理（开发环境默认使用代理）
+        const useProxy =
+          import.meta.env.DEV ||
+          import.meta.env.VITE_USE_GITEE_PROXY === 'true';
+
         if (storageType === 'gitee' && giteeConfig) {
-          const storageService = new GiteeStorageService(giteeConfig);
+          const storageService = new GiteeStorageService(giteeConfig, {
+            platform: 'web',
+            useProxy,
+          });
           set({ storageService });
         } else if (storageType === 'github' && githubConfig) {
-          const storageService = new GitHubStorageService(githubConfig);
+          const storageService = new GitHubStorageService(githubConfig, {
+            platform: 'web',
+          });
           set({ storageService });
         } else {
           set({ storageService: null });
@@ -287,7 +306,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                   items: state.batchUploadProgress.items.map(item =>
                     item.id === itemId
                       ? { ...item, status: 'uploading', message: '正在上传...' }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -329,7 +348,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                           width: newImage.width,
                           height: newImage.height,
                         }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -348,7 +367,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                   items: state.batchUploadProgress.items.map(item =>
                     item.id === itemId
                       ? { ...item, status: 'error', message: errorMessage }
-                      : item
+                      : item,
                   ),
                 }
               : null,
@@ -450,7 +469,7 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         // 在线模式：批量删除
         const deletePromises = imageIds.map((id, index) =>
-          storageService.deleteImage(id, fileNames[index])
+          storageService.deleteImage(id, fileNames[index]),
         );
         await Promise.all(deletePromises);
 
@@ -517,7 +536,7 @@ export const useImageStore = create<ImageState>((set, get) => {
           // 立即更新本地状态（乐观更新）
           set(state => ({
             images: state.images.map(img =>
-              img.id === editData.id ? { ...img, ...metadata } : img
+              img.id === editData.id ? { ...img, ...metadata } : img,
             ),
             loading: false,
             error: '更新操作已添加到同步队列，将在网络恢复后执行',
@@ -531,7 +550,7 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         set(state => ({
           images: state.images.map(img =>
-            img.id === editData.id ? { ...img, ...metadata } : img
+            img.id === editData.id ? { ...img, ...metadata } : img,
           ),
           loading: false,
         }));

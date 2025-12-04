@@ -8,31 +8,35 @@ export class GiteeStorageService {
   private platform: 'web' | 'desktop' | 'mobile';
   private baseUrl = 'https://gitee.com/api/v5';
   private platformAdapter: PlatformAdapter;
+  private useProxy: boolean;
 
   constructor(
     config: GiteeConfig,
     options: {
       platform: 'web' | 'desktop' | 'mobile';
       platformAdapter?: PlatformAdapter;
+      useProxy?: boolean;
     } = {
       platform: 'web',
       platformAdapter: new DefaultPlatformAdapter(),
+      useProxy: false,
     },
   ) {
     this.config = config;
     this.platform = options.platform || 'web';
     this.platformAdapter =
       options.platformAdapter || new DefaultPlatformAdapter();
+    this.useProxy = options.useProxy ?? false;
   }
 
   /**
    * 将 Gitee API 返回的 download_url 转换为 raw URL 格式
-   * 在开发环境使用 Vite 代理，在生产环境使用原始 URL
+   * 根据配置决定是否使用代理
    * @param owner 仓库所有者
    * @param repo 仓库名
    * @param branch 分支名
    * @param path 文件路径（相对于仓库根目录）
-   * @returns raw URL（开发环境使用代理，生产环境使用原始 URL）
+   * @returns raw URL（根据 useProxy 配置决定是否使用代理）
    */
   private getRawUrl(
     owner: string,
@@ -48,13 +52,7 @@ export class GiteeStorageService {
       .join('/');
     const rawPath = `/${owner}/${repo}/raw/${encodeURIComponent(branch)}/${encodedPath}`;
 
-    // 使用代理 URL 避免跨域问题
-    // 开发环境：使用 Vite 代理
-    // 生产环境：如果配置了代理服务器，可通过环境变量启用
-    const isDev = import.meta.env.DEV;
-    const useProxy = isDev || import.meta.env.VITE_USE_GITEE_PROXY === 'true';
-    const isWeb = this.platform === 'web';
-    if (useProxy && isWeb) {
+    if (this.useProxy) {
       return `/api/gitee-proxy${rawPath}`;
     }
 
