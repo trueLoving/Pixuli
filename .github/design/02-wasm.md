@@ -1412,6 +1412,7 @@ WASM 模块是 Pixuli 项目的核心性能组件，通过 Rust 实现提供了�
 ## 📚 相关文档
 
 - [跨端资源共享设计方案](./01-cross-platform-resources.md) - 了解跨端资源共享
+- [性能优化设计方案](./03-performance) - 了解性能优化策略
 
 ---
 

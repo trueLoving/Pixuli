@@ -232,6 +232,38 @@ export function DrawerMenu({
     }
   };
 
+  const handleClearAllSources = () => {
+    Alert.alert(
+      t('settings.storage.clearAllConfirm') || '确认清除所有配置',
+      t('settings.storage.clearAllMessage') ||
+        '确定要清除所有仓库源配置吗？此操作不可恢复。',
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.confirm'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // 清除所有配置
+              if (githubConfig) {
+                await clearGitHubConfig();
+              }
+              if (giteeConfig) {
+                await clearGiteeConfig();
+              }
+              onClose();
+            } catch (error) {
+              // Handle error
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const dynamicStyles = StyleSheet.create({
     drawerContent: {
       backgroundColor: colors.cardBackground,
@@ -383,17 +415,28 @@ export function DrawerMenu({
                 >
                   {t('settings.storage.title') || '存储配置'}
                 </ThemedText>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={handleAddSource}
-                  activeOpacity={0.6}
-                >
-                  <IconSymbol
-                    name="plus.circle.fill"
-                    size={22}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
+                <View style={styles.sectionHeaderActions}>
+                  {allSources.length > 0 && (
+                    <TouchableOpacity
+                      style={[styles.deleteAllButton, { marginRight: 8 }]}
+                      onPress={handleClearAllSources}
+                      activeOpacity={0.6}
+                    >
+                      <IconSymbol name="trash.fill" size={20} color="#FF3B30" />
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={handleAddSource}
+                    activeOpacity={0.6}
+                  >
+                    <IconSymbol
+                      name="plus.circle.fill"
+                      size={22}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
               {allSources.length > 0 ? (
                 allSources.map((source, index) => {
@@ -643,7 +686,14 @@ const styles = StyleSheet.create({
   sectionHeaderPlaceholder: {
     width: 26,
   },
+  sectionHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   addButton: {
+    padding: 4,
+  },
+  deleteAllButton: {
     padding: 4,
   },
   menuItem: {

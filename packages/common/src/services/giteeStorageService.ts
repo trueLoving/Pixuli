@@ -5,7 +5,7 @@ import { DefaultPlatformAdapter } from './platformAdapter';
 
 export class GiteeStorageService {
   private config: GiteeConfig;
-  private platform: 'web' | 'desktop' | 'mobile';
+  // private platform: 'web' | 'desktop' | 'mobile';
   private baseUrl = 'https://gitee.com/api/v5';
   private platformAdapter: PlatformAdapter;
   private useProxy: boolean;
@@ -23,7 +23,7 @@ export class GiteeStorageService {
     },
   ) {
     this.config = config;
-    this.platform = options.platform || 'web';
+    // this.platform = options.platform || 'web';
     this.platformAdapter =
       options.platformAdapter || new DefaultPlatformAdapter();
     this.useProxy = options.useProxy ?? false;

@@ -41,6 +41,9 @@ export const mobileLocales = {
         add: '添加存储配置',
         selectType: '选择仓库源类型',
         selectTypeHint: '请选择要添加的仓库源类型',
+        clearAll: '清除所有配置',
+        clearAllConfirm: '确认清除所有配置',
+        clearAllMessage: '确定要清除所有仓库源配置吗？此操作不可恢复。',
       },
       language: {
         title: '语言',
