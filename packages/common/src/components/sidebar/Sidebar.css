@@ -729,7 +729,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 160px;
   padding: 0.25rem 0;
-  z-index: 10000;
+  /* 使用极高的 z-index 确保显示在最上层（通过 Portal 渲染到 body） */
+  z-index: 999999;
   animation: fadeIn 0.15s ease-out;
 }
 

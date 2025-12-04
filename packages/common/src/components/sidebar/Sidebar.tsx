@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { defaultTranslate } from '../../locales';
 import type { BrowseMode } from '../browse-mode-switcher';
 import './Sidebar.css';
@@ -300,6 +301,53 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [contextMenu?.visible]);
 
+  // 渲染右键菜单（使用 Portal 避免被遮挡）
+  const renderContextMenu = () => {
+    if (!contextMenu?.visible) return null;
+
+    const menuContent = (
+      <div
+        ref={contextMenuRef}
+        className="sidebar-context-menu"
+        style={{
+          position: 'fixed',
+          left: contextMenu.x,
+          top: contextMenu.y,
+          zIndex: 999999,
+        }}
+      >
+        {onSourceOpenInWindow && (
+          <button
+            className="sidebar-context-menu-item"
+            onClick={() => handleOpenInWindow(contextMenu.sourceId)}
+          >
+            <ExternalLink size={16} />
+            <span>{translate('sidebar.openInWindow')}</span>
+          </button>
+        )}
+        <button
+          className="sidebar-context-menu-item"
+          onClick={() => handleEdit(contextMenu.sourceId)}
+        >
+          <Edit size={16} />
+          <span>{translate('sidebar.editSource')}</span>
+        </button>
+        <button
+          className="sidebar-context-menu-item sidebar-context-menu-item-danger"
+          onClick={() => handleDelete(contextMenu.sourceId)}
+        >
+          <Trash2 size={16} />
+          <span>{translate('sidebar.deleteSource')}</span>
+        </button>
+      </div>
+    );
+
+    // 使用 Portal 渲染到 body，避免被父元素的 stacking context 影响
+    return typeof document !== 'undefined'
+      ? createPortal(menuContent, document.body)
+      : null;
+  };
+
   if (collapsed) {
     return (
       <aside ref={sidebarRef} className="sidebar collapsed">
@@ -493,43 +541,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* 右键菜单 - 折叠状态 */}
-        {contextMenu?.visible && (
-          <div
-            ref={contextMenuRef}
-            className="sidebar-context-menu"
-            style={{
-              position: 'fixed',
-              left: contextMenu.x,
-              top: contextMenu.y,
-              zIndex: 10000,
-            }}
-          >
-            {onSourceOpenInWindow && (
-              <button
-                className="sidebar-context-menu-item"
-                onClick={() => handleOpenInWindow(contextMenu.sourceId)}
-              >
-                <ExternalLink size={16} />
-                <span>{translate('sidebar.openInWindow')}</span>
-              </button>
-            )}
-            <button
-              className="sidebar-context-menu-item"
-              onClick={() => handleEdit(contextMenu.sourceId)}
-            >
-              <Edit size={16} />
-              <span>{translate('sidebar.editSource')}</span>
-            </button>
-            <button
-              className="sidebar-context-menu-item sidebar-context-menu-item-danger"
-              onClick={() => handleDelete(contextMenu.sourceId)}
-            >
-              <Trash2 size={16} />
-              <span>{translate('sidebar.deleteSource')}</span>
-            </button>
-          </div>
-        )}
+        {/* 右键菜单 - 折叠状态（使用 Portal） */}
+        {renderContextMenu()}
       </aside>
     );
   }
@@ -709,43 +722,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       </div>
 
-      {/* 右键菜单 */}
-      {contextMenu?.visible && (
-        <div
-          ref={contextMenuRef}
-          className="sidebar-context-menu"
-          style={{
-            position: 'fixed',
-            left: contextMenu.x,
-            top: contextMenu.y,
-            zIndex: 10000,
-          }}
-        >
-          {onSourceOpenInWindow && (
-            <button
-              className="sidebar-context-menu-item"
-              onClick={() => handleOpenInWindow(contextMenu.sourceId)}
-            >
-              <ExternalLink size={16} />
-              <span>{translate('sidebar.openInWindow')}</span>
-            </button>
-          )}
-          <button
-            className="sidebar-context-menu-item"
-            onClick={() => handleEdit(contextMenu.sourceId)}
-          >
-            <Edit size={16} />
-            <span>{translate('sidebar.editSource')}</span>
-          </button>
-          <button
-            className="sidebar-context-menu-item sidebar-context-menu-item-danger"
-            onClick={() => handleDelete(contextMenu.sourceId)}
-          >
-            <Trash2 size={16} />
-            <span>{translate('sidebar.deleteSource')}</span>
-          </button>
-        </div>
-      )}
+      {/* 右键菜单（使用 Portal） */}
+      {renderContextMenu()}
     </aside>
   );
 };
