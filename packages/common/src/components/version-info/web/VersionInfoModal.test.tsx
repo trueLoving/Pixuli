@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import VersionInfoModal from './VersionInfoModal.web';
+import VersionInfoModal from './VersionInfoModal';
 import type { VersionInfo } from './types';
 
 // Mock useEscapeKey hook

@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import LanguageSwitcher, {
   Language,
   LanguageSwitcherProps,
-} from './LanguageSwitcher.web';
+} from './LanguageSwitche';
 
 describe('LanguageSwitcher', () => {
   const mockLanguages: Language[] = [

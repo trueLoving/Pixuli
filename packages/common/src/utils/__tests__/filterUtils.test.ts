@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { filterImages, createDefaultFilters } from '../filterUtils';
 import type { ImageItem } from '../../types/image';
-import type { FilterOptions } from '../../components/image-browser/image-filter/ImageFilter';
+import type { FilterOptions } from '../../components/image-browser/web/image-filter/ImageFilter';
 
 const mockImages: ImageItem[] = [
   {

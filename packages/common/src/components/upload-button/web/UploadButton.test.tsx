@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
-import UploadButton from './UploadButton.web';
+import UploadButton from './UploadButton';
 
 // Mock ImageUploadModal
 vi.mock('../../image-upload/ImageUploadModal', () => ({

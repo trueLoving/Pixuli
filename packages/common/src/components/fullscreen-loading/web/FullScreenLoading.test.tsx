@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { FullScreenLoading } from './FullScreenLoading.web';
+import { FullScreenLoading } from './FullScreenLoading';
 
 describe('FullScreenLoading', () => {
   const defaultProps = {
