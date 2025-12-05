@@ -1,8 +1,8 @@
 import { Download, Github, Save, Trash2, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { defaultTranslate } from '../../locales';
-import type { GitHubConfig } from '../../types/github';
-import { showError, showSuccess } from '../../utils/toast';
+import { defaultTranslate } from '../../../locales';
+import type { GitHubConfig } from '../../../types/github';
+import { showError, showSuccess } from '../../../utils/toast';
 import './GitHubConfigModal.css';
 
 interface GitHubConfigModalProps {

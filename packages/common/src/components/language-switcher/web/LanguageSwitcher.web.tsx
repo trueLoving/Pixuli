@@ -50,7 +50,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   };
 
   const currentLang = availableLanguages.find(
-    lang => lang.code === currentLanguage
+    lang => lang.code === currentLanguage,
   );
 
   return (

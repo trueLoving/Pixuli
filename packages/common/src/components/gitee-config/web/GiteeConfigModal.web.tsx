@@ -1,8 +1,8 @@
 import { Download, Save, Trash2, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { defaultTranslate } from '../../locales';
-import type { GiteeConfig } from '../../types/gitee';
-import { showError, showSuccess } from '../../utils/toast';
+import { defaultTranslate } from '../../../locales';
+import type { GiteeConfig } from '../../../types/gitee';
+import { showError, showSuccess } from '../../../utils/toast';
 import './GiteeConfigModal.css';
 
 interface GiteeConfigModalProps {

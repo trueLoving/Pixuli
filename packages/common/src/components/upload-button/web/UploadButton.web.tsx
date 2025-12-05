@@ -1,14 +1,14 @@
 import { Upload } from 'lucide-react';
 import React, { useState } from 'react';
-import { defaultTranslate } from '../../locales';
+import { defaultTranslate } from '../../../locales';
 import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
   ImageUploadData,
   MultiImageUploadData,
-} from '../../types/image';
-import ImageUploadModal from '../image-upload/ImageUploadModal';
+} from '../../../types/image';
+import ImageUploadModal from '../../image-upload/ImageUploadModal';
 import './UploadButton.css';
 
 export interface UploadButtonProps {

@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
-import { defaultTranslate } from '../../locales';
+import { defaultTranslate } from '../../../locales';
 import './RefreshButton.css';
 
 export interface RefreshButtonProps {

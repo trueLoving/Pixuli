@@ -1,8 +1,8 @@
 // TODO: 自定义快捷键
 import { Command, Keyboard, RefreshCw, X, Zap } from 'lucide-react';
 import React from 'react';
-import { useEscapeKey } from '../../hooks';
-import { defaultTranslate } from '../../locales';
+import { useEscapeKey } from '../../../hooks';
+import { defaultTranslate } from '../../../locales';
 import './KeyboardHelpModal.css';
 
 interface KeyboardShortcut {

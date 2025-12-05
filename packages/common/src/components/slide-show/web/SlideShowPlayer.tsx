@@ -1,7 +1,7 @@
-import { ImageItem } from '../../types/image';
-import { defaultTranslate } from '../../locales';
-import { slideShowLocales } from './locales';
-import { getRealGiteeUrl } from '../../utils/imageUtils';
+import { ImageItem } from '../../../types/image';
+import { defaultTranslate } from '../../../locales';
+import { slideShowLocales } from '../locales';
+import { getRealGiteeUrl } from '../../../utils/imageUtils';
 import {
   ChevronLeft,
   ChevronRight,
@@ -58,7 +58,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
 
   // 配置状态
   const [config, setConfig] = useState<SlideShowConfig>(
-    DEFAULT_SLIDE_SHOW_CONFIG
+    DEFAULT_SLIDE_SHOW_CONFIG,
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showImageInfo, setShowImageInfo] = useState(false);
@@ -85,7 +85,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   // 定时器
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null
+    null,
   );
 
   // 图片列表滚动容器引用
@@ -459,7 +459,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         }, config.transitionDuration);
       }
     },
-    [currentIndex, config.transitionDuration]
+    [currentIndex, config.transitionDuration],
   );
 
   // 应用过渡效果样式
@@ -512,7 +512,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         } catch (ipcError) {
           console.warn(
             'IPC image fetch failed, falling back to fetch:',
-            ipcError
+            ipcError,
           );
           // 如果 IPC 失败，回退到 fetch
         }
@@ -522,7 +522,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch image: ${response.status} ${response.statusText}`
+          `Failed to fetch image: ${response.status} ${response.statusText}`,
         );
       }
       const blob = await response.blob();
@@ -551,7 +551,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         size: number;
         width: number;
         height: number;
-      }>
+      }>,
     ) => {
       const htmlContent = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -710,7 +710,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     },
-    [config.autoPlay, config.interval]
+    [config.autoPlay, config.interval],
   );
 
   // 导出 PPT 格式
@@ -721,7 +721,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         name: string;
         width: number;
         height: number;
-      }>
+      }>,
     ) => {
       const pptx = new PptxGenJS();
       pptx.layout = 'LAYOUT_WIDE';
@@ -777,7 +777,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         fileName: `幻灯片_${new Date().toISOString().split('T')[0]}.pptx`,
       });
     },
-    []
+    [],
   );
 
   // 导出幻灯片
@@ -801,25 +801,25 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
           } catch (error) {
             console.error(
               `Failed to convert image ${img.name} to base64:`,
-              error
+              error,
             );
             throw error;
           }
-        })
+        }),
       );
 
       // 过滤出成功转换的图片
       const successfulImages = imagesWithBase64
         .filter(
           (
-            result
+            result,
           ): result is PromiseFulfilledResult<{
             base64: string;
             name: string;
             size: number;
             width: number;
             height: number;
-          }> => result.status === 'fulfilled'
+          }> => result.status === 'fulfilled',
         )
         .map(result => result.value);
 
@@ -832,7 +832,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
       const failedCount = imagesWithBase64.length - successfulImages.length;
       if (failedCount > 0) {
         console.warn(
-          `${failedCount} 张图片转换失败，将导出 ${successfulImages.length} 张图片`
+          `${failedCount} 张图片转换失败，将导出 ${successfulImages.length} 张图片`,
         );
       }
 
@@ -847,7 +847,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         // 所有图片都成功，可以显示成功消息（如果需要）
       } else {
         alert(
-          `导出完成，但 ${failedCount} 张图片转换失败，已导出 ${successfulImages.length} 张图片`
+          `导出完成，但 ${failedCount} 张图片转换失败，已导出 ${successfulImages.length} 张图片`,
         );
       }
     } catch (error) {
@@ -1072,7 +1072,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
               src={currentImage.url}
               alt={currentImage.name}
               className={`slide-show-current-image ${getTransitionClass(
-                config.transitionEffect
+                config.transitionEffect,
               )}`}
               style={{
                 opacity:

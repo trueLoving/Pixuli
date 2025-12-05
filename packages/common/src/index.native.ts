@@ -13,10 +13,7 @@ export * from './types/github';
 export * from './types/gitee';
 
 // ==================== Services 导出 ====================
-export { GiteeStorageService } from './services/giteeStorageService';
-export { GitHubStorageService } from './services/githubStorageService';
-export { DefaultPlatformAdapter } from './services/platformAdapter';
-export type { PlatformAdapter } from './services/platformAdapter';
+export * from './services';
 
 // ==================== React Native 专用组件导出 ====================
 // EmptyState 组件（React Native 版本）
