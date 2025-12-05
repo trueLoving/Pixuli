@@ -5,76 +5,127 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .image-upload-modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .image-upload-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 1.75rem;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
+  background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
 }
 
 .image-upload-modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.375rem;
+  font-weight: 700;
   color: var(--text-primary, #111827);
   margin: 0;
+  letter-spacing: -0.025em;
 }
 
 .image-upload-modal-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   color: var(--text-secondary, #6b7280);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .image-upload-modal-close:hover {
   background: var(--hover-bg, #f3f4f6);
   color: var(--text-primary, #111827);
+  transform: rotate(90deg);
+}
+
+.image-upload-modal-close:active {
+  transform: rotate(90deg) scale(0.95);
 }
 
 .image-upload-modal-body {
-  padding: 1.5rem;
+  padding: 2rem;
   overflow-y: auto;
   flex: 1;
+  background: #ffffff;
 }
 
 /* 响应式设计 */
 @media (max-width: 640px) {
+  .image-upload-modal-overlay {
+    padding: 0;
+  }
+
   .image-upload-modal-content {
     max-width: 100%;
     max-height: 100vh;
     border-radius: 0;
+    height: 100vh;
   }
 
+  .image-upload-modal-header {
+    padding: 1.25rem 1rem;
+  }
+
+  .image-upload-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .image-upload-modal-body {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
   .image-upload-modal-header {
     padding: 1rem;
   }

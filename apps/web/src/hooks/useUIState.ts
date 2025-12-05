@@ -22,6 +22,15 @@ export function useUIState() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  // 浏览模式切换动画状态
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fileModeClass, setFileModeClass] = useState(
+    'browse-mode-file-container',
+  );
+  const [slideModeClass, setSlideModeClass] = useState(
+    'browse-mode-slide-container',
+  );
+
   const handleOpenConfigModal = useCallback(() => {
     setShowConfigModal(true);
   }, []);
@@ -62,6 +71,51 @@ export function useUIState() {
     setShowSourceTypeMenu(false);
   }, []);
 
+  // 处理浏览模式切换（带动画）
+  const handleBrowseModeChange = useCallback(
+    (newMode: BrowseMode) => {
+      if (newMode === browseMode || isTransitioning) return;
+
+      setIsTransitioning(true);
+
+      // 文件模式 -> 幻灯片模式
+      if (browseMode === 'file' && newMode === 'slide') {
+        // 先淡出文件模式
+        setFileModeClass('browse-mode-file-container fade-out');
+        // 300ms 后切换模式并淡入幻灯片
+        setTimeout(() => {
+          setBrowseMode('slide');
+          setSlideModeClass('browse-mode-slide-container fade-in');
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setFileModeClass('browse-mode-file-container');
+          }, 300);
+        }, 300);
+      }
+      // 幻灯片模式 -> 文件模式
+      else if (browseMode === 'slide' && newMode === 'file') {
+        // 先淡出幻灯片
+        setSlideModeClass('browse-mode-slide-container fade-out');
+        // 300ms 后切换模式并淡入文件
+        setTimeout(() => {
+          setBrowseMode('file');
+          setFileModeClass('browse-mode-file-container fade-in');
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setSlideModeClass('browse-mode-slide-container');
+            setFileModeClass('browse-mode-file-container');
+          }, 300);
+        }, 300);
+      }
+      // 其他模式切换（无动画，直接切换）
+      else {
+        setBrowseMode(newMode);
+        setIsTransitioning(false);
+      }
+    },
+    [browseMode, isTransitioning],
+  );
+
   return {
     // 状态
     showConfigModal,
@@ -82,6 +136,10 @@ export function useUIState() {
     setViewMode,
     sidebarCollapsed,
     setSidebarCollapsed,
+    // 动画相关
+    isTransitioning,
+    fileModeClass,
+    slideModeClass,
     // 处理函数
     handleOpenConfigModal,
     handleCloseConfigModal,
@@ -92,5 +150,6 @@ export function useUIState() {
     handleAddSource,
     handleSelectSourceType,
     handleCloseSourceTypeMenu,
+    handleBrowseModeChange,
   };
 }

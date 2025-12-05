@@ -33,6 +33,7 @@ import React, {
 import { useI18n } from '../../i18n/useI18n';
 import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
+import '@packages/common/src/components/browse-mode-transition/BrowseModeTransition.css';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
@@ -82,6 +83,15 @@ export const HomePage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [externalFilters, setExternalFilters] = useState<FilterOptions>(
     createDefaultFilters(),
+  );
+
+  // 浏览模式切换动画状态
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [fileModeClass, setFileModeClass] = useState(
+    'browse-mode-file-container',
+  );
+  const [slideModeClass, setSlideModeClass] = useState(
+    'browse-mode-slide-container',
   );
 
   // 用于跟踪已同步的源 ID，避免重复同步
@@ -405,12 +415,57 @@ export const HomePage: React.FC = () => {
     [updateImage, handleLoadImages],
   );
 
+  // 处理浏览模式切换（带动画）
+  const handleBrowseModeChange = useCallback(
+    (newMode: BrowseMode) => {
+      if (newMode === browseMode || isTransitioning) return;
+
+      setIsTransitioning(true);
+
+      // 文件模式 -> 幻灯片模式
+      if (browseMode === 'file' && newMode === 'slide') {
+        // 先淡出文件模式
+        setFileModeClass('browse-mode-file-container fade-out');
+        // 300ms 后切换模式并淡入幻灯片
+        setTimeout(() => {
+          setBrowseMode('slide');
+          setSlideModeClass('browse-mode-slide-container fade-in');
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setFileModeClass('browse-mode-file-container');
+          }, 300);
+        }, 300);
+      }
+      // 幻灯片模式 -> 文件模式
+      else if (browseMode === 'slide' && newMode === 'file') {
+        // 先淡出幻灯片
+        setSlideModeClass('browse-mode-slide-container fade-out');
+        // 300ms 后切换模式并淡入文件
+        setTimeout(() => {
+          setBrowseMode('file');
+          setFileModeClass('browse-mode-file-container fade-in');
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setSlideModeClass('browse-mode-slide-container');
+            setFileModeClass('browse-mode-file-container');
+          }, 300);
+        }, 300);
+      }
+      // 其他模式切换（无动画，直接切换）
+      else {
+        setBrowseMode(newMode);
+        setIsTransitioning(false);
+      }
+    },
+    [browseMode, isTransitioning],
+  );
+
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* 左侧：Sidebar */}
       <Sidebar
         browseMode={browseMode}
-        onBrowseModeChange={setBrowseMode}
+        onBrowseModeChange={handleBrowseModeChange}
         currentFilter={currentFilter}
         onFilterChange={setCurrentFilter}
         sources={sidebarSources}
@@ -462,14 +517,6 @@ export const HomePage: React.FC = () => {
                   t={t}
                 />
               )}
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
               {hasConfig && (
                 <RefreshButton
                   onRefresh={handleLoadImages}
@@ -478,6 +525,14 @@ export const HomePage: React.FC = () => {
                   t={t}
                 />
               )}
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
             </>
           }
         />
@@ -516,7 +571,7 @@ export const HomePage: React.FC = () => {
               )}
 
               {/* 图片浏览 */}
-              <div className="min-h-0">
+              <div className={`min-h-0 ${fileModeClass}`}>
                 {browseMode === 'file' && (
                   <ImageBrowser
                     t={t}
@@ -660,14 +715,16 @@ export const HomePage: React.FC = () => {
       />
 
       {/* 幻灯片播放器 */}
-      {browseMode === 'slide' && (
-        <SlideShowPlayer
-          isOpen={true}
-          onClose={() => setBrowseMode('file')}
-          images={images}
-          t={t}
-        />
-      )}
+      <div className={slideModeClass}>
+        {browseMode === 'slide' && (
+          <SlideShowPlayer
+            isOpen={true}
+            onClose={() => handleBrowseModeChange('file')}
+            images={images}
+            t={t}
+          />
+        )}
+      </div>
 
       <Toaster />
     </div>

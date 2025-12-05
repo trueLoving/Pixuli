@@ -293,14 +293,6 @@ export const ProjectPage: React.FC<ProjectPageProps> = ({
                   t={t}
                 />
               )}
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
               {hasConfig && (
                 <RefreshButton
                   onRefresh={handleLoadImages}
@@ -309,6 +301,14 @@ export const ProjectPage: React.FC<ProjectPageProps> = ({
                   t={t}
                 />
               )}
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
             </>
           }
         />

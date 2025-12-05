@@ -36,6 +36,7 @@ import {
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
+import '@packages/common/src/components/browse-mode-transition/BrowseModeTransition.css';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
@@ -81,6 +82,8 @@ function App() {
     setSearchQuery,
     sidebarCollapsed,
     setSidebarCollapsed,
+    fileModeClass,
+    slideModeClass,
     handleOpenConfigModal,
     handleCloseConfigModal,
     handleOpenKeyboardHelp,
@@ -90,6 +93,7 @@ function App() {
     handleAddSource,
     handleSelectSourceType,
     handleCloseSourceTypeMenu,
+    handleBrowseModeChange,
   } = uiState;
 
   // 源管理
@@ -216,7 +220,7 @@ function App() {
         currentView={currentView}
         onViewChange={setCurrentView}
         browseMode={browseMode}
-        onBrowseModeChange={setBrowseMode}
+        onBrowseModeChange={handleBrowseModeChange}
         currentFilter={currentFilter}
         onFilterChange={setCurrentFilter}
         sources={sidebarSources}
@@ -268,14 +272,6 @@ function App() {
                   t={t}
                 />
               )}
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
               {hasConfig && (
                 <RefreshButton
                   onRefresh={handleLoadImages}
@@ -284,26 +280,36 @@ function App() {
                   t={t}
                 />
               )}
+              <LanguageSwitcher
+                currentLanguage={getCurrentLanguage()}
+                availableLanguages={getAvailableLanguages()}
+                onLanguageChange={changeLanguage}
+                switchTitle={t('language.switch')}
+                currentTitle={t('language.current')}
+                showBackdrop={true}
+              />
             </>
           }
         />
 
         {/* 底部：图片浏览区 */}
         <main className="flex-1 overflow-y-auto bg-white">
-          <ImageContent
-            hasConfig={hasConfig}
-            error={error}
-            onClearError={clearError}
-            images={images}
-            loading={loading}
-            searchQuery={searchQuery}
-            externalFilters={externalFilters}
-            onDeleteImage={handleDeleteImage}
-            onDeleteMultipleImages={handleDeleteMultipleImages}
-            onUpdateImage={handleUpdateImage}
-            onOpenConfigModal={handleOpenConfigModal}
-            t={t}
-          />
+          <div className={fileModeClass}>
+            <ImageContent
+              hasConfig={hasConfig}
+              error={error}
+              onClearError={clearError}
+              images={images}
+              loading={loading}
+              searchQuery={searchQuery}
+              externalFilters={externalFilters}
+              onDeleteImage={handleDeleteImage}
+              onDeleteMultipleImages={handleDeleteMultipleImages}
+              onUpdateImage={handleUpdateImage}
+              onOpenConfigModal={handleOpenConfigModal}
+              t={t}
+            />
+          </div>
         </main>
       </div>
 
@@ -379,14 +385,16 @@ function App() {
       />
 
       {/* 幻灯片播放器 */}
-      {browseMode === 'slide' && (
-        <SlideShowPlayer
-          isOpen={true}
-          onClose={() => setBrowseMode('file')}
-          images={images}
-          t={t}
-        />
-      )}
+      <div className={slideModeClass}>
+        {browseMode === 'slide' && (
+          <SlideShowPlayer
+            isOpen={true}
+            onClose={() => handleBrowseModeChange('file')}
+            images={images}
+            t={t}
+          />
+        )}
+      </div>
 
       {/* 照片墙模式 - 全屏 */}
       {browseMode === 'wall' && (
