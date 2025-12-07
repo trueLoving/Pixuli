@@ -6,9 +6,13 @@ import './index.css';
 import './i18n';
 import { loading } from './utils/loading';
 import { pwaService } from './services/pwaService';
+import { performanceService } from './services/performanceService';
 
 // 初始化加载动画
 loading();
+
+// 初始化性能监控
+performanceService.init();
 
 // 注册 Service Worker
 if ('serviceWorker' in navigator) {
@@ -20,5 +24,5 @@ if ('serviceWorker' in navigator) {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

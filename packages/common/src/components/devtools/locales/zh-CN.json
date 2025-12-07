@@ -1,0 +1,48 @@
+{
+  "devtools": {
+    "title": "开发工具",
+    "open": "打开开发工具",
+    "close": "关闭",
+    "tabs": {
+      "logs": "日志",
+      "performance": "性能"
+    },
+    "logs": {
+      "filter": "过滤",
+      "filterAll": "全部",
+      "filterLog": "Log",
+      "filterInfo": "Info",
+      "filterWarn": "Warn",
+      "filterError": "Error",
+      "filterDebug": "Debug",
+      "autoScroll": "自动滚动",
+      "clear": "清空",
+      "export": "导出",
+      "empty": "暂无日志",
+      "stackInfo": "堆栈信息"
+    },
+    "performance": {
+      "fps": "FPS",
+      "memoryUsage": "内存使用",
+      "pageLoadTime": "页面加载时间",
+      "renderTime": "渲染时间",
+      "longTasks": "长任务数",
+      "runAnalysis": "运行性能分析",
+      "collectMetrics": "收集性能指标",
+      "notInitialized": "性能监控未初始化",
+      "analysis": {
+        "title": "性能分析结果",
+        "score": "性能评分",
+        "level": "性能等级",
+        "excellent": "优秀",
+        "good": "良好",
+        "fair": "一般",
+        "poor": "较差",
+        "issues": "发现的问题",
+        "suggestions": "优化建议",
+        "noIssues": "未发现问题",
+        "noSuggestions": "暂无建议"
+      }
+    }
+  }
+}

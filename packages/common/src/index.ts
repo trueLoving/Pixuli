@@ -12,6 +12,9 @@ export * from './types/gitee';
 // ==================== Services 导出 ====================
 export * from './services';
 
+// ==================== 性能监控导出 ====================
+export * from './performance';
+
 // ==================== 工具函数导出 ====================
 export * from './utils';
 
@@ -49,5 +52,7 @@ export * from './components/version-info/web';
 export * from './components/fullscreen-loading/web';
 // Demo 组件
 export * from './components/demo/web';
+// DevTools 组件
+export * from './components/devtools/web';
 // ==================== 语言包导出 ====================
 export * from './locales';

@@ -1,0 +1,48 @@
+{
+  "devtools": {
+    "title": "DevTools",
+    "open": "Open DevTools",
+    "close": "Close",
+    "tabs": {
+      "logs": "Logs",
+      "performance": "Performance"
+    },
+    "logs": {
+      "filter": "Filter",
+      "filterAll": "All",
+      "filterLog": "Log",
+      "filterInfo": "Info",
+      "filterWarn": "Warn",
+      "filterError": "Error",
+      "filterDebug": "Debug",
+      "autoScroll": "Auto Scroll",
+      "clear": "Clear",
+      "export": "Export",
+      "empty": "No logs",
+      "stackInfo": "Stack Info"
+    },
+    "performance": {
+      "fps": "FPS",
+      "memoryUsage": "Memory Usage",
+      "pageLoadTime": "Page Load Time",
+      "renderTime": "Render Time",
+      "longTasks": "Long Tasks",
+      "runAnalysis": "Run Performance Analysis",
+      "collectMetrics": "Collect Performance Metrics",
+      "notInitialized": "Performance monitor not initialized",
+      "analysis": {
+        "title": "Performance Analysis",
+        "score": "Performance Score",
+        "level": "Performance Level",
+        "excellent": "Excellent",
+        "good": "Good",
+        "fair": "Fair",
+        "poor": "Poor",
+        "issues": "Issues Found",
+        "suggestions": "Optimization Suggestions",
+        "noIssues": "No issues found",
+        "noSuggestions": "No suggestions"
+      }
+    }
+  }
+}
