@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:mobile": "pnpm run --filter pixuli-mobile dev",
-    "build:wasm": "pnpm run --filter pixuli-wasm build",
+    "build:mobile": "pnpm run --filer pixuli-mobile build",
     "dev:web": "pnpm run --filter pixuli-web dev",
     "build:web": "pnpm run --filter pixuli-web build",
     "preview:web": "pnpm run --filter pixuli-web preview",
@@ -12,6 +12,7 @@
     "build:desktop": "pnpm run --filter pixuli-desktop build",
     "docs:dev": "pnpm run --filter pixuli-docs dev",
     "docs:build": "pnpm run --filter pixuli-docs build",
+    "build:wasm": "pnpm run --filter pixuli-wasm build",
     "benchmark": "pnpm run --filter pixuli-benchmark benchmark",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

@@ -10,15 +10,13 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "lucide-react": "^0.263.1",
+    "lucide-react": "^0.556.0",
     "pptxgenjs": "^4.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -44,7 +42,6 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.7.0",
-    "tsup": "^7.0.0",
     "typescript": "^5.0.0"
   },
   "author": "trueLoving",
