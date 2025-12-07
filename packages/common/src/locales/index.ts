@@ -19,6 +19,7 @@ import headerLocales from '../components/header/locales';
 import headerSearchLocales from '../components/header-search/locales';
 import emptyStateLocales from '../components/empty-state/locales';
 import demoLocales from '../components/demo/locales';
+import devtoolsLocales from '../components/devtools/locales';
 
 /**
  * 深层合并对象
@@ -76,6 +77,7 @@ export const appLocales = {
     headerSearchLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
     demoLocales['zh-CN'],
+    devtoolsLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -97,6 +99,7 @@ export const appLocales = {
     headerSearchLocales['en-US'],
     emptyStateLocales['en-US'],
     demoLocales['en-US'],
+    devtoolsLocales['en-US'],
   ),
 };
 

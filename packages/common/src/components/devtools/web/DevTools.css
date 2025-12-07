@@ -1,0 +1,665 @@
+/* DevTools 样式 */
+
+/* 浮球按钮 */
+.devtools-float-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  cursor: pointer;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 0 rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40; /* 低于 PWA 提示的 z-50 */
+  transition: all 0.3s ease;
+}
+
+.devtools-float-button:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 6px 20px rgba(102, 126, 234, 0.4),
+    0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.devtools-float-button:active {
+  transform: scale(0.95);
+}
+
+.devtools-float-button.dragging {
+  cursor: ns-resize; /* 垂直调整大小光标，表示只能垂直拖动 */
+  user-select: none;
+  transition: none; /* 拖动时禁用过渡动画 */
+}
+
+.devtools-float-button.dragging:hover {
+  transform: scale(1);
+}
+
+/* 面板 */
+.devtools-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 600px;
+  max-width: calc(100vw - 48px);
+  height: 100vh;
+  max-height: 100vh;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  border-radius: 0;
+  border-left: 1px solid #e2e8f0;
+  box-shadow:
+    -4px 0 24px rgba(0, 0, 0, 0.12),
+    -8px 0 48px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  z-index: 60; /* 高于 Header (50) 但低于筛选面板 (1000) */
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* 头部 */
+.devtools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(to right, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.devtools-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.devtools-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.devtools-icon-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.devtools-icon-button svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.devtools-icon-button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.devtools-icon-button:hover svg {
+  color: #1e293b;
+}
+
+/* 标签页 */
+.devtools-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  padding: 0 12px;
+  gap: 4px;
+}
+
+.devtools-tab {
+  position: relative;
+  padding: 14px 24px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px 8px 0 0;
+  margin-top: 4px;
+}
+
+.devtools-tab:hover {
+  color: #334155;
+  background: #f1f5f9;
+}
+
+.devtools-tab.active {
+  color: #667eea;
+  font-weight: 600;
+  background: #ffffff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.devtools-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.devtools-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.devtools-tab-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  min-width: 20px;
+  text-align: center;
+}
+
+/* 内容区域 */
+.devtools-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 日志容器 */
+.devtools-logs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.devtools-logs-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  flex-wrap: wrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.devtools-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.devtools-filter-group label {
+  white-space: nowrap;
+}
+
+.devtools-select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  color: #111827;
+  cursor: pointer;
+}
+
+.devtools-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.devtools-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.devtools-button {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.devtools-button:hover {
+  background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.devtools-button:active {
+  background: #e2e8f0;
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 日志列表 */
+.devtools-logs-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.devtools-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.devtools-log-item {
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+}
+
+.devtools-log-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: translateX(2px);
+}
+
+.devtools-log-item.devtools-log-error {
+  background: linear-gradient(to right, #fef2f2 0%, #ffffff 100%);
+  border-left-color: #ef4444;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.15);
+}
+
+.devtools-log-item.devtools-log-warn {
+  background: linear-gradient(to right, #fffbeb 0%, #ffffff 100%);
+  border-left-color: #f59e0b;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.15);
+}
+
+.devtools-log-item.devtools-log-info {
+  background: linear-gradient(to right, #eff6ff 0%, #ffffff 100%);
+  border-left-color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.15);
+}
+
+.devtools-log-item.devtools-log-debug {
+  background: linear-gradient(to right, #f5f3ff 0%, #ffffff 100%);
+  border-left-color: #8b5cf6;
+  box-shadow: 0 1px 3px rgba(139, 92, 246, 0.15);
+}
+
+.devtools-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.devtools-log-level {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.devtools-log-time {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.devtools-log-message {
+  color: #111827;
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.devtools-log-stack {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.devtools-log-stack summary {
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.devtools-log-stack summary:hover {
+  color: #111827;
+}
+
+.devtools-log-stack pre {
+  margin: 0;
+  padding: 8px;
+  background: #1f2937;
+  color: #e5e7eb;
+  border-radius: 4px;
+  font-size: 11px;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* 性能容器 */
+.devtools-performance-container {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.devtools-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.devtools-metric-card {
+  padding: 20px;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.devtools-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.devtools-metric-label {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.devtools-metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  line-height: 1.2;
+}
+
+.devtools-performance-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+/* 性能分析结果 */
+.devtools-analysis-container {
+  margin-top: 24px;
+  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.devtools-analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(to right, #ffffff 0%, #f8fafc 100%);
+}
+
+.devtools-analysis-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.devtools-analysis-content {
+  padding: 20px;
+}
+
+.devtools-analysis-score {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 2px solid #e2e8f0;
+}
+
+.devtools-analysis-score-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.devtools-analysis-score-value {
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.devtools-analysis-score-unit {
+  font-size: 24px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.devtools-analysis-level {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.devtools-analysis-level-excellent {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.devtools-analysis-level-good {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.devtools-analysis-level-fair {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.devtools-analysis-level-poor {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.devtools-analysis-section {
+  margin-bottom: 24px;
+}
+
+.devtools-analysis-section:last-child {
+  margin-bottom: 0;
+}
+
+.devtools-analysis-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.devtools-analysis-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.devtools-analysis-item {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-left: 4px solid;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.devtools-analysis-issue {
+  border-left-color: #ef4444;
+  background: linear-gradient(to right, #fef2f2 0%, #ffffff 100%);
+}
+
+.devtools-analysis-suggestion {
+  border-left-color: #3b82f6;
+  background: linear-gradient(to right, #eff6ff 0%, #ffffff 100%);
+}
+
+.devtools-analysis-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.devtools-close-button {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 36px !important;
+  height: 36px !important;
+  color: #475569 !important;
+  position: relative;
+  z-index: 1;
+}
+
+.devtools-close-button svg {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.devtools-close-button:hover {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+  color: #1e293b !important;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #94a3b8 !important;
+}
+
+.devtools-close-button:hover svg {
+  color: #1e293b !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .devtools-panel {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .devtools-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 滚动条样式 */
+.devtools-logs-list::-webkit-scrollbar,
+.devtools-performance-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.devtools-logs-list::-webkit-scrollbar-track,
+.devtools-performance-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.devtools-logs-list::-webkit-scrollbar-thumb,
+.devtools-performance-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.devtools-logs-list::-webkit-scrollbar-thumb:hover,
+.devtools-performance-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -17,6 +17,7 @@ import {
   UploadButton,
   useDemoMode,
   VersionInfoModal,
+  DevTools,
   type FilterOptions,
   type VersionInfo,
 } from '@packages/common/src';
@@ -36,6 +37,7 @@ import {
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
+import { performanceService } from './services/performanceService';
 import '@packages/common/src/components/browse-mode-transition/BrowseModeTransition.css';
 
 // 声明全局版本信息
@@ -418,6 +420,11 @@ function App() {
 
       {/* PWA 功能组件 */}
       <PWAInstallPrompt />
+
+      {/* DevTools 调试工具 - 通过环境变量控制 */}
+      {import.meta.env.VITE_ENABLE_DEVTOOLS === 'true' && (
+        <DevTools performanceMonitor={performanceService.getMonitor()} t={t} />
+      )}
 
       {/* 全屏 Loading - 数据请求时显示 */}
       <FullScreenLoading
