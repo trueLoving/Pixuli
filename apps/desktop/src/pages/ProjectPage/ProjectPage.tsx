@@ -4,7 +4,7 @@ import {
   GitHubConfigModal,
   GiteeConfigModal,
   Header,
-  HeaderSearch,
+  Search,
   ImageBrowser,
   KeyboardHelpModal,
   LanguageSwitcher,
@@ -262,9 +262,10 @@ export const ProjectPage: React.FC<ProjectPageProps> = ({
         {/* 顶部：Header */}
         <Header
           leftActions={
-            <HeaderSearch
+            <Search
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              variant="header"
               hasConfig={hasConfig}
               images={images}
               externalFilters={externalFilters}

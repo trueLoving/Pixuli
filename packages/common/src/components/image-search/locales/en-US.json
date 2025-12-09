@@ -1,9 +1,0 @@
-{
-  "image": {
-    "search": {
-      "placeholder": "Search image names, descriptions or tags...",
-      "filterByTags": "Filter by tags",
-      "clearFilters": "Clear filters"
-    }
-  }
-}

@@ -5,7 +5,7 @@ import {
   GitHubConfigModal,
   GiteeConfigModal,
   Header,
-  HeaderSearch,
+  Search,
   ImageBrowser,
   KeyboardHelpModal,
   LanguageSwitcher,
@@ -33,7 +33,7 @@ import React, {
 import { useI18n } from '../../i18n/useI18n';
 import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
-import '@packages/common/src/components/browse-mode-transition/BrowseModeTransition.css';
+// CSS 已整合到 BrowseModeSwitcher 组件中
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;
@@ -486,9 +486,10 @@ export const HomePage: React.FC = () => {
         {/* 顶部：Header */}
         <Header
           leftActions={
-            <HeaderSearch
+            <Search
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
+              variant="header"
               hasConfig={hasConfig}
               images={images}
               externalFilters={externalFilters}

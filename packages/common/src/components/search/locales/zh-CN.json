@@ -1,0 +1,16 @@
+{
+  "search": {
+    "placeholder": "搜索...",
+    "header": {
+      "placeholder": "搜索图片...",
+      "placeholderDisabled": "添加仓库源后即可搜索图片",
+      "filter": "筛选",
+      "clearFilters": "清除筛选"
+    },
+    "image": {
+      "placeholder": "搜索图片名称、描述或标签...",
+      "filterByTags": "按标签筛选",
+      "clearFilters": "清除筛选"
+    }
+  }
+}

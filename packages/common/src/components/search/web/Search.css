@@ -1,19 +1,37 @@
-/* HeaderSearch 组件样式 */
-.header-search-wrapper {
+/* Search 组件统一样式 */
+
+/* 基础包装器 */
+.search-wrapper {
   display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Header variant 样式 */
+.search-wrapper--header {
+  flex-direction: row;
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
   flex: 1;
 }
 
-/* 筛选功能样式 */
-.header-filter-wrapper {
+/* Image variant 样式 */
+.search-wrapper--image {
+  margin-bottom: 1rem;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+/* 筛选功能样式（Header variant） */
+.search-filter-wrapper {
   position: relative;
   flex-shrink: 0;
 }
 
-.header-filter-button {
+.search-filter-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,19 +47,19 @@
   position: relative;
 }
 
-.header-filter-button:hover {
+.search-filter-button:hover {
   background: var(--hover-bg, #f3f4f6);
   color: var(--text-primary, #111827);
   border-color: var(--primary-color, #3b82f6);
 }
 
-.header-filter-button.active {
+.search-filter-button.active {
   background: var(--primary-color, #3b82f6);
   color: white;
   border-color: var(--primary-color, #3b82f6);
 }
 
-.header-filter-badge {
+.search-filter-badge {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -52,7 +70,7 @@
   border: 2px solid white;
 }
 
-.header-filter-panel {
+.search-filter-panel {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
@@ -67,7 +85,7 @@
   z-index: 1000;
 }
 
-.header-filter-panel-header {
+.search-filter-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -75,13 +93,13 @@
   border-bottom: 1px solid var(--border-color, #e5e7eb);
 }
 
-.header-filter-panel-title {
+.search-filter-panel-title {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-primary, #111827);
 }
 
-.header-filter-clear {
+.search-filter-clear {
   font-size: 0.75rem;
   color: var(--primary-color, #3b82f6);
   background: none;
@@ -92,20 +110,20 @@
   transition: background 0.2s;
 }
 
-.header-filter-clear:hover {
+.search-filter-clear:hover {
   background: var(--hover-bg, #f3f4f6);
 }
 
-.header-filter-section {
+.search-filter-section {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
 }
 
-.header-filter-section:last-child {
+.search-filter-section:last-child {
   border-bottom: none;
 }
 
-.header-filter-label {
+.search-filter-label {
   display: block;
   font-size: 0.75rem;
   font-weight: 600;
@@ -115,13 +133,13 @@
   margin-bottom: 0.5rem;
 }
 
-.header-filter-options {
+.search-filter-options {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.header-filter-option {
+.search-filter-option {
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -135,22 +153,105 @@
   transition: all 0.2s;
 }
 
-.header-filter-option:hover {
+.search-filter-option:hover {
   background: var(--hover-bg, #f3f4f6);
   border-color: var(--primary-color, #3b82f6);
 }
 
-.header-filter-option input[type='checkbox'] {
+.search-filter-option input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
 }
 
-.header-filter-option input[type='checkbox']:checked + span {
+.search-filter-option input[type='checkbox']:checked + span {
   color: var(--primary-color, #3b82f6);
   font-weight: 500;
 }
 
-.header-filter-option:has(input[type='checkbox']:checked) {
+.search-filter-option:has(input[type='checkbox']:checked) {
   background: var(--primary-color-light, #dbeafe);
   border-color: var(--primary-color, #3b82f6);
+}
+
+/* 标签筛选样式（Image variant） */
+.search-tags-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .search-tags-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.search-tags-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-tags-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #9ca3af;
+}
+
+.search-tags-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* 清除筛选按钮 */
+.search-tags-clear-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.search-tags-clear-button:hover {
+  background-color: #fecaca;
+}
+
+/* 标签按钮 */
+.search-tag-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.search-tag-button:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.search-tag-button.selected {
+  background-color: #2563eb;
+  color: white;
+}
+
+.search-tag-button.unselected {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.search-tag-button.unselected:hover {
+  background-color: #e5e7eb;
 }
