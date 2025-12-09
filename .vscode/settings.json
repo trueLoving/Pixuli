@@ -6,8 +6,8 @@
 
   // Prettier 配置
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
   "editor.formatOnType": false,
 
   // 文件类型特定配置

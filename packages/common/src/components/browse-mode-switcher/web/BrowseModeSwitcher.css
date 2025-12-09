@@ -211,3 +211,46 @@
     font-size: 13px;
   }
 }
+
+/* 浏览模式切换动画 */
+/* 文件模式容器 */
+.browse-mode-file-container {
+  opacity: 1;
+  transition: opacity 300ms ease-in-out;
+  width: 100%;
+  height: 100%;
+}
+
+.browse-mode-file-container.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.browse-mode-file-container.fade-in {
+  opacity: 1;
+}
+
+/* 幻灯片模式容器 */
+.browse-mode-slide-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+  pointer-events: none;
+}
+
+.browse-mode-slide-container.fade-in {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.browse-mode-slide-container.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 确保幻灯片播放器在动画期间可见 */
+.browse-mode-slide-container.fade-in .slide-show-player {
+  opacity: 1;
+}

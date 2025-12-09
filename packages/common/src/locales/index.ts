@@ -8,7 +8,6 @@ import keyboardHelpLocales from '../components/keyboard-help/locales';
 import versionInfoLocales from '../components/version-info/locales';
 import imageBrowserLocales from '../components/image-browser/locales';
 import imageUploadLocales from '../components/image-upload/locales';
-import imageSearchLocales from '../components/image-search/locales';
 import languageSwitcherLocales from '../components/language-switcher/locales';
 import slideShowLocales from '../components/slide-show/locales';
 import browseModeSwitcherLocales from '../components/browse-mode-switcher/locales';
@@ -16,7 +15,7 @@ import photoWallLocales from '../components/photo-wall/locales';
 import gallery3dLocales from '../components/gallery-3d/locales';
 import sidebarLocales from '../components/sidebar/locales';
 import headerLocales from '../components/header/locales';
-import headerSearchLocales from '../components/header-search/locales';
+import searchLocales from '../components/search/locales';
 import emptyStateLocales from '../components/empty-state/locales';
 import demoLocales from '../components/demo/locales';
 import devtoolsLocales from '../components/devtools/locales';
@@ -66,7 +65,6 @@ export const appLocales = {
     versionInfoLocales['zh-CN'],
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
-    imageSearchLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
     slideShowLocales['zh-CN'],
     browseModeSwitcherLocales['zh-CN'],
@@ -74,7 +72,7 @@ export const appLocales = {
     gallery3dLocales['zh-CN'],
     sidebarLocales['zh-CN'],
     headerLocales['zh-CN'],
-    headerSearchLocales['zh-CN'],
+    searchLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
     demoLocales['zh-CN'],
     devtoolsLocales['zh-CN'],
@@ -88,7 +86,6 @@ export const appLocales = {
     versionInfoLocales['en-US'],
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
-    imageSearchLocales['en-US'],
     languageSwitcherLocales['en-US'],
     slideShowLocales['en-US'],
     browseModeSwitcherLocales['en-US'],
@@ -96,7 +93,7 @@ export const appLocales = {
     gallery3dLocales['en-US'],
     sidebarLocales['en-US'],
     headerLocales['en-US'],
-    headerSearchLocales['en-US'],
+    searchLocales['en-US'],
     emptyStateLocales['en-US'],
     demoLocales['en-US'],
     devtoolsLocales['en-US'],

@@ -1,0 +1,16 @@
+{
+  "search": {
+    "placeholder": "Search...",
+    "header": {
+      "placeholder": "Search images...",
+      "placeholderDisabled": "Add a source to search images",
+      "filter": "Filter",
+      "clearFilters": "Clear Filters"
+    },
+    "image": {
+      "placeholder": "Search image names, descriptions or tags...",
+      "filterByTags": "Filter by tags",
+      "clearFilters": "Clear filters"
+    }
+  }
+}

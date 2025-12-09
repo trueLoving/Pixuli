@@ -1,0 +1,146 @@
+/* ActionButton 通用样式 */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+  user-select: none;
+}
+
+/* 变体样式 */
+.action-button--icon-only {
+  padding: 0.5rem;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.action-button--icon-text {
+  padding: 0.5rem 1rem;
+}
+
+.action-button--text-only {
+  padding: 0.5rem 1rem;
+}
+
+/* 尺寸样式 */
+.action-button--small {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  min-height: 28px;
+}
+
+.action-button--small.action-button--icon-only {
+  padding: 0.375rem;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.action-button--medium {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-height: 36px;
+}
+
+.action-button--medium.action-button--icon-only {
+  padding: 0.5rem;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.action-button--large {
+  padding: 0.625rem 1.25rem;
+  font-size: 1rem;
+  min-height: 44px;
+}
+
+.action-button--large.action-button--icon-only {
+  padding: 0.625rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* 交互状态 */
+.action-button:hover:not(:disabled) {
+  background: var(--hover-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+  border-color: var(--border-color-dark, #d1d5db);
+}
+
+.action-button:focus-visible {
+  outline: 2px solid var(--primary-color, #3b82f6);
+  outline-offset: 2px;
+}
+
+.action-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* 禁用状态 */
+.action-button--disabled,
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 加载状态 */
+.action-button--loading {
+  cursor: wait;
+}
+
+/* 图标样式 */
+.action-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 标签样式 */
+.action-button-label {
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* 加载动画 */
+.action-button-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-top-color: var(--text-secondary, #6b7280);
+  border-radius: 50%;
+  animation: action-button-spin 1s linear infinite;
+}
+
+@keyframes action-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .action-button--icon-text .action-button-label {
+    display: none;
+  }
+
+  .action-button--icon-text {
+    padding: 0.5rem;
+    min-width: 36px;
+  }
+}

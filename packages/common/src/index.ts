@@ -27,8 +27,8 @@ export * from './components/image-browser/web';
 // 图片上传组件
 export * from './components/image-upload/web';
 // 搜索组件
-export * from './components/image-search/web';
-export { default as SearchBar } from './components/search/web/SearchBar';
+export { Search } from './components/search/web';
+export type { SearchProps, SearchVariant } from './components/search/web';
 // 浏览模式相关组件
 export * from './components/slide-show/web';
 export * from './components/photo-wall/web';
@@ -37,7 +37,6 @@ export * from './components/browse-mode-switcher/web';
 // 布局组件
 export * from './components/sidebar/web';
 export * from './components/header/web';
-export * from './components/header-search/web';
 export * from './components/empty-state/web';
 // 配置相关组件
 export * from './components/github-config/web';
