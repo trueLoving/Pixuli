@@ -1,45 +1,47 @@
 {
   "name": "pixuli-wasm",
   "version": "1.0.0",
-  "description": "pixuli wasm",
+  "description": "Pixuli WASM - Multi-platform image processing library",
   "main": "index.js",
   "types": "index.d.ts",
   "license": "MIT",
   "exports": {
-    ".": "./index.js",
-    "./wasi-worker-browser.mjs": "./wasi-worker-browser.mjs"
+    ".": {
+      "node": "./index.js",
+      "browser": "./index.js",
+      "react-native": "./index.js",
+      "default": "./index.js"
+    },
+    "./pkg-web": "./pkg-web/pixuli_wasm.js",
+    "./pkg-node": "./pkg-node/pixuli_wasm.js",
+    "./pkg-mobile": "./pkg-mobile/pixuli_wasm.js"
   },
   "files": [
-    "index.d.ts",
     "index.js",
-    "libonnxruntime.1.16.0.dylib",
-    "wasi-worker-browser.mjs",
-    "*.node"
+    "index.d.ts",
+    "pkg-web/**/*",
+    "pkg-node/**/*",
+    "pkg-mobile/**/*"
   ],
-  "napi": {
-    "binaryName": "pixuli-wasm",
-    "targets": [
-      "x86_64-pc-windows-msvc",
-      "x86_64-apple-darwin",
-      "x86_64-unknown-linux-gnu",
-      "aarch64-apple-darwin",
-      "aarch64-pc-windows-msvc"
-    ]
-  },
-  "engines": {
-    "node": ">= 12.22.0 < 13 || >= 14.17.0 < 15 || >= 15.12.0 < 16 || >= 16.0.0"
-  },
   "scripts": {
-    "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "pnpm run build:wasm",
+    "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node && pnpm run build:wasm:mobile",
+    "build:wasm:web": "wasm-pack build --target web --out-dir pkg-web --release",
+    "build:wasm:node": "wasm-pack build --target nodejs --out-dir pkg-node --release",
+    "build:wasm:mobile": "wasm-pack build --target bundler --out-dir pkg-mobile --release",
+    "build:wasm:dev": "pnpm run build:wasm:web:dev && pnpm run build:wasm:node:dev && pnpm run build:wasm:mobile:dev",
+    "build:wasm:web:dev": "wasm-pack build --target web --out-dir pkg-web --dev",
+    "build:wasm:node:dev": "wasm-pack build --target nodejs --out-dir pkg-node --dev",
+    "build:wasm:mobile:dev": "wasm-pack build --target bundler --out-dir pkg-mobile --dev",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.3",
     "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">= 14.0.0"
   },
   "packageManager": "pnpm@10.13.1"
 }

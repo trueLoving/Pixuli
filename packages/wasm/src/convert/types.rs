@@ -2,12 +2,12 @@
 //!
 //! 包含所有格式转换功能中使用的结构体和类型
 
-use napi_derive::napi;
+use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// 格式转换选项
+#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[napi(object)]
 pub struct FormatConversionOptions {
     /// 目标格式
     pub target_format: String,
@@ -24,8 +24,8 @@ pub struct FormatConversionOptions {
 }
 
 /// 尺寸调整选项
+#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[napi(object)]
 pub struct ResizeOptions {
     /// 目标宽度
     pub width: Option<u32>,
@@ -36,8 +36,8 @@ pub struct ResizeOptions {
 }
 
 /// 格式转换结果
+#[wasm_bindgen]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[napi(object)]
 pub struct FormatConversionResult {
     /// 转换后的数据
     pub data: Vec<u8>,

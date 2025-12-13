@@ -9,15 +9,17 @@ version = "0.1.0"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = "3.0.0"
-napi-derive = "3.0.0"
+# WASM 绑定（必需）
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"  # 异步支持
+
+# 图片处理库
 image = { version = "0.24", features = ["jpeg", "png", "gif", "bmp", "tiff"] }
-webp = "0.2"
+# WebP 库：在 WASM 目标上暂时禁用，因为 libwebp-sys 依赖 C 代码
+# TODO: 寻找纯 Rust 实现的 WebP 库或使用条件编译
+# webp = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-
-[build-dependencies]
-napi-build = "2"
 
 [dev-dependencies]
 tempfile = "3.0"

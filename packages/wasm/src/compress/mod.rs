@@ -2,14 +2,16 @@
 //!
 //! 提供图片的 WebP 格式压缩功能，支持单张和批量压缩
 
-use napi_derive::napi;
+use wasm_bindgen::prelude::*;
 use image::GenericImageView;
-use webp::{Encoder, PixelLayout};
-use napi::Error as NapiError;
+// TODO: WebP 功能暂时禁用，因为 webp crate 依赖 C 代码，在 WASM 目标上无法编译
+// 需要寻找纯 Rust 实现的 WebP 库或使用其他方案
+// use webp::{Encoder, PixelLayout};
+use serde::{Deserialize, Serialize};
 
 /// WebP压缩配置
-#[napi(object)]
-#[derive(Clone)]
+#[wasm_bindgen]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WebPCompressOptions {
   /// 压缩质量 (0-100)
   pub quality: Option<u8>,
@@ -17,8 +19,20 @@ pub struct WebPCompressOptions {
   pub lossless: Option<bool>,
 }
 
+#[wasm_bindgen]
+impl WebPCompressOptions {
+  #[wasm_bindgen(constructor)]
+  pub fn new() -> Self {
+    Self {
+      quality: Some(80),
+      lossless: Some(false),
+    }
+  }
+}
+
 /// WebP压缩结果
-#[napi(object)]
+#[wasm_bindgen]
+#[derive(Serialize, Deserialize)]
 pub struct WebPCompressResult {
   /// 压缩后的数据
   pub data: Vec<u8>,
@@ -34,65 +48,53 @@ pub struct WebPCompressResult {
   pub height: u32,
 }
 
-/// 压缩图片为WebP格式
-#[napi]
-pub fn compress_to_webp(
+
+// 内部实现函数
+// TODO: WebP 功能暂时禁用，等待找到纯 Rust 实现的 WebP 库
+fn compress_to_webp_impl(
   image_data: Vec<u8>,
-  options: Option<WebPCompressOptions>,
-) -> Result<WebPCompressResult, NapiError> {
-  // 解析图片
+  _options: Option<WebPCompressOptions>,
+) -> Result<WebPCompressResult, String> {
+  // 解析图片以获取尺寸信息
   let img = image::load_from_memory(&image_data)
-    .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
+    .map_err(|e| format!("Failed to load image: {}", e))?;
 
   let (width, height) = img.dimensions();
   let original_size = image_data.len() as u32;
 
-  // 获取选项
-  let opts = options.unwrap_or(WebPCompressOptions {
-    quality: Some(80),
-    lossless: Some(false),
-  });
-
-  let quality = opts.quality.unwrap_or(80);
-  let lossless = opts.lossless.unwrap_or(false);
-
-  // 转换为RGB格式
-  let rgb_img = img.to_rgb8();
-  let (img_width, img_height) = rgb_img.dimensions();
-
-  // 创建WebP编码器
-  let encoder = if lossless {
-    Encoder::new(&rgb_img, PixelLayout::Rgb, img_width, img_height).encode_lossless()
-  } else {
-    Encoder::new(&rgb_img, PixelLayout::Rgb, img_width, img_height).encode(quality as f32)
-  };
-
-  let webp_data = encoder.to_vec();
-  let compressed_size = webp_data.len() as u32;
-  let compression_ratio = compressed_size as f64 / original_size as f64;
-
-  Ok(WebPCompressResult {
-    data: webp_data,
-    original_size,
-    compressed_size,
-    compression_ratio,
-    width,
-    height,
-  })
+  // TODO: WebP 压缩功能暂时不可用
+  // 原因：webp crate 依赖 libwebp-sys，而 libwebp-sys 需要编译 C 代码，在 WASM 目标上不可用
+  // 解决方案：寻找纯 Rust 实现的 WebP 库，或使用其他压缩方案
+  Err(format!(
+    "WebP compression is temporarily unavailable in WASM build. \
+    Original image size: {}x{} ({} bytes). \
+    Please use other formats (JPEG, PNG) for now.",
+    width, height, original_size
+  ))
 }
 
-/// 批量压缩图片为WebP格式
-#[napi]
+/// 压缩图片为WebP格式（WASM 导出）
+#[wasm_bindgen]
+pub fn compress_to_webp(
+  image_data: &[u8],
+  options: Option<WebPCompressOptions>,
+) -> Result<WebPCompressResult, JsValue> {
+  compress_to_webp_impl(image_data.to_vec(), options)
+    .map_err(|e| JsValue::from_str(&e))
+}
+
+/// 批量压缩图片为WebP格式（WASM 导出）
+#[wasm_bindgen]
 pub fn batch_compress_to_webp(
   images_data: Vec<Vec<u8>>,
   options: Option<WebPCompressOptions>,
-) -> Result<Vec<WebPCompressResult>, NapiError> {
+) -> Result<Vec<WebPCompressResult>, JsValue> {
   let mut results = Vec::new();
 
   for image_data in images_data {
-    match compress_to_webp(image_data, options.clone()) {
+    match compress_to_webp_impl(image_data, options.clone()) {
       Ok(result) => results.push(result),
-      Err(e) => return Err(NapiError::new(napi::Status::GenericFailure, format!("Batch compression failed: {}", e))),
+      Err(e) => return Err(JsValue::from_str(&format!("Batch compression failed: {}", e))),
     }
   }
 
@@ -157,7 +159,7 @@ mod tests {
         // 测试基本的WebP压缩功能
         let png_data = generate_test_png(100, 100).expect("Failed to generate test PNG");
 
-        let result = compress_to_webp(png_data.clone(), None).expect("Failed to compress PNG to WebP");
+        let result = compress_to_webp_impl(png_data.clone(), None).expect("Failed to compress PNG to WebP");
 
         // 验证压缩结果的基本属性
         assert_eq!(result.width, 100);

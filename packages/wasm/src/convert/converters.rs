@@ -2,14 +2,13 @@
 //!
 //! 提供各种图片格式之间的转换功能
 
-use napi::Error as NapiError;
 use image::{DynamicImage, ColorType};
 use crate::convert::types::SupportedFormat;
 
 /// 格式转换器 trait
 pub trait FormatConverter {
     /// 转换图片格式
-    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError>;
+    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, String>;
 
     /// 获取支持的格式
     fn supported_format(&self) -> SupportedFormat;
@@ -37,7 +36,7 @@ impl Default for ConversionOptions {
 pub struct JpegConverter;
 
 impl FormatConverter for JpegConverter {
-    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_jpeg(img, options.quality)
     }
 
@@ -50,7 +49,7 @@ impl FormatConverter for JpegConverter {
 pub struct PngConverter;
 
 impl FormatConverter for PngConverter {
-    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_png(img, options.preserve_transparency)
     }
 
@@ -63,7 +62,7 @@ impl FormatConverter for PngConverter {
 pub struct WebPConverter;
 
 impl FormatConverter for WebPConverter {
-    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_webp(img, options.quality, options.lossless)
     }
 
@@ -76,7 +75,7 @@ impl FormatConverter for WebPConverter {
 pub struct GifConverter;
 
 impl FormatConverter for GifConverter {
-    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_gif(img)
     }
 
@@ -89,7 +88,7 @@ impl FormatConverter for GifConverter {
 pub struct BmpConverter;
 
 impl FormatConverter for BmpConverter {
-    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_bmp(img)
     }
 
@@ -102,7 +101,7 @@ impl FormatConverter for BmpConverter {
 pub struct TiffConverter;
 
 impl FormatConverter for TiffConverter {
-    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, NapiError> {
+    fn convert(&self, img: &DynamicImage, _options: &ConversionOptions) -> Result<Vec<u8>, String> {
         convert_to_tiff(img)
     }
 
@@ -124,69 +123,59 @@ pub fn get_converter(format: &SupportedFormat) -> Box<dyn FormatConverter> {
 }
 
 /// 转换为 JPEG 格式
-fn convert_to_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, NapiError> {
+fn convert_to_jpeg(img: &DynamicImage, quality: u8) -> Result<Vec<u8>, String> {
     let mut buffer = Vec::new();
     let rgb_img = img.to_rgb8();
 
     let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buffer, quality);
     encoder.encode(&rgb_img, rgb_img.width(), rgb_img.height(), ColorType::Rgb8)
-        .map_err(|e| NapiError::new(napi::Status::GenericFailure, format!("JPEG encoding failed: {}", e)))?;
+        .map_err(|e| format!("JPEG encoding failed: {}", e))?;
 
     Ok(buffer)
 }
 
 /// 转换为 PNG 格式
 #[allow(deprecated)]
-fn convert_to_png(img: &DynamicImage, preserve_transparency: bool) -> Result<Vec<u8>, NapiError> {
+fn convert_to_png(img: &DynamicImage, preserve_transparency: bool) -> Result<Vec<u8>, String> {
     let mut buffer = Vec::new();
 
     if preserve_transparency && img.color().has_alpha() {
         let rgba_img = img.to_rgba8();
         let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
         encoder.encode(&rgba_img, rgba_img.width(), rgba_img.height(), ColorType::Rgba8)
-            .map_err(|e| NapiError::new(napi::Status::GenericFailure, format!("PNG encoding failed: {}", e)))?;
+            .map_err(|e| format!("PNG encoding failed: {}", e))?;
     } else {
         let rgb_img = img.to_rgb8();
         let encoder = image::codecs::png::PngEncoder::new(&mut buffer);
         encoder.encode(&rgb_img, rgb_img.width(), rgb_img.height(), ColorType::Rgb8)
-            .map_err(|e| NapiError::new(napi::Status::GenericFailure, format!("PNG encoding failed: {}", e)))?;
+            .map_err(|e| format!("PNG encoding failed: {}", e))?;
     }
 
     Ok(buffer)
 }
 
 /// 转换为 WebP 格式
-fn convert_to_webp(img: &DynamicImage, quality: u8, lossless: bool) -> Result<Vec<u8>, NapiError> {
-    use webp::{Encoder, PixelLayout};
-
-    let rgb_img = img.to_rgb8();
-    let (width, height) = rgb_img.dimensions();
-
-    let encoder = if lossless {
-        Encoder::new(&rgb_img, PixelLayout::Rgb, width, height).encode_lossless()
-    } else {
-        Encoder::new(&rgb_img, PixelLayout::Rgb, width, height).encode(quality as f32)
-    };
-
-    Ok(encoder.to_vec())
+// TODO: WebP 转换功能暂时禁用，因为 webp crate 依赖 C 代码，在 WASM 目标上无法编译
+fn convert_to_webp(_img: &DynamicImage, _quality: u8, _lossless: bool) -> Result<Vec<u8>, String> {
+    Err("WebP conversion is temporarily unavailable in WASM build. Please use other formats (JPEG, PNG) for now.".to_string())
 }
 
 /// 转换为 GIF 格式
-fn convert_to_gif(img: &DynamicImage) -> Result<Vec<u8>, NapiError> {
+fn convert_to_gif(img: &DynamicImage) -> Result<Vec<u8>, String> {
     // 暂时使用 PNG 作为 GIF 的替代，因为 GIF 编码比较复杂
     // 在实际项目中，可以使用专门的 GIF 库
     convert_to_png(img, false)
 }
 
 /// 转换为 BMP 格式
-fn convert_to_bmp(img: &DynamicImage) -> Result<Vec<u8>, NapiError> {
+fn convert_to_bmp(img: &DynamicImage) -> Result<Vec<u8>, String> {
     // 暂时使用 PNG 作为 BMP 的替代
     // 在实际项目中，可以实现真正的 BMP 编码
     convert_to_png(img, false)
 }
 
 /// 转换为 TIFF 格式
-fn convert_to_tiff(img: &DynamicImage) -> Result<Vec<u8>, NapiError> {
+fn convert_to_tiff(img: &DynamicImage) -> Result<Vec<u8>, String> {
     // 暂时使用 PNG 作为 TIFF 的替代
     // 在实际项目中，可以使用专门的 TIFF 库
     convert_to_png(img, false)
@@ -197,16 +186,13 @@ pub fn batch_convert_images(
     images: Vec<DynamicImage>,
     converter: &dyn FormatConverter,
     options: &ConversionOptions,
-) -> Result<Vec<Vec<u8>>, NapiError> {
+) -> Result<Vec<Vec<u8>>, String> {
     let mut results = Vec::new();
 
     for img in images {
         match converter.convert(&img, options) {
             Ok(data) => results.push(data),
-            Err(e) => return Err(NapiError::new(
-                napi::Status::GenericFailure,
-                format!("Batch conversion failed: {}", e)
-            )),
+            Err(e) => return Err(format!("Batch conversion failed: {}", e)),
         }
     }
 

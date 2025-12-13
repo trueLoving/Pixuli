@@ -23,27 +23,28 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
 });
 
+// TODO: 暂时移除 WASM API，等稳定后再开放使用
 // --------- Expose WASM API to the Renderer process ---------
-contextBridge.exposeInMainWorld('wasmAPI', {
-  plus100: (input: number) => ipcRenderer.invoke('wasm:plus100', input),
-  compressToWebp: (imageData: number[], options?: any) =>
-    ipcRenderer.invoke('wasm:compress-to-webp', imageData, options),
-  batchCompressToWebp: (imagesData: number[][], options?: any) =>
-    ipcRenderer.invoke('wasm:batch-compress-to-webp', imagesData, options),
-  getImageInfo: (imageData: number[]) =>
-    ipcRenderer.invoke('wasm:get-image-info', imageData),
-  convertImageFormat: (imageData: number[], options: any) =>
-    ipcRenderer.invoke('wasm:convert-image-format', imageData, options),
-  batchConvertImageFormat: (imagesData: number[][], options: any) =>
-    ipcRenderer.invoke('wasm:batch-convert-image-format', imagesData, options),
-  // AI 分析功能
-  analyzeImage: (imageData: number[], options?: any) =>
-    ipcRenderer.invoke('wasm:analyze-image', imageData, options),
-  batchAnalyzeImages: (imagesData: number[][], options?: any) =>
-    ipcRenderer.invoke('wasm:batch-analyze-images', imagesData, options),
-  checkModelAvailability: (modelPath: string) =>
-    ipcRenderer.invoke('wasm:check-model-availability', modelPath),
-});
+// contextBridge.exposeInMainWorld('wasmAPI', {
+//   plus100: (input: number) => ipcRenderer.invoke('wasm:plus100', input),
+//   compressToWebp: (imageData: number[], options?: any) =>
+//     ipcRenderer.invoke('wasm:compress-to-webp', imageData, options),
+//   batchCompressToWebp: (imagesData: number[][], options?: any) =>
+//     ipcRenderer.invoke('wasm:batch-compress-to-webp', imagesData, options),
+//   getImageInfo: (imageData: number[]) =>
+//     ipcRenderer.invoke('wasm:get-image-info', imageData),
+//   convertImageFormat: (imageData: number[], options: any) =>
+//     ipcRenderer.invoke('wasm:convert-image-format', imageData, options),
+//   batchConvertImageFormat: (imagesData: number[][], options: any) =>
+//     ipcRenderer.invoke('wasm:batch-convert-image-format', imagesData, options),
+//   // AI 分析功能
+//   analyzeImage: (imageData: number[], options?: any) =>
+//     ipcRenderer.invoke('wasm:analyze-image', imageData, options),
+//   batchAnalyzeImages: (imagesData: number[][], options?: any) =>
+//     ipcRenderer.invoke('wasm:batch-analyze-images', imagesData, options),
+//   checkModelAvailability: (modelPath: string) =>
+//     ipcRenderer.invoke('wasm:check-model-availability', modelPath),
+// });
 
 // --------- Expose AI API to the Renderer process ---------
 contextBridge.exposeInMainWorld('aiAPI', {

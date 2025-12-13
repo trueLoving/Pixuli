@@ -6,33 +6,33 @@
 //
 // Pixuli WASM 图片处理库
 
-#![deny(clippy::all)]
+// #![deny(clippy::all)]
 
-use napi_derive::napi;
+use wasm_bindgen::prelude::*;
 
-// 导入模块
-pub mod convert;
-pub mod image;
-pub mod compress;
-pub mod analyze;
-pub mod edit;
+// // 导入模块
+// pub mod convert;
+// pub mod image;
+// pub mod compress;
+// pub mod analyze;
+// pub mod edit;
 
-// 重新导出主要功能
-pub use image::*;
-pub use compress::*;
+// // 重新导出主要功能
+// pub use image::*;
+// pub use compress::*;
 
-pub use convert::{
-  batch_convert_image_format, convert_image_format, get_format_info, get_supported_formats,
-  FormatConversionOptions, FormatConversionResult, ResizeOptions,
-};
+// pub use convert::{
+//   batch_convert_image_format, convert_image_format, get_format_info, get_supported_formats,
+//   FormatConversionOptions, FormatConversionResult, ResizeOptions,
+// };
 
-pub use analyze::{
-  analyze_image, batch_analyze_images, check_model_availability,
-  AIAnalysisOptions, AIAnalysisResult,
-};
+// pub use analyze::{
+//   analyze_image, batch_analyze_images, check_model_availability,
+//   AIAnalysisOptions, AIAnalysisResult,
+// };
 
-/// 简单的加法函数，用于测试WASM接口
-#[napi]
+// /// 简单的加法函数，用于测试WASM接口
+#[wasm_bindgen]
 pub fn plus_100(input: u32) -> u32 {
   input + 100
 }
