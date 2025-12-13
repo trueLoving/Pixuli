@@ -33,21 +33,20 @@ pub use converters::{
     validate_conversion_options,
 };
 
-use napi_derive::napi;
-use napi::Error as NapiError;
+use wasm_bindgen::prelude::*;
 use image::GenericImageView;
 
 /// 转换图片格式
-#[napi]
+#[wasm_bindgen]
 pub fn convert_image_format(
-    image_data: Vec<u8>,
+    image_data: &[u8],
     options: FormatConversionOptions,
-) -> Result<FormatConversionResult, NapiError> {
+) -> Result<FormatConversionResult, JsValue> {
     let start_time = std::time::Instant::now();
 
     // 解析图片
-    let img = image::load_from_memory(&image_data)
-        .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
+    let img = image::load_from_memory(image_data)
+        .map_err(|e| JsValue::from_str(&format!("Failed to load image: {}", e)))?;
 
     let (original_width, original_height) = img.dimensions();
     let original_size = image_data.len() as u32;
@@ -55,7 +54,7 @@ pub fn convert_image_format(
     // 验证尺寸调整选项
     if let Some(ref resize) = options.resize {
         validate_resize_options(resize)
-            .map_err(|e| NapiError::new(napi::Status::InvalidArg, e))?;
+            .map_err(|e| JsValue::from_str(&e))?;
     }
 
     // 处理尺寸调整
@@ -74,7 +73,7 @@ pub fn convert_image_format(
 
     // 解析目标格式
     let target_format = SupportedFormat::from_string(&options.target_format)
-        .ok_or_else(|| NapiError::new(napi::Status::InvalidArg, format!("Unsupported target format: {}", options.target_format)))?;
+        .ok_or_else(|| JsValue::from_str(&format!("Unsupported target format: {}", options.target_format)))?;
 
     // 创建转换选项
     let conversion_options = converters::ConversionOptions {
@@ -85,7 +84,7 @@ pub fn convert_image_format(
 
     // 验证转换选项
     validate_conversion_options(&conversion_options)
-        .map_err(|e| NapiError::new(napi::Status::InvalidArg, e))?;
+        .map_err(|e| JsValue::from_str(&e))?;
 
     // 获取转换器并执行转换
     let converter = get_converter(&target_format);
@@ -107,17 +106,17 @@ pub fn convert_image_format(
 }
 
 /// 批量转换图片格式
-#[napi]
+#[wasm_bindgen]
 pub fn batch_convert_image_format(
     images_data: Vec<Vec<u8>>,
     options: FormatConversionOptions,
-) -> Result<Vec<FormatConversionResult>, NapiError> {
+) -> Result<Vec<FormatConversionResult>, JsValue> {
     let mut results = Vec::new();
 
     for image_data in images_data {
-        match convert_image_format(image_data, options.clone()) {
+        match convert_image_format(&image_data, options.clone()) {
             Ok(result) => results.push(result),
-            Err(e) => return Err(NapiError::new(napi::Status::GenericFailure, format!("Batch conversion failed: {}", e))),
+            Err(e) => return Err(JsValue::from_str(&format!("Batch conversion failed: {:?}", e))),
         }
     }
 
@@ -125,7 +124,7 @@ pub fn batch_convert_image_format(
 }
 
 /// 获取支持的图片格式列表
-#[napi]
+#[wasm_bindgen]
 pub fn get_supported_formats() -> Vec<String> {
     vec![
         "jpeg".to_string(),
@@ -140,10 +139,10 @@ pub fn get_supported_formats() -> Vec<String> {
 }
 
 /// 获取格式的详细信息
-#[napi]
-pub fn get_format_info(format_str: String) -> Result<String, NapiError> {
+#[wasm_bindgen]
+pub fn get_format_info(format_str: String) -> Result<String, JsValue> {
     let format = SupportedFormat::from_string(&format_str)
-        .ok_or_else(|| NapiError::new(napi::Status::InvalidArg, format!("Unsupported format: {}", format_str)))?;
+        .ok_or_else(|| JsValue::from_str(&format!("Unsupported format: {}", format_str)))?;
 
     let info = serde_json::json!({
         "format": format_str,

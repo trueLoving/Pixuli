@@ -1,17 +1,16 @@
 //! 图片处理基础功能模块
-//! 
+//!
 //! 提供图片信息获取、格式检测等基础功能
 
-use napi_derive::napi;
+use wasm_bindgen::prelude::*;
 use image::{DynamicImage, GenericImageView};
-use napi::Error as NapiError;
 use serde_json;
 
 /// 获取图片信息
-#[napi]
-pub fn get_image_info(image_data: Vec<u8>) -> Result<String, NapiError> {
-  let img = image::load_from_memory(&image_data)
-    .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
+#[wasm_bindgen]
+pub fn get_image_info(image_data: &[u8]) -> Result<String, JsValue> {
+  let img = image::load_from_memory(image_data)
+    .map_err(|e| JsValue::from_str(&format!("Failed to load image: {}", e)))?;
 
   let (width, height) = img.dimensions();
   let format = match img {
@@ -44,7 +43,7 @@ pub fn detect_image_format(data: &[u8]) -> String {
   if data.len() < 4 {
     return "Unknown".to_string();
   }
-  
+
   // 检查文件头
   if data.starts_with(&[0xFF, 0xD8, 0xFF]) {
     "JPEG".to_string()
@@ -64,14 +63,14 @@ pub fn detect_image_format(data: &[u8]) -> String {
 /// 分析主要颜色
 pub fn analyze_dominant_colors(img: &DynamicImage) -> Vec<(u8, u8, u8)> {
   use std::collections::HashMap;
-  
+
   let mut color_counts: HashMap<(u8, u8, u8), u32> = HashMap::new();
-  
+
   // 简化采样
   let (width, height) = img.dimensions();
   let step_x = width / 32;
   let step_y = height / 32;
-  
+
   for y in (0..height).step_by(step_y as usize) {
     for x in (0..width).step_by(step_x as usize) {
       if x < width && y < height {
@@ -81,10 +80,10 @@ pub fn analyze_dominant_colors(img: &DynamicImage) -> Vec<(u8, u8, u8)> {
       }
     }
   }
-  
+
   // 获取最常见的颜色
   let mut colors: Vec<_> = color_counts.into_iter().collect();
   colors.sort_by(|a, b| b.1.cmp(&a.1));
-  
+
   colors.into_iter().take(3).map(|(color, _)| color).collect()
 }

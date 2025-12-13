@@ -2,14 +2,13 @@
 //!
 //! 提供基于 ONNX Runtime 的图片分析功能
 //! 支持对象检测、场景识别、图片标注等 AI 能力
-use napi_derive::napi;
-use napi::Error as NapiError;
+use wasm_bindgen::prelude::*;
 use image::{DynamicImage, GenericImageView};
 use serde_json::json;
 use std::path::Path;
 
 /// AI 分析配置选项
-#[napi(object)]
+#[wasm_bindgen]
 #[derive(Clone)]
 pub struct AIAnalysisOptions {
     /// 模型路径
@@ -25,7 +24,7 @@ pub struct AIAnalysisOptions {
 }
 
 /// 检测到的对象
-#[napi(object)]
+#[wasm_bindgen]
 pub struct DetectedObject {
     pub name: String,
     pub confidence: f64,
@@ -34,7 +33,7 @@ pub struct DetectedObject {
 }
 
 /// 颜色信息
-#[napi(object)]
+#[wasm_bindgen]
 pub struct ColorInfo {
     pub name: String,
     pub rgb: Vec<u8>,
@@ -43,7 +42,7 @@ pub struct ColorInfo {
 }
 
 /// 图片信息
-#[napi(object)]
+#[wasm_bindgen]
 pub struct ImageInfo {
     pub width: u32,
     pub height: u32,
@@ -51,7 +50,7 @@ pub struct ImageInfo {
 }
 
 /// AI 分析结果
-#[napi(object)]
+#[wasm_bindgen]
 pub struct AIAnalysisResult {
     /// 分析是否成功
     pub success: bool,
@@ -80,13 +79,13 @@ pub struct AIAnalysisResult {
 }
 
 /// 分析图片（单张）
-#[napi]
-pub fn analyze_image(image_data: Vec<u8>, options: Option<AIAnalysisOptions>) -> Result<AIAnalysisResult, NapiError> {
+#[wasm_bindgen]
+pub fn analyze_image(image_data: &[u8], options: Option<AIAnalysisOptions>) -> Result<AIAnalysisResult, JsValue> {
     let start_time = std::time::Instant::now();
 
     // 加载图片
-    let img = image::load_from_memory(&image_data)
-        .map_err(|e| NapiError::new(napi::Status::InvalidArg, format!("Failed to load image: {}", e)))?;
+    let img = image::load_from_memory(image_data)
+        .map_err(|e| JsValue::from_str(&format!("Failed to load image: {}", e)))?;
 
     let (width, height) = img.dimensions();
 
@@ -128,15 +127,15 @@ pub fn analyze_image(image_data: Vec<u8>, options: Option<AIAnalysisOptions>) ->
 }
 
 /// 批量分析图片
-#[napi]
+#[wasm_bindgen]
 pub fn batch_analyze_images(
     images_data: Vec<Vec<u8>>,
     options: Option<AIAnalysisOptions>
-) -> Result<Vec<AIAnalysisResult>, NapiError> {
+) -> Result<Vec<AIAnalysisResult>, JsValue> {
     let mut results = Vec::new();
 
     for image_data in images_data {
-        match analyze_image(image_data, options.clone()) {
+        match analyze_image(&image_data, options.clone()) {
             Ok(result) => results.push(result),
             Err(e) => {
                 // 返回错误结果而不是失败
@@ -152,7 +151,7 @@ pub fn batch_analyze_images(
                     analysis_time: 0.0,
                     model_used: String::new(),
                     image_info_json: "{}".to_string(),
-                    error: Some(e.to_string()),
+                    error: Some(format!("{:?}", e)),
                 });
             }
         }
@@ -162,8 +161,8 @@ pub fn batch_analyze_images(
 }
 
 /// 检查模型是否可用
-#[napi]
-pub fn check_model_availability(model_path: String) -> Result<bool, NapiError> {
+#[wasm_bindgen]
+pub fn check_model_availability(model_path: String) -> Result<bool, JsValue> {
     Ok(Path::new(&model_path).exists())
 }
 

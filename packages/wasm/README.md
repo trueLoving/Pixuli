@@ -1,116 +1,182 @@
 # Pixuli WASM
 
-Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。包括转换、压缩、分析、编辑处理
+Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。支持 Web、Node.js 和 React
+Native 多平台。
 
 ## 功能特性
 
-### 🖼️ 图片压缩
+### 🌐 多平台支持
 
-- **WebP 压缩**: 支持有损和无损压缩
-- **批量处理**: 支持多张图片同时压缩
-- **质量控制**: 可调节压缩质量
-- **性能优化**: 使用 Rust 实现，性能卓越
+- **Web 端**: 浏览器环境，使用 ES6 模块 ✅
+- **Node.js**: Node.js 和 Electron 主进程，使用 CommonJS ✅
+- **React Native**: 移动端应用，使用 CommonJS ⚠️ **暂时禁用**
 
-### 🔄 图片格式转换
+### 🖼️ 图片处理功能（开发中）
 
-- **多格式支持**: JPEG、PNG、WebP、GIF、BMP、TIFF
-- **智能转换**: 自动处理透明度和颜色空间
-- **尺寸调整**: 支持图片尺寸调整和宽高比保持
-- **批量转换**: 支持多张图片批量格式转换
+- **图片格式转换**: 支持 JPEG、PNG、GIF、BMP、TIFF 等格式转换
+- **图片压缩**: WebP 压缩功能（暂时禁用，等待纯 Rust 实现）
+- **图片分析**: AI 图片分析功能
+- **批量处理**: 支持多张图片批量处理
+
+### 🧪 测试功能
+
+- **plus_100**: 简单的测试函数，用于验证 WASM 模块加载
 
 ## 技术架构
 
 ### 核心技术栈
 
 - **Rust**: 主要开发语言
-- **NAPI-RS**: Node.js 原生模块绑定
+- **wasm-bindgen**: WebAssembly 绑定生成工具
+- **wasm-pack**: WASM 构建和打包工具
 - **image-rs**: 图片处理核心库
-- **webp**: WebP 格式支持
 - **serde**: 序列化支持
 
 ### 构建系统
 
 - **Cargo**: Rust 包管理器
-- **NAPI**: 跨平台 Node.js 原生模块构建
-- **Cross-compilation**: 支持多平台编译
+- **wasm-pack**: 跨平台 WASM 构建工具
+- **多目标构建**: 支持 web、nodejs、bundler 三种目标
 
 ## 安装使用
 
 ### 开发环境要求
 
 - Rust 1.70+
-- Node.js 16+
-- 平台相关构建工具
+- Node.js 14+
+- wasm-pack（通过 `cargo install wasm-pack` 安装）
 
 ### 构建命令
 
 ```bash
-# 开发构建
-pnpm run build:debug
+# 构建所有平台版本（生产）
+pnpm run build:wasm
 
-# 生产构建
-pnpm run build
+# 构建所有平台版本（开发）
+pnpm run build:wasm:dev
 
-# 查看构建产物
-pnpm run artifacts
+# 分别构建各平台版本
+pnpm run build:wasm:web      # Web 版本
+pnpm run build:wasm:node     # Node.js 版本
+pnpm run build:wasm:mobile   # React Native 版本
 ```
 
-## 主要功能
+### 使用示例
 
-### 压缩功能
+#### Web 端
 
-- WebP 格式压缩，支持有损和无损模式
-- 批量图片压缩处理
-- 可调节压缩质量参数
-- 返回详细的压缩统计信息
+```javascript
+import { init, plus100 } from 'pixuli-wasm';
 
-### 格式转换
+// 初始化 WASM 模块
+await init();
 
-- 支持多种图片格式之间的转换
-- 智能处理透明度和颜色空间
-- 支持图片尺寸调整
-- 批量格式转换功能
+// 使用功能
+const result = await plus100(50);
+console.log(result); // 150
+```
 
-### 工具函数
+#### Node.js / Electron
 
-- 图片信息获取
-- 格式检测
-- 基础测试功能
+```javascript
+const { init, plus100 } = require('pixuli-wasm');
 
-## 性能特点
+// 初始化 WASM 模块
+await init();
 
-### 压缩性能
+// 使用功能
+const result = await plus100(50);
+console.log(result); // 150
+```
 
-- WebP 压缩比 JPEG 小 25-35%，比 PNG 小 25-50%
-- 单张 2MB 图片压缩时间小于 100ms
-- 流式处理，内存占用低
+#### React Native ⚠️ **暂时禁用**
 
-### 格式转换性能
+```javascript
+// ⚠️ React Native WASM 支持暂时被禁用
+// Metro bundler 无法直接处理 WASM 文件导入
+// 等找到更好的解决方案后再开放
 
-- 支持 6 种主流格式无缝转换
-- 根据目标格式自动优化参数
-- 支持并发处理多张图片
+// import { init, plus100 } from 'pixuli-wasm';
+// await init();
+// const result = await plus100(50);
+```
+
+## 项目结构
+
+```
+packages/wasm/
+├── src/                    # Rust 源代码
+│   ├── lib.rs             # 主入口文件
+│   ├── image.rs           # 图片信息获取
+│   ├── compress/          # 压缩功能模块
+│   ├── convert/           # 格式转换模块
+│   └── analyze/           # AI 分析模块
+├── pkg-web/               # Web 版本构建产物
+├── pkg-node/              # Node.js 版本构建产物
+├── pkg-mobile/            # React Native 版本构建产物
+├── index.js               # ES6 模块入口（Web 端）
+├── index.cjs              # CommonJS 入口（Node.js/RN）
+└── index.d.ts             # TypeScript 类型定义
+```
+
+## 当前状态
+
+### ✅ 已完成
+
+- [x] WASM 多平台构建配置（web、nodejs、bundler）
+- [x] 统一入口模块（自动环境检测）
+- [x] ES6 和 CommonJS 双模块支持
+- [x] plus_100 测试函数
+- [x] TypeScript 类型定义
+- [x] Web 端 WASM 支持
+- [x] Node.js 端 WASM 支持
+
+### 🚧 开发中
+
+- [ ] 图片格式转换功能（代码已实现，待启用）
+- [ ] 图片信息获取功能（代码已实现，待启用）
+- [ ] AI 图片分析功能（代码已实现，待启用）
+
+### ⚠️ 已知问题
+
+- **WebP 压缩功能暂时禁用**: `webp`
+  crate 依赖 C 代码，在 WASM 目标上无法编译。需要寻找纯 Rust 实现的 WebP 库或使用其他方案。
+- **React Native 支持暂时禁用**: Metro bundler 无法直接处理
+  `import * as wasm from "./pixuli_wasm_bg.wasm"`。需要找到更好的解决方案（如自定义 Metro
+  resolver、使用 expo-asset、或等待 Metro 官方支持）。
 
 ## 开发指南
 
-### 项目结构
+### 添加新功能
 
-- `src/`: Rust 源代码目录
-- `src/webp.rs`: WebP 压缩功能模块
-- `src/image.rs`: 图片处理基础功能
-- `src/format_conversion.rs`: 格式转换功能
+1. 在 `src/` 目录下编写 Rust 代码
+2. 使用 `#[wasm_bindgen]` 宏导出函数
+3. 在 `index.js` 和 `index.cjs` 中添加对应的导出
+4. 更新 `index.d.ts` 类型定义
+5. 运行 `pnpm run build:wasm` 重新构建
 
 ### 测试
 
-- 所有功能模块都包含完整的单元测试
-- 使用 `cargo test` 运行测试
-- 测试代码集成在源代码中，使用条件编译
+```bash
+# 运行 Rust 单元测试
+cargo test
 
-### 构建和部署
+# 运行 JavaScript 测试（如果配置了）
+pnpm run test
+```
 
-- 使用 Cargo 管理 Rust 依赖
-- 通过 NAPI 生成 Node.js 原生模块
-- 支持多平台交叉编译
+### 调试
+
+- Web 端：使用浏览器开发者工具
+- Node.js：使用 Node.js 调试器
+- React Native：使用 React Native Debugger
+
+## 性能特点
+
+- **跨平台**: 同一套代码，支持 Web、Node.js、React Native
+- **高性能**: Rust 编译为 WASM，性能接近原生
+- **小体积**: WASM 二进制文件经过优化，体积小
+- **类型安全**: 完整的 TypeScript 类型定义
 
 ## 许可证
 
