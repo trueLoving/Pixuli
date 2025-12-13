@@ -7,9 +7,11 @@
   "license": "MIT",
   "exports": {
     ".": {
-      "node": "./index.js",
+      "import": "./index.js",
+      "require": "./index.cjs",
       "browser": "./index.js",
-      "react-native": "./index.js",
+      "react-native": "./index.cjs",
+      "node": "./index.cjs",
       "default": "./index.js"
     },
     "./pkg-web": "./pkg-web/pixuli_wasm.js",
@@ -18,6 +20,7 @@
   },
   "files": [
     "index.js",
+    "index.cjs",
     "index.d.ts",
     "pkg-web/**/*",
     "pkg-node/**/*",

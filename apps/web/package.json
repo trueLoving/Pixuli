@@ -22,6 +22,7 @@
     "lucide-react": "^0.556.0",
     "octokit": "^3.1.2",
     "pixuli-common": "workspace:*",
+    "pixuli-wasm": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^16.0.1",
