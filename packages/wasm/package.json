@@ -10,32 +10,27 @@
       "import": "./index.js",
       "require": "./index.cjs",
       "browser": "./index.js",
-      "react-native": "./index.cjs",
       "node": "./index.cjs",
       "default": "./index.js"
     },
     "./pkg-web": "./pkg-web/pixuli_wasm.js",
-    "./pkg-node": "./pkg-node/pixuli_wasm.js",
-    "./pkg-mobile": "./pkg-mobile/pixuli_wasm.js"
+    "./pkg-node": "./pkg-node/pixuli_wasm.js"
   },
   "files": [
     "index.js",
     "index.cjs",
     "index.d.ts",
     "pkg-web/**/*",
-    "pkg-node/**/*",
-    "pkg-mobile/**/*"
+    "pkg-node/**/*"
   ],
   "scripts": {
     "build": "pnpm run build:wasm",
-    "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node && pnpm run build:wasm:mobile",
+    "build:wasm": "pnpm run build:wasm:web && pnpm run build:wasm:node",
     "build:wasm:web": "wasm-pack build --target web --out-dir pkg-web --release",
     "build:wasm:node": "wasm-pack build --target nodejs --out-dir pkg-node --release",
-    "build:wasm:mobile": "wasm-pack build --target bundler --out-dir pkg-mobile --release",
-    "build:wasm:dev": "pnpm run build:wasm:web:dev && pnpm run build:wasm:node:dev && pnpm run build:wasm:mobile:dev",
+    "build:wasm:dev": "pnpm run build:wasm:web:dev && pnpm run build:wasm:node:dev",
     "build:wasm:web:dev": "wasm-pack build --target web --out-dir pkg-web --dev",
     "build:wasm:node:dev": "wasm-pack build --target nodejs --out-dir pkg-node --dev",
-    "build:wasm:mobile:dev": "wasm-pack build --target bundler --out-dir pkg-mobile --dev",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
