@@ -1,7 +1,6 @@
 # Pixuli WASM
 
-Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。支持 Web、Node.js 和 React
-Native 多平台。
+Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。支持 Web 和 Node.js 多平台。
 
 ## 功能特性
 
@@ -9,7 +8,6 @@ Native 多平台。
 
 - **Web 端**: 浏览器环境，使用 ES6 模块 ✅
 - **Node.js**: Node.js 和 Electron 主进程，使用 CommonJS ✅
-- **React Native**: 移动端应用，使用 CommonJS ⚠️ **暂时禁用**
 
 ### 🖼️ 图片处理功能（开发中）
 
@@ -58,7 +56,6 @@ pnpm run build:wasm:dev
 # 分别构建各平台版本
 pnpm run build:wasm:web      # Web 版本
 pnpm run build:wasm:node     # Node.js 版本
-pnpm run build:wasm:mobile   # React Native 版本
 ```
 
 ### 使用示例
@@ -89,18 +86,6 @@ const result = await plus100(50);
 console.log(result); // 150
 ```
 
-#### React Native ⚠️ **暂时禁用**
-
-```javascript
-// ⚠️ React Native WASM 支持暂时被禁用
-// Metro bundler 无法直接处理 WASM 文件导入
-// 等找到更好的解决方案后再开放
-
-// import { init, plus100 } from 'pixuli-wasm';
-// await init();
-// const result = await plus100(50);
-```
-
 ## 项目结构
 
 ```
@@ -113,9 +98,8 @@ packages/wasm/
 │   └── analyze/           # AI 分析模块
 ├── pkg-web/               # Web 版本构建产物
 ├── pkg-node/              # Node.js 版本构建产物
-├── pkg-mobile/            # React Native 版本构建产物
 ├── index.js               # ES6 模块入口（Web 端）
-├── index.cjs              # CommonJS 入口（Node.js/RN）
+├── index.cjs              # CommonJS 入口（Node.js）
 └── index.d.ts             # TypeScript 类型定义
 ```
 
@@ -141,9 +125,6 @@ packages/wasm/
 
 - **WebP 压缩功能暂时禁用**: `webp`
   crate 依赖 C 代码，在 WASM 目标上无法编译。需要寻找纯 Rust 实现的 WebP 库或使用其他方案。
-- **React Native 支持暂时禁用**: Metro bundler 无法直接处理
-  `import * as wasm from "./pixuli_wasm_bg.wasm"`。需要找到更好的解决方案（如自定义 Metro
-  resolver、使用 expo-asset、或等待 Metro 官方支持）。
 
 ## 开发指南
 
@@ -169,11 +150,10 @@ pnpm run test
 
 - Web 端：使用浏览器开发者工具
 - Node.js：使用 Node.js 调试器
-- React Native：使用 React Native Debugger
 
 ## 性能特点
 
-- **跨平台**: 同一套代码，支持 Web、Node.js、React Native
+- **跨平台**: 同一套代码，支持 Web、Node.js
 - **高性能**: Rust 编译为 WASM，性能接近原生
 - **小体积**: WASM 二进制文件经过优化，体积小
 - **类型安全**: 完整的 TypeScript 类型定义

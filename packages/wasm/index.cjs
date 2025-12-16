@@ -1,5 +1,5 @@
 /**
- * CommonJS 版本：用于 Node.js 和 React Native
+ * CommonJS 版本：用于 Node.js
  * 统一 WASM 入口：根据运行环境自动加载对应的 WASM 模块
  */
 
@@ -10,11 +10,6 @@ let initPromise = null;
  * 检测运行环境
  */
 function detectEnvironment() {
-  // React Native 环境
-  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') {
-    return 'react-native';
-  }
-
   // 浏览器环境（包括 Electron 渲染进程）
   if (typeof window !== 'undefined' || typeof self !== 'undefined') {
     return 'browser';
@@ -54,37 +49,6 @@ async function init() {
         // Web 端：使用 web 版本
         module = await import('./pkg-web/pixuli_wasm.js');
         await module.default(); // 初始化 WASM
-      } else if (env === 'react-native') {
-        // React Native：暂时禁用 WASM 支持
-        // React Native 的 Metro bundler 无法直接处理 `import * as wasm from "./pixuli_wasm_bg.wasm"`
-        // 需要特殊处理，暂时禁用，等找到更好的解决方案后再开放
-        throw new Error(
-          'WASM is temporarily disabled for React Native.\n' +
-          'Metro bundler cannot handle WASM file imports directly.\n' +
-          'Please use Web or Node.js version instead.\n' +
-          '\n' +
-          'TODO: Implement a better solution for React Native WASM support.'
-        );
-
-        // 之前的实现（暂时注释掉）：
-        // try {
-        //   // 直接使用 React Native 专用加载器
-        //   // 注意：不能直接导入 pkg-mobile/pixuli_wasm.js，因为它包含无法解析的 WASM import
-        //   const { loadWasmModule } = await import('./react-native-loader.js');
-        //   module = await loadWasmModule();
-        // } catch (err) {
-        //   throw new Error(
-        //     `React Native WASM loading failed: ${err.message}\n` +
-        //     `\n` +
-        //     `React Native supports WebAssembly, but Metro bundler cannot handle WASM imports directly.\n` +
-        //     `Solutions:\n` +
-        //     `1. Ensure Metro bundler is running on http://localhost:8081\n` +
-        //     `2. For Android emulator, use http://10.0.2.2:8081\n` +
-        //     `3. Restart Metro bundler with --reset-cache\n` +
-        //     `4. Check that pkg-mobile/pixuli_wasm_bg.wasm exists\n` +
-        //     `5. Verify WASM file is accessible via Metro bundler`
-        //   );
-        // }
       } else {
         // Node.js/Electron 主进程：使用 nodejs 版本
         // Node.js 版本是同步初始化的，不需要调用 default()
