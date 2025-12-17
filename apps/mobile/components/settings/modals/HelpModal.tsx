@@ -1,17 +1,17 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import {
+  Linking,
   Modal,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
-  ScrollView,
-  Linking,
 } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { IconSymbol } from './ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedView } from '../../ui/ThemedView';
 
 interface HelpModalProps {
   visible: boolean;

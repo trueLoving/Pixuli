@@ -1,33 +1,34 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  Modal,
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as DocumentPicker from 'expo-document-picker';
-// @ts-ignore
-const FileSystem = require('expo-file-system/legacy');
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { IconSymbol } from './ui/IconSymbol';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { showError, showSuccess } from '@/utils/toast';
 import { GitHubConfig, GiteeConfig } from '@packages/common/src/index.native';
-import { showSuccess, showError } from '@/utils/toast';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import * as DocumentPicker from 'expo-document-picker';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Alert,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedView } from '../../ui/ThemedView';
+// @ts-ignore
+const FileSystem = require('expo-file-system/legacy');
 
 interface StorageConfigModalProps {
   visible: boolean;
   onClose: () => void;
   type?: 'github' | 'gitee' | undefined;
-  config?: GitHubConfig | GiteeConfig;
+  sourceId?: string; // 编辑现有源时传入源ID
   onSave: () => void;
 }
 
@@ -35,14 +36,16 @@ export function StorageConfigModal({
   visible,
   onClose,
   type: initialType,
-  config,
+  sourceId,
   onSave,
 }: StorageConfigModalProps) {
   const { t } = useI18n();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
-  const { setGitHubConfig, setGiteeConfig } = useImageStore();
+  const { initializeStorage } = useImageStore();
+  const { sources, addSource, updateSource, setSelectedSourceId } =
+    useSourceStore();
 
   const [selectedType, setSelectedType] = useState<'github' | 'gitee' | null>(
     null,
@@ -63,32 +66,32 @@ export function StorageConfigModal({
     if (visible) {
       // 弹窗刚打开时（从关闭变为打开），初始化状态
       if (!wasVisible) {
-        if (initialType) {
+        // 如果有 sourceId，说明是编辑模式，从 sourceStore 加载配置
+        if (sourceId) {
+          const source = sources.find(s => s.id === sourceId);
+          if (source) {
+            setSelectedType(source.type);
+            setFormData({
+              owner: source.owner || '',
+              repo: source.repo || '',
+              branch:
+                source.branch || (source.type === 'github' ? 'main' : 'master'),
+              token: source.token || '',
+              path: source.path || 'images',
+            });
+          }
+        } else if (initialType) {
           setSelectedType(initialType);
+          setFormData({
+            owner: '',
+            repo: '',
+            branch: initialType === 'github' ? 'main' : 'master',
+            token: '',
+            path: 'images',
+          });
         } else {
           setSelectedType(null);
         }
-      }
-
-      if (config) {
-        setFormData({
-          owner: config.owner || '',
-          repo: config.repo || '',
-          branch:
-            config.branch || (initialType === 'github' ? 'main' : 'master'),
-          token: config.token || '',
-          path: config.path || 'images',
-        });
-      } else if (selectedType || initialType) {
-        // 只有在有类型时才重置表单数据
-        const type = selectedType || initialType;
-        setFormData({
-          owner: '',
-          repo: '',
-          branch: type === 'github' ? 'main' : 'master',
-          token: '',
-          path: 'images',
-        });
       }
     } else {
       // 弹窗关闭时，重置状态
@@ -103,7 +106,7 @@ export function StorageConfigModal({
         });
       }
     }
-  }, [config, initialType, visible, selectedType]);
+  }, [sourceId, initialType, visible, sources]);
 
   const currentType = selectedType || initialType;
 
@@ -190,11 +193,33 @@ export function StorageConfigModal({
     }
 
     try {
-      if (currentType === 'github') {
-        await setGitHubConfig(formData as GitHubConfig);
+      if (sourceId) {
+        // 编辑现有源
+        updateSource(sourceId, {
+          name: `${formData.owner}/${formData.repo}`,
+          owner: formData.owner,
+          repo: formData.repo,
+          branch: formData.branch,
+          token: formData.token,
+          path: formData.path,
+        });
       } else {
-        await setGiteeConfig(formData as GiteeConfig);
+        // 添加新源
+        const newSource = addSource({
+          type: currentType,
+          name: `${formData.owner}/${formData.repo}`,
+          owner: formData.owner,
+          repo: formData.repo,
+          branch: formData.branch,
+          token: formData.token,
+          path: formData.path,
+        });
+        setSelectedSourceId(newSource.id);
       }
+
+      // 更新 imageStore 的配置
+      initializeStorage();
+
       showSuccess(
         currentType === 'github'
           ? t('settings.github.saveSuccess')
@@ -351,7 +376,11 @@ export function StorageConfigModal({
                       },
                     ]}
                   >
-                    <IconSymbol name="link" size={24} color={colors.primary} />
+                    <IconSymbol
+                      name="chevron.left.forwardslash.chevron.right"
+                      size={24}
+                      color={colors.primary}
+                    />
                   </View>
                   <View style={styles.typeOptionContent}>
                     <ThemedText
@@ -408,7 +437,11 @@ export function StorageConfigModal({
                       },
                     ]}
                   >
-                    <IconSymbol name="link" size={24} color={colors.primary} />
+                    <ThemedText
+                      style={[styles.giteeIconText, { color: colors.primary }]}
+                    >
+                      码
+                    </ThemedText>
                   </View>
                   <View style={styles.typeOptionContent}>
                     <ThemedText
@@ -803,5 +836,9 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
+  },
+  giteeIconText: {
+    fontSize: 20,
+    fontWeight: '600',
   },
 });

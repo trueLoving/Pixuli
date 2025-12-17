@@ -1,21 +1,21 @@
-import { StyleSheet, View, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { SearchAndFilter } from '@/components/SearchAndFilter';
-import { ImageGrid } from '@/components/ImageGrid';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ImageBrowser } from '@/components/image/ImageBrowser';
+import { ImageGrid } from '@/components/image/ImageGrid';
+import { SearchAndFilter } from '@/components/search/SearchAndFilter';
+import { ThemedView } from '@/components/ui/ThemedView';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { useState } from 'react';
 import { ImageItem } from '@packages/common/src/index.native';
-import { ImageBrowser } from '@/components/ImageBrowser';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export default function FilterScreen() {
   const { t } = useI18n();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { filteredImages, images, refreshImageMetadata } = useImageStore();
+  const { filteredImages, images, refreshImageMetadata, deleteImage } =
+    useImageStore();
   const [browserVisible, setBrowserVisible] = useState(false);
   const [browserIndex, setBrowserIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,6 +32,15 @@ export default function FilterScreen() {
     if (index !== -1) {
       setBrowserIndex(index);
       setBrowserVisible(true);
+    }
+  };
+
+  const handleDeleteImage = async (image: ImageItem) => {
+    await deleteImage(image.id, image.name);
+    // 如果删除后没有图片了，关闭浏览器
+    const currentImages = filteredImages.length > 0 ? filteredImages : images;
+    if (currentImages.length <= 1) {
+      setBrowserVisible(false);
     }
   };
 
@@ -59,6 +68,7 @@ export default function FilterScreen() {
         images={filteredImages.length > 0 ? filteredImages : images}
         initialIndex={browserIndex}
         onClose={() => setBrowserVisible(false)}
+        onDelete={handleDeleteImage}
         onRefreshMetadata={refreshImageMetadata}
       />
     </ThemedView>

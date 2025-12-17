@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Modal,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Switch,
-  Alert,
-} from 'react-native';
-import { Image } from 'expo-image';
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import {
-  getImageDimensionsFromUri,
-  getFileSizeFromUri,
   formatImageFileSize,
-  processImage,
+  getFileSizeFromUri,
+  getImageDimensionsFromUri,
   ImageFormat,
   ImageProcessOptions,
   ImageProcessResult,
+  processImage,
 } from '@/utils/imageUtils';
+import { Image } from 'expo-image';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
 import { ImageCropModal } from './ImageCropModal';
 
 interface ImageUploadEditModalProps {
@@ -64,7 +64,7 @@ export function ImageUploadEditModal({
   const [enableProcessing, setEnableProcessing] = useState(false);
   const [compressQuality, setCompressQuality] = useState(0.8);
   const [targetFormat, setTargetFormat] = useState<ImageFormat | 'original'>(
-    'original'
+    'original',
   );
   const [resizeWidth, setResizeWidth] = useState<string>('');
   const [resizeHeight, setResizeHeight] = useState<string>('');
@@ -72,7 +72,7 @@ export function ImageUploadEditModal({
 
   // 处理效果预览
   const [previewResult, setPreviewResult] = useState<ImageProcessResult | null>(
-    null
+    null,
   );
   const [previewLoading, setPreviewLoading] = useState(false);
   const [originalFileSize, setOriginalFileSize] = useState<number | null>(null);
@@ -269,7 +269,7 @@ export function ImageUploadEditModal({
       console.error('预览处理效果失败:', error);
       Alert.alert(
         t('common.error'),
-        t('image.previewFailed') || '预览处理效果失败'
+        t('image.previewFailed') || '预览处理效果失败',
       );
     } finally {
       setPreviewLoading(false);
@@ -513,7 +513,7 @@ export function ImageUploadEditModal({
                         style={styles.sliderButton}
                         onPress={() =>
                           setCompressQuality(
-                            Math.max(0.1, compressQuality - 0.1)
+                            Math.max(0.1, compressQuality - 0.1),
                           )
                         }
                       >
@@ -571,7 +571,7 @@ export function ImageUploadEditModal({
                                 : format.toUpperCase()}
                             </ThemedText>
                           </TouchableOpacity>
-                        )
+                        ),
                       )}
                     </View>
                   </View>
@@ -697,7 +697,7 @@ export function ImageUploadEditModal({
                               </ThemedText>
                               <ThemedText style={styles.comparisonValue}>
                                 {formatImageFileSize(
-                                  previewResult.originalSize
+                                  previewResult.originalSize,
                                 )}
                               </ThemedText>
                             </View>
@@ -713,9 +713,11 @@ export function ImageUploadEditModal({
                               <ThemedText
                                 style={[
                                   styles.comparisonValue,
-                                  previewResult.sizeReductionPercent &&
-                                    previewResult.sizeReductionPercent > 0 &&
-                                    styles.comparisonValueSuccess,
+                                  previewResult.sizeReductionPercent !==
+                                    undefined &&
+                                  previewResult.sizeReductionPercent > 0
+                                    ? styles.comparisonValueSuccess
+                                    : null,
                                 ]}
                               >
                                 {formatImageFileSize(previewResult.size)}
@@ -731,7 +733,7 @@ export function ImageUploadEditModal({
                             <ThemedText style={styles.compressionText}>
                               {t('image.sizeReduced')}:{' '}
                               {formatImageFileSize(
-                                previewResult.sizeReduction || 0
+                                previewResult.sizeReduction || 0,
                               )}{' '}
                               ({previewResult.sizeReductionPercent.toFixed(1)}%)
                             </ThemedText>

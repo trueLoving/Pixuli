@@ -1,25 +1,24 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
+import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
+  Alert,
+  Animated,
+  Dimensions,
   Modal,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
-  ScrollView,
-  Animated,
-  Dimensions,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
-import { useImageStore } from '@/stores/imageStore';
-import { useRouter } from 'expo-router';
-import { Swipeable } from 'react-native-gesture-handler';
-import { StorageConfigModal } from './StorageConfigModal';
-import { GitHubConfig, GiteeConfig } from '@packages/common/src/index.native';
+import { StorageConfigModal } from '../settings/modals/StorageConfigModal';
+import { IconSymbol } from '../ui/IconSymbol';
+import { ThemedText } from '../ui/ThemedText';
 
 interface DrawerMenuProps {
   visible: boolean;
@@ -39,24 +38,17 @@ export function DrawerMenu({
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const {
-    githubConfig,
-    giteeConfig,
-    storageType,
-    setGitHubConfig,
-    setGiteeConfig,
-    clearGitHubConfig,
-    clearGiteeConfig,
-    loadImages,
-  } = useImageStore();
+  const { storageType, loadImages, initializeStorage } = useImageStore();
+  const { sources, selectedSourceId, setSelectedSourceId, removeSource } =
+    useSourceStore();
   const [versionModalVisible, setVersionModalVisible] = React.useState(false);
   const [helpModalVisible, setHelpModalVisible] = React.useState(false);
   const [configModalVisible, setConfigModalVisible] = React.useState(false);
   const [configModalType, setConfigModalType] = React.useState<
     'github' | 'gitee' | undefined
   >(undefined);
-  const [editingConfig, setEditingConfig] = React.useState<
-    GitHubConfig | GiteeConfig | undefined
+  const [editingSourceId, setEditingSourceId] = React.useState<
+    string | undefined
   >();
   const slideAnim = React.useRef(
     new Animated.Value(-Dimensions.get('window').width),
@@ -122,146 +114,102 @@ export function DrawerMenu({
     }
   };
 
-  const getCurrentSourceInfo = () => {
-    if (storageType === 'github' && githubConfig) {
-      return {
-        type: 'github' as const,
-        name: 'GitHub',
-        display: `${githubConfig.owner}/${githubConfig.repo}`,
-        config: githubConfig,
-      };
-    } else if (storageType === 'gitee' && giteeConfig) {
-      return {
-        type: 'gitee' as const,
-        name: 'Gitee',
-        display: `${giteeConfig.owner}/${giteeConfig.repo}`,
-        config: giteeConfig,
-      };
-    }
-    return null;
-  };
+  const currentSource = selectedSourceId
+    ? sources.find(s => s.id === selectedSourceId)
+    : sources[0] || null;
 
-  const getAllSources = () => {
-    const sources = [];
-    if (githubConfig) {
-      sources.push({
-        type: 'github' as const,
-        name: 'GitHub',
-        display: `${githubConfig.owner}/${githubConfig.repo}`,
-        config: githubConfig,
-        isActive: storageType === 'github',
-      });
-    }
-    if (giteeConfig) {
-      sources.push({
-        type: 'gitee' as const,
-        name: 'Gitee',
-        display: `${giteeConfig.owner}/${giteeConfig.repo}`,
-        config: giteeConfig,
-        isActive: storageType === 'gitee',
-      });
-    }
-    return sources;
-  };
-
-  const currentSource = getCurrentSourceInfo();
-  const allSources = getAllSources();
+  const allSources = sources.map(source => ({
+    ...source,
+    isActive: selectedSourceId === source.id,
+  }));
 
   const handleAddSource = () => {
-    setConfigModalType(undefined as any); // 不预设类型，让用户选择
-    setEditingConfig(undefined);
+    setConfigModalType(undefined);
+    setEditingSourceId(undefined);
     setConfigModalVisible(true);
   };
 
-  const handleEditSource = (
-    type: 'github' | 'gitee',
-    config: GitHubConfig | GiteeConfig,
-  ) => {
-    setConfigModalType(type);
-    setEditingConfig(config);
-    setConfigModalVisible(true);
+  const handleEditSource = (sourceId: string) => {
+    const source = sources.find(s => s.id === sourceId);
+    if (source) {
+      setConfigModalType(source.type);
+      setEditingSourceId(sourceId);
+      setConfigModalVisible(true);
+    }
   };
 
-  const handleDeleteSource = (type: 'github' | 'gitee') => {
-    Alert.alert(
-      t('common.confirm'),
-      type === 'github'
-        ? t('settings.github.clearConfirmMessage')
-        : t('settings.gitee.clearConfirmMessage'),
-      [
-        {
-          text: t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('common.confirm'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (type === 'github') {
-                await clearGitHubConfig();
-              } else {
-                await clearGiteeConfig();
-              }
-              onClose();
-            } catch (error) {
-              // Handle error
+  const handleDeleteSource = (sourceId: string) => {
+    const source = sources.find(s => s.id === sourceId);
+    if (!source) return;
+
+    const deleteConfirmText = t('settings.storage.deleteConfirm');
+    const confirmMessage = deleteConfirmText
+      ? deleteConfirmText.replace('{name}', source.name)
+      : `确定要删除仓库源 "${source.name}" 吗？`;
+
+    Alert.alert(t('common.confirm'), confirmMessage, [
+      {
+        text: t('common.cancel'),
+        style: 'cancel',
+      },
+      {
+        text: t('common.confirm'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            // 先获取删除后的剩余源列表
+            const remainingSources = sources.filter(s => s.id !== sourceId);
+
+            // 删除源（等待保存完成）
+            await removeSource(sourceId);
+
+            // 如果删除的是最后一个源，清除旧配置（防止迁移逻辑重新创建）
+            if (remainingSources.length === 0) {
+              // 直接清除旧配置存储，避免迁移逻辑重新创建
+              const AsyncStorage =
+                require('@react-native-async-storage/async-storage').default;
+              await AsyncStorage.removeItem('pixuli-github-config');
+              await AsyncStorage.removeItem('pixuli-gitee-config');
+              // 确保迁移标记已设置，防止重新迁移
+              await AsyncStorage.setItem('pixuli.migration.completed', 'true');
             }
-          },
+
+            // 如果删除的是当前选中的源，切换到其他源或清空
+            if (selectedSourceId === sourceId) {
+              if (remainingSources.length > 0) {
+                setSelectedSourceId(remainingSources[0].id);
+                initializeStorage();
+                await loadImages();
+              } else {
+                setSelectedSourceId(null);
+                initializeStorage();
+              }
+            }
+            onClose();
+          } catch (error) {
+            console.error('删除仓库源失败:', error);
+            Alert.alert(
+              t('common.error') || '错误',
+              t('settings.storage.deleteFailed') || '删除仓库源失败，请重试',
+            );
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
-  const handleSwitchSource = async (type: 'github' | 'gitee') => {
-    if (storageType === type) {
+  const handleSwitchSource = async (sourceId: string) => {
+    if (selectedSourceId === sourceId) {
       return; // Already active
     }
     try {
-      if (type === 'github' && githubConfig) {
-        await setGitHubConfig(githubConfig);
-        await loadImages();
-        onClose();
-      } else if (type === 'gitee' && giteeConfig) {
-        await setGiteeConfig(giteeConfig);
-        await loadImages();
-        onClose();
-      }
+      setSelectedSourceId(sourceId);
+      initializeStorage();
+      await loadImages();
+      onClose();
     } catch (error) {
       // Handle error
     }
-  };
-
-  const handleClearAllSources = () => {
-    Alert.alert(
-      t('settings.storage.clearAllConfirm') || '确认清除所有配置',
-      t('settings.storage.clearAllMessage') ||
-        '确定要清除所有仓库源配置吗？此操作不可恢复。',
-      [
-        {
-          text: t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('common.confirm'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // 清除所有配置
-              if (githubConfig) {
-                await clearGitHubConfig();
-              }
-              if (giteeConfig) {
-                await clearGiteeConfig();
-              }
-              onClose();
-            } catch (error) {
-              // Handle error
-            }
-          },
-        },
-      ],
-    );
   };
 
   const dynamicStyles = StyleSheet.create({
@@ -416,15 +364,6 @@ export function DrawerMenu({
                   {t('settings.storage.title') || '存储配置'}
                 </ThemedText>
                 <View style={styles.sectionHeaderActions}>
-                  {allSources.length > 0 && (
-                    <TouchableOpacity
-                      style={[styles.deleteAllButton, { marginRight: 8 }]}
-                      onPress={handleClearAllSources}
-                      activeOpacity={0.6}
-                    >
-                      <IconSymbol name="trash.fill" size={20} color="#FF3B30" />
-                    </TouchableOpacity>
-                  )}
                   <TouchableOpacity
                     style={styles.addButton}
                     onPress={handleAddSource}
@@ -440,73 +379,60 @@ export function DrawerMenu({
               </View>
               {allSources.length > 0 ? (
                 allSources.map((source, index) => {
-                  const renderRightActions = () => (
-                    <View style={styles.rightActions}>
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.editButton]}
-                        onPress={() => {
-                          handleEditSource(source.type, source.config);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <IconSymbol name="pencil" size={20} color="#FFFFFF" />
-                        <ThemedText style={styles.actionButtonText}>
-                          {t('common.edit')}
-                        </ThemedText>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.actionButton, styles.deleteButton]}
-                        onPress={() => {
-                          handleDeleteSource(source.type);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <IconSymbol
-                          name="trash.fill"
-                          size={20}
-                          color="#FFFFFF"
-                        />
-                        <ThemedText style={styles.actionButtonText}>
-                          {t('common.delete')}
-                        </ThemedText>
-                      </TouchableOpacity>
-                    </View>
-                  );
-
                   return (
-                    <Swipeable
-                      key={source.type}
-                      renderRightActions={renderRightActions}
-                      overshootRight={false}
+                    <TouchableOpacity
+                      key={source.id}
+                      style={[
+                        styles.sourceItem,
+                        dynamicStyles.sourceItem,
+                        index === allSources.length - 1 &&
+                          styles.sourceItemLast,
+                        source.isActive && {
+                          backgroundColor: colors.primary + '10',
+                        },
+                      ]}
+                      onPress={() => handleSwitchSource(source.id)}
+                      onLongPress={() => {
+                        // 长按显示操作菜单
+                        Alert.alert(
+                          source.name,
+                          `${source.owner}/${source.repo}`,
+                          [
+                            {
+                              text: t('common.edit'),
+                              onPress: () => handleEditSource(source.id),
+                            },
+                            {
+                              text: t('common.delete'),
+                              style: 'destructive',
+                              onPress: () => handleDeleteSource(source.id),
+                            },
+                            {
+                              text: t('common.cancel'),
+                              style: 'cancel',
+                            },
+                          ],
+                          { cancelable: true },
+                        );
+                      }}
+                      activeOpacity={0.6}
                     >
-                      <TouchableOpacity
-                        style={[
-                          styles.sourceItem,
-                          dynamicStyles.sourceItem,
-                          index === allSources.length - 1 &&
-                            styles.sourceItemLast,
-                          source.isActive && {
-                            backgroundColor: colors.primary + '10',
-                          },
-                        ]}
-                        onPress={() => handleSwitchSource(source.type)}
-                        activeOpacity={0.6}
-                      >
-                        <View style={styles.menuItemLeft}>
-                          <View
-                            style={[
-                              styles.iconContainer,
-                              {
-                                backgroundColor: source.isActive
-                                  ? colors.primary + '20'
-                                  : colorScheme === 'dark'
-                                    ? '#2C2C2E'
-                                    : '#E6F4FE',
-                              },
-                            ]}
-                          >
+                      <View style={styles.menuItemLeft}>
+                        <View
+                          style={[
+                            styles.iconContainer,
+                            {
+                              backgroundColor: source.isActive
+                                ? colors.primary + '20'
+                                : colorScheme === 'dark'
+                                  ? '#2C2C2E'
+                                  : '#E6F4FE',
+                            },
+                          ]}
+                        >
+                          {source.type === 'github' ? (
                             <IconSymbol
-                              name="link"
+                              name="chevron.left.forwardslash.chevron.right"
                               size={22}
                               color={
                                 source.isActive
@@ -514,43 +440,56 @@ export function DrawerMenu({
                                   : colors.sectionTitle
                               }
                             />
-                          </View>
-                          <View style={styles.menuItemContent}>
+                          ) : (
                             <ThemedText
                               style={[
-                                styles.sourceItemText,
-                                dynamicStyles.sourceItemText,
+                                styles.giteeIconText,
+                                {
+                                  color: source.isActive
+                                    ? colors.primary
+                                    : colors.sectionTitle,
+                                },
                               ]}
                             >
-                              {source.name}
+                              码
                             </ThemedText>
-                            <ThemedText
-                              style={[
-                                styles.sourceItemSubtext,
-                                dynamicStyles.sourceItemSubtext,
-                              ]}
-                              numberOfLines={1}
-                            >
-                              {source.display}
-                            </ThemedText>
-                          </View>
+                          )}
                         </View>
-                        {source.isActive && (
-                          <IconSymbol
-                            name="checkmark.circle.fill"
-                            size={22}
-                            color={colors.primary}
-                          />
-                        )}
-                        {!source.isActive && (
-                          <IconSymbol
-                            name="chevron.right"
-                            size={18}
-                            color={colors.sectionTitle}
-                          />
-                        )}
-                      </TouchableOpacity>
-                    </Swipeable>
+                        <View style={styles.menuItemContent}>
+                          <ThemedText
+                            style={[
+                              styles.sourceItemText,
+                              dynamicStyles.sourceItemText,
+                            ]}
+                          >
+                            {source.name}
+                          </ThemedText>
+                          <ThemedText
+                            style={[
+                              styles.sourceItemSubtext,
+                              dynamicStyles.sourceItemSubtext,
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {source.owner}/{source.repo}
+                          </ThemedText>
+                        </View>
+                      </View>
+                      {source.isActive && (
+                        <IconSymbol
+                          name="checkmark.circle.fill"
+                          size={22}
+                          color={colors.primary}
+                        />
+                      )}
+                      {!source.isActive && (
+                        <IconSymbol
+                          name="chevron.right"
+                          size={18}
+                          color={colors.sectionTitle}
+                        />
+                      )}
+                    </TouchableOpacity>
                   );
                 })
               ) : (
@@ -610,16 +549,16 @@ export function DrawerMenu({
         visible={configModalVisible}
         onClose={() => {
           setConfigModalVisible(false);
-          setEditingConfig(undefined);
-          // 不重置 configModalType，保持用户的选择
-          // setConfigModalType(undefined as any);
+          setEditingSourceId(undefined);
+          setConfigModalType(undefined);
         }}
         type={configModalType}
-        config={editingConfig}
+        sourceId={editingSourceId}
         onSave={() => {
+          initializeStorage();
           loadImages();
-          // 保存成功后重置类型，以便下次打开时重新选择
-          setConfigModalType(undefined as any);
+          setEditingSourceId(undefined);
+          setConfigModalType(undefined);
         }}
       />
     </Modal>
@@ -691,9 +630,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addButton: {
-    padding: 4,
-  },
-  deleteAllButton: {
     padding: 4,
   },
   menuItem: {
@@ -774,5 +710,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
+  },
+  giteeIconText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

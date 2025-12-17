@@ -1,25 +1,26 @@
+import { ImageBrowser } from '@/components/image/ImageBrowser';
+import { ImageGrid } from '@/components/image/ImageGrid';
+import { ImageUploadButton } from '@/components/image/ImageUploadButton';
+import { DrawerMenu } from '@/components/navigation/DrawerMenu';
+import { SearchAndFilter } from '@/components/search/SearchAndFilter';
+import { StorageConfigModal } from '@/components/settings/modals/StorageConfigModal';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ThemedText } from '@/components/ui/ThemedText';
+import { ThemedView } from '@/components/ui/ThemedView';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
+import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { EmptyState, ImageItem } from '@packages/common/src/index.native';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  View,
   ActivityIndicator,
+  StyleSheet,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { ImageGrid } from '@/components/ImageGrid';
-import { ImageUploadButton } from '@/components/ImageUploadButton';
-import { ImageBrowser } from '@/components/ImageBrowser';
-import { SlideShowPlayer } from '@/components/SlideShowPlayer';
-import { SearchAndFilter } from '@/components/SearchAndFilter';
-import { DrawerMenu } from '@/components/DrawerMenu';
-import { useImageStore } from '@/stores/imageStore';
-import { useI18n } from '@/i18n/useI18n';
-import { ImageItem, EmptyState } from '@packages/common/src/index.native';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
 
 export default function HomeScreen() {
   const { t } = useI18n();
@@ -31,40 +32,27 @@ export default function HomeScreen() {
     error,
     loadImages,
     storageType,
-    githubConfig,
-    giteeConfig,
     deleteImage,
     searchQuery,
     filterOptions,
     refreshImageMetadata,
+    initializeStorage,
   } = useImageStore();
+  const { sources, selectedSourceId } = useSourceStore();
 
   // 获取当前仓库源信息
-  const getCurrentSourceInfo = () => {
-    if (storageType === 'github' && githubConfig) {
-      return {
-        type: 'github',
-        name: 'GitHub',
-        config: githubConfig,
-        display: `${githubConfig.owner}/${githubConfig.repo}`,
-      };
-    } else if (storageType === 'gitee' && giteeConfig) {
-      return {
-        type: 'gitee',
-        name: 'Gitee',
-        config: giteeConfig,
-        display: `${giteeConfig.owner}/${giteeConfig.repo}`,
-      };
-    }
-    return null;
-  };
-
-  const currentSource = getCurrentSourceInfo();
+  const currentSource = selectedSourceId
+    ? sources.find(s => s.id === selectedSourceId)
+    : sources[0] || null;
   const [refreshing, setRefreshing] = useState(false);
   const [browserVisible, setBrowserVisible] = useState(false);
   const [browserIndex, setBrowserIndex] = useState(0);
   const [slideShowVisible, setSlideShowVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [configModalVisible, setConfigModalVisible] = useState(false);
+  const [configModalType, setConfigModalType] = useState<
+    'github' | 'gitee' | undefined
+  >(undefined);
   const [browseMode, setBrowseMode] = useState<
     'file' | 'slide' | 'wall' | 'gallery3d'
   >('file');
@@ -73,10 +61,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     // 如果已配置存储，加载图片
-    if (storageType && (githubConfig || giteeConfig)) {
+    if (storageType && currentSource) {
       loadImages();
     }
-  }, [storageType, githubConfig, giteeConfig, loadImages]);
+  }, [storageType, currentSource, loadImages]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -109,10 +97,34 @@ export default function HomeScreen() {
     return (
       <ThemedView style={styles.container}>
         <EmptyState
-          onAddGitHub={() => router.push('/(tabs)/settings/github')}
-          onAddGitee={() => router.push('/(tabs)/settings/gitee')}
+          onAddGitHub={() => {
+            // 打开配置模态框，设置类型为 GitHub
+            setConfigModalType('github');
+            setConfigModalVisible(true);
+          }}
+          onAddGitee={() => {
+            // 打开配置模态框，设置类型为 Gitee
+            setConfigModalType('gitee');
+            setConfigModalVisible(true);
+          }}
           t={t}
           colorScheme={colorScheme}
+        />
+        {/* 配置模态框 */}
+        <StorageConfigModal
+          visible={configModalVisible}
+          onClose={() => {
+            setConfigModalVisible(false);
+            setConfigModalType(undefined);
+          }}
+          type={configModalType}
+          onSave={async () => {
+            // 保存后初始化存储并加载图片
+            initializeStorage();
+            await loadImages();
+            setConfigModalVisible(false);
+            setConfigModalType(undefined);
+          }}
         />
       </ThemedView>
     );

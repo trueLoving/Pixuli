@@ -1,11 +1,10 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/HapticTab';
+import { HapticTab } from '@/components/ui/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
+import { Tabs } from 'expo-router';
+import React from 'react';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -47,19 +46,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="gear" color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings/github"
-        options={{
-          href: null, // 隐藏此路由，不显示在底部导航栏
-        }}
-      />
-
-      <Tabs.Screen
-        name="settings/gitee"
-        options={{
-          href: null, // 隐藏此路由，不显示在底部导航栏
         }}
       />
     </Tabs>

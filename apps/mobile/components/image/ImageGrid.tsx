@@ -1,14 +1,14 @@
+import { ImageItem } from '@packages/common/src/index.native';
 import { Image } from 'expo-image';
 import {
   FlatList,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
-  RefreshControl,
 } from 'react-native';
-import { ImageItem } from '@packages/common/src/index.native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
+import { ThemedText } from '../ui/ThemedText';
+import { ThemedView } from '../ui/ThemedView';
 
 interface ImageGridProps {
   images: ImageItem[];

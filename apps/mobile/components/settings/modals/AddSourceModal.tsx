@@ -1,11 +1,11 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
 import React from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedView } from '../../ui/ThemedView';
 
 interface AddSourceModalProps {
   visible: boolean;

@@ -1,17 +1,16 @@
+import { useI18n } from '@/i18n/useI18n';
+import { useImageStore } from '@/stores/imageStore';
+import { ImageProcessOptions, processImage } from '@/utils/imageUtils';
+import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  View,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { ThemedText } from './ThemedText';
-import { useImageStore } from '@/stores/imageStore';
-import { useI18n } from '@/i18n/useI18n';
-import { ImageUploadEditModal } from './ImageUploadEditModal';
-import { processImage, ImageProcessOptions } from '@/utils/imageUtils';
+import { ThemedText } from '../ui/ThemedText';
+import { ImageUploadEditModal } from './modals/ImageUploadEditModal';
 
 interface ImageUploadButtonProps {
   onUploadComplete?: () => void;
@@ -117,7 +116,7 @@ export function ImageUploadButton({
           style: 'cancel',
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -143,7 +142,7 @@ export function ImageUploadButton({
         try {
           const processedResult = await processImage(
             pendingImage.uri,
-            data.processOptions
+            data.processOptions,
           );
           finalUri = processedResult.uri;
 
@@ -161,7 +160,7 @@ export function ImageUploadButton({
           console.error('图片处理失败:', processError);
           Alert.alert(
             t('common.error'),
-            t('image.processFailed') || '图片处理失败，将上传原图'
+            t('image.processFailed') || '图片处理失败，将上传原图',
           );
           // 继续使用原图上传
         }

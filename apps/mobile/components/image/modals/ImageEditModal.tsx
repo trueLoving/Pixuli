@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useI18n } from '@/i18n/useI18n';
+import { ImageEditData, ImageItem } from '@packages/common/src/index.native';
+import { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  View,
+  ActivityIndicator,
+  Alert,
   Modal,
+  ScrollView,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { ImageItem, ImageEditData } from '@packages/common/src/index.native';
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
 
 interface ImageEditModalProps {
   visible: boolean;

@@ -1,21 +1,20 @@
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, TouchableOpacity, View, ScrollView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { HelpModal } from '@/components/settings/modals/HelpModal';
+import { LanguageModal } from '@/components/settings/modals/LanguageModal';
+import { ThemeModal } from '@/components/settings/modals/ThemeModal';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { VersionInfoModal } from '@packages/common/src/index.native';
-import { HelpModal } from '@/components/HelpModal';
-import { ThemeModal } from '@/components/ThemeModal';
-import { LanguageModal } from '@/components/LanguageModal';
-import { useI18n, useInitLanguage } from '@/i18n/useI18n';
-import { useImageStore } from '@/stores/imageStore';
+import { ThemedText } from '@/components/ui/ThemedText';
+import { ThemedView } from '@/components/ui/ThemedView';
+import { Colors } from '@/constants/theme';
 import {
+  setThemeMode,
   useColorScheme,
   useThemeMode,
-  setThemeMode,
 } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import { useI18n, useInitLanguage } from '@/i18n/useI18n';
+import { VersionInfoModal } from '@packages/common/src/index.native';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type IconName =
   | 'house.fill'

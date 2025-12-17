@@ -1,21 +1,21 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Modal,
-  TouchableOpacity,
-  Dimensions,
-  Animated,
-  ScrollView,
-} from 'react-native';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
+import { ImageItem } from '@packages/common/src/index.native';
 import { Image } from 'expo-image';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { ImageItem } from '@packages/common/src/index.native';
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { IconSymbol } from '../ui/IconSymbol';
+import { ThemedText } from '../ui/ThemedText';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const SIDEBAR_WIDTH = 120; // 侧边栏宽度
