@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { SlideShowPlayer } from '@/components/image/SlideShowPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedText } from '@/components/ui/ThemedText';
+import { ThemedView } from '@/components/ui/ThemedView';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { SlideShowPlayer } from '@/components/SlideShowPlayer';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type BrowseMode = 'file' | 'slide' | 'wall' | 'gallery3d';
 

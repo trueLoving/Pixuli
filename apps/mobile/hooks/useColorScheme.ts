@@ -1,6 +1,6 @@
-import { useColorScheme as useRNColorScheme } from 'react-native';
-import { useEffect, useState } from 'react';
 import { loadTheme, saveTheme, ThemeMode } from '@/config/theme';
+import { useEffect, useState } from 'react';
+import { useColorScheme as useRNColorScheme } from 'react-native';
 
 let themeMode: ThemeMode = 'auto';
 let listeners: Set<() => void> = new Set();

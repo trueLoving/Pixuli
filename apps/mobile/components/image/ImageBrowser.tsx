@@ -1,29 +1,29 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Modal,
-  TouchableOpacity,
-  Dimensions,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { Image } from 'expo-image';
+import { useI18n } from '@/i18n/useI18n';
+import { formatImageFileSize } from '@/utils/imageUtils';
+import { showError, showSuccess } from '@/utils/toast';
 import { ImageItem } from '@packages/common/src/index.native';
-import * as Sharing from 'expo-sharing';
 import * as Clipboard from 'expo-clipboard';
+import { Image } from 'expo-image';
+import * as Sharing from 'expo-sharing';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { IconSymbol } from '../ui/IconSymbol';
+import { ThemedText } from '../ui/ThemedText';
+
 // 动态加载 legacy API（运行时可用）
 // @ts-ignore
 const FileSystem = require('expo-file-system/legacy');
 // 动态加载 expo-media-library（如果可用）
 const MediaLibrary = require('expo-media-library');
-
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { showSuccess, showError } from '@/utils/toast';
-import { formatImageFileSize } from '@/utils/imageUtils';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const THUMBNAIL_SIZE = 60;

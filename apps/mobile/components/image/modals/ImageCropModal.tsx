@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Modal,
-  TouchableOpacity,
-  Dimensions,
-  PanResponder,
-  ActivityIndicator,
-} from 'react-native';
-import { Image, ImageProps } from 'expo-image';
-import { ThemedText } from './ThemedText';
-import { IconSymbol } from './ui/IconSymbol';
 import { useI18n } from '@/i18n/useI18n';
 import { getImageDimensionsFromUri } from '@/utils/imageUtils';
+import { Image } from 'expo-image';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Modal,
+  PanResponder,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CROP_AREA_SIZE = Math.min(SCREEN_WIDTH - 40, SCREEN_HEIGHT * 0.6);
@@ -70,7 +70,7 @@ export function ImageCropModal({
   const [cropStartPosition, setCropStartPosition] = useState({ x: 0, y: 0 });
   const [cropStartSize, setCropStartSize] = useState({ width: 0, height: 0 });
   const [resizeMode, setResizeMode] = useState<'move' | 'resize' | 'none'>(
-    'none'
+    'none',
   );
   const [resizeHandle, setResizeHandle] = useState<string | null>(null);
 
@@ -96,7 +96,7 @@ export function ImageCropModal({
           const initialCropSize = Math.min(
             dims.width * scale * 0.8,
             dims.height * scale * 0.8,
-            CROP_AREA_SIZE - 40
+            CROP_AREA_SIZE - 40,
           );
           const initialCropWidth = aspectRatio
             ? initialCropSize
@@ -132,7 +132,7 @@ export function ImageCropModal({
     ) {
       const cropSize = Math.min(
         imageLayout.width * 0.8,
-        imageLayout.height * 0.8
+        imageLayout.height * 0.8,
       );
       const cropWidth = aspectRatio ? cropSize : cropSize;
       const cropHeight = aspectRatio ? cropSize / aspectRatio : cropSize;
@@ -239,7 +239,7 @@ export function ImageCropModal({
         };
         setCropStartPosition({ x: currentCropArea.x, y: currentCropArea.y });
       },
-    })
+    }),
   ).current;
 
   // 创建调整大小手势处理器
@@ -302,7 +302,7 @@ export function ImageCropModal({
           newY = Math.max(imageY, startPos.y + dy);
           newWidth = Math.max(
             minSize,
-            Math.min(startSize.width + dx, imageX + imageWidth - startPos.x)
+            Math.min(startSize.width + dx, imageX + imageWidth - startPos.x),
           );
           newHeight = Math.max(minSize, startSize.height - (newY - startPos.y));
         } else if (handle === 'bottomLeft') {
@@ -310,16 +310,16 @@ export function ImageCropModal({
           newWidth = Math.max(minSize, startSize.width - (newX - startPos.x));
           newHeight = Math.max(
             minSize,
-            Math.min(startSize.height + dy, imageY + imageHeight - startPos.y)
+            Math.min(startSize.height + dy, imageY + imageHeight - startPos.y),
           );
         } else if (handle === 'bottomRight') {
           newWidth = Math.max(
             minSize,
-            Math.min(startSize.width + dx, imageX + imageWidth - startPos.x)
+            Math.min(startSize.width + dx, imageX + imageWidth - startPos.x),
           );
           newHeight = Math.max(
             minSize,
-            Math.min(startSize.height + dy, imageY + imageHeight - startPos.y)
+            Math.min(startSize.height + dy, imageY + imageHeight - startPos.y),
           );
         }
 
@@ -346,16 +346,16 @@ export function ImageCropModal({
   };
 
   const topLeftResizePanResponder = useRef(
-    createResizePanResponder('topLeft')
+    createResizePanResponder('topLeft'),
   ).current;
   const topRightResizePanResponder = useRef(
-    createResizePanResponder('topRight')
+    createResizePanResponder('topRight'),
   ).current;
   const bottomLeftResizePanResponder = useRef(
-    createResizePanResponder('bottomLeft')
+    createResizePanResponder('bottomLeft'),
   ).current;
   const bottomRightResizePanResponder = useRef(
-    createResizePanResponder('bottomRight')
+    createResizePanResponder('bottomRight'),
   ).current;
 
   // 处理裁剪完成
@@ -387,7 +387,7 @@ export function ImageCropModal({
     const initialCropSize = Math.min(
       imageLayout.width * 0.8,
       imageLayout.height * 0.8,
-      CROP_AREA_SIZE - 40
+      CROP_AREA_SIZE - 40,
     );
     const initialCropWidth = aspectRatio ? initialCropSize : initialCropSize;
     const initialCropHeight = aspectRatio

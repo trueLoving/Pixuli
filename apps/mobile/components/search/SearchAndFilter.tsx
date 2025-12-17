@@ -1,21 +1,20 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useI18n } from '@/i18n/useI18n';
+import { FilterOption, SortOption, useImageStore } from '@/stores/imageStore';
 import { useState } from 'react';
 import {
+  Modal,
+  Platform,
+  ScrollView,
   StyleSheet,
-  View,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  Platform,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { IconSymbol } from './ui/IconSymbol';
-import { useI18n } from '@/i18n/useI18n';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
-import { useImageStore, SortOption, FilterOption } from '@/stores/imageStore';
+import { IconSymbol } from '../ui/IconSymbol';
+import { ThemedText } from '../ui/ThemedText';
 
 type BrowseMode = 'file' | 'slide' | 'wall' | 'gallery3d';
 

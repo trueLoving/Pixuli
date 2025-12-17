@@ -41,9 +41,8 @@ export const mobileLocales = {
         add: '添加存储配置',
         selectType: '选择仓库源类型',
         selectTypeHint: '请选择要添加的仓库源类型',
-        clearAll: '清除所有配置',
-        clearAllConfirm: '确认清除所有配置',
-        clearAllMessage: '确定要清除所有仓库源配置吗？此操作不可恢复。',
+        deleteConfirm: '确定要删除仓库源 "{name}" 吗？',
+        deleteFailed: '删除仓库源失败，请重试',
       },
       language: {
         title: '语言',
@@ -368,6 +367,9 @@ export const mobileLocales = {
         add: 'Add Storage Configuration',
         selectType: 'Select Repository Source Type',
         selectTypeHint: 'Please select the repository source type to add',
+        deleteConfirm:
+          'Are you sure you want to delete repository source "{name}"?',
+        deleteFailed: 'Failed to delete repository source, please try again',
       },
       language: {
         title: 'Language',

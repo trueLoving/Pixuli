@@ -1,26 +1,26 @@
 import {
   BatchUploadProgress,
   GitHubConfig,
+  GitHubStorageService,
   GiteeConfig,
+  GiteeStorageService,
   ImageEditData,
   ImageItem,
   MultiImageUploadData,
   UploadProgress,
-  GitHubStorageService,
-  GiteeStorageService,
 } from '@packages/common/src/index.native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import {
-  loadGitHubConfig,
-  saveGitHubConfig,
-  clearGitHubConfig as clearGitHubConfigFromStorage,
-} from '../config/github';
-import {
-  loadGiteeConfig,
-  saveGiteeConfig,
   clearGiteeConfig as clearGiteeConfigFromStorage,
+  loadGiteeConfig,
 } from '../config/gitee';
+import {
+  clearGitHubConfig as clearGitHubConfigFromStorage,
+  loadGitHubConfig,
+} from '../config/github';
 import { MetadataCache } from '../utils/metadataCache';
+import { useSourceStore } from './sourceStore';
 
 export type SortOption =
   | 'date-desc'
@@ -109,54 +109,149 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   // 初始化（异步加载配置）
   initialize: async () => {
-    const initialGitHubConfig = await loadGitHubConfig();
-    const initialGiteeConfig = await loadGiteeConfig();
+    // 初始化 sourceStore
+    await useSourceStore.getState().initialize();
 
-    let storageType: 'github' | 'gitee' | null = null;
-    if (initialGitHubConfig) {
-      storageType = 'github';
-    } else if (initialGiteeConfig) {
-      storageType = 'gitee';
+    const sourceStore = useSourceStore.getState();
+    const sources = sourceStore.sources;
+
+    // 迁移旧数据（如果存在）- 只在首次迁移时执行
+    // 检查是否已经迁移过（通过检查是否有迁移标记或 sourceStore 已有数据）
+    const MIGRATION_FLAG_KEY = 'pixuli.migration.completed';
+    const migrationCompleted = await AsyncStorage.getItem(MIGRATION_FLAG_KEY);
+
+    if (!migrationCompleted && sources.length === 0) {
+      // 迁移旧数据（如果存在）
+      const oldGitHubConfig = await loadGitHubConfig();
+      const oldGiteeConfig = await loadGiteeConfig();
+
+      if (oldGitHubConfig) {
+        const migratedSource = sourceStore.addSource({
+          type: 'github',
+          name: `${oldGitHubConfig.owner}/${oldGitHubConfig.repo}`,
+          owner: oldGitHubConfig.owner,
+          repo: oldGitHubConfig.repo,
+          branch: oldGitHubConfig.branch,
+          token: oldGitHubConfig.token,
+          path: oldGitHubConfig.path,
+        });
+        sourceStore.setSelectedSourceId(migratedSource.id);
+        // 迁移后清除旧配置并标记已完成迁移
+        await clearGitHubConfigFromStorage();
+        await AsyncStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+      } else if (oldGiteeConfig) {
+        const migratedSource = sourceStore.addSource({
+          type: 'gitee',
+          name: `${oldGiteeConfig.owner}/${oldGiteeConfig.repo}`,
+          owner: oldGiteeConfig.owner,
+          repo: oldGiteeConfig.repo,
+          branch: oldGiteeConfig.branch,
+          token: oldGiteeConfig.token,
+          path: oldGiteeConfig.path,
+        });
+        sourceStore.setSelectedSourceId(migratedSource.id);
+        // 迁移后清除旧配置并标记已完成迁移
+        await clearGiteeConfigFromStorage();
+        await AsyncStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+      } else {
+        // 没有旧配置，也标记已完成迁移
+        await AsyncStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+      }
     }
 
-    set({
-      githubConfig: initialGitHubConfig,
-      giteeConfig: initialGiteeConfig,
-      storageType,
-    });
+    // 从 sourceStore 获取当前选中的源
+    const selectedSourceId = useSourceStore.getState().selectedSourceId;
+    const selectedSource = selectedSourceId
+      ? sourceStore.getSourceById(selectedSourceId)
+      : sources[0] || null;
 
-    if (storageType === 'github' && initialGitHubConfig) {
-      try {
-        const storageService = new GitHubStorageService(initialGitHubConfig, {
-          platform: 'mobile',
+    if (selectedSource) {
+      const config = {
+        owner: selectedSource.owner,
+        repo: selectedSource.repo,
+        branch: selectedSource.branch,
+        token: selectedSource.token,
+        path: selectedSource.path,
+      };
+
+      if (selectedSource.type === 'github') {
+        set({
+          githubConfig: config,
+          giteeConfig: null,
+          storageType: 'github',
         });
-        set({ storageService });
-      } catch (error) {
-        console.error('Failed to initialize github storage service:', error);
-      }
-    } else if (storageType === 'gitee' && initialGiteeConfig) {
-      try {
-        const storageService = new GiteeStorageService(initialGiteeConfig, {
-          platform: 'mobile',
-          useProxy: false, // 移动端不使用代理
+        try {
+          const storageService = new GitHubStorageService(config, {
+            platform: 'mobile',
+          });
+          MetadataCache.setCurrentCacheKey('github', config.owner, config.repo);
+          set({ storageService });
+        } catch (error) {
+          console.error('Failed to initialize github storage service:', error);
+        }
+      } else {
+        set({
+          githubConfig: null,
+          giteeConfig: config,
+          storageType: 'gitee',
         });
-        // 设置当前缓存键，确保元数据缓存按仓库源隔离
-        MetadataCache.setCurrentCacheKey(
-          'gitee',
-          initialGiteeConfig.owner,
-          initialGiteeConfig.repo,
-        );
-        set({ storageService });
-      } catch (error) {
-        console.error('Failed to initialize gitee storage service:', error);
+        try {
+          const storageService = new GiteeStorageService(config, {
+            platform: 'mobile',
+            useProxy: false,
+          });
+          MetadataCache.setCurrentCacheKey('gitee', config.owner, config.repo);
+          set({ storageService });
+        } catch (error) {
+          console.error('Failed to initialize gitee storage service:', error);
+        }
       }
+    } else {
+      set({
+        githubConfig: null,
+        giteeConfig: null,
+        storageType: null,
+        storageService: null,
+      });
     }
   },
 
   setGitHubConfig: async (config: GitHubConfig) => {
-    await saveGitHubConfig(config);
+    // 这个方法保留用于向后兼容，但现在应该通过 sourceStore 来管理
+    // 如果 sourceStore 中有选中的源，则更新它；否则创建新源
+    const sourceStore = useSourceStore.getState();
+    const selectedSourceId = sourceStore.selectedSourceId;
+    const selectedSource = selectedSourceId
+      ? sourceStore.getSourceById(selectedSourceId)
+      : null;
+
+    if (selectedSource && selectedSource.type === 'github') {
+      // 更新现有源
+      sourceStore.updateSource(selectedSourceId!, {
+        name: `${config.owner}/${config.repo}`,
+        owner: config.owner,
+        repo: config.repo,
+        branch: config.branch,
+        token: config.token,
+        path: config.path,
+      });
+    } else {
+      // 创建新源
+      const newSource = sourceStore.addSource({
+        type: 'github',
+        name: `${config.owner}/${config.repo}`,
+        owner: config.owner,
+        repo: config.repo,
+        branch: config.branch,
+        token: config.token,
+        path: config.path,
+      });
+      sourceStore.setSelectedSourceId(newSource.id);
+    }
+
     set({
       githubConfig: config,
+      giteeConfig: null,
       storageType: 'github',
       // 切换仓库源时清空图片列表，避免数据混淆
       images: [],
@@ -167,40 +262,77 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   clearGitHubConfig: async () => {
-    await clearGitHubConfigFromStorage();
-    const { storageType, giteeConfig } = get();
-    if (storageType === 'github') {
-      // 如果当前使用的是 GitHub，清除后检查是否有 Gitee 配置
-      if (giteeConfig) {
-        // 切换到 Gitee
-        set({
-          githubConfig: null,
-          storageType: 'gitee',
-          images: [],
-          filteredImages: [],
-          error: null,
-        });
-        get().initializeStorage();
+    // 这个方法保留用于向后兼容
+    // 从 sourceStore 中删除所有 GitHub 源
+    const sourceStore = useSourceStore.getState();
+    const githubSources = sourceStore.sources.filter(s => s.type === 'github');
+
+    // 等待所有删除操作完成
+    for (const source of githubSources) {
+      await sourceStore.removeSource(source.id);
+    }
+
+    // 如果当前选中的是 GitHub 源，切换到其他源或清空
+    const currentSource = sourceStore.selectedSourceId
+      ? sourceStore.getSourceById(sourceStore.selectedSourceId)
+      : null;
+    if (currentSource && currentSource.type === 'github') {
+      const remainingSources = sourceStore.sources;
+      if (remainingSources.length > 0) {
+        sourceStore.setSelectedSourceId(remainingSources[0].id);
+        get().initialize();
       } else {
-        // 没有其他配置，清空所有
+        sourceStore.setSelectedSourceId(null);
         set({
           storageService: null,
           storageType: null,
           githubConfig: null,
+          giteeConfig: null,
           images: [],
           filteredImages: [],
           error: null,
         });
       }
     } else {
-      // 当前不是使用 GitHub，只清除配置即可
       set({ githubConfig: null });
     }
   },
 
   setGiteeConfig: async (config: GiteeConfig) => {
-    await saveGiteeConfig(config);
+    // 这个方法保留用于向后兼容，但现在应该通过 sourceStore 来管理
+    // 如果 sourceStore 中有选中的源，则更新它；否则创建新源
+    const sourceStore = useSourceStore.getState();
+    const selectedSourceId = sourceStore.selectedSourceId;
+    const selectedSource = selectedSourceId
+      ? sourceStore.getSourceById(selectedSourceId)
+      : null;
+
+    if (selectedSource && selectedSource.type === 'gitee') {
+      // 更新现有源
+      sourceStore.updateSource(selectedSourceId!, {
+        name: `${config.owner}/${config.repo}`,
+        owner: config.owner,
+        repo: config.repo,
+        branch: config.branch,
+        token: config.token,
+        path: config.path,
+      });
+    } else {
+      // 创建新源
+      const newSource = sourceStore.addSource({
+        type: 'gitee',
+        name: `${config.owner}/${config.repo}`,
+        owner: config.owner,
+        repo: config.repo,
+        branch: config.branch,
+        token: config.token,
+        path: config.path,
+      });
+      sourceStore.setSelectedSourceId(newSource.id);
+    }
+
     set({
+      githubConfig: null,
       giteeConfig: config,
       storageType: 'gitee',
       // 切换仓库源时清空图片列表，避免数据混淆
@@ -212,25 +344,31 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   clearGiteeConfig: async () => {
-    await clearGiteeConfigFromStorage();
-    const { storageType, githubConfig } = get();
-    if (storageType === 'gitee') {
-      // 如果当前使用的是 Gitee，清除后检查是否有 GitHub 配置
-      if (githubConfig) {
-        // 切换到 GitHub
-        set({
-          giteeConfig: null,
-          storageType: 'github',
-          images: [],
-          filteredImages: [],
-          error: null,
-        });
-        get().initializeStorage();
+    // 这个方法保留用于向后兼容
+    // 从 sourceStore 中删除所有 Gitee 源
+    const sourceStore = useSourceStore.getState();
+    const giteeSources = sourceStore.sources.filter(s => s.type === 'gitee');
+
+    // 等待所有删除操作完成
+    for (const source of giteeSources) {
+      await sourceStore.removeSource(source.id);
+    }
+
+    // 如果当前选中的是 Gitee 源，切换到其他源或清空
+    const currentSource = sourceStore.selectedSourceId
+      ? sourceStore.getSourceById(sourceStore.selectedSourceId)
+      : null;
+    if (currentSource && currentSource.type === 'gitee') {
+      const remainingSources = sourceStore.sources;
+      if (remainingSources.length > 0) {
+        sourceStore.setSelectedSourceId(remainingSources[0].id);
+        get().initialize();
       } else {
-        // 没有其他配置，清空所有
+        sourceStore.setSelectedSourceId(null);
         set({
           storageService: null,
           storageType: null,
+          githubConfig: null,
           giteeConfig: null,
           images: [],
           filteredImages: [],
@@ -238,47 +376,68 @@ export const useImageStore = create<ImageState>((set, get) => ({
         });
       }
     } else {
-      // 当前不是使用 Gitee，只清除配置即可
       set({ giteeConfig: null });
     }
   },
 
   initializeStorage: () => {
-    const { githubConfig, giteeConfig, storageType } = get();
+    // 从 sourceStore 获取当前选中的源
+    const sourceStore = useSourceStore.getState();
+    const selectedSourceId = sourceStore.selectedSourceId;
+    const selectedSource = selectedSourceId
+      ? sourceStore.getSourceById(selectedSourceId)
+      : sourceStore.sources[0] || null;
 
-    if (storageType === 'github' && githubConfig) {
-      try {
-        const storageService = new GitHubStorageService(githubConfig, {
-          platform: 'mobile',
+    if (selectedSource) {
+      const config = {
+        owner: selectedSource.owner,
+        repo: selectedSource.repo,
+        branch: selectedSource.branch,
+        token: selectedSource.token,
+        path: selectedSource.path,
+      };
+
+      if (selectedSource.type === 'github') {
+        set({
+          githubConfig: config,
+          giteeConfig: null,
+          storageType: 'github',
         });
-        // 设置当前缓存键，确保元数据缓存按仓库源隔离
-        MetadataCache.setCurrentCacheKey(
-          'github',
-          githubConfig.owner,
-          githubConfig.repo,
-        );
-        set({ storageService });
-      } catch (error) {
-        console.error('Failed to initialize github storage service:', error);
-        set({ error: '初始化GitHub存储服务失败' });
-      }
-    } else if (storageType === 'gitee' && giteeConfig) {
-      try {
-        const storageService = new GiteeStorageService(giteeConfig, {
-          platform: 'mobile',
-          useProxy: false, // 移动端不使用代理
+        try {
+          const storageService = new GitHubStorageService(config, {
+            platform: 'mobile',
+          });
+          MetadataCache.setCurrentCacheKey('github', config.owner, config.repo);
+          set({ storageService });
+        } catch (error) {
+          console.error('Failed to initialize github storage service:', error);
+          set({ error: '初始化GitHub存储服务失败' });
+        }
+      } else {
+        set({
+          githubConfig: null,
+          giteeConfig: config,
+          storageType: 'gitee',
         });
-        // 设置当前缓存键，确保元数据缓存按仓库源隔离
-        MetadataCache.setCurrentCacheKey(
-          'gitee',
-          giteeConfig.owner,
-          giteeConfig.repo,
-        );
-        set({ storageService });
-      } catch (error) {
-        console.error('Failed to initialize gitee storage service:', error);
-        set({ error: '初始化Gitee存储服务失败' });
+        try {
+          const storageService = new GiteeStorageService(config, {
+            platform: 'mobile',
+            useProxy: false,
+          });
+          MetadataCache.setCurrentCacheKey('gitee', config.owner, config.repo);
+          set({ storageService });
+        } catch (error) {
+          console.error('Failed to initialize gitee storage service:', error);
+          set({ error: '初始化Gitee存储服务失败' });
+        }
       }
+    } else {
+      set({
+        githubConfig: null,
+        giteeConfig: null,
+        storageType: null,
+        storageService: null,
+      });
     }
   },
 

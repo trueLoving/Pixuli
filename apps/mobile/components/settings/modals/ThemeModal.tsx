@@ -1,39 +1,49 @@
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
-import { IconSymbol } from './ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { Colors } from '@/constants/theme';
+import { IconSymbol } from '../../ui/IconSymbol';
+import { ThemedText } from '../../ui/ThemedText';
+import { ThemedView } from '../../ui/ThemedView';
 
-interface Language {
-  code: string;
-  name: string;
-  flag: string;
-}
-
-interface LanguageModalProps {
+interface ThemeModalProps {
   visible: boolean;
   onClose: () => void;
-  currentLanguage: string;
-  availableLanguages: Language[];
-  onSelect: (languageCode: string) => void;
+  currentMode: 'light' | 'dark' | 'auto';
+  onSelect: (mode: 'light' | 'dark' | 'auto') => void;
   t: (key: string) => string;
 }
 
-export const LanguageModal: React.FC<LanguageModalProps> = ({
+export const ThemeModal: React.FC<ThemeModalProps> = ({
   visible,
   onClose,
-  currentLanguage,
-  availableLanguages,
+  currentMode,
   onSelect,
   t,
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
-  const handleSelect = (languageCode: string) => {
-    onSelect(languageCode);
+  const themes = [
+    {
+      mode: 'light' as const,
+      label: t('settings.theme.light'),
+      icon: 'sun.max.fill',
+    },
+    {
+      mode: 'dark' as const,
+      label: t('settings.theme.dark'),
+      icon: 'moon.fill',
+    },
+    {
+      mode: 'auto' as const,
+      label: t('settings.theme.auto'),
+      icon: 'circle.lefthalf.filled',
+    },
+  ];
+
+  const handleSelect = (mode: 'light' | 'dark' | 'auto') => {
+    onSelect(mode);
     onClose();
   };
 
@@ -48,17 +58,17 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
     title: {
       color: colors.text,
     },
-    languageItem: {
+    themeItem: {
       backgroundColor: colors.cardBackground,
       borderBottomColor: colors.cardBorder,
     },
-    languageItemSelected: {
+    themeItemSelected: {
       backgroundColor: colorScheme === 'dark' ? '#2C2C2E' : '#F9F9F9',
     },
-    languageItemTitle: {
+    themeItemTitle: {
       color: colors.text,
     },
-    languageItemDescription: {
+    themeItemDescription: {
       color: colors.sectionTitle,
     },
   });
@@ -88,21 +98,21 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
                   { backgroundColor: colors.primary + '20' },
                 ]}
               >
-                <ThemedText style={styles.flagText}>🌐</ThemedText>
+                <IconSymbol
+                  name="circle.lefthalf.filled"
+                  size={24}
+                  color={colors.primary}
+                />
               </View>
               <View style={styles.headerText}>
                 <ThemedText style={[styles.title, dynamicStyles.title]}>
-                  {t('settings.language.title')}
+                  {t('settings.theme.title')}
                 </ThemedText>
                 <ThemedText
-                  style={[
-                    styles.subtitle,
-                    dynamicStyles.languageItemDescription,
-                  ]}
+                  style={[styles.subtitle, dynamicStyles.themeItemDescription]}
                 >
-                  {availableLanguages.find(
-                    lang => lang.code === currentLanguage,
-                  )?.name || t('settings.language.current')}
+                  {themes.find(t => t.mode === currentMode)?.label ||
+                    t('settings.theme.current')}
                 </ThemedText>
               </View>
             </View>
@@ -117,40 +127,41 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
 
           {/* Content */}
           <View style={styles.content}>
-            {availableLanguages.map((lang, index) => {
-              const isSelected = currentLanguage === lang.code;
+            {themes.map((theme, index) => {
+              const isSelected = currentMode === theme.mode;
               return (
                 <TouchableOpacity
-                  key={lang.code}
+                  key={theme.mode}
                   style={[
-                    styles.languageItem,
-                    dynamicStyles.languageItem,
-                    index === availableLanguages.length - 1 &&
-                      styles.languageItemLast,
-                    isSelected && dynamicStyles.languageItemSelected,
+                    styles.themeItem,
+                    dynamicStyles.themeItem,
+                    index === themes.length - 1 && styles.themeItemLast,
+                    isSelected && dynamicStyles.themeItemSelected,
                   ]}
-                  onPress={() => handleSelect(lang.code)}
+                  onPress={() => handleSelect(theme.mode)}
                   activeOpacity={0.6}
                 >
-                  <View style={styles.languageItemLeft}>
+                  <View style={styles.themeItemLeft}>
                     <View
                       style={[
                         styles.iconContainer,
                         { backgroundColor: colors.primary + '20' },
                       ]}
                     >
-                      <ThemedText style={styles.flagText}>
-                        {lang.flag}
-                      </ThemedText>
+                      <IconSymbol
+                        name={theme.icon as any}
+                        size={22}
+                        color={colors.primary}
+                      />
                     </View>
-                    <View style={styles.languageItemContent}>
+                    <View style={styles.themeItemContent}>
                       <ThemedText
                         style={[
-                          styles.languageItemTitle,
-                          dynamicStyles.languageItemTitle,
+                          styles.themeItemTitle,
+                          dynamicStyles.themeItemTitle,
                         ]}
                       >
-                        {lang.name}
+                        {theme.label}
                       </ThemedText>
                     </View>
                   </View>
@@ -228,7 +239,7 @@ const styles = StyleSheet.create({
   content: {
     padding: 8,
   },
-  languageItem: {
+  themeItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -237,22 +248,19 @@ const styles = StyleSheet.create({
     minHeight: 56,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  languageItemLast: {
+  themeItemLast: {
     borderBottomWidth: 0,
   },
-  languageItemLeft: {
+  themeItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  languageItemContent: {
+  themeItemContent: {
     flex: 1,
   },
-  languageItemTitle: {
+  themeItemTitle: {
     fontSize: 17,
     fontWeight: '400',
-  },
-  flagText: {
-    fontSize: 20,
   },
 });

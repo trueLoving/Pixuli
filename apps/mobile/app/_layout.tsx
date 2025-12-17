@@ -1,4 +1,4 @@
-import { useColorScheme, initTheme } from '@/hooks/useColorScheme';
+import { initTheme, useColorScheme } from '@/hooks/useColorScheme';
 import '@/i18n';
 import { useImageStore } from '@/stores/imageStore';
 import {
