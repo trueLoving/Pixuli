@@ -2,7 +2,7 @@ import type { ImageItem } from '../types/image';
 import type {
   SortField,
   SortOrder,
-} from '../components/image-browser/web/image-sorter/ImageSorter';
+} from '../components/image/image-browser/common/types';
 
 /**
  * 对图片数组进行排序

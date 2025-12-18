@@ -102,7 +102,7 @@ export const HomePage: React.FC = () => {
 
   // 同步搜索查询到筛选条件
   useEffect(() => {
-    setExternalFilters(prev => ({
+    setExternalFilters((prev: FilterOptions) => ({
       ...prev,
       searchTerm: searchQuery,
     }));
@@ -594,9 +594,6 @@ export const HomePage: React.FC = () => {
                     onUpdateImage={handleUpdateImage}
                     getImageDimensionsFromUrl={getImageDimensionsFromUrl}
                     formatFileSize={formatFileSize}
-                    externalSearchQuery={searchQuery}
-                    externalFilters={externalFilters}
-                    hideFilter={true}
                   />
                 )}
               </div>

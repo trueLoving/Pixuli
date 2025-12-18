@@ -18,9 +18,9 @@ import {
   VersionInfoModal,
   DevTools,
   filterImages,
-  type FilterOptions,
   type VersionInfo,
 } from '@packages/common/src';
+import type { FilterOptions } from '@packages/common/src/components/image/image-browser/common/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { ImageContent, PWAInstallPrompt, SourceTypeMenu } from './components';
@@ -123,7 +123,7 @@ function App() {
 
   // 同步搜索查询到筛选条件
   useEffect(() => {
-    setExternalFilters(prev => ({
+    setExternalFilters((prev: FilterOptions) => ({
       ...prev,
       searchTerm: searchQuery,
     }));
@@ -309,8 +309,6 @@ function App() {
               onClearError={clearError}
               images={images}
               loading={loading}
-              searchQuery={searchQuery}
-              externalFilters={externalFilters}
               onDeleteImage={handleDeleteImage}
               onDeleteMultipleImages={handleDeleteMultipleImages}
               onUpdateImage={handleUpdateImage}

@@ -2,22 +2,29 @@
 import appZhCN from './app/zh-CN.json';
 import appEnUS from './app/en-US.json';
 // 组件语言包
-import githubConfigLocales from '../components/github-config/locales';
-import giteeConfigLocales from '../components/gitee-config/locales';
-import keyboardHelpLocales from '../components/keyboard-help/locales';
-import versionInfoLocales from '../components/version-info/locales';
-import imageBrowserLocales from '../components/image-browser/locales';
-import imageUploadLocales from '../components/image-upload/locales';
-import languageSwitcherLocales from '../components/language-switcher/locales';
-import slideShowLocales from '../components/slide-show/locales';
-import browseModeSwitcherLocales from '../components/browse-mode-switcher/locales';
-import timelineLocales from '../components/timeline/locales';
-import sidebarLocales from '../components/sidebar/locales';
-import headerLocales from '../components/header/locales';
-import searchLocales from '../components/search/locales';
-import emptyStateLocales from '../components/empty-state/locales';
-import demoLocales from '../components/demo/locales';
-import devtoolsLocales from '../components/devtools/locales';
+// 图片相关组件
+import imagePreviewModalLocales from '../components/image/image-preview-modal/locales';
+import imageBrowserLocales from '../components/image/image-browser/locales';
+import imageUploadLocales from '../components/image/image-upload/locales';
+import timelineLocales from '../components/image/timeline/locales';
+// 布局组件
+import sidebarLocales from '../components/layout/sidebar/locales';
+import headerLocales from '../components/layout/header/locales';
+import emptyStateLocales from '../components/layout/empty-state/locales';
+// 配置相关组件
+import githubConfigLocales from '../components/config/github-config/locales';
+import giteeConfigLocales from '../components/config/gitee-config/locales';
+// UI 组件
+import searchLocales from '../components/ui/search/locales';
+import keyboardHelpLocales from '../components/ui/keyboard-help/locales';
+import languageSwitcherLocales from '../components/ui/language-switcher/locales';
+// 功能组件
+import slideShowLocales from '../components/features/slide-show/locales';
+import browseModeSwitcherLocales from '../components/features/browse-mode-switcher/locales';
+import versionInfoLocales from '../components/features/version-info/locales';
+// 开发工具
+import demoLocales from '../components/dev/demo/locales';
+import devtoolsLocales from '../components/dev/devtools/locales';
 
 /**
  * 深层合并对象
@@ -62,6 +69,7 @@ export const appLocales = {
     giteeConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
     versionInfoLocales['zh-CN'],
+    imagePreviewModalLocales['zh-CN'],
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
@@ -82,6 +90,7 @@ export const appLocales = {
     giteeConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
     versionInfoLocales['en-US'],
+    imagePreviewModalLocales['en-US'],
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
     languageSwitcherLocales['en-US'],

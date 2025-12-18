@@ -17,11 +17,11 @@ export * from './services';
 
 // ==================== React Native 专用组件导出 ====================
 // EmptyState 组件（React Native 版本）
-export * from './components/empty-state/native';
+export * from './components/layout/empty-state/native';
 // Demo 组件（React Native 版本）
-export * from './components/demo/native';
+export * from './components/dev/demo/native';
 // VersionInfoModal 组件（React Native 版本）
-export * from './components/version-info/native';
+export * from './components/features/version-info/native';
 
 // ==================== 语言包导出 ====================
 export * from './locales';
