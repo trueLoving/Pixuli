@@ -2,7 +2,6 @@
   "browseMode": {
     "file": "文件模式",
     "slide": "幻灯片模式",
-    "wall": "照片墙模式",
-    "gallery3d": "3D画廊模式"
+    "timeline": "时间线模式"
   }
 }

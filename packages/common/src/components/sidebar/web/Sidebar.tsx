@@ -1,4 +1,5 @@
 import {
+  Calendar,
   ExternalLink,
   Github,
   Heart,
@@ -6,7 +7,6 @@ import {
   Image as ImageIcon,
   Info,
   Keyboard,
-  LayoutGrid,
   Lock,
   Play,
   Plus,
@@ -190,22 +190,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       mode: 'slide',
       icon: <Play size={20} />,
       label: translate('browseMode.slide'),
-      // disabled: true,
-      // comingSoon: true,
     },
     {
-      mode: 'wall',
-      icon: <LayoutGrid size={20} />,
-      label: translate('browseMode.wall'),
-      disabled: true,
-      comingSoon: true,
-    },
-    {
-      mode: 'gallery3d',
-      icon: <ImageIcon size={20} />,
-      label: translate('browseMode.gallery3d'),
-      disabled: true,
-      comingSoon: true,
+      mode: 'timeline',
+      icon: <Calendar size={20} />,
+      label: translate('browseMode.timeline'),
     },
   ];
 
