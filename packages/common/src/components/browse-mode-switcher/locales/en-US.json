@@ -2,7 +2,6 @@
   "browseMode": {
     "file": "File Mode",
     "slide": "Slide Show Mode",
-    "wall": "Photo Wall Mode",
-    "gallery3d": "3D Gallery Mode"
+    "timeline": "Timeline Mode"
   }
 }

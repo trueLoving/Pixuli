@@ -11,8 +11,7 @@ import imageUploadLocales from '../components/image-upload/locales';
 import languageSwitcherLocales from '../components/language-switcher/locales';
 import slideShowLocales from '../components/slide-show/locales';
 import browseModeSwitcherLocales from '../components/browse-mode-switcher/locales';
-import photoWallLocales from '../components/photo-wall/locales';
-import gallery3dLocales from '../components/gallery-3d/locales';
+import timelineLocales from '../components/timeline/locales';
 import sidebarLocales from '../components/sidebar/locales';
 import headerLocales from '../components/header/locales';
 import searchLocales from '../components/search/locales';
@@ -68,8 +67,7 @@ export const appLocales = {
     languageSwitcherLocales['zh-CN'],
     slideShowLocales['zh-CN'],
     browseModeSwitcherLocales['zh-CN'],
-    photoWallLocales['zh-CN'],
-    gallery3dLocales['zh-CN'],
+    timelineLocales['zh-CN'],
     sidebarLocales['zh-CN'],
     headerLocales['zh-CN'],
     searchLocales['zh-CN'],
@@ -89,8 +87,7 @@ export const appLocales = {
     languageSwitcherLocales['en-US'],
     slideShowLocales['en-US'],
     browseModeSwitcherLocales['en-US'],
-    photoWallLocales['en-US'],
-    gallery3dLocales['en-US'],
+    timelineLocales['en-US'],
     sidebarLocales['en-US'],
     headerLocales['en-US'],
     searchLocales['en-US'],

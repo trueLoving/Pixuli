@@ -1,9 +1,9 @@
-import { ChevronDown, FileText, Play } from 'lucide-react';
+import { Calendar, ChevronDown, FileText, Play } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { defaultTranslate } from '../../../locales';
 import './BrowseModeSwitcher.css';
 
-export type BrowseMode = 'file' | 'slide' | 'wall' | 'gallery3d';
+export type BrowseMode = 'file' | 'slide' | 'timeline';
 
 interface BrowseModeSwitcherProps {
   currentMode: BrowseMode;
@@ -37,17 +37,11 @@ const BrowseModeSwitcher: React.FC<BrowseModeSwitcherProps> = ({
       icon: <Play className="browse-mode-icon" />,
       label: translate('browseMode.slide'),
     },
-    // TODO: 暂时隐藏，等稳定后再开放
-    // {
-    //   mode: 'wall',
-    //   icon: <LayoutGrid className="browse-mode-icon" />,
-    //   label: translate('browseMode.wall'),
-    // },
-    // {
-    //   mode: 'gallery3d',
-    //   icon: <Image className="browse-mode-icon" />,
-    //   label: translate('browseMode.gallery3d'),
-    // },
+    {
+      mode: 'timeline',
+      icon: <Calendar className="browse-mode-icon" />,
+      label: translate('browseMode.timeline'),
+    },
   ];
 
   const currentModeData = modes.find(m => m.mode === currentMode) || modes[0];

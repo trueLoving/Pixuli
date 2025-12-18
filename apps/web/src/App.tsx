@@ -2,22 +2,22 @@ import {
   createDefaultFilters,
   DemoIcon,
   FullScreenLoading,
-  Gallery3D,
   GiteeConfigModal,
   GitHubConfigModal,
   Header,
   Search,
   KeyboardHelpModal,
   LanguageSwitcher,
-  PhotoWall,
   RefreshButton,
   Sidebar,
   SlideShowPlayer,
+  Timeline,
   Toaster,
   UploadButton,
   useDemoMode,
   VersionInfoModal,
   DevTools,
+  filterImages,
   type FilterOptions,
   type VersionInfo,
 } from '@packages/common/src';
@@ -194,6 +194,11 @@ function App() {
 
   // 应用初始化
   useAppInitialization(isDemoMode, hasConfig, handleLoadImages);
+
+  // 计算筛选后的图片（用于照片墙、3D画廊和幻灯片模式）
+  const filteredImages = useMemo(() => {
+    return filterImages(images, externalFilters);
+  }, [images, externalFilters]);
 
   // 键盘快捷键
   useKeyboardShortcuts(
@@ -393,25 +398,16 @@ function App() {
           <SlideShowPlayer
             isOpen={true}
             onClose={() => handleBrowseModeChange('file')}
-            images={images}
+            images={filteredImages}
             t={t}
           />
         )}
       </div>
 
-      {/* 照片墙模式 - 全屏 */}
-      {browseMode === 'wall' && (
-        <PhotoWall
-          images={images}
-          t={t}
-          onClose={() => setBrowseMode('file')}
-        />
-      )}
-
-      {/* 3D画廊模式 - 全屏 */}
-      {browseMode === 'gallery3d' && (
-        <Gallery3D
-          images={images}
+      {/* 时间线模式 - 全屏 */}
+      {browseMode === 'timeline' && (
+        <Timeline
+          images={filteredImages}
           t={t}
           onClose={() => setBrowseMode('file')}
         />

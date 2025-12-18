@@ -31,8 +31,7 @@ export { Search } from './components/search/web';
 export type { SearchProps, SearchVariant } from './components/search/web';
 // 浏览模式相关组件
 export * from './components/slide-show/web';
-export * from './components/photo-wall/web';
-export * from './components/gallery-3d/web';
+export * from './components/timeline/web';
 export * from './components/browse-mode-switcher/web';
 // 布局组件
 export * from './components/sidebar/web';

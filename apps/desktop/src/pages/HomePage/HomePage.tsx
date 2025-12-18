@@ -13,9 +13,11 @@ import {
   Sidebar,
   SidebarFilter,
   SlideShowPlayer,
+  Timeline,
   Toaster,
   UploadButton,
   VersionInfoModal,
+  filterImages,
   formatFileSize,
   getImageDimensionsFromUrl,
   type FilterOptions,
@@ -105,6 +107,11 @@ export const HomePage: React.FC = () => {
       searchTerm: searchQuery,
     }));
   }, [searchQuery]);
+
+  // 计算筛选后的图片（用于时间线和幻灯片模式）
+  const filteredImages = useMemo(() => {
+    return filterImages(images, externalFilters);
+  }, [images, externalFilters]);
 
   // 初始化：如果没有选中源但有源列表，自动选中第一个
   useEffect(() => {
@@ -451,6 +458,11 @@ export const HomePage: React.FC = () => {
           }, 300);
         }, 300);
       }
+      // 时间线模式切换（无动画，直接切换）
+      else if (newMode === 'timeline') {
+        setBrowseMode('timeline');
+        setIsTransitioning(false);
+      }
       // 其他模式切换（无动画，直接切换）
       else {
         setBrowseMode(newMode);
@@ -721,11 +733,20 @@ export const HomePage: React.FC = () => {
           <SlideShowPlayer
             isOpen={true}
             onClose={() => handleBrowseModeChange('file')}
-            images={images}
+            images={filteredImages}
             t={t}
           />
         )}
       </div>
+
+      {/* 时间线模式 - 全屏 */}
+      {browseMode === 'timeline' && (
+        <Timeline
+          images={filteredImages}
+          t={t}
+          onClose={() => handleBrowseModeChange('file')}
+        />
+      )}
 
       <Toaster />
     </div>
