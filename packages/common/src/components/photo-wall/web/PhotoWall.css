@@ -16,11 +16,31 @@
   padding: 0;
 }
 
-.photo-wall-close-button {
+.photo-wall-header {
   position: absolute;
   top: 1rem;
+  left: 1rem;
   right: 1rem;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.photo-wall-count {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: auto;
+}
+
+.photo-wall-close-button {
+  margin-left: auto;
   padding: 0.75rem;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
@@ -31,6 +51,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto;
 }
 
 .photo-wall-close-button:hover {

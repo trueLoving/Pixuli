@@ -9,7 +9,7 @@ import React, {
 import { useLazyLoad } from '../../../hooks';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
-import ImagePreviewModal from '../../image-browser/web/components/image-preview/ImagePreviewModal';
+import { ImagePreviewModal } from '../../image-preview-modal/web';
 import './Timeline.css';
 
 interface TimelineProps {

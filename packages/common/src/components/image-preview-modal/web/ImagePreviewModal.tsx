@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight, ExternalLink, Link, X } from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
-import { defaultTranslate } from '../../../../../locales';
-import { ImageItem } from '../../../../../types/image';
+import { defaultTranslate } from '../../../locales';
+import { ImageItem } from '../../../types/image';
 import './ImagePreviewModal.css';
-import { getRealGiteeUrl } from '../../../../../utils/imageUtils';
+import { getRealGiteeUrl } from '../../../utils/imageUtils';
 
 interface ImagePreviewModalProps {
   image: ImageItem | null;

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLazyLoad } from '../../../hooks';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
-import ImagePreviewModal from '../../image-browser/web/components/image-preview/ImagePreviewModal';
+import { ImagePreviewModal } from '../../image-preview-modal/web';
 import './PhotoWall.css';
 
 interface PhotoWallProps {
@@ -134,10 +134,45 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
     setPreviewImageIndex(-1);
   }, []);
 
+  // 键盘快捷键支持
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // ESC 键关闭照片墙
+      if (event.key === 'Escape' && !showPreview && onClose) {
+        onClose();
+      }
+      // ESC 键关闭预览
+      if (event.key === 'Escape' && showPreview) {
+        handleClosePreview();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose, showPreview, handleClosePreview]);
+
   if (images.length === 0) {
     return (
-      <div className={`photo-wall-empty ${className}`}>
-        <p>{translate('photoWall.noImages')}</p>
+      <div
+        className={`photo-wall-container photo-wall-fullscreen ${className}`}
+      >
+        <div className="photo-wall-header">
+          <div className="photo-wall-count">0 {translate('app.images')}</div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="photo-wall-close-button"
+              title={translate('common.close')}
+            >
+              <X className="photo-wall-close-icon" />
+            </button>
+          )}
+        </div>
+        <div className="photo-wall-empty">
+          <p>{translate('photoWall.noImages')}</p>
+        </div>
       </div>
     );
   }
@@ -159,16 +194,21 @@ const PhotoWall: React.FC<PhotoWallProps> = ({
         ref={containerRef}
         className={`photo-wall-container photo-wall-fullscreen ${className}`}
       >
-        {/* 关闭按钮 */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="photo-wall-close-button"
-            title={translate('common.close')}
-          >
-            <X className="photo-wall-close-icon" />
-          </button>
-        )}
+        {/* 头部：图片数量和关闭按钮 */}
+        <div className="photo-wall-header">
+          <div className="photo-wall-count">
+            {images.length} {translate('app.images')}
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="photo-wall-close-button"
+              title={translate('common.close')}
+            >
+              <X className="photo-wall-close-icon" />
+            </button>
+          )}
+        </div>
         <div
           className="photo-wall-grid"
           style={{ '--columns': columns } as React.CSSProperties}

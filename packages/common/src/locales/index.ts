@@ -6,6 +6,7 @@ import githubConfigLocales from '../components/github-config/locales';
 import giteeConfigLocales from '../components/gitee-config/locales';
 import keyboardHelpLocales from '../components/keyboard-help/locales';
 import versionInfoLocales from '../components/version-info/locales';
+import imagePreviewModalLocales from '../components/image-preview-modal/locales';
 import imageBrowserLocales from '../components/image-browser/locales';
 import imageUploadLocales from '../components/image-upload/locales';
 import languageSwitcherLocales from '../components/language-switcher/locales';
@@ -62,6 +63,7 @@ export const appLocales = {
     giteeConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
     versionInfoLocales['zh-CN'],
+    imagePreviewModalLocales['zh-CN'],
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
@@ -82,6 +84,7 @@ export const appLocales = {
     giteeConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
     versionInfoLocales['en-US'],
+    imagePreviewModalLocales['en-US'],
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
     languageSwitcherLocales['en-US'],

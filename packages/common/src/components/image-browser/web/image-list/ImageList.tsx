@@ -26,7 +26,7 @@ import {
   updateLoadingToSuccess,
 } from '../../../../utils/toast';
 import ImageEditModal from '../components/image-edit/ImageEditModal';
-import ImagePreviewModal from '../components/image-preview/ImagePreviewModal';
+import { ImagePreviewModal } from '../../../image-preview-modal/web';
 import ImageUrlModal from '../components/image-url/ImageUrlModal';
 import './ImageList.css';
 

@@ -22,6 +22,8 @@ export * from './utils';
 export * from './hooks';
 
 // ==================== 组件导出 ====================
+// 图片预览组件
+export * from './components/image-preview-modal/web';
 // 图片浏览相关组件
 export * from './components/image-browser/web';
 // 图片上传组件

@@ -1,4 +1,3 @@
-import './components/image-preview/ImagePreviewModal.css';
 import './components/image-url/ImageUrlModal.css';
 import './image-filter/ImageFilter.css';
 import './image-grid/ImageGrid.css';
@@ -10,7 +9,6 @@ export { default as ImageGrid } from './image-grid/ImageGrid';
 export { default as ImageList } from './image-list/ImageList';
 export { default as ImageFilter } from './image-filter/ImageFilter';
 export { default as ImageSorter } from './image-sorter/ImageSorter';
-export { default as ImagePreviewModal } from './components/image-preview/ImagePreviewModal';
 export { default as ImageUrlModal } from './components/image-url/ImageUrlModal';
 export { default as ImageEditModal } from './components/image-edit/ImageEditModal';
 export { default as ImageViewToggle } from './image-view-toggle/ImageViewToggle';

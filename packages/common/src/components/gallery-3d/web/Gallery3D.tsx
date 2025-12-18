@@ -2,7 +2,7 @@ import { Eye, X } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '../../../locales';
 import { ImageItem } from '../../../types/image';
-import ImagePreviewModal from '../../image-browser/web/components/image-preview/ImagePreviewModal';
+import { ImagePreviewModal } from '../../image-preview-modal/web';
 import './Gallery3D.css';
 
 interface Gallery3DProps {
