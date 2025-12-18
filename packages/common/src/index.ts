@@ -22,37 +22,36 @@ export * from './utils';
 export * from './hooks';
 
 // ==================== 组件导出 ====================
-// 图片预览组件
-export * from './components/image-preview-modal/web';
-// 图片浏览相关组件
-export * from './components/image-browser/web';
-// 图片上传组件
-export * from './components/image-upload/web';
-// 搜索组件
-export { Search } from './components/search/web';
-export type { SearchProps, SearchVariant } from './components/search/web';
-// 浏览模式相关组件
-export * from './components/slide-show/web';
-export * from './components/timeline/web';
-export * from './components/browse-mode-switcher/web';
+// 图片相关组件
+export * from './components/image/image-preview-modal/web';
+export * from './components/image/image-browser/web';
+export * from './components/image/image-upload/web';
+export * from './components/image/photo-wall/web';
+export * from './components/image/gallery-3d/web';
+export * from './components/image/timeline/web';
 // 布局组件
-export * from './components/sidebar/web';
-export * from './components/header/web';
-export * from './components/empty-state/web';
+export * from './components/layout/sidebar/web';
+export * from './components/layout/header/web';
+export * from './components/layout/empty-state/web';
 // 配置相关组件
-export * from './components/github-config/web';
-export * from './components/gitee-config/web';
+export * from './components/config/github-config/web';
+export * from './components/config/gitee-config/web';
+// UI 组件
+export { Search } from './components/ui/search/web';
+export type { SearchProps, SearchVariant } from './components/ui/search/web';
+export * from './components/ui/toaster/web';
+export * from './components/ui/refresh-button/web';
+export * from './components/ui/upload-button/web';
+export * from './components/ui/keyboard-help/web';
+export * from './components/ui/language-switcher/web';
+export * from './components/ui/fullscreen-loading/web';
+export * from './components/ui/action-button/web';
 // 功能组件
-export * from './components/toaster/web';
-export * from './components/refresh-button/web';
-export * from './components/upload-button/web';
-export * from './components/keyboard-help/web';
-export * from './components/language-switcher/web';
-export * from './components/version-info/web';
-export * from './components/fullscreen-loading/web';
-// Demo 组件
-export * from './components/demo/web';
-// DevTools 组件
-export * from './components/devtools/web';
+export * from './components/features/slide-show/web';
+export * from './components/features/browse-mode-switcher/web';
+export * from './components/features/version-info/web';
+// 开发工具
+export * from './components/dev/demo/web';
+export * from './components/dev/devtools/web';
 // ==================== 语言包导出 ====================
 export * from './locales';

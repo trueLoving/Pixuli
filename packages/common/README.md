@@ -17,35 +17,56 @@ import { ImageBrowser } from 'pixuli-common/src'
 
 ### 组件 (Components)
 
-#### 图片浏览相关
+组件按功能分类组织，便于查找和维护：
+
+#### 📷 图片相关组件 (`components/image/`)
 
 - **ImageBrowser** - 图片浏览器主组件
 - **ImageGrid** - 图片网格视图
 - **ImageList** - 图片列表视图
-- **ImageFilter** - 图片过滤器
 - **ImageSorter** - 图片排序器
 - **ImagePreviewModal** - 图片预览模态框
 - **ImageUrlModal** - 图片 URL 模态框
 - **ImageEditModal** - 图片编辑模态框
-
-#### 图片上传相关
-
 - **ImageUpload** - 图片上传组件
 - **ImageCropModal** - 图片裁剪模态框
-
-#### 其他组件
-
-- **ImageSearch** - 图片搜索组件
-- **SlideShowPlayer** - 幻灯片播放器
-- **SlideShowSettings** - 幻灯片设置
 - **PhotoWall** - 照片墙组件
 - **Gallery3D** - 3D 画廊组件
-- **BrowseModeSwitcher** - 浏览模式切换器
+- **Timeline** - 时间线组件
+
+#### 🎨 布局组件 (`components/layout/`)
+
+- **Sidebar** - 侧边栏组件
+- **Header** - 头部组件
+- **EmptyState** - 空状态组件
+
+#### ⚙️ 配置组件 (`components/config/`)
+
 - **GitHubConfigModal** - GitHub 配置模态框
 - **GiteeConfigModal** - Gitee 配置模态框
+
+#### 🎯 UI 组件 (`components/ui/`)
+
+- **Search** - 搜索组件
+- **Toaster** - 消息提示组件
+- **UploadButton** - 上传按钮组件
+- **RefreshButton** - 刷新按钮组件
+- **ActionButton** - 操作按钮组件
 - **KeyboardHelpModal** - 键盘快捷键帮助模态框
 - **LanguageSwitcher** - 语言切换器
-- **Toaster** - 消息提示组件
+- **FullScreenLoading** - 全屏加载组件
+
+#### 🚀 功能组件 (`components/features/`)
+
+- **SlideShowPlayer** - 幻灯片播放器
+- **SlideShowSettings** - 幻灯片设置
+- **BrowseModeSwitcher** - 浏览模式切换器
+- **VersionInfoModal** - 版本信息模态框
+
+#### 🛠️ 开发工具 (`components/dev/`)
+
+- **Demo** - Demo 组件
+- **DevTools** - 开发工具组件
 
 ### Hooks
 
@@ -95,14 +116,22 @@ import { ImageBrowser } from 'pixuli-common/src'
 ### 基础组件使用
 
 ```tsx
-import { ImageBrowser, ImageUpload, ImageSearch } from 'pixuli-common';
+import {
+  ImageBrowser,
+  ImageUpload,
+  Search,
+  Sidebar,
+  Header,
+} from 'pixuli-common';
 
 function App() {
   return (
     <>
+      <Header />
+      <Sidebar />
+      <Search searchQuery={query} onSearchChange={setQuery} variant="header" />
       <ImageBrowser images={images} />
       <ImageUpload onUpload={handleUpload} />
-      <ImageSearch onSearch={handleSearch} />
     </>
   );
 }
@@ -180,9 +209,68 @@ pnpm test:coverage
 
 - ✅ 所有 Hooks（6 个）
 - ✅ 所有工具函数（7 个）
-- ✅ 组件功能测试
+- ✅ 组件功能测试（27 个测试文件，632 个测试用例）
 
 测试使用 Vitest + React Testing Library，环境为 jsdom。
+
+## 📁 目录结构
+
+组件按功能分类组织，结构清晰：
+
+```
+components/
+├── layout/              # 布局组件 (3个)
+│   ├── sidebar/
+│   ├── header/
+│   └── empty-state/
+├── image/               # 图片相关组件 (6个)
+│   ├── image-browser/
+│   ├── image-upload/
+│   ├── image-preview-modal/
+│   ├── photo-wall/
+│   ├── gallery-3d/
+│   └── timeline/
+├── config/              # 配置相关组件 (2个)
+│   ├── github-config/
+│   └── gitee-config/
+├── ui/                  # 通用 UI 组件 (8个)
+│   ├── search/
+│   ├── toaster/
+│   ├── upload-button/
+│   ├── refresh-button/
+│   ├── action-button/
+│   ├── language-switcher/
+│   ├── keyboard-help/
+│   └── fullscreen-loading/
+├── features/            # 功能组件 (3个)
+│   ├── slide-show/
+│   ├── browse-mode-switcher/
+│   └── version-info/
+└── dev/                 # 开发工具 (2个)
+    ├── demo/
+    └── devtools/
+```
+
+每个组件目录结构：
+
+```
+component-name/
+├── locales/             # 国际化文件（统一使用复数）
+│   ├── index.ts
+│   ├── zh-CN.json
+│   └── en-US.json
+├── common/              # 跨平台共享代码（可选）
+│   ├── types.ts
+│   ├── hooks.ts
+│   └── utils.ts
+├── web/                 # Web 平台实现
+│   ├── index.ts
+│   ├── ComponentName.tsx
+│   └── ComponentName.css
+└── native/              # React Native 实现（可选）
+    ├── index.ts
+    └── ComponentName.native.tsx
+```
 
 ## 📄 许可证
 

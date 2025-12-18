@@ -3,7 +3,6 @@ import {
   formatFileSize,
   getImageDimensionsFromUrl,
   ImageBrowser,
-  type FilterOptions,
 } from '@packages/common/src';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
@@ -15,8 +14,6 @@ interface ImageContentProps {
   onClearError: () => void;
   images: any[];
   loading: boolean;
-  searchQuery: string;
-  externalFilters: FilterOptions;
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
   onDeleteMultipleImages: (
     imageIds: string[],
@@ -33,8 +30,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   onClearError,
   images,
   loading,
-  searchQuery,
-  externalFilters,
   onDeleteImage,
   onDeleteMultipleImages,
   onUpdateImage,
@@ -108,9 +103,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           onUpdateImage={onUpdateImage}
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           formatFileSize={formatFileSize}
-          externalSearchQuery={searchQuery}
-          externalFilters={externalFilters}
-          hideFilter={true}
         />
       </div>
     </div>

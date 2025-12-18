@@ -1,5 +1,5 @@
 import type { ImageItem } from '../types/image';
-import type { FilterOptions } from '../components/image-browser/web/image-filter/ImageFilter';
+import type { FilterOptions } from '../components/image/image-browser/common/types';
 
 /**
  * 根据筛选条件过滤图片数组
