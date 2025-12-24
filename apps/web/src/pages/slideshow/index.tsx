@@ -1,8 +1,7 @@
 import React from 'react';
-import { SlideShowPlayer } from '@packages/common/src';
+import { SlideShowPlayer, type ImageItem } from '@packages/common/src';
 import { X } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
-import type { ImageItem } from '@packages/common/src/components/image/image-browser/common/types';
 
 interface SlideshowPageProps {
   images: ImageItem[];

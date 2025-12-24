@@ -1,8 +1,7 @@
 import React from 'react';
-import { Timeline } from '@packages/common/src';
+import { Timeline, type ImageItem } from '@packages/common/src';
 import { X } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
-import type { ImageItem } from '@packages/common/src/components/image/image-browser/common/types';
 
 interface TimelinePageProps {
   images: ImageItem[];

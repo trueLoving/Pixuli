@@ -312,7 +312,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         case 'Escape':
           if (isFullscreen) {
             toggleFullscreen();
-          } else {
+          } else if (onClose) {
             onClose();
           }
           break;
