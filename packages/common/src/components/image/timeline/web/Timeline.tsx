@@ -1,4 +1,4 @@
-import { Eye, X } from 'lucide-react';
+import { Eye, Maximize, Minimize, X } from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -18,6 +18,10 @@ interface TimelineProps {
   onImageClick?: (image: ImageItem, index: number) => void;
   onClose?: () => void;
   t?: (key: string) => string;
+  /** 是否嵌入模式（在容器中显示，而不是全屏） */
+  embedded?: boolean;
+  /** 全屏模式切换回调 */
+  onFullscreenToggle?: (isFullscreen: boolean) => void;
 }
 
 interface GroupedImage {
@@ -34,12 +38,49 @@ const Timeline: React.FC<TimelineProps> = ({
   onImageClick,
   onClose,
   t,
+  embedded = false,
+  onFullscreenToggle,
 }) => {
   const translate = t || defaultTranslate;
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
   const [showPreview, setShowPreview] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
+
+  // 全屏切换
+  const toggleFullscreen = useCallback(() => {
+    if (!isFullscreen) {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+      setIsFullscreen(true);
+      // 通知父组件进入全屏模式
+      if (onFullscreenToggle) {
+        onFullscreenToggle(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+      // 通知父组件退出全屏模式
+      if (onFullscreenToggle) {
+        onFullscreenToggle(false);
+      }
+    }
+  }, [isFullscreen, onFullscreenToggle]);
+
+  // 监听全屏状态变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // 使用懒加载 Hook
   const { observeElement } = useLazyLoad({
@@ -153,18 +194,39 @@ const Timeline: React.FC<TimelineProps> = ({
 
   if (images.length === 0) {
     return (
-      <div className={`timeline-container timeline-fullscreen ${className}`}>
+      <div
+        className={`timeline-container ${embedded ? 'timeline-embedded' : 'timeline-fullscreen'} ${className}`}
+      >
         <div className="timeline-header">
           <div className="timeline-count">0 {translate('app.images')}</div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="timeline-close-button"
-              title={translate('common.close')}
-            >
-              <X className="timeline-close-icon" />
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+            {embedded && (
+              <button
+                onClick={toggleFullscreen}
+                className="timeline-close-button"
+                title={
+                  isFullscreen
+                    ? translate('common.exitFullscreen') || '退出全屏'
+                    : translate('common.fullscreen') || '全屏'
+                }
+              >
+                {isFullscreen ? (
+                  <Minimize className="timeline-close-icon" />
+                ) : (
+                  <Maximize className="timeline-close-icon" />
+                )}
+              </button>
+            )}
+            {!embedded && onClose && (
+              <button
+                onClick={onClose}
+                className="timeline-close-button"
+                title={translate('common.close')}
+              >
+                <X className="timeline-close-icon" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="timeline-empty">
           <p>{translate('timeline.noImages')}</p>
@@ -177,22 +239,41 @@ const Timeline: React.FC<TimelineProps> = ({
     <>
       <div
         ref={containerRef}
-        className={`timeline-container timeline-fullscreen ${className}`}
+        className={`timeline-container ${embedded ? 'timeline-embedded' : 'timeline-fullscreen'} ${isFullscreen ? 'timeline-fullscreen' : ''} ${className}`}
       >
-        {/* 头部：图片数量和关闭按钮 */}
+        {/* 头部：图片数量和全屏按钮 */}
         <div className="timeline-header">
           <div className="timeline-count">
             {images.length} {translate('app.images')}
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="timeline-close-button"
-              title={translate('common.close')}
-            >
-              <X className="timeline-close-icon" />
-            </button>
-          )}
+          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+            {embedded && (
+              <button
+                onClick={toggleFullscreen}
+                className="timeline-close-button"
+                title={
+                  isFullscreen
+                    ? translate('common.exitFullscreen') || '退出全屏'
+                    : translate('common.fullscreen') || '全屏'
+                }
+              >
+                {isFullscreen ? (
+                  <Minimize className="timeline-close-icon" />
+                ) : (
+                  <Maximize className="timeline-close-icon" />
+                )}
+              </button>
+            )}
+            {!embedded && onClose && (
+              <button
+                onClick={onClose}
+                className="timeline-close-button"
+                title={translate('common.close')}
+              >
+                <X className="timeline-close-icon" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 主内容区域 */}

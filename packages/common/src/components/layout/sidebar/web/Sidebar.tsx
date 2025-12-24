@@ -2,18 +2,17 @@ import {
   Calendar,
   ExternalLink,
   Github,
-  Heart,
   HelpCircle,
-  Image as ImageIcon,
   Info,
   Keyboard,
   Lock,
   Play,
   Plus,
-  Tag,
   FileText,
   Edit,
   Trash2,
+  Zap,
+  FileImage,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -29,6 +28,13 @@ export type SidebarView =
   | 'settings';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
+export type SidebarUtilityTool = 'compress' | 'convert';
+
+// 统一的菜单项类型
+export type SidebarMenuItem =
+  | { type: 'browse'; mode: BrowseMode }
+  | { type: 'utility'; tool: SidebarUtilityTool }
+  | { type: 'view'; view: SidebarView };
 
 export interface SidebarSource {
   id: string;
@@ -41,14 +47,12 @@ export interface SidebarSource {
 }
 
 interface SidebarProps {
-  currentView?: SidebarView;
-  onViewChange?: (view: SidebarView) => void;
-  // 浏览模式相关
+  // 统一的菜单点击处理
+  onMenuClick?: (menuItem: SidebarMenuItem) => void;
+  // 当前激活的菜单（用于高亮显示）
+  activeMenu?: string;
+  // 浏览模式（用于兼容性，可选）
   browseMode?: BrowseMode;
-  onBrowseModeChange?: (mode: BrowseMode) => void;
-  // 筛选相关
-  currentFilter?: SidebarFilter;
-  onFilterChange?: (filter: SidebarFilter) => void;
   sources: SidebarSource[];
   selectedSourceId: string | null;
   onSourceSelect: (id: string) => void;
@@ -117,10 +121,9 @@ const NavItem: React.FC<NavItemProps> = ({
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
+  onMenuClick,
+  activeMenu,
   browseMode = 'file',
-  onBrowseModeChange,
-  currentFilter = 'all',
-  onFilterChange,
   sources,
   selectedSourceId,
   onSourceSelect,
@@ -198,31 +201,24 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
-  // 筛选选项配置
-  const filters: Array<{
-    filter: SidebarFilter;
+  // 实用工具配置
+  const utilityTools: Array<{
+    tool: SidebarUtilityTool;
     icon: React.ReactNode;
     label: string;
     disabled?: boolean;
     comingSoon?: boolean;
   }> = [
     {
-      filter: 'all',
-      icon: <ImageIcon size={20} />,
-      label: translate('sidebar.all'),
-    },
-    {
-      filter: 'tags',
-      icon: <Tag size={20} />,
-      label: translate('sidebar.tags'),
-      disabled: true,
+      tool: 'compress',
+      icon: <Zap size={20} />,
+      label: translate('sidebar.imageCompress'),
       comingSoon: true,
     },
     {
-      filter: 'favorites',
-      icon: <Heart size={20} />,
-      label: translate('sidebar.favorites'),
-      disabled: true,
+      tool: 'convert',
+      icon: <FileImage size={20} />,
+      label: translate('sidebar.imageConvert'),
       comingSoon: true,
     },
   ];
@@ -357,84 +353,91 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* 浏览模式导航 - 折叠状态 */}
         <nav className="sidebar-collapsed-nav">
-          {browseModes.map(mode => (
-            <button
-              key={mode.mode}
-              className={`sidebar-collapsed-item ${
-                browseMode === mode.mode ? 'active' : ''
-              } ${!hasConfig || mode.disabled ? 'disabled' : ''} ${
-                mode.comingSoon ? 'coming-soon' : ''
-              }`}
-              onClick={
-                hasConfig && !mode.disabled && onBrowseModeChange
-                  ? () => onBrowseModeChange(mode.mode)
-                  : undefined
-              }
-              disabled={!hasConfig || mode.disabled}
-              title={
-                mode.comingSoon
-                  ? `${mode.label} - ${translate('sidebar.comingSoon')}`
-                  : mode.label
-              }
-            >
-              {React.cloneElement(
-                mode.icon as React.ReactElement<{ size?: number }>,
-                {
-                  size: 28,
-                },
-              )}
-              {mode.comingSoon && (
-                <Lock
-                  size={14}
-                  className="sidebar-collapsed-coming-soon-icon"
-                />
-              )}
-              <span className="sidebar-collapsed-tooltip">
-                {mode.label}
-                {mode.comingSoon && ` (${translate('sidebar.comingSoon')})`}
-              </span>
-            </button>
-          ))}
-        </nav>
-
-        {/* 筛选选项 - 折叠状态 */}
-        {hasConfig && onFilterChange && (
-          <nav className="sidebar-collapsed-nav sidebar-collapsed-filters">
-            {filters.map(filter => (
+          {browseModes.map(mode => {
+            const menuKey =
+              mode.mode === 'file' ? 'photos' : `browse-${mode.mode}`;
+            return (
               <button
-                key={filter.filter}
+                key={mode.mode}
                 className={`sidebar-collapsed-item ${
-                  currentFilter === filter.filter ? 'active' : ''
-                } ${filter.disabled ? 'disabled' : ''} ${
-                  filter.comingSoon ? 'coming-soon' : ''
+                  activeMenu === menuKey ||
+                  (activeMenu === undefined && browseMode === mode.mode)
+                    ? 'active'
+                    : ''
+                } ${!hasConfig || mode.disabled ? 'disabled' : ''} ${
+                  mode.comingSoon ? 'coming-soon' : ''
                 }`}
                 onClick={
-                  !filter.disabled
-                    ? () => onFilterChange(filter.filter)
+                  hasConfig && !mode.disabled && onMenuClick
+                    ? () => onMenuClick({ type: 'browse', mode: mode.mode })
                     : undefined
                 }
-                disabled={filter.disabled}
+                disabled={!hasConfig || mode.disabled}
                 title={
-                  filter.comingSoon
-                    ? `${filter.label} - ${translate('sidebar.comingSoon')}`
-                    : filter.label
+                  mode.comingSoon
+                    ? `${mode.label} - ${translate('sidebar.comingSoon')}`
+                    : mode.label
                 }
               >
                 {React.cloneElement(
-                  filter.icon as React.ReactElement<{ size?: number }>,
+                  mode.icon as React.ReactElement<{ size?: number }>,
+                  {
+                    size: 28,
+                  },
+                )}
+                {mode.comingSoon && (
+                  <Lock
+                    size={14}
+                    className="sidebar-collapsed-coming-soon-icon"
+                  />
+                )}
+                <span className="sidebar-collapsed-tooltip">
+                  {mode.label}
+                  {mode.comingSoon && ` (${translate('sidebar.comingSoon')})`}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* 实用工具 - 折叠状态 */}
+        {onMenuClick && (
+          <nav className="sidebar-collapsed-nav sidebar-collapsed-utility-tools">
+            {utilityTools.map(tool => (
+              <button
+                key={tool.tool}
+                className={`sidebar-collapsed-item ${
+                  activeMenu === tool.tool ? 'active' : ''
+                } ${tool.disabled ? 'disabled' : ''} ${
+                  tool.comingSoon ? 'coming-soon' : ''
+                }`}
+                onClick={
+                  !tool.disabled
+                    ? () => onMenuClick({ type: 'utility', tool: tool.tool })
+                    : undefined
+                }
+                disabled={tool.disabled}
+                title={
+                  tool.comingSoon
+                    ? `${tool.label} - ${translate('sidebar.comingSoon')}`
+                    : tool.label
+                }
+              >
+                {React.cloneElement(
+                  tool.icon as React.ReactElement<{ size?: number }>,
                   {
                     size: 24,
                   },
                 )}
-                {filter.comingSoon && (
+                {tool.comingSoon && (
                   <Lock
                     size={12}
                     className="sidebar-collapsed-coming-soon-icon"
                   />
                 )}
                 <span className="sidebar-collapsed-tooltip">
-                  {filter.label}
-                  {filter.comingSoon && ` (${translate('sidebar.comingSoon')})`}
+                  {tool.label}
+                  {tool.comingSoon && ` (${translate('sidebar.comingSoon')})`}
                 </span>
               </button>
             ))}
@@ -563,58 +566,63 @@ const Sidebar: React.FC<SidebarProps> = ({
           </span>
         </div>
         <nav className="sidebar-nav">
-          {browseModes.map(mode => (
-            <NavItem
-              key={mode.mode}
-              icon={mode.icon}
-              label={mode.label}
-              active={browseMode === mode.mode}
-              disabled={!hasConfig || mode.disabled}
-              comingSoon={mode.comingSoon}
-              onClick={
-                hasConfig && !mode.disabled && onBrowseModeChange
-                  ? () => onBrowseModeChange(mode.mode)
-                  : undefined
-              }
-              tooltip={
-                mode.comingSoon
-                  ? translate('sidebar.comingSoon')
-                  : !hasConfig
-                    ? translate('sidebar.needSource')
-                    : undefined
-              }
-              t={t}
-            />
-          ))}
-        </nav>
-      </div>
-
-      {/* 筛选选项 */}
-      {hasConfig && onFilterChange && (
-        <div className="sidebar-section">
-          <div className="sidebar-section-header">
-            <span className="sidebar-section-title">
-              {translate('sidebar.filter')}
-            </span>
-          </div>
-          <nav className="sidebar-nav">
-            {filters.map(filter => (
+          {browseModes.map(mode => {
+            const menuKey =
+              mode.mode === 'file' ? 'photos' : `browse-${mode.mode}`;
+            return (
               <NavItem
-                key={filter.filter}
-                icon={filter.icon}
-                label={filter.label}
-                active={currentFilter === filter.filter}
-                disabled={filter.disabled}
-                comingSoon={filter.comingSoon}
+                key={mode.mode}
+                icon={mode.icon}
+                label={mode.label}
+                active={
+                  activeMenu === menuKey ||
+                  (activeMenu === undefined && browseMode === mode.mode)
+                }
+                disabled={!hasConfig || mode.disabled}
+                comingSoon={mode.comingSoon}
                 onClick={
-                  !filter.disabled
-                    ? () => onFilterChange(filter.filter)
+                  hasConfig && !mode.disabled && onMenuClick
+                    ? () => onMenuClick({ type: 'browse', mode: mode.mode })
                     : undefined
                 }
                 tooltip={
-                  filter.comingSoon
+                  mode.comingSoon
                     ? translate('sidebar.comingSoon')
+                    : !hasConfig
+                      ? translate('sidebar.needSource')
+                      : undefined
+                }
+                t={t}
+              />
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* 实用工具 */}
+      {onMenuClick && (
+        <div className="sidebar-section">
+          <div className="sidebar-section-header">
+            <span className="sidebar-section-title">
+              {translate('sidebar.utilityTools')}
+            </span>
+          </div>
+          <nav className="sidebar-nav">
+            {utilityTools.map(tool => (
+              <NavItem
+                key={tool.tool}
+                icon={tool.icon}
+                label={tool.label}
+                active={activeMenu === tool.tool}
+                disabled={tool.disabled}
+                comingSoon={tool.comingSoon}
+                onClick={
+                  !tool.disabled
+                    ? () => onMenuClick({ type: 'utility', tool: tool.tool })
                     : undefined
+                }
+                tooltip={
+                  tool.comingSoon ? translate('sidebar.comingSoon') : undefined
                 }
                 t={t}
               />

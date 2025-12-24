@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import type {
   BrowseMode,
   SidebarView,
-  SidebarFilter,
+  SidebarUtilityTool,
 } from '@packages/common/src';
 import { useImageStore } from '../stores/imageStore';
 
@@ -17,7 +17,10 @@ export function useUIState() {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const [browseMode, setBrowseMode] = useState<BrowseMode>('file');
   const [currentView, setCurrentView] = useState<SidebarView>('photos');
-  const [currentFilter, setCurrentFilter] = useState<SidebarFilter>('all');
+  const [currentUtilityTool, setCurrentUtilityTool] =
+    useState<SidebarUtilityTool | null>(null);
+  const [activeMenu, setActiveMenu] = useState<string>('photos'); // 统一的菜单激活状态
+  const [isFullscreenMode, setIsFullscreenMode] = useState(false); // 全屏模式状态（隐藏 Header 和 Sidebar）
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -128,8 +131,12 @@ export function useUIState() {
     setBrowseMode,
     currentView,
     setCurrentView,
-    currentFilter,
-    setCurrentFilter,
+    currentUtilityTool,
+    setCurrentUtilityTool,
+    activeMenu,
+    setActiveMenu,
+    isFullscreenMode,
+    setIsFullscreenMode,
     searchQuery,
     setSearchQuery,
     viewMode,

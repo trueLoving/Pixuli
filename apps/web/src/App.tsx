@@ -5,13 +5,10 @@ import {
   GiteeConfigModal,
   GitHubConfigModal,
   Header,
-  Search,
   KeyboardHelpModal,
   LanguageSwitcher,
   RefreshButton,
   Sidebar,
-  SlideShowPlayer,
-  Timeline,
   Toaster,
   UploadButton,
   useDemoMode,
@@ -19,15 +16,15 @@ import {
   DevTools,
   filterImages,
   type VersionInfo,
+  type SidebarMenuItem,
 } from '@packages/common/src';
 import type { FilterOptions } from '@packages/common/src/components/image/image-browser/common/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { ImageContent, PWAInstallPrompt, SourceTypeMenu } from './components';
+import { PWAInstallPrompt, SourceTypeMenu } from './components';
 import {
   useAppInitialization,
   useConfigManagement,
-  useImageOperations,
   useKeyboardCategories,
   useKeyboardShortcuts,
   useSelectedSourceSync,
@@ -38,6 +35,11 @@ import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
 import { performanceService } from './services/performanceService';
+import { CompressPage } from './pages/compress';
+import { ConvertPage } from './pages/convert';
+import { PhotosPage } from './pages/photos';
+import { SlideshowPage } from './pages/slideshow';
+import { TimelinePage } from './pages/timeline';
 // CSS 已整合到 BrowseModeSwitcher 组件中
 
 // 声明全局版本信息
@@ -49,12 +51,10 @@ function App() {
   const {
     images,
     loading,
-    error,
     storageType,
     githubConfig,
     giteeConfig,
     loadImages,
-    clearError,
     uploadImage,
     uploadMultipleImages,
     batchUploadProgress,
@@ -75,17 +75,12 @@ function App() {
     showKeyboardHelp,
     showVersionInfo,
     browseMode,
-    setBrowseMode,
-    currentView,
     setCurrentView,
-    currentFilter,
-    setCurrentFilter,
+    setCurrentUtilityTool,
     searchQuery,
-    setSearchQuery,
     sidebarCollapsed,
     setSidebarCollapsed,
     fileModeClass,
-    slideModeClass,
     handleOpenConfigModal,
     handleCloseConfigModal,
     handleOpenKeyboardHelp,
@@ -96,6 +91,10 @@ function App() {
     handleSelectSourceType,
     handleCloseSourceTypeMenu,
     handleBrowseModeChange,
+    activeMenu,
+    setActiveMenu,
+    isFullscreenMode,
+    setIsFullscreenMode,
   } = uiState;
 
   // 源管理
@@ -110,11 +109,6 @@ function App() {
 
   // 配置管理
   const { handleSaveConfig, handleClearConfig } = useConfigManagement();
-
-  // 图片操作
-  const imageOperations = useImageOperations();
-  const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
-    imageOperations;
 
   // 筛选条件
   const [externalFilters, setExternalFilters] = useState<FilterOptions>(
@@ -223,99 +217,144 @@ function App() {
       }}
     >
       {/* 左侧：侧边栏菜单 */}
-      <Sidebar
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        browseMode={browseMode}
-        onBrowseModeChange={handleBrowseModeChange}
-        currentFilter={currentFilter}
-        onFilterChange={setCurrentFilter}
-        sources={sidebarSources}
-        selectedSourceId={selectedSourceId}
-        onSourceSelect={handleSourceSelect}
-        onSourceEdit={handleEditSourceWithId}
-        onSourceDelete={handleDeleteSourceWithT}
-        hasConfig={hasConfig}
-        onAddSource={handleAddSource}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        t={t}
-      />
+      {!isFullscreenMode && (
+        <Sidebar
+          onMenuClick={(menuItem: SidebarMenuItem) => {
+            if (menuItem.type === 'browse') {
+              handleBrowseModeChange(menuItem.mode);
+              if (menuItem.mode === 'file') {
+                setActiveMenu('photos');
+                setCurrentView('photos');
+                setCurrentUtilityTool(null);
+              } else {
+                setActiveMenu(`browse-${menuItem.mode}`);
+                setCurrentView('photos');
+                setCurrentUtilityTool(null);
+              }
+            } else if (menuItem.type === 'utility') {
+              setCurrentUtilityTool(menuItem.tool);
+              setActiveMenu(menuItem.tool);
+              setCurrentView('photos');
+              handleBrowseModeChange('file');
+            } else if (menuItem.type === 'view') {
+              setCurrentView(menuItem.view);
+              setActiveMenu(menuItem.view);
+              setCurrentUtilityTool(null);
+              handleBrowseModeChange('file');
+            }
+          }}
+          activeMenu={activeMenu}
+          browseMode={browseMode}
+          sources={sidebarSources}
+          selectedSourceId={selectedSourceId}
+          onSourceSelect={handleSourceSelect}
+          onSourceEdit={handleEditSourceWithId}
+          onSourceDelete={handleDeleteSourceWithT}
+          hasConfig={hasConfig}
+          onAddSource={handleAddSource}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          t={t}
+        />
+      )}
 
       {/* 右侧：主内容区域 */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* 顶部：Header */}
-        <Header
-          leftActions={
-            <Search
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              variant="header"
-              hasConfig={hasConfig}
-              images={images}
-              externalFilters={externalFilters}
-              onFiltersChange={setExternalFilters}
-              showFilter={true}
-              t={t}
-            />
-          }
-          rightActions={
-            <>
-              <DemoIcon t={t} isDemoMode={isDemoMode} />
-              {hasConfig && (
-                <UploadButton
-                  onUploadImage={uploadImage}
-                  onUploadMultipleImages={uploadMultipleImages}
-                  loading={loading}
-                  batchUploadProgress={batchUploadProgress}
-                  enableCompression={true}
-                  compressionOptions={{
-                    quality: 0.8,
-                    maxWidth: 1920,
-                    maxHeight: 1080,
-                    maintainAspectRatio: true,
-                    outputFormat: 'image/jpeg',
-                    minSizeToCompress: 100 * 1024,
-                  }}
-                  t={t}
+        {!isFullscreenMode && (
+          <Header
+            rightActions={
+              <>
+                <DemoIcon t={t} isDemoMode={isDemoMode} />
+                {hasConfig && (
+                  <UploadButton
+                    onUploadImage={uploadImage}
+                    onUploadMultipleImages={uploadMultipleImages}
+                    loading={loading}
+                    batchUploadProgress={batchUploadProgress}
+                    enableCompression={true}
+                    compressionOptions={{
+                      quality: 0.8,
+                      maxWidth: 1920,
+                      maxHeight: 1080,
+                      maintainAspectRatio: true,
+                      outputFormat: 'image/jpeg',
+                      minSizeToCompress: 100 * 1024,
+                    }}
+                    t={t}
+                  />
+                )}
+                {hasConfig && (
+                  <RefreshButton
+                    onRefresh={handleLoadImages}
+                    loading={loading}
+                    disabled={!hasConfig}
+                    t={t}
+                  />
+                )}
+                <LanguageSwitcher
+                  currentLanguage={getCurrentLanguage()}
+                  availableLanguages={getAvailableLanguages()}
+                  onLanguageChange={changeLanguage}
+                  switchTitle={t('language.switch')}
+                  currentTitle={t('language.current')}
+                  showBackdrop={true}
                 />
-              )}
-              {hasConfig && (
-                <RefreshButton
-                  onRefresh={handleLoadImages}
-                  loading={loading}
-                  disabled={!hasConfig}
-                  t={t}
-                />
-              )}
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
-            </>
-          }
-        />
+              </>
+            }
+          />
+        )}
 
-        {/* 底部：图片浏览区 */}
-        <main className="flex-1 overflow-y-auto bg-white">
-          <div className={fileModeClass}>
-            <ImageContent
-              hasConfig={hasConfig}
-              error={error}
-              onClearError={clearError}
-              images={images}
-              loading={loading}
-              onDeleteImage={handleDeleteImage}
-              onDeleteMultipleImages={handleDeleteMultipleImages}
-              onUpdateImage={handleUpdateImage}
-              onOpenConfigModal={handleOpenConfigModal}
-              t={t}
+        {/* 底部：AppMain 主内容区域 */}
+        <main className="flex-1 overflow-hidden bg-white relative">
+          {/* 根据 activeMenu 切换页面 */}
+          {activeMenu === 'compress' && (
+            <div className="h-full w-full">
+              <CompressPage />
+            </div>
+          )}
+          {activeMenu === 'convert' && (
+            <div className="h-full w-full">
+              <ConvertPage />
+            </div>
+          )}
+          {activeMenu === 'photos' && browseMode === 'file' && (
+            <div className={`h-full ${fileModeClass}`}>
+              <PhotosPage />
+            </div>
+          )}
+          {activeMenu === 'browse-slide' && browseMode === 'slide' && (
+            <SlideshowPage
+              images={filteredImages}
+              isFullscreenMode={isFullscreenMode}
+              onFullscreenToggle={isFullscreen => {
+                setIsFullscreenMode(isFullscreen);
+              }}
+              onExitFullscreen={() => {
+                setIsFullscreenMode(false);
+                // 退出浏览器全屏
+                if (document.exitFullscreen) {
+                  document.exitFullscreen();
+                }
+              }}
             />
-          </div>
+          )}
+          {activeMenu === 'browse-timeline' && browseMode === 'timeline' && (
+            <TimelinePage
+              images={filteredImages}
+              isFullscreenMode={isFullscreenMode}
+              onFullscreenToggle={isFullscreen => {
+                setIsFullscreenMode(isFullscreen);
+              }}
+              onExitFullscreen={() => {
+                setIsFullscreenMode(false);
+                // 退出浏览器全屏
+                if (document.exitFullscreen) {
+                  document.exitFullscreen();
+                }
+              }}
+            />
+          )}
         </main>
       </div>
 
@@ -389,27 +428,6 @@ function App() {
         t={t}
         versionInfo={__VERSION_INFO__}
       />
-
-      {/* 幻灯片播放器 */}
-      <div className={slideModeClass}>
-        {browseMode === 'slide' && (
-          <SlideShowPlayer
-            isOpen={true}
-            onClose={() => handleBrowseModeChange('file')}
-            images={filteredImages}
-            t={t}
-          />
-        )}
-      </div>
-
-      {/* 时间线模式 - 全屏 */}
-      {browseMode === 'timeline' && (
-        <Timeline
-          images={filteredImages}
-          t={t}
-          onClose={() => setBrowseMode('file')}
-        />
-      )}
 
       <Toaster />
 

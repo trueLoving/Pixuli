@@ -1,0 +1,207 @@
+.compress-page {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+}
+
+.compress-page-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.compress-page-left,
+.compress-page-right {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.compress-page-left {
+  border-right: 1px solid #e5e7eb;
+  background: white;
+}
+
+.compress-page-right {
+  background: #f9fafb;
+}
+
+.compress-page-dropzone {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #f9fafb;
+}
+
+.compress-page-dropzone:hover {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.compress-page-file-input {
+  display: none;
+}
+
+.compress-page-dropzone-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  text-align: center;
+  padding: 48px;
+}
+
+.compress-page-dropzone-icon {
+  color: #9ca3af;
+}
+
+.compress-page-dropzone-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.compress-page-dropzone-hint {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.compress-page-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.compress-page-file-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.compress-page-file-size {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.compress-page-compress-btn {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.compress-page-compress-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.compress-page-compress-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.compress-page-preview {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compress-page-preview-placeholder {
+  text-align: center;
+  color: #6b7280;
+}
+
+.compress-page-preview-placeholder svg {
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.compress-page-result {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  background-color: white;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.compress-page-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #dcfce7;
+}
+
+.compress-page-result-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 16px;
+}
+
+.compress-page-result-label {
+  font-size: 14px;
+  color: #374151;
+}
+
+.compress-page-result-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.compress-page-download-btn {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.compress-page-download-btn:hover {
+  background-color: #059669;
+}
