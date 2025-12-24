@@ -30,12 +30,16 @@ import PptxGenJS from 'pptxgenjs';
 interface SlideShowPlayerProps {
   /** 是否打开 */
   isOpen: boolean;
-  /** 关闭回调 */
-  onClose: () => void;
+  /** 关闭回调（可选，嵌入模式下可能不需要） */
+  onClose?: () => void;
   /** 图片列表 */
   images: ImageItem[];
   /** 翻译函数 */
   t?: (key: string) => string;
+  /** 是否嵌入模式（在容器中显示，而不是全屏） */
+  embedded?: boolean;
+  /** 全屏模式切换回调 */
+  onFullscreenToggle?: (isFullscreen: boolean) => void;
 }
 
 const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
@@ -43,6 +47,8 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   onClose,
   images,
   t,
+  embedded = false,
+  onFullscreenToggle,
 }) => {
   const translate = (key: string, params?: Record<string, any>) => {
     const transFn =
@@ -218,13 +224,21 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
         document.documentElement.requestFullscreen();
       }
       setIsFullscreen(true);
+      // 通知父组件进入全屏模式
+      if (onFullscreenToggle) {
+        onFullscreenToggle(true);
+      }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen();
       }
       setIsFullscreen(false);
+      // 通知父组件退出全屏模式
+      if (onFullscreenToggle) {
+        onFullscreenToggle(false);
+      }
     }
-  }, [isFullscreen]);
+  }, [isFullscreen, onFullscreenToggle]);
 
   // 自动播放逻辑
   useEffect(() => {
@@ -893,7 +907,7 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
   return (
     <>
       <div
-        className={`slide-show-player ${isFullscreen ? 'fullscreen' : ''}`}
+        className={`slide-show-player ${isFullscreen ? 'fullscreen' : ''} ${embedded ? 'embedded' : ''}`}
         style={
           {
             '--transition-duration': `${config.transitionDuration}ms`,
@@ -922,14 +936,35 @@ const SlideShowPlayer: React.FC<SlideShowPlayerProps> = ({
             <Info className="w-5 h-5" />
           </button>
 
-          {/* 关闭按钮 */}
-          <button
-            onClick={onClose}
-            className="slide-show-close-button"
-            title={translate('slideShow.close')}
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* 全屏按钮（嵌入模式时显示） */}
+          {embedded && (
+            <button
+              onClick={toggleFullscreen}
+              className="slide-show-info-button"
+              title={
+                isFullscreen
+                  ? translate('slideShow.exitFullscreen')
+                  : translate('slideShow.fullscreen')
+              }
+            >
+              {isFullscreen ? (
+                <Minimize className="w-5 h-5" />
+              ) : (
+                <Maximize className="w-5 h-5" />
+              )}
+            </button>
+          )}
+
+          {/* 关闭按钮（仅在非嵌入模式时显示） */}
+          {!embedded && onClose && (
+            <button
+              onClick={onClose}
+              className="slide-show-close-button"
+              title={translate('slideShow.close')}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* 图片列表面板 */}

@@ -9,6 +9,13 @@
   overflow: hidden;
 }
 
+/* 嵌入模式：在容器中显示 */
+.slide-show-player.embedded {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .slide-show-player.fullscreen {
   position: fixed;
   top: 0;
