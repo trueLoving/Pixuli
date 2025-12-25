@@ -1,9 +1,10 @@
 import { rmSync } from 'node:fs';
 import path from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron/simple';
 import renderer from 'vite-plugin-electron-renderer';
+import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json';
 import fs from 'fs';
 import { execSync } from 'child_process';
@@ -15,7 +16,7 @@ function getRealVersion(packageName: string, isDevDependency = false): string {
       __dirname,
       'node_modules',
       packageName,
-      'package.json'
+      'package.json',
     );
     const packageInfo = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
     return packageInfo.version;
@@ -84,31 +85,31 @@ const versionInfo = {
 };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
-  rmSync('dist-electron', { recursive: true, force: true });
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const isWeb = mode === 'web';
+  const isDesktop = mode === 'desktop' || (!mode && !env.ELECTRON);
+
+  // 仅在 Desktop 模式下清理 dist-electron
+  if (isDesktop) {
+    rmSync('dist-electron', { recursive: true, force: true });
+  }
 
   const isServe = command === 'serve';
   const isBuild = command === 'build';
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
-  return {
-    resolve: {
-      alias: {
-        '@': path.join(__dirname, 'src'),
-        '@packages': path.resolve(__dirname, '../../packages'),
-      },
-    },
-    plugins: [
-      react(),
+  const plugins: any[] = [react()];
+
+  // 根据模式添加 Electron 插件（仅 Desktop 模式）
+  if (isDesktop) {
+    plugins.push(
       electron({
         main: {
-          // Shortcut of `build.lib.entry`
           entry: 'electron/main/index.ts',
           onstart(args) {
             if (process.env.VSCODE_DEBUG) {
-              console.log(
-                /* For `.vscode/.debug.script.mjs` */ '[startup] Electron App'
-              );
+              console.log('[startup] Electron App');
             } else {
               args.startup();
             }
@@ -120,36 +121,96 @@ export default defineConfig(({ command }) => {
               outDir: 'dist-electron/main',
               rollupOptions: {
                 external: Object.keys(
-                  'dependencies' in pkg ? pkg.dependencies : {}
+                  'dependencies' in pkg ? pkg.dependencies : {},
                 ),
               },
             },
           },
         },
         preload: {
-          // Shortcut of `build.rollupOptions.input`.
-          // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
           input: 'electron/preload/index.ts',
           vite: {
             build: {
-              sourcemap: sourcemap ? 'inline' : undefined, // #332
+              sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
                 external: Object.keys(
-                  'dependencies' in pkg ? pkg.dependencies : {}
+                  'dependencies' in pkg ? pkg.dependencies : {},
                 ),
               },
             },
           },
         },
-        // Ployfill the Electron and Node.js API for Renderer process.
-        // If you want use Node.js in Renderer process, the `nodeIntegration` needs to be enabled in the Main process.
-        // See 👉 https://github.com/electron-vite/vite-plugin-electron-renderer
         renderer: {},
       }),
       renderer(),
-    ],
+    );
+  }
+
+  // 根据模式添加 PWA 插件（仅 Web 模式）
+  if (isWeb) {
+    plugins.push(
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['icon.ico', 'icon-192x192.png', 'icon-512x512.png'],
+        manifest: {
+          name: 'Pixuli - 智能图片管理',
+          short_name: 'Pixuli',
+          description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
+          theme_color: '#2563eb',
+          background_color: '#ffffff',
+          display: 'standalone',
+          orientation: 'any',
+          scope: '/',
+          start_url: '/',
+          icons: [
+            {
+              src: '/icon-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+          shortcuts: [
+            {
+              name: '上传图片',
+              short_name: '上传',
+              description: '快速上传新图片',
+              url: '/?action=upload',
+              icons: [{ src: '/icon-192x192.png', sizes: '192x192' }],
+            },
+          ],
+          categories: ['productivity', 'utilities'],
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          skipWaiting: true,
+          clientsClaim: true,
+        },
+        devOptions: {
+          enabled: true,
+          type: 'module',
+          navigateFallback: undefined,
+        },
+      }),
+    );
+  }
+
+  return {
+    resolve: {
+      alias: {
+        '@': path.join(__dirname, 'src'),
+        '@packages': path.resolve(__dirname, '../../packages'),
+      },
+    },
+    plugins,
     build: {
       target: 'esnext',
       minify: 'esbuild',
@@ -193,19 +254,49 @@ export default defineConfig(({ command }) => {
         },
       },
     },
-    server: process.env.VSCODE_DEBUG
-      ? (() => {
-          const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
-          return {
-            host: url.hostname,
-            port: +url.port,
-          };
-        })()
-      : undefined,
+    server:
+      isDesktop && process.env.VSCODE_DEBUG
+        ? (() => {
+            const url = new URL(
+              pkg.debug?.env?.VITE_DEV_SERVER_URL || 'http://localhost:5173',
+            );
+            return {
+              host: url.hostname,
+              port: +url.port,
+            };
+          })()
+        : isWeb
+          ? {
+              open: true,
+              port: 5500,
+              proxy: {
+                '/api/gitee-proxy': {
+                  target: 'https://gitee.com',
+                  changeOrigin: true,
+                  secure: true,
+                  rewrite: path => path.replace(/^\/api\/gitee-proxy/, ''),
+                  configure: (proxy, _options) => {
+                    proxy.on('proxyReq', (proxyReq, _req, _res) => {
+                      proxyReq.setHeader('Referer', 'https://gitee.com/');
+                      proxyReq.setHeader('Origin', 'https://gitee.com');
+                    });
+                    proxy.on('proxyRes', (proxyRes, _req, _res) => {
+                      proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+                      proxyRes.headers['Access-Control-Allow-Methods'] =
+                        'GET, HEAD, OPTIONS';
+                      proxyRes.headers['Access-Control-Allow-Headers'] = '*';
+                    });
+                  },
+                },
+              },
+            }
+          : undefined,
     clearScreen: false,
     define: {
       // 注入版本信息到全局变量
       __VERSION_INFO__: JSON.stringify(versionInfo),
+      __IS_WEB__: JSON.stringify(isWeb),
+      __IS_DESKTOP__: JSON.stringify(isDesktop),
     },
   };
 });
