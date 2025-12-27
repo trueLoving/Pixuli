@@ -3,7 +3,7 @@
  * 处理离线操作的后台同步
  */
 
-import { pwaService } from './pwaService';
+import { pwaService } from '../services/pwaService';
 
 export interface PendingOperation {
   id: string;

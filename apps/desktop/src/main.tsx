@@ -10,9 +10,9 @@ import { isWeb } from './utils/platform';
 if (isWeb()) {
   // 动态导入 Web 模式的服务（避免在 Desktop 模式下加载）
   Promise.all([
-    import('./utils-web/loading').catch(() => null),
-    import('./services-web/pwaService').catch(() => null),
-    import('./services-web/performanceService').catch(() => null),
+    import('./utils/loading').catch(() => null),
+    import('./services/pwaService').catch(() => null),
+    import('./services/performanceService').catch(() => null),
   ]).then(([loadingModule, pwaServiceModule, performanceServiceModule]) => {
     // 初始化加载动画
     if (loadingModule?.loading) {

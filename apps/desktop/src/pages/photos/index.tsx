@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ImageContent } from '../../components-web/image-content/ImageContent';
+import { ImageContent } from '../../features/image-content/ImageContent';
 import {
   Search,
   createDefaultFilters,
@@ -9,8 +9,8 @@ import {
 import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
 import { useI18n } from '../../i18n/useI18n';
-import { useImageOperations } from '../../hooks-web/useImageOperations';
-import { useUIState } from '../../hooks-web/useUIState';
+import { useImageOperations } from '../../hooks/useImageOperations';
+import { useUIState } from '../../hooks/useUIState';
 
 export const PhotosPage: React.FC = () => {
   const { t } = useI18n();

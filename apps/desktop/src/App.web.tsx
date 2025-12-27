@@ -21,7 +21,7 @@ import {
 import type { FilterOptions } from '@packages/common/src/components/image/image-browser/common/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import './App.css';
-import { PWAInstallPrompt, SourceTypeMenu } from './components-web';
+import { PWAInstallPrompt, SourceTypeMenu } from './features';
 import {
   useAppInitialization,
   useConfigManagement,
@@ -30,16 +30,16 @@ import {
   useSelectedSourceSync,
   useSourceManagement,
   useUIState,
-} from './hooks-web';
+} from './hooks';
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
-import { performanceService } from './services-web/performanceService';
-import { CompressPage } from './pages-web/compress';
-import { ConvertPage } from './pages-web/convert';
-import { PhotosPage } from './pages-web/photos';
-import { SlideshowPage } from './pages-web/slideshow';
-import { TimelinePage } from './pages-web/timeline';
+import { performanceService } from './services/performanceService';
+import { CompressPage } from './pages/compress';
+import { ConvertPage } from './pages/convert';
+import { PhotosPage } from './pages/photos';
+import { SlideshowPage } from './pages/slideshow';
+import { TimelinePage } from './pages/timeline';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;

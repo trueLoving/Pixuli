@@ -80,9 +80,12 @@ export const useImageStore = create<ImageState>((set, get) => {
     giteeConfig: initialGiteeConfig,
     storageService: initialConfig
       ? storageType === 'gitee'
-        ? new GiteeStorageService(initialGiteeConfig!, { platform: 'desktop' })
+        ? new GiteeStorageService(initialGiteeConfig!, {
+            platform: __IS_WEB__ ? 'web' : 'desktop',
+            useProxy: __IS_WEB__ ? true : false,
+          })
         : new GitHubStorageService(initialGitHubConfig!, {
-            platform: 'desktop',
+            platform: __IS_WEB__ ? 'web' : 'desktop',
           })
       : null,
     storageType,
@@ -154,7 +157,8 @@ export const useImageStore = create<ImageState>((set, get) => {
       if (storageType === 'gitee' && giteeConfig) {
         try {
           const storageService = new GiteeStorageService(giteeConfig, {
-            platform: 'desktop',
+            platform: __IS_WEB__ ? 'web' : 'desktop',
+            useProxy: __IS_WEB__ ? true : false,
           });
           set({ storageService });
         } catch (error) {
