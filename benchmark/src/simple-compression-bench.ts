@@ -28,7 +28,7 @@ function getTestImageData(): number[] {
   // 尝试使用项目中的 favicon.ico
   const faviconPath = path.join(
     __dirname,
-    '../../apps/desktop/public/favicon.ico'
+    '../../apps/pixuli/public/favicon.ico',
   );
   if (fs.existsSync(faviconPath)) {
     const data = fs.readFileSync(faviconPath);
@@ -54,7 +54,7 @@ function createMockImageData(): number[] {
 // JavaScript 压缩实现（模拟）
 async function compressWithJS(
   imageData: number[],
-  options: any = {}
+  options: any = {},
 ): Promise<{
   compressedSize: number;
   compressionRatio: number;
@@ -174,7 +174,7 @@ async function runSimpleBenchmark() {
   for (const quality of qualities) {
     const result = compressToWebp(imageData, { quality });
     console.log(
-      `  质量 ${quality}: ${result.compressedSize} 字节 (${(result.compressionRatio * 100).toFixed(1)}% 压缩)`
+      `  质量 ${quality}: ${result.compressedSize} 字节 (${(result.compressionRatio * 100).toFixed(1)}% 压缩)`,
     );
   }
 
@@ -191,7 +191,7 @@ async function runSimpleBenchmark() {
 
   batchBench.add('JavaScript 批量压缩 (3张)', async () => {
     const results = await Promise.all(
-      batchData.map(data => compressWithJS(data, { quality: 80 }))
+      batchData.map(data => compressWithJS(data, { quality: 80 })),
     );
     return results;
   });
@@ -213,10 +213,10 @@ async function runSimpleBenchmark() {
   const jsEnd = process.memoryUsage();
 
   console.log(
-    `WASM 压缩内存使用: ${((wasmEnd.heapUsed - wasmStart.heapUsed) / 1024 / 1024).toFixed(2)} MB`
+    `WASM 压缩内存使用: ${((wasmEnd.heapUsed - wasmStart.heapUsed) / 1024 / 1024).toFixed(2)} MB`,
   );
   console.log(
-    `JavaScript 压缩内存使用: ${((jsEnd.heapUsed - jsStart.heapUsed) / 1024 / 1024).toFixed(2)} MB`
+    `JavaScript 压缩内存使用: ${((jsEnd.heapUsed - jsStart.heapUsed) / 1024 / 1024).toFixed(2)} MB`,
   );
 
   // 总结

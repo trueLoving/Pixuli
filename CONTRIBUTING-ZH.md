@@ -103,10 +103,10 @@ pnpm android
 
 ## 📦 项目结构
 
-### 桌面端 (apps/desktop)
+### 应用 (apps/pixuli)
 
 ```
-apps/desktop/
+apps/pixuli/
 ├── src/                           # 源代码
 │   ├── components/                # React 组件
 │   ├── config/                    # 配置文件
