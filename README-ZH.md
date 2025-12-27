@@ -151,15 +151,15 @@ docker run -d -p 8080:80 --name pixuli-web trueloving/pixuli-web:1.0.0
 
 ## 📚 文档
 
-| 文档类型     | 文档链接                                          | 描述                       |
-| ------------ | ------------------------------------------------- | -------------------------- |
-| **功能文档** | [桌面端文档](./apps/desktop/README.md)            | 桌面端功能和使用说明       |
-|              | [Web 端文档](./apps/web/README.md)                | Web 端功能和使用说明       |
-|              | [移动端文档](./apps/mobile/README.md)             | 移动端功能和使用说明       |
-| **开发文档** | [贡献指南](./CONTRIBUTING-ZH.md)                  | 完整的开发指南             |
-|              | [Contributing Guide (English)](./CONTRIBUTING.md) | Complete development guide |
-| **更新日志** | [更新日志](./CHANGELOG-ZH.md)                     | 完整的版本更新历史         |
-|              | [Changelog (English)](./CHANGELOG.md)             | Complete version history   |
+| 文档类型     | 文档链接                                          | 描述                                 |
+| ------------ | ------------------------------------------------- | ------------------------------------ |
+| **功能文档** | [应用文档](./apps/pixuli/README.md)               | 应用功能和使用说明（Web 和 Desktop） |
+|              | [Web 端文档](./apps/web/README.md)                | Web 端功能和使用说明                 |
+|              | [移动端文档](./apps/mobile/README.md)             | 移动端功能和使用说明                 |
+| **开发文档** | [贡献指南](./CONTRIBUTING-ZH.md)                  | 完整的开发指南                       |
+|              | [Contributing Guide (English)](./CONTRIBUTING.md) | Complete development guide           |
+| **更新日志** | [更新日志](./CHANGELOG-ZH.md)                     | 完整的版本更新历史                   |
+|              | [Changelog (English)](./CHANGELOG.md)             | Complete version history             |
 
 ## 🙏 致谢
 

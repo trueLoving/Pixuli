@@ -158,15 +158,15 @@ Mobile application supports iOS and Android platforms, available through:
 
 ## 📚 Documentation
 
-| Documentation Type   | Documentation Link                                | Description                |
-| -------------------- | ------------------------------------------------- | -------------------------- |
-| **Feature Docs**     | [Desktop Documentation](./apps/desktop/README.md) | Desktop features and usage |
-|                      | [Web Documentation](./apps/web/README.md)         | Web features and usage     |
-|                      | [Mobile Documentation](./apps/mobile/README.md)   | Mobile features and usage  |
-| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)           | Complete development guide |
-|                      | [Contributing Guide (中文)](./CONTRIBUTING-ZH.md) | 完整的开发指南             |
-| **Changelog**        | [Changelog](./CHANGELOG.md)                       | Complete version history   |
-|                      | [Changelog (中文)](./CHANGELOG-ZH.md)             | 完整的版本更新历史         |
+| Documentation Type   | Documentation Link                                | Description                            |
+| -------------------- | ------------------------------------------------- | -------------------------------------- |
+| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)      | App features and usage (Web & Desktop) |
+|                      | [Web Documentation](./apps/web/README.md)         | Web features and usage                 |
+|                      | [Mobile Documentation](./apps/mobile/README.md)   | Mobile features and usage              |
+| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)           | Complete development guide             |
+|                      | [Contributing Guide (中文)](./CONTRIBUTING-ZH.md) | 完整的开发指南                         |
+| **Changelog**        | [Changelog](./CHANGELOG.md)                       | Complete version history               |
+|                      | [Changelog (中文)](./CHANGELOG-ZH.md)             | 完整的版本更新历史                     |
 
 ## 🙏 Acknowledgments
 

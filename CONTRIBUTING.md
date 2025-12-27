@@ -104,10 +104,10 @@ pnpm android
 
 ## 📦 Project Structure
 
-### Desktop (apps/desktop)
+### App (apps/pixuli)
 
 ```
-apps/desktop/
+apps/pixuli/
 ├── src/                           # Source code
 │   ├── components/                # React components
 │   ├── config/                    # Configuration files
