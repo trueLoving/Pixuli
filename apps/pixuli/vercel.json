@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/gitee-proxy/:path*",
+      "destination": "/api/gitee-proxy?path=:path*"
+    }
+  ]
+}

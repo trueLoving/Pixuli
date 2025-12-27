@@ -199,6 +199,9 @@ export default defineConfig(({ command, mode }) => {
           type: 'module',
           navigateFallback: undefined,
         },
+        // 确保 manifest 文件正确生成和注入
+        injectManifest: false,
+        strategies: 'generateSW',
       }),
     );
   }

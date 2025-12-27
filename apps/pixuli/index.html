@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pixuli - 基于 GitHub/Gitee 的智能图片管理应用（支持 Web 和 Desktop）"
+    />
+    <meta name="theme-color" content="#2563eb" />
     <!-- Content Security Policy -->
     <!-- 开发模式：允许 Vite dev server 和 HMR -->
     <!-- 生产模式：严格的安全策略（通过 Electron session.webRequest 动态设置） -->
@@ -12,6 +17,9 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
+    <!-- PWA Manifest (仅 Web 模式，VitePWA 插件会自动处理) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
     <title>Pixuli - 智能图片管理工具</title>
   </head>
   <body>
