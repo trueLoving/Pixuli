@@ -1,5 +1,13 @@
 [English](./README.md) | 中文
 
+> ⚠️ **迁移通知** **Web 端代码已与桌面端合并到
+> [`apps/pixuli`](../pixuli/README-ZH.md)**
+> 该目录（`apps/web`）将逐步迁移直至删除。新的开发请使用
+> `apps/pixuli`，它支持 Web 和 Desktop 两种运行模式。查看
+> [Pixuli App 文档](../pixuli/README-ZH.md) 了解更多信息。
+
+---
+
 # Pixuli Web - 智能图片管理 Web 应用
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -102,9 +110,26 @@ Pixuli Web 提供强大的图片管理功能，让您轻松组织和浏览图片
 
 ## 🚀 快速开始
 
+> **⚠️ 迁移通知** **Web 端功能已合并到 [`apps/pixuli`](../pixuli/README-ZH.md)**
+> 该目录（`apps/web`）将逐步迁移直至删除。新的开发请使用
+> `apps/pixuli`，它支持 Web 和 Desktop 两种运行模式。
+>
+> ```bash
+> # Web 模式开发
+> pnpm dev:app:web
+>
+> # Web 模式构建
+> pnpm build:app:web
+> ```
+>
+> 查看 [Pixuli App 文档](../pixuli/README-ZH.md) 了解更多信息。
+
 想要开始使用 Pixuli Web？请查看我们的[贡献指南](../../CONTRIBUTING-ZH.md)。
 
 ## 🐳 Docker 本地构建
+
+> **⚠️ 注意**：Docker 构建说明仅供参考。新的部署请使用 `apps/pixuli`
+> 的 Web 模式构建。
 
 ### 前置要求
 
