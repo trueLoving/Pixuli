@@ -2,6 +2,7 @@
   "name": "pixuli-app",
   "productName": "Pixuli",
   "version": "1.3.0",
+  "type": "module",
   "debug": {
     "env": {
       "VITE_DEV_SERVER_URL": "http://localhost:5173"

@@ -199,8 +199,7 @@ export default defineConfig(({ command, mode }) => {
           type: 'module',
           navigateFallback: undefined,
         },
-        // 确保 manifest 文件正确生成和注入
-        injectManifest: false,
+        // 使用 generateSW 策略（默认），确保 manifest 文件正确生成
         strategies: 'generateSW',
       }),
     );
@@ -223,9 +222,35 @@ export default defineConfig(({ command, mode }) => {
         external: ['pixuli-wasm'],
         output: {
           manualChunks: id => {
-            // React核心
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react';
+            // 在 Web 模式下，确保 React 核心（包括 scheduler）不被分割
+            // React 19 的调度器必须与 React 核心在同一 chunk
+            if (isWeb) {
+              // React 核心 - 包括所有 React 相关模块（react, react-dom, scheduler）
+              // 确保它们都在同一个 chunk 中，避免调度器加载顺序问题
+              if (
+                id.includes('/node_modules/react/') ||
+                id.includes('/node_modules/react-dom/') ||
+                id.includes('/node_modules/scheduler/') ||
+                (id.includes('react') &&
+                  !id.includes('react-hot-toast') &&
+                  !id.includes('react-dropzone') &&
+                  !id.includes('react-image-crop') &&
+                  !id.includes('react-i18next'))
+              ) {
+                return 'react';
+              }
+            } else {
+              // Desktop 模式：保持原有逻辑
+              if (id.includes('react') || id.includes('react-dom')) {
+                if (
+                  !id.includes('react-hot-toast') &&
+                  !id.includes('react-dropzone') &&
+                  !id.includes('react-image-crop') &&
+                  !id.includes('react-i18next')
+                ) {
+                  return 'react';
+                }
+              }
             }
             // UI组件库
             if (id.includes('lucide-react')) {
@@ -242,7 +267,7 @@ export default defineConfig(({ command, mode }) => {
             if (id.includes('zustand')) {
               return 'state';
             }
-            if (id.includes('i18next')) {
+            if (id.includes('i18next') || id.includes('react-i18next')) {
               return 'i18n';
             }
             // GitHub API
