@@ -158,12 +158,16 @@ export const useSourceStore = create<SourceState>((set, get) => {
       saveSelectedSourceId(id);
     },
     openProjectWindow: async id => {
-      const ipcRenderer = (window as any).ipcRenderer;
-      if (ipcRenderer && ipcRenderer.invoke) {
-        await ipcRenderer.invoke(
-          'open-win',
-          `project?id=${encodeURIComponent(id)}`,
-        );
+      // 动态导入 Desktop 平台工具（避免在 Web 模式下加载）
+      if (typeof window !== 'undefined' && (window as any).ipcRenderer) {
+        try {
+          const { openProjectWindow: openProject } = await import(
+            '../platforms/desktop/utils/ipc'
+          );
+          await openProject(id);
+        } catch (error) {
+          console.error('Failed to open project window:', error);
+        }
       }
     },
   };

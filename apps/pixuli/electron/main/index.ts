@@ -12,14 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
 import { registerServiceHandlers } from './services';
-import {
-  createTray,
-  updateTrayMenu,
-  destroyTray,
-  closeCompressionWindow,
-  closeConversionWindow,
-  closeAIAnalysisWindow,
-} from './tray';
+import { createTray, updateTrayMenu, destroyTray } from './tray';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -302,7 +295,7 @@ app.on('before-quit', () => {
 });
 
 // 打开新窗口的 IPC 处理器
-// arg 格式: "project?id=xxx" 或 "compression" 或 "conversion" 或 "ai-analysis"
+// arg 格式: "project?id=xxx"
 ipcMain.handle('open-win', (_, arg) => {
   const appIcon = getAppIcon();
 
@@ -319,12 +312,6 @@ ipcMain.handle('open-win', (_, arg) => {
         windowTitle = `${APP_NAME} - 项目窗口 v${APP_VERSION}`;
       }
     }
-  } else if (arg === 'compression') {
-    windowTitle = '图片压缩 - Pixuli';
-  } else if (arg === 'conversion') {
-    windowTitle = '图片转换 - Pixuli';
-  } else if (arg === 'ai-analysis') {
-    windowTitle = 'AI 图片分析 - Pixuli';
   }
 
   const childWindow = new BrowserWindow({
@@ -358,18 +345,3 @@ ipcMain.handle('open-win', (_, arg) => {
 
 // 注册服务处理程序
 registerServiceHandlers();
-
-// 处理关闭压缩窗口的 IPC 请求
-ipcMain.handle('close-compression-window', () => {
-  closeCompressionWindow();
-});
-
-// 处理关闭转换窗口的 IPC 请求
-ipcMain.handle('close-conversion-window', () => {
-  closeConversionWindow();
-});
-
-// 处理关闭 AI 分析窗口的 IPC 请求
-ipcMain.handle('close-ai-analysis-window', () => {
-  closeAIAnalysisWindow();
-});

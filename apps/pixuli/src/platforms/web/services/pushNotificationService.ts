@@ -3,7 +3,7 @@
  * 处理推送通知的订阅和管理
  */
 
-import { pwaService, PushSubscription } from './pwaService';
+import { pwaService, type PushSubscription } from './pwaService';
 
 class PushNotificationService {
   private subscription: PushSubscription | null = null;

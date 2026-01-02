@@ -20,9 +20,9 @@ import {
 } from '@packages/common/src';
 import { createDefaultFilters } from '@packages/common/src/utils/filterUtils';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useI18n } from '../../i18n/useI18n';
-import { useImageStore } from '../../stores/imageStore';
-import { useSourceStore } from '../../stores/sourceStore';
+import { useI18n } from '../../../../i18n/useI18n';
+import { useImageStore } from '../../../../stores/imageStore';
+import { useSourceStore } from '../../../../stores/sourceStore';
 
 // 声明全局版本信息
 declare const __VERSION_INFO__: VersionInfo;

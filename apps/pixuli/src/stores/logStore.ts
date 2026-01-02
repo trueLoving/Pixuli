@@ -146,15 +146,25 @@ export const useLogStore = create<LogState>((set, get) => ({
       const extension = format === 'json' ? 'json' : 'csv';
       const mimeType = format === 'json' ? 'application/json' : 'text/csv';
 
-      // 使用 Electron API 保存文件
+      // 使用 Electron API 保存文件（Desktop 特定）
       if (
         typeof window !== 'undefined' &&
         (window as any).electronAPI?.saveFile
       ) {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const fileName = `pixuli-logs-${timestamp}.${extension}`;
-        await (window as any).electronAPI.saveFile(fileName, content, mimeType);
-      } else {
+        try {
+          const { saveFile } = await import('../platforms/desktop/utils/ipc');
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const fileName = `pixuli-logs-${timestamp}.${extension}`;
+          await saveFile(fileName, content, mimeType);
+          return;
+        } catch (error) {
+          console.error('Failed to save file via Electron API:', error);
+          // 降级到浏览器下载
+        }
+      }
+
+      // 降级方案：使用浏览器下载
+      {
         // 降级方案：使用浏览器下载
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
