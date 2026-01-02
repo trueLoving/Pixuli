@@ -210,6 +210,8 @@ export default defineConfig(({ command, mode }) => {
       alias: {
         '@': path.join(__dirname, 'src'),
         '@packages': path.resolve(__dirname, '../../packages'),
+        '@platforms/web': path.resolve(__dirname, 'src/platforms/web'),
+        '@platforms/desktop': path.resolve(__dirname, 'src/platforms/desktop'),
       },
     },
     plugins,

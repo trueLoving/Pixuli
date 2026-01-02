@@ -4,7 +4,7 @@ import { Download, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/useI18n';
 // TODO: 暂时注释掉 pwaService 导入，待更新功能恢复后启用
-// import { pwaService } from '../../services/pwaService';
+// import { pwaService } from '../../platforms/web/services/pwaService';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;

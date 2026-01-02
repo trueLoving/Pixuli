@@ -1,9 +1,9 @@
 import { Wifi, WifiOff, Database } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/useI18n';
-import { backgroundSyncService } from '../../services/backgroundSyncService';
+import { backgroundSyncService } from '../../platforms/web/services/backgroundSyncService';
 // TODO: 暂时注释掉 pwaService 导入，待缓存功能恢复后启用
-// import { pwaService } from '../../services-web/pwaService';
+// import { pwaService } from '../../platforms/web/services/pwaService';
 
 export function OfflineIndicator() {
   const { t } = useI18n();

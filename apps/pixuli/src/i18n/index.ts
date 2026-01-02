@@ -4,11 +4,7 @@ import { initReactI18next } from 'react-i18next';
 // 导入packages/ui的语言包
 import { deepMerge, enUS, zhCN } from '@packages/common/src';
 // 导入桌面端功能模块语言包
-import {
-  aiAnalysisLocales,
-  imageCompressionLocales,
-  imageConverterLocales,
-} from '../features';
+import { operationLogLocales } from '../features';
 import { desktopLocales } from './locales';
 
 // zhCN 和 enUS 已经包含了所有组件语言包（包括 versionInfoLocales 和 slideShowLocales）
@@ -18,9 +14,7 @@ const resources = {
       {},
       zhCN,
       desktopLocales['zh-CN'],
-      aiAnalysisLocales['zh-CN'],
-      imageCompressionLocales['zh-CN'],
-      imageConverterLocales['zh-CN'],
+      operationLogLocales['zh-CN'],
     ),
   },
   'en-US': {
@@ -28,9 +22,7 @@ const resources = {
       {},
       enUS,
       desktopLocales['en-US'],
-      aiAnalysisLocales['en-US'],
-      imageCompressionLocales['en-US'],
-      imageConverterLocales['en-US'],
+      operationLogLocales['en-US'],
     ),
   },
 };

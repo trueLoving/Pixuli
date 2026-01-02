@@ -1,4 +1,4 @@
-English | [中文](./README-ZH.md)
+English | [中文](./README.zh-CN.md)
 
 # Pixuli App - Intelligent Image Management Application
 

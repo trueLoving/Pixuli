@@ -4,6 +4,9 @@ import * as fs from 'fs';
 import { promisify } from 'util';
 import * as https from 'https';
 import * as http from 'http';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);

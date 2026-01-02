@@ -34,9 +34,7 @@ import {
 import { useI18n } from './i18n/useI18n';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
-import { performanceService } from './services/performanceService';
-import { CompressPage } from './pages/compress';
-import { ConvertPage } from './pages/convert';
+import { performanceService } from './platforms/web/services/performanceService';
 import { PhotosPage } from './pages/photos';
 import { SlideshowPage } from './pages/slideshow';
 import { TimelinePage } from './pages/timeline';
@@ -268,15 +266,6 @@ function WebApp() {
                     onUploadMultipleImages={uploadMultipleImages}
                     loading={loading}
                     batchUploadProgress={batchUploadProgress}
-                    enableCompression={true}
-                    compressionOptions={{
-                      quality: 0.8,
-                      maxWidth: 1920,
-                      maxHeight: 1080,
-                      maintainAspectRatio: true,
-                      outputFormat: 'image/jpeg',
-                      minSizeToCompress: 100 * 1024,
-                    }}
                     t={t}
                   />
                 )}
@@ -304,14 +293,29 @@ function WebApp() {
         {/* 底部：AppMain 主内容区域 */}
         <main className="flex-1 overflow-hidden bg-white relative">
           {/* 根据 activeMenu 切换页面 */}
+          {/* 注意：compress 和 convert 功能已暂时移除，菜单保留用于后续开发 */}
           {activeMenu === 'compress' && (
-            <div className="h-full w-full">
-              <CompressPage />
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-lg text-gray-600 mb-2">
+                  {t('sidebar.comingSoon')}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {t('sidebar.imageCompress')}
+                </p>
+              </div>
             </div>
           )}
           {activeMenu === 'convert' && (
-            <div className="h-full w-full">
-              <ConvertPage />
+            <div className="h-full w-full flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-lg text-gray-600 mb-2">
+                  {t('sidebar.comingSoon')}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {t('sidebar.imageConvert')}
+                </p>
+              </div>
             </div>
           )}
           {activeMenu === 'photos' && browseMode === 'file' && (

@@ -12,17 +12,11 @@
   "main": "dist-electron/main/index.js",
   "homepage": "./",
   "scripts": {
-    "dev": "vite --mode desktop",
     "dev:web": "vite --mode web",
     "dev:desktop": "vite --mode desktop",
     "build:web": "vite build --mode web",
     "build:desktop": "tsc && vite build --mode desktop && electron-builder",
-    "build": "tsc && vite build --mode desktop && electron-builder",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest"
   },
   "keywords": ["electron", "vite", "react", "typescript", "图片管理"],
   "author": "trueLoving",

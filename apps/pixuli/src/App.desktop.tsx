@@ -31,14 +31,7 @@ import {
   useUIState,
 } from './hooks';
 import { useI18n } from './i18n/useI18n';
-import {
-  AIAnalysisWindowPage,
-  CompressionWindowPage,
-  ConversionWindowPage,
-  ProjectPage,
-} from './pages';
-import { CompressPage } from './pages/compress';
-import { ConvertPage } from './pages/convert';
+import { ProjectPage } from './platforms/desktop/pages';
 import { PhotosPage } from './pages/photos';
 import { SlideshowPage } from './pages/slideshow';
 import { TimelinePage } from './pages/timeline';
@@ -50,10 +43,7 @@ declare const __VERSION_INFO__: VersionInfo;
 
 // Desktop 版本的 App
 function DesktopApp() {
-  // 检查是否在特殊窗口模式
-  const [isCompressionMode] = useState(window.location.hash === '#compression');
-  const [isConversionMode] = useState(window.location.hash === '#conversion');
-  const [isAIAnalysisMode] = useState(window.location.hash === '#ai-analysis');
+  // 检查是否在项目窗口模式
   const [projectSourceId] = useState<string | null>(() => {
     const hash = window.location.hash;
     if (hash.startsWith('#project')) {
@@ -65,19 +55,7 @@ function DesktopApp() {
     return null;
   });
 
-  // 如果是特殊窗口模式，使用原有逻辑
-  if (isAIAnalysisMode) {
-    return <AIAnalysisWindowPage />;
-  }
-
-  if (isConversionMode) {
-    return <ConversionWindowPage />;
-  }
-
-  if (isCompressionMode) {
-    return <CompressionWindowPage />;
-  }
-
+  // 如果是项目窗口模式，显示项目页面
   if (projectSourceId) {
     return <ProjectPage projectSourceId={projectSourceId} />;
   }
@@ -311,15 +289,6 @@ function DesktopMainApp() {
                     onUploadMultipleImages={uploadMultipleImages}
                     loading={loading}
                     batchUploadProgress={batchUploadProgress}
-                    enableCompression={true}
-                    compressionOptions={{
-                      quality: 0.8,
-                      maxWidth: 1920,
-                      maxHeight: 1080,
-                      maintainAspectRatio: true,
-                      outputFormat: 'image/jpeg',
-                      minSizeToCompress: 100 * 1024,
-                    }}
                     t={t}
                   />
                 )}
@@ -347,16 +316,6 @@ function DesktopMainApp() {
         {/* 底部：AppMain 主内容区域 */}
         <main className="flex-1 overflow-hidden bg-white relative">
           {/* 根据 activeMenu 切换页面 */}
-          {activeMenu === 'compress' && (
-            <div className="h-full w-full">
-              <CompressPage />
-            </div>
-          )}
-          {activeMenu === 'convert' && (
-            <div className="h-full w-full">
-              <ConvertPage />
-            </div>
-          )}
           {activeMenu === 'photos' && browseMode === 'file' && (
             <div className={`h-full ${fileModeClass}`}>
               <PhotosPage />
