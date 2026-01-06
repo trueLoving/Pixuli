@@ -10,17 +10,24 @@ import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
 import { useI18n } from '../../i18n/useI18n';
 import { useImageOperations } from '../../hooks/useImageOperations';
-import { useUIState } from '../../hooks/useUIState';
 
-export const PhotosPage: React.FC = () => {
+interface PhotosPageProps {
+  onOpenConfigModal: () => void;
+}
+
+export const PhotosPage: React.FC<PhotosPageProps> = ({
+  onOpenConfigModal,
+}) => {
   const { t } = useI18n();
   const { images, loading, error, clearError } = useImageStore();
   const { sources } = useSourceStore();
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
-  const { handleOpenConfigModal, searchQuery, setSearchQuery } = useUIState();
 
   const hasConfig = sources.length > 0;
+
+  // 搜索查询状态（仅在文件模式下使用）
+  const [searchQuery, setSearchQuery] = useState('');
 
   // 筛选条件
   const [externalFilters, setExternalFilters] = useState<FilterOptions>(
@@ -67,7 +74,7 @@ export const PhotosPage: React.FC = () => {
           onDeleteImage={handleDeleteImage}
           onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
-          onOpenConfigModal={handleOpenConfigModal}
+          onOpenConfigModal={onOpenConfigModal}
           t={t}
         />
       </div>

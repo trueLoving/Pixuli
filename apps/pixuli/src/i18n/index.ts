@@ -6,6 +6,8 @@ import { deepMerge, enUS, zhCN } from '@packages/common/src';
 // 导入桌面端功能模块语言包
 import { operationLogLocales } from '../features';
 import { desktopLocales } from './locales';
+// 导入 Web功能模块语言包
+import { pwaLocales } from '../features';
 
 // zhCN 和 enUS 已经包含了所有组件语言包（包括 versionInfoLocales 和 slideShowLocales）
 const resources = {
@@ -15,6 +17,7 @@ const resources = {
       zhCN,
       desktopLocales['zh-CN'],
       operationLogLocales['zh-CN'],
+      pwaLocales['zh-CN'],
     ),
   },
   'en-US': {
@@ -23,6 +26,7 @@ const resources = {
       enUS,
       desktopLocales['en-US'],
       operationLogLocales['en-US'],
+      pwaLocales['en-US'],
     ),
   },
 };
