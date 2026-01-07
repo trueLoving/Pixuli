@@ -13,6 +13,9 @@ import {
   Trash2,
   Zap,
   FileImage,
+  Brain,
+  PenTool,
+  Sparkles,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -28,7 +31,12 @@ export type SidebarView =
   | 'settings';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
-export type SidebarUtilityTool = 'compress' | 'convert';
+export type SidebarUtilityTool =
+  | 'compress'
+  | 'convert'
+  | 'analyze'
+  | 'edit'
+  | 'generate';
 
 // 统一的菜单项类型
 export type SidebarMenuItem =
@@ -219,6 +227,24 @@ const Sidebar: React.FC<SidebarProps> = ({
       tool: 'convert',
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
+      comingSoon: true,
+    },
+    {
+      tool: 'analyze',
+      icon: <Brain size={20} />,
+      label: translate('sidebar.imageAnalyze'),
+      comingSoon: true,
+    },
+    {
+      tool: 'edit',
+      icon: <PenTool size={20} />,
+      label: translate('sidebar.imageEdit'),
+      comingSoon: true,
+    },
+    {
+      tool: 'generate',
+      icon: <Sparkles size={20} />,
+      label: translate('sidebar.imageGenerate'),
       comingSoon: true,
     },
   ];
