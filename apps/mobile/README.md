@@ -1,4 +1,4 @@
-English | [中文](./README-ZH.md)
+English
 
 # Pixuli Mobile - Intelligent Image Management Mobile Application
 

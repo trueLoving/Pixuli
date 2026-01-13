@@ -1,4 +1,4 @@
-English | [中文](./README-ZH.md)
+English
 
 # Pixuli - Intelligent Image Management Application
 
@@ -9,7 +9,7 @@ English | [中文](./README-ZH.md)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
 [![pnpm](https://img.shields.io/badge/pnpm-10.18.3-orange.svg)](https://pnpm.io/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-1.0.0-blue.svg)](https://pixuli-web.vercel.app/)
-[![Documentation](https://img.shields.io/badge/Documentation-1.0.0-green.svg)](https://pixuli-docs.vercel.app/)
+[![Documentation](https://img.shields.io/badge/Documentation-Wiki-blue.svg)](https://github.com/trueLoving/Pixuli/wiki)
 
 ## 📖 Project Origin
 
@@ -64,7 +64,6 @@ Pixuli/
 ├── packages/                 # Shared packages
 │   ├── ui/                    # UI component library
 │   └── wasm/                  # WASM module (Rust)
-├── docs/                     # Documentation website
 ├── benchmark/                # Performance testing
 └── pnpm-workspace.yaml       # Workspace configuration
 ```
@@ -106,7 +105,6 @@ Want to learn more about development details? Check out our contributing guide:
 
 - **[Contributing Guide](./CONTRIBUTING.md)** - Complete development guide
   covering all platforms (Desktop, Web, Mobile)
-- **[Contributing Guide (中文)](./CONTRIBUTING-ZH.md)** - 完整的开发指南，涵盖所有平台（桌面端、Web 端、移动端）
 
 ## 📦 Downloads
 
@@ -158,15 +156,13 @@ Mobile application supports iOS and Android platforms, available through:
 
 ## 📚 Documentation
 
-| Documentation Type   | Documentation Link                                | Description                            |
-| -------------------- | ------------------------------------------------- | -------------------------------------- |
-| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)      | App features and usage (Web & Desktop) |
-|                      | [Web Documentation](./apps/web/README.md)         | Web features and usage                 |
-|                      | [Mobile Documentation](./apps/mobile/README.md)   | Mobile features and usage              |
-| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)           | Complete development guide             |
-|                      | [Contributing Guide (中文)](./CONTRIBUTING-ZH.md) | 完整的开发指南                         |
-| **Changelog**        | [Changelog](./CHANGELOG.md)                       | Complete version history               |
-|                      | [Changelog (中文)](./CHANGELOG-ZH.md)             | 完整的版本更新历史                     |
+| Documentation Type   | Documentation Link                                       | Description                               |
+| -------------------- | -------------------------------------------------------- | ----------------------------------------- |
+| **User Guides**      | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) | Complete user documentation and tutorials |
+| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)             | App features and usage (Web & Desktop)    |
+|                      | [Mobile Documentation](./apps/mobile/README.md)          | Mobile features and usage                 |
+| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)                  | Complete development guide                |
+| **Changelog**        | [Changelog](./CHANGELOG.md)                              | Complete version history                  |
 
 ## 🙏 Acknowledgments
 

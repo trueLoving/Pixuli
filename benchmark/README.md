@@ -1,211 +1,221 @@
-# Pixuli 性能基准测试
+# Pixuli Performance Benchmark
 
-这个目录包含了 Pixuli
-WASM 和 JavaScript 图片压缩功能的性能对比测试，用于验证 WASM 实现的性能优势。
+This directory contains performance comparison tests for Pixuli's WASM and
+JavaScript image compression functionality, used to verify the performance
+advantages of the WASM implementation.
 
-## 🎯 测试目标
+## 🎯 Test Objectives
 
-- **性能对比**: WASM WebP 压缩 vs JavaScript 压缩
-- **压缩效果**: 不同质量设置的压缩率和效果
-- **批量处理**: 多图片批量压缩性能
-- **内存使用**: 内存占用情况对比
-- **稳定性**: 连续运行稳定性测试
+- **Performance Comparison**: WASM WebP compression vs JavaScript compression
+- **Compression Quality**: Compression ratio and effects at different quality
+  settings
+- **Batch Processing**: Multi-image batch compression performance
+- **Memory Usage**: Memory consumption comparison
+- **Stability**: Continuous running stability tests
 
-## 📁 测试文件
+## 📁 Test Files
 
-- `src/simple-compression-bench.ts` - 简化基准测试，快速验证基本性能
-- `src/detailed-bench.ts` - 详细基准测试，包含多种测试场景和深度分析
-- `test-images/` - 测试图片目录，包含 PNG 和 ICO 格式的测试图片
+- `src/simple-compression-bench.ts` - Simplified benchmark test for quick basic
+  performance verification
+- `src/detailed-bench.ts` - Detailed benchmark test with multiple test scenarios
+  and in-depth analysis
+- `test-images/` - Test images directory containing PNG and ICO format test
+  images
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 安装依赖
+### Install Dependencies
 
 ```bash
 cd benchmark
 pnpm install
 ```
 
-### 运行测试
+### Run Tests
 
-#### 简化基准测试（推荐）
+#### Simplified Benchmark Test (Recommended)
 
 ```bash
 pnpm run benchmark:simple
 ```
 
-#### 详细基准测试
+#### Detailed Benchmark Test
 
 ```bash
 pnpm run benchmark:detailed
 ```
 
-#### 运行所有测试
+#### Run All Tests
 
 ```bash
 pnpm run benchmark
 ```
 
-## 📊 测试内容
+## 📊 Test Content
 
-### 1. 单次压缩性能对比
+### 1. Single Compression Performance Comparison
 
-- **WASM WebP 压缩** vs **JavaScript 压缩**
-- 处理时间对比（毫秒）
-- 操作频率对比（ops/sec）
-- 性能提升百分比
+- **WASM WebP Compression** vs **JavaScript Compression**
+- Processing time comparison (milliseconds)
+- Operations per second comparison (ops/sec)
+- Performance improvement percentage
 
-### 2. 不同质量设置测试
+### 2. Different Quality Settings Test
 
-- 质量范围：60, 70, 80, 90, 95
-- 压缩率对比
-- 处理时间对比
-- 质量 vs 性能权衡分析
+- Quality range: 60, 70, 80, 90, 95
+- Compression ratio comparison
+- Processing time comparison
+- Quality vs performance trade-off analysis
 
-### 3. 批量压缩性能测试
+### 3. Batch Compression Performance Test
 
-- 批量大小：2, 5, 10 张图片
-- WASM 批量处理 vs JavaScript 并行处理
-- 批量处理效率对比
-- 内存使用情况
+- Batch sizes: 2, 5, 10 images
+- WASM batch processing vs JavaScript parallel processing
+- Batch processing efficiency comparison
+- Memory usage
 
-### 4. 压缩效果对比
+### 4. Compression Effect Comparison
 
-- 原始文件大小
-- 压缩后文件大小
-- 压缩率百分比
-- 图片尺寸信息
+- Original file size
+- Compressed file size
+- Compression ratio percentage
+- Image dimension information
 
-### 5. 内存使用对比
+### 5. Memory Usage Comparison
 
-- WASM 压缩内存占用
-- JavaScript 压缩内存占用
-- 内存效率对比
+- WASM compression memory usage
+- JavaScript compression memory usage
+- Memory efficiency comparison
 
-### 6. 稳定性测试
+### 6. Stability Test
 
-- 连续运行 100 次测试
-- 错误率统计
-- 平均处理时间
-- 性能稳定性分析
+- Continuous running of 100 tests
+- Error rate statistics
+- Average processing time
+- Performance stability analysis
 
-## 🛠️ 技术实现
+## 🛠️ Technical Implementation
 
-### 测试框架
+### Test Framework
 
-- **TinyBench**: 高性能基准测试框架
-- **TypeScript**: 类型安全的测试代码
-- **Node.js**: 服务端测试环境
+- **TinyBench**: High-performance benchmark testing framework
+- **TypeScript**: Type-safe test code
+- **Node.js**: Server-side test environment
 
-### 测试数据
+### Test Data
 
-- **真实图片**: 使用项目中的测试图片文件
-- **模拟数据**: 当无测试图片时使用随机数据
-- **多种格式**: 支持 PNG、ICO 等格式
+- **Real Images**: Uses test image files from the project
+- **Simulated Data**: Uses random data when no test images are available
+- **Multiple Formats**: Supports PNG, ICO, and other formats
 
-### WASM 模块
+### WASM Module
 
-- **pixuli-wasm**: 项目自研的 WASM 图片处理模块
-- **WebP 压缩**: 支持有损和无损压缩
-- **批量处理**: 支持多图片批量压缩
+- **pixuli-wasm**: Project's self-developed WASM image processing module
+- **WebP Compression**: Supports lossy and lossless compression
+- **Batch Processing**: Supports multi-image batch compression
 
-## 📈 预期结果
+## 📈 Expected Results
 
-根据测试，WASM WebP 压缩相比 JavaScript 压缩通常具有以下优势：
+Based on testing, WASM WebP compression typically has the following advantages
+over JavaScript compression:
 
-### ⚡ 性能优势
+### ⚡ Performance Advantages
 
-- **更快的处理速度** - 通常快 2-10 倍
-- **更高的操作频率** - 更高的 ops/sec
-- **更低的延迟** - 更快的响应时间
+- **Faster Processing Speed** - Typically 2-10x faster
+- **Higher Operation Frequency** - Higher ops/sec
+- **Lower Latency** - Faster response time
 
-### 📦 压缩优势
+### 📦 Compression Advantages
 
-- **更好的压缩效果** - WebP 格式压缩率更高
-- **更精确的质量控制** - 支持 0-100 质量设置
-- **无损压缩支持** - 支持无损压缩模式
+- **Better Compression Effect** - WebP format has higher compression ratio
+- **More Precise Quality Control** - Supports 0-100 quality settings
+- **Lossless Compression Support** - Supports lossless compression mode
 
-### 💾 资源优势
+### 💾 Resource Advantages
 
-- **更低的内存使用** - 原生代码更高效
-- **更好的稳定性** - 更少的错误率
-- **批量处理优化** - 批量压缩效率更高
+- **Lower Memory Usage** - Native code is more efficient
+- **Better Stability** - Lower error rate
+- **Batch Processing Optimization** - More efficient batch compression
 
-## 📋 测试指标
+## 📋 Test Metrics
 
-### 性能指标
+### Performance Metrics
 
-- **处理时间** (毫秒)
-- **操作频率** (ops/sec)
-- **性能提升** (百分比)
-- **平均时间** (毫秒)
+- **Processing Time** (milliseconds)
+- **Operation Frequency** (ops/sec)
+- **Performance Improvement** (percentage)
+- **Average Time** (milliseconds)
 
-### 压缩指标
+### Compression Metrics
 
-- **压缩率** (百分比)
-- **文件大小** (字节)
-- **质量设置** (0-100)
-- **图片尺寸** (宽x高)
+- **Compression Ratio** (percentage)
+- **File Size** (bytes)
+- **Quality Setting** (0-100)
+- **Image Dimensions** (width x height)
 
-### 资源指标
+### Resource Metrics
 
-- **内存使用** (MB)
-- **错误率** (百分比)
-- **稳定性** (连续运行成功率)
+- **Memory Usage** (MB)
+- **Error Rate** (percentage)
+- **Stability** (continuous running success rate)
 
-## ⚠️ 注意事项
+## ⚠️ Notes
 
-1. **测试环境**: 测试结果可能因硬件配置而异
-2. **WASM 编译**: 首次运行可能需要编译 WASM 模块
-3. **测试数据**: 使用真实图片时会在 test-images 目录中查找
-4. **内存监控**: 测试会监控内存使用情况
-5. **多次运行**: 建议多次运行以获得准确的性能数据
-6. **环境一致性**: 建议在相同环境下进行对比测试
+1. **Test Environment**: Test results may vary depending on hardware
+   configuration
+2. **WASM Compilation**: First run may require WASM module compilation
+3. **Test Data**: When using real images, will search in the test-images
+   directory
+4. **Memory Monitoring**: Tests will monitor memory usage
+5. **Multiple Runs**: It's recommended to run multiple times for accurate
+   performance data
+6. **Environment Consistency**: It's recommended to perform comparison tests in
+   the same environment
 
-## 🔧 自定义测试
+## 🔧 Custom Testing
 
-### 修改测试参数
+### Modify Test Parameters
 
 ```typescript
-// 修改测试时间
+// Modify test duration
 const bench = new Bench({
-  time: 5000, // 运行 5 秒
-  iterations: 20, // 最少 20 次迭代
+  time: 5000, // Run for 5 seconds
+  iterations: 20, // Minimum 20 iterations
 });
 
-// 修改质量设置
+// Modify quality settings
 const qualities = [60, 70, 80, 90, 95];
 
-// 修改批量大小
+// Modify batch sizes
 const batchSizes = [2, 5, 10];
 ```
 
-### 添加新的测试场景
+### Add New Test Scenarios
 
 ```typescript
-// 添加新的压缩选项测试
-bench.add('WASM WebP 自定义质量', async () => {
+// Add new compression option test
+bench.add('WASM WebP Custom Quality', async () => {
   const result = compressToWebp(imageData, { quality: 85 });
   return result;
 });
 ```
 
-## 📊 结果分析
+## 📊 Result Analysis
 
-测试完成后会输出详细的性能报告：
+After testing completes, a detailed performance report will be output:
 
-- **性能对比表格** - 直观的性能数据对比
-- **压缩效果分析** - 压缩率和文件大小对比
-- **内存使用报告** - 内存占用情况
-- **稳定性统计** - 错误率和稳定性分析
-- **综合总结** - 整体性能优势总结
+- **Performance Comparison Table** - Intuitive performance data comparison
+- **Compression Effect Analysis** - Compression ratio and file size comparison
+- **Memory Usage Report** - Memory consumption
+- **Stability Statistics** - Error rate and stability analysis
+- **Comprehensive Summary** - Overall performance advantages summary
 
-## 🎉 测试完成
+## 🎉 Test Completion
 
-测试完成后会显示：
+After testing completes, it will display:
 
-- ✅ WASM WebP 压缩的各项优势
-- 📈 详细的性能指标
-- 🎯 压缩效果对比
-- 💾 内存使用情况
-- 🔄 稳定性测试结果
+- ✅ All advantages of WASM WebP compression
+- 📈 Detailed performance metrics
+- 🎯 Compression effect comparison
+- 💾 Memory usage
+- 🔄 Stability test results
