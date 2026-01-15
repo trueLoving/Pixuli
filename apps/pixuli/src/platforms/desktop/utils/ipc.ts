@@ -129,10 +129,3 @@ export async function closeWindow(
     `Window type "${windowType}" has been removed. This function is deprecated.`,
   );
 }
-
-/**
- * 打开项目窗口
- */
-export async function openProjectWindow(projectId: string): Promise<void> {
-  await invokeIpc('open-win', `project?id=${encodeURIComponent(projectId)}`);
-}

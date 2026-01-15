@@ -35,7 +35,6 @@ import {
   useUIState,
 } from './hooks';
 import { useI18n } from './i18n/useI18n';
-import { ProjectPage } from './platforms/desktop/pages';
 import { AppRoutes, ROUTES } from './routes';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
@@ -223,24 +222,6 @@ function App() {
     handleLoadImages,
     handleOpenConfigModal,
   );
-
-  // Desktop 平台：检查是否在项目窗口模式
-  const [projectSourceId] = useState<string | null>(() => {
-    if (isWeb()) return null;
-    const hash = window.location.hash;
-    if (hash.startsWith('#project')) {
-      const idx = hash.indexOf('?');
-      const query = idx >= 0 ? new URLSearchParams(hash.slice(idx + 1)) : null;
-      const id = query?.get('id');
-      return id || null;
-    }
-    return null;
-  });
-
-  // Desktop 平台：如果是项目窗口模式，显示项目页面
-  if (!isWeb() && projectSourceId) {
-    return <ProjectPage projectSourceId={projectSourceId} />;
-  }
 
   // 获取平台类型
   const platform = getPlatform();

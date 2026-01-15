@@ -41,7 +41,6 @@ organize, process, and store images.
 |                             | Configuration Management | Support for configuration import, export, and clear                                  |
 |                             | Version Control          | Leverage Git version control with complete operation history                         |
 | 🪟 **Multi-window Mode**    | Main Window              | Primary interface for source management and project list                             |
-|                             | Project Window           | Independent image browsing and management window                                     |
 |                             | Compression Window       | Dedicated image compression feature window                                           |
 |                             | Conversion Window        | Independent format conversion window                                                 |
 | 📋 **Operation Log**        | Operation Recording      | Automatically record all upload, delete, edit operations                             |

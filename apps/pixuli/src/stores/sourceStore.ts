@@ -45,7 +45,6 @@ type SourceState = {
   removeSource: (id: string) => void;
   getSourceById: (id: string) => SourceConfig | undefined;
   setSelectedSourceId: (id: string | null) => void;
-  openProjectWindow: (id: string) => Promise<void>;
 };
 
 const STORAGE_KEY = 'pixuli.sources.v2';
@@ -156,19 +155,6 @@ export const useSourceStore = create<SourceState>((set, get) => {
     setSelectedSourceId: id => {
       set({ selectedSourceId: id });
       saveSelectedSourceId(id);
-    },
-    openProjectWindow: async id => {
-      // 动态导入 Desktop 平台工具（避免在 Web 模式下加载）
-      if (typeof window !== 'undefined' && (window as any).ipcRenderer) {
-        try {
-          const { openProjectWindow: openProject } = await import(
-            '../platforms/desktop/utils/ipc'
-          );
-          await openProject(id);
-        } catch (error) {
-          console.error('Failed to open project window:', error);
-        }
-      }
     },
   };
 });

@@ -2,6 +2,5 @@
  * Desktop 平台特定页面
  *
  * 注意：压缩、转换、AI 分析窗口页面已移除，功能暂时关闭
+ * 注意：项目窗口功能已移除
  */
-
-export { default as ProjectPage } from './ProjectPage/ProjectPage';

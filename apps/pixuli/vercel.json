@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/gitee-proxy/:path*",
-      "destination": "/api/gitee-proxy?path=:path*"
+      "source": "/vercel/gitee-proxy/:path*",
+      "destination": "/vercel/gitee-proxy?path=:path*"
     }
   ]
 }

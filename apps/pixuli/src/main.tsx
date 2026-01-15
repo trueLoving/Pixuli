@@ -24,13 +24,6 @@ if (isWeb()) {
     if (performanceServiceModule?.performanceService) {
       performanceServiceModule.performanceService.init();
     }
-
-    // 注册 Service Worker
-    if ('serviceWorker' in navigator && pwaServiceModule?.pwaService) {
-      pwaServiceModule.pwaService.registerServiceWorker().catch(error => {
-        console.error('[PWA] Failed to register Service Worker:', error);
-      });
-    }
   });
 }
 

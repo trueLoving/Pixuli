@@ -1,7 +1,7 @@
 /**
  * 共享页面导出
  *
- * 注意：Desktop 特定页面（ProjectPage）已移动到 platforms/desktop/pages
+ * 注意：ProjectPage 项目窗口功能已移除
  * HomePage 已不再使用，统一使用 App.tsx 中的主应用组件
  */
 export { PhotosPage } from './photos';

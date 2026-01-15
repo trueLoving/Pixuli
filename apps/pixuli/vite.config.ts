@@ -153,7 +153,11 @@ export default defineConfig(({ command, mode }) => {
     plugins.push(
       VitePWA({
         registerType: 'prompt',
-        includeAssets: ['icon.ico', 'icon-192x192.png', 'icon-512x512.png'],
+        includeAssets: [
+          'icon.ico',
+          'pwa/icon-192x192.png',
+          'pwa/icon-512x512.png',
+        ],
         manifest: {
           name: 'Pixuli - 智能图片管理',
           short_name: 'Pixuli',
@@ -166,13 +170,13 @@ export default defineConfig(({ command, mode }) => {
           start_url: '/',
           icons: [
             {
-              src: '/icon-192x192.png',
+              src: '/pwa/icon-192x192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any maskable',
             },
             {
-              src: '/icon-512x512.png',
+              src: '/pwa/icon-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any maskable',
@@ -184,23 +188,12 @@ export default defineConfig(({ command, mode }) => {
               short_name: '上传',
               description: '快速上传新图片',
               url: '/?action=upload',
-              icons: [{ src: '/icon-192x192.png', sizes: '192x192' }],
+              icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
             },
           ],
           categories: ['productivity', 'utilities'],
         },
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-          skipWaiting: true,
-          clientsClaim: true,
-        },
-        devOptions: {
-          enabled: true,
-          type: 'module',
-          navigateFallback: undefined,
-        },
-        // 使用 generateSW 策略（默认），确保 manifest 文件正确生成
-        strategies: 'generateSW',
+        // Service Worker 已移除，仅保留 manifest 配置
       }),
     );
   }
