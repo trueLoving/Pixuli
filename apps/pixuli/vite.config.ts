@@ -148,55 +148,56 @@ export default defineConfig(({ command, mode }) => {
     );
   }
 
-  // 根据模式添加 PWA 插件（仅 Web 模式）
-  if (isWeb) {
-    plugins.push(
-      VitePWA({
-        registerType: 'prompt',
-        includeAssets: [
-          'icon.ico',
-          'pwa/icon-192x192.png',
-          'pwa/icon-512x512.png',
-        ],
-        manifest: {
-          name: 'Pixuli - 智能图片管理',
-          short_name: 'Pixuli',
-          description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
-          theme_color: '#2563eb',
-          background_color: '#ffffff',
-          display: 'standalone',
-          orientation: 'any',
-          scope: '/',
-          start_url: '/',
-          icons: [
-            {
-              src: '/pwa/icon-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any maskable',
-            },
-            {
-              src: '/pwa/icon-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable',
-            },
-          ],
-          shortcuts: [
-            {
-              name: '上传图片',
-              short_name: '上传',
-              description: '快速上传新图片',
-              url: '/?action=upload',
-              icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
-            },
-          ],
-          categories: ['productivity', 'utilities'],
-        },
-        // Service Worker 已移除，仅保留 manifest 配置
-      }),
-    );
-  }
+  // PWA 功能已暂时移除，相关插件配置已注释
+  // 如需恢复 PWA 功能，取消下面的注释即可
+  // if (isWeb) {
+  //   plugins.push(
+  //     VitePWA({
+  //       registerType: 'prompt',
+  //       includeAssets: [
+  //         'icon.ico',
+  //         'pwa/icon-192x192.png',
+  //         'pwa/icon-512x512.png',
+  //       ],
+  //       manifest: {
+  //         name: 'Pixuli - 智能图片管理',
+  //         short_name: 'Pixuli',
+  //         description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
+  //         theme_color: '#2563eb',
+  //         background_color: '#ffffff',
+  //         display: 'standalone',
+  //         orientation: 'any',
+  //         scope: '/',
+  //         start_url: '/',
+  //         icons: [
+  //           {
+  //             src: '/pwa/icon-192x192.png',
+  //             sizes: '192x192',
+  //             type: 'image/png',
+  //             purpose: 'any maskable',
+  //           },
+  //           {
+  //             src: '/pwa/icon-512x512.png',
+  //             sizes: '512x512',
+  //             type: 'image/png',
+  //             purpose: 'any maskable',
+  //           },
+  //         ],
+  //         shortcuts: [
+  //           {
+  //             name: '上传图片',
+  //             short_name: '上传',
+  //             description: '快速上传新图片',
+  //             url: '/?action=upload',
+  //             icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
+  //           },
+  //         ],
+  //         categories: ['productivity', 'utilities'],
+  //       },
+  //       // Service Worker 已移除，仅保留 manifest 配置
+  //     }),
+  //   );
+  // }
 
   return {
     resolve: {

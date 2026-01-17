@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { SlideShowPlayer, type ImageItem } from '@packages/common/src';
 import { X } from 'lucide-react';
 import { useI18n } from '../../i18n/useI18n';
+import { useUIStore } from '../../stores/uiStore';
+import { useImageStore } from '../../stores/imageStore';
 
-interface SlideshowPageProps {
-  images: ImageItem[];
-  isFullscreenMode: boolean;
-  onFullscreenToggle: (isFullscreen: boolean) => void;
-  onExitFullscreen: () => void;
-}
-
-export const SlideshowPage: React.FC<SlideshowPageProps> = ({
-  images,
-  isFullscreenMode,
-  onFullscreenToggle,
-  onExitFullscreen,
-}) => {
+export const SlideshowPage: React.FC = () => {
   const { t } = useI18n();
+  const { images } = useImageStore();
+  const { setIsFullscreenMode } = useUIStore();
+
+  // 页面级别的全屏状态
+  const [isFullscreenMode, setIsFullscreenModeLocal] = useState(false);
+
+  const handleFullscreenToggle = useCallback(
+    (isFullscreen: boolean) => {
+      setIsFullscreenModeLocal(isFullscreen);
+      setIsFullscreenMode(isFullscreen);
+    },
+    [setIsFullscreenMode],
+  );
+
+  const handleExitFullscreen = useCallback(() => {
+    setIsFullscreenModeLocal(false);
+    setIsFullscreenMode(false);
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }, [setIsFullscreenMode]);
 
   return (
     <div className="h-full w-full relative">
@@ -25,12 +36,12 @@ export const SlideshowPage: React.FC<SlideshowPageProps> = ({
         images={images}
         t={t}
         embedded={true}
-        onFullscreenToggle={onFullscreenToggle}
+        onFullscreenToggle={handleFullscreenToggle}
       />
       {/* 全屏模式下的返回按钮 */}
       {isFullscreenMode && (
         <button
-          onClick={onExitFullscreen}
+          onClick={handleExitFullscreen}
           className="absolute top-4 right-4 z-50 p-3 bg-black bg-opacity-60 hover:bg-opacity-80 text-white rounded-lg transition-all"
           title={t('common.back') || '返回'}
         >
