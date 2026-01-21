@@ -1,5 +1,5 @@
 import React from 'react';
-import { useI18n } from '../../i18n/useI18n';
+import { useI18n } from '@/i18n/useI18n';
 
 export const ConvertPage: React.FC = () => {
   const { t } = useI18n();

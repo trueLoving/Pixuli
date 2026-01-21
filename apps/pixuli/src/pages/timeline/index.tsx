@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { Timeline, type ImageItem } from '@packages/common/src';
+import { useI18n } from '@/i18n/useI18n';
+import { useImageStore } from '@/stores/imageStore';
+import { useUIStore } from '@/stores/uiStore';
+import { Timeline } from '@packages/common/src';
 import { X } from 'lucide-react';
-import { useI18n } from '../../i18n/useI18n';
-import { useUIStore } from '../../stores/uiStore';
-import { useImageStore } from '../../stores/imageStore';
+import React, { useCallback, useState } from 'react';
 
 export const TimelinePage: React.FC = () => {
   const { t } = useI18n();

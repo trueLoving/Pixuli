@@ -15,6 +15,11 @@ import './Search.css';
 
 export type SearchVariant = 'header' | 'image' | 'basic';
 
+export interface SearchHistoryItem {
+  query: string;
+  timestamp: number;
+}
+
 export interface SearchProps {
   /** 搜索关键词 */
   searchQuery: string;
@@ -46,6 +51,18 @@ export interface SearchProps {
   t?: (key: string) => string;
   /** 自定义 CSS 类名 */
   className?: string;
+  /** 是否显示历史记录 */
+  showHistory?: boolean;
+  /** 历史记录数据 */
+  history?: SearchHistoryItem[];
+  /** 选择历史记录回调 */
+  onSelectHistory?: (query: string) => void;
+  /** 删除历史记录回调 */
+  onDeleteHistory?: (query: string) => void;
+  /** 清空历史记录回调 */
+  onClearHistory?: () => void;
+  /** 保存历史记录回调（按下 Enter 时调用） */
+  onSaveHistory?: (query: string) => void;
 }
 
 const Search: React.FC<SearchProps> = ({
@@ -64,6 +81,12 @@ const Search: React.FC<SearchProps> = ({
   disabled = false,
   t,
   className = '',
+  showHistory = false,
+  history = [],
+  onSelectHistory,
+  onDeleteHistory,
+  onClearHistory,
+  onSaveHistory,
 }) => {
   const translate = t || defaultTranslate;
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -200,6 +223,12 @@ const Search: React.FC<SearchProps> = ({
         onChange={onSearchChange}
         placeholder={getPlaceholder()}
         disabled={disabled || !hasConfig}
+        showHistory={showHistory}
+        history={history}
+        onSelectHistory={onSelectHistory}
+        onDeleteHistory={onDeleteHistory}
+        onClearHistory={onClearHistory}
+        onSaveHistory={onSaveHistory}
       />
     );
   }
@@ -213,6 +242,12 @@ const Search: React.FC<SearchProps> = ({
           onChange={onSearchChange}
           placeholder={getPlaceholder()}
           disabled={!hasConfig}
+          showHistory={showHistory}
+          history={history}
+          onSelectHistory={onSelectHistory}
+          onDeleteHistory={onDeleteHistory}
+          onClearHistory={onClearHistory}
+          onSaveHistory={onSaveHistory}
         />
         {showFilter && hasConfig && onFiltersChange && (
           <div className="search-filter-wrapper" ref={filterPanelRef}>
@@ -307,6 +342,12 @@ const Search: React.FC<SearchProps> = ({
             onChange={onSearchChange}
             placeholder={getPlaceholder()}
             disabled={disabled}
+            showHistory={showHistory}
+            history={history}
+            onSelectHistory={onSelectHistory}
+            onDeleteHistory={onDeleteHistory}
+            onClearHistory={onClearHistory}
+            onSaveHistory={onSaveHistory}
           />
         </div>
 

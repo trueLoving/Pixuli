@@ -4,7 +4,7 @@
  */
 
 import type { NavigateFunction } from 'react-router-dom';
-import { ROUTES } from '../router/routes';
+import { ROUTES } from '@/router/routes';
 
 /**
  * 路由导航函数类型
