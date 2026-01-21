@@ -5,7 +5,7 @@ import {
   LogQueryOptions,
   LogFilter,
   LogStatistics,
-} from './types';
+} from '@/types/log';
 
 // 日志服务类
 export class LogService {

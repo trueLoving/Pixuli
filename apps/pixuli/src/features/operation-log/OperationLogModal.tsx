@@ -1,4 +1,4 @@
-import { LogActionType, LogStatus, LogFilter } from '@/services/types';
+import { LogActionType, LogStatus, LogFilter } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
 import { showError, showSuccess } from '@packages/common/src';
 import {

@@ -524,7 +524,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <button
             className="sidebar-collapsed-item"
             onClick={() => {
-              window.open('https://pixuli-docs.vercel.app/', '_blank');
+              window.open(
+                'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                '_blank',
+              );
             }}
             title={translate('sidebar.docs')}
           >
@@ -724,7 +727,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           label={translate('sidebar.docs')}
           onClick={() => {
             // 打开文档链接
-            window.open('https://pixuli-docs.vercel.app/', '_blank');
+            window.open(
+              'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+              '_blank',
+            );
           }}
         />
         <NavItem
