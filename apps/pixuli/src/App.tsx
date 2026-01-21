@@ -1,6 +1,7 @@
 import { useDemoMode } from '@packages/common/src';
 import { useCallback, useMemo } from 'react';
 import './App.css';
+import { SearchProvider } from './contexts/SearchContext';
 import {
   useAppInitialization,
   useConfigManagement,
@@ -144,7 +145,7 @@ function App() {
   );
 
   return (
-    <>
+    <SearchProvider>
       <MainLayout
         sidebarSources={sidebarSources}
         selectedSourceId={selectedSourceId}
@@ -166,7 +167,7 @@ function App() {
           setIsFullscreenMode={setIsFullscreenMode}
         />
       </MainLayout>
-    </>
+    </SearchProvider>
   );
 }
 

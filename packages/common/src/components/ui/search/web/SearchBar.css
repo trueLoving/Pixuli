@@ -83,3 +83,114 @@
   color: var(--text-secondary, #6b7280);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
+/* 搜索框包装器 */
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* 历史记录面板 */
+.search-history-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.search-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-secondary, #f9fafb);
+}
+
+.search-history-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.search-history-clear-all {
+  font-size: 0.75rem;
+  color: var(--primary-color, #3b82f6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.search-history-clear-all:hover {
+  background: var(--hover-bg, #f3f4f6);
+}
+
+.search-history-list {
+  padding: 0.25rem 0;
+}
+
+.search-history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.search-history-item:hover,
+.search-history-item.selected {
+  background: var(--hover-bg, #f3f4f6);
+}
+
+.search-history-icon {
+  color: var(--text-secondary, #9ca3af);
+  flex-shrink: 0;
+}
+
+.search-history-query {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-history-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #9ca3af);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.search-history-item:hover .search-history-delete {
+  opacity: 1;
+}
+
+.search-history-delete:hover {
+  background: var(--error-bg, #fee2e2);
+  color: var(--error-color, #dc2626);
+}
