@@ -12,7 +12,7 @@ import {
   GiteeStorageService,
   GitHubStorageService,
 } from '@packages/common/src';
-import { LogActionType, LogStatus } from '@/services/types';
+import { LogActionType, LogStatus } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
 import {
   BatchUploadProgress,

@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useImageStore } from '../stores/imageStore';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 // 路由懒加载 - 提升初始加载性能
 const PhotosPage = lazy(() =>
