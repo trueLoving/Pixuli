@@ -14,6 +14,7 @@ import {
   type ImageUploadData,
   type MultiImageUploadData,
 } from '@packages/common/src';
+import { ScrollText } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { ROUTES } from '../router/routes';
@@ -42,7 +43,7 @@ export const AppMain: React.FC<AppMainProps> = ({
     useI18n();
   const { loading, batchUploadProgress, images } = useImageStore();
   const { sources } = useSourceStore();
-  const { isFullscreenMode } = useUIStore();
+  const { isFullscreenMode, openOperationLog } = useUIStore();
   const { isDemoMode } = useDemoMode();
   const location = useLocation();
   const searchContext = useSearchContextSafe();
@@ -100,6 +101,15 @@ export const AppMain: React.FC<AppMainProps> = ({
                   t={t}
                 />
               )}
+              <button
+                type="button"
+                onClick={openOperationLog}
+                title={t('header.operationLog')}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                aria-label={t('header.operationLog')}
+              >
+                <ScrollText size={18} />
+              </button>
               <LanguageSwitcher
                 currentLanguage={getCurrentLanguage()}
                 availableLanguages={getAvailableLanguages()}

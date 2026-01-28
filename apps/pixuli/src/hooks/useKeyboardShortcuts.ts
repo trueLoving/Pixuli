@@ -10,11 +10,14 @@ export function useKeyboardShortcuts(
   showConfigModal: boolean,
   showKeyboardHelp: boolean,
   showVersionInfo: boolean,
+  showOperationLog: boolean,
   handleCloseConfigModal: () => void,
   handleOpenKeyboardHelp: () => void,
   handleOpenVersionInfo: () => void,
   handleCloseKeyboardHelp: () => void,
   handleCloseVersionInfo: () => void,
+  handleOpenOperationLog: () => void,
+  handleCloseOperationLog: () => void,
   handleLoadImages: () => Promise<void>,
   handleOpenConfigModal: () => void,
 ) {
@@ -26,16 +29,19 @@ export function useKeyboardShortcuts(
       if (showConfigModal) handleCloseConfigModal();
       else if (showKeyboardHelp) handleCloseKeyboardHelp();
       else if (showVersionInfo) handleCloseVersionInfo();
+      else if (showOperationLog) handleCloseOperationLog();
     };
 
     const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
     const handleOpenVersionInfoEvent = () => handleOpenVersionInfo();
+    const handleOpenOperationLogEvent = () => handleOpenOperationLog();
     const handleRefreshImages = () => handleLoadImages();
     const handleOpenConfig = () => handleOpenConfigModal();
 
     window.addEventListener('closeModals', handleCloseModals);
     window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent);
     window.addEventListener('openVersionInfo', handleOpenVersionInfoEvent);
+    window.addEventListener('openOperationLog', handleOpenOperationLogEvent);
     window.addEventListener('refreshImages', handleRefreshImages);
     window.addEventListener('openConfig', handleOpenConfig);
 
@@ -47,6 +53,10 @@ export function useKeyboardShortcuts(
         handleOpenKeyboardHelpEvent,
       );
       window.removeEventListener('openVersionInfo', handleOpenVersionInfoEvent);
+      window.removeEventListener(
+        'openOperationLog',
+        handleOpenOperationLogEvent,
+      );
       window.removeEventListener('refreshImages', handleRefreshImages);
       window.removeEventListener('openConfig', handleOpenConfig);
     };
@@ -55,11 +65,14 @@ export function useKeyboardShortcuts(
     showConfigModal,
     showKeyboardHelp,
     showVersionInfo,
+    showOperationLog,
     handleCloseConfigModal,
     handleOpenKeyboardHelp,
     handleOpenVersionInfo,
     handleCloseKeyboardHelp,
     handleCloseVersionInfo,
+    handleOpenOperationLog,
+    handleCloseOperationLog,
     handleLoadImages,
     handleOpenConfigModal,
   ]);

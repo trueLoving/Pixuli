@@ -65,4 +65,15 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     },
     category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
   },
+  {
+    key: COMMON_SHORTCUTS.L,
+    ctrlKey: true,
+    shiftKey: true,
+    description: t('keyboard.shortcuts.openOperationLog'),
+    action: () => {
+      const event = new CustomEvent('openOperationLog');
+      window.dispatchEvent(event);
+    },
+    category: SHORTCUT_CATEGORIES.HELP,
+  },
 ];

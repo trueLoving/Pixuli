@@ -16,6 +16,7 @@
     },
     "shortcuts": {
       "closeModal": "关闭当前模态框",
+      "openOperationLog": "打开操作日志",
       "showHelp": "显示键盘快捷键帮助",
       "refresh": "刷新图片列表",
       "openConfig": "打开GitHub配置",

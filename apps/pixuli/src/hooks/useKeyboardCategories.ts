@@ -23,6 +23,12 @@ export function useKeyboardCategories(t: (key: string) => string) {
             key: 'V',
             ctrlKey: true,
           },
+          {
+            description: t('keyboard.shortcuts.openOperationLog'),
+            key: 'L',
+            ctrlKey: true,
+            shiftKey: true,
+          },
         ],
       },
       {
