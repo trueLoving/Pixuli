@@ -16,7 +16,7 @@ import {
   type VersionInfo,
 } from '@packages/common/src';
 import React from 'react';
-import { SourceTypeMenu } from '../features';
+import { OperationLogModal, SourceTypeMenu } from '../features';
 import { useKeyboardCategories } from '../hooks/useKeyboardCategories';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
@@ -81,11 +81,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     showSourceTypeMenu,
     showKeyboardHelp,
     showVersionInfo,
+    showOperationLog,
     editingSourceId,
     closeConfigModal,
     closeSourceTypeMenu,
     closeKeyboardHelp,
     closeVersionInfo,
+    closeOperationLog,
   } = useUIStore();
 
   // 键盘快捷键分类
@@ -198,6 +200,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onClose={closeVersionInfo}
         t={t}
         versionInfo={__VERSION_INFO__}
+      />
+
+      {/* 操作日志模态框 */}
+      <OperationLogModal
+        isOpen={showOperationLog}
+        onClose={closeOperationLog}
       />
 
       {/* 全局组件统一管理 */}

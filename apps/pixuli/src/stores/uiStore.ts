@@ -12,6 +12,7 @@ interface UIState {
   showSourceTypeMenu: boolean;
   showKeyboardHelp: boolean;
   showVersionInfo: boolean;
+  showOperationLog: boolean;
 
   // 编辑状态
   editingSourceId: string | null;
@@ -41,6 +42,7 @@ interface UIState {
   setShowSourceTypeMenu: (show: boolean) => void;
   setShowKeyboardHelp: (show: boolean) => void;
   setShowVersionInfo: (show: boolean) => void;
+  setShowOperationLog: (show: boolean) => void;
 
   // Actions - 编辑
   setEditingSourceId: (id: string | null) => void;
@@ -69,6 +71,8 @@ interface UIState {
   closeKeyboardHelp: () => void;
   openVersionInfo: () => void;
   closeVersionInfo: () => void;
+  openOperationLog: () => void;
+  closeOperationLog: () => void;
   addSource: () => void;
   closeSourceTypeMenu: () => void;
 }
@@ -79,6 +83,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   showSourceTypeMenu: false,
   showKeyboardHelp: false,
   showVersionInfo: false,
+  showOperationLog: false,
   editingSourceId: null,
   sidebarCollapsed: false,
   activeMenu: 'photos',
@@ -92,6 +97,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   setShowSourceTypeMenu: (show: boolean) => set({ showSourceTypeMenu: show }),
   setShowKeyboardHelp: (show: boolean) => set({ showKeyboardHelp: show }),
   setShowVersionInfo: (show: boolean) => set({ showVersionInfo: show }),
+  setShowOperationLog: (show: boolean) => set({ showOperationLog: show }),
 
   // 编辑 Actions
   setEditingSourceId: (id: string | null) => set({ editingSourceId: id }),
@@ -124,6 +130,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
   openVersionInfo: () => set({ showVersionInfo: true }),
   closeVersionInfo: () => set({ showVersionInfo: false }),
+  openOperationLog: () => set({ showOperationLog: true }),
+  closeOperationLog: () => set({ showOperationLog: false }),
   addSource: () => set({ showSourceTypeMenu: true }),
   closeSourceTypeMenu: () => set({ showSourceTypeMenu: false }),
 }));

@@ -16,6 +16,7 @@
     },
     "shortcuts": {
       "closeModal": "Close current modal",
+      "openOperationLog": "Open operation log",
       "showHelp": "Show keyboard shortcuts help",
       "refresh": "Refresh image list",
       "openConfig": "Open GitHub configuration",
