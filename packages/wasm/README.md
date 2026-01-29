@@ -1,74 +1,77 @@
 # Pixuli WASM
 
-Pixuli 的 WebAssembly 核心库，提供高性能的图片处理功能。支持 Web 和 Node.js 多平台。
+Pixuli's WebAssembly core library, providing high-performance image processing
+capabilities. Supports multiple platforms including Web and Node.js.
 
-## 功能特性
+## Features
 
-### 🌐 多平台支持
+### 🌐 Multi-Platform Support
 
-- **Web 端**: 浏览器环境，使用 ES6 模块 ✅
-- **Node.js**: Node.js 和 Electron 主进程，使用 CommonJS ✅
+- **Web**: Browser environment, using ES6 modules ✅
+- **Node.js**: Node.js and Electron main process, using CommonJS ✅
 
-### 🖼️ 图片处理功能（开发中）
+### 🖼️ Image Processing Features (In Development)
 
-- **图片格式转换**: 支持 JPEG、PNG、GIF、BMP、TIFF 等格式转换
-- **图片压缩**: WebP 压缩功能（暂时禁用，等待纯 Rust 实现）
-- **图片分析**: AI 图片分析功能
-- **批量处理**: 支持多张图片批量处理
+- **Image Format Conversion**: Supports format conversion for JPEG, PNG, GIF,
+  BMP, TIFF, etc.
+- **Image Compression**: WebP compression functionality (temporarily disabled,
+  awaiting pure Rust implementation)
+- **Image Analysis**: AI image analysis functionality
+- **Batch Processing**: Supports batch processing of multiple images
 
-### 🧪 测试功能
+### 🧪 Test Functions
 
-- **plus_100**: 简单的测试函数，用于验证 WASM 模块加载
+- **plus_100**: Simple test function for verifying WASM module loading
 
-## 技术架构
+## Technical Architecture
 
-### 核心技术栈
+### Core Technology Stack
 
-- **Rust**: 主要开发语言
-- **wasm-bindgen**: WebAssembly 绑定生成工具
-- **wasm-pack**: WASM 构建和打包工具
-- **image-rs**: 图片处理核心库
-- **serde**: 序列化支持
+- **Rust**: Primary development language
+- **wasm-bindgen**: WebAssembly binding generation tool
+- **wasm-pack**: WASM build and packaging tool
+- **image-rs**: Image processing core library
+- **serde**: Serialization support
 
-### 构建系统
+### Build System
 
-- **Cargo**: Rust 包管理器
-- **wasm-pack**: 跨平台 WASM 构建工具
-- **多目标构建**: 支持 web、nodejs、bundler 三种目标
+- **Cargo**: Rust package manager
+- **wasm-pack**: Cross-platform WASM build tool
+- **Multi-target Build**: Supports web, nodejs, and bundler targets
 
-## 安装使用
+## Installation and Usage
 
-### 开发环境要求
+### Development Environment Requirements
 
 - Rust 1.70+
 - Node.js 14+
-- wasm-pack（通过 `cargo install wasm-pack` 安装）
+- wasm-pack (install via `cargo install wasm-pack`)
 
-### 构建命令
+### Build Commands
 
 ```bash
-# 构建所有平台版本（生产）
+# Build all platform versions (production)
 pnpm run build:wasm
 
-# 构建所有平台版本（开发）
+# Build all platform versions (development)
 pnpm run build:wasm:dev
 
-# 分别构建各平台版本
-pnpm run build:wasm:web      # Web 版本
-pnpm run build:wasm:node     # Node.js 版本
+# Build platform versions separately
+pnpm run build:wasm:web      # Web version
+pnpm run build:wasm:node     # Node.js version
 ```
 
-### 使用示例
+### Usage Examples
 
-#### Web 端
+#### Web
 
 ```javascript
 import { init, plus100 } from 'pixuli-wasm';
 
-// 初始化 WASM 模块
+// Initialize WASM module
 await init();
 
-// 使用功能
+// Use functionality
 const result = await plus100(50);
 console.log(result); // 150
 ```
@@ -78,94 +81,97 @@ console.log(result); // 150
 ```javascript
 const { init, plus100 } = require('pixuli-wasm');
 
-// 初始化 WASM 模块
+// Initialize WASM module
 await init();
 
-// 使用功能
+// Use functionality
 const result = await plus100(50);
 console.log(result); // 150
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 packages/wasm/
-├── src/                    # Rust 源代码
-│   ├── lib.rs             # 主入口文件
-│   ├── image.rs           # 图片信息获取
-│   ├── compress/          # 压缩功能模块
-│   ├── convert/           # 格式转换模块
-│   └── analyze/           # AI 分析模块
-├── pkg-web/               # Web 版本构建产物
-├── pkg-node/              # Node.js 版本构建产物
-├── index.js               # ES6 模块入口（Web 端）
-├── index.cjs              # CommonJS 入口（Node.js）
-└── index.d.ts             # TypeScript 类型定义
+├── src/                    # Rust source code
+│   ├── lib.rs             # Main entry file
+│   ├── image.rs           # Image information retrieval
+│   ├── compress/          # Compression module
+│   ├── convert/           # Format conversion module
+│   └── analyze/           # AI analysis module
+├── pkg-web/               # Web version build artifacts
+├── pkg-node/              # Node.js version build artifacts
+├── index.js               # ES6 module entry (Web)
+├── index.cjs              # CommonJS entry (Node.js)
+└── index.d.ts             # TypeScript type definitions
 ```
 
-## 当前状态
+## Current Status
 
-### ✅ 已完成
+### ✅ Completed
 
-- [x] WASM 多平台构建配置（web、nodejs、bundler）
-- [x] 统一入口模块（自动环境检测）
-- [x] ES6 和 CommonJS 双模块支持
-- [x] plus_100 测试函数
-- [x] TypeScript 类型定义
-- [x] Web 端 WASM 支持
-- [x] Node.js 端 WASM 支持
+- [x] WASM multi-platform build configuration (web, nodejs, bundler)
+- [x] Unified entry module (automatic environment detection)
+- [x] ES6 and CommonJS dual module support
+- [x] plus_100 test function
+- [x] TypeScript type definitions
+- [x] Web WASM support
+- [x] Node.js WASM support
 
-### 🚧 开发中
+### 🚧 In Development
 
-- [ ] 图片格式转换功能（代码已实现，待启用）
-- [ ] 图片信息获取功能（代码已实现，待启用）
-- [ ] AI 图片分析功能（代码已实现，待启用）
+- [ ] Image format conversion functionality (code implemented, pending
+      activation)
+- [ ] Image information retrieval functionality (code implemented, pending
+      activation)
+- [ ] AI image analysis functionality (code implemented, pending activation)
 
-### ⚠️ 已知问题
+### ⚠️ Known Issues
 
-- **WebP 压缩功能暂时禁用**: `webp`
-  crate 依赖 C 代码，在 WASM 目标上无法编译。需要寻找纯 Rust 实现的 WebP 库或使用其他方案。
+- **WebP compression temporarily disabled**: The `webp` crate depends on C code
+  and cannot compile for WASM targets. Need to find a pure Rust WebP library or
+  use an alternative solution.
 
-## 开发指南
+## Development Guide
 
-### 添加新功能
+### Adding New Features
 
-1. 在 `src/` 目录下编写 Rust 代码
-2. 使用 `#[wasm_bindgen]` 宏导出函数
-3. 在 `index.js` 和 `index.cjs` 中添加对应的导出
-4. 更新 `index.d.ts` 类型定义
-5. 运行 `pnpm run build:wasm` 重新构建
+1. Write Rust code in the `src/` directory
+2. Use `#[wasm_bindgen]` macro to export functions
+3. Add corresponding exports in `index.js` and `index.cjs`
+4. Update `index.d.ts` type definitions
+5. Run `pnpm run build:wasm` to rebuild
 
-### 测试
+### Testing
 
 ```bash
-# 运行 Rust 单元测试
+# Run Rust unit tests
 cargo test
 
-# 运行 JavaScript 测试（如果配置了）
+# Run JavaScript tests (if configured)
 pnpm run test
 ```
 
-### 调试
+### Debugging
 
-- Web 端：使用浏览器开发者工具
-- Node.js：使用 Node.js 调试器
+- Web: Use browser developer tools
+- Node.js: Use Node.js debugger
 
-## 性能特点
+## Performance Characteristics
 
-- **跨平台**: 同一套代码，支持 Web、Node.js
-- **高性能**: Rust 编译为 WASM，性能接近原生
-- **小体积**: WASM 二进制文件经过优化，体积小
-- **类型安全**: 完整的 TypeScript 类型定义
+- **Cross-platform**: Same codebase supports Web and Node.js
+- **High Performance**: Rust compiled to WASM, performance close to native
+- **Small Size**: WASM binary files are optimized for small size
+- **Type Safety**: Complete TypeScript type definitions
 
-## 许可证
+## License
 
 MIT License
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
 ---
 
-**Pixuli WASM** - 让图片处理更简单、更快速、更智能 🚀
+**Pixuli WASM** - Making image processing simpler, faster, and smarter 🚀

@@ -1,119 +1,121 @@
 # Pixuli Common
 
-Pixuli
-Common 是 Pixuli 项目的共享库，提供三端（Web、Desktop、Mobile）通用的 React 组件、Hooks、工具函数和服务。
+Pixuli Common is the shared library for the Pixuli project, providing common
+React components, Hooks, utility functions, and services across three platforms
+(Web, Desktop, Mobile).
 
-## 📦 安装
+## 📦 Installation
 
 ```bash
-# 在 monorepo 中使用
+# Use in monorepo
 pnpm add pixuli-common
 
-# 或直接导入源码
+# Or import directly from source
 import { ImageBrowser } from 'pixuli-common/src'
 ```
 
-## 🚀 功能模块
+## 🚀 Feature Modules
 
-### 组件 (Components)
+### Components
 
-组件按功能分类组织，便于查找和维护：
+Components are organized by functionality for easy discovery and maintenance:
 
-#### 📷 图片相关组件 (`components/image/`)
+#### 📷 Image Components (`components/image/`)
 
-- **ImageBrowser** - 图片浏览器主组件
-- **ImageGrid** - 图片网格视图
-- **ImageList** - 图片列表视图
-- **ImageSorter** - 图片排序器
-- **ImagePreviewModal** - 图片预览模态框
-- **ImageUrlModal** - 图片 URL 模态框
-- **ImageEditModal** - 图片编辑模态框
-- **ImageUpload** - 图片上传组件
-- **ImageCropModal** - 图片裁剪模态框
-- **PhotoWall** - 照片墙组件
-- **Gallery3D** - 3D 画廊组件
-- **Timeline** - 时间线组件
+- **ImageBrowser** - Main image browser component
+- **ImageGrid** - Image grid view
+- **ImageList** - Image list view
+- **ImageSorter** - Image sorter
+- **ImagePreviewModal** - Image preview modal
+- **ImageUrlModal** - Image URL modal
+- **ImageEditModal** - Image edit modal
+- **ImageUpload** - Image upload component
+- **ImageCropModal** - Image crop modal
+- **PhotoWall** - Photo wall component
+- **Gallery3D** - 3D gallery component
+- **Timeline** - Timeline component
 
-#### 🎨 布局组件 (`components/layout/`)
+#### 🎨 Layout Components (`components/layout/`)
 
-- **Sidebar** - 侧边栏组件
-- **Header** - 头部组件
-- **EmptyState** - 空状态组件
+- **Sidebar** - Sidebar component
+- **Header** - Header component
+- **EmptyState** - Empty state component
 
-#### ⚙️ 配置组件 (`components/config/`)
+#### ⚙️ Config Components (`components/config/`)
 
-- **GitHubConfigModal** - GitHub 配置模态框
-- **GiteeConfigModal** - Gitee 配置模态框
+- **GitHubConfigModal** - GitHub configuration modal
+- **GiteeConfigModal** - Gitee configuration modal
 
-#### 🎯 UI 组件 (`components/ui/`)
+#### 🎯 UI Components (`components/ui/`)
 
-- **Search** - 搜索组件
-- **Toaster** - 消息提示组件
-- **UploadButton** - 上传按钮组件
-- **RefreshButton** - 刷新按钮组件
-- **ActionButton** - 操作按钮组件
-- **KeyboardHelpModal** - 键盘快捷键帮助模态框
-- **LanguageSwitcher** - 语言切换器
-- **FullScreenLoading** - 全屏加载组件
+- **Search** - Search component
+- **Toaster** - Toast notification component
+- **UploadButton** - Upload button component
+- **RefreshButton** - Refresh button component
+- **ActionButton** - Action button component
+- **KeyboardHelpModal** - Keyboard shortcuts help modal
+- **LanguageSwitcher** - Language switcher
+- **FullScreenLoading** - Full-screen loading component
 
-#### 🚀 功能组件 (`components/features/`)
+#### 🚀 Feature Components (`components/features/`)
 
-- **SlideShowPlayer** - 幻灯片播放器
-- **SlideShowSettings** - 幻灯片设置
-- **BrowseModeSwitcher** - 浏览模式切换器
-- **VersionInfoModal** - 版本信息模态框
+- **SlideShowPlayer** - Slideshow player
+- **SlideShowSettings** - Slideshow settings
+- **BrowseModeSwitcher** - Browse mode switcher
+- **VersionInfoModal** - Version info modal
 
-#### 🛠️ 开发工具 (`components/dev/`)
+#### 🛠️ Development Tools (`components/dev/`)
 
-- **Demo** - Demo 组件
-- **DevTools** - 开发工具组件
+- **Demo** - Demo component
+- **DevTools** - Development tools component
 
 ### Hooks
 
-- **useVirtualScroll** - 虚拟滚动 Hook
-- **useLazyLoad** - 懒加载 Hook
-- **useInfiniteScroll** - 无限滚动 Hook
-- **useImageDimensions** - 图片尺寸 Hook
-- **useImageInfo** - 图片信息 Hook
-- **useImageDimensionsFromUrl** - 从 URL 获取图片尺寸 Hook
-- **useKeyboard** - 键盘事件 Hook
-- **useKeyboardShortcut** - 键盘快捷键 Hook
-- **useKeyboardMultiple** - 多按键监听 Hook
-- **useEscapeKey** - Escape 键 Hook
-- **useEnterKey** - Enter 键 Hook
-- **useArrowKeys** - 方向键 Hook
-- **useNumberKeys** - 数字键 Hook
-- **useLetterKeys** - 字母键 Hook
+- **useVirtualScroll** - Virtual scroll Hook
+- **useLazyLoad** - Lazy load Hook
+- **useInfiniteScroll** - Infinite scroll Hook
+- **useImageDimensions** - Image dimensions Hook
+- **useImageInfo** - Image info Hook
+- **useImageDimensionsFromUrl** - Get image dimensions from URL Hook
+- **useKeyboard** - Keyboard event Hook
+- **useKeyboardShortcut** - Keyboard shortcut Hook
+- **useKeyboardMultiple** - Multiple key listener Hook
+- **useEscapeKey** - Escape key Hook
+- **useEnterKey** - Enter key Hook
+- **useArrowKeys** - Arrow keys Hook
+- **useNumberKeys** - Number keys Hook
+- **useLetterKeys** - Letter keys Hook
 
-### 工具函数 (Utils)
+### Utility Functions
 
-- **toast** - 消息提示工具
-- **fileSizeUtils** - 文件大小格式化工具
-- **filterUtils** - 过滤工具函数
-- **imageUtils** - 图片处理工具（压缩、转换、尺寸获取等）
-- **keyboardShortcuts** - 键盘快捷键管理系统
-- **sortUtils** - 排序工具函数
-- **dateUtils** - 日期工具函数
+- **toast** - Toast notification utility
+- **fileSizeUtils** - File size formatting utility
+- **filterUtils** - Filter utility functions
+- **imageUtils** - Image processing utilities (compression, conversion,
+  dimension retrieval, etc.)
+- **keyboardShortcuts** - Keyboard shortcut management system
+- **sortUtils** - Sorting utility functions
+- **dateUtils** - Date utility functions
 
-### 服务 (Services)
+### Services
 
-- **GiteeStorageService** - Gitee 存储服务
-- **GitHubStorageService** - GitHub 存储服务
+- **GiteeStorageService** - Gitee storage service
+- **GitHubStorageService** - GitHub storage service
 
-### 类型定义 (Types)
+### Type Definitions
 
-- **image.ts** - 图片相关类型
-- **github.ts** - GitHub 相关类型
-- **gitee.ts** - Gitee 相关类型
+- **image.ts** - Image-related types
+- **github.ts** - GitHub-related types
+- **gitee.ts** - Gitee-related types
 
-### 国际化 (Locales)
+### Internationalization (Locales)
 
-- 支持中文（zh-CN）和英文（en-US）
-- 提供语言包合并和默认翻译功能
+- Supports Chinese (zh-CN) and English (en-US)
+- Provides locale merging and default translation functionality
 
-## 📝 使用示例
+## 📝 Usage Examples
 
-### 基础组件使用
+### Basic Component Usage
 
 ```tsx
 import {
@@ -137,7 +139,7 @@ function App() {
 }
 ```
 
-### Hooks 使用
+### Hooks Usage
 
 ```tsx
 import { useImageDimensions, useKeyboard } from 'pixuli-common';
@@ -145,95 +147,95 @@ import { useImageDimensions, useKeyboard } from 'pixuli-common';
 function MyComponent() {
   const { dimensions, loading } = useImageDimensions(file);
   const { isPressed } = useKeyboard('Escape', () => {
-    // 处理 Escape 键
+    // Handle Escape key
   });
 
   return <div>...</div>;
 }
 ```
 
-### 工具函数使用
+### Utility Functions Usage
 
 ```tsx
 import { formatFileSize, compressImage, keyboardManager } from 'pixuli-common';
 
-// 格式化文件大小
+// Format file size
 const size = formatFileSize(1024 * 1024); // "1 MB"
 
-// 压缩图片
+// Compress image
 const compressed = await compressImage(file, { quality: 0.8 });
 
-// 注册快捷键
+// Register keyboard shortcut
 keyboardManager.register({
   key: 's',
   ctrlKey: true,
-  description: '保存',
+  description: 'Save',
   action: () => save(),
-  category: '通用',
+  category: 'General',
 });
 ```
 
-## 🛠️ 开发
+## 🛠️ Development
 
-### 构建
+### Build
 
 ```bash
 pnpm build
 ```
 
-### 开发模式（监听文件变化）
+### Development Mode (Watch File Changes)
 
 ```bash
 pnpm dev
 ```
 
-### 测试
+### Testing
 
 ```bash
-# 运行测试
+# Run tests
 pnpm test
 
-# 监听模式
+# Watch mode
 pnpm test:watch
 
-# UI 模式
+# UI mode
 pnpm test:ui
 
-# 覆盖率
+# Coverage
 pnpm test:coverage
 ```
 
-## 📊 测试覆盖
+## 📊 Test Coverage
 
-包内包含完整的单元测试，覆盖：
+The package includes comprehensive unit tests covering:
 
-- ✅ 所有 Hooks（6 个）
-- ✅ 所有工具函数（7 个）
-- ✅ 组件功能测试（27 个测试文件，632 个测试用例）
+- ✅ All Hooks (6)
+- ✅ All utility functions (7)
+- ✅ Component functionality tests (27 test files, 632 test cases)
 
-测试使用 Vitest + React Testing Library，环境为 jsdom。
+Tests use Vitest + React Testing Library with jsdom environment.
 
-## 📁 目录结构
+## 📁 Directory Structure
 
-组件按功能分类组织，结构清晰：
+Components are organized by functionality with a clear structure:
 
 ```
 components/
-├── layout/              # 布局组件 (3个)
+├── layout/              # Layout components (3)
 │   ├── sidebar/
 │   ├── header/
 │   └── empty-state/
-├── image/               # 图片相关组件 (6个)
+├── image/               # Image-related components (6)
 │   ├── image-browser/
 │   ├── image-upload/
 │   ├── image-preview-modal/
 │   ├── photo-wall/
 │   ├── gallery-3d/
 │   └── timeline/
-├── config/              # 配置相关组件 (2个)
+├── config/              # Config-related components (2)
 │   ├── github-config/
 │   └── gitee-config/
-├── ui/                  # 通用 UI 组件 (8个)
+├── ui/                  # General UI components (8)
 │   ├── search/
 │   ├── toaster/
 │   ├── upload-button/
@@ -242,40 +244,40 @@ components/
 │   ├── language-switcher/
 │   ├── keyboard-help/
 │   └── fullscreen-loading/
-├── features/            # 功能组件 (3个)
+├── features/            # Feature components (3)
 │   ├── slide-show/
 │   ├── browse-mode-switcher/
 │   └── version-info/
-└── dev/                 # 开发工具 (2个)
+└── dev/                 # Development tools (2)
     ├── demo/
     └── devtools/
 ```
 
-每个组件目录结构：
+Each component directory structure:
 
 ```
 component-name/
-├── locales/             # 国际化文件（统一使用复数）
+├── locales/             # Internationalization files (use plural form)
 │   ├── index.ts
 │   ├── zh-CN.json
 │   └── en-US.json
-├── common/              # 跨平台共享代码（可选）
+├── common/              # Cross-platform shared code (optional)
 │   ├── types.ts
 │   ├── hooks.ts
 │   └── utils.ts
-├── web/                 # Web 平台实现
+├── web/                 # Web platform implementation
 │   ├── index.ts
 │   ├── ComponentName.tsx
 │   └── ComponentName.css
-└── native/              # React Native 实现（可选）
+└── native/              # React Native implementation (optional)
     ├── index.ts
     └── ComponentName.native.tsx
 ```
 
-## 📄 许可证
+## 📄 License
 
 MIT
 
-## 👤 作者
+## 👤 Author
 
 trueLoving
