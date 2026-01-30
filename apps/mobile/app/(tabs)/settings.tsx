@@ -1,5 +1,6 @@
 import { HelpModal } from '@/components/settings/modals/HelpModal';
 import { LanguageModal } from '@/components/settings/modals/LanguageModal';
+import { OperationLogModal } from '@/components/settings/modals/OperationLogModal';
 import { ThemeModal } from '@/components/settings/modals/ThemeModal';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ThemedText } from '@/components/ui/ThemedText';
@@ -49,6 +50,8 @@ export default function SettingsScreen() {
   const [helpModalVisible, setHelpModalVisible] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [operationLogModalVisible, setOperationLogModalVisible] =
+    useState(false);
 
   // 切换主题
   const handleThemeChange = async (mode: 'light' | 'dark' | 'auto') => {
@@ -221,6 +224,38 @@ export default function SettingsScreen() {
                 styles.settingItemFirst,
                 { borderBottomColor: colors.cardBorder },
               ]}
+              onPress={() => setOperationLogModalVisible(true)}
+              activeOpacity={0.6}
+            >
+              <View style={styles.settingItemLeft}>
+                <View style={dynamicStyles.iconContainer}>
+                  <IconSymbol
+                    name="doc.text.fill"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </View>
+                <View style={styles.settingItemContent}>
+                  <ThemedText style={dynamicStyles.settingItemTitle}>
+                    {t('settings.operationLog.title') || '日志查看'}
+                  </ThemedText>
+                  <ThemedText style={dynamicStyles.settingItemDescription}>
+                    {t('settings.operationLog.description') ||
+                      '查看与导出操作日志'}
+                  </ThemedText>
+                </View>
+              </View>
+              <IconSymbol
+                name="chevron.right"
+                size={18}
+                color={colors.sectionTitle}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                dynamicStyles.settingItem,
+                { borderBottomColor: colors.cardBorder },
+              ]}
               onPress={() => setHelpModalVisible(true)}
               activeOpacity={0.6}
             >
@@ -311,6 +346,13 @@ export default function SettingsScreen() {
         currentLanguage={getCurrentLanguage()}
         availableLanguages={getAvailableLanguages()}
         onSelect={changeLanguage}
+        t={t}
+      />
+
+      {/* 操作日志模态框 */}
+      <OperationLogModal
+        visible={operationLogModalVisible}
+        onClose={() => setOperationLogModalVisible(false)}
         t={t}
       />
     </ThemedView>

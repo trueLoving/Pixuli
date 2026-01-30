@@ -1,3 +1,7 @@
+import * as Sharing from 'expo-sharing';
+// 使用 legacy API 以保持与项目中其他模块一致（cacheDirectory/documentDirectory/writeAsStringAsync）
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const FileSystem = require('expo-file-system/legacy');
 import { getLogService } from '@/services/logService';
 import {
   OperationLog,
@@ -8,6 +12,8 @@ import {
 } from '@/types/log';
 import { create } from 'zustand';
 
+const getService = () => getLogService();
+
 interface LogState {
   logs: OperationLog[];
   statistics: LogStatistics | null;
@@ -15,7 +21,6 @@ interface LogState {
   error: string | null;
   filter: LogQueryOptions['filter'] | null;
 
-  // Actions
   loadLogs: (options?: LogQueryOptions) => Promise<void>;
   addLog: (
     action: LogActionType,
@@ -45,8 +50,6 @@ interface LogState {
   ) => Promise<void>;
 }
 
-const getService = () => getLogService();
-
 export const useLogStore = create<LogState>((set, get) => ({
   logs: [],
   statistics: null,
@@ -72,22 +75,19 @@ export const useLogStore = create<LogState>((set, get) => ({
 
   addLog: (action, status, options) => {
     try {
-      const logService = getService();
-      logService.log(action, status, options);
+      getService().log(action, status, options);
       const { filter } = get();
       if (filter) {
         void get().loadLogs({ filter });
       } else {
-        const newLog = {
+        const newLog: OperationLog = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
           action,
           status,
           timestamp: Date.now(),
           ...options,
-        } as OperationLog;
-        set(state => ({
-          logs: [newLog, ...state.logs],
-        }));
+        };
+        set(state => ({ logs: [newLog, ...state.logs] }));
       }
       get().refreshStatistics();
     } catch (error) {
@@ -107,8 +107,7 @@ export const useLogStore = create<LogState>((set, get) => ({
 
   refreshStatistics: () => {
     try {
-      const statistics = getService().getStatistics();
-      set({ statistics });
+      set({ statistics: getService().getStatistics() });
     } catch (error) {
       console.error('Failed to refresh statistics:', error);
     }
@@ -117,10 +116,10 @@ export const useLogStore = create<LogState>((set, get) => ({
   clearLogs: async options => {
     set({ loading: true, error: null });
     try {
-      const removedCount = getService().clearLogs(options);
+      const removed = getService().clearLogs(options);
       await get().loadLogs();
       set({ loading: false });
-      return removedCount;
+      return removed;
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : '清理日志失败',
@@ -130,44 +129,32 @@ export const useLogStore = create<LogState>((set, get) => ({
     }
   },
 
-  exportToJSON: options => {
-    return getService().exportToJSON(options);
-  },
-
-  exportToCSV: options => {
-    return getService().exportToCSV(options);
-  },
+  exportToJSON: options => getService().exportToJSON(options),
+  exportToCSV: options => getService().exportToCSV(options),
 
   exportToFile: async (format, options) => {
-    try {
-      const content =
-        format === 'json'
-          ? get().exportToJSON(options)
-          : get().exportToCSV(options);
-      const extension = format === 'json' ? 'json' : 'csv';
-      const mimeType = format === 'json' ? 'application/json' : 'text/csv';
+    const content =
+      format === 'json'
+        ? get().exportToJSON(options)
+        : get().exportToCSV(options);
+    const ext = format === 'json' ? 'json' : 'csv';
+    const mimeType = format === 'json' ? 'application/json' : 'text/csv';
+    const fileName = `pixuli-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.${ext}`;
+    const dir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
+    if (!dir) throw new Error('No writable directory');
+    const fileUri = `${dir}${fileName}`;
 
-      // 使用浏览器下载文件
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const fileName = `pixuli-logs-${timestamp}.${extension}`;
+    await FileSystem.writeAsStringAsync(fileUri, content, {
+      encoding: 'utf8',
+    });
 
-      const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Failed to export logs:', error);
-      throw error;
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) {
+      throw new Error('Sharing is not available on this device');
     }
+    await Sharing.shareAsync(fileUri, {
+      mimeType,
+      dialogTitle: fileName,
+    });
   },
 }));
-
-// 初始化时加载日志和统计信息（异步）
-if (typeof window !== 'undefined') {
-  void useLogStore.getState().loadLogs();
-}

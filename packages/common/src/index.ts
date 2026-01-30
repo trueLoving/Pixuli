@@ -8,6 +8,7 @@
 export * from './types/image';
 export * from './types/github';
 export * from './types/gitee';
+export * from './types/log';
 
 // ==================== Services 导出 ====================
 export * from './services';
