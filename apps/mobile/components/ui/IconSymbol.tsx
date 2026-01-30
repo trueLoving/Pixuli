@@ -56,6 +56,7 @@ const MAPPING = {
   // Help and documentation icons
   'book.fill': 'book',
   'questionmark.circle.fill': 'help',
+  'doc.text.fill': 'description',
   // Browse mode icons
   'folder.fill': 'folder',
   'square.grid.3x3.fill': 'grid-on',

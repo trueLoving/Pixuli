@@ -1,6 +1,6 @@
 # Pixuli Product Requirements Document (PRD)
 
-- **Document Version**: 1.3
+- **Document Version**: 1.4
 - **Created Date**: 2025-01-27
 - **Last Updated**: 2025-01-29
 - **Project Name**: Pixuli - Intelligent Image Management Application
@@ -86,7 +86,6 @@ Pixuli/
 ├── server/               # Optional backend service (NestJS + Prisma + MySQL/MinIO)
 ├── benchmark/            # Performance testing
 ├── .github/design/       # Design documents (cross-platform resources, image processing, performance, logging, etc.)
-└── .local/               # Product and planning documents (e.g., this PRD, feature.md)
 ```
 
 ### 3.2 Technology Stack Overview
@@ -104,21 +103,21 @@ Pixuli/
 
 ### 3.3 Platform Capability Matrix
 
-| Capability                                  | Web                            | Desktop                        | Mobile                                   |
-| ------------------------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------- |
-| Repository Source Management (GitHub/Gitee) | ✅                             | ✅                             | ✅                                       |
-| Image CRUD                                  | ✅                             | ✅                             | ✅ (Batch upload/edit: ⏳ High priority) |
-| Slideshow / Timeline Browsing               | ✅                             | ✅                             | ✅ (Slideshow implemented)               |
-| Operation Log                               | ✅                             | ✅                             | ❌ To be implemented                     |
-| PWA / Offline                               | ✅                             | ⏳ To be implemented           | ⏳ Medium priority                       |
-| Format Conversion / Compression / Editing   | Framework ready, logic pending | Framework ready, logic pending | ✅ Partially implemented                 |
-| Batch Edit Metadata                         | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ High priority                         |
-| Layout Optimization (Columns/Waterfall)     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                       |
-| Private Repository Access Control           | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                       |
-| AI Features Integration                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                          |
-| Favorites and Grouping                      | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                          |
-| Statistics and Insights                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                          |
-| Camera / Gallery                            | —                              | —                              | ✅                                       |
+| Capability                                  | Web                            | Desktop                        | Mobile                                               |
+| ------------------------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------------------- |
+| Repository Source Management (GitHub/Gitee) | ✅                             | ✅                             | ✅                                                   |
+| Image CRUD                                  | ✅                             | ✅                             | ✅ (Batch upload done; batch edit: ⏳ High priority) |
+| Slideshow / Timeline Browsing               | ✅                             | ✅                             | ✅ (Slideshow implemented)                           |
+| Operation Log                               | ✅                             | ✅                             | ✅                                                   |
+| PWA / Offline                               | ✅                             | ⏳ To be implemented           | ⏳ Medium priority                                   |
+| Format Conversion / Compression / Editing   | Framework ready, logic pending | Framework ready, logic pending | ✅ Partially implemented                             |
+| Batch Edit Metadata                         | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ High priority                                     |
+| Layout Optimization (Columns/Waterfall)     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                                   |
+| Private Repository Access Control           | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                                   |
+| AI Features Integration                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
+| Favorites and Grouping                      | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
+| Statistics and Insights                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
+| Camera / Gallery                            | —                              | —                              | ✅                                                   |
 
 ---
 
@@ -157,11 +156,11 @@ repository source.
 
 #### 4.2.1 Create
 
-| ID         | Requirement                                                        | Priority | Status                                    | Platforms              |
-| ---------- | ------------------------------------------------------------------ | -------- | ----------------------------------------- | ---------------------- |
-| F-CRUD-C01 | Single image upload with metadata (name, description, tags, etc.)  | P0       | ✅                                        | All platforms          |
-| F-CRUD-C02 | Batch image upload with progress display (progress bar/percentage) | P0       | ✅ Web/Desktop; ⏳ Mobile (high priority) | Web / Desktop / Mobile |
-| F-CRUD-C03 | Mobile: Support camera capture and gallery selection for upload    | P0       | ✅                                        | Mobile                 |
+| ID         | Requirement                                                        | Priority | Status | Platforms     |
+| ---------- | ------------------------------------------------------------------ | -------- | ------ | ------------- |
+| F-CRUD-C01 | Single image upload with metadata (name, description, tags, etc.)  | P0       | ✅     | All platforms |
+| F-CRUD-C02 | Batch image upload with progress display (progress bar/percentage) | P0       | ✅     | All platforms |
+| F-CRUD-C03 | Mobile: Support camera capture and gallery selection for upload    | P0       | ✅     | Mobile        |
 
 #### 4.2.2 Read
 
@@ -205,19 +204,22 @@ mode, slideshow, and timeline.
 
 ---
 
-### 4.4 Operation Log (Web/Desktop Implemented)
+### 4.4 Operation Log (All Platforms Implemented)
 
 **Overview**: Record and display key user operations within the application for
-auditing and backtracking. Web and Desktop share the same implementation
-(localStorage persistence, Header entry, Ctrl+Shift+L shortcut).
+auditing and backtracking. All three platforms share the same types and business
+logic (`packages/common`: `types/log`, `OperationLogService`); only the storage
+adapter differs (Web/Desktop: localStorage; Mobile: AsyncStorage). Web/Desktop
+entry: Header and Ctrl+Shift+L shortcut; Mobile entry: Settings → "Operation
+Log" menu, modal showing the latest 10 entries, export JSON/CSV, and clear all.
 
-| ID       | Requirement                                                                                            | Priority | Status               | Platforms     |
-| -------- | ------------------------------------------------------------------------------------------------------ | -------- | -------------------- | ------------- |
-| F-LOG-01 | Record operations such as upload, delete, edit, configuration changes                                  | P1       | ✅                   | Web / Desktop |
-| F-LOG-02 | Provide log viewing interface (modal/standalone view), support filtering by type, time, keywords, etc. | P1       | ✅                   | Web / Desktop |
-| F-LOG-03 | Display statistics (e.g., operation counts by type, today's count, success rate)                       | P2       | ✅                   | Web / Desktop |
-| F-LOG-04 | Support exporting logs as JSON/CSV files                                                               | P2       | ✅                   | Web / Desktop |
-| F-LOG-05 | Implement equivalent log capabilities on Mobile as Web/Desktop                                         | P2       | ⏳ To be implemented | Mobile        |
+| ID       | Requirement                                                                                            | Priority | Status | Platforms                                         |
+| -------- | ------------------------------------------------------------------------------------------------------ | -------- | ------ | ------------------------------------------------- |
+| F-LOG-01 | Record operations such as upload, delete, edit, configuration changes, batch upload                    | P1       | ✅     | All platforms                                     |
+| F-LOG-02 | Provide log viewing interface (modal/standalone view), support filtering by type, time, keywords, etc. | P1       | ✅     | Web/Desktop; Mobile modal shows latest 10 entries |
+| F-LOG-03 | Display statistics (e.g., operation counts by type, today's count, success rate)                       | P2       | ✅     | All platforms                                     |
+| F-LOG-04 | Support exporting logs as JSON/CSV files                                                               | P2       | ✅     | All platforms (Mobile via system share)           |
+| F-LOG-05 | Implement equivalent log capabilities on Mobile as Web/Desktop                                         | P2       | ✅     | Mobile                                            |
 
 ---
 
@@ -339,7 +341,7 @@ capabilities.
 
 | ID          | Requirement                                                                           | Priority | Status             | Platforms |
 | ----------- | ------------------------------------------------------------------------------------- | -------- | ------------------ | --------- |
-| F-MOBILE-01 | Batch upload with progress tracking and error handling                                | P0       | ⏳ High priority   | Mobile    |
+| F-MOBILE-01 | Batch upload with progress tracking and error handling                                | P0       | ✅                 | Mobile    |
 | F-MOBILE-02 | Batch edit metadata (tags, description, name) for multiple images                     | P0       | ⏳ High priority   | Mobile    |
 | F-MOBILE-03 | Grid layout optimization (2/3/4 columns, waterfall, list view)                        | P1       | ⏳ Medium priority | Mobile    |
 | F-MOBILE-04 | Loading experience optimization (skeleton screens, lazy loading, preloading)          | P1       | ⏳ Medium priority | Mobile    |
@@ -424,10 +426,10 @@ and advanced features.
 
 ### 5.4 Usability and Maintainability
 
-| ID          | Requirement                                                                                                                            |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| NF-USAB-01  | Main workflows support bilingual (Chinese/English), key operations have feedback (e.g., Toast, loading states)                         |
-| NF-MAINT-01 | Common logic and UI are consolidated in packages/common for reuse across platforms, facilitating maintenance and consistent experience |
+| ID          | Requirement                                                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NF-USAB-01  | Main workflows support bilingual (Chinese/English), key operations have feedback (e.g., Toast, loading states)                                                                               |
+| NF-MAINT-01 | Common logic and UI are consolidated in packages/common for reuse across platforms, facilitating maintenance and consistent experience (including operation log types and service in common) |
 
 ---
 
@@ -474,10 +476,6 @@ provides enhanced capabilities including:
 - Support future GraphQL API (when implemented) alongside REST API.
 - Integrate with MCP Server for AI-powered features (when available).
 
-Refer to `server/README.md`, Swagger documentation, and
-[Server Feature Roadmap](https://github.com/trueLoving/Pixuli/blob/main/.local/03-inbox/Server-FEATURE_ROADMAP.md)
-for specific interfaces and planned features.
-
 ---
 
 ## VII. Requirement Priority
@@ -499,10 +497,6 @@ for specific interfaces and planned features.
 - [Server Documentation](https://github.com/trueLoving/Pixuli/blob/main/server/README.md)
 - [Common Package Documentation](https://github.com/trueLoving/Pixuli/blob/main/packages/common/README.md)
 - [WASM Package Documentation](https://github.com/trueLoving/Pixuli/blob/main/packages/wasm/README.md)
-- [Mobile Roadmap](https://github.com/trueLoving/Pixuli/blob/main/.local/03-inbox/MOBILE-ROADMAP.md) -
-  Mobile feature roadmap and priorities
-- [Server Feature Roadmap](https://github.com/trueLoving/Pixuli/blob/main/.local/03-inbox/Server-FEATURE_ROADMAP.md) -
-  Server feature roadmap and priorities
 
 ### 8.2 Revision History
 
@@ -512,6 +506,7 @@ for specific interfaces and planned features.
 | 1.1     | 2025-01-28 | Synced with implementation: Operation log Web/Desktop implemented                                                                                                                                                                                                                                                                                          | —      |
 | 1.2     | 2025-01-29 | Updated based on Mobile and Server roadmaps: Mobile batch upload/edit status, Mobile slideshow, Server features (MCP, repository, auth, etc.)                                                                                                                                                                                                              | —      |
 | 1.3     | 2025-01-29 | Extended requirements: Incorporated Mobile extension features suitable for Web/Desktop into requirements planning (batch edit, layout optimization, loading optimization, private repository, error handling, offline, AI, favorites/grouping, statistics, quick actions, animation, accessibility, performance optimization, sharing/collaboration, etc.) | —      |
+| 1.4     | 2025-01-29 | Synced with implementation: Mobile operation log implemented (Settings → "Operation Log", modal with latest 10 entries, export JSON/CSV, clear all); operation log types and service unified in packages/common (OperationLogService + storage adapters); Mobile batch upload marked as implemented                                                        | —      |
 
 ---
 

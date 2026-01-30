@@ -19,7 +19,9 @@ import {
   clearGitHubConfig as clearGitHubConfigFromStorage,
   loadGitHubConfig,
 } from '../config/github';
+import { LogActionType, LogStatus } from '@/types/log';
 import { MetadataCache } from '../utils/metadataCache';
+import { useLogStore } from './logStore';
 import { useSourceStore } from './sourceStore';
 
 export type SortOption =
@@ -259,6 +261,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
       error: null,
     });
     get().initializeStorage();
+    useLogStore
+      .getState()
+      .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+        details: { type: 'github', action: 'set' },
+      });
   },
 
   clearGitHubConfig: async () => {
@@ -296,6 +303,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
     } else {
       set({ githubConfig: null });
     }
+    useLogStore
+      .getState()
+      .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+        details: { type: 'github', action: 'clear' },
+      });
   },
 
   setGiteeConfig: async (config: GiteeConfig) => {
@@ -341,6 +353,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
       error: null,
     });
     get().initializeStorage();
+    useLogStore
+      .getState()
+      .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+        details: { type: 'gitee', action: 'set' },
+      });
   },
 
   clearGiteeConfig: async () => {
@@ -378,6 +395,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
     } else {
       set({ giteeConfig: null });
     }
+    useLogStore
+      .getState()
+      .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
+        details: { type: 'gitee', action: 'clear' },
+      });
   },
 
   initializeStorage: () => {
@@ -538,6 +560,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     }
 
     set({ loading: true, error: null });
+    const start = Date.now();
     try {
       const newImage = await storageService.uploadImage(uploadData);
       set(state => ({
@@ -546,12 +569,23 @@ export const useImageStore = create<ImageState>((set, get) => ({
           : [...state.images, newImage],
         loading: false,
       }));
-      // 应用搜索和筛选
       get().applyFiltersAndSort();
+      useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.SUCCESS, {
+        imageId: newImage.id,
+        imageName: newImage.name,
+        duration: Date.now() - start,
+        details: {
+          size: newImage.size,
+          type: newImage.type,
+        },
+      });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : '上传图片失败',
-        loading: false,
+      const msg = error instanceof Error ? error.message : '上传图片失败';
+      set({ error: msg, loading: false });
+      useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
+        imageName: uploadData.name,
+        error: msg,
+        duration: Date.now() - start,
       });
     }
   },
@@ -565,11 +599,11 @@ export const useImageStore = create<ImageState>((set, get) => ({
       return;
     }
 
+    const { uris, name, description, tags } = uploadData;
+    const total = uris.length;
+    let completed = 0;
+    let failed = 0;
     try {
-      const { uris, name, description, tags } = uploadData;
-      const total = uris.length;
-      let completed = 0;
-      let failed = 0;
       const items: UploadProgress[] = uris.map((_uri, index) => ({
         id: `${Date.now()}-${index}`,
         progress: 0,
@@ -665,19 +699,37 @@ export const useImageStore = create<ImageState>((set, get) => ({
         }
       }
 
+      const batchStartTime = Date.now();
       set(state => ({
         images: [...state.images, ...uploadedImages],
         loading: false,
         batchUploadProgress: null,
       }));
-      // 应用搜索和筛选
       get().applyFiltersAndSort();
+      useLogStore
+        .getState()
+        .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
+          details: {
+            total,
+            completed,
+            failed,
+            images: uploadedImages.map(img => ({ id: img.id, name: img.name })),
+          },
+          duration: Date.now() - batchStartTime,
+        });
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : '批量上传失败';
       set({
-        error: error instanceof Error ? error.message : '批量上传失败',
+        error: errorMsg,
         loading: false,
         batchUploadProgress: null,
       });
+      useLogStore
+        .getState()
+        .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
+          error: errorMsg,
+          details: { total, completed, failed },
+        });
     }
   },
 
@@ -689,18 +741,29 @@ export const useImageStore = create<ImageState>((set, get) => ({
     }
 
     set({ loading: true, error: null });
+    const startTime = Date.now();
     try {
       await storageService.deleteImage(imageId, fileName);
+      const duration = Date.now() - startTime;
       set(state => ({
         images: state.images.filter(img => img.id !== imageId),
         loading: false,
       }));
-      // 应用搜索和筛选
       get().applyFiltersAndSort();
+      useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
+        imageId,
+        imageName: fileName,
+        duration,
+      });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : '删除图片失败',
-        loading: false,
+      const duration = Date.now() - startTime;
+      const msg = error instanceof Error ? error.message : '删除图片失败';
+      set({ error: msg, loading: false });
+      useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
+        imageId,
+        imageName: fileName,
+        error: msg,
+        duration,
       });
     }
   },
@@ -719,6 +782,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     }
 
     set({ loading: true, error: null });
+    const startTime = Date.now();
     try {
       const metadata = {
         name: editData.name || image.name,
@@ -729,18 +793,44 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
       await storageService.updateImageInfo(editData.id, image.name, metadata);
 
+      const duration = Date.now() - startTime;
       set(state => ({
         images: state.images.map(img =>
           img.id === editData.id ? { ...img, ...metadata } : img,
         ),
         loading: false,
       }));
-      // 应用搜索和筛选
       get().applyFiltersAndSort();
+      useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
+        imageId: editData.id,
+        imageName: metadata.name,
+        duration,
+        details: {
+          changes: {
+            name:
+              editData.name !== image.name
+                ? { old: image.name, new: editData.name }
+                : undefined,
+            description:
+              editData.description !== image.description
+                ? { old: image.description, new: editData.description }
+                : undefined,
+            tags:
+              editData.tags !== image.tags
+                ? { old: image.tags, new: editData.tags }
+                : undefined,
+          },
+        },
+      });
     } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : '更新图片失败',
-        loading: false,
+      const duration = Date.now() - startTime;
+      const msg = error instanceof Error ? error.message : '更新图片失败';
+      set({ error: msg, loading: false });
+      useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
+        imageId: editData.id,
+        imageName: image.name,
+        error: msg,
+        duration,
       });
     }
   },
