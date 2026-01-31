@@ -2,7 +2,11 @@
   "rewrites": [
     {
       "source": "/api/gitee-proxy/:path*",
-      "destination": "/vercel/gitee-proxy?path=:path*"
+      "destination": "/api/gitee-proxy?path=:path*"
+    },
+    {
+      "source": "/((?!api/|assets/|favicon\\.ico|icon\\.ico|icon\\.png|pwa/).*)",
+      "destination": "/index.html"
     }
   ]
 }
