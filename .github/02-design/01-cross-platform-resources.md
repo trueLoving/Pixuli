@@ -1,570 +1,303 @@
-# 🔄 跨端资源共享设计方案
+# 跨端资源共享设计方案
 
-本文档详细描述了 Pixuli 项目中跨端（移动端、PC端、Web端）资源共享的设计方案，基于
-`packages/common` 共享库的实际实现。
+## 目录
 
----
-
-## 🎯 设计目标
-
-### 核心目标
-
-- **代码复用**：最大化代码复用率，减少重复开发
-- **一致性**：保证三端功能和体验的一致性
-- **可维护性**：统一的资源库，便于维护和更新
-- **性能优化**：针对不同平台进行性能优化
-- **类型安全**：完整的 TypeScript 类型定义，确保跨端类型一致性
-
-### 设计原则
-
-- **分层设计**：业务逻辑层、适配层、平台层分离
-- **平台适配**：通过适配层和平台特定实现处理平台差异
-- **渐进增强**：基础功能通用，高级功能平台特定
-- **类型优先**：使用 TypeScript 确保类型安全
-- **纯函数原则**：组件实现必须为纯函数，通过 Props 获取外部数据
+- [一、方案概述](#一方案概述)
+- [二、专业术语](#二专业术语)
+- [三、整体架构](#三整体架构)
+- [四、资源共享策略](#四资源共享策略)
+- [五、平台适配方案](#五平台适配方案)
+- [六、实现策略与最佳实践](#六实现策略与最佳实践)
+- [七、注意事项](#七注意事项)
+- [八、附录](#八附录)
 
 ---
 
-## 🏗️ 整体架构
+## 一、方案概述
 
-### 平台运行环境区分
+### 1.1 目标
 
-Pixuli 项目中的三端运行环境可以简化为两类：
+本文档描述 Pixuli 项目中跨端（Web 端、Desktop 端、移动端）资源共享的设计方案，基于
+`packages/common` 共享库的实现，用于：
 
-1. **Web 端运行环境**（包括 PC 端和 Web 端）
-   - PC 端：基于 Electron，本质上运行在浏览器环境中
-   - Web 端：直接运行在浏览器环境中
-   - **共同特征**：使用 HTML 元素（`<div>`, `<button>` 等）和 DOM API
+- **代码复用**：最大化三端代码复用率，减少重复开发。
+- **一致性**：保证三端功能与体验一致。
+- **可维护性**：统一资源库，便于维护与更新。
+- **类型安全**：通过完整 TypeScript 类型定义，确保跨端类型一致。
 
-2. **React Native 端运行环境**（移动端）
-   - 运行在 React Native 环境中
-   - **特征**：使用 React Native 组件（`<View>`, `<TouchableOpacity>`
-     等）和 React- Native API
+### 1.2 设计原则
 
-### 三层架构模型
+- **分层设计**：业务逻辑层、适配层、平台层分离。
+- **平台适配**：通过适配层与平台特定实现处理平台差异。
+- **渐进增强**：基础功能通用，高级功能可按平台特定实现。
+- **类型优先**：使用 TypeScript 确保类型安全。
+- **纯函数原则**：组件实现为纯函数，通过 Props 获取外部数据，通过回调与外部通信。
 
-Pixuli 跨端资源共享采用三层架构，通过 Monorepo 实现代码共享：
+### 1.3 范围
 
+- 适用端：Web（Vite +
+  React）、Desktop（Electron + 同一套 Web 代码）、Mobile（React Native +
+  Expo）。
+- 共享范围：组件、Hooks、工具函数、服务、类型定义、国际化语言包。
+- 与
+  [00-System-Design](./00-System-Design.md)、[02-cross-image-process](./02-cross-image-process.md)
+  等设计文档配合使用。
+
+---
+
+## 二、专业术语
+
+### 2.1 架构与平台术语
+
+| 术语           | 英文                  | 说明                                                                          |
+| -------------- | --------------------- | ----------------------------------------------------------------------------- |
+| **资源共享层** | Shared Resource Layer | `packages/common` 内组件、Hooks、工具、服务、类型、语言包等可被多端引用的代码 |
+| **平台导出层** | Export Layer          | 通过不同入口文件（如 `index.ts` / `index.native.ts`）向各平台导出对应实现     |
+| **平台层**     | Platform Layer        | 实际运行环境：Desktop（Electron）、Web（Browser）、Mobile（React Native）     |
+| **平台适配器** | Platform Adapter      | 抽象平台差异的接口与实现，如 `PlatformAdapter`，供服务层注入使用              |
+
+### 2.2 组件与实现术语
+
+| 术语                | 英文                    | 说明                                                                                        |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| **Web 版本组件**    | Web Component           | 使用 HTML 元素（`<div>`, `<button>` 等）与 DOM API 的实现，供 Web/Desktop 使用              |
+| **Native 版本组件** | Native Component        | 使用 React Native 组件（`<View>`, `<TouchableOpacity>` 等）与 RN API 的实现，供 Mobile 使用 |
+| **共享代码**        | Shared Code             | 平台无关的类型、工具函数、Hooks，通常放在组件或模块下的 `common/` 目录                      |
+| **纯函数组件**      | Pure Function Component | 不依赖外部可变状态，通过 Props 入参与回调出参与外部通信的组件                               |
+
+---
+
+## 三、整体架构
+
+### 3.1 平台运行环境区分
+
+Pixuli 三端运行环境可简化为两类：
+
+| 类型                | 包含端                    | 共同特征                                                             |
+| ------------------- | ------------------------- | -------------------------------------------------------------------- |
+| **Web 端运行环境**  | PC 端（Electron）、Web 端 | 使用 HTML 元素与 DOM API；PC 端基于 Electron，本质为浏览器环境       |
+| **React Native 端** | 移动端                    | 使用 RN 组件（`<View>`, `<TouchableOpacity>` 等）与 React Native API |
+
+### 3.2 三层架构模型
+
+跨端资源共享采用三层架构，通过 Monorepo 与 `packages/common` 实现：
+
+```mermaid
+graph TB
+    subgraph 资源共享层
+        C[packages/common]
+        C1[组件 Components]
+        C2[Hooks]
+        C3[工具 Utils]
+        C4[服务 Services]
+        C5[类型 Types]
+        C6[语言包 Locales]
+        C --> C1 & C2 & C3 & C4 & C5 & C6
+    end
+
+    subgraph 平台导出层
+        E1[index.ts<br/>Web/Desktop]
+        E2[index.native.ts<br/>Mobile]
+    end
+
+    subgraph 平台层
+        P1[Desktop Electron]
+        P2[Web Browser]
+        P3[Mobile RN/Expo]
+    end
+
+    C1 & C2 & C3 & C4 & C5 & C6 --> E1
+    C1 & C2 & C3 & C4 & C5 & C6 --> E2
+    E1 --> P1 & P2
+    E2 --> P3
 ```
-┌─────────────────────────────────────────────────┐
-│         资源共享层 (packages/common)               │
-│  ┌─────────────────────────────────────┐  │
-│  │   组件 (Components)                   │  │
-│  │   - Web 版本组件                      │  │
-│  │   - React Native 版本组件            │  │
-│  └─────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────┐  │
-│  │   Hooks                              │  │
-│  │   - 共享 Hooks                       │  │
-│  │   - 平台特定 Hooks                   │  │
-│  └─────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────┐  │
-│  │   工具函数 (Utils)                    │  │
-│  │   - 纯函数工具                        │  │
-│  │   - 平台适配工具                      │  │
-│  └─────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────┐  │
-│  │   服务 (Services)                    │  │
-│  │   - 业务服务                         │  │
-│  │   - 平台适配服务                     │  │
-│  └─────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────┐  │
-│  │   类型定义 (Types)                    │  │
-│  │   - 共享类型                         │  │
-│  │   - 平台特定类型                     │  │
-│  └─────────────────────────────────────┘  │
-│  ┌─────────────────────────────────────┐  │
-│  │   语言包 (Locales)                    │  │
-│  │   - 国际化资源                       │  │
-│  └─────────────────────────────────────┘  │
-└─────────────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────────────┐
-│         平台导出层 (Export Layer)                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐│
-│  │ index.ts     │  │ index.ts     │  │ index.   ││
-│  │ (Web/Desktop)│  │ (Web/Desktop)│  │ native.ts││
-│  │              │  │              │  │ (Mobile) ││
-│  │ - Web组件    │  │ - Desktop    │  │          ││
-│  │ - Desktop    │  │   组件       │  │ - RN组件 ││
-│  │   组件       │  │              │  │          ││
-│  └──────────────┘  └──────────────┘  └──────────┘│
-└─────────────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────────────┐
-│         平台层 (Platform Layer)                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐│
-│  │ Desktop      │  │ Web          │  │ Mobile   ││
-│  │ (Electron)   │  │ (Browser)    │  │ (RN/Expo)││
-│  │              │  │              │  │          ││
-│  │ - React      │  │ - React      │  │ - React  ││
-│  │ - Electron   │  │ - Vite       │  │   Native ││
-│  │ - Node.js    │  │ - PWA        │  │ - Expo   ││
-│  └──────────────┘  └──────────────┘  └──────────┘│
-└─────────────────────────────────────────────────┘
-```
 
-### 目录结构
+### 3.3 目录结构
+
+| 路径                  | 说明                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| `src/index.ts`        | Web/Desktop 平台入口，导出 Web 版本组件与共享能力                                   |
+| `src/index.native.ts` | React Native 平台入口，由 Metro 解析，导出 Native 版本                              |
+| `src/components/`     | 组件目录；平台特定组件含 `common/`、`web/`、`native/` 或 `.web.tsx` / `.native.tsx` |
+| `src/hooks/`          | 共享或平台相关 Hooks                                                                |
+| `src/utils/`          | 纯函数工具与平台适配工具                                                            |
+| `src/services/`       | 存储服务、平台适配器接口与实现                                                      |
+| `src/types/`          | 共享类型与平台相关类型                                                              |
+| `src/locales/`        | 国际化 JSON 与加载逻辑                                                              |
 
 ```
 packages/common/
 ├── src/
-│   ├── index.ts                    # Web/Desktop 平台导出
-│   ├── index.native.ts             # React Native 平台导出
-│   │
-│   ├── components/                 # 组件目录
-│   │   ├── demo/                   # 平台特定组件示例
-│   │   │   ├── common/             # 共享代码
-│   │   │   │   ├── types.ts
-│   │   │   │   ├── utils.ts
-│   │   │   │   └── hooks.ts
-│   │   │   ├── web/                # Web 版本
-│   │   │   │   └── Demo.web.tsx
-│   │   │   └── native/             # React Native 版本
-│   │   │       └── Demo.native.tsx
-│   │   │
-│   │   └── ...                     # 其他组件
-│   │
-│   ├── hooks/                      # Hooks 目录
-│   │   ├── useKeyboard.ts          # 共享 Hooks
-│   │   ├── useLazyLoad.ts
-│   │   ├── useInfiniteScroll.ts
-│   │   └── index.ts
-│   │
-│   ├── utils/                      # 工具函数目录
-│   │   ├── toast.ts
-│   │   ├── fileSizeUtils.ts
-│   │   ├── filterUtils.ts
-│   │   ├── imageUtils.ts
-│   │   ├── keyboardShortcuts.ts
-│   │   └── sortUtils.ts
-│   │
-│   ├── services/                   # 服务目录
-│   │   ├── githubStorageService.ts
-│   │   ├── giteeStorageService.ts
-│   │   └── platformAdapter.ts      # 平台适配器
-│   │
-│   ├── types/                      # 类型定义目录
-│   │   ├── image.ts
-│   │   ├── github.ts
-│   │   └── gitee.ts
-│   │
-│   └── locales/                    # 国际化目录
-│       ├── index.ts
-│       └── app/
-│           ├── en-US.json
-│           └── zh-CN.json
-│
+│   ├── index.ts
+│   ├── index.native.ts
+│   ├── components/
+│   ├── hooks/
+│   ├── utils/
+│   ├── services/
+│   ├── types/
+│   └── locales/
 └── package.json
 ```
 
 ---
 
-## 📦 资源共享策略
+## 四、资源共享策略
 
-### 1. 组件实现策略
+### 4.1 组件
 
-#### 平台区分标志
+#### 4.1.1 平台区分与实现原则
 
-组件的运行环境通过**元素的使用**来区分：
+- **Web 端组件**：使用 HTML 元素与 DOM API。
+- **React Native 端组件**：使用 RN 组件与 RN API。
+- **纯函数原则**：组件通过 Props 获取数据，通过回调与外部通信；仅保留必要 UI 状态。
 
-- **Web 端组件**：使用 HTML 元素（`<div>`, `<button>`, `<input>` 等）和 DOM API
-- **React Native 端组件**：使用 React Native 组件（`<View>`,
-  `<TouchableOpacity>`, `<TextInput>` 等）和 RN API
+#### 4.1.2 组件分类
 
-#### 组件实现原则
+| 类型             | 说明                     | 实现方式                                                        |
+| ---------------- | ------------------------ | --------------------------------------------------------------- |
+| **完全共享逻辑** | 平台无关逻辑             | 抽到 `common/`：types、utils、hooks                             |
+| **平台特定 UI**  | 因元素/API 不同需两套 UI | `.web.tsx` 与 `.native.tsx`，或 `web/` / `native/` 目录分别实现 |
+| **导出**         | 各端使用各自入口         | `index.ts` 导出 Web 版，`index.native.ts` 导出 Native 版        |
 
-1. **纯函数原则**：所有组件必须实现为纯函数
-   - 组件不维护内部状态（或仅维护 UI 状态）
-   - 通过 Props 获取外部数据（如 `ImageBrowser` 通过 `images`
-     prop 获取图片数据）
-   - 通过回调函数（如 `onDeleteImage`）与外部通信
-
-2. **平台特定实现**：
-   - 每个组件根据运行环境提供两种实现：
-     - `.web.tsx` - Web/Desktop 版本（使用 HTML 元素）
-     - `.native.tsx` - React Native 版本（使用 RN 组件）
-
-3. **共享代码提取**：
-   - 将平台无关的代码提取到 `common/` 目录
-   - 包括：类型定义、工具函数、共享 Hooks
-
-#### 组件分类
-
-**完全共享组件**：
-
-- 使用标准 React API，不依赖平台特定 API
-- 通过 Props 适配平台差异
-- 三端通用（但需要分别实现 Web 和 Native 版本）
-
-**平台特定组件**：
-
-- 需要平台特定 API 时，创建 `.web.tsx` 和 `.native.tsx` 版本
-- 共享代码提取到 `common/` 目录
-- 通过不同的导出文件导出
-
-### 2. 工具函数策略
-
-#### 实现原则
-
-1. **纯函数**：工具函数必须为纯函数，不依赖外部状态
-2. **平台无关**：尽可能使用平台无关的实现
-3. **平台适配**：需要平台特定功能时，通过参数注入平台适配器
-
-#### 工具函数分类
-
-- **完全共享**：纯逻辑函数，不依赖平台 API（如 `filterUtils`, `sortUtils`）
-- **平台适配**：需要平台特定功能时，通过适配器处理（如文件操作）
-
-### 3. 服务层策略
-
-#### 实现原则
-
-1. **平台适配器模式**：通过 `PlatformAdapter` 接口处理平台差异
-2. **依赖注入**：服务类通过构造函数注入平台适配器
-3. **统一接口**：提供统一的业务接口，隐藏平台差异
-
-#### 服务分类
-
-- **业务服务**：`GitHubStorageService`, `GiteeStorageService` 等
-- **平台适配服务**：`PlatformAdapter` 及其实现
-
-### 4. Hooks 策略
-
-#### 实现原则
-
-1. **共享 Hooks**：纯逻辑 Hooks，不依赖平台 API（如 `useInfiniteScroll`）
-2. **平台特定 Hooks**：需要平台特定功能时，提供平台特定实现（如 `useKeyboard`
-   在 Web 端可用，RN 端需要特殊处理）
-
-### 5. 类型定义策略
-
-#### 实现原则
-
-1. **共享类型**：定义平台无关的类型
-2. **平台特定类型**：通过联合类型或条件类型处理平台差异
-3. **类型安全**：确保跨端类型一致性
-
-### 6. 语言包策略
-
-#### 实现原则
-
-1. **统一格式**：使用 JSON 格式存储翻译资源
-2. **共享使用**：三端使用相同的语言包文件
-3. **动态加载**：支持运行时切换语言
-
----
-
-## 🔧 平台适配方案
-
-### 1. 平台特定导出
-
-**实现方式**：通过不同的入口文件区分平台
-
-- `index.ts` - Web/Desktop 平台导出
-- `index.native.ts` - React Native 平台导出
-
-**构建配置**：
-
-- Web/Desktop：使用 `index.ts` 作为入口
-- React Native：通过 Metro bundler 配置使用 `index.native.ts`
-
-### 2. 组件平台分离
-
-**目录结构**：
+#### 4.1.3 推荐目录结构（平台特定组件）
 
 ```
 components/my-component/
-├── common/              # 共享代码（必须）
-│   ├── types.ts        # 共享类型
-│   ├── utils.ts        # 共享工具函数
-│   └── hooks.ts        # 共享 Hooks
-├── web/                 # Web 版本（必须）
+├── common/
+│   ├── types.ts
+│   ├── utils.ts
+│   └── hooks.ts
+├── web/
 │   └── MyComponent.web.tsx
-└── native/              # React Native 版本（必须）
+└── native/
     └── MyComponent.native.tsx
 ```
 
-**导出方式**：
+### 4.2 工具函数
 
-- `index.ts` 导出 Web 版本
-- `index.native.ts` 导出 React Native 版本
+- **完全共享**：纯逻辑、不依赖平台 API（如 `filterUtils`、`sortUtils`）。
+- **平台适配**：需文件、存储等平台能力时，通过参数注入平台适配器或平台特定实现。
 
-### 3. 平台适配器
+### 4.3 服务层
 
-**接口定义**：通过 `PlatformAdapter` 接口定义平台差异处理
+- **平台适配器模式**：通过 `PlatformAdapter` 接口统一文件、存储、网络等差异。
+- **依赖注入**：业务服务（如
+  `GitHubStorageService`、`GiteeStorageService`）在构造函数中注入适配器。
+- **统一接口**：对应用层暴露统一业务接口，隐藏平台差异。
 
-**实现方式**：
+### 4.4 Hooks
 
-- `DefaultPlatformAdapter` - 默认实现（Web 端）
-- 各平台可提供自定义适配器实现
+- **共享 Hooks**：纯逻辑、不依赖平台 API（如 `useInfiniteScroll`）。
+- **平台相关 Hooks**：需平台 API 时提供平台特定实现或通过适配器调用（如
+  `useKeyboard` 在 RN 端需特殊处理）。
 
-**使用方式**：服务类通过构造函数注入平台适配器
+### 4.5 类型定义
 
----
+- **共享类型**：平台无关的接口与类型。
+- **平台相关类型**：通过联合类型或条件类型区分（如 `File | string` 表示 Web
+  File 与 Mobile URI）。
 
-## 💻 实现策略
+### 4.6 语言包
 
-### 1. 组件实现策略
-
-#### 纯函数原则
-
-所有组件必须实现为纯函数：
-
-- **输入**：通过 Props 获取外部数据
-- **输出**：通过回调函数与外部通信
-- **副作用**：最小化副作用，仅处理 UI 交互
-
-#### Props 设计
-
-- **数据 Props**：组件所需的数据（如 `images: ImageItem[]`）
-- **回调 Props**：与外部通信的回调函数（如
-  `onDeleteImage: (id: string) => void`）
-- **配置 Props**：组件配置选项（如 `hideFilter?: boolean`）
-- **平台特定 Props**：平台特定的配置（如 React Native 的 `colorScheme`）
-
-### 2. 平台检测策略
-
-**当前实现**：通过不同的导出文件和构建配置区分平台，而不是运行时检测
-
-- **导出文件**：`index.ts` vs `index.native.ts`
-- **构建配置**：Web/Desktop 使用 `index.ts`，React Native 使用 `index.native.ts`
-
-### 3. 代码组织策略
-
-#### 共享代码提取
-
-将平台无关的代码提取到 `common/` 目录：
-
-- **类型定义**：共享的 TypeScript 类型
-- **工具函数**：共享的工具函数
-- **Hooks**：共享的 React Hooks
-
-#### 平台特定实现
-
-平台特定的实现放在对应的目录：
-
-- **Web 版本**：`web/` 目录
-- **React Native 版本**：`native/` 目录
+- **统一格式**：JSON；三端共用同一套 key 与文件。
+- **动态加载**：支持运行时切换语言。
 
 ---
 
-## 🎨 UI/UX 适配策略
+## 五、平台适配方案
 
-### 1. 样式适配
+### 5.1 平台特定导出
 
-#### Web/Desktop 样式
+| 入口文件          | 使用端       | 说明                               |
+| ----------------- | ------------ | ---------------------------------- |
+| `index.ts`        | Web、Desktop | Vite/构建默认解析                  |
+| `index.native.ts` | Mobile       | Metro bundler 按 `.native.ts` 解析 |
 
-- 使用 CSS 文件或 CSS-in-JS
-- 使用标准 CSS 特性（Flexbox、Grid 等）
+### 5.2 平台适配器
 
-#### React Native 样式
+- **接口**：`PlatformAdapter` 定义文件大小、MIME 类型、图片尺寸等能力的抽象。
+- **实现**：各端提供默认或自定义实现，在创建存储服务等时注入。
+- **使用**：服务类通过构造函数接收适配器，内部统一调用接口方法。
 
-- 使用 `StyleSheet.create`
-- 使用 React Native 样式属性
-- 支持主题适配（通过 `colorScheme` prop）
+### 5.3 平台差异对照（概要）
 
-### 2. 交互适配
-
-#### Web/Desktop 交互
-
-- 键盘快捷键支持
-- 鼠标事件处理
-- DOM API 交互
-
-#### React Native 交互
-
-- 触摸手势支持
-- React Native 事件处理
-- 原生 API 交互
+| 能力          | Web/Desktop                     | Mobile                     |
+| ------------- | ------------------------------- | -------------------------- |
+| 文件/图片输入 | `File`、DOM API                 | URI、`expo-file-system` 等 |
+| 持久化配置    | `localStorage` / Electron store | `AsyncStorage`             |
+| 网络          | `fetch` / Node `http`           | `fetch`                    |
+| UI 与样式     | HTML + CSS                      | RN 组件 + `StyleSheet`     |
+| 事件          | DOM 事件                        | RN 事件（`onPress` 等）    |
 
 ---
 
-## 📋 最佳实践
+## 六、实现策略与最佳实践
 
-### 1. 组件设计原则
+### 6.1 组件实现
 
-#### 完全共享 vs 平台特定
+- **Props 设计**：数据 Props、回调 Props、配置 Props、必要时平台特定 Props。
+- **共享代码提取**：类型、工具、Hooks 放入
+  `common/`，避免在 web/native 中重复实现。
+- **平台检测**：通过不同入口与构建配置区分平台，而非依赖运行时 UA 等检测。
 
-**完全共享组件**：
+### 6.2 代码组织
 
-- 使用标准 React API
-- 不依赖平台特定 API（DOM、RN API 等）
-- 通过 Props 适配平台差异
-- 但仍需要分别实现 Web 和 Native 版本（因为元素使用不同）
+- 平台无关逻辑集中在 `common/`。
+- 平台特定实现放在 `web/`、`native/` 或 `.web.tsx` / `.native.tsx`。
+- 公共 API 在 `index.ts` / `index.native.ts` 中统一导出。
 
-**平台特定组件**：
+### 6.3 UI/UX 适配
 
-- 需要平台特定 API 时，创建 `.web.tsx` 和 `.native.tsx` 版本
-- 共享代码提取到 `common/` 目录
-- 通过不同的导出文件导出
-
-#### 代码组织
-
-```
-components/my-component/
-├── common/              # 共享代码（必须）
-│   ├── types.ts        # 共享类型
-│   ├── utils.ts        # 共享工具函数
-│   └── hooks.ts        # 共享 Hooks
-├── web/                 # Web 版本（必须）
-│   └── MyComponent.web.tsx
-└── native/              # React Native 版本（必须）
-    └── MyComponent.native.tsx
-```
-
-### 2. 平台适配器使用
-
-#### 创建自定义适配器
-
-各平台可以创建自定义的平台适配器，实现 `PlatformAdapter`
-接口，处理平台特定的差异。
-
-### 3. 类型安全
-
-#### 平台特定类型
-
-通过联合类型或条件类型处理平台差异，确保类型安全。
+- **Web/Desktop**：CSS 或 CSS-in-JS；键盘快捷键、DOM 事件。
+- **React Native**：`StyleSheet.create`、主题与 `colorScheme`；触摸与 RN 事件。
 
 ---
 
-## ⚠️ 注意事项
+## 七、注意事项
 
-### 1. 平台差异处理
+### 7.1 平台差异处理
 
-#### API 差异
+- **API 差异**：文件系统、持久化、网络在各端实现方式不同，统一通过适配器或平台分支封装。
+- **UI 差异**：组件库与样式系统不同，需分别实现 Web 与 Native 两套 UI，共享逻辑与数据层。
 
-- **文件系统**：
-  - Desktop：使用 Node.js `fs`（通过 Electron IPC）
-  - Web：使用 `FileReader` API
-  - Mobile：使用 `expo-file-system`
+### 7.2 构建与依赖
 
-- **存储**：
-  - Desktop：使用 Electron `store`
-  - Web：使用 `localStorage`
-  - Mobile：使用 `AsyncStorage`
+- **Web/Desktop**：以 `index.ts` 为入口。
+- **React Native**：Metro 配置使用 `index.native.ts`。
+- **平台特定依赖**：通过 `peerDependencies` 或 `optionalDependencies`
+  声明，避免在不需要的端打包。
 
-- **网络请求**：
-  - Desktop：可使用 Node.js `http` 或 `fetch`
-  - Web：使用 `fetch`
-  - Mobile：使用 React Native `fetch`
+### 7.3 测试
 
-#### UI 差异
-
-- **组件库**：
-  - Desktop/Web：使用 HTML 元素（`<div>`, `<button>` 等）
-  - Mobile：使用 React Native 组件（`<View>`, `<TouchableOpacity>` 等）
-
-- **样式**：
-  - Desktop/Web：使用 CSS
-  - Mobile：使用 `StyleSheet`
-
-- **事件处理**：
-  - Desktop/Web：使用 DOM 事件（`onClick`, `onKeyDown` 等）
-  - Mobile：使用 React Native 事件（`onPress`, `onLongPress` 等）
-
-### 2. 构建配置
-
-#### Web/Desktop 构建
-
-使用 `index.ts` 作为入口文件。
-
-#### React Native 构建
-
-通过 Metro bundler 配置使用 `index.native.ts` 作为入口文件。
-
-### 3. 依赖管理
-
-#### 共享依赖
-
-在 `package.json` 的 `dependencies` 中定义共享依赖。
-
-#### 平台特定依赖
-
-在 `package.json` 的 `peerDependencies` 或 `optionalDependencies`
-中定义平台特定依赖。
+- 对 `common/` 下共享逻辑做单元测试。
+- 对 Web 与 Native 组件分别做渲染/集成测试。
 
 ---
 
-## 📈 代码复用统计
+## 八、附录
 
-### 资源共享比例
+### 8.1 代码复用统计（参考）
 
-- **组件**：约 60-70% 代码共享（通过 `common/` 目录）
-- **工具函数**：约 90% 代码共享
-- **服务层**：约 80% 代码共享（通过平台适配器）
-- **Hooks**：约 70% 代码共享
-- **类型定义**：约 95% 代码共享
-- **语言包**：100% 代码共享
+| 类别     | 共享比例（约）                 |
+| -------- | ------------------------------ |
+| 组件     | 60–70%（通过 common 与双实现） |
+| 工具函数 | 约 90%                         |
+| 服务层   | 约 80%（平台适配器封装差异）   |
+| Hooks    | 约 70%                         |
+| 类型定义 | 约 95%                         |
+| 语言包   | 100%                           |
 
-### 总体代码复用率
+总体约 **75–80%** 代码在三端共享，其余为平台特定实现。
 
-**约 75-80%** 的代码在三端共享，20-25% 的代码需要平台特定实现。
+### 8.2 开发指南摘要
 
----
+1. **新建平台特定组件**：创建目录 → 在 `common/` 定义类型与共享逻辑 → 在
+   `web/`、`native/` 实现 UI → 在对应 index 中导出。
+2. **新建平台适配器**：实现 `PlatformAdapter` 接口，在服务构造时注入。
+3. **保持纯函数**：组件通过 Props 与回调通信，避免隐式依赖全局状态。
 
-## 📋 开发指南
+### 8.3 相关文档
 
-### 1. 创建新组件
-
-#### 步骤
-
-1. 创建组件目录结构
-2. 在 `common/` 目录中定义共享类型、工具函数、Hooks
-3. 在 `web/` 目录中实现 Web 版本（使用 HTML 元素）
-4. 在 `native/` 目录中实现 React Native 版本（使用 RN 组件）
-5. 在 `index.ts` 和 `index.native.ts` 中导出对应版本
-
-#### 原则
-
-- 组件必须为纯函数
-- 通过 Props 获取外部数据
-- 通过回调函数与外部通信
-- Web 版本使用 HTML 元素，Native 版本使用 RN 组件
-
-### 2. 创建平台适配器
-
-各平台可以创建自定义的平台适配器，实现 `PlatformAdapter`
-接口，处理平台特定的差异。
-
-### 3. 测试策略
-
-#### 共享代码测试
-
-对 `common/` 目录中的共享代码进行单元测试。
-
-#### 平台特定组件测试
-
-对 Web 和 Native 版本分别进行测试。
-
----
-
-## 📝 总结
-
-Pixuli 跨端资源共享设计方案通过以下方式实现了高效的代码复用：
-
-1. **平台区分**：根据运行环境（元素使用）区分 Web 端和 React Native 端
-2. **组件实现**：每个组件提供 Web 和 Native 两种实现，必须为纯函数
-3. **资源共享**：包括组件、工具函数、服务、Hooks、类型定义、语言包
-4. **平台适配器**：通过 `PlatformAdapter` 接口处理平台差异
-5. **共享代码提取**：将平台无关代码提取到 `common/` 目录
-6. **平台特定导出**：通过 `index.ts` 和 `index.native.ts` 区分平台
-
-通过这种设计，我们实现了：
-
-- ✅ 高代码复用率（75-80%）
-- ✅ 统一的用户体验
-- ✅ 易于维护和扩展
-- ✅ 类型安全的开发体验
-- ✅ 清晰的平台边界
-
----
-
-## 📚 相关文档
-
-- [WASM 模块设计方案](./02-wasm.md) - 了解 WASM 模块设计
-- [性能优化设计方案](./03-performance) - 了解性能优化策略
-
----
-
-最后更新：2025年11月
+- [00-System-Design - 整体系统设计](./00-System-Design.md)
+- [02-cross-image-process - 跨端图片处理](./02-cross-image-process.md)
+- [03-performance - 性能优化与监控](./03-performance.md)
