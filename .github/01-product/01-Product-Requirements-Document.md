@@ -1,514 +1,483 @@
-# Pixuli Product Requirements Document (PRD)
+# Pixuli 产品需求文档（PRD）
 
-- **Document Version**: 1.4
-- **Created Date**: 2025-01-27
-- **Last Updated**: 2025-01-29
-- **Project Name**: Pixuli - Intelligent Image Management Application
-
----
-
-## I. Document Overview
-
-### 1.1 Purpose
-
-This document systematically describes the product requirements for the Pixuli
-project, including implemented features, features in progress, and features to
-be implemented, providing a basis for product iteration, development scheduling,
-and acceptance.
-
-### 1.2 Scope
-
-- Product Managers, Project Managers: Requirement understanding and scheduling
-- Development Engineers: Feature implementation and interface design
-- Test Engineers: Test case design and acceptance criteria
-- Operations and Deployment: Runtime environment and constraints
-
-### 1.3 Terms and Abbreviations
-
-| Term     | Description                                             |
-| -------- | ------------------------------------------------------- |
-| PRD      | Product Requirements Document                           |
-| PWA      | Progressive Web App                                     |
-| WASM     | WebAssembly, high-performance binary instruction format |
-| CRUD     | Create / Read / Update / Delete                         |
-| Monorepo | Single codebase managing multiple packages/applications |
+- **文档版本**：1.4
+- **创建日期**：2025-01-27
+- **最后更新**：2025-01-29
+- **项目名称**：Pixuli - 智能图片管理应用
 
 ---
 
-## II. Project Overview
+## 一、文档概述
 
-### 2.1 Background
+### 1.1 目的
 
-Pixuli originates from two needs:
+本文档系统描述 Pixuli 项目的产品需求，包括已实现功能、进行中功能与待实现功能，为产品迭代、开发排期与验收提供依据。
 
-1. **Practical Need**: Unified image storage, compression, and batch processing
-   requirements for blog and website operations.
-2. **Technical Practice**: Based on previous experience developing an image
-   management application with Vue3, reimplementing using the React technology
-   stack and expanding capabilities across multiple platforms (Web, Desktop,
-   Mobile).
+### 1.2 范围
 
-### 2.2 Product Positioning
+- 产品经理、项目经理：需求理解与排期
+- 开发工程师：功能实现与接口设计
+- 测试工程师：测试用例设计与验收标准
+- 运维与部署：运行环境与约束
 
-Pixuli is an **intelligent image management solution based on Monorepo
-architecture**, supporting multi-platform deployment with a unified experience:
+### 1.3 术语与缩写
 
-- **Desktop**: Electron + React, supporting Windows, macOS (including Apple
-  Silicon)
-- **Web**: Vite + React, supporting PWA and online access
-- **Mobile**: React Native + Expo, supporting Android (iOS planned)
-
-**Core Value**: Using GitHub / Gitee repositories as storage backends, providing
-image browsing, uploading, editing, compression, format conversion, and metadata
-management, with unified cloud storage and version control capabilities.
-
-### 2.3 Target Users
-
-- Personal blog / static site operators: Need stable, versioned image hosting
-- Content creators: Need batch upload, compression, and format conversion
-- Developers and DevOps: Need self-hosted, integrable image management
-  capabilities
+| 术语     | 说明                                          |
+| -------- | --------------------------------------------- |
+| PRD      | 产品需求文档（Product Requirements Document） |
+| PWA      | 渐进式 Web 应用（Progressive Web App）        |
+| WASM     | WebAssembly，高性能二进制指令格式             |
+| CRUD     | 创建 / 读取 / 更新 / 删除                     |
+| Monorepo | 单一代码库管理多个包/应用                     |
 
 ---
 
-## III. System Architecture and Technology Stack
+## 二、项目概述
 
-### 3.1 Project Structure
+### 2.1 背景
+
+Pixuli 源于两类需求：
+
+1. **实际需求**：博客与网站运营中统一的图片存储、压缩与批量处理需求。
+2. **技术实践**：在已有 Vue3 图片管理应用经验基础上，使用 React 技术栈重新实现，并扩展至多平台（Web、桌面、移动端）。
+
+### 2.2 产品定位
+
+Pixuli 是一款**基于 Monorepo 架构的智能图片管理方案**，支持多平台部署与统一体验：
+
+- **桌面端**：Electron + React，支持 Windows、macOS（含 Apple Silicon）
+- **Web**：Vite + React，支持 PWA 与在线访问
+- **移动端**：React Native + Expo，支持 Android（iOS 规划中）
+
+**核心价值**：以 GitHub /
+Gitee 仓库为存储后端，提供图片浏览、上传、编辑、压缩、格式转换与元数据管理，具备统一云存储与版本控制能力。
+
+### 2.3 目标用户
+
+- 个人博客 / 静态站运营者：需要稳定、可版本化的图床
+- 内容创作者：需要批量上传、压缩与格式转换
+- 开发者与运维：需要自托管、可集成的图片管理能力
+
+---
+
+## 三、系统架构与技术栈
+
+### 3.1 项目结构
 
 ```
 Pixuli/
 ├── apps/
-│   ├── pixuli/          # Web + Desktop unified application (Vite + React + Electron)
-│   └── mobile/          # Mobile application (React Native + Expo)
+│   ├── pixuli/          # Web + 桌面统一应用（Vite + React + Electron）
+│   └── mobile/          # 移动端应用（React Native + Expo）
 ├── packages/
-│   ├── common/          # Shared components, Hooks, utilities, storage services across platforms
-│   └── wasm/             # Rust WASM image processing core (Web/Desktop)
-├── server/               # Optional backend service (NestJS + Prisma + MySQL/MinIO)
-├── benchmark/            # Performance testing
-├── .github/design/       # Design documents (cross-platform resources, image processing, performance, logging, etc.)
+│   ├── common/          # 跨平台共享组件、Hooks、工具与存储服务
+│   └── wasm/             # Rust WASM 图片处理核心（Web/桌面）
+├── server/               # 可选后端服务（NestJS + Prisma + MySQL/MinIO）
+├── benchmark/            # 性能测试
+├── .github/design/       # 设计文档（跨平台资源、图片处理、性能、日志等）
 ```
 
-### 3.2 Technology Stack Overview
+### 3.2 技术栈概览
 
-| Layer              | Technology                           | Description                                   |
-| ------------------ | ------------------------------------ | --------------------------------------------- |
-| Frontend Framework | React 19.x + TypeScript              | Unified UI and logic                          |
-| Build Tool         | Vite                                 | Web/Desktop build                             |
-| Desktop Runtime    | Electron                             | Cross-platform desktop application            |
-| Mobile             | React Native + Expo                  | Cross-platform mobile application             |
-| State Management   | Zustand                              | Lightweight state management                  |
-| Image Processing   | Rust (WASM) / expo-image-manipulator | Web/Desktop uses WASM, Mobile uses native     |
-| Cloud Storage      | GitHub API / Gitee API               | Repositories as image hosting                 |
-| Optional Backend   | NestJS + Prisma + MySQL              | Image metadata and file storage (Local/MinIO) |
+| 层级       | 技术                                 | 说明                               |
+| ---------- | ------------------------------------ | ---------------------------------- |
+| 前端框架   | React 19.x + TypeScript              | 统一 UI 与逻辑                     |
+| 构建工具   | Vite                                 | Web/桌面构建                       |
+| 桌面运行时 | Electron                             | 跨平台桌面应用                     |
+| 移动端     | React Native + Expo                  | 跨平台移动应用                     |
+| 状态管理   | Zustand                              | 轻量状态管理                       |
+| 图片处理   | Rust (WASM) / expo-image-manipulator | Web/桌面用 WASM，移动端用原生      |
+| 云存储     | GitHub API / Gitee API               | 以仓库为图床                       |
+| 可选后端   | NestJS + Prisma + MySQL              | 图片元数据与文件存储（本地/MinIO） |
 
-### 3.3 Platform Capability Matrix
+### 3.3 平台能力矩阵
 
-| Capability                                  | Web                            | Desktop                        | Mobile                                               |
-| ------------------------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------------------- |
-| Repository Source Management (GitHub/Gitee) | ✅                             | ✅                             | ✅                                                   |
-| Image CRUD                                  | ✅                             | ✅                             | ✅ (Batch upload done; batch edit: ⏳ High priority) |
-| Slideshow / Timeline Browsing               | ✅                             | ✅                             | ✅ (Slideshow implemented)                           |
-| Operation Log                               | ✅                             | ✅                             | ✅                                                   |
-| PWA / Offline                               | ✅                             | ⏳ To be implemented           | ⏳ Medium priority                                   |
-| Format Conversion / Compression / Editing   | Framework ready, logic pending | Framework ready, logic pending | ✅ Partially implemented                             |
-| Batch Edit Metadata                         | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ High priority                                     |
-| Layout Optimization (Columns/Waterfall)     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                                   |
-| Private Repository Access Control           | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Medium priority                                   |
-| AI Features Integration                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
-| Favorites and Grouping                      | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
-| Statistics and Insights                     | ⏳ To be implemented           | ⏳ To be implemented           | ⏳ Low priority                                      |
-| Camera / Gallery                            | —                              | —                              | ✅                                                   |
-
----
-
-## IV. Functional Requirements
-
-### 4.1 Repository Source Management (Implemented)
-
-**Overview**: Users can configure multiple GitHub or Gitee repositories as image
-storage sources and switch between them.
-
-#### 4.1.1 Feature Points
-
-| ID           | Requirement                                                                          | Priority | Status | Platforms              |
-| ------------ | ------------------------------------------------------------------------------------ | -------- | ------ | ---------------------- |
-| F-SOURCE-001 | Support adding multiple GitHub repository sources (owner, repo, branch, token, path) | P0       | ✅     | Web / Desktop / Mobile |
-| F-SOURCE-002 | Support adding multiple Gitee repository sources (same structure as above)           | P0       | ✅     | Web / Desktop / Mobile |
-| F-SOURCE-003 | Support switching between configured sources as the current active source            | P0       | ✅     | All platforms          |
-| F-SOURCE-004 | Support editing and deleting existing repository sources                             | P0       | ✅     | All platforms          |
-| F-SOURCE-005 | Configuration persistence (Web/Desktop: localStorage; Mobile: AsyncStorage)          | P0       | ✅     | All platforms          |
-| F-SOURCE-006 | Configuration form validation (required fields, format, etc.)                        | P1       | ✅     | All platforms          |
-| F-SOURCE-007 | Configuration import, export, and clear                                              | P1       | ✅     | All platforms          |
-
-#### 4.1.2 Business Rules
-
-- GitHub and Gitee configurations can coexist; switching only changes the
-  "currently active" storage service.
-- Sensitive information such as tokens is only persisted locally and not
-  uploaded to servers not controlled by the user.
+| 能力                       | Web                | 桌面               | 移动端                                      |
+| -------------------------- | ------------------ | ------------------ | ------------------------------------------- |
+| 仓库源管理（GitHub/Gitee） | ✅                 | ✅                 | ✅                                          |
+| 图片 CRUD                  | ✅                 | ✅                 | ✅（批量上传已完成；批量编辑：⏳ 高优先级） |
+| 幻灯片 / 时间线浏览        | ✅                 | ✅                 | ✅（幻灯片已实现）                          |
+| 操作日志                   | ✅                 | ✅                 | ✅                                          |
+| PWA / 离线                 | ✅                 | ⏳ 待实现          | ⏳ 中优先级                                 |
+| 格式转换 / 压缩 / 编辑     | 框架就绪，逻辑待补 | 框架就绪，逻辑待补 | ✅ 部分已实现                               |
+| 批量编辑元数据             | ⏳ 待实现          | ⏳ 待实现          | ⏳ 高优先级                                 |
+| 布局优化（列数/瀑布流）    | ⏳ 待实现          | ⏳ 待实现          | ⏳ 中优先级                                 |
+| 私有仓库访问控制           | ⏳ 待实现          | ⏳ 待实现          | ⏳ 中优先级                                 |
+| AI 能力集成                | ⏳ 待实现          | ⏳ 待实现          | ⏳ 低优先级                                 |
+| 收藏与分组                 | ⏳ 待实现          | ⏳ 待实现          | ⏳ 低优先级                                 |
+| 统计与洞察                 | ⏳ 待实现          | ⏳ 待实现          | ⏳ 低优先级                                 |
+| 相机 / 相册                | —                  | —                  | ✅                                          |
 
 ---
 
-### 4.2 Image CRUD (Implemented)
+## 四、功能需求
 
-**Overview**: Create, read, update, and delete images in the currently selected
-repository source.
+### 4.1 仓库源管理（已实现）
 
-#### 4.2.1 Create
+**概述**：用户可配置多个 GitHub 或 Gitee 仓库作为图片存储源，并可在源之间切换。
 
-| ID         | Requirement                                                        | Priority | Status | Platforms     |
-| ---------- | ------------------------------------------------------------------ | -------- | ------ | ------------- |
-| F-CRUD-C01 | Single image upload with metadata (name, description, tags, etc.)  | P0       | ✅     | All platforms |
-| F-CRUD-C02 | Batch image upload with progress display (progress bar/percentage) | P0       | ✅     | All platforms |
-| F-CRUD-C03 | Mobile: Support camera capture and gallery selection for upload    | P0       | ✅     | Mobile        |
+#### 4.1.1 功能点
 
-#### 4.2.2 Read
+| ID           | 需求                                                           | 优先级 | 状态 | 平台                |
+| ------------ | -------------------------------------------------------------- | ------ | ---- | ------------------- |
+| F-SOURCE-001 | 支持添加多个 GitHub 仓库源（owner、repo、branch、token、path） | P0     | ✅   | Web / 桌面 / 移动端 |
+| F-SOURCE-002 | 支持添加多个 Gitee 仓库源（结构同上）                          | P0     | ✅   | Web / 桌面 / 移动端 |
+| F-SOURCE-003 | 支持在已配置源之间切换为当前活跃源                             | P0     | ✅   | 全平台              |
+| F-SOURCE-004 | 支持编辑与删除已有仓库源                                       | P0     | ✅   | 全平台              |
+| F-SOURCE-005 | 配置持久化（Web/桌面：localStorage；移动端：AsyncStorage）     | P0     | ✅   | 全平台              |
+| F-SOURCE-006 | 配置表单校验（必填项、格式等）                                 | P1     | ✅   | 全平台              |
+| F-SOURCE-007 | 配置导入、导出与清空                                           | P1     | ✅   | 全平台              |
 
-| ID         | Requirement                                                                  | Priority | Status | Platforms     |
-| ---------- | ---------------------------------------------------------------------------- | -------- | ------ | ------------- |
-| F-CRUD-R01 | Load image list from current source                                          | P0       | ✅     | All platforms |
-| F-CRUD-R02 | Display images in grid/list formats                                          | P0       | ✅     | All platforms |
-| F-CRUD-R03 | Full-screen preview, zoom, left/right navigation, etc.                       | P0       | ✅     | All platforms |
-| F-CRUD-R04 | View single image metadata (name, description, tags, dimensions, time, etc.) | P1       | ✅     | All platforms |
-| F-CRUD-R05 | Pull-to-refresh to sync latest list                                          | P1       | ✅     | All platforms |
-| F-CRUD-R06 | Mobile: Metadata caching for optimized loading and offline browsing          | P1       | ✅     | Mobile        |
+#### 4.1.2 业务规则
 
-#### 4.2.3 Update
-
-| ID         | Requirement                                                             | Priority | Status               | Platforms              |
-| ---------- | ----------------------------------------------------------------------- | -------- | -------------------- | ---------------------- |
-| F-CRUD-U01 | Edit image metadata (description, tags, etc.), support rename detection | P0       | ✅                   | All platforms          |
-| F-CRUD-U02 | Batch edit metadata (tags, description, name) for multiple images       | P1       | ⏳ To be implemented | Web / Desktop / Mobile |
-
-#### 4.2.4 Delete
-
-| ID         | Requirement                                       | Priority | Status | Platforms     |
-| ---------- | ------------------------------------------------- | -------- | ------ | ------------- |
-| F-CRUD-D01 | Single image deletion with confirmation mechanism | P0       | ✅     | All platforms |
-| F-CRUD-D02 | Batch selection and batch deletion                | P0       | ✅     | All platforms |
+- GitHub 与 Gitee 配置可并存；切换仅改变「当前活跃」的存储服务。
+- Token 等敏感信息仅本地持久化，不上传至用户不可控的服务器。
 
 ---
 
-### 4.3 Browse Modes (Implemented)
+### 4.2 图片 CRUD（已实现）
 
-**Overview**: Provide three browsing modes for the same set of image data: file
-mode, slideshow, and timeline.
+**概述**：在当前选中的仓库源内对图片进行创建、读取、更新与删除。
 
-| ID          | Requirement                                                                     | Priority | Status | Platforms     |
-| ----------- | ------------------------------------------------------------------------------- | -------- | ------ | ------------- |
-| F-BROWSE-01 | File mode: Grid/list display, support click preview, image switching            | P0       | ✅     | Web / Desktop |
-| F-BROWSE-02 | Slideshow mode: Auto/manual playback, transition animations, loop, etc.         | P0       | ✅     | Web / Desktop |
-| F-BROWSE-03 | Timeline mode: Grouped display by time                                          | P0       | ✅     | Web / Desktop |
-| F-BROWSE-04 | Sidebar menu to switch between the three modes and route to corresponding pages | P0       | ✅     | Web / Desktop |
-| F-BROWSE-05 | Mobile: Slideshow playback with auto/manual modes, transitions, loop, controls  | P0       | ✅     | Mobile        |
+#### 4.2.1 创建
 
----
+| ID         | 需求                                         | 优先级 | 状态 | 平台   |
+| ---------- | -------------------------------------------- | ------ | ---- | ------ |
+| F-CRUD-C01 | 单张图片上传并带元数据（名称、描述、标签等） | P0     | ✅   | 全平台 |
+| F-CRUD-C02 | 批量图片上传并显示进度（进度条/百分比）      | P0     | ✅   | 全平台 |
+| F-CRUD-C03 | 移动端：支持相机拍摄与相册选择上传           | P0     | ✅   | 移动端 |
 
-### 4.4 Operation Log (All Platforms Implemented)
+#### 4.2.2 读取
 
-**Overview**: Record and display key user operations within the application for
-auditing and backtracking. All three platforms share the same types and business
-logic (`packages/common`: `types/log`, `OperationLogService`); only the storage
-adapter differs (Web/Desktop: localStorage; Mobile: AsyncStorage). Web/Desktop
-entry: Header and Ctrl+Shift+L shortcut; Mobile entry: Settings → "Operation
-Log" menu, modal showing the latest 10 entries, export JSON/CSV, and clear all.
+| ID         | 需求                                                 | 优先级 | 状态 | 平台   |
+| ---------- | ---------------------------------------------------- | ------ | ---- | ------ |
+| F-CRUD-R01 | 从当前源加载图片列表                                 | P0     | ✅   | 全平台 |
+| F-CRUD-R02 | 以网格/列表形式展示图片                              | P0     | ✅   | 全平台 |
+| F-CRUD-R03 | 全屏预览、缩放、左右切换等                           | P0     | ✅   | 全平台 |
+| F-CRUD-R04 | 查看单张图片元数据（名称、描述、标签、尺寸、时间等） | P1     | ✅   | 全平台 |
+| F-CRUD-R05 | 下拉刷新以同步最新列表                               | P1     | ✅   | 全平台 |
+| F-CRUD-R06 | 移动端：元数据缓存以优化加载与离线浏览               | P1     | ✅   | 移动端 |
 
-| ID       | Requirement                                                                                            | Priority | Status | Platforms                                         |
-| -------- | ------------------------------------------------------------------------------------------------------ | -------- | ------ | ------------------------------------------------- |
-| F-LOG-01 | Record operations such as upload, delete, edit, configuration changes, batch upload                    | P1       | ✅     | All platforms                                     |
-| F-LOG-02 | Provide log viewing interface (modal/standalone view), support filtering by type, time, keywords, etc. | P1       | ✅     | Web/Desktop; Mobile modal shows latest 10 entries |
-| F-LOG-03 | Display statistics (e.g., operation counts by type, today's count, success rate)                       | P2       | ✅     | All platforms                                     |
-| F-LOG-04 | Support exporting logs as JSON/CSV files                                                               | P2       | ✅     | All platforms (Mobile via system share)           |
-| F-LOG-05 | Implement equivalent log capabilities on Mobile as Web/Desktop                                         | P2       | ✅     | Mobile                                            |
+#### 4.2.3 更新
 
----
+| ID         | 需求                                           | 优先级 | 状态      | 平台                |
+| ---------- | ---------------------------------------------- | ------ | --------- | ------------------- |
+| F-CRUD-U01 | 编辑图片元数据（描述、标签等），支持重命名检测 | P0     | ✅        | 全平台              |
+| F-CRUD-U02 | 对多张图片批量编辑元数据（标签、描述、名称）   | P1     | ⏳ 待实现 | Web / 桌面 / 移动端 |
 
-### 4.5 PWA and Offline (Web Implemented)
+#### 4.2.4 删除
 
-**Overview**: Web provides offline and "installable" experience in PWA form.
-
-| ID       | Requirement                                       | Priority | Status                  | Platforms |
-| -------- | ------------------------------------------------- | -------- | ----------------------- | --------- |
-| F-PWA-01 | Service Worker registration and offline caching   | P1       | ✅                      | Web       |
-| F-PWA-02 | Install prompt (PWAInstallPrompt)                 | P1       | ✅                      | Web       |
-| F-PWA-03 | Offline status indicator (e.g., OfflineIndicator) | P1       | ✅                      | Web       |
-| F-PWA-04 | PWA update detection and prompt                   | P2       | ⏳ To be fixed/improved | Web       |
+| ID         | 需求                     | 优先级 | 状态 | 平台   |
+| ---------- | ------------------------ | ------ | ---- | ------ |
+| F-CRUD-D01 | 单张图片删除并带确认机制 | P0     | ✅   | 全平台 |
+| F-CRUD-D02 | 批量选择与批量删除       | P0     | ✅   | 全平台 |
 
 ---
 
-### 4.6 Image Processing Tools (Partially Implemented)
+### 4.3 浏览模式（已实现）
 
-**Overview**: Provide compression, format conversion, editing, analysis, and
-generation capabilities; progress varies by platform.
+**概述**：对同一套图片数据提供三种浏览模式：文件模式、幻灯片与时间线。
 
-#### 4.6.1 Format Conversion
-
-| ID            | Requirement                                             | Priority | Status                       | Platforms     |
-| ------------- | ------------------------------------------------------- | -------- | ---------------------------- | ------------- |
-| F-TOOL-CVT-01 | Support format conversion between JPEG, PNG, WebP, etc. | P0       | ⏳ Page ready, logic pending | Web / Desktop |
-| F-TOOL-CVT-02 | Mobile: Already supports JPEG, PNG, WebP conversion     | P0       | ✅                           | Mobile        |
-
-#### 4.6.2 Image Compression
-
-| ID            | Requirement                                                        | Priority | Status                       | Platforms     |
-| ------------- | ------------------------------------------------------------------ | -------- | ---------------------------- | ------------- |
-| F-TOOL-CMP-01 | Adjustable compression quality (e.g., 10%-100%), real-time preview | P0       | ⏳ Page ready, logic pending | Web / Desktop |
-| F-TOOL-CMP-02 | Mobile: Already implements quality-adjustable compression          | P0       | ✅                           | Mobile        |
-
-#### 4.6.3 Image Editing
-
-| ID            | Requirement                                             | Priority | Status                       | Platforms     |
-| ------------- | ------------------------------------------------------- | -------- | ---------------------------- | ------------- |
-| F-TOOL-EDT-01 | Crop, resize, metadata editing                          | P0       | ⏳ Page ready, logic pending | Web / Desktop |
-| F-TOOL-EDT-02 | Mobile: Already supports crop, resize, metadata editing | P0       | ✅ Partial                   | Mobile        |
-
-#### 4.6.4 Image Analysis
-
-| ID            | Requirement                                                                                                         | Priority | Status                       | Platforms              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------- | -------- | ---------------------------- | ---------------------- |
-| F-TOOL-ANZ-01 | Basic information (dimensions, format, channels, etc.) and extended analysis (e.g., tag and description generation) | P1       | ⏳ Page ready, logic pending | Web / Desktop / Mobile |
-
-#### 4.6.5 Image Generation
-
-| ID            | Requirement                                                                     | Priority | Status     | Platforms     |
-| ------------- | ------------------------------------------------------------------------------- | -------- | ---------- | ------------- |
-| F-TOOL-GEN-01 | Generate images based on text or conditions (including future Dify integration) | P2       | ⏳ Planned | All platforms |
+| ID          | 需求                                                | 优先级 | 状态 | 平台       |
+| ----------- | --------------------------------------------------- | ------ | ---- | ---------- |
+| F-BROWSE-01 | 文件模式：网格/列表展示，支持点击预览、图片切换     | P0     | ✅   | Web / 桌面 |
+| F-BROWSE-02 | 幻灯片模式：自动/手动播放、过渡动画、循环等         | P0     | ✅   | Web / 桌面 |
+| F-BROWSE-03 | 时间线模式：按时间分组展示                          | P0     | ✅   | Web / 桌面 |
+| F-BROWSE-04 | 侧边栏菜单切换三种模式并跳转对应页面                | P0     | ✅   | Web / 桌面 |
+| F-BROWSE-05 | 移动端：幻灯片播放，支持自动/手动、过渡、循环与控件 | P0     | ✅   | 移动端     |
 
 ---
 
-### 4.7 Search and Filter (Partially Implemented)
+### 4.4 操作日志（全平台已实现）
 
-**Overview**: Narrow image scope through keywords and filter conditions.
+**概述**：记录并展示应用内关键用户操作，便于审计与回溯。三端共用同一类型与业务逻辑（`packages/common`：`types/log`、`OperationLogService`），仅存储适配器不同（Web/桌面：localStorage；移动端：AsyncStorage）。Web/桌面入口：顶部栏与 Ctrl+Shift+L 快捷键；移动端入口：设置 →「操作日志」菜单，弹窗展示最近 10 条，支持导出 JSON/CSV 与清空。
 
-| ID          | Requirement                                                      | Priority | Status                                        | Platforms     |
-| ----------- | ---------------------------------------------------------------- | -------- | --------------------------------------------- | ------------- |
-| F-SEARCH-01 | Search by name, description, and tags                            | P0       | ✅ (e.g., Photos page and SearchContext)      | Web / Desktop |
-| F-SEARCH-02 | Filter by tags, dimensions, date, etc.                           | P1       | ✅ (e.g., filterImages, createDefaultFilters) | Web / Desktop |
-| F-SEARCH-03 | Mobile: Already supports search and multi-dimensional filtering  | P1       | ✅                                            | Mobile        |
-| F-SEARCH-04 | Multi-condition combination, search history, and advanced search | P2       | ⏳ To be implemented                          | All platforms |
-
----
-
-### 4.8 Internationalization and Theme (Implemented)
-
-| ID         | Requirement                                                     | Priority | Status                                                                     | Platforms               |
-| ---------- | --------------------------------------------------------------- | -------- | -------------------------------------------------------------------------- | ----------------------- |
-| F-I18N-01  | Chinese/English switching, interface text changes with language | P0       | ✅                                                                         | All platforms           |
-| F-THEME-01 | Light/dark theme switching                                      | P1       | ✅ (e.g., Mobile); Web/Desktop can be marked as per current implementation | Partial / All platforms |
+| ID       | 需求                                                            | 优先级 | 状态 | 平台                               |
+| -------- | --------------------------------------------------------------- | ------ | ---- | ---------------------------------- |
+| F-LOG-01 | 记录上传、删除、编辑、配置变更、批量上传等操作                  | P1     | ✅   | 全平台                             |
+| F-LOG-02 | 提供日志查看界面（弹窗/独立页），支持按类型、时间、关键词等筛选 | P1     | ✅   | Web/桌面；移动端弹窗展示最近 10 条 |
+| F-LOG-03 | 展示统计（如按类型操作数、今日数量、成功率）                    | P2     | ✅   | 全平台                             |
+| F-LOG-04 | 支持将日志导出为 JSON/CSV 文件                                  | P2     | ✅   | 全平台（移动端通过系统分享）       |
+| F-LOG-05 | 移动端实现与 Web/桌面等效的日志能力                             | P2     | ✅   | 移动端                             |
 
 ---
 
-### 4.9 Keyboard Shortcuts and Help (Implemented)
+### 4.5 PWA 与离线（Web 已实现）
 
-| ID       | Requirement                                                                                                                                                     | Priority | Status | Platforms     |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------ | ------------- |
-| F-KBD-01 | Common operations support keyboard shortcuts (Esc close modal, F1 help, F5 refresh, Ctrl+, config, / search box, Ctrl+V view, Ctrl+Shift+L operation log, etc.) | P1       | ✅     | Web / Desktop |
-| F-KBD-02 | Provide keyboard shortcut help modal (KeyboardHelpModal), press F1 to open                                                                                      | P2       | ✅     | Web / Desktop |
+**概述**：Web 以 PWA 形式提供离线与「可安装」体验。
 
----
-
-### 4.10 Web/Desktop Extensions (Partially Implemented / Planned)
-
-**Overview**: Enhanced features and experience optimizations for Web and Desktop
-platforms.
-
-| ID            | Requirement                                                                                | Priority | Status               | Platforms     |
-| ------------- | ------------------------------------------------------------------------------------------ | -------- | -------------------- | ------------- |
-| F-WEB-DESK-01 | Batch edit metadata (tags, description, name)                                              | P1       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-02 | Grid layout optimization (column switching, waterfall, list view)                          | P1       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-03 | Loading experience optimization (skeleton screens, lazy loading optimization, preloading)  | P1       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-04 | Private repository image access control (auto-detect repository type, token-based access)  | P1       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-05 | Enhanced error handling (retry mechanism, clear error messages, error recovery)            | P1       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-06 | Desktop offline support (offline browsing, upload queue, network status detection)         | P1       | ⏳ To be implemented | Desktop       |
-| F-WEB-DESK-07 | Web touch device gesture support (long-press menu, swipe operations)                       | P2       | ⏳ To be implemented | Web           |
-| F-WEB-DESK-08 | AI features integration (auto-tagging, scene recognition, OCR, object detection)           | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-09 | Favorites and grouping (favorites, custom albums, tag management)                          | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-10 | Statistics and insights (storage usage, image count, upload history, operation statistics) | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-11 | Quick actions (recent uploads, common tags, quick upload templates)                        | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-12 | Animation and transitions (page transitions, loading animations, feedback animations)      | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-13 | Accessibility support (screen reader, keyboard navigation, font size, high contrast)       | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-14 | Performance optimization (image caching strategy, virtual lists, compressed image cache)   | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-15 | Sharing and collaboration (share links, QR code generation, multi-user editing)            | P2       | ⏳ To be implemented | Web / Desktop |
-| F-WEB-DESK-16 | Desktop auto-update (electron-updater, update check, download, and installation)           | P1       | ⏳ To be implemented | Desktop       |
-| F-WEB-DESK-17 | Desktop system tray (tray icon, tray menu, minimize to tray, tray notifications)           | P1       | ⏳ To be implemented | Desktop       |
+| ID       | 需求                                | 优先级 | 状态           | 平台 |
+| -------- | ----------------------------------- | ------ | -------------- | ---- |
+| F-PWA-01 | Service Worker 注册与离线缓存       | P1     | ✅             | Web  |
+| F-PWA-02 | 安装提示（PWAInstallPrompt）        | P1     | ✅             | Web  |
+| F-PWA-03 | 离线状态指示（如 OfflineIndicator） | P1     | ✅             | Web  |
+| F-PWA-04 | PWA 更新检测与提示                  | P2     | ⏳ 待修复/完善 | Web  |
 
 ---
 
-### 4.11 Mobile Extensions (Partially Implemented / Planned)
+### 4.6 图片处理工具（部分实现）
 
-**Overview**: Mobile-specific features and enhancements based on mobile platform
-capabilities.
+**概述**：提供压缩、格式转换、编辑、分析与生成能力；各平台进度不一。
 
-| ID          | Requirement                                                                           | Priority | Status             | Platforms |
-| ----------- | ------------------------------------------------------------------------------------- | -------- | ------------------ | --------- |
-| F-MOBILE-01 | Batch upload with progress tracking and error handling                                | P0       | ✅                 | Mobile    |
-| F-MOBILE-02 | Batch edit metadata (tags, description, name) for multiple images                     | P0       | ⏳ High priority   | Mobile    |
-| F-MOBILE-03 | Grid layout optimization (2/3/4 columns, waterfall, list view)                        | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-04 | Loading experience optimization (skeleton screens, lazy loading, preloading)          | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-05 | Private repository image access control (auto-detect repo type, token-based access)   | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-06 | Enhanced error handling (retry mechanism, clear error messages)                       | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-07 | Offline support (offline browsing, upload queue, network status detection)            | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-08 | Gesture enhancements (long-press menu, swipe to delete, double-tap zoom)              | P1       | ⏳ Medium priority | Mobile    |
-| F-MOBILE-09 | AI features integration (auto-tagging, scene recognition, OCR, object detection)      | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-10 | Favorites and grouping (favorites, custom albums, tag management)                     | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-11 | Statistics and insights (storage usage, image count, upload history)                  | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-12 | Quick actions (recent uploads, common tags, quick upload)                             | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-13 | Animation and transitions (page transitions, loading animations, feedback animations) | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-14 | Accessibility support (screen reader, keyboard navigation, font size)                 | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-15 | Performance optimization (image caching, virtual lists, compressed image cache)       | P2       | ⏳ Low priority    | Mobile    |
-| F-MOBILE-16 | Sharing and collaboration (share links, QR codes, multi-user editing)                 | P2       | ⏳ Low priority    | Mobile    |
+#### 4.6.1 格式转换
 
----
+| ID            | 需求                                | 优先级 | 状态                  | 平台       |
+| ------------- | ----------------------------------- | ------ | --------------------- | ---------- |
+| F-TOOL-CVT-01 | 支持 JPEG、PNG、WebP 等格式间转换   | P0     | ⏳ 页面就绪，逻辑待补 | Web / 桌面 |
+| F-TOOL-CVT-02 | 移动端：已支持 JPEG、PNG、WebP 转换 | P0     | ✅                    | 移动端     |
 
-### 4.12 Server Features (Planned / In Development)
+#### 4.6.2 图片压缩
 
-**Overview**: Optional backend service (Pixuli Server) providing enhanced
-capabilities including MCP Server, image repository management, authentication,
-and advanced features.
+| ID            | 需求                                  | 优先级 | 状态                  | 平台       |
+| ------------- | ------------------------------------- | ------ | --------------------- | ---------- |
+| F-TOOL-CMP-01 | 可调压缩质量（如 10%–100%），实时预览 | P0     | ⏳ 页面就绪，逻辑待补 | Web / 桌面 |
+| F-TOOL-CMP-02 | 移动端：已实现可调质量压缩            | P0     | ✅                    | 移动端     |
 
-#### 4.12.1 Core Features (High Priority)
+#### 4.6.3 图片编辑
 
-| ID          | Requirement                                                                                                             | Priority | Status           | Platform |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------- | -------- | ---------------- | -------- |
-| F-SERVER-01 | MCP Server core functionality (Model Context Protocol support, model management, context management, model interaction) | P0       | ⏳ High priority | Server   |
-| F-SERVER-02 | Image repository core functionality (image storage management, metadata management, version control, RESTful API)       | P0       | ⏳ High priority | Server   |
-| F-SERVER-03 | Authentication and authorization system (JWT authentication, RBAC, security features, rate limiting)                    | P0       | ⏳ High priority | Server   |
+| ID            | 需求                                 | 优先级 | 状态                  | 平台       |
+| ------------- | ------------------------------------ | ------ | --------------------- | ---------- |
+| F-TOOL-EDT-01 | 裁剪、缩放、元数据编辑               | P0     | ⏳ 页面就绪，逻辑待补 | Web / 桌面 |
+| F-TOOL-EDT-02 | 移动端：已支持裁剪、缩放、元数据编辑 | P0     | ✅ 部分               | 移动端     |
 
-#### 4.12.2 Enhanced Features (Medium Priority)
+#### 4.6.4 图片分析
 
-| ID          | Requirement                                                                                                          | Priority | Status             | Platform |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- | -------- | ------------------ | -------- |
-| F-SERVER-04 | Intelligent search (AI-based image search, full-text search with Elasticsearch, search performance optimization)     | P1       | ⏳ Medium priority | Server   |
-| F-SERVER-05 | Batch processing (batch upload, batch operations, task queue with Bull/BullMQ)                                       | P1       | ⏳ Medium priority | Server   |
-| F-SERVER-06 | Caching and performance optimization (Redis caching, database optimization, CDN integration)                         | P1       | ⏳ Medium priority | Server   |
-| F-SERVER-07 | Monitoring and logging system (Prometheus metrics, Winston logging, Grafana dashboards)                              | P1       | ⏳ Medium priority | Server   |
-| F-SERVER-08 | Error handling and fault tolerance (unified error responses, retry mechanisms, circuit breakers, Sentry integration) | P1       | ⏳ Medium priority | Server   |
+| ID            | 需求                                                         | 优先级 | 状态                  | 平台                |
+| ------------- | ------------------------------------------------------------ | ------ | --------------------- | ------------------- |
+| F-TOOL-ANZ-01 | 基础信息（尺寸、格式、通道等）与扩展分析（如标签与描述生成） | P1     | ⏳ 页面就绪，逻辑待补 | Web / 桌面 / 移动端 |
 
-#### 4.12.3 Extended Features (Low Priority)
+#### 4.6.5 图片生成
 
-| ID          | Requirement                                                                                           | Priority | Status          | Platform |
-| ----------- | ----------------------------------------------------------------------------------------------------- | -------- | --------------- | -------- |
-| F-SERVER-09 | Image processing service integration (compression, format conversion, resize, crop)                   | P2       | ⏳ Low priority | Server   |
-| F-SERVER-10 | Webhook and event system (webhook registration, event pub/sub, event history)                         | P2       | ⏳ Low priority | Server   |
-| F-SERVER-11 | Data import/export (metadata export/import, batch operations, task management)                        | P2       | ⏳ Low priority | Server   |
-| F-SERVER-12 | Multi-tenant support (tenant management, resource isolation, billing and statistics)                  | P2       | ⏳ Low priority | Server   |
-| F-SERVER-13 | API rate limiting and quota management (IP/user/endpoint-based rate limiting, storage/request quotas) | P2       | ⏳ Low priority | Server   |
-| F-SERVER-14 | Documentation and testing (Swagger/OpenAPI docs, comprehensive test coverage >80%)                    | P2       | ⏳ Low priority | Server   |
-| F-SERVER-15 | Internationalization support (multi-language error messages, timezone support)                        | P2       | ⏳ Low priority | Server   |
-| F-SERVER-16 | GraphQL API support (GraphQL schema, queries/mutations/subscriptions, coexist with REST)              | P2       | ⏳ Low priority | Server   |
+| ID            | 需求                                       | 优先级 | 状态      | 平台   |
+| ------------- | ------------------------------------------ | ------ | --------- | ------ |
+| F-TOOL-GEN-01 | 基于文本或条件生成图片（含未来 Dify 集成） | P2     | ⏳ 规划中 | 全平台 |
 
 ---
 
-## V. Non-Functional Requirements
+### 4.7 搜索与筛选（部分实现）
 
-### 5.1 Performance
+**概述**：通过关键词与筛选条件缩小图片范围。
 
-| ID         | Requirement                                                                                                                          | Description                                                                   |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| NF-PERF-01 | List rendering should be acceptable in scenarios with many images (e.g., lazy loading, pagination, or virtual scrolling)             | Currently has lazy loading, etc.; virtual scrolling is a pending optimization |
-| NF-PERF-02 | Image processing (compression, conversion) on Web/Desktop should prioritize WASM, controlling initial bundle size and runtime memory | See packages/wasm and design documents                                        |
-| NF-PERF-03 | Mobile can implement metadata caching to reduce duplicate requests                                                                   | Partially implemented                                                         |
-
-### 5.2 Security and Privacy
-
-| ID        | Requirement                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------------ |
-| NF-SEC-01 | GitHub/Gitee tokens are only stored locally on user devices and not uploaded to servers not controlled by the user |
-| NF-SEC-02 | If using self-hosted Server, support API Key authentication (see server documentation)                             |
-
-### 5.3 Compatibility
-
-| ID           | Requirement                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| NF-COMPAT-01 | Web: Modern browsers (Chrome, Firefox, Safari, Edge, etc.); requires WASM-capable environment |
-| NF-COMPAT-02 | Desktop: Windows 10/11 x64; macOS 10.15+ (x64/ARM64)                                          |
-| NF-COMPAT-03 | Mobile: Android 5.0+ (API 21); iOS TBD                                                        |
-
-### 5.4 Usability and Maintainability
-
-| ID          | Requirement                                                                                                                                                                                  |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NF-USAB-01  | Main workflows support bilingual (Chinese/English), key operations have feedback (e.g., Toast, loading states)                                                                               |
-| NF-MAINT-01 | Common logic and UI are consolidated in packages/common for reuse across platforms, facilitating maintenance and consistent experience (including operation log types and service in common) |
+| ID          | 需求                           | 优先级 | 状态                                        | 平台       |
+| ----------- | ------------------------------ | ------ | ------------------------------------------- | ---------- |
+| F-SEARCH-01 | 按名称、描述、标签搜索         | P0     | ✅（如 Photos 页与 SearchContext）          | Web / 桌面 |
+| F-SEARCH-02 | 按标签、尺寸、日期等筛选       | P1     | ✅（如 filterImages、createDefaultFilters） | Web / 桌面 |
+| F-SEARCH-03 | 移动端：已支持搜索与多维度筛选 | P1     | ✅                                          | 移动端     |
+| F-SEARCH-04 | 多条件组合、搜索历史与高级搜索 | P2     | ⏳ 待实现                                   | 全平台     |
 
 ---
 
-## VI. Integration with Optional Backend (Pixuli Server)
+### 4.8 国际化与主题（已实现）
 
-Pixuli frontend defaults to **GitHub / Gitee** as storage and does not require a
-self-hosted backend. **Pixuli Server** is an optional backend service that
-provides enhanced capabilities including:
-
-- **MCP Server**: Model Context Protocol support for AI model integration
-- **Image Repository**: Advanced image storage and management with version
-  control
-- **Authentication & Authorization**: JWT-based authentication and RBAC
-- **Intelligent Search**: AI-based image search and full-text search
-- **Batch Processing**: Task queue for large-scale image processing
-- **Monitoring & Logging**: Comprehensive monitoring and logging capabilities
-
-### 6.1 Server Capabilities Overview
-
-**Current Implementation** (as per `server/README.md`):
-
-- Image upload, list, detail, metadata update, deletion
-- Local storage and MinIO object storage
-- API Key authentication
-- Tags and simple queries
-
-**Planned Features** (see Section 4.12 for detailed requirements):
-
-- MCP Server core functionality
-- Enhanced image repository with version control
-- Complete authentication and authorization system
-- Intelligent search with Elasticsearch
-- Batch processing with task queues
-- Caching and performance optimization
-- Monitoring and logging systems
-
-### 6.2 Frontend-Server Integration Requirements (if enabled)
-
-- Use Server-provided REST API (e.g., `/api/images/*`) for upload, list, delete,
-  metadata update.
-- Switch between "repository source" and "Server source" via environment
-  variables or configuration, and abstract as "current image hosting source" in
-  the frontend.
-- Support future GraphQL API (when implemented) alongside REST API.
-- Integrate with MCP Server for AI-powered features (when available).
+| ID         | 需求                           | 优先级 | 状态                                     | 平台          |
+| ---------- | ------------------------------ | ------ | ---------------------------------------- | ------------- |
+| F-I18N-01  | 中英文切换，界面文案随语言变化 | P0     | ✅                                       | 全平台        |
+| F-THEME-01 | 亮色/暗色主题切换              | P1     | ✅（如移动端）；Web/桌面可按当前实现标注 | 部分 / 全平台 |
 
 ---
 
-## VII. Requirement Priority
+### 4.9 快捷键与帮助（已实现）
 
-- **P0**: Core workflows; product unusable or significantly degraded without
-  them.
-- **P1**: Important features affecting experience and differentiation.
-- **P2**: Enhancement features that can be iterated later.
-
----
-
-## VIII. Appendix
-
-### 8.1 Related Documents
-
-- [Project README](https://github.com/trueLoving/Pixuli/blob/main/README.md)
-- [Pixuli App Documentation](https://github.com/trueLoving/Pixuli/blob/main/apps/pixuli/README.md)
-- [Mobile Documentation](https://github.com/trueLoving/Pixuli/blob/main/apps/mobile/README.md)
-- [Server Documentation](https://github.com/trueLoving/Pixuli/blob/main/server/README.md)
-- [Common Package Documentation](https://github.com/trueLoving/Pixuli/blob/main/packages/common/README.md)
-- [WASM Package Documentation](https://github.com/trueLoving/Pixuli/blob/main/packages/wasm/README.md)
-
-### 8.2 Revision History
-
-| Version | Date       | Changes                                                                                                                                                                                                                                                                                                                                                    | Author |
-| ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 1.0     | 2025-01-27 | Initial draft, based on repository code and documentation                                                                                                                                                                                                                                                                                                  | —      |
-| 1.1     | 2025-01-28 | Synced with implementation: Operation log Web/Desktop implemented                                                                                                                                                                                                                                                                                          | —      |
-| 1.2     | 2025-01-29 | Updated based on Mobile and Server roadmaps: Mobile batch upload/edit status, Mobile slideshow, Server features (MCP, repository, auth, etc.)                                                                                                                                                                                                              | —      |
-| 1.3     | 2025-01-29 | Extended requirements: Incorporated Mobile extension features suitable for Web/Desktop into requirements planning (batch edit, layout optimization, loading optimization, private repository, error handling, offline, AI, favorites/grouping, statistics, quick actions, animation, accessibility, performance optimization, sharing/collaboration, etc.) | —      |
-| 1.4     | 2025-01-29 | Synced with implementation: Mobile operation log implemented (Settings → "Operation Log", modal with latest 10 entries, export JSON/CSV, clear all); operation log types and service unified in packages/common (OperationLogService + storage adapters); Mobile batch upload marked as implemented                                                        | —      |
+| ID       | 需求                                                                                                              | 优先级 | 状态 | 平台       |
+| -------- | ----------------------------------------------------------------------------------------------------------------- | ------ | ---- | ---------- |
+| F-KBD-01 | 常用操作支持快捷键（Esc 关闭弹窗、F1 帮助、F5 刷新、Ctrl+, 配置、/ 搜索框、Ctrl+V 查看、Ctrl+Shift+L 操作日志等） | P1     | ✅   | Web / 桌面 |
+| F-KBD-02 | 提供快捷键帮助弹窗（KeyboardHelpModal），按 F1 打开                                                               | P2     | ✅   | Web / 桌面 |
 
 ---
 
-_This document is updated with project iterations. Please refer to the code and
-latest design documents for the most current information._
+### 4.10 Web/桌面扩展（部分实现 / 规划）
+
+**概述**：Web 与桌面端的增强功能与体验优化。
+
+| ID            | 需求                                                        | 优先级 | 状态      | 平台       |
+| ------------- | ----------------------------------------------------------- | ------ | --------- | ---------- |
+| F-WEB-DESK-01 | 批量编辑元数据（标签、描述、名称）                          | P1     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-02 | 网格布局优化（列数切换、瀑布流、列表视图）                  | P1     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-03 | 加载体验优化（骨架屏、懒加载优化、预加载）                  | P1     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-04 | 私有仓库图片访问控制（自动识别仓库类型、基于 Token 的访问） | P1     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-05 | 错误处理增强（重试机制、清晰错误提示、错误恢复）            | P1     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-06 | 桌面离线支持（离线浏览、上传队列、网络状态检测）            | P1     | ⏳ 待实现 | 桌面       |
+| F-WEB-DESK-07 | Web 触屏手势支持（长按菜单、滑动操作）                      | P2     | ⏳ 待实现 | Web        |
+| F-WEB-DESK-08 | AI 能力集成（自动打标签、场景识别、OCR、目标检测）          | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-09 | 收藏与分组（收藏、自定义相册、标签管理）                    | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-10 | 统计与洞察（存储用量、图片数量、上传历史、操作统计）        | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-11 | 快捷操作（最近上传、常用标签、快速上传模板）                | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-12 | 动画与过渡（页面过渡、加载动画、反馈动画）                  | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-13 | 无障碍支持（读屏、键盘导航、字号、高对比度）                | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-14 | 性能优化（图片缓存策略、虚拟列表、压缩图缓存）              | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-15 | 分享与协作（分享链接、二维码生成、多用户编辑）              | P2     | ⏳ 待实现 | Web / 桌面 |
+| F-WEB-DESK-16 | 桌面自动更新（electron-updater、检查/下载/安装）            | P1     | ⏳ 待实现 | 桌面       |
+| F-WEB-DESK-17 | 桌面系统托盘（托盘图标、托盘菜单、最小化到托盘、托盘通知）  | P1     | ⏳ 待实现 | 桌面       |
+
+---
+
+### 4.11 移动端扩展（部分实现 / 规划）
+
+**概述**：基于移动端能力的移动专属功能与增强。
+
+| ID          | 需求                                                        | 优先级 | 状态        | 平台   |
+| ----------- | ----------------------------------------------------------- | ------ | ----------- | ------ |
+| F-MOBILE-01 | 批量上传及进度与错误处理                                    | P0     | ✅          | 移动端 |
+| F-MOBILE-02 | 多张图片批量编辑元数据（标签、描述、名称）                  | P0     | ⏳ 高优先级 | 移动端 |
+| F-MOBILE-03 | 网格布局优化（2/3/4 列、瀑布流、列表视图）                  | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-04 | 加载体验优化（骨架屏、懒加载、预加载）                      | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-05 | 私有仓库图片访问控制（自动识别仓库类型、基于 Token 的访问） | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-06 | 错误处理增强（重试机制、清晰错误提示）                      | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-07 | 离线支持（离线浏览、上传队列、网络状态检测）                | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-08 | 手势增强（长按菜单、滑动删除、双击缩放）                    | P1     | ⏳ 中优先级 | 移动端 |
+| F-MOBILE-09 | AI 能力集成（自动打标签、场景识别、OCR、目标检测）          | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-10 | 收藏与分组（收藏、自定义相册、标签管理）                    | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-11 | 统计与洞察（存储用量、图片数量、上传历史）                  | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-12 | 快捷操作（最近上传、常用标签、快速上传）                    | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-13 | 动画与过渡（页面过渡、加载动画、反馈动画）                  | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-14 | 无障碍支持（读屏、键盘导航、字号）                          | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-15 | 性能优化（图片缓存、虚拟列表、压缩图缓存）                  | P2     | ⏳ 低优先级 | 移动端 |
+| F-MOBILE-16 | 分享与协作（分享链接、二维码、多用户编辑）                  | P2     | ⏳ 低优先级 | 移动端 |
+
+---
+
+### 4.12 服务端功能（规划中 / 开发中）
+
+**概述**：可选后端服务（Pixuli Server）提供 MCP
+Server、图片仓库管理、认证与高级能力等。
+
+#### 4.12.1 核心功能（高优先级）
+
+| ID          | 需求                                                                           | 优先级 | 状态        | 平台   |
+| ----------- | ------------------------------------------------------------------------------ | ------ | ----------- | ------ |
+| F-SERVER-01 | MCP Server 核心（Model Context Protocol 支持、模型管理、上下文管理、模型交互） | P0     | ⏳ 高优先级 | 服务端 |
+| F-SERVER-02 | 图片仓库核心（图片存储管理、元数据管理、版本控制、RESTful API）                | P0     | ⏳ 高优先级 | 服务端 |
+| F-SERVER-03 | 认证与授权（JWT 认证、RBAC、安全策略、限流）                                   | P0     | ⏳ 高优先级 | 服务端 |
+
+#### 4.12.2 增强功能（中优先级）
+
+| ID          | 需求                                                                 | 优先级 | 状态        | 平台   |
+| ----------- | -------------------------------------------------------------------- | ------ | ----------- | ------ |
+| F-SERVER-04 | 智能搜索（基于 AI 的图片搜索、Elasticsearch 全文搜索、搜索性能优化） | P1     | ⏳ 中优先级 | 服务端 |
+| F-SERVER-05 | 批量处理（批量上传、批量操作、Bull/BullMQ 任务队列）                 | P1     | ⏳ 中优先级 | 服务端 |
+| F-SERVER-06 | 缓存与性能优化（Redis 缓存、数据库优化、CDN 集成）                   | P1     | ⏳ 中优先级 | 服务端 |
+| F-SERVER-07 | 监控与日志（Prometheus 指标、Winston 日志、Grafana 看板）            | P1     | ⏳ 中优先级 | 服务端 |
+| F-SERVER-08 | 错误处理与容错（统一错误响应、重试、熔断、Sentry 集成）              | P1     | ⏳ 中优先级 | 服务端 |
+
+#### 4.12.3 扩展功能（低优先级）
+
+| ID          | 需求                                                        | 优先级 | 状态        | 平台   |
+| ----------- | ----------------------------------------------------------- | ------ | ----------- | ------ |
+| F-SERVER-09 | 图片处理服务集成（压缩、格式转换、缩放、裁剪）              | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-10 | Webhook 与事件（Webhook 注册、事件发布/订阅、事件历史）     | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-11 | 数据导入/导出（元数据导出/导入、批量操作、任务管理）        | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-12 | 多租户（租户管理、资源隔离、计费与统计）                    | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-13 | API 限流与配额（按 IP/用户/接口限流、存储/请求配额）        | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-14 | 文档与测试（Swagger/OpenAPI 文档、测试覆盖率 >80%）         | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-15 | 国际化（多语言错误信息、时区支持）                          | P2     | ⏳ 低优先级 | 服务端 |
+| F-SERVER-16 | GraphQL API（GraphQL Schema、查询/变更/订阅，与 REST 并存） | P2     | ⏳ 低优先级 | 服务端 |
+
+---
+
+## 五、非功能需求
+
+### 5.1 性能
+
+| ID         | 需求                                                              | 说明                                 |
+| ---------- | ----------------------------------------------------------------- | ------------------------------------ |
+| NF-PERF-01 | 多图场景下列表渲染应可接受（如懒加载、分页或虚拟滚动）            | 当前已有懒加载等；虚拟滚动为待优化项 |
+| NF-PERF-02 | Web/桌面端图片处理（压缩、转换）优先采用 WASM，控制首包与运行内存 | 参见 packages/wasm 与设计文档        |
+| NF-PERF-03 | 移动端可实现元数据缓存以减少重复请求                              | 部分已实现                           |
+
+### 5.2 安全与隐私
+
+| ID        | 需求                                                                |
+| --------- | ------------------------------------------------------------------- |
+| NF-SEC-01 | GitHub/Gitee Token 仅存储在用户设备本地，不上传至用户不可控的服务器 |
+| NF-SEC-02 | 若使用自托管 Server，支持 API Key 认证（见服务端文档）              |
+
+### 5.3 兼容性
+
+| ID           | 需求                                                                    |
+| ------------ | ----------------------------------------------------------------------- |
+| NF-COMPAT-01 | Web：现代浏览器（Chrome、Firefox、Safari、Edge 等）；需支持 WASM 的环境 |
+| NF-COMPAT-02 | 桌面：Windows 10/11 x64；macOS 10.15+（x64/ARM64）                      |
+| NF-COMPAT-03 | 移动端：Android 5.0+（API 21）；iOS 待定                                |
+
+### 5.4 可用性与可维护性
+
+| ID          | 需求                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| NF-USAB-01  | 主流程支持中英双语，关键操作有反馈（如 Toast、加载状态）                                                      |
+| NF-MAINT-01 | 通用逻辑与 UI 集中在 packages/common 供各平台复用，便于维护与体验一致（含操作日志类型与服务在 common 中统一） |
+
+---
+
+## 六、与可选后端（Pixuli Server）的集成
+
+Pixuli 前端默认以 **GitHub / Gitee** 为存储，不依赖自托管后端。**Pixuli Server**
+为可选后端服务，可提供以下增强能力：
+
+- **MCP Server**：Model Context Protocol，支持 AI 模型集成
+- **图片仓库**：带版本控制的高级图片存储与管理
+- **认证与授权**：基于 JWT 的认证与 RBAC
+- **智能搜索**：基于 AI 的图片搜索与全文搜索
+- **批量处理**：大规模图片处理的任务队列
+- **监控与日志**：监控与日志能力
+
+### 6.1 服务端能力概览
+
+**当前实现**（参见 `server/README.md`）：
+
+- 图片上传、列表、详情、元数据更新、删除
+- 本地存储与 MinIO 对象存储
+- API Key 认证
+- 标签与简单查询
+
+**规划功能**（详见 4.12 节）：
+
+- MCP Server 核心
+- 带版本控制的图片仓库增强
+- 完整认证与授权体系
+- 基于 Elasticsearch 的智能搜索
+- 任务队列批量处理
+- 缓存与性能优化
+- 监控与日志体系
+
+### 6.2 前端-服务端集成要求（启用时）
+
+- 使用 Server 提供的 REST API（如
+  `/api/images/*`）进行上传、列表、删除、元数据更新。
+- 通过环境变量或配置在「仓库源」与「Server 源」之间切换，前端抽象为「当前图床源」。
+- 未来支持 GraphQL API（实现后）与 REST 并存。
+- 与 MCP Server 集成以支持 AI 能力（可用时）。
+
+---
+
+## 七、需求优先级
+
+- **P0**：核心流程；缺失则产品不可用或体验严重受损。
+- **P1**：重要功能，影响体验与差异化。
+- **P2**：增强功能，可后续迭代。
+
+---
+
+## 八、附录
+
+### 8.1 相关文档
+
+- [项目 README](https://github.com/trueLoving/Pixuli/blob/main/README.md)
+- [Pixuli 应用文档](https://github.com/trueLoving/Pixuli/blob/main/apps/pixuli/README.md)
+- [移动端文档](https://github.com/trueLoving/Pixuli/blob/main/apps/mobile/README.md)
+- [服务端文档](https://github.com/trueLoving/Pixuli/blob/main/server/README.md)
+- [Common 包文档](https://github.com/trueLoving/Pixuli/blob/main/packages/common/README.md)
+- [WASM 包文档](https://github.com/trueLoving/Pixuli/blob/main/packages/wasm/README.md)
+
+### 8.2 修订历史
+
+| 版本 | 日期       | 变更                                                                                                                                                                                                  | 作者 |
+| ---- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| 1.0  | 2025-01-27 | 初稿，基于仓库代码与文档                                                                                                                                                                              | —    |
+| 1.1  | 2025-01-28 | 与实现同步：操作日志 Web/桌面已实现                                                                                                                                                                   | —    |
+| 1.2  | 2025-01-29 | 根据移动端与服务端路线图更新：移动端批量上传/编辑状态、移动端幻灯片、服务端功能（MCP、仓库、认证等）                                                                                                  | —    |
+| 1.3  | 2025-01-29 | 扩展需求：将适合 Web/桌面的移动端扩展能力纳入需求规划（批量编辑、布局优化、加载优化、私有仓库、错误处理、离线、AI、收藏/分组、统计、快捷操作、动画、无障碍、性能优化、分享协作等）                    | —    |
+| 1.4  | 2025-01-29 | 与实现同步：移动端操作日志已实现（设置 →「操作日志」，弹窗最近 10 条，导出 JSON/CSV、清空）；操作日志类型与服务统一至 packages/common（OperationLogService + 存储适配器）；移动端批量上传标记为已实现 | —    |
+
+---
+
+_本文档随项目迭代更新，请以代码与最新设计文档为准。_

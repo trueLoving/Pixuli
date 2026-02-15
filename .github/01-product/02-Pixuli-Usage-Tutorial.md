@@ -1,229 +1,213 @@
-# Pixuli Usage Tutorial
+# Pixuli 使用教程
 
-this guide will help you quickly get started with Pixuli image management
-application, including GitHub and Gitee repository source configuration, and how
-to configure repository sources in the interface.
+本指南帮助你快速上手 Pixuli 图片管理应用，包括 GitHub、Gitee 仓库源配置，以及如何在界面中配置仓库源。
 
-## Table of Contents
+## 目录
 
-- [Prerequisites](#prerequisites)
-- [GitHub Repository Source Configuration](#github-repository-source-configuration)
-- [Gitee Repository Source Configuration](#gitee-repository-source-configuration)
-- [Configuring Repository Sources in the Interface](#configuring-repository-sources-in-the-interface)
-- [Using Features](#using-features)
-- [Troubleshooting](#troubleshooting)
+- [前置条件](#前置条件)
+- [GitHub 仓库源配置](#github-仓库源配置)
+- [Gitee 仓库源配置](#gitee-仓库源配置)
+- [在界面中配置仓库源](#在界面中配置仓库源)
+- [使用功能](#使用功能)
+- [常见问题](#常见问题)
 
-## Prerequisites
+## 前置条件
 
-- Pixuli application installed (Desktop, Web, or Mobile)
-- GitHub or Gitee account
-- Repository created for storing images
+- 已安装 Pixuli 应用（桌面端、Web 或移动端）
+- 拥有 GitHub 或 Gitee 账号
+- 已创建用于存放图片的仓库
 
-## GitHub Repository Source Configuration
+## GitHub 仓库源配置
 
-### Step 1: Create GitHub Repository
+### 第一步：创建 GitHub 仓库
 
-1. Log in to your GitHub account
-2. Click the **"+"** button in the top right corner, select **"New repository"**
-3. Fill in repository information:
-   - **Repository name**: Enter repository name (e.g., `my-images`)
-   - **Visibility**: Select **Public** (must be set to public)
-   - **Initialize**: Optionally add README.md
-4. Click **"Create repository"** to complete
+1. 登录你的 GitHub 账号
+2. 点击右上角 **「+」** 按钮，选择 **「New repository」**（新建仓库）
+3. 填写仓库信息：
+   - **Repository name**（仓库名称）：输入仓库名（如 `my-images`）
+   - **Visibility**（可见性）：选择 **Public**（公开）（必须设为公开）
+   - **Initialize**（初始化）：可选添加 README.md
+4. 点击 **「Create repository」**（创建仓库）完成
 
-> ⚠️ **Important**: The repository must be set to **Public**, otherwise Pixuli
-> cannot access your images.
+> ⚠️ **重要**：仓库必须设为 **Public**（公开），否则 Pixuli 无法访问你的图片。
 
-### Step 2: Get GitHub Personal Access Token
+### 第二步：获取 GitHub 个人访问令牌
 
-1. Go to GitHub Settings: Click avatar → **Settings**
-2. Find **"Developer settings"** in the left menu
-3. Click **"Personal access tokens"** → **"Tokens (classic)"**
-4. Click **"Generate new token"** → **"Generate new token (classic)"**
-5. Fill in token information:
-   - **Note**: Enter description (e.g., Pixuli Access)
-   - **Expiration**: Recommend longer duration (e.g., 90 days or No expiration)
-6. Set permission scope:
-   - ✅ **repo** - Full repository access
-   - ✅ **public_repo** - Public repository access
-7. Click **"Generate token"**
-8. **Copy the generated token** and save it securely (only shown once)
+1. 进入 GitHub 设置：点击头像 → **Settings**（设置）
+2. 在左侧菜单找到 **「Developer settings」**（开发者设置）
+3. 点击 **「Personal access tokens」** → **「Tokens
+   (classic)”**（个人访问令牌 → 经典令牌）
+4. 点击 **「Generate new token」** → **「Generate new token
+   (classic)”**（生成新令牌 → 生成新经典令牌）
+5. 填写令牌信息：
+   - **Note**（备注）：输入描述（如 Pixuli 访问）
+   - **Expiration**（过期时间）：建议较长（如 90 天或不限期）
+6. 设置权限范围：
+   - ✅ **repo** - 完整仓库访问
+   - ✅ **public_repo** - 公开仓库访问
+7. 点击 **「Generate token」**（生成令牌）
+8. **复制生成的令牌**并妥善保存（仅显示一次）
 
-### Configuration Items
+### 配置项说明
 
-| Configuration Item      | Description                          | Example              |
-| ----------------------- | ------------------------------------ | -------------------- |
-| **Username (Owner)**    | Your GitHub username                 | `yourgithubname`     |
-| **Repository Name**     | The repository name you just created | `my-images`          |
-| **Branch Name**         | Main branch name                     | `main` or `master`   |
-| **Storage Path (Path)** | Directory for storing images         | `images` or `photos` |
-| **GitHub Token**        | Generated access token               | `ghp_xxxxxxxxxxxx`   |
+| 配置项              | 说明               | 示例                 |
+| ------------------- | ------------------ | -------------------- |
+| **用户名 (Owner)**  | 你的 GitHub 用户名 | `yourgithubname`     |
+| **仓库名称**        | 你刚创建的仓库名   | `my-images`          |
+| **分支名称**        | 主分支名称         | `main` 或 `master`   |
+| **存储路径 (Path)** | 存放图片的目录     | `images` 或 `photos` |
+| **GitHub Token**    | 生成的访问令牌     | `ghp_xxxxxxxxxxxx`   |
 
-## Gitee Repository Source Configuration
+## Gitee 仓库源配置
 
-### Step 1: Create Gitee Repository
+### 第一步：创建 Gitee 仓库
 
-1. Log in to your Gitee account
-2. Click the **"+"** button in the top right corner, select **"新建仓库"** (New
-   Repository)
-3. Fill in repository information:
-   - **仓库名称** (Repository Name): Enter repository name (e.g., `my-images`)
-   - **是否开源** (Open Source): Select **公开** (Public) (must be set to
-     public)
-   - **初始化仓库** (Initialize Repository): Optionally add README.md
-4. Click **"创建"** (Create) to complete
+1. 登录你的 Gitee 账号
+2. 点击右上角 **「+」** 按钮，选择 **「新建仓库」**
+3. 填写仓库信息：
+   - **仓库名称**：输入仓库名（如 `my-images`）
+   - **是否开源**：选择 **公开**（必须设为公开）
+   - **初始化仓库**：可选添加 README.md
+4. 点击 **「创建」** 完成
 
-> ⚠️ **Important**: The repository must be set to **公开** (Public), otherwise
-> Pixuli cannot access your images.
+> ⚠️ **重要**：仓库必须设为 **公开**，否则 Pixuli 无法访问你的图片。
 
-### Step 2: Get Gitee Personal Access Token
+### 第二步：获取 Gitee 个人访问令牌
 
-1. Go to Gitee Settings: Click avatar → **设置** (Settings)
-2. Find **"安全设置"** (Security Settings) → **"私人令牌"** (Personal Access
-   Tokens) in the left menu
-3. Click **"生成新令牌"** (Generate New Token)
-4. Fill in token information:
-   - **令牌描述** (Token Description): Enter description (e.g., Pixuli Access)
-   - **过期时间** (Expiration): Recommend longer duration (e.g., 90 days or
-     permanent)
-5. Set permission scope:
-   - ✅ **projects** - Repository access
-   - ✅ **user_info** - User information access
-6. Click **"提交"** (Submit)
-7. **Copy the generated token** and save it securely (only shown once)
+1. 进入 Gitee 设置：点击头像 → **设置**
+2. 在左侧菜单找到 **「安全设置」** → **「私人令牌」**
+3. 点击 **「生成新令牌」**
+4. 填写令牌信息：
+   - **令牌描述**：输入描述（如 Pixuli 访问）
+   - **过期时间**：建议较长（如 90 天或永久）
+5. 设置权限范围：
+   - ✅ **projects** - 仓库访问
+   - ✅ **user_info** - 用户信息访问
+6. 点击 **「提交」**
+7. **复制生成的令牌**并妥善保存（仅显示一次）
 
-### Configuration Items
+### 配置项说明
 
-| Configuration Item      | Description                          | Example              |
-| ----------------------- | ------------------------------------ | -------------------- |
-| **Username (Owner)**    | Your Gitee username                  | `yourgiteename`      |
-| **Repository Name**     | The repository name you just created | `my-images`          |
-| **Branch Name**         | Main branch name                     | `master` or `main`   |
-| **Storage Path (Path)** | Directory for storing images         | `images` or `photos` |
-| **Gitee Token**         | Generated access token               | `xxxxxxxxxxxxxxxx`   |
+| 配置项              | 说明              | 示例                 |
+| ------------------- | ----------------- | -------------------- |
+| **用户名 (Owner)**  | 你的 Gitee 用户名 | `yourgiteename`      |
+| **仓库名称**        | 你刚创建的仓库名  | `my-images`          |
+| **分支名称**        | 主分支名称        | `master` 或 `main`   |
+| **存储路径 (Path)** | 存放图片的目录    | `images` 或 `photos` |
+| **Gitee Token**     | 生成的访问令牌    | `xxxxxxxxxxxxxxxx`   |
 
-## Configuring Repository Sources in the Interface
+## 在界面中配置仓库源
 
-After configuring GitHub or Gitee repository and Token, you need to configure
-the repository source in the Pixuli application. Configuration methods vary
-slightly across platforms:
+配置好 GitHub 或 Gitee 仓库与 Token 后，需要在 Pixuli 应用中配置仓库源。各平台配置方式略有不同：
 
-### Desktop Configuration
+### 桌面端配置
 
-1. Open Pixuli desktop application
-2. Find **"仓库源管理"** (Source Manager) or **"Source Manager"** option in the
-   left sidebar
-3. Click **"+"** or **"添加仓库源"** (Add Repository Source) button
-4. Select the repository source type to add:
-   - **GitHub** - Select this option to configure GitHub repository source
-   - **Gitee** - Select this option to configure Gitee repository source
-5. Fill in the following information in the configuration dialog:
-   - **Username (Owner)**: Enter your GitHub/Gitee username
-   - **Repository Name**: Enter repository name
-   - **Branch Name**: Enter branch name (usually `main` or `master`)
-   - **Storage Path (Path)**: Enter image storage path (e.g., `images`)
-   - **Token**: Paste the Personal Access Token you generated earlier
-6. Click **"保存"** (Save) or **"确认"** (Confirm) to complete configuration
-7. After successful configuration, the repository source will appear in the
-   repository source list, and you can click to switch between different
-   repository sources
+1. 打开 Pixuli 桌面应用
+2. 在左侧边栏找到 **「仓库源管理」** 或 **「Source Manager」** 选项
+3. 点击 **「+」** 或 **「添加仓库源」** 按钮
+4. 选择要添加的仓库源类型：
+   - **GitHub** - 配置 GitHub 仓库源时选择此项
+   - **Gitee** - 配置 Gitee 仓库源时选择此项
+5. 在配置对话框中填写以下信息：
+   - **用户名 (Owner)**：填写你的 GitHub/Gitee 用户名
+   - **仓库名称**：填写仓库名称
+   - **分支名称**：填写分支名称（一般为 `main` 或 `master`）
+   - **存储路径 (Path)**：填写图片存储路径（如 `images`）
+   - **Token**：粘贴此前生成的个人访问令牌
+6. 点击 **「保存」** 或 **「确认」** 完成配置
+7. 配置成功后，仓库源会出现在仓库源列表中，可点击切换不同仓库源
 
-### Web Configuration
+### Web 端配置
 
-1. Open Pixuli Web application (visit
-   [https://pixuli-web.vercel.app/](https://pixuli-web.vercel.app/))
-2. Click the **Settings** icon in the top right corner or go to settings page
-3. Find **"存储配置"** (Storage Config) or **"Storage Config"** option
-4. Select the storage type to configure:
-   - **GitHub** - Configure GitHub repository source
-   - **Gitee** - Configure Gitee repository source
-5. Fill in configuration information (same as desktop)
-6. Click **"保存"** (Save) to complete configuration
+1. 打开 Pixuli Web 应用（访问
+   [https://pixuli-web.vercel.app/](https://pixuli-web.vercel.app/)）
+2. 点击右上角设置图标或进入设置页
+3. 找到 **「存储配置」** 或 **「Storage Config」** 选项
+4. 选择要配置的存储类型：
+   - **GitHub** - 配置 GitHub 仓库源
+   - **Gitee** - 配置 Gitee 仓库源
+5. 填写配置信息（与桌面端相同）
+6. 点击 **「保存」** 完成配置
 
-### Mobile Configuration
+### 移动端配置
 
-1. Open Pixuli mobile application
-2. Go to **Settings** page (usually in bottom navigation bar)
-3. Find **"GitHub 配置"** (GitHub Config) or **"Gitee 配置"** (Gitee Config)
-   option
-4. Click to enter configuration page and fill in corresponding configuration
-   information
-5. Click **"保存"** (Save) to complete configuration
+1. 打开 Pixuli 移动端应用
+2. 进入 **设置** 页（一般在底部导航栏）
+3. 找到 **「GitHub 配置」** 或 **「Gitee 配置」** 选项
+4. 点击进入配置页，填写对应配置信息
+5. 点击 **「保存」** 完成配置
 
-### Configuring Multiple Repository Sources
+### 配置多个仓库源
 
-Pixuli supports configuring multiple repository sources, and you can switch
-between different repository sources:
+Pixuli 支持配置多个仓库源，并可在不同仓库源之间切换：
 
-- **Desktop**: In the repository source management list, click different
-  repository sources to switch
-- **Web**: Switch storage type in settings page
-- **Mobile**: Switch storage source at the top of home page
+- **桌面端**：在仓库源管理列表中点击不同仓库源进行切换
+- **Web 端**：在设置页切换存储类型
+- **移动端**：在首页顶部切换存储源
 
-## Using Features
+## 使用功能
 
-### Uploading Images
+### 上传图片
 
-After configuration is complete, you can start uploading and managing images:
+配置完成后即可开始上传和管理图片：
 
-1. **Drag and Drop Upload**:
-   - Directly drag images to upload into Pixuli window
-   - Support batch drag and drop of multiple images
-2. **Click Upload**:
-   - Click the **"上传"** (Upload) or **"+"** button in the application
-   - Select image files to upload
-3. **Image Storage**:
-   - Images will automatically upload to your configured repository source
-   - Support multiple image formats (JPG, PNG, WebP, etc.)
-   - Can be viewed and managed in the repository
+1. **拖拽上传**：
+   - 直接将图片拖入 Pixuli 窗口即可上传
+   - 支持多张图片批量拖拽
+2. **点击上传**：
+   - 点击应用内的 **「上传」** 或 **「+」** 按钮
+   - 选择要上传的图片文件
+3. **图片存储**：
+   - 图片会自动上传到你配置的仓库源
+   - 支持多种图片格式（JPG、PNG、WebP 等）
+   - 可在仓库中查看和管理
 
-### Viewing and Managing
+### 查看与管理
 
-- **Preview Images**: Directly preview all uploaded images in the application
-- **File Management**: Manage by upload time, filename, tags, etc.
-- **Online Access**: View all images online through repository URL
-- **Batch Operations**: Support batch delete, batch edit tags, etc.
+- **预览图片**：在应用中直接预览所有已上传图片
+- **文件管理**：按上传时间、文件名、标签等管理
+- **在线访问**：通过仓库地址在线查看所有图片
+- **批量操作**：支持批量删除、批量编辑标签等
 
-## Troubleshooting
+## 常见问题
 
-### Common Issues
+### 常见情况
 
-1. **Cannot Upload Images**
-   - Check if Token is valid and not expired
-   - Confirm repository is set to Public/公开
-   - Verify network connection is normal
-   - Check if configuration information is correct (username, repository name,
-     branch name, etc.)
+1. **无法上传图片**
+   - 检查 Token 是否有效、是否过期
+   - 确认仓库已设为公开（Public/公开）
+   - 确认网络连接正常
+   - 检查配置信息是否正确（用户名、仓库名、分支名等）
 
-2. **Token Expired**
-   - Regenerate GitHub/Gitee Token
-   - Update new Token in Pixuli
+2. **Token 过期**
+   - 重新生成 GitHub/Gitee Token
+   - 在 Pixuli 中更新为新 Token
 
-3. **Images Cannot Be Viewed**
-   - Check repository visibility settings (must be public)
-   - Confirm storage path configuration is correct
-   - Verify images have been successfully uploaded to repository
+3. **无法查看图片**
+   - 检查仓库可见性设置（必须为公开）
+   - 确认存储路径配置正确
+   - 确认图片已成功上传到仓库
 
-4. **Cannot Switch Repository Sources**
-   - Confirm multiple repository sources are correctly configured
-   - Check if current repository source is available
-   - Try reloading the application
+4. **无法切换仓库源**
+   - 确认多个仓库源已正确配置
+   - 检查当前仓库源是否可用
+   - 尝试重新加载应用
 
-### Getting Help
+### 获取帮助
 
-If you encounter other issues, please refer to:
+如遇其他问题，可参考：
 
 - [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
-- [Web Version Online Experience](https://pixuli-web.vercel.app/)
-- [Keyboard Shortcuts Guide](/keyboard)
+- [Web 版在线体验](https://pixuli-web.vercel.app/)
+- [快捷键指南](/keyboard)
 
-## Summary
+## 小结
 
-Through the above steps, you can:
+通过以上步骤，你可以：
 
-1. ✅ Create GitHub or Gitee repository
-2. ✅ Get access permission Token
-3. ✅ Complete repository source configuration in Pixuli interface
-4. ✅ Start uploading and managing images
+1. ✅ 创建 GitHub 或 Gitee 仓库
+2. ✅ 获取访问权限 Token
+3. ✅ 在 Pixuli 界面完成仓库源配置
+4. ✅ 开始上传和管理图片
 
-Now you can enjoy the image management experience that Pixuli brings!
+现在即可享受 Pixuli 带来的图片管理体验！
