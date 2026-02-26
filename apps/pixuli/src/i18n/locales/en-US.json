@@ -25,5 +25,47 @@
   },
   "header": {
     "operationLog": "Operation Log"
+  },
+  "compressPage": {
+    "title": "Image Compression",
+    "dropHint": "Drag images here or click to select",
+    "quality": "Quality",
+    "maxWidth": "Max width",
+    "maxHeight": "Max height",
+    "maxWidthPlaceholder": "No limit",
+    "maxHeightPlaceholder": "No limit",
+    "outputFormat": "Output format",
+    "minSizeToCompress": "Skip if smaller than (KB)",
+    "minSizePlaceholder": "No limit",
+    "compressBtn": "Compress",
+    "compressing": "Compressing...",
+    "originalSize": "Original",
+    "processedSize": "Compressed",
+    "ratio": "Ratio",
+    "dimensions": "Dimensions",
+    "download": "Download",
+    "noFiles": "Select images to compress first",
+    "clear": "Clear",
+    "keepAspectRatio": "Keep aspect ratio"
+  },
+  "convertPage": {
+    "title": "Image Conversion",
+    "dropHint": "Drag images here or click to select",
+    "targetFormat": "Target format",
+    "quality": "Quality",
+    "maxWidth": "Max width",
+    "maxHeight": "Max height",
+    "maxWidthPlaceholder": "No limit",
+    "maxHeightPlaceholder": "No limit",
+    "convertBtn": "Convert",
+    "converting": "Converting...",
+    "originalSize": "Original",
+    "processedSize": "Converted",
+    "ratio": "Size ratio",
+    "dimensions": "Dimensions",
+    "download": "Download",
+    "noFiles": "Select images to convert first",
+    "clear": "Clear",
+    "keepAspectRatio": "Keep aspect ratio"
   }
 }

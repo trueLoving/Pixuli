@@ -43,13 +43,13 @@ export const HelpModal: React.FC<HelpModalProps> = ({
       id: 'docs',
       title: t('help.documentation') || '使用文档',
       icon: 'book.fill',
-      url: 'https://pixuli-docs.vercel.app/',
+      url: 'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
     },
     {
       id: 'faq',
       title: t('help.faq') || '常见问题',
       icon: 'questionmark.circle.fill',
-      url: 'https://pixuli-docs.vercel.app/',
+      url: 'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
     },
     {
       id: 'github',

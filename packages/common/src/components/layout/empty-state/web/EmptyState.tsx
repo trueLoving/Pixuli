@@ -88,7 +88,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           <HelpCircle className="w-4 h-4" />
           <span>{translate('emptyState.needHelp')}</span>
           <a
-            href="https://pixuli-docs.vercel.app/"
+            href="https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial"
             target="_blank"
             rel="noopener noreferrer"
             className="help-link"

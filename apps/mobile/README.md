@@ -145,7 +145,6 @@ graph TB
 
 - [Project Homepage](https://github.com/trueLoving/Pixuli)
 - [Issue Feedback](https://github.com/trueLoving/Pixuli/issues)
-- [Documentation](https://pixuli-docs.vercel.app/)
 - [Feature Roadmap](./ROADMAP.md)
 - [Changelog](../../CHANGELOG.md)
 - [Contributing Guide](../../CONTRIBUTING.md)
