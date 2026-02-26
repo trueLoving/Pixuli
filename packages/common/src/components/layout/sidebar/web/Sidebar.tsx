@@ -221,13 +221,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       tool: 'compress',
       icon: <Zap size={20} />,
       label: translate('sidebar.imageCompress'),
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       tool: 'convert',
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
-      comingSoon: true,
+      comingSoon: false,
     },
     {
       tool: 'analyze',

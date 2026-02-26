@@ -25,5 +25,47 @@
   },
   "header": {
     "operationLog": "操作日志"
+  },
+  "compressPage": {
+    "title": "图片压缩",
+    "dropHint": "拖拽图片到此处，或点击选择文件",
+    "quality": "压缩质量",
+    "maxWidth": "最大宽度",
+    "maxHeight": "最大高度",
+    "maxWidthPlaceholder": "不限制",
+    "maxHeightPlaceholder": "不限制",
+    "outputFormat": "输出格式",
+    "minSizeToCompress": "小于此大小不压缩（KB）",
+    "minSizePlaceholder": "不限制",
+    "compressBtn": "压缩",
+    "compressing": "压缩中...",
+    "originalSize": "原始大小",
+    "processedSize": "压缩后",
+    "ratio": "压缩率",
+    "dimensions": "尺寸",
+    "download": "下载",
+    "noFiles": "请先选择要压缩的图片",
+    "clear": "清空",
+    "keepAspectRatio": "保持宽高比"
+  },
+  "convertPage": {
+    "title": "图片转换",
+    "dropHint": "拖拽图片到此处，或点击选择文件",
+    "targetFormat": "目标格式",
+    "quality": "质量",
+    "maxWidth": "最大宽度",
+    "maxHeight": "最大高度",
+    "maxWidthPlaceholder": "不限制",
+    "maxHeightPlaceholder": "不限制",
+    "convertBtn": "转换",
+    "converting": "转换中...",
+    "originalSize": "原始大小",
+    "processedSize": "转换后",
+    "ratio": "体积比",
+    "dimensions": "尺寸",
+    "download": "下载",
+    "noFiles": "请先选择要转换的图片",
+    "clear": "清空",
+    "keepAspectRatio": "保持宽高比"
   }
 }

@@ -27,7 +27,9 @@ const EmptyStateNative: React.FC<EmptyStateProps> = ({
   const colorScheme = colorSchemeProp ?? systemColorScheme;
 
   const handleOpenDocs = () => {
-    Linking.openURL('https://pixuli-docs.vercel.app/');
+    Linking.openURL(
+      'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+    );
   };
 
   // 主题颜色定义

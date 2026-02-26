@@ -9,3 +9,10 @@ export type {
   IOperationLogStorage,
   OperationLogServiceOptions,
 } from './operationLog';
+
+// 图片处理（Web/Desktop 纯 Web 实现，依赖 Canvas；移动端勿用）
+export {
+  WebImageProcessorService,
+  webImageProcessorService,
+  type OutputMimeType,
+} from './imageProcessor';
