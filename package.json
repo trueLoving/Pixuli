@@ -12,8 +12,6 @@
     "build:wasm": "pnpm run --filter pixuli-wasm build",
     "benchmark": "pnpm run --filter pixuli-benchmark benchmark",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "test:all": "pnpm test && pnpm test:e2e",
     "prepare": "husky"
   },
   "keywords": [

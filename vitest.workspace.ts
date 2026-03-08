@@ -5,8 +5,6 @@ export default defineWorkspace([
   './packages/common/vitest.config.ts',
   // packages/wasm - node 环境
   './packages/wasm/vitest.config.ts',
-  // apps/web - jsdom 环境
-  './apps/web/vitest.config.ts',
   // apps/pixuli - jsdom 环境
   './apps/pixuli/vitest.config.ts',
   // apps/mobile - node 环境

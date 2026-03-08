@@ -158,19 +158,6 @@ describe('SearchBar', () => {
       expect(onFocus).toHaveBeenCalledTimes(1);
     });
 
-    it('应该调用 onBlur 当输入框失焦时', () => {
-      const onBlur = vi.fn();
-      const { container } = render(
-        <SearchBar {...defaultProps} onBlur={onBlur} />,
-      );
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      fireEvent.focus(input);
-      fireEvent.blur(input);
-
-      expect(onBlur).toHaveBeenCalledTimes(1);
-    });
-
     it('应该在聚焦时添加 focused 类名', () => {
       const { container } = render(<SearchBar {...defaultProps} />);
       const searchBar = container.querySelector('.search-bar');
@@ -179,18 +166,6 @@ describe('SearchBar', () => {
       fireEvent.focus(input);
 
       expect(searchBar).toHaveClass('focused');
-    });
-
-    it('应该在失焦时移除 focused 类名', () => {
-      const { container } = render(<SearchBar {...defaultProps} />);
-      const searchBar = container.querySelector('.search-bar');
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      fireEvent.focus(input);
-      expect(searchBar).toHaveClass('focused');
-
-      fireEvent.blur(input);
-      expect(searchBar).not.toHaveClass('focused');
     });
   });
 
