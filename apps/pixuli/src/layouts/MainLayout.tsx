@@ -16,7 +16,12 @@ import {
   type VersionInfo,
 } from '@packages/common/src';
 import React from 'react';
-import { OperationLogModal, SourceTypeMenu } from '../features';
+import {
+  OfflineIndicator,
+  OperationLogModal,
+  PWAInstallPrompt,
+  SourceTypeMenu,
+} from '../features';
 import { useKeyboardCategories } from '../hooks/useKeyboardCategories';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
@@ -27,8 +32,9 @@ import { getPlatform } from '../utils/platform';
 import { AppMain } from './AppMain';
 import { Sidebar } from './Sidebar';
 
-// 声明全局版本信息
+// 声明构建时注入的全局变量
 declare const __VERSION_INFO__: VersionInfo;
+declare const __IS_WEB__: boolean;
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -216,6 +222,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         visible={loading}
         text={loading ? t('app.loadingImages') : undefined}
       />
+
+      {/* PWA：仅 Web 模式显示安装提示、更新提示与离线状态 */}
+      {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && (
+        <>
+          <OfflineIndicator />
+          <PWAInstallPrompt />
+        </>
+      )}
     </div>
   );
 };

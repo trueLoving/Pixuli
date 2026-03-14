@@ -148,65 +148,93 @@ export default defineConfig(({ command, mode }) => {
     );
   }
 
-  // PWA 功能已暂时移除，相关插件配置已注释
-  // 如需恢复 PWA 功能，取消下面的注释即可
-  // if (isWeb) {
-  //   plugins.push(
-  //     VitePWA({
-  //       registerType: 'prompt',
-  //       includeAssets: [
-  //         'icon.ico',
-  //         'pwa/icon-192x192.png',
-  //         'pwa/icon-512x512.png',
-  //       ],
-  //       manifest: {
-  //         name: 'Pixuli - 智能图片管理',
-  //         short_name: 'Pixuli',
-  //         description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
-  //         theme_color: '#2563eb',
-  //         background_color: '#ffffff',
-  //         display: 'standalone',
-  //         orientation: 'any',
-  //         scope: '/',
-  //         start_url: '/',
-  //         icons: [
-  //           {
-  //             src: '/pwa/icon-192x192.png',
-  //             sizes: '192x192',
-  //             type: 'image/png',
-  //             purpose: 'any maskable',
-  //           },
-  //           {
-  //             src: '/pwa/icon-512x512.png',
-  //             sizes: '512x512',
-  //             type: 'image/png',
-  //             purpose: 'any maskable',
-  //           },
-  //         ],
-  //         shortcuts: [
-  //           {
-  //             name: '上传图片',
-  //             short_name: '上传',
-  //             description: '快速上传新图片',
-  //             url: '/?action=upload',
-  //             icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
-  //           },
-  //         ],
-  //         categories: ['productivity', 'utilities'],
-  //       },
-  //       // Service Worker 已移除，仅保留 manifest 配置
-  //     }),
-  //   );
-  // }
+  // PWA：仅 Web 模式启用（Desktop 不注册 SW）
+  if (isWeb) {
+    plugins.push(
+      VitePWA({
+        registerType: 'prompt',
+        injectRegister: 'auto',
+        includeAssets: [
+          'favicon.ico',
+          'icon.ico',
+          'pwa/icon-192x192.png',
+          'pwa/icon-512x512.png',
+        ],
+        manifest: {
+          name: 'Pixuli - 智能图片管理',
+          short_name: 'Pixuli',
+          description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
+          theme_color: '#2563eb',
+          background_color: '#ffffff',
+          display: 'standalone',
+          orientation: 'any',
+          scope: '/',
+          start_url: '/',
+          icons: [
+            {
+              src: '/pwa/icon-192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: '/pwa/icon-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+          shortcuts: [
+            {
+              name: '上传图片',
+              short_name: '上传',
+              description: '快速上传新图片',
+              url: '/?action=upload',
+              icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
+            },
+          ],
+          categories: ['productivity', 'utilities'],
+        },
+        workbox: {
+          // 开发时 dev-dist 可能为空，不预缓存以免触发 glob 警告；生产构建正常预缓存
+          globPatterns: isServe ? [] : ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/raw\.(githubusercontent|gitee)\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'pixuli-image-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 30 * 24 * 60 * 60,
+                },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
+        },
+        devOptions: { enabled: true },
+      }),
+    );
+  }
+
+  const resolveAlias: Record<string, string> = {
+    '@': path.join(__dirname, 'src'),
+    '@packages': path.resolve(__dirname, '../../packages'),
+    '@platforms/web': path.resolve(__dirname, 'src/platforms/web'),
+    '@platforms/desktop': path.resolve(__dirname, 'src/platforms/desktop'),
+  };
+  // Desktop 构建时无 PWA 插件，将 virtual:pwa-register 指向 no-op 避免报错
+  if (isDesktop) {
+    resolveAlias['virtual:pwa-register/react'] = path.resolve(
+      __dirname,
+      'src/features/pwa/pwaRegisterStub.ts',
+    );
+  }
 
   return {
     resolve: {
-      alias: {
-        '@': path.join(__dirname, 'src'),
-        '@packages': path.resolve(__dirname, '../../packages'),
-        '@platforms/web': path.resolve(__dirname, 'src/platforms/web'),
-        '@platforms/desktop': path.resolve(__dirname, 'src/platforms/desktop'),
-      },
+      alias: resolveAlias,
     },
     plugins,
     build: {

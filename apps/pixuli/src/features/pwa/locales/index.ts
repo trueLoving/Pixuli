@@ -4,6 +4,7 @@ export const pwaLocales = {
       install: {
         title: '安装 Pixuli',
         description: '安装到主屏幕，获得更好的体验',
+        hint: '请使用浏览器菜单（⋮）→「安装应用」或「添加到主屏幕」',
         button: '安装',
         dismiss: '稍后',
       },
@@ -53,6 +54,7 @@ export const pwaLocales = {
       install: {
         title: 'Install Pixuli',
         description: 'Install to home screen for a better experience',
+        hint: 'Use browser menu (⋮) → Install app or Add to Home Screen',
         button: 'Install',
         dismiss: 'Later',
       },

@@ -2,8 +2,7 @@ import { Wifi, WifiOff, Database } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/useI18n';
 import { backgroundSyncService } from '../../platforms/web/services/backgroundSyncService';
-// TODO: 暂时注释掉 pwaService 导入，待缓存功能恢复后启用
-// import { pwaService } from '../../platforms/web/services/pwaService';
+import { getCacheSize } from '../../platforms/web/services/pwaService';
 
 export function OfflineIndicator() {
   const { t } = useI18n();
@@ -33,18 +32,13 @@ export function OfflineIndicator() {
     const handleOffline = async () => {
       setIsOnline(false);
       setShowBanner(true);
-
-      // TODO: 暂时注释掉获取缓存大小，待缓存功能恢复后启用
-      /*
-      // 获取缓存大小
       try {
-        const size = await pwaService.getCacheSize();
+        const size = await getCacheSize();
         setCacheSize(size);
       } catch (error) {
         console.error('[OfflineIndicator] Failed to get cache size:', error);
+        setCacheSize(null);
       }
-      */
-      setCacheSize(null);
     };
 
     // 初始化时检查状态
