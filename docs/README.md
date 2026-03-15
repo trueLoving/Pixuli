@@ -33,7 +33,7 @@
 | [03-performance.md](02-system-design/03-performance.md)                                                                   | 性能优化与监控：列表渲染（虚拟滚动、懒加载）、数据处理（Worker/后台线程）、资源与代码分割；性能监控（FPS、首屏、内存、网络）、采集与可视化、跨平台适配。                                                     |
 | [04-cross-platform-logging.md](02-system-design/04-cross-platform-logging.md)                                             | 跨端日志：统一日志接口、console 拦截与收集、过滤/搜索/导出、DevTools 可视化；Web/Desktop/Mobile 一致用法与安全、性能要点。                                                                                   |
 | [05-Dify-Integration-And-Image-Processing-Design.md](02-system-design/05-Dify-Integration-And-Image-Processing-Design.md) | Dify 集成与图片处理选型：Dify 工作流 run API 接入（图片分析 image→text、图片生成 text→image）；压缩/编辑/格式转换采用传统实现（WASM/原生/服务端）的选型依据与架构阶段。                                      |
-| [06-unified-app-mobile-integration.md](02-system-design/06-unified-app-mobile-integration.md)                             | 移动端与 apps/pixuli 统一可行性：Web/Desktop 共一工程（同一 DOM）、Mobile 独立（RN）；方案 A Capacitor（Web 包壳）、方案 B RNW（以 RN 为主）、方案 C 保持双应用；对比与建议。                                |
+| [06-unified-app-mobile-integration.md](02-system-design/06-unified-app-mobile-integration.md)                             | 移动端与 apps/pixuli 统一：可行性分析（Web/Desktop 共一工程、Mobile 独立 RN）、方案 A/B/C 对比与决策；方案 A（Capacitor 套壳）落地：目标与原则、技术选型、工程结构、分阶段步骤、配置示例、风险与应对。       |
 
 ---
 
