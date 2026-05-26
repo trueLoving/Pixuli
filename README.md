@@ -156,13 +156,14 @@ Mobile application supports iOS and Android platforms, available through:
 
 ## 📚 Documentation
 
-| Documentation Type   | Documentation Link                                       | Description                               |
-| -------------------- | -------------------------------------------------------- | ----------------------------------------- |
-| **User Guides**      | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) | Complete user documentation and tutorials |
-| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)             | App features and usage (Web & Desktop)    |
-|                      | [Mobile Documentation](./apps/mobile/README.md)          | Mobile features and usage                 |
-| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)                  | Complete development guide                |
-| **Changelog**        | [Changelog](./CHANGELOG.md)                              | Complete version history                  |
+| Documentation Type   | Documentation Link                                       | Description                                |
+| -------------------- | -------------------------------------------------------- | ------------------------------------------ |
+| **User Guides**      | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) | Complete user documentation and tutorials  |
+| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)             | App features and usage (Web & Desktop)     |
+|                      | [Mobile Documentation](./apps/mobile/README.md)          | Mobile features and usage                  |
+| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)                  | Complete development guide                 |
+| **Refactor Plan**    | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                   | Refactor milestones & GitHub Issue tracker |
+| **Changelog**        | [Changelog](./CHANGELOG.md)                              | Complete version history                   |
 
 ## 🙏 Acknowledgments
 
