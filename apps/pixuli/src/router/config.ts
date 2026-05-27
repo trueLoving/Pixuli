@@ -12,7 +12,7 @@ export interface RouteMeta {
   description?: string;
   requiresAuth?: boolean;
   menuKey?: string;
-  browseMode?: 'file' | 'slide' | 'timeline';
+  browseMode?: 'file';
 }
 
 // 路由配置映射
@@ -23,20 +23,6 @@ export const routeConfig: Record<string, RouteMeta> = {
     description: 'Browse photos in file mode',
     menuKey: 'photos',
     browseMode: 'file',
-  },
-  [ROUTES.SLIDESHOW]: {
-    path: ROUTES.SLIDESHOW,
-    title: 'Slideshow',
-    description: 'View photos in slideshow mode',
-    menuKey: 'browse-slide',
-    browseMode: 'slide',
-  },
-  [ROUTES.TIMELINE]: {
-    path: ROUTES.TIMELINE,
-    title: 'Timeline',
-    description: 'View photos in timeline mode',
-    menuKey: 'browse-timeline',
-    browseMode: 'timeline',
   },
   [ROUTES.COMPRESS]: {
     path: ROUTES.COMPRESS,
@@ -50,27 +36,6 @@ export const routeConfig: Record<string, RouteMeta> = {
     title: 'Convert',
     description: 'Convert image formats',
     menuKey: 'convert',
-    browseMode: 'file',
-  },
-  [ROUTES.ANALYZE]: {
-    path: ROUTES.ANALYZE,
-    title: 'Analyze',
-    description: 'Analyze images',
-    menuKey: 'analyze',
-    browseMode: 'file',
-  },
-  [ROUTES.EDIT]: {
-    path: ROUTES.EDIT,
-    title: 'Edit',
-    description: 'Edit images',
-    menuKey: 'edit',
-    browseMode: 'file',
-  },
-  [ROUTES.GENERATE]: {
-    path: ROUTES.GENERATE,
-    title: 'Generate',
-    description: 'Generate images',
-    menuKey: 'generate',
     browseMode: 'file',
   },
 };
@@ -92,8 +57,6 @@ export function getMenuKeyByPath(path: string): string | undefined {
 /**
  * 根据路径获取浏览模式
  */
-export function getBrowseModeByPath(
-  path: string,
-): 'file' | 'slide' | 'timeline' | undefined {
+export function getBrowseModeByPath(path: string): 'file' | undefined {
   return routeConfig[path]?.browseMode;
 }

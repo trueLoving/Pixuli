@@ -1,27 +1,23 @@
 import {
-  Calendar,
   ExternalLink,
   Github,
   HelpCircle,
   Info,
   Keyboard,
   Lock,
-  Play,
   Plus,
   FileText,
   Edit,
   Trash2,
   Zap,
   FileImage,
-  Brain,
-  PenTool,
-  Sparkles,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { defaultTranslate } from '../../../../locales';
-import type { BrowseMode } from '../../../features/browse-mode-switcher/web';
 import './Sidebar.css';
+
+export type BrowseMode = 'file';
 
 export type SidebarView =
   | 'photos'
@@ -31,12 +27,7 @@ export type SidebarView =
   | 'settings';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
-export type SidebarUtilityTool =
-  | 'compress'
-  | 'convert'
-  | 'analyze'
-  | 'edit'
-  | 'generate';
+export type SidebarUtilityTool = 'compress' | 'convert';
 
 // 统一的菜单项类型
 export type SidebarMenuItem =
@@ -197,16 +188,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: <FileText size={20} />,
       label: translate('browseMode.file'),
     },
-    {
-      mode: 'slide',
-      icon: <Play size={20} />,
-      label: translate('browseMode.slide'),
-    },
-    {
-      mode: 'timeline',
-      icon: <Calendar size={20} />,
-      label: translate('browseMode.timeline'),
-    },
   ];
 
   // 实用工具配置
@@ -228,24 +209,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
       comingSoon: false,
-    },
-    {
-      tool: 'analyze',
-      icon: <Brain size={20} />,
-      label: translate('sidebar.imageAnalyze'),
-      comingSoon: true,
-    },
-    {
-      tool: 'edit',
-      icon: <PenTool size={20} />,
-      label: translate('sidebar.imageEdit'),
-      comingSoon: true,
-    },
-    {
-      tool: 'generate',
-      icon: <Sparkles size={20} />,
-      label: translate('sidebar.imageGenerate'),
-      comingSoon: true,
     },
   ];
 

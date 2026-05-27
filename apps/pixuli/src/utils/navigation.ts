@@ -30,20 +30,6 @@ export function navigateToPhotos(navigate: RouteNavigator): void {
 }
 
 /**
- * 导航到幻灯片页面
- */
-export function navigateToSlideshow(navigate: RouteNavigator): void {
-  navigateToRoute(navigate, ROUTES.SLIDESHOW);
-}
-
-/**
- * 导航到时间线页面
- */
-export function navigateToTimeline(navigate: RouteNavigator): void {
-  navigateToRoute(navigate, ROUTES.TIMELINE);
-}
-
-/**
  * 导航到压缩页面
  */
 export function navigateToCompress(navigate: RouteNavigator): void {
@@ -55,27 +41,6 @@ export function navigateToCompress(navigate: RouteNavigator): void {
  */
 export function navigateToConvert(navigate: RouteNavigator): void {
   navigateToRoute(navigate, ROUTES.CONVERT);
-}
-
-/**
- * 导航到分析页面
- */
-export function navigateToAnalyze(navigate: RouteNavigator): void {
-  navigateToRoute(navigate, ROUTES.ANALYZE);
-}
-
-/**
- * 导航到编辑页面
- */
-export function navigateToEdit(navigate: RouteNavigator): void {
-  navigateToRoute(navigate, ROUTES.EDIT);
-}
-
-/**
- * 导航到生成页面
- */
-export function navigateToGenerate(navigate: RouteNavigator): void {
-  navigateToRoute(navigate, ROUTES.GENERATE);
 }
 
 /**
@@ -96,22 +61,12 @@ export function isPhotosRoute(pathname: string): boolean {
  * 检查当前路径是否为浏览相关路由
  */
 export function isBrowseRoute(pathname: string): boolean {
-  return (
-    pathname === ROUTES.PHOTOS ||
-    pathname === ROUTES.SLIDESHOW ||
-    pathname === ROUTES.TIMELINE
-  );
+  return pathname === ROUTES.PHOTOS;
 }
 
 /**
  * 检查当前路径是否为工具相关路由
  */
 export function isUtilityRoute(pathname: string): boolean {
-  return (
-    pathname === ROUTES.COMPRESS ||
-    pathname === ROUTES.CONVERT ||
-    pathname === ROUTES.ANALYZE ||
-    pathname === ROUTES.EDIT ||
-    pathname === ROUTES.GENERATE
-  );
+  return pathname === ROUTES.COMPRESS || pathname === ROUTES.CONVERT;
 }

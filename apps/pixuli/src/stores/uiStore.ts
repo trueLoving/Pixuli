@@ -29,13 +29,7 @@ interface UIState {
 
   // 视图状态（可能被多个页面使用）
   currentView: string; // 使用 string 以兼容 SidebarView 类型
-  currentUtilityTool:
-    | 'compress'
-    | 'convert'
-    | 'analyze'
-    | 'edit'
-    | 'generate'
-    | null;
+  currentUtilityTool: 'compress' | 'convert' | null;
 
   // Actions - 模态框
   setShowConfigModal: (show: boolean) => void;
@@ -60,9 +54,7 @@ interface UIState {
 
   // Actions - 视图
   setCurrentView: (view: string) => void;
-  setCurrentUtilityTool: (
-    tool: 'compress' | 'convert' | 'analyze' | 'edit' | 'generate' | null,
-  ) => void;
+  setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) => void;
 
   // Helper actions
   openConfigModal: () => void;
@@ -118,9 +110,8 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   // 视图 Actions
   setCurrentView: (view: string) => set({ currentView: view }),
-  setCurrentUtilityTool: (
-    tool: 'compress' | 'convert' | 'analyze' | 'edit' | 'generate' | null,
-  ) => set({ currentUtilityTool: tool }),
+  setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) =>
+    set({ currentUtilityTool: tool }),
 
   // Helper actions
   openConfigModal: () => set({ showConfigModal: true }),

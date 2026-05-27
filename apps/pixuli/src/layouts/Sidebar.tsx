@@ -64,20 +64,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     // 根据菜单类型导航到对应路由
     if (menuItem.type === 'browse') {
-      if (menuItem.mode === 'file') {
-        navigate(ROUTES.PHOTOS);
-      } else if (menuItem.mode === 'slide') {
-        navigate(ROUTES.SLIDESHOW);
-      } else if (menuItem.mode === 'timeline') {
-        navigate(ROUTES.TIMELINE);
-      }
+      navigate(ROUTES.PHOTOS);
     } else if (menuItem.type === 'utility') {
       const routeMap: Record<string, string> = {
         compress: ROUTES.COMPRESS,
         convert: ROUTES.CONVERT,
-        analyze: ROUTES.ANALYZE,
-        edit: ROUTES.EDIT,
-        generate: ROUTES.GENERATE,
       };
       const route = routeMap[menuItem.tool];
       if (route) {
