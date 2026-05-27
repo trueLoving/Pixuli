@@ -310,20 +310,20 @@ Closes #42 Related: REF-101
 
 ### 里程碑 M1 — 减负与归档
 
-| ID      | 建议标题                                                                                       | Labels                                               | 优先级 | Depends on  | GitHub #                                              | 状态 |
-| ------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------ | ----------- | ----------------------------------------------------- | ---- |
-| REF-101 | [M1] 移除 Web 幻灯片与时间线路由及页面                                                         | refactor, m1, area:web, type:removal, priority:P0    | P0     | —           | [#46](https://github.com/trueLoving/Pixuli/issues/46) | ✅   |
-| REF-102 | [M1] 移除 Web 占位页 analyze / edit / generate                                                 | refactor, m1, area:web, type:removal, priority:P0    | P0     | —           | [#47](https://github.com/trueLoving/Pixuli/issues/47) | ✅   |
-| REF-103 | [M1] 删除 common 增强展示组件（slideshow/timeline/photo-wall/gallery-3d/browse-mode-switcher） | refactor, m1, area:ui, type:removal, priority:P0     | P0     | #46         | [#48](https://github.com/trueLoving/Pixuli/issues/48) | ✅   |
-| REF-104 | [M1] 移除 pptxgenjs 与幻灯片相关依赖                                                           | refactor, m1, type:removal, priority:P0              | P0     | #48         | [#49](https://github.com/trueLoving/Pixuli/issues/49) | ✅   |
-| REF-105 | [M1] 清理 browseMode 状态与路由同步逻辑                                                        | refactor, m1, area:web, priority:P0                  | P0     | #46         | [#50](https://github.com/trueLoving/Pixuli/issues/50) | ✅   |
-| REF-106 | [M1] 移动端移除浏览模式 Tab 与 SlideShowPlayer                                                 | refactor, m1, area:mobile, type:removal, priority:P0 | P0     | #48         | [#51](https://github.com/trueLoving/Pixuli/issues/51) | ✅   |
-| REF-107 | [M1] 更新 Web 侧栏/菜单为「图床 + 工具 + 设置」结构                                            | refactor, m1, area:web, priority:P1                  | P1     | #46, #47    |                                                       | ✅   |
-| REF-108 | [M1] 归档 packages/wasm 与 benchmark                                                           | refactor, m1, type:removal, priority:P0              | P0     | —           |                                                       | ⬜   |
-| REF-109 | [M1] 移除 Electron WASM IPC 与 pixuli-wasm 依赖                                                | refactor, m1, area:desktop, priority:P0              | P0     | REF-108     |                                                       | ⬜   |
-| REF-110 | [M1] 归档 server/ 并移出 pnpm workspace                                                        | refactor, m1, type:removal, priority:P0              | P0     | —           |                                                       | ⬜   |
-| REF-111 | [M1] 删除 performance 与 devtools 未接入模块                                                   | refactor, m1, area:ui, type:removal, priority:P0     | P0     | —           |                                                       | ⬜   |
-| REF-112 | [M1] M1 回归：web / desktop / mobile 冒烟 + vitest                                             | refactor, m1, priority:P0                            | P0     | REF-101–111 |                                                       | ⬜   |
+| ID      | 建议标题                                                                                       | Labels                                               | 优先级 | Depends on | GitHub #                                              | 状态 |
+| ------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------ | ---------- | ----------------------------------------------------- | ---- |
+| REF-101 | [M1] 移除 Web 幻灯片与时间线路由及页面                                                         | refactor, m1, area:web, type:removal, priority:P0    | P0     | —          | [#46](https://github.com/trueLoving/Pixuli/issues/46) | ✅   |
+| REF-102 | [M1] 移除 Web 占位页 analyze / edit / generate                                                 | refactor, m1, area:web, type:removal, priority:P0    | P0     | —          | [#47](https://github.com/trueLoving/Pixuli/issues/47) | ✅   |
+| REF-103 | [M1] 删除 common 增强展示组件（slideshow/timeline/photo-wall/gallery-3d/browse-mode-switcher） | refactor, m1, area:ui, type:removal, priority:P0     | P0     | #46        | [#48](https://github.com/trueLoving/Pixuli/issues/48) | ✅   |
+| REF-104 | [M1] 移除 pptxgenjs 与幻灯片相关依赖                                                           | refactor, m1, type:removal, priority:P0              | P0     | #48        | [#49](https://github.com/trueLoving/Pixuli/issues/49) | ✅   |
+| REF-105 | [M1] 清理 browseMode 状态与路由同步逻辑                                                        | refactor, m1, area:web, priority:P0                  | P0     | #46        | [#50](https://github.com/trueLoving/Pixuli/issues/50) | ✅   |
+| REF-106 | [M1] 移动端移除浏览模式 Tab 与 SlideShowPlayer                                                 | refactor, m1, area:mobile, type:removal, priority:P0 | P0     | #48        | [#51](https://github.com/trueLoving/Pixuli/issues/51) | ✅   |
+| REF-107 | [M1] 更新 Web 侧栏/菜单为「图床 + 工具 + 设置」结构                                            | refactor, m1, area:web, priority:P1                  | P1     | #46, #47   | [#52](https://github.com/trueLoving/Pixuli/issues/52) | ✅   |
+| REF-108 | [M1] 归档 packages/wasm 与 benchmark                                                           | refactor, m1, type:removal, priority:P0              | P0     | —          | [#54](https://github.com/trueLoving/Pixuli/issues/54) | ⬜   |
+| REF-109 | [M1] 移除 Electron WASM IPC 与 pixuli-wasm 依赖                                                | refactor, m1, area:desktop, priority:P0              | P0     | #54        | [#55](https://github.com/trueLoving/Pixuli/issues/55) | ⬜   |
+| REF-110 | [M1] 归档 server/ 并移出 pnpm workspace                                                        | refactor, m1, type:removal, priority:P0              | P0     | —          | [#56](https://github.com/trueLoving/Pixuli/issues/56) | ⬜   |
+| REF-111 | [M1] 删除 performance 与 devtools 未接入模块                                                   | refactor, m1, area:ui, type:removal, priority:P0     | P0     | —          | [#57](https://github.com/trueLoving/Pixuli/issues/57) | ⬜   |
+| REF-112 | [M1] M1 回归：web / desktop / mobile 冒烟 + vitest                                             | refactor, m1, priority:P0                            | P0     | #46–#57    | [#58](https://github.com/trueLoving/Pixuli/issues/58) | ⬜   |
 
 **M1 已关联 GitHub Issue（计划编号 ↔ Issue）**
 
@@ -335,6 +335,12 @@ Closes #42 Related: REF-101
 | REF-104 | [#49](https://github.com/trueLoving/Pixuli/issues/49) |
 | REF-105 | [#50](https://github.com/trueLoving/Pixuli/issues/50) |
 | REF-106 | [#51](https://github.com/trueLoving/Pixuli/issues/51) |
+| REF-107 | [#52](https://github.com/trueLoving/Pixuli/issues/52) |
+| REF-108 | [#54](https://github.com/trueLoving/Pixuli/issues/54) |
+| REF-109 | [#55](https://github.com/trueLoving/Pixuli/issues/55) |
+| REF-110 | [#56](https://github.com/trueLoving/Pixuli/issues/56) |
+| REF-111 | [#57](https://github.com/trueLoving/Pixuli/issues/57) |
+| REF-112 | [#58](https://github.com/trueLoving/Pixuli/issues/58) |
 
 <details>
 <summary>REF-101 ~ REF-112 Issue 正文模板（点击展开）</summary>
