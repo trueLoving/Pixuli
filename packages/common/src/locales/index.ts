@@ -6,7 +6,6 @@ import appEnUS from './app/en-US.json';
 import imagePreviewModalLocales from '../components/image/image-preview-modal/locales';
 import imageBrowserLocales from '../components/image/image-browser/locales';
 import imageUploadLocales from '../components/image/image-upload/locales';
-import timelineLocales from '../components/image/timeline/locales';
 // 布局组件
 import sidebarLocales from '../components/layout/sidebar/locales';
 import headerLocales from '../components/layout/header/locales';
@@ -19,8 +18,6 @@ import searchLocales from '../components/ui/search/locales';
 import keyboardHelpLocales from '../components/ui/keyboard-help/locales';
 import languageSwitcherLocales from '../components/ui/language-switcher/locales';
 // 功能组件
-import slideShowLocales from '../components/features/slide-show/locales';
-import browseModeSwitcherLocales from '../components/features/browse-mode-switcher/locales';
 import versionInfoLocales from '../components/features/version-info/locales';
 // 开发工具
 import demoLocales from '../components/dev/demo/locales';
@@ -73,9 +70,6 @@ export const appLocales = {
     imageBrowserLocales['zh-CN'],
     imageUploadLocales['zh-CN'],
     languageSwitcherLocales['zh-CN'],
-    slideShowLocales['zh-CN'],
-    browseModeSwitcherLocales['zh-CN'],
-    timelineLocales['zh-CN'],
     sidebarLocales['zh-CN'],
     headerLocales['zh-CN'],
     searchLocales['zh-CN'],
@@ -94,9 +88,6 @@ export const appLocales = {
     imageBrowserLocales['en-US'],
     imageUploadLocales['en-US'],
     languageSwitcherLocales['en-US'],
-    slideShowLocales['en-US'],
-    browseModeSwitcherLocales['en-US'],
-    timelineLocales['en-US'],
     sidebarLocales['en-US'],
     headerLocales['en-US'],
     searchLocales['en-US'],

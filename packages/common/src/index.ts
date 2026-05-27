@@ -27,9 +27,6 @@ export * from './hooks';
 export * from './components/image/image-preview-modal/web';
 export * from './components/image/image-browser/web';
 export * from './components/image/image-upload/web';
-export * from './components/image/photo-wall/web';
-export * from './components/image/gallery-3d/web';
-export * from './components/image/timeline/web';
 // 布局组件
 export * from './components/layout/sidebar/web';
 export * from './components/layout/header/web';
@@ -48,8 +45,6 @@ export * from './components/ui/language-switcher/web';
 export * from './components/ui/fullscreen-loading/web';
 export * from './components/ui/action-button/web';
 // 功能组件
-export * from './components/features/slide-show/web';
-export * from './components/features/browse-mode-switcher/web';
 export * from './components/features/version-info/web';
 // 开发工具
 export * from './components/dev/demo/web';
