@@ -23,16 +23,9 @@ import { ThemedText } from '../ui/ThemedText';
 interface DrawerMenuProps {
   visible: boolean;
   onClose: () => void;
-  onBrowseModeChange?: (mode: 'file' | 'slide' | 'wall' | 'gallery3d') => void;
-  currentBrowseMode?: 'file' | 'slide' | 'wall' | 'gallery3d';
 }
 
-export function DrawerMenu({
-  visible,
-  onClose,
-  onBrowseModeChange,
-  currentBrowseMode = 'file',
-}: DrawerMenuProps) {
+export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const { t } = useI18n();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -70,49 +63,6 @@ export function DrawerMenu({
       }).start();
     }
   }, [visible]);
-
-  const browseModes: Array<{
-    mode: 'file' | 'slide' | 'wall' | 'gallery3d';
-    icon: string;
-    label: string;
-    disabled?: boolean;
-  }> = [
-    {
-      mode: 'file',
-      icon: 'folder.fill',
-      label: t('browseMode.file') || '文件模式',
-    },
-    {
-      mode: 'slide',
-      icon: 'play.fill',
-      label: t('browseMode.slide') || '幻灯片模式',
-      disabled: true,
-    },
-    {
-      mode: 'wall',
-      icon: 'square.grid.3x3.fill',
-      label: t('browseMode.wall') || '照片墙模式',
-      disabled: true,
-    },
-    {
-      mode: 'gallery3d',
-      icon: 'cube.transparent.fill',
-      label: t('browseMode.gallery3d') || '3D画廊模式',
-      disabled: true,
-    },
-  ];
-
-  const handleBrowseModeSelect = (
-    mode: 'file' | 'slide' | 'wall' | 'gallery3d',
-  ) => {
-    if (
-      onBrowseModeChange &&
-      !browseModes.find(m => m.mode === mode)?.disabled
-    ) {
-      onBrowseModeChange(mode);
-      onClose();
-    }
-  };
 
   const currentSource = selectedSourceId
     ? sources.find(s => s.id === selectedSourceId)
@@ -272,87 +222,6 @@ export function DrawerMenu({
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <IconSymbol name="xmark" size={24} color={colors.text} />
               </TouchableOpacity>
-            </View>
-
-            {/* 浏览模式切换 */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <ThemedText
-                  style={[styles.sectionTitle, dynamicStyles.sectionTitle]}
-                >
-                  {t('browseMode.title') || '浏览模式'}
-                </ThemedText>
-                <View style={styles.sectionHeaderPlaceholder} />
-              </View>
-              {browseModes.map((mode, index) => {
-                const isSelected = currentBrowseMode === mode.mode;
-                const isDisabled = mode.disabled;
-                return (
-                  <TouchableOpacity
-                    key={mode.mode}
-                    style={[
-                      styles.menuItem,
-                      dynamicStyles.menuItem,
-                      index === browseModes.length - 1 && styles.menuItemLast,
-                      isSelected && { backgroundColor: colors.primary + '20' },
-                    ]}
-                    onPress={() => handleBrowseModeSelect(mode.mode)}
-                    disabled={isDisabled}
-                    activeOpacity={0.6}
-                  >
-                    <View style={styles.menuItemLeft}>
-                      <View
-                        style={[
-                          styles.iconContainer,
-                          {
-                            backgroundColor: isSelected
-                              ? colors.primary + '20'
-                              : colorScheme === 'dark'
-                                ? '#2C2C2E'
-                                : '#E6F4FE',
-                          },
-                        ]}
-                      >
-                        <IconSymbol
-                          name={mode.icon as any}
-                          size={22}
-                          color={
-                            isSelected ? colors.primary : colors.sectionTitle
-                          }
-                        />
-                      </View>
-                      <View style={styles.menuItemContent}>
-                        <ThemedText
-                          style={[
-                            styles.menuItemText,
-                            dynamicStyles.menuItemText,
-                            isDisabled && { opacity: 0.5 },
-                          ]}
-                        >
-                          {mode.label}
-                        </ThemedText>
-                        {isDisabled && (
-                          <ThemedText
-                            style={[
-                              styles.menuItemSubtext,
-                              dynamicStyles.menuItemSubtext,
-                            ]}
-                          >
-                            {t('common.comingSoon') || '即将推出'}
-                          </ThemedText>
-                        )}
-                      </View>
-                    </View>
-                    {isSelected && (
-                      <IconSymbol
-                        name="checkmark.circle.fill"
-                        size={22}
-                        color={colors.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
             </View>
 
             {/* 仓库源管理 */}

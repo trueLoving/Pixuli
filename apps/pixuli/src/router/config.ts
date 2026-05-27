@@ -12,7 +12,6 @@ export interface RouteMeta {
   description?: string;
   requiresAuth?: boolean;
   menuKey?: string;
-  browseMode?: 'file';
 }
 
 // 路由配置映射
@@ -22,21 +21,18 @@ export const routeConfig: Record<string, RouteMeta> = {
     title: 'Photos',
     description: 'Browse photos in file mode',
     menuKey: 'photos',
-    browseMode: 'file',
   },
   [ROUTES.COMPRESS]: {
     path: ROUTES.COMPRESS,
     title: 'Compress',
     description: 'Compress images',
     menuKey: 'compress',
-    browseMode: 'file',
   },
   [ROUTES.CONVERT]: {
     path: ROUTES.CONVERT,
     title: 'Convert',
     description: 'Convert image formats',
     menuKey: 'convert',
-    browseMode: 'file',
   },
 };
 
@@ -52,11 +48,4 @@ export function getRouteMeta(path: string): RouteMeta | undefined {
  */
 export function getMenuKeyByPath(path: string): string | undefined {
   return routeConfig[path]?.menuKey;
-}
-
-/**
- * 根据路径获取浏览模式
- */
-export function getBrowseModeByPath(path: string): 'file' | undefined {
-  return routeConfig[path]?.browseMode;
 }

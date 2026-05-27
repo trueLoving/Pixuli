@@ -11,13 +11,12 @@ import {
   Trash2,
   Zap,
   FileImage,
+  Settings,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { defaultTranslate } from '../../../../locales';
 import './Sidebar.css';
-
-export type BrowseMode = 'file';
 
 export type SidebarView =
   | 'photos'
@@ -29,11 +28,11 @@ export type SidebarView =
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarUtilityTool = 'compress' | 'convert';
 
-// 统一的菜单项类型
+// 统一的菜单项类型（图床 + 工具 + 设置）
 export type SidebarMenuItem =
-  | { type: 'browse'; mode: BrowseMode }
+  | { type: 'photos' }
   | { type: 'utility'; tool: SidebarUtilityTool }
-  | { type: 'view'; view: SidebarView };
+  | { type: 'settings' };
 
 export interface SidebarSource {
   id: string;
@@ -50,8 +49,6 @@ interface SidebarProps {
   onMenuClick?: (menuItem: SidebarMenuItem) => void;
   // 当前激活的菜单（用于高亮显示）
   activeMenu?: string;
-  // 浏览模式（用于兼容性，可选）
-  browseMode?: BrowseMode;
   sources: SidebarSource[];
   selectedSourceId: string | null;
   onSourceSelect: (id: string) => void;
@@ -122,7 +119,6 @@ const NavItem: React.FC<NavItemProps> = ({
 const Sidebar: React.FC<SidebarProps> = ({
   onMenuClick,
   activeMenu,
-  browseMode = 'file',
   sources,
   selectedSourceId,
   onSourceSelect,
@@ -175,40 +171,37 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [collapsed]);
 
-  // 浏览模式配置
-  const browseModes: Array<{
-    mode: BrowseMode;
+  const mainNavItems: Array<{
+    menuKey: string;
     icon: React.ReactNode;
     label: string;
-    disabled?: boolean;
-    comingSoon?: boolean;
+    menuItem: SidebarMenuItem;
+    requiresConfig?: boolean;
   }> = [
     {
-      mode: 'file',
+      menuKey: 'photos',
       icon: <FileText size={20} />,
-      label: translate('browseMode.file'),
+      label: translate('sidebar.photos'),
+      menuItem: { type: 'photos' },
+      requiresConfig: true,
     },
-  ];
-
-  // 实用工具配置
-  const utilityTools: Array<{
-    tool: SidebarUtilityTool;
-    icon: React.ReactNode;
-    label: string;
-    disabled?: boolean;
-    comingSoon?: boolean;
-  }> = [
     {
-      tool: 'compress',
+      menuKey: 'compress',
       icon: <Zap size={20} />,
       label: translate('sidebar.imageCompress'),
-      comingSoon: false,
+      menuItem: { type: 'utility', tool: 'compress' },
     },
     {
-      tool: 'convert',
+      menuKey: 'convert',
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
-      comingSoon: false,
+      menuItem: { type: 'utility', tool: 'convert' },
+    },
+    {
+      menuKey: 'settings',
+      icon: <Settings size={20} />,
+      label: translate('sidebar.settings'),
+      menuItem: { type: 'settings' },
     },
   ];
 
@@ -340,96 +333,35 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* 浏览模式导航 - 折叠状态 */}
-        <nav className="sidebar-collapsed-nav">
-          {browseModes.map(mode => {
-            const menuKey =
-              mode.mode === 'file' ? 'photos' : `browse-${mode.mode}`;
-            return (
-              <button
-                key={mode.mode}
-                className={`sidebar-collapsed-item ${
-                  activeMenu === menuKey ||
-                  (activeMenu === undefined && browseMode === mode.mode)
-                    ? 'active'
-                    : ''
-                } ${!hasConfig || mode.disabled ? 'disabled' : ''} ${
-                  mode.comingSoon ? 'coming-soon' : ''
-                }`}
-                onClick={
-                  hasConfig && !mode.disabled && onMenuClick
-                    ? () => onMenuClick({ type: 'browse', mode: mode.mode })
-                    : undefined
-                }
-                disabled={!hasConfig || mode.disabled}
-                title={
-                  mode.comingSoon
-                    ? `${mode.label} - ${translate('sidebar.comingSoon')}`
-                    : mode.label
-                }
-              >
-                {React.cloneElement(
-                  mode.icon as React.ReactElement<{ size?: number }>,
-                  {
-                    size: 28,
-                  },
-                )}
-                {mode.comingSoon && (
-                  <Lock
-                    size={14}
-                    className="sidebar-collapsed-coming-soon-icon"
-                  />
-                )}
-                <span className="sidebar-collapsed-tooltip">
-                  {mode.label}
-                  {mode.comingSoon && ` (${translate('sidebar.comingSoon')})`}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* 实用工具 - 折叠状态 */}
+        {/* 主导航 - 折叠状态 */}
         {onMenuClick && (
-          <nav className="sidebar-collapsed-nav sidebar-collapsed-utility-tools">
-            {utilityTools.map(tool => (
-              <button
-                key={tool.tool}
-                className={`sidebar-collapsed-item ${
-                  activeMenu === tool.tool ? 'active' : ''
-                } ${tool.disabled ? 'disabled' : ''} ${
-                  tool.comingSoon ? 'coming-soon' : ''
-                }`}
-                onClick={
-                  !tool.disabled
-                    ? () => onMenuClick({ type: 'utility', tool: tool.tool })
-                    : undefined
-                }
-                disabled={tool.disabled}
-                title={
-                  tool.comingSoon
-                    ? `${tool.label} - ${translate('sidebar.comingSoon')}`
-                    : tool.label
-                }
-              >
-                {React.cloneElement(
-                  tool.icon as React.ReactElement<{ size?: number }>,
-                  {
-                    size: 24,
-                  },
-                )}
-                {tool.comingSoon && (
-                  <Lock
-                    size={12}
-                    className="sidebar-collapsed-coming-soon-icon"
-                  />
-                )}
-                <span className="sidebar-collapsed-tooltip">
-                  {tool.label}
-                  {tool.comingSoon && ` (${translate('sidebar.comingSoon')})`}
-                </span>
-              </button>
-            ))}
+          <nav className="sidebar-collapsed-nav">
+            {mainNavItems.map(item => {
+              const disabled = item.requiresConfig && !hasConfig;
+              return (
+                <button
+                  key={item.menuKey}
+                  className={`sidebar-collapsed-item ${
+                    activeMenu === item.menuKey ? 'active' : ''
+                  } ${disabled ? 'disabled' : ''}`}
+                  onClick={
+                    !disabled ? () => onMenuClick(item.menuItem) : undefined
+                  }
+                  disabled={disabled}
+                  title={
+                    disabled ? translate('sidebar.needSource') : item.label
+                  }
+                >
+                  {React.cloneElement(
+                    item.icon as React.ReactElement<{ size?: number }>,
+                    { size: 28 },
+                  )}
+                  <span className="sidebar-collapsed-tooltip">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </nav>
         )}
 
@@ -550,75 +482,34 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* 浏览模式导航 */}
-      <div className="sidebar-section">
-        <div className="sidebar-section-header">
-          <span className="sidebar-section-title">
-            {translate('sidebar.browseMode')}
-          </span>
-        </div>
-        <nav className="sidebar-nav">
-          {browseModes.map(mode => {
-            const menuKey =
-              mode.mode === 'file' ? 'photos' : `browse-${mode.mode}`;
-            return (
-              <NavItem
-                key={mode.mode}
-                icon={mode.icon}
-                label={mode.label}
-                active={
-                  activeMenu === menuKey ||
-                  (activeMenu === undefined && browseMode === mode.mode)
-                }
-                disabled={!hasConfig || mode.disabled}
-                comingSoon={mode.comingSoon}
-                onClick={
-                  hasConfig && !mode.disabled && onMenuClick
-                    ? () => onMenuClick({ type: 'browse', mode: mode.mode })
-                    : undefined
-                }
-                tooltip={
-                  mode.comingSoon
-                    ? translate('sidebar.comingSoon')
-                    : !hasConfig
-                      ? translate('sidebar.needSource')
-                      : undefined
-                }
-                t={t}
-              />
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* 实用工具 */}
+      {/* 主导航：图床 + 工具 + 设置 */}
       {onMenuClick && (
         <div className="sidebar-section">
           <div className="sidebar-section-header">
             <span className="sidebar-section-title">
-              {translate('sidebar.utilityTools')}
+              {translate('sidebar.mainNav')}
             </span>
           </div>
           <nav className="sidebar-nav">
-            {utilityTools.map(tool => (
-              <NavItem
-                key={tool.tool}
-                icon={tool.icon}
-                label={tool.label}
-                active={activeMenu === tool.tool}
-                disabled={tool.disabled}
-                comingSoon={tool.comingSoon}
-                onClick={
-                  !tool.disabled
-                    ? () => onMenuClick({ type: 'utility', tool: tool.tool })
-                    : undefined
-                }
-                tooltip={
-                  tool.comingSoon ? translate('sidebar.comingSoon') : undefined
-                }
-                t={t}
-              />
-            ))}
+            {mainNavItems.map(item => {
+              const disabled = item.requiresConfig && !hasConfig;
+              return (
+                <NavItem
+                  key={item.menuKey}
+                  icon={item.icon}
+                  label={item.label}
+                  active={activeMenu === item.menuKey}
+                  disabled={disabled}
+                  onClick={
+                    !disabled ? () => onMenuClick(item.menuItem) : undefined
+                  }
+                  tooltip={
+                    disabled ? translate('sidebar.needSource') : undefined
+                  }
+                  t={t}
+                />
+              );
+            })}
           </nav>
         </div>
       )}

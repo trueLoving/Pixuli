@@ -4,7 +4,6 @@
  */
 
 import { create } from 'zustand';
-import type { BrowseMode } from '@packages/common/src';
 
 interface UIState {
   // 模态框状态
@@ -19,16 +18,13 @@ interface UIState {
 
   // 侧边栏状态
   sidebarCollapsed: boolean;
-  activeMenu: string; // 当前激活的菜单项
-
-  // 浏览模式（应用级别，用于路由同步）
-  browseMode: BrowseMode;
+  activeMenu: string;
 
   // 全屏模式（应用级别，用于隐藏 Sidebar 和 Header）
   isFullscreenMode: boolean;
 
-  // 视图状态（可能被多个页面使用）
-  currentView: string; // 使用 string 以兼容 SidebarView 类型
+  // 视图状态
+  currentView: string;
   currentUtilityTool: 'compress' | 'convert' | null;
 
   // Actions - 模态框
@@ -45,9 +41,6 @@ interface UIState {
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
   setActiveMenu: (menu: string) => void;
-
-  // Actions - 浏览模式
-  setBrowseMode: (mode: BrowseMode) => void;
 
   // Actions - 全屏模式
   setIsFullscreenMode: (isFullscreen: boolean) => void;
@@ -69,8 +62,7 @@ interface UIState {
   closeSourceTypeMenu: () => void;
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
-  // 初始状态
+export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
   showSourceTypeMenu: false,
   showKeyboardHelp: false,
@@ -79,41 +71,31 @@ export const useUIStore = create<UIState>((set, get) => ({
   editingSourceId: null,
   sidebarCollapsed: false,
   activeMenu: 'photos',
-  browseMode: 'file',
   isFullscreenMode: false,
   currentView: 'photos',
   currentUtilityTool: null,
 
-  // 模态框 Actions
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSourceTypeMenu: (show: boolean) => set({ showSourceTypeMenu: show }),
   setShowKeyboardHelp: (show: boolean) => set({ showKeyboardHelp: show }),
   setShowVersionInfo: (show: boolean) => set({ showVersionInfo: show }),
   setShowOperationLog: (show: boolean) => set({ showOperationLog: show }),
 
-  // 编辑 Actions
   setEditingSourceId: (id: string | null) => set({ editingSourceId: id }),
 
-  // 侧边栏 Actions
   setSidebarCollapsed: (collapsed: boolean) =>
     set({ sidebarCollapsed: collapsed }),
   toggleSidebar: () =>
     set(state => ({ sidebarCollapsed: !state.sidebarCollapsed })),
   setActiveMenu: (menu: string) => set({ activeMenu: menu }),
 
-  // 浏览模式 Actions
-  setBrowseMode: (mode: BrowseMode) => set({ browseMode: mode }),
-
-  // 全屏模式 Actions
   setIsFullscreenMode: (isFullscreen: boolean) =>
     set({ isFullscreenMode: isFullscreen }),
 
-  // 视图 Actions
   setCurrentView: (view: string) => set({ currentView: view }),
   setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) =>
     set({ currentUtilityTool: tool }),
 
-  // Helper actions
   openConfigModal: () => set({ showConfigModal: true }),
   closeConfigModal: () =>
     set({ showConfigModal: false, editingSourceId: null }),

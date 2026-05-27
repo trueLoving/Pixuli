@@ -17,6 +17,7 @@
     "selectSourceType": "Select Repository Type",
     "githubDescription": "Store images in GitHub repository",
     "giteeDescription": "Store images in Gitee repository",
+    "mainNav": "Features",
     "browseMode": "Browse Mode",
     "filter": "Filter",
     "all": "All",
