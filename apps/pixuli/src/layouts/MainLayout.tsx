@@ -78,7 +78,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { isDemoMode } = useDemoMode();
   const platform = getPlatform();
 
-  // 路由同步：根据路由路径自动同步 activeMenu 和 browseMode
+  // 路由同步：根据路由路径自动同步 activeMenu
   useRouteSync();
 
   // UI Store 状态

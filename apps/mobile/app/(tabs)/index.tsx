@@ -47,15 +47,11 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [browserVisible, setBrowserVisible] = useState(false);
   const [browserIndex, setBrowserIndex] = useState(0);
-  const [slideShowVisible, setSlideShowVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [configModalType, setConfigModalType] = useState<
     'github' | 'gitee' | undefined
   >(undefined);
-  const [browseMode, setBrowseMode] = useState<
-    'file' | 'slide' | 'wall' | 'gallery3d'
-  >('file');
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
@@ -144,26 +140,12 @@ export default function HomeScreen() {
     filterOptions.maxWidth !== undefined ||
     filterOptions.maxHeight !== undefined;
 
-  // 处理浏览模式切换
-  const handleBrowseModeChange = (
-    mode: 'file' | 'slide' | 'wall' | 'gallery3d',
-  ) => {
-    setBrowseMode(mode);
-    // 暂时禁用幻灯片模式
-    // if (mode === 'slide' && filteredImages.length > 0) {
-    //   setSlideShowVisible(true);
-    // }
-  };
-
   return (
     <ThemedView style={styles.container}>
       {/* 搜索和筛选栏 */}
       <View style={styles.headerContainer}>
         <View style={styles.searchContainer}>
-          <SearchAndFilter
-            currentBrowseMode={browseMode}
-            onBrowseModeChange={handleBrowseModeChange}
-          />
+          <SearchAndFilter />
         </View>
       </View>
 
@@ -233,20 +215,9 @@ export default function HomeScreen() {
         onRefreshMetadata={refreshImageMetadata}
       />
 
-      {/* 幻灯片播放器 - 暂时禁用 */}
-      {/* <SlideShowPlayer
-        visible={slideShowVisible}
-        images={displayImages}
-        initialIndex={0}
-        onClose={() => setSlideShowVisible(false)}
-      /> */}
-
-      {/* 抽屉菜单 */}
       <DrawerMenu
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
-        onBrowseModeChange={handleBrowseModeChange}
-        currentBrowseMode={browseMode}
       />
     </ThemedView>
   );

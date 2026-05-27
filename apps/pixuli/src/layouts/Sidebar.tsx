@@ -36,36 +36,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const {
     activeMenu,
-    browseMode,
     sidebarCollapsed,
     isFullscreenMode,
     toggleSidebar,
-    setBrowseMode,
     setCurrentView,
     setCurrentUtilityTool,
+    setActiveMenu,
+    openConfigModal,
   } = useUIStore();
 
-  // 处理菜单点击，设置状态并导航到对应路由
   const handleMenuClick = (menuItem: SidebarMenuItem) => {
-    // 设置 UI 状态
-    if (menuItem.type === 'browse') {
-      setBrowseMode(menuItem.mode);
+    if (menuItem.type === 'photos') {
       setCurrentView('photos');
       setCurrentUtilityTool(null);
+      setActiveMenu('photos');
+      navigate(ROUTES.PHOTOS);
     } else if (menuItem.type === 'utility') {
       setCurrentUtilityTool(menuItem.tool);
       setCurrentView('photos');
-      setBrowseMode('file');
-    } else if (menuItem.type === 'view') {
-      setCurrentView(menuItem.view);
-      setCurrentUtilityTool(null);
-      setBrowseMode('file');
-    }
-
-    // 根据菜单类型导航到对应路由
-    if (menuItem.type === 'browse') {
-      navigate(ROUTES.PHOTOS);
-    } else if (menuItem.type === 'utility') {
+      setActiveMenu(menuItem.tool);
       const routeMap: Record<string, string> = {
         compress: ROUTES.COMPRESS,
         convert: ROUTES.CONVERT,
@@ -74,10 +63,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (route) {
         navigate(route);
       }
+    } else if (menuItem.type === 'settings') {
+      setCurrentView('settings');
+      setCurrentUtilityTool(null);
+      setActiveMenu('settings');
+      openConfigModal();
     }
   };
 
-  // 全屏模式下不显示侧边栏
   if (isFullscreenMode) {
     return null;
   }
@@ -86,7 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <CommonSidebar
       onMenuClick={handleMenuClick}
       activeMenu={activeMenu}
-      browseMode={browseMode}
       sources={sidebarSources}
       selectedSourceId={selectedSourceId}
       onSourceSelect={onSourceSelect}
