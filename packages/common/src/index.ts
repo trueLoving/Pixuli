@@ -13,9 +13,6 @@ export * from './types/log';
 // ==================== Services 导出 ====================
 export * from './services';
 
-// ==================== 性能监控导出 ====================
-export * from './performance';
-
 // ==================== 工具函数导出 ====================
 export * from './utils';
 
@@ -48,6 +45,5 @@ export * from './components/ui/action-button/web';
 export * from './components/features/version-info/web';
 // 开发工具
 export * from './components/dev/demo/web';
-export * from './components/dev/devtools/web';
 // ==================== 语言包导出 ====================
 export * from './locales';
