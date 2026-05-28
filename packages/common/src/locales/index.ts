@@ -21,7 +21,6 @@ import languageSwitcherLocales from '../components/ui/language-switcher/locales'
 import versionInfoLocales from '../components/features/version-info/locales';
 // 开发工具
 import demoLocales from '../components/dev/demo/locales';
-import devtoolsLocales from '../components/dev/devtools/locales';
 
 /**
  * 深层合并对象
@@ -75,7 +74,6 @@ export const appLocales = {
     searchLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
     demoLocales['zh-CN'],
-    devtoolsLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -93,7 +91,6 @@ export const appLocales = {
     searchLocales['en-US'],
     emptyStateLocales['en-US'],
     demoLocales['en-US'],
-    devtoolsLocales['en-US'],
   ),
 };
 

@@ -6,5 +6,6 @@
 | ------------ | ------------------------------------------ |
 | `wasm/`      | 原 `packages/wasm`（Rust / NAPI 图片处理） |
 | `benchmark/` | 原 `benchmark/`（WASM 性能基准测试）       |
+| `server/`    | 原 `server/`（NestJS 可选后端）            |
 
 如需恢复或参考实现，请在本目录内单独构建；主应用已改用浏览器 Canvas 等方案处理图片。
