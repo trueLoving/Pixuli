@@ -18,7 +18,6 @@ export interface VersionInfo {
     'react-i18next': string;
     zustand: string;
     octokit?: string;
-    'pixuli-wasm'?: string;
     'react-dropzone': string;
     'react-hot-toast': string;
     'react-image-crop'?: string;

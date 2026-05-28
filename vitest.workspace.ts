@@ -3,8 +3,6 @@ import { defineWorkspace } from 'vitest/config';
 export default defineWorkspace([
   // packages/common - 需要 jsdom 环境
   './packages/common/vitest.config.ts',
-  // packages/wasm - node 环境
-  './packages/wasm/vitest.config.ts',
   // apps/pixuli - jsdom 环境
   './apps/pixuli/vitest.config.ts',
   // apps/mobile - node 环境

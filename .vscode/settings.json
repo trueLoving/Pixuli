@@ -1,9 +1,4 @@
 {
-  // Rust 配置
-  "rust-analyzer.linkedProjects": [
-    "packages/wasm/Cargo.toml"
-  ],
-
   // Prettier 配置
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": false,

@@ -57,13 +57,6 @@ cd Pixuli
 pnpm install
 ```
 
-### 3. Build WASM Module (Desktop only)
-
-```bash
-# Build wasm module
-pnpm run build:wasm
-```
-
 ## 💻 Development Workflow
 
 ### Desktop
