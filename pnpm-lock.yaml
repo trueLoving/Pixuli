@@ -201,9 +201,6 @@ importers:
       pixuli-common:
         specifier: workspace:*
         version: link:../../packages/common
-      pixuli-wasm:
-        specifier: workspace:*
-        version: link:../../packages/wasm
       react:
         specifier: ^19.1.0
         version: 19.1.0
@@ -266,25 +263,6 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@vite-pwa/assets-generator@1.0.2)(vite@5.4.21(@types/node@22.18.12)(lightningcss@1.30.2)(terser@5.44.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0)
 
-  benchmark:
-    dependencies:
-      browser-image-compression:
-        specifier: ^2.0.2
-        version: 2.0.2
-      pixuli-wasm:
-        specifier: workspace:*
-        version: link:../packages/wasm
-      tinybench:
-        specifier: ^2.5.0
-        version: 2.9.0
-    devDependencies:
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.18.12
-      tsx:
-        specifier: ^4.0.0
-        version: 4.20.6
-
   packages/common:
     dependencies:
       lucide-react:
@@ -337,12 +315,6 @@ importers:
       react-native:
         specifier: ^0.81.0
         version: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
-
-  packages/wasm:
-    devDependencies:
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.3
 
   server:
     dependencies:
@@ -4516,9 +4488,6 @@ packages:
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
-
-  browser-image-compression@2.0.2:
-    resolution: {integrity: sha512-pBLlQyUf6yB8SmmngrcOw3EoS4RpQ1BcylI3T9Yqn7+4nrQTXJD4sJDe5ODnJdrvNMaio5OicFo75rDyJD2Ucw==}
 
   browserslist@4.27.0:
     resolution: {integrity: sha512-AXVQwdhot1eqLihwasPElhX2tAZiBjWdJ9i/Zcj2S6QYIjkx62OKSfnobkriB81C3l4w0rVy3Nt4jaTBltYEpw==}
@@ -9197,9 +9166,6 @@ packages:
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     hasBin: true
-
-  uzip@0.20201231.0:
-    resolution: {integrity: sha512-OZeJfZP+R0z9D6TmBgLq2LHzSSptGMGDGigGiEe0pr8UBe/7fdflgHlHBNDASTXB5jnFuxHpNaJywSg8YFeGng==}
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
@@ -15087,10 +15053,6 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  browser-image-compression@2.0.2:
-    dependencies:
-      uzip: 0.20201231.0
-
   browserslist@4.27.0:
     dependencies:
       baseline-browser-mapping: 2.8.20
@@ -16045,6 +16007,7 @@ snapshots:
       '@esbuild/win32-arm64': 0.25.11
       '@esbuild/win32-ia32': 0.25.11
       '@esbuild/win32-x64': 0.25.11
+    optional: true
 
   escalade@3.2.0: {}
 
@@ -20532,6 +20495,7 @@ snapshots:
       get-tsconfig: 4.13.0
     optionalDependencies:
       fsevents: 2.3.3
+    optional: true
 
   type-check@0.4.0:
     dependencies:
@@ -20736,8 +20700,6 @@ snapshots:
   uuid@13.0.0: {}
 
   uuid@7.0.3: {}
-
-  uzip@0.20201231.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

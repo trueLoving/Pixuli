@@ -7,16 +7,7 @@
   },
   "extraResources": [],
   "extraFiles": [],
-  "files": [
-    "dist/**/*",
-    "dist-electron/**/*",
-    "node_modules/pixuli-wasm/index.js",
-    "node_modules/pixuli-wasm/index.d.ts",
-    "node_modules/pixuli-wasm/package.json",
-    "node_modules/pixuli-wasm/pixuli-wasm.*.node",
-    "node_modules/pixuli-wasm/wasi-worker-browser.mjs",
-    "!**/node_modules/pixuli-wasm/{.cargo,src,target,*.rs,*.toml,*.lock,tsconfig.json}"
-  ],
+  "files": ["dist/**/*", "dist-electron/**/*"],
   "mac": {
     "category": "public.app-category.graphics-design",
     "artifactName": "${productName}_${version}_${arch}.${ext}",

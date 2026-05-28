@@ -28,7 +28,7 @@ function getTestImageData(): number[] {
   // 尝试使用项目中的 favicon.ico
   const faviconPath = path.join(
     __dirname,
-    '../../apps/desktop/public/favicon.ico'
+    '../../apps/desktop/public/favicon.ico',
   );
   if (fs.existsSync(faviconPath)) {
     const data = fs.readFileSync(faviconPath);
@@ -48,7 +48,7 @@ function getTestImageData(): number[] {
 // JavaScript 压缩实现
 async function compressWithJS(
   imageData: number[],
-  options: any = {}
+  options: any = {},
 ): Promise<{
   compressedSize: number;
   compressionRatio: number;
@@ -161,7 +161,7 @@ async function runDetailedBenchmark() {
 
     batchBench.add(`JavaScript 批量压缩 (${batchSize}张)`, async () => {
       const results = await Promise.all(
-        batchData.map(data => compressWithJS(data, { quality: 80 }))
+        batchData.map(data => compressWithJS(data, { quality: 80 })),
       );
       return results;
     });
@@ -173,11 +173,13 @@ async function runDetailedBenchmark() {
     const batchResults = batchBench.table();
     if (batchResults && batchResults.length > 0) {
       const wasmBatch = batchResults.find(
-        r => r?.name && typeof r.name === 'string' && r.name.includes('WASM')
+        r => r?.name && typeof r.name === 'string' && r.name.includes('WASM'),
       );
       const jsBatch = batchResults.find(
         r =>
-          r?.name && typeof r.name === 'string' && r.name.includes('JavaScript')
+          r?.name &&
+          typeof r.name === 'string' &&
+          r.name.includes('JavaScript'),
       );
 
       if (
@@ -191,7 +193,7 @@ async function runDetailedBenchmark() {
           100
         ).toFixed(2);
         console.log(
-          `⚡ WASM 批量压缩比 JavaScript 快 ${batchSpeedImprovement}%`
+          `⚡ WASM 批量压缩比 JavaScript 快 ${batchSpeedImprovement}%`,
         );
       }
     }
@@ -233,10 +235,10 @@ async function runDetailedBenchmark() {
   const jsEnd = process.memoryUsage();
 
   console.log(
-    `WASM 压缩内存使用: ${((wasmEnd.heapUsed - wasmStart.heapUsed) / 1024 / 1024).toFixed(4)} MB`
+    `WASM 压缩内存使用: ${((wasmEnd.heapUsed - wasmStart.heapUsed) / 1024 / 1024).toFixed(4)} MB`,
   );
   console.log(
-    `JavaScript 压缩内存使用: ${((jsEnd.heapUsed - jsStart.heapUsed) / 1024 / 1024).toFixed(4)} MB`
+    `JavaScript 压缩内存使用: ${((jsEnd.heapUsed - jsStart.heapUsed) / 1024 / 1024).toFixed(4)} MB`,
   );
 
   // 6. 稳定性测试
@@ -278,10 +280,10 @@ async function runDetailedBenchmark() {
     stabilityResults.js.times.length;
 
   console.log(
-    `WASM 平均时间: ${wasmAvgTime.toFixed(2)}ms (错误: ${stabilityResults.wasm.errors})`
+    `WASM 平均时间: ${wasmAvgTime.toFixed(2)}ms (错误: ${stabilityResults.wasm.errors})`,
   );
   console.log(
-    `JavaScript 平均时间: ${jsAvgTime.toFixed(2)}ms (错误: ${stabilityResults.js.errors})`
+    `JavaScript 平均时间: ${jsAvgTime.toFixed(2)}ms (错误: ${stabilityResults.js.errors})`,
   );
 
   // 7. 最终总结
@@ -291,7 +293,7 @@ async function runDetailedBenchmark() {
   console.log('✅ WASM WebP 压缩优势:');
   const finalSingleResults = singleBench.table();
   const wasmSingle = finalSingleResults?.find(
-    r => r?.name === 'WASM WebP 压缩'
+    r => r?.name === 'WASM WebP 压缩',
   );
   const jsSingle = finalSingleResults?.find(r => r?.name === 'JavaScript 压缩');
 
@@ -302,12 +304,12 @@ async function runDetailedBenchmark() {
     typeof jsSingle.mean === 'number'
   ) {
     console.log(
-      `   - 处理速度: 比 JavaScript 快 ${(((jsSingle.mean - wasmSingle.mean) / jsSingle.mean) * 100).toFixed(2)}%`
+      `   - 处理速度: 比 JavaScript 快 ${(((jsSingle.mean - wasmSingle.mean) / jsSingle.mean) * 100).toFixed(2)}%`,
     );
   }
   console.log(`   - 压缩效果: 比 JavaScript 好 ${compressionImprovement}%`);
   console.log(
-    `   - 稳定性: 100 次测试中错误 ${stabilityResults.wasm.errors} 次`
+    `   - 稳定性: 100 次测试中错误 ${stabilityResults.wasm.errors} 次`,
   );
   console.log(`   - 支持质量范围: 0-100`);
   console.log(`   - 支持无损压缩: 是`);
@@ -317,10 +319,10 @@ async function runDetailedBenchmark() {
   console.log(`   - WASM 单次压缩: ${wasmSingle?.ops || 0} ops/sec`);
   console.log(`   - JavaScript 单次压缩: ${jsSingle?.ops || 0} ops/sec`);
   console.log(
-    `   - WASM 压缩率: ${(wasmResult.compressionRatio * 100).toFixed(2)}%`
+    `   - WASM 压缩率: ${(wasmResult.compressionRatio * 100).toFixed(2)}%`,
   );
   console.log(
-    `   - JavaScript 压缩率: ${(jsResult.compressionRatio * 100).toFixed(2)}%`
+    `   - JavaScript 压缩率: ${(jsResult.compressionRatio * 100).toFixed(2)}%`,
   );
 
   console.log('\n🎉 详细性能对比测试完成!');

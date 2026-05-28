@@ -29,7 +29,7 @@ Pixuli is an image management solution based on a Monorepo architecture,
 supporting multi-platform deployment:
 
 - **🖥️ Desktop**: Cross-platform desktop application built with Electron +
-  React + TypeScript + Rust (WASM)
+  React + TypeScript
 - **🌐 Web**: Web application built with Vite + React + TypeScript, supporting
   PWA
 - **📱 Mobile**: Mobile application built with React Native + Expo
@@ -39,7 +39,7 @@ supporting multi-platform deployment:
 - **Frontend**: React 19.1.0 + TypeScript + Vite
 - **Desktop**: Electron
 - **Mobile**: React Native + Expo
-- **Image Processing**: Rust (WASM) + NAPI-RS
+- **Image Processing**: Browser Canvas API（Web / Desktop 渲染进程）
 - **State Management**: Zustand
 - **UI Components**: Shared component library
 - **Cloud Storage**: GitHub / Gitee
@@ -58,13 +58,11 @@ supporting multi-platform deployment:
 ```
 Pixuli/
 ├── apps/                     # Applications
-│   ├── desktop/               # Desktop application (Electron + React)
-│   ├── web/                   # Web application (Vite + React)
-│   └── mobile/                # Mobile application (React Native + Expo)
+│   ├── pixuli/                # Web + Desktop (Vite + Electron)
+│   └── mobile/                # Mobile (React Native + Expo)
 ├── packages/                 # Shared packages
-│   ├── ui/                    # UI component library
-│   └── wasm/                  # WASM module (Rust)
-├── benchmark/                # Performance testing
+│   └── common/                # Shared UI, i18n, utilities
+├── archive/                  # Archived code (wasm, benchmark; not in workspace)
 └── pnpm-workspace.yaml       # Workspace configuration
 ```
 
@@ -75,7 +73,6 @@ Pixuli/
 - **Node.js** >= 22.0.0
 - **pnpm** >= 8.0.0 (Required, project only supports pnpm)
 - **Git** >= 2.0.0
-- **Rust** >= 1.70.0 (For building WASM modules, desktop only)
 - **Android Studio** (For Android development, mobile only)
 - **XCode** (For iOS development, mobile only)
 
@@ -88,9 +85,6 @@ cd Pixuli
 
 # Install dependencies
 pnpm install
-
-# Build WASM module (desktop only)
-pnpm build:wasm
 
 # Start development mode
 pnpm dev:web      # Web (http://localhost:5500)

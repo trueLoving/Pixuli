@@ -68,7 +68,6 @@ const versionInfo = {
     'react-i18next': getRealVersion('react-i18next'),
     zustand: getRealVersion('zustand'),
     octokit: getRealVersion('octokit'),
-    'pixuli-wasm': getRealVersion('pixuli-wasm'),
     'react-dropzone': getRealVersion('react-dropzone'),
     'react-hot-toast': getRealVersion('react-hot-toast'),
     'react-image-crop': getRealVersion('react-image-crop'),
@@ -243,7 +242,6 @@ export default defineConfig(({ command, mode }) => {
       sourcemap: false,
       cssCodeSplit: true,
       rollupOptions: {
-        external: ['pixuli-wasm'],
         output: {
           manualChunks: id => {
             // 在 Web 模式下，确保 React 核心（包括 scheduler）不被分割
