@@ -8,7 +8,7 @@ import {
   ScrollView,
   useColorScheme,
 } from 'react-native';
-import { defaultTranslate } from '../../../../locales';
+import { defaultTranslate } from '@pixuli/core/locales';
 import { emptyStateLocales } from '../locales';
 import type { EmptyStateProps } from '../common/types';
 

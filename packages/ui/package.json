@@ -1,0 +1,48 @@
+{
+  "name": "@pixuli/ui",
+  "version": "1.0.0",
+  "description": "Pixuli UI — shared React components for Web, Desktop, and Native",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/web/index.ts",
+    "./native": "./src/native/index.ts",
+    "./layout/empty-state/locales": "./src/layout/empty-state/locales/index.ts",
+    "./features/version-info/locales": "./src/features/version-info/locales/index.ts",
+    "./dev/demo/locales": "./src/dev/demo/locales/index.ts",
+    "./dev/demo/common": "./src/dev/demo/common/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@pixuli/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-native": ">=0.81.0",
+    "expo-constants": ">=18.0.0",
+    "expo-file-system": ">=19.0.0",
+    "expo-sharing": ">=14.0.0",
+    "@react-native-async-storage/async-storage": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": { "optional": true },
+    "react-native": { "optional": true },
+    "expo-constants": { "optional": true },
+    "expo-file-system": { "optional": true },
+    "expo-sharing": { "optional": true },
+    "@react-native-async-storage/async-storage": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@testing-library/react": "^16.1.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8"
+  }
+}

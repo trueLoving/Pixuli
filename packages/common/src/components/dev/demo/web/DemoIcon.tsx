@@ -1,7 +1,7 @@
 import { AlertCircle, Github, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '../../../../locales';
-import { demoLocales } from '../locales';
+import { demoLocales } from '@pixuli/ui/dev/demo/locales';
 import {
   isEnvConfigured,
   getDemoGitHubConfig,

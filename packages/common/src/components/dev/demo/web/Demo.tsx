@@ -1,15 +1,15 @@
 import { AlertCircle, ChevronDown, Github, Play, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '../../../../locales';
-import { useDemoModeCore } from '../common/hooks';
-import type { DemoConfig, DemoProps } from '../common/types';
+import { useDemoModeCore } from '@pixuli/ui/dev/demo/common';
+import type { DemoConfig, DemoProps } from '@pixuli/ui/dev/demo/common';
 import {
   checkEnvConfigured,
   createDemoGitHubConfig,
   createDemoGiteeConfig,
   validateDemoConfig,
-} from '../common/utils';
-import { demoLocales } from '../locales';
+} from '@pixuli/ui/dev/demo/common';
+import { demoLocales } from '@pixuli/ui/dev/demo/locales';
 import './Demo.css';
 
 // 重新导出类型供外部使用

@@ -9,14 +9,14 @@ import imageBrowserLocales from '../components/image/image-browser/locales';
 import imageUploadLocales from '../components/image/image-upload/locales';
 import sidebarLocales from '../components/layout/sidebar/locales';
 import headerLocales from '../components/layout/header/locales';
-import emptyStateLocales from '../components/layout/empty-state/locales';
+import emptyStateLocales from '@pixuli/ui/layout/empty-state/locales';
 import githubConfigLocales from '../components/config/github-config/locales';
 import giteeConfigLocales from '../components/config/gitee-config/locales';
 import searchLocales from '../components/ui/search/locales';
 import keyboardHelpLocales from '../components/ui/keyboard-help/locales';
 import languageSwitcherLocales from '../components/ui/language-switcher/locales';
-import versionInfoLocales from '../components/features/version-info/locales';
-import demoLocales from '../components/dev/demo/locales';
+import versionInfoLocales from '@pixuli/ui/features/version-info/locales';
+import demoLocales from '@pixuli/ui/dev/demo/locales';
 
 export { deepMerge, appOnlyLocales };
 
