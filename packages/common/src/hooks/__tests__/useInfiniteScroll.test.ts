@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useInfiniteScroll } from '../useInfiniteScroll';
-import type { ImageItem } from '../../types/image';
+import type { ImageItem } from '@pixuli/core/types';
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
@@ -11,7 +11,7 @@ class MockIntersectionObserver {
 
   constructor(
     public callback: IntersectionObserverCallback,
-    public options?: IntersectionObserverInit
+    public options?: IntersectionObserverInit,
   ) {}
 }
 
@@ -54,7 +54,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该初始加载指定数量的项目', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { initialLoadCount: 10 })
+      useInfiniteScroll(mockItems, { initialLoadCount: 10 }),
     );
 
     await waitFor(() => {
@@ -68,7 +68,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该加载更多项目', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { pageSize: 10, initialLoadCount: 10 })
+      useInfiniteScroll(mockItems, { pageSize: 10, initialLoadCount: 10 }),
     );
 
     await waitFor(() => {
@@ -90,7 +90,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该正确设置hasMore状态', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { pageSize: 20, initialLoadCount: 20 })
+      useInfiniteScroll(mockItems, { pageSize: 20, initialLoadCount: 20 }),
     );
 
     await waitFor(() => {
@@ -122,7 +122,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该防止重复加载', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { pageSize: 10, initialLoadCount: 10 })
+      useInfiniteScroll(mockItems, { pageSize: 10, initialLoadCount: 10 }),
     );
 
     await waitFor(() => {
@@ -141,7 +141,7 @@ describe('useInfiniteScroll', () => {
       () => {
         expect(result.current.isLoading).toBe(false);
       },
-      { timeout: 500 }
+      { timeout: 500 },
     );
 
     // 验证只加载了一次
@@ -157,7 +157,7 @@ describe('useInfiniteScroll', () => {
       () => {
         expect(result.current.isLoading).toBe(false);
       },
-      { timeout: 500 }
+      { timeout: 500 },
     );
 
     // 验证加载了两次
@@ -166,7 +166,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该重置状态', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { initialLoadCount: 10 })
+      useInfiniteScroll(mockItems, { initialLoadCount: 10 }),
     );
 
     await waitFor(() => {
@@ -187,7 +187,7 @@ describe('useInfiniteScroll', () => {
       ({ items }) => useInfiniteScroll(items, { initialLoadCount: 10 }),
       {
         initialProps: { items: mockItems },
-      }
+      },
     );
 
     await waitFor(() => {
@@ -204,7 +204,7 @@ describe('useInfiniteScroll', () => {
 
   it('应该使用自定义pageSize', async () => {
     const { result } = renderHook(() =>
-      useInfiniteScroll(mockItems, { pageSize: 5, initialLoadCount: 5 })
+      useInfiniteScroll(mockItems, { pageSize: 5, initialLoadCount: 5 }),
     );
 
     await waitFor(() => {
@@ -233,7 +233,7 @@ describe('useInfiniteScroll', () => {
     const smallItems = mockItems.slice(0, 5);
 
     const { result } = renderHook(() =>
-      useInfiniteScroll(smallItems, { initialLoadCount: 10 })
+      useInfiniteScroll(smallItems, { initialLoadCount: 10 }),
     );
 
     await waitFor(() => {

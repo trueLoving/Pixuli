@@ -8,11 +8,11 @@ import type {
   ImageCompressionOptions,
   ImageProcessResult,
   ImageConversionOptions,
-} from '../../types/image';
+} from '@pixuli/core/types';
 import {
   calculateDisplayDimensions,
   getImageDimensions,
-} from '../../utils/imageUtils';
+} from '@pixuli/core/utils';
 
 const DEFAULT_QUALITY = 0.8;
 const DEFAULT_CONVERT_QUALITY = 0.9;

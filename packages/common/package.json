@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@pixuli/core": "workspace:*",
     "lucide-react": "^0.556.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

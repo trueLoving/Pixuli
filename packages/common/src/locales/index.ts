@@ -1,66 +1,29 @@
-// 应用级语言包（已包含 common 通用词汇）
-import appZhCN from './app/zh-CN.json';
-import appEnUS from './app/en-US.json';
-// 组件语言包
-// 图片相关组件
+import {
+  deepMerge,
+  appOnlyLocales,
+  defaultTranslate,
+} from '@pixuli/core/locales';
+// 组件语言包（仍留在 common，待 REF-202/203 迁入 ui）
 import imagePreviewModalLocales from '../components/image/image-preview-modal/locales';
 import imageBrowserLocales from '../components/image/image-browser/locales';
 import imageUploadLocales from '../components/image/image-upload/locales';
-// 布局组件
 import sidebarLocales from '../components/layout/sidebar/locales';
 import headerLocales from '../components/layout/header/locales';
 import emptyStateLocales from '../components/layout/empty-state/locales';
-// 配置相关组件
 import githubConfigLocales from '../components/config/github-config/locales';
 import giteeConfigLocales from '../components/config/gitee-config/locales';
-// UI 组件
 import searchLocales from '../components/ui/search/locales';
 import keyboardHelpLocales from '../components/ui/keyboard-help/locales';
 import languageSwitcherLocales from '../components/ui/language-switcher/locales';
-// 功能组件
 import versionInfoLocales from '../components/features/version-info/locales';
-// 开发工具
 import demoLocales from '../components/dev/demo/locales';
 
-/**
- * 深层合并对象
- * @param target 目标对象
- * @param sources 要合并的源对象列表
- * @returns 合并后的对象
- */
-export const deepMerge = (
-  target: Record<string, any>,
-  ...sources: Record<string, any>[]
-): Record<string, any> => {
-  if (!sources.length) return target;
-  const source = sources.shift();
+export { deepMerge, appOnlyLocales };
 
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        deepMerge(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
-  }
-
-  return deepMerge(target, ...sources);
-};
-
-/**
- * 判断是否为对象
- */
-const isObject = (item: any): item is Record<string, any> => {
-  return item && typeof item === 'object' && !Array.isArray(item);
-};
-
-// 汇聚所有语言包（使用深层合并）
 export const appLocales = {
   'zh-CN': deepMerge(
     {},
-    appZhCN,
+    appOnlyLocales['zh-CN'],
     githubConfigLocales['zh-CN'],
     giteeConfigLocales['zh-CN'],
     keyboardHelpLocales['zh-CN'],
@@ -77,7 +40,7 @@ export const appLocales = {
   ),
   'en-US': deepMerge(
     {},
-    appEnUS,
+    appOnlyLocales['en-US'],
     githubConfigLocales['en-US'],
     giteeConfigLocales['en-US'],
     keyboardHelpLocales['en-US'],
@@ -94,31 +57,18 @@ export const appLocales = {
   ),
 };
 
-// 导出应用级语言包（不含组件语言包）
-export const appOnlyLocales = {
-  'zh-CN': deepMerge({}, appZhCN),
-  'en-US': deepMerge({}, appEnUS),
-};
-
-/**
- * 默认中文翻译函数
- * 当组件没有传入翻译函数时，使用此函数提供中文翻译
- * @param key 翻译键，支持嵌套路径，如 'github.config.title'
- * @returns 翻译后的文本，如果找不到则返回key本身
- */
 export const defaultTranslate = (
   key: string,
-  langs?: Record<string, any>,
+  langs?: Record<string, unknown>,
 ): string => {
   const keys = key.split('.');
-  let value: any = langs || appLocales['zh-CN'];
+  let value: unknown = langs || appLocales['zh-CN'];
   for (const k of keys) {
-    value = value?.[k];
+    value = (value as Record<string, unknown>)?.[k];
   }
-  return value || key;
+  return (typeof value === 'string' ? value : undefined) || key;
 };
 
-// 兼容性导出：导出为 zhCN 和 enUS
 export const zhCN = appLocales['zh-CN'];
 export const enUS = appLocales['en-US'];
 
