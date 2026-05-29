@@ -10,6 +10,7 @@
     "dev:desktop": "pnpm run --filter pixuli-app dev:desktop",
     "build:desktop": "pnpm run --filter pixuli-app build:desktop",
     "test": "vitest run",
+    "ci": "pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop && pnpm --filter pixuli-mobile exec tsc --noEmit",
     "prepare": "husky"
   },
   "keywords": [
