@@ -14,6 +14,7 @@ dist-electron
 release
 build
 *.local
+.local/
 
 # Editor directories and files
 .vscode/.debug.env

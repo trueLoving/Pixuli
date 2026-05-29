@@ -152,8 +152,8 @@ gh label create "type:docs" --color "0075CA" --description "文档"
 1. （可选）为每条 Issue 建正文文件：
 
 ```bash
-mkdir -p .github/issue-bodies
-# 将 REFACTOR_PLAN 中 REF-101 模板保存为 .github/issue-bodies/ref-101.md
+mkdir -p .local/issue-bodies
+# 将 REFACTOR_PLAN 中 REF-101 模板保存为 .local/issue-bodies/ref-101.md
 ```
 
 2. 创建单条 Issue：
@@ -163,7 +163,7 @@ gh issue create \
   --title "[M1] 移除 Web 幻灯片与时间线路由" \
   --label "refactor,m1,area:web,type:removal,priority:P0" \
   --milestone "M1-减负与归档" \
-  --body-file .github/issue-bodies/ref-101.md
+  --body-file .local/issue-bodies/ref-101.md
 ```
 
 3. 终端会输出 `https://github.com/.../issues/42`，将 `42` 填入 **GitHub #** 列。
@@ -323,7 +323,7 @@ Closes #42 Related: REF-101
 | REF-109 | [M1] 移除 Electron WASM IPC 与 pixuli-wasm 依赖                                                | refactor, m1, area:desktop, priority:P0              | P0     | #54        | [#55](https://github.com/trueLoving/Pixuli/issues/55) | ✅   |
 | REF-110 | [M1] 归档 server/ 并移出 pnpm workspace                                                        | refactor, m1, type:removal, priority:P0              | P0     | —          | [#56](https://github.com/trueLoving/Pixuli/issues/56) | ✅   |
 | REF-111 | [M1] 删除 performance 与 devtools 未接入模块                                                   | refactor, m1, area:ui, type:removal, priority:P0     | P0     | —          | [#57](https://github.com/trueLoving/Pixuli/issues/57) | ✅   |
-| REF-112 | [M1] M1 回归：web / desktop / mobile 冒烟 + vitest                                             | refactor, m1, priority:P0                            | P0     | #46–#57    | [#58](https://github.com/trueLoving/Pixuli/issues/58) | ⬜   |
+| REF-112 | [M1] M1 回归：web / desktop / mobile 冒烟 + vitest                                             | refactor, m1, priority:P0                            | P0     | #46–#57    | [#58](https://github.com/trueLoving/Pixuli/issues/58) | ✅   |
 
 **M1 已关联 GitHub Issue（计划编号 ↔ Issue）**
 
@@ -446,7 +446,9 @@ workspace 移除 wasm/benchmark；更新 README 去掉 Rust。
 
 **REF-111** — 删 `performance/`、`components/dev/devtools/`。
 
-**REF-112** — `pnpm test`；`dev:web` / `dev:desktop` / `dev:mobile` 主流程冒烟。
+**REF-112** — `pnpm test`；`dev:web` / `dev:desktop` / `dev:mobile`
+主流程冒烟。已固化 `pnpm run ci` 与
+`.github/workflows/ci.yml`（手动触发；Vitest + Web/Desktop 构建 + Mobile tsc）。
 
 </details>
 
