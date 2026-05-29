@@ -5,7 +5,7 @@ const FileSystem = require('expo-file-system/legacy');
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { defaultTranslate } from '../../../../locales';
+import { defaultTranslate } from '@pixuli/core/locales';
 import { demoLocales } from '../locales';
 import type { DemoConfig, DemoProps } from '../common/types';
 import {

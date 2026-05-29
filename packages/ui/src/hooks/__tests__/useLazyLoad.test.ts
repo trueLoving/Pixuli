@@ -11,7 +11,7 @@ class MockIntersectionObserver {
 
   constructor(
     callback: IntersectionObserverCallback,
-    public options?: IntersectionObserverInit
+    public options?: IntersectionObserverInit,
   ) {
     this.callback = callback;
   }
@@ -31,11 +31,11 @@ describe('useLazyLoad', () => {
     global.IntersectionObserver = vi.fn(
       (
         callback: IntersectionObserverCallback,
-        options?: IntersectionObserverInit
+        options?: IntersectionObserverInit,
       ) => {
         mockObserver = new MockIntersectionObserver(callback, options);
         return mockObserver as any;
-      }
+      },
     ) as any;
   });
 
@@ -209,7 +209,7 @@ describe('useLazyLoad', () => {
 
     // 模拟observer为null
     vi.mocked(global.IntersectionObserver).mockImplementationOnce(
-      () => null as any
+      () => null as any,
     );
 
     const { result: result2 } = renderHook(() => useLazyLoad());
@@ -233,7 +233,7 @@ describe('useLazyLoad', () => {
     };
 
     vi.mocked(global.IntersectionObserver).mockImplementationOnce(
-      () => brokenObserver as any
+      () => brokenObserver as any,
     );
 
     const { result: result2 } = renderHook(() => useLazyLoad());
@@ -257,7 +257,7 @@ describe('useLazyLoad', () => {
     };
 
     vi.mocked(global.IntersectionObserver).mockImplementationOnce(
-      () => brokenObserver as any
+      () => brokenObserver as any,
     );
 
     const { result: result2 } = renderHook(() => useLazyLoad());

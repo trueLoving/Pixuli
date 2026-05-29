@@ -12,7 +12,7 @@ interface UseLazyLoadReturn {
 }
 
 export function useLazyLoad(
-  options: UseLazyLoadOptions = {}
+  options: UseLazyLoadOptions = {},
 ): UseLazyLoadReturn {
   const { threshold = 0.1, rootMargin = '50px' } = options;
 
@@ -33,7 +33,7 @@ export function useLazyLoad(
       {
         threshold,
         rootMargin,
-      }
+      },
     );
 
     return () => {

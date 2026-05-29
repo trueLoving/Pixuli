@@ -10,11 +10,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  useEscapeKey,
-  useInfiniteScroll,
-  useLazyLoad,
-} from '../../../../hooks';
+import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '@pixuli/ui';
 import { ImageItem } from '../../../../types/image';
 import {
   showError,

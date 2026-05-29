@@ -10,7 +10,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import Constants from 'expo-constants';
-import { defaultTranslate } from '../../../../locales';
+import { defaultTranslate } from '@pixuli/core/locales';
 import { versionInfoLocales } from '../locales';
 import type { VersionInfoModalProps } from './types';
 

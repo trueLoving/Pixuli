@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { defaultTranslate } from '../../../../locales';
-import type { EmptyStateProps } from '../common/types';
+import type { EmptyStateProps } from '@pixuli/ui/native';
 import './EmptyState.css';
 
 const EmptyState: React.FC<EmptyStateProps> = ({

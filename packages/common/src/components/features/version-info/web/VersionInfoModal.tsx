@@ -1,4 +1,4 @@
-import { useEscapeKey } from '../../../../hooks';
+import { useEscapeKey } from '@pixuli/ui';
 import {
   Calendar,
   Code,
