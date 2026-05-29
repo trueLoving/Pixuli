@@ -1,7 +1,12 @@
-import type { GiteeConfig } from '../types/gitee';
-import type { ImageItem, ImageUploadData } from '../types/image';
-import type { PlatformAdapter } from './platformAdapter';
-import { DefaultPlatformAdapter } from './platformAdapter';
+import type {
+  GiteeConfig,
+  ImageItem,
+  ImageUploadData,
+} from '@pixuli/core/types';
+import {
+  DefaultPlatformAdapter,
+  type PlatformAdapter,
+} from '@pixuli/core/platform';
 
 export class GiteeStorageService {
   private config: GiteeConfig;

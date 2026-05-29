@@ -1,7 +1,9 @@
-import type { ImageItem, ImageUploadData } from '../types/image';
-import type { GitHubConfig } from '../types/github';
-import type { PlatformAdapter } from './platformAdapter';
-import { DefaultPlatformAdapter } from './platformAdapter';
+import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import type { GitHubConfig } from '@pixuli/core/types';
+import {
+  DefaultPlatformAdapter,
+  type PlatformAdapter,
+} from '@pixuli/core/platform';
 
 export class GitHubStorageService {
   private config: GitHubConfig;

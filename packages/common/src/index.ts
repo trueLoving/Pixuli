@@ -4,11 +4,8 @@
  * React Native 应用请使用 index.native.ts
  */
 
-// ==================== 类型导出 ====================
-export * from './types/image';
-export * from './types/github';
-export * from './types/gitee';
-export * from './types/log';
+// ==================== 类型导出（@pixuli/core） ====================
+export * from '@pixuli/core/types';
 
 // ==================== Services 导出 ====================
 export * from './services';

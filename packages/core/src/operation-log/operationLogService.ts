@@ -9,8 +9,8 @@ import type {
   LogStatistics,
   OperationLogAddOptions,
   OperationLogClearOptions,
-} from '../../types/log';
-import { LogActionType, LogStatus } from '../../types/log';
+} from '../types/log';
+import { LogActionType, LogStatus } from '../types/log';
 import type { IOperationLogStorage } from './operationLogStorage';
 
 const DEFAULT_STORAGE_KEY = 'pixuli-operation-logs';

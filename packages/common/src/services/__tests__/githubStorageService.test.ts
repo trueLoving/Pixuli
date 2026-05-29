@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GitHubStorageService } from '../githubStorageService';
-import { DefaultPlatformAdapter } from '../platformAdapter';
-import type { GitHubConfig } from '../../types/github';
-import type { ImageItem, ImageUploadData } from '../../types/image';
+import { DefaultPlatformAdapter } from '@pixuli/core/platform';
+import type {
+  GitHubConfig,
+  ImageItem,
+  ImageUploadData,
+} from '@pixuli/core/types';
 
 describe('GitHubStorageService', () => {
   let service: GitHubStorageService;

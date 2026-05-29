@@ -7,11 +7,8 @@
  * Web 专用组件（如 Sidebar、Header 等）不会在此文件中导出
  */
 
-// ==================== 类型导出 ====================
-export * from './types/image';
-export * from './types/github';
-export * from './types/gitee';
-export * from './types/log';
+// ==================== 类型导出（@pixuli/core） ====================
+export * from '@pixuli/core/types';
 
 // ==================== Services 导出 ====================
 export * from './services';

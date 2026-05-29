@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { ImageItem } from '../types/image';
+import type { ImageItem } from '@pixuli/core/types';
 
 interface UseInfiniteScrollOptions {
   pageSize?: number;
@@ -20,7 +20,7 @@ interface UseInfiniteScrollReturn {
 
 export function useInfiniteScroll(
   allItems: ImageItem[],
-  options: UseInfiniteScrollOptions = {}
+  options: UseInfiniteScrollOptions = {},
 ): UseInfiniteScrollReturn {
   const {
     pageSize = 20,
@@ -90,7 +90,7 @@ export function useInfiniteScroll(
       {
         threshold,
         rootMargin,
-      }
+      },
     );
 
     observerRef.current.observe(loadingRef.current);
