@@ -1,14 +1,16 @@
-import {
+import type {
   BatchUploadProgress,
   GitHubConfig,
-  GitHubStorageService,
   GiteeConfig,
-  GiteeStorageService,
   ImageEditData,
   ImageItem,
   MultiImageUploadData,
   UploadProgress,
-} from '@packages/common/src/index.native';
+} from '@pixuli/core/types';
+import {
+  GitHubStorageService,
+  GiteeStorageService,
+} from 'pixuli-common/services/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import {

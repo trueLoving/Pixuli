@@ -1,4 +1,4 @@
-import { useDemoMode } from '@packages/common/src';
+import { useDemoMode } from '@pixuli/ui';
 import { useCallback, useMemo } from 'react';
 import './App.css';
 import { SearchProvider } from './contexts/SearchContext';

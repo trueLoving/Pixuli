@@ -12,7 +12,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
-import { EmptyState, ImageItem } from '@packages/common/src/index.native';
+import type { ImageItem } from '@pixuli/core/types';
+import { EmptyState } from '@pixuli/ui/native';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {

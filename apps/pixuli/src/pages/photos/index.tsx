@@ -4,7 +4,7 @@ import { useImageOperations } from '@/hooks/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
-import { createDefaultFilters, filterImages } from '@packages/common/src';
+import { createDefaultFilters, filterImages } from '@pixuli/core/utils';
 import React, { useEffect, useMemo, useRef } from 'react';
 
 interface PhotosPageProps {

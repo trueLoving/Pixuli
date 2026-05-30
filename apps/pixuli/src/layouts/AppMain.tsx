@@ -11,9 +11,8 @@ import {
   Search,
   UploadButton,
   useDemoMode,
-  type ImageUploadData,
-  type MultiImageUploadData,
-} from '@packages/common/src';
+} from '@pixuli/ui';
+import type { ImageUploadData, MultiImageUploadData } from '@pixuli/core/types';
 import { ScrollText } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';

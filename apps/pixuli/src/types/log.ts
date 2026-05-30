@@ -8,5 +8,5 @@ export type {
   LogStatistics,
   OperationLogAddOptions,
   OperationLogClearOptions,
-} from '@packages/common/src';
-export { LogActionType, LogStatus } from '@packages/common/src';
+} from '@pixuli/core/types';
+export { LogActionType, LogStatus } from '@pixuli/core/types';

@@ -11,10 +11,10 @@ import {
 import {
   GiteeStorageService,
   GitHubStorageService,
-} from '@packages/common/src';
+} from 'pixuli-common/services';
 import { LogActionType, LogStatus } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
-import {
+import type {
   BatchUploadProgress,
   GiteeConfig,
   GitHubConfig,
@@ -23,7 +23,7 @@ import {
   ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
-} from '@packages/common/src';
+} from '@pixuli/core/types';
 import { create } from 'zustand';
 
 interface ImageState {

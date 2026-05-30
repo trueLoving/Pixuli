@@ -1,9 +1,5 @@
-import {
-  EmptyState,
-  formatFileSize,
-  getImageDimensionsFromUrl,
-  ImageBrowser,
-} from '@packages/common/src';
+import { EmptyState, ImageBrowser } from '@pixuli/ui';
+import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
 import { useImageStore } from '../../stores/imageStore';

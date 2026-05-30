@@ -1,8 +1,5 @@
 import type { ImageItem } from '../types/image';
-import type {
-  SortField,
-  SortOrder,
-} from '../components/image/image-browser/common/types';
+import type { SortField, SortOrder } from '../types/image-browser';
 
 /**
  * 对图片数组进行排序

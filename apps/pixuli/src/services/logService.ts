@@ -5,7 +5,7 @@
 import {
   OperationLogService,
   type IOperationLogStorage,
-} from '@packages/common/src';
+} from '@pixuli/core/operation-log';
 
 const STORAGE_KEY = 'pixuli-operation-logs';
 

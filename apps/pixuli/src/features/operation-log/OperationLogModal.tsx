@@ -1,6 +1,6 @@
 import { LogActionType, LogStatus, LogFilter } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
-import { showError, showSuccess } from '@packages/common/src';
+import { showError, showSuccess } from '@pixuli/ui/feedback/toast';
 import {
   Calendar,
   Download,

@@ -4,7 +4,7 @@ import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { showError, showSuccess } from '@/utils/toast';
-import { GitHubConfig, GiteeConfig } from '@packages/common/src/index.native';
+import type { GitHubConfig, GiteeConfig } from '@pixuli/core/types';
 import * as DocumentPicker from 'expo-document-picker';
 import { useEffect, useRef, useState } from 'react';
 import {

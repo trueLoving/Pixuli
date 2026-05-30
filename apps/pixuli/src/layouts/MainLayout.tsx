@@ -11,10 +11,9 @@ import {
   Toaster,
   useDemoMode,
   VersionInfoModal,
-  type ImageUploadData,
-  type MultiImageUploadData,
-  type VersionInfo,
-} from '@packages/common/src';
+} from '@pixuli/ui';
+import type { VersionInfo } from '@pixuli/ui';
+import type { ImageUploadData, MultiImageUploadData } from '@pixuli/core/types';
 import React from 'react';
 import {
   OfflineIndicator,

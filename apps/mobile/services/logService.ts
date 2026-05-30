@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   OperationLogService,
   type IOperationLogStorage,
-} from '@packages/common/src/index.native';
+} from '@pixuli/core/operation-log';
 
 const STORAGE_KEY = 'pixuli-operation-logs';
 

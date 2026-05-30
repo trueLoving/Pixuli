@@ -1,7 +1,7 @@
 import { useI18n } from '@/i18n/useI18n';
 import { formatImageFileSize } from '@/utils/imageUtils';
 import { showError, showSuccess } from '@/utils/toast';
-import { ImageItem } from '@packages/common/src/index.native';
+import type { ImageItem } from '@pixuli/core/types';
 import * as Clipboard from 'expo-clipboard';
 import { Image } from 'expo-image';
 import * as Sharing from 'expo-sharing';
