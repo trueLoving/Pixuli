@@ -34,6 +34,9 @@ export * from '../features/version-info/web';
 // 开发
 export * from '../dev/demo/web';
 
+// Web 图片处理（Canvas）
+export * from '../services/imageProcessor';
+
 // 反馈与工具（Web）
 export * from '../feedback/toast';
 export {

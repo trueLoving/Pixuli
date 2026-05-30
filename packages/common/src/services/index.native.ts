@@ -1,3 +1,7 @@
+/**
+ * React Native 可用的 services（不含 Web Canvas 图片处理）
+ */
+
 export { GiteeStorageService } from './giteeStorageService';
 export { GitHubStorageService } from './githubStorageService';
 export {
@@ -11,11 +15,3 @@ export {
   type IOperationLogStorage,
   type OperationLogServiceOptions,
 } from '@pixuli/core/operation-log';
-
-// 图片处理（Web/Desktop 纯 Web 实现，依赖 Canvas；移动端勿用）
-/** @deprecated 请改用 @pixuli/ui/services/imageProcessor */
-export {
-  WebImageProcessorService,
-  webImageProcessorService,
-  type OutputMimeType,
-} from '@pixuli/ui/services/imageProcessor';
