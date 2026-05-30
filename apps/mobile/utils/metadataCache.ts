@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ImageItem } from '@packages/common/src/index.native';
+import type { ImageItem } from '@pixuli/core/types';
 
 const METADATA_CACHE_KEY_PREFIX = 'pixuli-metadata-cache';
 const METADATA_CACHE_VERSION = '1.0';

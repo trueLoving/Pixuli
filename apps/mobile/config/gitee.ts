@@ -1,4 +1,4 @@
-import { GiteeConfig } from '@packages/common/src/index.native';
+import type { GiteeConfig } from '@pixuli/core/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GITEE_CONFIG_KEY = 'pixuli-gitee-config';

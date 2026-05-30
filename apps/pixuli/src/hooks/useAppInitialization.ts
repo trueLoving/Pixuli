@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { getDemoGitHubConfig, getDemoGiteeConfig } from '@packages/common/src';
+import { getDemoGitHubConfig, getDemoGiteeConfig } from '@pixuli/ui';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 

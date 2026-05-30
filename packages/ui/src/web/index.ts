@@ -44,7 +44,6 @@ export {
   keyboardManager,
   COMMON_SHORTCUTS,
   SHORTCUT_CATEGORIES,
-  createKeyboardShortcuts,
 } from '../utils/keyboardShortcuts';
 export type {
   KeyboardShortcut,

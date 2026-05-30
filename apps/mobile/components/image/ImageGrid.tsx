@@ -1,4 +1,4 @@
-import { ImageItem } from '@packages/common/src/index.native';
+import type { ImageItem } from '@pixuli/core/types';
 import { Image } from 'expo-image';
 import {
   FlatList,

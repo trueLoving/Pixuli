@@ -1,9 +1,9 @@
-import {
-  formatFileSize,
-  webImageProcessorService,
-  type ImageCompressionOptions,
-  type ImageProcessResult,
-} from '@packages/common/src';
+import type {
+  ImageCompressionOptions,
+  ImageProcessResult,
+} from '@pixuli/core/types';
+import { formatFileSize } from '@pixuli/core/utils';
+import { webImageProcessorService } from '@pixuli/ui/services/imageProcessor';
 import { Download, ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';

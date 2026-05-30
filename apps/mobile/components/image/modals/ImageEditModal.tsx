@@ -1,5 +1,5 @@
 import { useI18n } from '@/i18n/useI18n';
-import { ImageEditData, ImageItem } from '@packages/common/src/index.native';
+import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

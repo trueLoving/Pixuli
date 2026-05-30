@@ -11,7 +11,8 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import { FilterOptions, createDefaultFilters } from '@packages/common/src';
+import type { FilterOptions } from '@pixuli/ui';
+import { createDefaultFilters } from '@pixuli/core/utils';
 import {
   getSearchHistory,
   addSearchHistory,

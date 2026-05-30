@@ -6,7 +6,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
-import { ImageItem } from '@packages/common/src/index.native';
+import type { ImageItem } from '@pixuli/core/types';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 

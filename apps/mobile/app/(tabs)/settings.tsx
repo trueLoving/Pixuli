@@ -12,7 +12,7 @@ import {
   useThemeMode,
 } from '@/hooks/useColorScheme';
 import { useI18n, useInitLanguage } from '@/i18n/useI18n';
-import { VersionInfoModal } from '@packages/common/src/index.native';
+import { VersionInfoModal } from '@pixuli/ui/native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';

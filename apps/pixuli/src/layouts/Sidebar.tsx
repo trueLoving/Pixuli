@@ -3,10 +3,7 @@
  * 处理侧边栏的显示和交互逻辑
  */
 
-import {
-  Sidebar as CommonSidebar,
-  type SidebarMenuItem,
-} from '@packages/common/src';
+import { Sidebar as CommonSidebar, type SidebarMenuItem } from '@pixuli/ui';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../router/routes';
