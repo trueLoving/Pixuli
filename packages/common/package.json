@@ -1,53 +1,22 @@
 {
   "name": "pixuli-common",
   "version": "1.0.0",
-  "description": "Pixuli common — deprecated compatibility re-exports; use @pixuli/core and @pixuli/ui",
+  "description": "Pixuli storage services shell — GitHub/Gitee storage until M3 provider packages",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./native": "./src/index.native.ts",
     "./services": "./src/services/index.ts",
     "./services/native": "./src/services/index.native.ts"
-  },
-  "files": ["dist", "README.md", "src", "docs"],
-  "publishConfig": {
-    "access": "public"
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@pixuli/core": "workspace:*",
-    "@pixuli/ui": "workspace:*",
-    "lucide-react": "^0.556.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-dropzone": "^14.2.3",
-    "react-hot-toast": "^2.6.0",
-    "react-image-crop": "^10.1.8",
-    "zustand": "^4.4.1"
-  },
-  "peerDependencies": {
-    "react-native": "^0.81.0",
-    "expo-file-system": "^19.0.0",
-    "expo-sharing": "^14.0.0",
-    "@react-native-async-storage/async-storage": "^2.0.0"
-  },
-  "optionalDependencies": {
-    "@react-native-async-storage/async-storage": "^2.1.0",
-    "expo-file-system": "^19.0.17",
-    "expo-sharing": "^14.0.7",
-    "react-native": "^0.81.0"
+    "@pixuli/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.7.0",
     "typescript": "^5.0.0"
   },

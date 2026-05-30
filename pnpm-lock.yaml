@@ -289,59 +289,16 @@ importers:
       '@pixuli/core':
         specifier: workspace:*
         version: link:../core
-      '@pixuli/ui':
-        specifier: workspace:*
-        version: link:../ui
-      lucide-react:
-        specifier: ^0.556.0
-        version: 0.556.0(react@19.1.0)
-      react:
-        specifier: ^19.1.0
-        version: 19.1.0
-      react-dom:
-        specifier: ^19.1.0
-        version: 19.1.0(react@19.1.0)
-      react-dropzone:
-        specifier: ^14.2.3
-        version: 14.3.8(react@19.1.0)
-      react-hot-toast:
-        specifier: ^2.6.0
-        version: 2.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react-image-crop:
-        specifier: ^10.1.8
-        version: 10.1.8(react@19.1.0)
-      zustand:
-        specifier: ^4.4.1
-        version: 4.5.7(@types/react@19.1.17)(react@19.1.0)
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
         version: 22.18.12
-      '@types/react':
-        specifier: ^19.1.0
-        version: 19.1.17
-      '@types/react-dom':
-        specifier: ^19.1.0
-        version: 19.2.2(@types/react@19.1.17)
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@5.4.21(@types/node@22.18.12)(lightningcss@1.30.2)(terser@5.44.1))
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
-    optionalDependencies:
-      '@react-native-async-storage/async-storage':
-        specifier: ^2.1.0
-        version: 2.2.0(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
-      expo-file-system:
-        specifier: ^19.0.17
-        version: 19.0.17(expo@54.0.32)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))
-      expo-sharing:
-        specifier: ^14.0.7
-        version: 14.0.7(expo@54.0.32)
-      react-native:
-        specifier: ^0.81.0
-        version: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
 
   packages/core:
     devDependencies:
@@ -4547,12 +4504,6 @@ packages:
     peerDependencies:
       expo: '*'
 
-  expo-file-system@19.0.17:
-    resolution: {integrity: sha512-WwaS01SUFrxBnExn87pg0sCTJjZpf2KAOzfImG0o8yhkU7fbYpihpl/oocXBEsNbj58a8hVt1Y4CVV5c1tzu/g==}
-    peerDependencies:
-      expo: '*'
-      react-native: '*'
-
   expo-file-system@19.0.21:
     resolution: {integrity: sha512-s3DlrDdiscBHtab/6W1osrjGL+C2bvoInPJD7sOwmxfJ5Woynv2oc+Fz1/xVXaE/V7HE/+xrHC/H45tu6lZzzg==}
     peerDependencies:
@@ -4679,11 +4630,6 @@ packages:
   expo-server@1.0.5:
     resolution: {integrity: sha512-IGR++flYH70rhLyeXF0Phle56/k4cee87WeQ4mamS+MkVAVP+dDlOHf2nN06Z9Y2KhU0Gp1k+y61KkghF7HdhA==}
     engines: {node: '>=20.16.0'}
-
-  expo-sharing@14.0.7:
-    resolution: {integrity: sha512-t/5tR8ZJNH6tMkHXlF7453UafNIfrpfTG+THN9EMLC4Wsi4bJuESPm3NdmWDg2D4LDALJI/LQo0iEnLAd5Sp4g==}
-    peerDependencies:
-      expo: '*'
 
   expo-sharing@14.0.8:
     resolution: {integrity: sha512-A1pPr2iBrxypFDCWVAESk532HK+db7MFXbvO2sCV9ienaFXAk7lIBm6bkqgE6vzRd9O3RGdEGzYx80cYlc089Q==}
@@ -11312,6 +11258,7 @@ snapshots:
   '@types/react-dom@19.2.2(@types/react@19.1.17)':
     dependencies:
       '@types/react': 19.1.17
+    optional: true
 
   '@types/react-dom@19.2.2(@types/react@19.2.2)':
     dependencies:
@@ -13425,12 +13372,6 @@ snapshots:
     dependencies:
       expo: 54.0.32(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
-  expo-file-system@19.0.17(expo@54.0.32)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)):
-    dependencies:
-      expo: 54.0.32(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-      react-native: 0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)
-    optional: true
-
   expo-file-system@19.0.21(expo@54.0.32)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0)):
     dependencies:
       expo: 54.0.32(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -13563,11 +13504,6 @@ snapshots:
       expo: 54.0.32(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
   expo-server@1.0.5: {}
-
-  expo-sharing@14.0.7(expo@54.0.32):
-    dependencies:
-      expo: 54.0.32(@babel/core@7.28.5)(@expo/metro-runtime@6.1.2)(expo-router@6.0.22)(react-native@0.81.5(@babel/core@7.28.5)(@react-native-community/cli@20.0.0(typescript@5.9.3))(@react-native/metro-config@0.82.0(@babel/core@7.28.5))(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
-    optional: true
 
   expo-sharing@14.0.8(expo@54.0.32):
     dependencies:

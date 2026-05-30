@@ -25,5 +25,4 @@
 - `react-dom`（Web，optional peer）
 - `react-native` 及相关 Expo 模块（Native，optional peer）
 
-`pixuli-common` 在迁移期间从此包 re-export（已 `@deprecated`），应用请使用
-`@pixuli/ui` 直接引用。
+应用请直接使用 `@pixuli/ui`；`pixuli-common` 已不再聚合 UI 导出。
