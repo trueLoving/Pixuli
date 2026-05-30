@@ -1,10 +1,8 @@
 /**
  * @fileoverview React Native 平台专用导出文件
- * 此文件用于 React Native 移动应用的统一导出入口
- * Web/Desktop 应用请使用 index.ts
+ * @deprecated 请改用 `@pixuli/core`、`@pixuli/ui/native` 及 `pixuli-common/services/native`
  *
- * 注意：此文件仅导出 React Native 环境可用的组件和工具
- * Web 专用组件（如 Sidebar、Header 等）不会在此文件中导出
+ * Web/Desktop 应用请使用 `index.ts`（同样已 deprecated）。
  */
 
 // ==================== 类型导出（@pixuli/core） ====================
