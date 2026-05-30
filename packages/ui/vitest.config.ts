@@ -13,6 +13,23 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@pixuli/ui/locales': path.resolve(__dirname, './src/locales/index.ts'),
+      '@pixuli/ui/feedback/toast': path.resolve(
+        __dirname,
+        './src/feedback/toast.ts',
+      ),
+      '@pixuli/ui/utils/keyboardShortcuts': path.resolve(
+        __dirname,
+        './src/utils/keyboardShortcuts.ts',
+      ),
+      '@pixuli/core/types': path.resolve(
+        __dirname,
+        '../core/src/types/index.ts',
+      ),
+      '@pixuli/core/utils': path.resolve(
+        __dirname,
+        '../core/src/utils/index.ts',
+      ),
     },
   },
 });

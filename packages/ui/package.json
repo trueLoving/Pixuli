@@ -7,6 +7,9 @@
   "exports": {
     ".": "./src/web/index.ts",
     "./native": "./src/native/index.ts",
+    "./locales": "./src/locales/index.ts",
+    "./feedback/toast": "./src/feedback/toast.ts",
+    "./utils/keyboardShortcuts": "./src/utils/keyboardShortcuts.ts",
     "./layout/empty-state/locales": "./src/layout/empty-state/locales/index.ts",
     "./features/version-info/locales": "./src/features/version-info/locales/index.ts",
     "./dev/demo/locales": "./src/dev/demo/locales/index.ts",
@@ -17,7 +20,11 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@pixuli/core": "workspace:*"
+    "@pixuli/core": "workspace:*",
+    "lucide-react": "^0.556.0",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.6.0",
+    "react-image-crop": "^10.1.8"
   },
   "peerDependencies": {
     "react": "^19.0.0",

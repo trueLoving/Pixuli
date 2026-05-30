@@ -1,3 +1,3 @@
 export * from '@pixuli/core/utils';
-export * from './toast';
-export * from './keyboardShortcuts';
+export * from '@pixuli/ui/feedback/toast';
+export * from '@pixuli/ui/utils/keyboardShortcuts';
