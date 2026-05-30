@@ -10,8 +10,8 @@
 // ==================== 类型导出（@pixuli/core） ====================
 export * from '@pixuli/core/types';
 
-// ==================== Services 导出 ====================
-export * from './services';
+// ==================== Services 导出（不含 webImageProcessor，见 REF-205） ====================
+export * from './services/index.native';
 
 // ==================== React Native 专用组件（@pixuli/ui/native） ====================
 export * from '@pixuli/ui/native';
