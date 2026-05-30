@@ -16,7 +16,11 @@
 
 ## 依赖边界
 
-不得依赖：`react-dom`、`lucide-react`、`react-hot-toast` 等 UI 库。
+不得依赖：`react-dom`、`lucide-react`、`react-hot-toast`、`@pixuli/ui`
+等 UI 库。
 
-`pixuli-common` 在迁移期间从此包 re-export，应用侧请逐步改为直接引用
+根目录 `pnpm lint:boundaries` 通过 ESLint `import/no-restricted-paths` 与
+`no-restricted-imports` 强制执行（REF-209）。
+
+`pixuli-common` 在迁移期间从此包 re-export（已 `@deprecated`），应用请直接引用
 `@pixuli/core`。

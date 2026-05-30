@@ -10,7 +10,9 @@
     "dev:desktop": "pnpm run --filter pixuli-app dev:desktop",
     "build:desktop": "pnpm run --filter pixuli-app build:desktop",
     "test": "vitest run",
-    "ci": "pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop && pnpm --filter pixuli-mobile exec tsc --noEmit",
+    "lint": "eslint packages/core",
+    "lint:boundaries": "eslint packages/core",
+    "ci": "pnpm lint:boundaries && pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop && pnpm --filter pixuli-mobile exec tsc --noEmit",
     "prepare": "husky"
   },
   "keywords": [
@@ -34,7 +36,10 @@
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "lint-staged": "^16.2.5",
+    "eslint": "^9.25.0",
+    "eslint-plugin-import": "^2.31.0",
     "prettier": "^3.0.0",
+    "typescript-eslint": "^8.30.0",
     "vitest": "^2.1.8"
   },
   "lint-staged": {
