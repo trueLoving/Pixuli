@@ -19,23 +19,23 @@
 
 ### 1.2 架构方向
 
-| 方向     | 说明                                                       |
-| -------- | ---------------------------------------------------------- |
-| 归档     | `packages/wasm`、`benchmark/`、`server/` 移出主构建路径    |
-| 拆分     | `packages/common` → `@pixuli/core` + `@pixuli/ui`          |
-| 插件     | `StorageProvider` + `provider-github` / `provider-gitee`   |
-| 功能分层 | **L1** 基础业务 · **L2** 仅网格/列表 · **L3** 各端平台能力 |
-| 展示裁剪 | 移除幻灯片、时间线、照片墙、3D 画廊及浏览模式路由          |
+| 方向     | 说明                                                                               |
+| -------- | ---------------------------------------------------------------------------------- |
+| 归档     | `packages/wasm`、`benchmark/`、`server/` 移出主构建路径                            |
+| 拆分     | `packages/common` → `@pixuli/core` + `@pixuli/ui`（M3 末 REF-311 整包删除 common） |
+| 插件     | `StorageProvider` + `provider-github` / `provider-gitee`                           |
+| 功能分层 | **L1** 基础业务 · **L2** 仅网格/列表 · **L3** 各端平台能力                         |
+| 展示裁剪 | 移除幻灯片、时间线、照片墙、3D 画廊及浏览模式路由                                  |
 
 ### 1.3 里程碑
 
-| 里程碑 | 名称                | 目标日期（可填） | 说明                                          |
-| ------ | ------------------- | ---------------- | --------------------------------------------- |
-| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除        |
-| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                   |
-| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置 |
-| M4     | 文档与 CI           |                  | PRD/README/CI 与架构一致                      |
-| M5     | 平台能力 L3（持续） |                  | PWA 归位、Desktop 离线/更新规划               |
+| 里程碑 | 名称                | 目标日期（可填） | 说明                                                                  |
+| ------ | ------------------- | ---------------- | --------------------------------------------------------------------- |
+| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                |
+| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                           |
+| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common` |
+| M4     | 文档与 CI           |                  | PRD/README/CI 与架构一致                                              |
+| M5     | 平台能力 L3（持续） |                  | PWA 归位、Desktop 离线/更新规划                                       |
 
 ---
 
@@ -127,7 +127,7 @@ gh label create "type:docs" --color "0075CA" --description "文档"
 
 ### 步骤 3：按 REFACTOR_PLAN 创建 Issues
 
-对第三节表格 **每一行** 创建一条 Issue（共 43 条，建议
+对第三节表格 **每一行** 创建一条 Issue（共 44 条，建议
 **先 M1 再 M2…**，同里程碑内按 Depends on 顺序）。
 
 #### 方式 A：Web UI（适合少量或首次熟悉）
@@ -327,51 +327,52 @@ Closes #42 Related: REF-101
 
 **M1 已关联 GitHub Issue（计划编号 ↔ Issue）**
 
-| 计划 ID | GitHub Issue                                          |
-| ------- | ----------------------------------------------------- |
-| REF-101 | [#46](https://github.com/trueLoving/Pixuli/issues/46) |
-| REF-102 | [#47](https://github.com/trueLoving/Pixuli/issues/47) |
-| REF-103 | [#48](https://github.com/trueLoving/Pixuli/issues/48) |
-| REF-104 | [#49](https://github.com/trueLoving/Pixuli/issues/49) |
-| REF-105 | [#50](https://github.com/trueLoving/Pixuli/issues/50) |
-| REF-106 | [#51](https://github.com/trueLoving/Pixuli/issues/51) |
-| REF-107 | [#52](https://github.com/trueLoving/Pixuli/issues/52) |
-| REF-108 | [#54](https://github.com/trueLoving/Pixuli/issues/54) |
-| REF-109 | [#55](https://github.com/trueLoving/Pixuli/issues/55) |
-| REF-110 | [#56](https://github.com/trueLoving/Pixuli/issues/56) |
-| REF-111 | [#57](https://github.com/trueLoving/Pixuli/issues/57) |
-| REF-112 | [#58](https://github.com/trueLoving/Pixuli/issues/58) |
-| REF-201 | [#60](https://github.com/trueLoving/Pixuli/issues/60) |
-| REF-202 | [#61](https://github.com/trueLoving/Pixuli/issues/61) |
-| REF-203 | [#62](https://github.com/trueLoving/Pixuli/issues/62) |
-| REF-204 | [#69](https://github.com/trueLoving/Pixuli/issues/69) |
-| REF-205 | [#63](https://github.com/trueLoving/Pixuli/issues/63) |
-| REF-206 | [#64](https://github.com/trueLoving/Pixuli/issues/64) |
-| REF-207 | [#65](https://github.com/trueLoving/Pixuli/issues/65) |
-| REF-208 | [#66](https://github.com/trueLoving/Pixuli/issues/66) |
-| REF-209 | [#67](https://github.com/trueLoving/Pixuli/issues/67) |
-| REF-210 | [#68](https://github.com/trueLoving/Pixuli/issues/68) |
-| REF-301 | [#70](https://github.com/trueLoving/Pixuli/issues/70) |
-| REF-302 | [#71](https://github.com/trueLoving/Pixuli/issues/71) |
-| REF-303 | [#72](https://github.com/trueLoving/Pixuli/issues/72) |
-| REF-304 | [#73](https://github.com/trueLoving/Pixuli/issues/73) |
-| REF-305 | [#74](https://github.com/trueLoving/Pixuli/issues/74) |
-| REF-306 | [#75](https://github.com/trueLoving/Pixuli/issues/75) |
-| REF-307 | [#76](https://github.com/trueLoving/Pixuli/issues/76) |
-| REF-308 | [#77](https://github.com/trueLoving/Pixuli/issues/77) |
-| REF-309 | [#78](https://github.com/trueLoving/Pixuli/issues/78) |
-| REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79) |
-| REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80) |
-| REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81) |
-| REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82) |
-| REF-404 | [#83](https://github.com/trueLoving/Pixuli/issues/83) |
-| REF-405 | [#84](https://github.com/trueLoving/Pixuli/issues/84) |
-| REF-406 | [#85](https://github.com/trueLoving/Pixuli/issues/85) |
-| REF-501 | [#86](https://github.com/trueLoving/Pixuli/issues/86) |
-| REF-502 | [#87](https://github.com/trueLoving/Pixuli/issues/87) |
-| REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88) |
-| REF-504 | [#89](https://github.com/trueLoving/Pixuli/issues/89) |
-| REF-505 | [#90](https://github.com/trueLoving/Pixuli/issues/90) |
+| 计划 ID | GitHub Issue                                            |
+| ------- | ------------------------------------------------------- |
+| REF-101 | [#46](https://github.com/trueLoving/Pixuli/issues/46)   |
+| REF-102 | [#47](https://github.com/trueLoving/Pixuli/issues/47)   |
+| REF-103 | [#48](https://github.com/trueLoving/Pixuli/issues/48)   |
+| REF-104 | [#49](https://github.com/trueLoving/Pixuli/issues/49)   |
+| REF-105 | [#50](https://github.com/trueLoving/Pixuli/issues/50)   |
+| REF-106 | [#51](https://github.com/trueLoving/Pixuli/issues/51)   |
+| REF-107 | [#52](https://github.com/trueLoving/Pixuli/issues/52)   |
+| REF-108 | [#54](https://github.com/trueLoving/Pixuli/issues/54)   |
+| REF-109 | [#55](https://github.com/trueLoving/Pixuli/issues/55)   |
+| REF-110 | [#56](https://github.com/trueLoving/Pixuli/issues/56)   |
+| REF-111 | [#57](https://github.com/trueLoving/Pixuli/issues/57)   |
+| REF-112 | [#58](https://github.com/trueLoving/Pixuli/issues/58)   |
+| REF-201 | [#60](https://github.com/trueLoving/Pixuli/issues/60)   |
+| REF-202 | [#61](https://github.com/trueLoving/Pixuli/issues/61)   |
+| REF-203 | [#62](https://github.com/trueLoving/Pixuli/issues/62)   |
+| REF-204 | [#69](https://github.com/trueLoving/Pixuli/issues/69)   |
+| REF-205 | [#63](https://github.com/trueLoving/Pixuli/issues/63)   |
+| REF-206 | [#64](https://github.com/trueLoving/Pixuli/issues/64)   |
+| REF-207 | [#65](https://github.com/trueLoving/Pixuli/issues/65)   |
+| REF-208 | [#66](https://github.com/trueLoving/Pixuli/issues/66)   |
+| REF-209 | [#67](https://github.com/trueLoving/Pixuli/issues/67)   |
+| REF-210 | [#68](https://github.com/trueLoving/Pixuli/issues/68)   |
+| REF-301 | [#70](https://github.com/trueLoving/Pixuli/issues/70)   |
+| REF-302 | [#71](https://github.com/trueLoving/Pixuli/issues/71)   |
+| REF-303 | [#72](https://github.com/trueLoving/Pixuli/issues/72)   |
+| REF-304 | [#73](https://github.com/trueLoving/Pixuli/issues/73)   |
+| REF-305 | [#74](https://github.com/trueLoving/Pixuli/issues/74)   |
+| REF-306 | [#75](https://github.com/trueLoving/Pixuli/issues/75)   |
+| REF-307 | [#76](https://github.com/trueLoving/Pixuli/issues/76)   |
+| REF-308 | [#77](https://github.com/trueLoving/Pixuli/issues/77)   |
+| REF-309 | [#78](https://github.com/trueLoving/Pixuli/issues/78)   |
+| REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79)   |
+| REF-311 | [#100](https://github.com/trueLoving/Pixuli/issues/100) |
+| REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80)   |
+| REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81)   |
+| REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82)   |
+| REF-404 | [#83](https://github.com/trueLoving/Pixuli/issues/83)   |
+| REF-405 | [#84](https://github.com/trueLoving/Pixuli/issues/84)   |
+| REF-406 | [#85](https://github.com/trueLoving/Pixuli/issues/85)   |
+| REF-501 | [#86](https://github.com/trueLoving/Pixuli/issues/86)   |
+| REF-502 | [#87](https://github.com/trueLoving/Pixuli/issues/87)   |
+| REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88)   |
+| REF-504 | [#89](https://github.com/trueLoving/Pixuli/issues/89)   |
+| REF-505 | [#90](https://github.com/trueLoving/Pixuli/issues/90)   |
 
 > **说明**：#53 为已合并 PR（REF-101～103 批次），非独立计划 Issue。
 
@@ -500,21 +501,22 @@ native。
 
 ### 里程碑 M3 — 存储插件体系 P0
 
-| ID      | 建议标题                                        | Labels                                            | 优先级 | Depends on    | GitHub #                                              | 状态 |
-| ------- | ----------------------------------------------- | ------------------------------------------------- | ------ | ------------- | ----------------------------------------------------- | ---- |
-| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60           | [#70](https://github.com/trueLoving/Pixuli/issues/70) | ⬜   |
-| REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0            | P0     | #70           | [#71](https://github.com/trueLoving/Pixuli/issues/71) | ⬜   |
-| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70           | [#72](https://github.com/trueLoving/Pixuli/issues/72) | ⬜   |
-| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0 | P0     | #71, #72, #64 | [#73](https://github.com/trueLoving/Pixuli/issues/73) | ⬜   |
-| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0            | P0     | #71, #72, #65 | [#74](https://github.com/trueLoving/Pixuli/issues/74) | ⬜   |
-| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                         | P1     | #73, #74      | [#75](https://github.com/trueLoving/Pixuli/issues/75) | ⬜   |
-| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                | P1     | #75           | [#76](https://github.com/trueLoving/Pixuli/issues/76) | ⬜   |
-| REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1              | P1     | #70           | [#77](https://github.com/trueLoving/Pixuli/issues/77) | ⬜   |
-| REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                         | P1     | #71, #72      | [#78](https://github.com/trueLoving/Pixuli/issues/78) | ⬜   |
-| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                         | P0     | #73–#78       | [#79](https://github.com/trueLoving/Pixuli/issues/79) | ⬜   |
+| ID      | 建议标题                                        | Labels                                            | 优先级 | Depends on         | GitHub #                                                | 状态 |
+| ------- | ----------------------------------------------- | ------------------------------------------------- | ------ | ------------------ | ------------------------------------------------------- | ---- |
+| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ⬜   |
+| REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ⬜   |
+| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ⬜   |
+| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0 | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ⬜   |
+| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0            | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ⬜   |
+| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                         | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ⬜   |
+| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ⬜   |
+| REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1              | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ⬜   |
+| REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                         | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
+| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                         | P0     | #73–#78            | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
+| REF-311 | [M3] 删除 `packages/common` 整包                | refactor, m3, type:removal, priority:P0           | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
 
 <details>
-<summary>REF-301 ~ REF-310 Issue 正文模板</summary>
+<summary>REF-301 ~ REF-311 Issue 正文模板</summary>
 
 **REF-301**
 — 接口：`StorageProvider`、`StoragePluginManifest`、`StoragePluginRegistry`、`ProviderContext`（含 PlatformAdapter）。
@@ -534,6 +536,19 @@ native。
 **REF-309** — 迁移 `services/__tests__/*` 到 provider 包。
 
 **REF-310** — 配置源、列表、上传、删除、切换源 E2E/手工清单。
+
+**REF-311** — 在 REF-304/305、REF-309、REF-310 完成后，删除 `packages/common`
+整包：
+
+- 移除 `apps/pixuli`、`apps/mobile` 对 `pixuli-common`
+  的 workspace 依赖（应已无 import）
+- 从 `vitest.workspace.ts`、`pnpm-workspace` 移除 common
+- 处理 `logInterceptorService`：应用未引用则随包删除，或已提前迁入 `apps/pixuli`
+  开发工具
+- 更新 `docs/`、`packages/core` / `packages/ui` README 中仍指向
+  `packages/common` 的表述
+- `grep pixuli-common` / `packages/common` 在代码库中为 0（归档目录除外）
+- `pnpm run ci` 全绿
 
 </details>
 
@@ -587,13 +602,23 @@ flowchart LR
   end
   subgraph M3[M3 插件]
     REF301[REF-301]
+    REF304[REF-304]
     REF310[REF-310]
+    REF311[REF-311]
     REF201 --> REF301
-    REF301 --> REF310
+    REF301 --> REF302[REF-302]
+    REF301 --> REF303[REF-303]
+    REF302 --> REF304
+    REF303 --> REF304
+    REF304 --> REF305[REF-305]
+    REF304 --> REF310
+    REF305 --> REF310
+    REF310 --> REF311
     REF210 --> REF304
   end
   M1 --> M2 --> M3
   M3 --> M4[M4 文档CI]
+  REF311 --> M4
 ```
 
 ---
@@ -615,10 +640,10 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 10       | 0      | 0%      |
+| M3       | 11       | 0      | 0%      |
 | M4       | 6        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
-| **合计** | **43**   | **7**  | **16%** |
+| **合计** | **44**   | **7**  | **16%** |
 
 ---
 
