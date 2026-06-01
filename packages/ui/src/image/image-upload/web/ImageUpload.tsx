@@ -16,6 +16,7 @@ import type {
   ImageCropOptions,
   ImageUploadData,
   MultiImageUploadData,
+  WebImageUploadData,
 } from '@pixuli/core/types';
 import { compressImage } from '@pixuli/core/utils';
 import {
@@ -52,7 +53,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
-  const [uploadData, setUploadData] = useState<ImageUploadData | null>(null);
+  const [uploadData, setUploadData] = useState<WebImageUploadData | null>(null);
   const [multiUploadData, setMultiUploadData] =
     useState<MultiImageUploadData | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -418,7 +419,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const handleInputChange = (
-    field: keyof ImageUploadData,
+    field: keyof WebImageUploadData,
     value: string | string[],
   ) => {
     if (uploadData) {

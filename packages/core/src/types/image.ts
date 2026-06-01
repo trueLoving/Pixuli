@@ -21,6 +21,16 @@ export interface ImageUploadData {
   tags?: string[];
 }
 
+/** Web/Desktop 上传表单：file 恒为 File */
+export type WebImageUploadData = Omit<ImageUploadData, 'file'> & { file: File };
+
+export function getUploadFileName(file: File | string, name?: string): string {
+  if (typeof file === 'string') {
+    return name || file.split('/').pop() || 'image.jpg';
+  }
+  return name || file.name;
+}
+
 export interface ImageCropOptions {
   aspectRatio?: number;
   minWidth?: number;

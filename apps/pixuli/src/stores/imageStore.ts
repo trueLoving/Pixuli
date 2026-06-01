@@ -24,6 +24,7 @@ import type {
   MultiImageUploadData,
   UploadProgress,
 } from '@pixuli/core/types';
+import { getUploadFileName } from '@pixuli/core/types';
 import { create } from 'zustand';
 
 interface ImageState {
@@ -256,7 +257,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         });
         // 记录上传失败日志
         useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
-          imageName: uploadData.name || uploadData.file.name,
+          imageName: getUploadFileName(uploadData.file, uploadData.name),
           error: errorMsg,
           duration,
         });

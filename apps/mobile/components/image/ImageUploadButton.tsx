@@ -167,7 +167,7 @@ export function ImageUploadButton({
       }
 
       await uploadImage({
-        uri: finalUri,
+        file: finalUri,
         name: finalName,
         description: data.description,
         tags: data.tags,
