@@ -3,47 +3,82 @@ import type {
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
-import {
-  DefaultPlatformAdapter,
-  type PlatformAdapter,
-} from '@pixuli/core/platform';
+import type {
+  ImageListOptions,
+  ImageMetadataLoadOptions,
+  ProviderContext,
+  StorageProviderConfig,
+  StorageProviderWithMetadata,
+} from '@pixuli/core/plugins';
+import { giteeManifest } from './manifest';
 
-export class GiteeStorageService {
-  private config: GiteeConfig;
-  // private platform: 'web' | 'desktop' | 'mobile';
-  private baseUrl = 'https://gitee.com/api/v5';
-  private platformAdapter: PlatformAdapter;
-  private useProxy: boolean;
+function narrowGiteeConfig(
+  config: StorageProviderConfig | GiteeConfig,
+): GiteeConfig {
+  const { owner, repo, branch, token, path } = config;
 
-  constructor(
-    config: GiteeConfig,
-    options: {
-      platform: 'web' | 'desktop' | 'mobile';
-      platformAdapter?: PlatformAdapter;
-      useProxy?: boolean;
-    } = {
-      platform: 'web',
-      platformAdapter: new DefaultPlatformAdapter(),
-      useProxy: false,
-    },
+  if (
+    typeof owner !== 'string' ||
+    typeof repo !== 'string' ||
+    typeof branch !== 'string' ||
+    typeof token !== 'string' ||
+    typeof path !== 'string'
   ) {
-    this.config = config;
-    // this.platform = options.platform || 'web';
-    this.platformAdapter =
-      options.platformAdapter || new DefaultPlatformAdapter();
+    throw new Error('Invalid Gitee storage provider config');
+  }
+
+  return { owner, repo, branch, token, path };
+}
+
+export interface GiteeStorageProviderOptions {
+  useProxy?: boolean;
+}
+
+export class GiteeStorageProvider implements StorageProviderWithMetadata {
+  readonly manifest = giteeManifest;
+
+  private config!: GiteeConfig;
+  private readonly baseUrl = 'https://gitee.com/api/v5';
+  private readonly platformAdapter: ProviderContext['platformAdapter'];
+  private readonly fetchFn: typeof fetch;
+  private readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
+  private readonly useProxy: boolean;
+
+  constructor(ctx: ProviderContext, options: GiteeStorageProviderOptions = {}) {
+    this.platformAdapter = ctx.platformAdapter;
+    this.fetchFn =
+      ctx.fetch ??
+      ((input: RequestInfo | URL, init?: RequestInit) =>
+        globalThis.fetch(input, init));
+    this.logger = ctx.logger ?? console;
     this.useProxy = options.useProxy ?? false;
+  }
+
+  configure(config: StorageProviderConfig): void {
+    this.config = narrowGiteeConfig(config);
+  }
+
+  private assertConfigured(): void {
+    if (!this.config) {
+      throw new Error('Gitee storage provider is not configured');
+    }
+  }
+
+  getRawUrl(path: string): string {
+    this.assertConfigured();
+    const filePath = `${this.config.path}/${path}`;
+    return this.buildRawUrl(
+      this.config.owner,
+      this.config.repo,
+      this.config.branch,
+      filePath,
+    );
   }
 
   /**
    * 将 Gitee API 返回的 download_url 转换为 raw URL 格式
-   * 根据配置决定是否使用代理
-   * @param owner 仓库所有者
-   * @param repo 仓库名
-   * @param branch 分支名
-   * @param path 文件路径（相对于仓库根目录）
-   * @returns raw URL（根据 useProxy 配置决定是否使用代理）
    */
-  private getRawUrl(
+  private buildRawUrl(
     owner: string,
     repo: string,
     branch: string,
@@ -68,8 +103,7 @@ export class GiteeStorageService {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<any> {
-    // Gitee API v5 使用 access_token 作为查询参数
-    // 注意：endpoint 可能已经包含查询参数（如 ref=branch），需要正确处理
+    this.assertConfigured();
     let url: string;
     if (endpoint.includes('?')) {
       // endpoint 已经包含查询参数，使用 & 连接 access_token
@@ -84,7 +118,7 @@ export class GiteeStorageService {
       ...(options.headers as Record<string, string>),
     };
 
-    const response = await fetch(url, {
+    const response = await this.fetchFn(url, {
       ...options,
       headers,
     });
@@ -152,7 +186,7 @@ export class GiteeStorageService {
     try {
       return await this.platformAdapter.getImageDimensions(file);
     } catch (error) {
-      console.warn(
+      this.logger.warn(
         'Failed to get image dimensions, using default values:',
         error,
       );
@@ -202,7 +236,7 @@ export class GiteeStorageService {
     });
 
     // 使用 raw URL 替代 API 返回的 download_url，避免跨域问题
-    const rawUrl = this.getRawUrl(
+    const rawUrl = this.buildRawUrl(
       this.config.owner,
       this.config.repo,
       this.config.branch,
@@ -227,9 +261,9 @@ export class GiteeStorageService {
     metadata: ImageItem,
   ): Promise<void> {
     try {
-      await this.updateImageMetadata(fileName, metadata);
+      await this.persistImageMetadata(fileName, metadata);
     } catch (error) {
-      console.error('Failed to upload metadata:', error);
+      this.logger.error('Failed to upload metadata:', error);
       // 元数据上传失败不应该阻止整个上传流程，但记录错误
       throw new Error(`上传元数据失败: ${error}`);
     }
@@ -246,14 +280,10 @@ export class GiteeStorageService {
    * @param uploadData 上传数据
    * @returns Promise<ImageItem> 上传后的图片信息
    */
-  async uploadImage(
-    uploadData:
-      | ImageUploadData
-      | { uri: string; name?: string; description?: string; tags?: string[] },
-  ): Promise<ImageItem> {
+  async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+    this.assertConfigured();
     try {
-      // 兼容 web/desktop 的 File 和 mobile 的 URI
-      const file = 'file' in uploadData ? uploadData.file : uploadData.uri;
+      const file = uploadData.file;
       const name = uploadData.name;
       const description = uploadData.description;
       const tags = uploadData.tags;
@@ -305,26 +335,27 @@ export class GiteeStorageService {
       } catch (error) {
         // 元数据上传失败时，记录警告但不影响图片上传的成功
         // 因为图片文件已经成功上传，元数据可以在后续补充
-        console.warn(
+        this.logger.warn(
           'Image file uploaded successfully, but metadata upload failed:',
           error,
         );
-        console.warn(
+        this.logger.warn(
           'You can update metadata later or it will be fetched from the image URL',
         );
       }
 
       return imageItem;
     } catch (error) {
-      console.error('Upload image failed:', error);
+      this.logger.error('Upload image failed:', error);
       throw new Error(`上传图片失败: ${error}`);
     }
   }
 
   // 删除图片
-  async deleteImage(_imageId: string, fileName: string): Promise<void> {
+  async deleteImage(path: string): Promise<void> {
+    this.assertConfigured();
     try {
-      const filePath = `${this.config.path}/${fileName}`;
+      const filePath = `${this.config.path}/${path}`;
 
       // 获取文件的当前 SHA
       const sha = await this.getFileSha(filePath, this.config.branch);
@@ -337,7 +368,7 @@ export class GiteeStorageService {
       await this.makeGiteeRequest(endpoint, {
         method: 'DELETE',
         body: JSON.stringify({
-          message: `Delete image: ${fileName}`,
+          message: `Delete image: ${path}`,
           sha,
           branch: this.config.branch,
         }),
@@ -345,13 +376,13 @@ export class GiteeStorageService {
 
       // 删除对应的元数据文件
       try {
-        await this.deleteImageMetadata(fileName);
+        await this.deleteImageMetadata(path);
       } catch (error) {
-        console.warn('Failed to delete metadata file:', error);
+        this.logger.warn('Failed to delete metadata file:', error);
         // 不抛出错误，因为图片已经删除成功
       }
     } catch (error) {
-      console.error('Delete image failed:', error);
+      this.logger.error('Delete image failed:', error);
       throw new Error(`删除图片失败: ${error}`);
     }
   }
@@ -385,13 +416,14 @@ export class GiteeStorageService {
       });
     } catch (error) {
       // 删除元数据失败不应该阻止图片删除，只记录警告
-      console.warn(`Failed to delete metadata for ${fileName}:`, error);
+      this.logger.warn(`Failed to delete metadata for ${fileName}:`, error);
       throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
     }
   }
 
   // 获取图片列表
-  async getImageList(): Promise<ImageItem[]> {
+  async listImages(_options?: ImageListOptions): Promise<ImageItem[]> {
+    this.assertConfigured();
     try {
       const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.config.path)}?ref=${this.config.branch}`;
       const response = await this.makeGiteeRequest(endpoint, {
@@ -459,7 +491,7 @@ export class GiteeStorageService {
                     }
                   } catch (decodeError) {
                     // 如果解码失败，记录错误但继续处理其他文件
-                    console.debug(
+                    this.logger.log(
                       `Failed to decode metadata file ${file.name}:`,
                       decodeError,
                     );
@@ -467,7 +499,7 @@ export class GiteeStorageService {
                 }
               } catch (error) {
                 // 忽略单个 metadata 文件加载失败
-                console.debug(
+                this.logger.log(
                   `Failed to load metadata file ${file.name}:`,
                   error,
                 );
@@ -478,7 +510,7 @@ export class GiteeStorageService {
         }
       } catch (metadataError) {
         // .metadata 目录不存在或无法访问，使用默认值
-        console.debug(
+        this.logger.log(
           'Metadata directory not found or inaccessible:',
           metadataError,
         );
@@ -512,7 +544,7 @@ export class GiteeStorageService {
 
         // 使用 raw URL 替代 API 返回的 download_url，避免跨域问题
         const filePath = `${this.config.path}/${item.name}`;
-        const rawUrl = this.getRawUrl(
+        const rawUrl = this.buildRawUrl(
           this.config.owner,
           this.config.repo,
           this.config.branch,
@@ -548,7 +580,7 @@ export class GiteeStorageService {
         ([_, count]) => (count as number) > 1,
       );
       if (duplicateIds.length > 0) {
-        console.warn('发现重复的图片ID:', duplicateIds);
+        this.logger.warn('发现重复的图片ID:', duplicateIds);
         // 为重复的ID添加后缀以确保唯一性
         const processedImages = images.map((img: ImageItem, index: number) => {
           if (idCounts[img.id] > 1) {
@@ -564,28 +596,68 @@ export class GiteeStorageService {
 
       return images;
     } catch (error) {
-      console.error('Get image list failed:', error);
+      this.logger.error('Get image list failed:', error);
       throw new Error(`获取图片列表失败: ${error}`);
     }
   }
 
-  // 更新图片信息（如标签、描述等）
-  async updateImageInfo(
-    _imageId: string,
-    fileName: string,
-    metadata: any,
-  ): Promise<void> {
+  async updateImageMetadata(
+    path: string,
+    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>> & {
+      id?: string;
+      size?: number;
+      width?: number;
+      height?: number;
+      createdAt?: string;
+      updatedAt?: string;
+    },
+  ): Promise<ImageItem> {
+    this.assertConfigured();
     try {
-      // 更新元数据文件
-      await this.updateImageMetadata(fileName, metadata);
+      await this.persistImageMetadata(path, metadata);
+      const filePath = `${this.config.path}/${path}`;
+      return {
+        id: metadata.id ?? path,
+        name: metadata.name ?? path,
+        url: this.buildRawUrl(
+          this.config.owner,
+          this.config.repo,
+          this.config.branch,
+          filePath,
+        ),
+        githubUrl: `https://gitee.com/${this.config.owner}/${this.config.repo}/blob/${this.config.branch}/${filePath}`,
+        size: metadata.size ?? 0,
+        width: metadata.width ?? 0,
+        height: metadata.height ?? 0,
+        type: this.getMimeType(path),
+        tags: metadata.tags ?? [],
+        description: metadata.description ?? '',
+        createdAt: metadata.createdAt ?? new Date().toISOString(),
+        updatedAt: metadata.updatedAt ?? new Date().toISOString(),
+      };
     } catch (error) {
-      console.error('Update image info failed:', error);
+      this.logger.error('Update image info failed:', error);
       throw new Error(`更新图片信息失败: ${error}`);
     }
   }
 
-  // 更新图片元数据文件
-  private async updateImageMetadata(
+  /** @deprecated 兼容 pixuli-common GiteeStorageService，REF-304 后移除 */
+  async updateImageInfo(
+    _imageId: string,
+    fileName: string,
+    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>> & {
+      id?: string;
+      size?: number;
+      width?: number;
+      height?: number;
+      createdAt?: string;
+      updatedAt?: string;
+    },
+  ): Promise<void> {
+    await this.updateImageMetadata(fileName, metadata);
+  }
+
+  private async persistImageMetadata(
     fileName: string,
     metadata: any,
   ): Promise<void> {
@@ -676,7 +748,7 @@ export class GiteeStorageService {
         }
       }
     } catch (error) {
-      console.error('Update image metadata failed:', error);
+      this.logger.error('Update image metadata failed:', error);
       throw new Error(`更新图片元数据失败: ${error}`);
     }
   }
@@ -696,14 +768,14 @@ export class GiteeStorageService {
     try {
       const metadataFileName = this.getMetadataFileName(fileName);
       // 使用 Gitee raw URL 直接获取文件内容
-      const metadataUrl = this.getRawUrl(
+      const metadataUrl = this.buildRawUrl(
         this.config.owner,
         this.config.repo,
         this.config.branch,
         `${this.config.path}/.metadata/${metadataFileName}`,
       );
 
-      const response = await fetch(metadataUrl);
+      const response = await this.fetchFn(metadataUrl);
 
       if (response.status === 404) {
         return null;
@@ -732,7 +804,7 @@ export class GiteeStorageService {
    */
   async loadImageMetadata(
     images: ImageItem[],
-    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean },
+    _options?: ImageMetadataLoadOptions,
   ): Promise<ImageItem[]> {
     try {
       // 批量获取元数据
@@ -753,14 +825,14 @@ export class GiteeStorageService {
           }
           return img;
         } catch (error) {
-          console.debug(`Failed to load metadata for ${img.name}:`, error);
+          this.logger.log(`Failed to load metadata for ${img.name}:`, error);
           return img;
         }
       });
 
       return await Promise.all(metadataPromises);
     } catch (error) {
-      console.error('Load image metadata failed:', error);
+      this.logger.error('Load image metadata failed:', error);
       // 即使加载元数据失败，也返回原始图片列表
       return images;
     }

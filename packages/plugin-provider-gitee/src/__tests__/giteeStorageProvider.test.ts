@@ -143,7 +143,7 @@ describe('GiteeStorageService', () => {
 
     it('应该上传图片文件（使用 URI）', async () => {
       const uploadData = {
-        uri: 'file:///path/to/image.jpg',
+        file: 'file:///path/to/image.jpg',
         name: 'image.jpg',
         description: 'Test image',
       };

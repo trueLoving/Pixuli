@@ -289,6 +289,9 @@ importers:
       '@pixuli/core':
         specifier: workspace:*
         version: link:../core
+      '@pixuli/provider-gitee':
+        specifier: workspace:*
+        version: link:../plugin-provider-gitee
       '@pixuli/provider-github':
         specifier: workspace:*
         version: link:../plugin-provider-github
@@ -304,6 +307,25 @@ importers:
         version: 5.9.3
 
   packages/core:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.18.12
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.18.12)(@vitest/ui@2.1.9)(jsdom@25.0.1)(lightningcss@1.30.2)(terser@5.44.1)
+
+  packages/plugin-provider-gitee:
+    dependencies:
+      '@pixuli/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@types/node':
         specifier: ^22.0.0
@@ -10831,7 +10853,9 @@ snapshots:
       metro-runtime: 0.83.3
     transitivePeerDependencies:
       - '@babel/core'
+      - bufferutil
       - supports-color
+      - utf-8-validate
     optional: true
 
   '@react-native/normalize-colors@0.74.89': {}
