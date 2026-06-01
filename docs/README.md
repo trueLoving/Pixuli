@@ -34,6 +34,7 @@
 | [04-cross-platform-logging.md](02-system-design/04-cross-platform-logging.md)                                             | 跨端日志：统一日志接口、console 拦截与收集、过滤/搜索/导出、DevTools 可视化；Web/Desktop/Mobile 一致用法与安全、性能要点。                                                                                   |
 | [05-Dify-Integration-And-Image-Processing-Design.md](02-system-design/05-Dify-Integration-And-Image-Processing-Design.md) | Dify 集成与图片处理选型：Dify 工作流 run API 接入（图片分析 image→text、图片生成 text→image）；压缩/编辑/格式转换采用传统实现（WASM/原生/服务端）的选型依据与架构阶段。                                      |
 | [06-unified-app-mobile-integration.md](02-system-design/06-unified-app-mobile-integration.md)                             | 移动端与 apps/pixuli 统一：可行性分析（Web/Desktop 共一工程、Mobile 独立 RN）、方案 A/B/C 对比与决策；方案 A（Capacitor 套壳）落地：目标与原则、技术选型、工程结构、分阶段步骤、配置示例、风险与应对。       |
+| [07-storage-plugin-system.md](02-system-design/07-storage-plugin-system.md)                                               | **M3 存储插件体系**：`StorageProvider` / Registry 契约、`@pixuli/provider-*` 包约定、imageStore 集成、配置持久化演进、与 `pixuli-common` 迁移及 REF-301～311 路线图（REF-301 设计基线）。                    |
 
 ---
 

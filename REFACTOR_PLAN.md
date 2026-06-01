@@ -503,7 +503,7 @@ native。
 
 | ID      | 建议标题                                        | Labels                                            | 优先级 | Depends on         | GitHub #                                                | 状态 |
 | ------- | ----------------------------------------------- | ------------------------------------------------- | ------ | ------------------ | ------------------------------------------------------- | ---- |
-| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ⬜   |
+| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
 | REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ⬜   |
 | REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ⬜   |
 | REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0 | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ⬜   |
@@ -549,6 +549,11 @@ native。
   `packages/common` 的表述
 - `grep pixuli-common` / `packages/common` 在代码库中为 0（归档目录除外）
 - `pnpm run ci` 全绿
+
+**范围外（Backlog）**
+— 插件热加载、远程安装第三方 provider：Registry/Manifest 在 REF-301 预留扩展点；Loader 与安装 UI 不在 M3
+P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
+#77 已补充说明）。
 
 </details>
 
@@ -640,7 +645,7 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 11       | 0      | 0%      |
+| M3       | 11       | 1      | 9%      |
 | M4       | 6        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
 | **合计** | **44**   | **7**  | **16%** |

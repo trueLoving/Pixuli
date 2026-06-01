@@ -14,7 +14,8 @@ export interface ImageItem {
 }
 
 export interface ImageUploadData {
-  file: File;
+  /** Web/Desktop 为 File；Mobile 可为本地 URI 字符串 */
+  file: File | string;
   name?: string;
   description?: string;
   tags?: string[];
