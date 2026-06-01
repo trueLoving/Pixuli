@@ -516,14 +516,14 @@ const githubManifest: StoragePluginManifest = {
 
 ### B. 相关源码索引（M2 基线）
 
-| 路径                                                   | 说明                         |
-| ------------------------------------------------------ | ---------------------------- |
-| `packages/core/src/plugins/types.ts`                   | 契约定义                     |
-| `packages/core/src/plugins/registry.ts`                | DefaultStoragePluginRegistry |
-| `packages/common/src/services/githubStorageService.ts` | 待迁至 provider-github       |
-| `packages/common/src/services/giteeStorageService.ts`  | 待迁至 provider-gitee        |
-| `apps/pixuli/src/stores/imageStore.ts`                 | 待 REF-304                   |
-| `apps/mobile/stores/imageStore.ts`                     | 待 REF-305                   |
+| 路径                                                   | 说明                                     |
+| ------------------------------------------------------ | ---------------------------------------- |
+| `packages/core/src/plugins/types.ts`                   | 契约定义                                 |
+| `packages/core/src/plugins/registry.ts`                | DefaultStoragePluginRegistry             |
+| `packages/common/src/services/githubStorageService.ts` | 已迁至 `packages/plugin-provider-github` |
+| `packages/common/src/services/giteeStorageService.ts`  | 待迁至 provider-gitee                    |
+| `apps/pixuli/src/stores/imageStore.ts`                 | 待 REF-304                               |
+| `apps/mobile/stores/imageStore.ts`                     | 待 REF-305                               |
 
 ### C. 文档维护
 

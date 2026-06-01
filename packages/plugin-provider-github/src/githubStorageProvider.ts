@@ -1,34 +1,67 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import type { GitHubConfig } from '@pixuli/core/types';
-import {
-  DefaultPlatformAdapter,
-  type PlatformAdapter,
-} from '@pixuli/core/platform';
+import type {
+  ImageListOptions,
+  ImageMetadataLoadOptions,
+  ProviderContext,
+  StorageProviderConfig,
+  StorageProviderWithMetadata,
+} from '@pixuli/core/plugins';
+import { githubManifest } from './manifest';
 
-export class GitHubStorageService {
-  private config: GitHubConfig;
-  private baseUrl = 'https://api.github.com';
-  private platformAdapter: PlatformAdapter;
-  // @ts-ignore
-  private platform: 'web' | 'desktop' | 'mobile';
+function narrowGitHubConfig(
+  config: StorageProviderConfig | GitHubConfig,
+): GitHubConfig {
+  const { owner, repo, branch, token, path } = config;
 
-  constructor(
-    config: GitHubConfig,
-    options: {
-      platform: 'web' | 'desktop' | 'mobile';
-      platformAdapter?: PlatformAdapter;
-    } = {
-      platform: 'web',
-      platformAdapter: new DefaultPlatformAdapter(),
-    },
+  if (
+    typeof owner !== 'string' ||
+    typeof repo !== 'string' ||
+    typeof branch !== 'string' ||
+    typeof token !== 'string' ||
+    typeof path !== 'string'
   ) {
-    this.config = config;
-    this.platformAdapter =
-      options.platformAdapter || new DefaultPlatformAdapter();
-    this.platform = options.platform || 'web';
+    throw new Error('Invalid GitHub storage provider config');
+  }
+
+  return { owner, repo, branch, token, path };
+}
+
+export class GitHubStorageProvider implements StorageProviderWithMetadata {
+  readonly manifest = githubManifest;
+
+  private config!: GitHubConfig;
+  private readonly baseUrl = 'https://api.github.com';
+  private readonly platformAdapter: ProviderContext['platformAdapter'];
+  private readonly fetchFn: typeof fetch;
+  private readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
+
+  constructor(ctx: ProviderContext) {
+    this.platformAdapter = ctx.platformAdapter;
+    this.fetchFn =
+      ctx.fetch ??
+      ((input: RequestInfo | URL, init?: RequestInit) =>
+        globalThis.fetch(input, init));
+    this.logger = ctx.logger ?? console;
+  }
+
+  configure(config: StorageProviderConfig): void {
+    this.config = narrowGitHubConfig(config);
+  }
+
+  private assertConfigured(): void {
+    if (!this.config) {
+      throw new Error('GitHub storage provider is not configured');
+    }
+  }
+
+  getRawUrl(path: string): string {
+    this.assertConfigured();
+    return `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.config.path}/${path}`;
   }
 
   private async makeGitHubRequest(endpoint: string, options: RequestInit = {}) {
+    this.assertConfigured();
     const url = `${this.baseUrl}${endpoint}`;
     const headers = {
       Authorization: `token ${this.config.token}`,
@@ -37,7 +70,7 @@ export class GitHubStorageService {
       ...options.headers,
     };
 
-    const response = await fetch(url, {
+    const response = await this.fetchFn(url, {
       ...options,
       headers,
     });
@@ -63,7 +96,7 @@ export class GitHubStorageService {
     try {
       return await this.platformAdapter.getImageDimensions(file);
     } catch (error) {
-      console.warn(
+      this.logger.warn(
         'Failed to get image dimensions, using default values:',
         error,
       );
@@ -121,9 +154,9 @@ export class GitHubStorageService {
     metadata: ImageItem,
   ): Promise<void> {
     try {
-      await this.updateImageMetadata(fileName, metadata);
+      await this.persistImageMetadata(fileName, metadata);
     } catch (error) {
-      console.error('Failed to upload metadata:', error);
+      this.logger.error('Failed to upload metadata:', error);
       // 元数据上传失败不应该阻止整个上传流程，但记录错误
       throw new Error(`上传元数据失败: ${error}`);
     }
@@ -140,14 +173,10 @@ export class GitHubStorageService {
    * @param uploadData 上传数据
    * @returns Promise<ImageItem> 上传后的图片信息
    */
-  async uploadImage(
-    uploadData:
-      | ImageUploadData
-      | { uri: string; name?: string; description?: string; tags?: string[] },
-  ): Promise<ImageItem> {
+  async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+    this.assertConfigured();
     try {
-      // 兼容 web/desktop 的 File 和 mobile 的 URI
-      const file = 'file' in uploadData ? uploadData.file : uploadData.uri;
+      const file = uploadData.file;
       const name = uploadData.name;
       const description = uploadData.description;
       const tags = uploadData.tags;
@@ -199,26 +228,27 @@ export class GitHubStorageService {
       } catch (error) {
         // 元数据上传失败时，记录警告但不影响图片上传的成功
         // 因为图片文件已经成功上传，元数据可以在后续补充
-        console.warn(
+        this.logger.warn(
           'Image file uploaded successfully, but metadata upload failed:',
           error,
         );
-        console.warn(
+        this.logger.warn(
           'You can update metadata later or it will be fetched from the image URL',
         );
       }
 
       return imageItem;
     } catch (error) {
-      console.error('Upload image failed:', error);
+      this.logger.error('Upload image failed:', error);
       throw new Error(`上传图片失败: ${error}`);
     }
   }
 
   // 删除图片
-  async deleteImage(_imageId: string, fileName: string): Promise<void> {
+  async deleteImage(path: string): Promise<void> {
+    this.assertConfigured();
     try {
-      const filePath = `${this.config.path}/${fileName}`;
+      const filePath = `${this.config.path}/${path}`;
 
       // 首先获取文件的SHA
       const fileInfo = await this.makeGitHubRequest(
@@ -231,7 +261,7 @@ export class GitHubStorageService {
         {
           method: 'DELETE',
           body: JSON.stringify({
-            message: `Delete image: ${fileName}`,
+            message: `Delete image: ${path}`,
             sha: fileInfo.sha,
             branch: this.config.branch,
           }),
@@ -240,13 +270,13 @@ export class GitHubStorageService {
 
       // 删除对应的元数据文件
       try {
-        await this.deleteImageMetadata(fileName);
+        await this.deleteImageMetadata(path);
       } catch (error) {
-        console.warn('Failed to delete metadata file:', error);
+        this.logger.warn('Failed to delete metadata file:', error);
         // 不抛出错误，因为图片已经删除成功
       }
     } catch (error) {
-      console.error('Delete image failed:', error);
+      this.logger.error('Delete image failed:', error);
       throw new Error(`删除图片失败: ${error}`);
     }
   }
@@ -286,7 +316,9 @@ export class GitHubStorageService {
 
       // 确保获取到了 SHA
       if (!metadataFileInfo.sha) {
-        console.warn(`Metadata file exists but no SHA found for ${fileName}`);
+        this.logger.warn(
+          `Metadata file exists but no SHA found for ${fileName}`,
+        );
         return;
       }
 
@@ -304,13 +336,14 @@ export class GitHubStorageService {
       );
     } catch (error) {
       // 删除元数据失败不应该阻止图片删除，只记录警告
-      console.warn(`Failed to delete metadata for ${fileName}:`, error);
+      this.logger.warn(`Failed to delete metadata for ${fileName}:`, error);
       throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
     }
   }
 
   // 获取图片列表
-  async getImageList(): Promise<ImageItem[]> {
+  async listImages(_options?: ImageListOptions): Promise<ImageItem[]> {
+    this.assertConfigured();
     try {
       const response = await this.makeGitHubRequest(
         `/repos/${this.config.owner}/${this.config.repo}/contents/${this.config.path}?ref=${this.config.branch}`,
@@ -329,7 +362,10 @@ export class GitHubStorageService {
             metadata = await this.getImageMetadata(item.name);
           } catch (error) {
             // 其他错误，记录debug日志
-            console.debug(`Failed to fetch metadata for ${item.name}:`, error);
+            this.logger.log(
+              `Failed to fetch metadata for ${item.name}:`,
+              error,
+            );
           }
 
           return {
@@ -362,7 +398,7 @@ export class GitHubStorageService {
         ([_, count]) => (count as number) > 1,
       );
       if (duplicateIds.length > 0) {
-        console.warn('发现重复的图片ID:', duplicateIds);
+        this.logger.warn('发现重复的图片ID:', duplicateIds);
         // 为重复的ID添加后缀以确保唯一性
         const processedImages = images.map((img: ImageItem, index: number) => {
           if (idCounts[img.id] > 1) {
@@ -378,28 +414,49 @@ export class GitHubStorageService {
 
       return images;
     } catch (error) {
-      console.error('Get image list failed:', error);
+      this.logger.error('Get image list failed:', error);
       throw new Error(`获取图片列表失败: ${error}`);
     }
   }
 
   // 更新图片信息（如标签、描述等）
-  async updateImageInfo(
-    _imageId: string,
-    fileName: string,
-    metadata: any,
-  ): Promise<void> {
+  async updateImageMetadata(
+    path: string,
+    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>>,
+  ): Promise<ImageItem> {
+    this.assertConfigured();
     try {
-      // 更新元数据文件
-      await this.updateImageMetadata(fileName, metadata);
+      await this.persistImageMetadata(path, metadata);
+      return {
+        id: path,
+        name: metadata.name ?? path,
+        url: this.getRawUrl(path),
+        githubUrl: `https://github.com/${this.config.owner}/${this.config.repo}/blob/${this.config.branch}/${this.config.path}/${path}`,
+        size: 0,
+        width: 0,
+        height: 0,
+        type: this.getMimeType(path),
+        tags: metadata.tags ?? [],
+        description: metadata.description ?? '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     } catch (error) {
-      console.error('Update image info failed:', error);
+      this.logger.error('Update image info failed:', error);
       throw new Error(`更新图片信息失败: ${error}`);
     }
   }
 
-  // 更新图片元数据文件
-  private async updateImageMetadata(
+  /** @deprecated 兼容 pixuli-common GitHubStorageService，REF-304 后移除 */
+  async updateImageInfo(
+    _imageId: string,
+    fileName: string,
+    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>>,
+  ): Promise<void> {
+    await this.updateImageMetadata(fileName, metadata);
+  }
+
+  private async persistImageMetadata(
     fileName: string,
     metadata: any,
   ): Promise<void> {
@@ -516,7 +573,7 @@ export class GitHubStorageService {
         }
       }
     } catch (error) {
-      console.error('Update image metadata failed:', error);
+      this.logger.error('Update image metadata failed:', error);
       throw new Error(`更新图片元数据失败: ${error}`);
     }
   }
@@ -537,11 +594,11 @@ export class GitHubStorageService {
       // URL格式：https://raw.githubusercontent.com/owner/repo/refs/heads/branch/path/.metadata/file.json
       const metadataUrl = `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.config.path}/.metadata/${metadataFileName}`;
 
-      const response = await fetch(metadataUrl);
+      const response = await this.fetchFn(metadataUrl);
 
       // 如果文件不存在（404），记录警告而不是错误
       if (response.status === 404) {
-        console.warn(`Metadata file not found for ${fileName} (404)`);
+        this.logger.warn(`Metadata file not found for ${fileName} (404)`);
         return null;
       }
 
@@ -569,7 +626,7 @@ export class GitHubStorageService {
    */
   async loadImageMetadata(
     images: ImageItem[],
-    _options?: { forceRefresh?: boolean; backgroundUpdate?: boolean },
+    _options?: ImageMetadataLoadOptions,
   ): Promise<ImageItem[]> {
     try {
       // const { forceRefresh = false } = options || {};
@@ -592,14 +649,14 @@ export class GitHubStorageService {
           }
           return img;
         } catch (error) {
-          console.debug(`Failed to load metadata for ${img.name}:`, error);
+          this.logger.log(`Failed to load metadata for ${img.name}:`, error);
           return img;
         }
       });
 
       return await Promise.all(metadataPromises);
     } catch (error) {
-      console.error('Load image metadata failed:', error);
+      this.logger.error('Load image metadata failed:', error);
       // 即使加载元数据失败，也返回原始图片列表
       return images;
     }
