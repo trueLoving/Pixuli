@@ -269,15 +269,16 @@ interface StoragePluginRegistry {
     factory: StorageProviderFactory,
   ): void;
   get(id: string): StorageProviderFactory | undefined;
+  getManifest(id: string): StoragePluginManifest | undefined;
   listManifests(): StoragePluginManifest[];
   create(id: string, ctx: ProviderContext): StorageProvider;
 }
 ```
 
 - 默认实现：`DefaultStoragePluginRegistry` / `createStoragePluginRegistry()`。
-- `register` 时
-  **manifest.id 与 factory 一一对应**；重复 register 覆盖（或抛错，REF-301 实现时二选一并文档化，推荐
-  **后者抛错** 便于调试）。
+- `register` 时 **manifest.id 与 factory 一一对应**；重复 `register`
+  同一 id 时抛出
+  `StoragePluginAlreadyRegisteredError`（热加载覆盖策略见 #102）。
 - `create` 仅构造实例，**不**自动 `configure`；由 `imageStore`
   在加载用户 config 后调用 `configure`。
 
