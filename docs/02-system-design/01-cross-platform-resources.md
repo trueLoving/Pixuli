@@ -40,7 +40,7 @@
   Expo）。
 - 共享范围：组件、Hooks、工具函数、服务、类型定义、国际化语言包。
 - 与
-  [00-System-Design](./00-System-Design.md)、[02-cross-image-process](./02-cross-image-process.md)
+  [00-System-Design](./00-System-Design.md)、[02-cross-image-process](./02-cross-image-process.md)、[07-storage-plugin-system](./07-storage-plugin-system.md)
   等设计文档配合使用。
 
 ---
