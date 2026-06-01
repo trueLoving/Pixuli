@@ -550,6 +550,11 @@ native。
 - `grep pixuli-common` / `packages/common` 在代码库中为 0（归档目录除外）
 - `pnpm run ci` 全绿
 
+**范围外（Backlog）**
+— 插件热加载、远程安装第三方 provider：Registry/Manifest 在 REF-301 预留扩展点；Loader 与安装 UI 不在 M3
+P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
+#77 已补充说明）。
+
 </details>
 
 ---
