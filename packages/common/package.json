@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@pixuli/core": "workspace:*",
-    "@pixuli/provider-github": "workspace:*"
+    "@pixuli/provider-github": "workspace:*",
+    "@pixuli/provider-gitee": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -505,7 +505,7 @@ native。
 | ------- | ----------------------------------------------- | ------------------------------------------------- | ------ | ------------------ | ------------------------------------------------------- | ---- |
 | REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
 | REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
-| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ⬜   |
+| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
 | REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0 | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ⬜   |
 | REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0            | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ⬜   |
 | REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                         | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ⬜   |
@@ -645,7 +645,7 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 11       | 2      | 18%     |
+| M3       | 11       | 3      | 27%     |
 | M4       | 6        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
 | **合计** | **44**   | **7**  | **16%** |
