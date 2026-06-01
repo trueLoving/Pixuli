@@ -1,0 +1,24 @@
+{
+  "name": "@pixuli/provider-github",
+  "version": "1.0.0",
+  "description": "Pixuli GitHub storage provider plugin",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./register": "./src/register.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@pixuli/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8"
+  }
+}

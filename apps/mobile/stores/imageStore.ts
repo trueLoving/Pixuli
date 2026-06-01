@@ -4,6 +4,7 @@ import type {
   GiteeConfig,
   ImageEditData,
   ImageItem,
+  ImageUploadData,
   MultiImageUploadData,
   UploadProgress,
 } from '@pixuli/core/types';
@@ -67,12 +68,7 @@ interface ImageState {
   clearGiteeConfig: () => Promise<void>;
   initializeStorage: () => void;
   loadImages: () => Promise<void>;
-  uploadImage: (uploadData: {
-    uri: string;
-    name?: string;
-    description?: string;
-    tags?: string[];
-  }) => Promise<void>;
+  uploadImage: (uploadData: ImageUploadData) => Promise<void>;
   uploadMultipleImages: (
     uploadData: MultiImageUploadData & { uris: string[] },
   ) => Promise<void>;
@@ -549,12 +545,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     }
   },
 
-  uploadImage: async (uploadData: {
-    uri: string;
-    name?: string;
-    description?: string;
-    tags?: string[];
-  }) => {
+  uploadImage: async (uploadData: ImageUploadData) => {
     const { storageService } = get();
     if (!storageService) {
       set({ error: '存储服务未初始化', loading: false });
@@ -651,8 +642,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
               : null,
           }));
 
-          const uploadData = {
-            uri,
+          const uploadData: ImageUploadData = {
+            file: uri,
             name: name ? `${name}-${i + 1}-${fileName}` : fileName,
             description,
             tags,

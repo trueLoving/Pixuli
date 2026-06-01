@@ -54,25 +54,25 @@ const providerNoUiRules = {
     {
       zones: [
         {
-          target: './packages/provider-github',
+          target: './packages/plugin-provider-github',
           from: './packages/ui',
           message:
             '不得从 packages/ui 引用：provider 与 ui 分层（REF-209）',
         },
         {
-          target: './packages/provider-github',
+          target: './packages/plugin-provider-github',
           from: './packages/ui/**',
           message:
             '不得从 packages/ui 引用：provider 与 ui 分层（REF-209）',
         },
         {
-          target: './packages/provider-gitee',
+          target: './packages/plugin-provider-gitee',
           from: './packages/ui',
           message:
             '不得从 packages/ui 引用：provider 与 ui 分层（REF-209）',
         },
         {
-          target: './packages/provider-gitee',
+          target: './packages/plugin-provider-gitee',
           from: './packages/ui/**',
           message:
             '不得从 packages/ui 引用：provider 与 ui 分层（REF-209）',
@@ -109,7 +109,7 @@ export default tseslint.config(
     rules: noUiDependencyRules,
   },
   {
-    files: ['packages/provider-*/**/*.{ts,tsx}'],
+    files: ['packages/plugin-provider-*/**/*.{ts,tsx}'],
     languageOptions: tsLanguageOptions,
     plugins: { import: importPlugin },
     rules: providerNoUiRules,
