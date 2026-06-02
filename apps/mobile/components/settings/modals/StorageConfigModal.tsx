@@ -4,6 +4,12 @@ import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { showError, showSuccess } from '@/utils/toast';
+import {
+  buildPluginConfigExport,
+  getRepoConfigFromSource,
+  parsePluginConfigImport,
+  pluginIdToLegacyType,
+} from '@pixuli/core/sources';
 import type { GitHubConfig, GiteeConfig } from '@pixuli/core/types';
 import * as DocumentPicker from 'expo-document-picker';
 import { useEffect, useRef, useState } from 'react';
@@ -70,14 +76,14 @@ export function StorageConfigModal({
         if (sourceId) {
           const source = sources.find(s => s.id === sourceId);
           if (source) {
-            setSelectedType(source.type);
+            setSelectedType(pluginIdToLegacyType(source.pluginId));
+            const repo = getRepoConfigFromSource(source);
             setFormData({
-              owner: source.owner || '',
-              repo: source.repo || '',
-              branch:
-                source.branch || (source.type === 'github' ? 'main' : 'master'),
-              token: source.token || '',
-              path: source.path || 'images',
+              owner: repo.owner,
+              repo: repo.repo,
+              branch: repo.branch,
+              token: repo.token,
+              path: repo.path,
             });
           }
         } else if (initialType) {
@@ -134,14 +140,11 @@ export function StorageConfigModal({
       }
 
       const fileContent = await FileSystem.readAsStringAsync(file.uri);
-      const configData = JSON.parse(fileContent);
-
-      if (
-        !configData.config ||
-        !configData.config.owner ||
-        !configData.config.repo ||
-        !configData.config.token
-      ) {
+      const parsed = parsePluginConfigImport(
+        JSON.parse(fileContent),
+        currentType ?? 'github',
+      );
+      if (!parsed) {
         showError(
           currentType === 'github'
             ? t('settings.github.invalidFormat')
@@ -150,14 +153,20 @@ export function StorageConfigModal({
         return;
       }
 
+      const importedType = pluginIdToLegacyType(parsed.pluginId);
+      if (currentType && importedType !== currentType) {
+        setSelectedType(importedType);
+      }
+
       setFormData({
-        owner: configData.config.owner || '',
-        repo: configData.config.repo || '',
-        branch:
-          configData.config.branch ||
-          (currentType === 'github' ? 'main' : 'master'),
-        token: configData.config.token || '',
-        path: configData.config.path || 'images',
+        owner: String(parsed.config.owner ?? ''),
+        repo: String(parsed.config.repo ?? ''),
+        branch: String(
+          parsed.config.branch ??
+            (importedType === 'github' ? 'main' : 'master'),
+        ),
+        token: String(parsed.config.token ?? ''),
+        path: String(parsed.config.path ?? 'images'),
       });
 
       showSuccess(
@@ -196,23 +205,14 @@ export function StorageConfigModal({
       if (sourceId) {
         // 编辑现有源
         updateSource(sourceId, {
-          name: `${formData.owner}/${formData.repo}`,
-          owner: formData.owner,
-          repo: formData.repo,
-          branch: formData.branch,
-          token: formData.token,
-          path: formData.path,
+          label: `${formData.owner}/${formData.repo}`,
+          config: { ...formData },
         });
       } else {
-        // 添加新源
         const newSource = addSource({
-          type: currentType,
-          name: `${formData.owner}/${formData.repo}`,
-          owner: formData.owner,
-          repo: formData.repo,
-          branch: formData.branch,
-          token: formData.token,
-          path: formData.path,
+          pluginId: currentType,
+          label: `${formData.owner}/${formData.repo}`,
+          config: { ...formData },
         });
         setSelectedSourceId(newSource.id);
       }

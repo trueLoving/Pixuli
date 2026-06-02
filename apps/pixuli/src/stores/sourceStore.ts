@@ -1,89 +1,71 @@
+import {
+  createStoredSourceEntry,
+  mergeStoredSourceUpdate,
+  normalizeStoredSources,
+  type CreateStoredSourceInput,
+  type StoredSourceEntry,
+} from '@pixuli/core/sources';
 import { create } from 'zustand';
 
-export interface GitHubSourceConfig {
-  id: string;
-  name: string;
-  type: 'github';
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface GiteeSourceConfig {
-  id: string;
-  name: string;
-  type: 'gitee';
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export type SourceConfig = GitHubSourceConfig | GiteeSourceConfig;
+export type SourceConfig = StoredSourceEntry;
+export type AddSourceInput = CreateStoredSourceInput;
+export type UpdateSourceInput = Partial<{
+  label: string;
+  pluginId: string;
+  config: StoredSourceEntry['config'];
+}>;
 
 type SourceState = {
   sources: SourceConfig[];
   selectedSourceId: string | null;
-  addSource: (
-    input:
-      | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
-      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => SourceConfig;
-  updateSource: (
-    id: string,
-    input:
-      | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
-      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>,
-  ) => void;
+  addSource: (input: AddSourceInput) => SourceConfig;
+  updateSource: (id: string, input: UpdateSourceInput) => void;
   removeSource: (id: string) => void;
   getSourceById: (id: string) => SourceConfig | undefined;
   setSelectedSourceId: (id: string | null) => void;
 };
 
-const STORAGE_KEY = 'pixuli.sources.v2';
+const STORAGE_KEY = 'pixuli.sources.v3';
 
 function loadSources(): SourceConfig[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      // 尝试迁移旧数据
-      const oldKey = 'pixuli.github.sources.v1';
-      const oldRaw = localStorage.getItem(oldKey);
-      if (oldRaw) {
-        try {
-          const oldData = JSON.parse(oldRaw);
-          if (Array.isArray(oldData)) {
-            // 迁移旧数据，添加 type 字段
-            const migrated = oldData.map((s: any) => ({
-              ...s,
-              type: 'github' as const,
-            }));
-            saveSources(migrated);
-            localStorage.removeItem(oldKey);
-            return migrated;
-          }
-        } catch {
-          // ignore migration error
+    if (raw) {
+      return normalizeStoredSources(JSON.parse(raw));
+    }
+
+    const v2Raw = localStorage.getItem('pixuli.sources.v2');
+    if (v2Raw) {
+      const data = JSON.parse(v2Raw);
+      if (Array.isArray(data)) {
+        const migrated = normalizeStoredSources(
+          data.map((s: Record<string, unknown>) =>
+            s.type || s.pluginId ? s : { ...s, type: 'github' },
+          ),
+        );
+        if (migrated.length > 0) {
+          saveSources(migrated);
+          return migrated;
         }
       }
-      return [];
     }
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data)) return [];
-    // 确保所有源都有 type 字段（兼容旧数据）
-    return data.map((s: any) => {
-      if (!s.type) {
-        return { ...s, type: 'github' };
+
+    const v1Raw = localStorage.getItem('pixuli.github.sources.v1');
+    if (v1Raw) {
+      const data = JSON.parse(v1Raw);
+      if (Array.isArray(data)) {
+        const migrated = normalizeStoredSources(
+          data.map((s: Record<string, unknown>) => ({ ...s, type: 'github' })),
+        );
+        if (migrated.length > 0) {
+          saveSources(migrated);
+          localStorage.removeItem('pixuli.github.sources.v1');
+          return migrated;
+        }
       }
-      return s;
-    }) as SourceConfig[];
+    }
+
+    return [];
   } catch {
     return [];
   }
@@ -127,13 +109,7 @@ export const useSourceStore = create<SourceState>((set, get) => {
     sources: initial,
     selectedSourceId: initialSelectedId,
     addSource: input => {
-      const now = Date.now();
-      const source: SourceConfig = {
-        id: Math.random().toString(36).slice(2, 10),
-        createdAt: now,
-        updatedAt: now,
-        ...input,
-      } as SourceConfig;
+      const source = createStoredSourceEntry(input);
       const next = [...get().sources, source];
       set({ sources: next });
       saveSources(next);
@@ -141,7 +117,7 @@ export const useSourceStore = create<SourceState>((set, get) => {
     },
     updateSource: (id, input) => {
       const next = get().sources.map(s =>
-        s.id === id ? { ...s, ...input, updatedAt: Date.now() } : s,
+        s.id === id ? mergeStoredSourceUpdate(s, input) : s,
       );
       set({ sources: next });
       saveSources(next);

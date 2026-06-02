@@ -112,7 +112,7 @@ function App() {
   );
 
   // 同步选中源到配置，并在同步后加载图片
-  useSelectedSourceSync(selectedSource, () => {
+  useSelectedSourceSync(selectedSource ?? null, () => {
     if (sources.length > 0 && selectedSource) {
       handleLoadImages();
     }

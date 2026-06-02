@@ -2,6 +2,10 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
+import {
+  getRepoConfigFromSource,
+  pluginIdToLegacyType,
+} from '@pixuli/core/sources';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -68,10 +72,17 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     ? sources.find(s => s.id === selectedSourceId)
     : sources[0] || null;
 
-  const allSources = sources.map(source => ({
-    ...source,
-    isActive: selectedSourceId === source.id,
-  }));
+  const allSources = sources.map(source => {
+    const repo = getRepoConfigFromSource(source);
+    return {
+      id: source.id,
+      label: source.label,
+      pluginId: source.pluginId,
+      owner: repo.owner,
+      repo: repo.repo,
+      isActive: selectedSourceId === source.id,
+    };
+  });
 
   const handleAddSource = () => {
     setConfigModalType(undefined);
@@ -82,7 +93,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const handleEditSource = (sourceId: string) => {
     const source = sources.find(s => s.id === sourceId);
     if (source) {
-      setConfigModalType(source.type);
+      setConfigModalType(pluginIdToLegacyType(source.pluginId));
       setEditingSourceId(sourceId);
       setConfigModalVisible(true);
     }
@@ -94,8 +105,8 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
 
     const deleteConfirmText = t('settings.storage.deleteConfirm');
     const confirmMessage = deleteConfirmText
-      ? deleteConfirmText.replace('{name}', source.name)
-      : `确定要删除仓库源 "${source.name}" 吗？`;
+      ? deleteConfirmText.replace('{name}', source.label)
+      : `确定要删除仓库源 "${source.label}" 吗？`;
 
     Alert.alert(t('common.confirm'), confirmMessage, [
       {
@@ -264,7 +275,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                       onLongPress={() => {
                         // 长按显示操作菜单
                         Alert.alert(
-                          source.name,
+                          source.label,
                           `${source.owner}/${source.repo}`,
                           [
                             {
@@ -299,7 +310,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                             },
                           ]}
                         >
-                          {source.type === 'github' ? (
+                          {source.pluginId === 'github' ? (
                             <IconSymbol
                               name="chevron.left.forwardslash.chevron.right"
                               size={22}
@@ -331,7 +342,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                               dynamicStyles.sourceItemText,
                             ]}
                           >
-                            {source.name}
+                            {source.label}
                           </ThemedText>
                           <ThemedText
                             style={[

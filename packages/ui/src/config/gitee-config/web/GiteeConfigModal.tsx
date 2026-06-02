@@ -1,6 +1,10 @@
 import { Download, Save, Trash2, Upload, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
+import {
+  buildPluginConfigExport,
+  parsePluginConfigImport,
+} from '@pixuli/core/sources';
 import type { GiteeConfig } from '@pixuli/core/types';
 import { showError, showSuccess } from '@pixuli/ui/feedback/toast';
 import './GiteeConfigModal.css';
@@ -96,12 +100,11 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
         return;
       }
 
-      const configData = {
-        version: '1.0',
-        platform: platform,
-        timestamp: new Date().toISOString(),
-        config: giteeConfig,
-      };
+      const configData = buildPluginConfigExport({
+        pluginId: 'gitee',
+        platform,
+        config: { ...giteeConfig },
+      });
 
       const blob = new Blob([JSON.stringify(configData, null, 2)], {
         type: 'application/json',
@@ -136,26 +139,18 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
       reader.onload = e => {
         try {
           const content = e.target?.result as string;
-          const configData = JSON.parse(content);
-
-          // 验证配置格式
-          if (
-            !configData.config ||
-            !configData.config.owner ||
-            !configData.config.repo ||
-            !configData.config.token
-          ) {
+          const parsed = parsePluginConfigImport(JSON.parse(content), 'gitee');
+          if (!parsed) {
             showError(translate('messages.invalidFormat'));
             return;
           }
 
-          // 更新表单数据
           setFormData({
-            owner: configData.config.owner || '',
-            repo: configData.config.repo || '',
-            branch: configData.config.branch || 'main',
-            token: configData.config.token || '',
-            path: configData.config.path || 'images',
+            owner: String(parsed.config.owner ?? ''),
+            repo: String(parsed.config.repo ?? ''),
+            branch: String(parsed.config.branch ?? 'master'),
+            token: String(parsed.config.token ?? ''),
+            path: String(parsed.config.path ?? 'images'),
           });
 
           showSuccess(translate('messages.configImported'));
