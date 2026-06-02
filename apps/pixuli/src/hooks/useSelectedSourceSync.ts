@@ -45,9 +45,9 @@ export function useSelectedSourceSync(
       if (onConfigSynced) {
         // 延迟执行，确保 store 状态已更新和存储服务已初始化
         setTimeout(() => {
-          const { storageService, initializeStorage } =
+          const { storageProvider, initializeStorage } =
             useImageStore.getState();
-          if (!storageService) {
+          if (!storageProvider) {
             initializeStorage();
           }
           onConfigSynced();

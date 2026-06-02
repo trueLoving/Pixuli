@@ -204,6 +204,12 @@ importers:
       '@pixuli/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@pixuli/provider-gitee':
+        specifier: workspace:*
+        version: link:../../packages/plugin-provider-gitee
+      '@pixuli/provider-github':
+        specifier: workspace:*
+        version: link:../../packages/plugin-provider-github
       '@pixuli/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -219,9 +225,6 @@ importers:
       octokit:
         specifier: 3.1.2
         version: 3.1.2
-      pixuli-common:
-        specifier: workspace:*
-        version: link:../../packages/common
       react:
         specifier: ^19.1.0
         version: 19.1.0
