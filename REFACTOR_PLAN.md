@@ -362,6 +362,7 @@ Closes #42 Related: REF-101
 | REF-309 | [#78](https://github.com/trueLoving/Pixuli/issues/78)   |
 | REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79)   |
 | REF-311 | [#100](https://github.com/trueLoving/Pixuli/issues/100) |
+| REF-312 | [#109](https://github.com/trueLoving/Pixuli/issues/109) |
 | REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80)   |
 | REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81)   |
 | REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82)   |
@@ -501,22 +502,23 @@ native。
 
 ### 里程碑 M3 — 存储插件体系 P0
 
-| ID      | 建议标题                                        | Labels                                            | 优先级 | Depends on         | GitHub #                                                | 状态 |
-| ------- | ----------------------------------------------- | ------------------------------------------------- | ------ | ------------------ | ------------------------------------------------------- | ---- |
-| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0 | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
-| REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
-| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0            | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
-| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0 | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
-| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0            | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
-| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                         | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
-| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ⬜   |
-| REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1              | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ⬜   |
-| REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                         | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
-| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                         | P0     | #73–#78            | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
-| REF-311 | [M3] 删除 `packages/common` 整包                | refactor, m3, type:removal, priority:P0           | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
+| ID      | 建议标题                                        | Labels                                                 | 优先级 | Depends on         | GitHub #                                                | 状态 |
+| ------- | ----------------------------------------------- | ------------------------------------------------------ | ------ | ------------------ | ------------------------------------------------------- | ---- |
+| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0      | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
+| REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
+| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
+| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
+| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
+| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
+| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ⬜   |
+| REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ⬜   |
+| REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
+| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
+| REF-311 | [M3] 删除 `packages/common` 整包                | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
+| REF-312 | [Bug] 编辑仓库源时配置表单未回显                | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ⬜   |
 
 <details>
-<summary>REF-301 ~ REF-311 Issue 正文模板</summary>
+<summary>REF-301 ~ REF-312 Issue 正文模板</summary>
 
 **REF-301**
 — 接口：`StorageProvider`、`StoragePluginManifest`、`StoragePluginRegistry`、`ProviderContext`（含 PlatformAdapter）。
@@ -535,7 +537,12 @@ native。
 
 **REF-309** — 迁移 `services/__tests__/*` 到 provider 包。
 
-**REF-310** — 配置源、列表、上传、删除、切换源 E2E/手工清单。
+**REF-310**
+— 配置源、列表、上传、删除、切换源 E2E/手工清单（含 #109 编辑回显）。
+
+**REF-312** — 编辑源时 Modal 按 `editingSourceId` 从 `sourceStore` 回显
+`StoredSourceEntry.config`；修复 `MainLayout` 误用 `selectedSource`
+导致不回显（见 [#109](https://github.com/trueLoving/Pixuli/issues/109)）。
 
 **REF-311** — 在 REF-304/305、REF-309、REF-310 完成后，删除 `packages/common`
 整包：
@@ -645,10 +652,10 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 11       | 6      | 55%     |
+| M3       | 12       | 6      | 50%     |
 | M4       | 6        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
-| **合计** | **44**   | **7**  | **16%** |
+| **合计** | **45**   | **7**  | **16%** |
 
 ---
 
