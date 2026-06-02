@@ -9,9 +9,12 @@ import type {
   UploadProgress,
 } from '@pixuli/core/types';
 import {
-  GitHubStorageService,
-  GiteeStorageService,
-} from 'pixuli-common/services/native';
+  createConfiguredStorageProvider,
+  hasLoadImageMetadata,
+  storagePluginLabel,
+  type StoragePluginId,
+} from '../storage/createProvider';
+import type { StorageProvider } from '@pixuli/core/plugins';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import {
@@ -51,8 +54,8 @@ interface ImageState {
   error: string | null;
   githubConfig: GitHubConfig | null;
   giteeConfig: GiteeConfig | null;
-  storageService: GitHubStorageService | GiteeStorageService | null;
-  storageType: 'github' | 'gitee' | null;
+  storageProvider: StorageProvider | null;
+  storageType: StoragePluginId | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Search and Filter
@@ -100,7 +103,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
   error: null,
   githubConfig: null,
   giteeConfig: null,
-  storageService: null,
+  storageProvider: null,
   storageType: null,
   batchUploadProgress: null,
   searchQuery: '',
@@ -181,11 +184,12 @@ export const useImageStore = create<ImageState>((set, get) => ({
           storageType: 'github',
         });
         try {
-          const storageService = new GitHubStorageService(config, {
-            platform: 'mobile',
-          });
+          const storageProvider = createConfiguredStorageProvider(
+            'github',
+            config,
+          );
           MetadataCache.setCurrentCacheKey('github', config.owner, config.repo);
-          set({ storageService });
+          set({ storageProvider });
         } catch (error) {
           console.error('Failed to initialize github storage service:', error);
         }
@@ -196,12 +200,12 @@ export const useImageStore = create<ImageState>((set, get) => ({
           storageType: 'gitee',
         });
         try {
-          const storageService = new GiteeStorageService(config, {
-            platform: 'mobile',
-            useProxy: false,
-          });
+          const storageProvider = createConfiguredStorageProvider(
+            'gitee',
+            config,
+          );
           MetadataCache.setCurrentCacheKey('gitee', config.owner, config.repo);
-          set({ storageService });
+          set({ storageProvider });
         } catch (error) {
           console.error('Failed to initialize gitee storage service:', error);
         }
@@ -211,7 +215,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
         githubConfig: null,
         giteeConfig: null,
         storageType: null,
-        storageService: null,
+        storageProvider: null,
       });
     }
   },
@@ -289,7 +293,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
       } else {
         sourceStore.setSelectedSourceId(null);
         set({
-          storageService: null,
+          storageProvider: null,
           storageType: null,
           githubConfig: null,
           giteeConfig: null,
@@ -381,7 +385,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
       } else {
         sourceStore.setSelectedSourceId(null);
         set({
-          storageService: null,
+          storageProvider: null,
           storageType: null,
           githubConfig: null,
           giteeConfig: null,
@@ -424,11 +428,12 @@ export const useImageStore = create<ImageState>((set, get) => ({
           storageType: 'github',
         });
         try {
-          const storageService = new GitHubStorageService(config, {
-            platform: 'mobile',
-          });
+          const storageProvider = createConfiguredStorageProvider(
+            'github',
+            config,
+          );
           MetadataCache.setCurrentCacheKey('github', config.owner, config.repo);
-          set({ storageService });
+          set({ storageProvider });
         } catch (error) {
           console.error('Failed to initialize github storage service:', error);
           set({ error: '初始化GitHub存储服务失败' });
@@ -440,12 +445,12 @@ export const useImageStore = create<ImageState>((set, get) => ({
           storageType: 'gitee',
         });
         try {
-          const storageService = new GiteeStorageService(config, {
-            platform: 'mobile',
-            useProxy: false,
-          });
+          const storageProvider = createConfiguredStorageProvider(
+            'gitee',
+            config,
+          );
           MetadataCache.setCurrentCacheKey('gitee', config.owner, config.repo);
-          set({ storageService });
+          set({ storageProvider });
         } catch (error) {
           console.error('Failed to initialize gitee storage service:', error);
           set({ error: '初始化Gitee存储服务失败' });
@@ -456,28 +461,24 @@ export const useImageStore = create<ImageState>((set, get) => ({
         githubConfig: null,
         giteeConfig: null,
         storageType: null,
-        storageService: null,
+        storageProvider: null,
       });
     }
   },
 
   loadImages: async () => {
-    const { storageService, storageType } = get();
+    const { storageProvider, storageType } = get();
 
-    if (!storageService) {
+    if (!storageProvider) {
       set({
-        error:
-          storageType === 'gitee'
-            ? 'Gitee 配置未初始化'
-            : 'GitHub 配置未初始化',
+        error: `${storagePluginLabel(storageType)} 配置未初始化`,
       });
       return;
     }
 
     set({ loading: true, error: null });
     try {
-      // 快速获取基础图片列表（不等待元数据）
-      const images = await storageService.getImageList();
+      const images = await storageProvider.listImages();
 
       // 去重：确保每个图片ID只出现一次
       const uniqueImages = images.reduce(
@@ -502,8 +503,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
       get().applyFiltersAndSort();
 
       // 异步加载元数据并更新（不阻塞页面显示）
-      if (storageService && 'loadImageMetadata' in storageService) {
-        (storageService as any)
+      if (hasLoadImageMetadata(storageProvider)) {
+        storageProvider
           .loadImageMetadata(uniqueImages)
           .then((imagesWithMetadata: ImageItem[]) => {
             // 再次去重并更新
@@ -546,8 +547,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   uploadImage: async (uploadData: ImageUploadData) => {
-    const { storageService } = get();
-    if (!storageService) {
+    const { storageProvider } = get();
+    if (!storageProvider) {
       set({ error: '存储服务未初始化', loading: false });
       return;
     }
@@ -555,7 +556,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     set({ loading: true, error: null });
     const start = Date.now();
     try {
-      const newImage = await storageService.uploadImage(uploadData);
+      const newImage = await storageProvider.uploadImage(uploadData);
       set(state => ({
         images: state.images.some(img => img.id === newImage.id)
           ? state.images.map(img => (img.id === newImage.id ? newImage : img))
@@ -586,8 +587,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   uploadMultipleImages: async (
     uploadData: MultiImageUploadData & { uris: string[] },
   ) => {
-    const { storageService } = get();
-    if (!storageService) {
+    const { storageProvider } = get();
+    if (!storageProvider) {
       set({ error: '存储服务未初始化', loading: false });
       return;
     }
@@ -649,7 +650,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
             tags,
           };
 
-          const newImage = await storageService.uploadImage(uploadData);
+          const newImage = await storageProvider.uploadImage(uploadData);
           uploadedImages.push(newImage);
           completed++;
 
@@ -727,8 +728,8 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   deleteImage: async (imageId: string, fileName: string) => {
-    const { storageService } = get();
-    if (!storageService) {
+    const { storageProvider } = get();
+    if (!storageProvider) {
       set({ error: '存储服务未初始化', loading: false });
       return;
     }
@@ -736,7 +737,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     set({ loading: true, error: null });
     const startTime = Date.now();
     try {
-      await storageService.deleteImage(imageId, fileName);
+      await storageProvider.deleteImage(fileName);
       const duration = Date.now() - startTime;
       set(state => ({
         images: state.images.filter(img => img.id !== imageId),
@@ -762,9 +763,14 @@ export const useImageStore = create<ImageState>((set, get) => ({
   },
 
   updateImage: async (editData: ImageEditData) => {
-    const { storageService, images } = get();
-    if (!storageService) {
+    const { storageProvider, images } = get();
+    if (!storageProvider) {
       set({ error: '存储服务未初始化', loading: false });
+      return;
+    }
+
+    if (!storageProvider.updateImageMetadata) {
+      set({ error: '当前存储插件不支持更新元数据', loading: false });
       return;
     }
 
@@ -778,13 +784,14 @@ export const useImageStore = create<ImageState>((set, get) => ({
     const startTime = Date.now();
     try {
       const metadata = {
+        ...image,
         name: editData.name || image.name,
-        description: editData.description || image.description,
-        tags: editData.tags || image.tags,
+        description: editData.description ?? image.description,
+        tags: editData.tags ?? image.tags,
         updatedAt: new Date().toISOString(),
       };
 
-      await storageService.updateImageInfo(editData.id, image.name, metadata);
+      await storageProvider.updateImageMetadata(metadata.name, metadata);
 
       const duration = Date.now() - startTime;
       set(state => ({
@@ -980,15 +987,19 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
   // 刷新单个图片的元数据
   refreshImageMetadata: async (image: ImageItem) => {
-    const { storageService } = get();
-    if (!storageService) {
+    const { storageProvider } = get();
+    if (!storageProvider) {
       set({ error: '存储服务未初始化' });
       return null;
     }
 
+    if (!hasLoadImageMetadata(storageProvider)) {
+      set({ error: '当前存储插件不支持刷新元数据' });
+      return null;
+    }
+
     try {
-      // 强制刷新该图片的元数据
-      const updatedImages = await storageService.loadImageMetadata([image], {
+      const updatedImages = await storageProvider.loadImageMetadata([image], {
         forceRefresh: true,
       });
 
