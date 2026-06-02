@@ -9,9 +9,10 @@ import {
   saveGitHubConfig,
 } from '@/config/github';
 import {
-  GiteeStorageService,
-  GitHubStorageService,
-} from 'pixuli-common/services';
+  createConfiguredStorageProvider,
+  storagePluginLabel,
+  type StoragePluginId,
+} from '@/storage/createProvider';
 import { LogActionType, LogStatus } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
 import type {
@@ -25,6 +26,7 @@ import type {
   UploadProgress,
 } from '@pixuli/core/types';
 import { getUploadFileName } from '@pixuli/core/types';
+import type { StorageProvider } from '@pixuli/core/plugins';
 import { create } from 'zustand';
 
 interface ImageState {
@@ -33,8 +35,9 @@ interface ImageState {
   error: string | null;
   githubConfig: GitHubConfig | null;
   giteeConfig: GiteeConfig | null;
-  storageService: GitHubStorageService | GiteeStorageService | null;
-  storageType: 'github' | 'gitee' | null;
+  /** 当前激活的存储插件（与 storageType 同值，对应 Registry pluginId） */
+  storageProvider: StorageProvider | null;
+  storageType: StoragePluginId | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Actions
@@ -61,12 +64,10 @@ interface ImageState {
 }
 
 export const useImageStore = create<ImageState>((set, get) => {
-  // 在store创建时加载配置并初始化存储服务
   const initialGitHubConfig = loadGitHubConfig();
   const initialGiteeConfig = loadGiteeConfig();
 
-  // 确定当前使用的存储类型
-  const storageType = initialGiteeConfig
+  const storageType: StoragePluginId | null = initialGiteeConfig
     ? 'gitee'
     : initialGitHubConfig
       ? 'github'
@@ -79,26 +80,18 @@ export const useImageStore = create<ImageState>((set, get) => {
     error: null,
     githubConfig: initialGitHubConfig,
     giteeConfig: initialGiteeConfig,
-    storageService: initialConfig
-      ? storageType === 'gitee'
-        ? new GiteeStorageService(initialGiteeConfig!, {
-            platform: __IS_WEB__ ? 'web' : 'desktop',
-            useProxy: __IS_WEB__ ? true : false,
-          })
-        : new GitHubStorageService(initialGitHubConfig!, {
-            platform: __IS_WEB__ ? 'web' : 'desktop',
-          })
-      : null,
+    storageProvider:
+      initialConfig && storageType
+        ? createConfiguredStorageProvider(storageType, initialConfig)
+        : null,
     storageType,
     batchUploadProgress: null,
 
     setGitHubConfig: (config: GitHubConfig) => {
       set({ githubConfig: config });
       saveGitHubConfig(config);
-      // 切换到 GitHub 存储
       set({ storageType: 'github' });
       get().initializeStorage();
-      // 记录配置变更日志
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
@@ -109,12 +102,10 @@ export const useImageStore = create<ImageState>((set, get) => {
     clearGitHubConfig: () => {
       set({ githubConfig: null });
       clearGitHubConfig();
-      // 如果当前使用的是 GitHub，清除存储服务
       const { storageType } = get();
       if (storageType === 'github') {
-        set({ storageService: null, storageType: null });
+        set({ storageProvider: null, storageType: null });
       }
-      // 记录配置变更日志
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
@@ -125,10 +116,8 @@ export const useImageStore = create<ImageState>((set, get) => {
     setGiteeConfig: (config: GiteeConfig) => {
       set({ giteeConfig: config });
       saveGiteeConfig(config);
-      // 切换到 Gitee 存储
       set({ storageType: 'gitee' });
       get().initializeStorage();
-      // 记录配置变更日志
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
@@ -139,12 +128,10 @@ export const useImageStore = create<ImageState>((set, get) => {
     clearGiteeConfig: () => {
       set({ giteeConfig: null });
       clearGiteeConfig();
-      // 如果当前使用的是 Gitee，清除存储服务
       const { storageType } = get();
       if (storageType === 'gitee') {
-        set({ storageService: null, storageType: null });
+        set({ storageProvider: null, storageType: null });
       }
-      // 记录配置变更日志
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
@@ -157,51 +144,48 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       if (storageType === 'gitee' && giteeConfig) {
         try {
-          const storageService = new GiteeStorageService(giteeConfig, {
-            platform: __IS_WEB__ ? 'web' : 'desktop',
-            useProxy: __IS_WEB__ ? true : false,
-          });
-          set({ storageService });
+          const storageProvider = createConfiguredStorageProvider(
+            'gitee',
+            giteeConfig,
+          );
+          set({ storageProvider });
         } catch (error) {
-          console.error('Failed to initialize gitee storage service:', error);
+          console.error('Failed to initialize gitee storage provider:', error);
           set({ error: '初始化Gitee存储服务失败' });
         }
       } else if (storageType === 'github' && githubConfig) {
         try {
-          const storageService = new GitHubStorageService(githubConfig, {
-            platform: 'desktop',
-          });
-          set({ storageService });
+          const storageProvider = createConfiguredStorageProvider(
+            'github',
+            githubConfig,
+          );
+          set({ storageProvider });
         } catch (error) {
-          console.error('Failed to initialize github storage service:', error);
+          console.error('Failed to initialize github storage provider:', error);
           set({ error: '初始化GitHub存储服务失败' });
         }
       }
     },
 
     loadImages: async () => {
-      const { storageService, storageType } = get();
+      const { storageProvider, storageType } = get();
 
-      if (!storageService) {
-        const errorMsg = storageType === 'gitee' ? 'Gitee' : 'GitHub';
+      if (!storageProvider) {
         set({
-          error: `${errorMsg} 配置未初始化`,
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
         });
         return;
       }
 
       set({ loading: true, error: null });
       try {
-        const images = await storageService.getImageList();
+        const images = await storageProvider.listImages();
 
-        // 去重：确保每个图片ID只出现一次，如果有重复，保留最新的
         const uniqueImages = images.reduce((acc: ImageItem[], current) => {
           const existingIndex = acc.findIndex(img => img.id === current.id);
           if (existingIndex === -1) {
-            // 新图片，直接添加
             acc.push(current);
           } else {
-            // 已存在，比较更新时间，保留最新的
             const existing = acc[existingIndex];
             if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
               acc[existingIndex] = current;
@@ -222,25 +206,26 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadImage: async (uploadData: ImageUploadData) => {
-      const { storageService } = get();
-      if (!storageService) {
-        set({ error: 'GitHub 配置未初始化', loading: false });
+      const { storageProvider, storageType } = get();
+      if (!storageProvider) {
+        set({
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          loading: false,
+        });
         return;
       }
 
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        const newImage = await storageService.uploadImage(uploadData);
+        const newImage = await storageProvider.uploadImage(uploadData);
         const duration = Date.now() - startTime;
         set(state => ({
-          // 去重：确保不会添加重复ID的图片
           images: state.images.some(img => img.id === newImage.id)
             ? state.images.map(img => (img.id === newImage.id ? newImage : img))
             : [...state.images, newImage],
           loading: false,
         }));
-        // 记录上传成功日志
         useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.SUCCESS, {
           imageId: newImage.id,
           imageName: newImage.name,
@@ -255,22 +240,23 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: errorMsg,
           loading: false,
         });
-        // 记录上传失败日志
         useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
           imageName: getUploadFileName(uploadData.file, uploadData.name),
           error: errorMsg,
           duration,
         });
       } finally {
-        // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
       }
     },
 
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
-      const { storageService } = get();
-      if (!storageService) {
-        set({ error: 'GitHub 配置未初始化', loading: false });
+      const { storageProvider, storageType } = get();
+      if (!storageProvider) {
+        set({
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          loading: false,
+        });
         return;
       }
 
@@ -287,7 +273,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           message: '等待上传...',
         }));
 
-        // 初始化批量上传进度
         set({
           loading: true,
           error: null,
@@ -302,13 +287,11 @@ export const useImageStore = create<ImageState>((set, get) => {
 
         const uploadedImages: ImageItem[] = [];
 
-        // 逐个上传图片
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const itemId = items[i].id;
 
           try {
-            // 更新当前上传状态
             set(state => ({
               batchUploadProgress: state.batchUploadProgress
                 ? {
@@ -327,7 +310,6 @@ export const useImageStore = create<ImageState>((set, get) => {
                 : null,
             }));
 
-            // 上传单个图片
             const fileName = name ? `${name}-${i + 1}-${file.name}` : file.name;
 
             const singleUploadData: ImageUploadData = {
@@ -337,11 +319,11 @@ export const useImageStore = create<ImageState>((set, get) => {
               tags,
             };
 
-            const newImage = await storageService.uploadImage(singleUploadData);
+            const newImage =
+              await storageProvider.uploadImage(singleUploadData);
             uploadedImages.push(newImage);
             completed++;
 
-            // 更新成功状态
             set(state => ({
               batchUploadProgress: state.batchUploadProgress
                 ? {
@@ -365,7 +347,6 @@ export const useImageStore = create<ImageState>((set, get) => {
             const errorMessage =
               error instanceof Error ? error.message : '上传失败';
 
-            // 更新失败状态
             set(state => ({
               batchUploadProgress: state.batchUploadProgress
                 ? {
@@ -382,14 +363,12 @@ export const useImageStore = create<ImageState>((set, get) => {
           }
         }
 
-        // 批量上传完成
         const batchStartTime = Date.now();
         set(state => ({
           images: [...state.images, ...uploadedImages],
           loading: false,
           batchUploadProgress: null,
         }));
-        // 记录批量上传日志
         useLogStore
           .getState()
           .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
@@ -412,7 +391,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false,
           batchUploadProgress: null,
         });
-        // 记录批量上传失败日志
         useLogStore
           .getState()
           .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
@@ -420,28 +398,29 @@ export const useImageStore = create<ImageState>((set, get) => {
             details: { total, completed, failed },
           });
       } finally {
-        // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
       }
     },
 
     deleteImage: async (imageId: string, fileName: string) => {
-      const { storageService } = get();
-      if (!storageService) {
-        set({ error: 'GitHub 配置未初始化', loading: false });
+      const { storageProvider, storageType } = get();
+      if (!storageProvider) {
+        set({
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          loading: false,
+        });
         return;
       }
 
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        await storageService.deleteImage(imageId, fileName);
+        await storageProvider.deleteImage(fileName);
         const duration = Date.now() - startTime;
         set(state => ({
           images: state.images.filter(img => img.id !== imageId),
           loading: false,
         }));
-        // 记录删除成功日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
           imageId,
           imageName: fileName,
@@ -455,7 +434,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: errorMsg,
           loading: false,
         });
-        // 记录删除失败日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
           imageId,
           imageName: fileName,
@@ -463,15 +441,17 @@ export const useImageStore = create<ImageState>((set, get) => {
           duration,
         });
       } finally {
-        // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
       }
     },
 
     deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
-      const { storageService } = get();
-      if (!storageService) {
-        set({ error: '存储配置未初始化', loading: false });
+      const { storageProvider, storageType } = get();
+      if (!storageProvider) {
+        set({
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          loading: false,
+        });
         return;
       }
 
@@ -482,9 +462,8 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        // 批量删除
-        const deletePromises = imageIds.map((id, index) =>
-          storageService.deleteImage(id, fileNames[index]),
+        const deletePromises = fileNames.map(fileName =>
+          storageProvider.deleteImage(fileName),
         );
         await Promise.all(deletePromises);
 
@@ -494,7 +473,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false,
         }));
 
-        // 记录批量删除成功日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
           details: {
             imageIds,
@@ -512,7 +490,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false,
         });
 
-        // 记录批量删除失败日志
         useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
           details: {
             imageIds,
@@ -523,15 +500,22 @@ export const useImageStore = create<ImageState>((set, get) => {
           duration,
         });
       } finally {
-        // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
       }
     },
 
     updateImage: async (editData: ImageEditData) => {
-      const { storageService, images } = get();
-      if (!storageService) {
-        set({ error: 'GitHub 配置未初始化', loading: false });
+      const { storageProvider, storageType, images } = get();
+      if (!storageProvider) {
+        set({
+          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          loading: false,
+        });
+        return;
+      }
+
+      if (!storageProvider.updateImageMetadata) {
+        set({ error: '当前存储插件不支持更新元数据', loading: false });
         return;
       }
 
@@ -544,7 +528,6 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null });
       const startTime = Date.now();
       try {
-        // 构建完整的元数据对象（包含所有 ImageItem 属性）
         const metadata: ImageItem = {
           ...image,
           name: editData.name || image.name,
@@ -553,12 +536,7 @@ export const useImageStore = create<ImageState>((set, get) => {
           updatedAt: new Date().toISOString(),
         };
 
-        // 传递旧文件名用于重命名检测
-        await storageService.updateImageInfo(
-          editData.id,
-          metadata.name,
-          metadata,
-        );
+        await storageProvider.updateImageMetadata(metadata.name, metadata);
 
         const duration = Date.now() - startTime;
         set(state => ({
@@ -567,7 +545,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           ),
           loading: false,
         }));
-        // 记录编辑成功日志
         useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
           imageId: editData.id,
           imageName: metadata.name,
@@ -597,7 +574,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: errorMsg,
           loading: false,
         });
-        // 记录编辑失败日志
         useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
           imageId: editData.id,
           imageName: image.name,
@@ -605,14 +581,12 @@ export const useImageStore = create<ImageState>((set, get) => {
           duration,
         });
       } finally {
-        // 确保 loading 状态总是被清除（双重保险）
         set({ loading: false });
       }
     },
 
     addImage: (image: ImageItem) => {
       set(state => ({
-        // 去重：确保不会添加重复ID的图片
         images: state.images.some(img => img.id === image.id)
           ? state.images.map(img => (img.id === image.id ? image : img))
           : [...state.images, image],

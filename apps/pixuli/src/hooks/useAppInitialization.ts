@@ -100,11 +100,11 @@ export function useAppInitialization(
       storageType,
       githubConfig,
       giteeConfig,
-      storageService,
+      storageProvider,
       initializeStorage,
     } = useImageStore.getState();
     if (
-      !storageService &&
+      !storageProvider &&
       ((storageType === 'github' && githubConfig) ||
         (storageType === 'gitee' && giteeConfig))
     ) {

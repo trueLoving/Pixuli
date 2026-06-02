@@ -3,7 +3,10 @@ import { GiteeStorageProvider } from './giteeStorageProvider';
 import { giteeManifest } from './manifest';
 
 export function registerGiteeProvider(registry: StoragePluginRegistry): void {
-  registry.register(giteeManifest, ctx => new GiteeStorageProvider(ctx));
+  registry.register(
+    giteeManifest,
+    ctx => new GiteeStorageProvider(ctx, { useProxy: ctx.platform === 'web' }),
+  );
 }
 
 export { giteeManifest };
