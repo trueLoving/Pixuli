@@ -8,6 +8,7 @@ import type {
   MultiImageUploadData,
   UploadProgress,
 } from '@pixuli/core/types';
+import { getRepoConfigFromSource } from '@pixuli/core/sources';
 import {
   createConfiguredStorageProvider,
   hasLoadImageMetadata,
@@ -130,13 +131,15 @@ export const useImageStore = create<ImageState>((set, get) => ({
 
       if (oldGitHubConfig) {
         const migratedSource = sourceStore.addSource({
-          type: 'github',
-          name: `${oldGitHubConfig.owner}/${oldGitHubConfig.repo}`,
-          owner: oldGitHubConfig.owner,
-          repo: oldGitHubConfig.repo,
-          branch: oldGitHubConfig.branch,
-          token: oldGitHubConfig.token,
-          path: oldGitHubConfig.path,
+          pluginId: 'github',
+          label: `${oldGitHubConfig.owner}/${oldGitHubConfig.repo}`,
+          config: {
+            owner: oldGitHubConfig.owner,
+            repo: oldGitHubConfig.repo,
+            branch: oldGitHubConfig.branch,
+            token: oldGitHubConfig.token,
+            path: oldGitHubConfig.path,
+          },
         });
         sourceStore.setSelectedSourceId(migratedSource.id);
         // 迁移后清除旧配置并标记已完成迁移
@@ -144,13 +147,15 @@ export const useImageStore = create<ImageState>((set, get) => ({
         await AsyncStorage.setItem(MIGRATION_FLAG_KEY, 'true');
       } else if (oldGiteeConfig) {
         const migratedSource = sourceStore.addSource({
-          type: 'gitee',
-          name: `${oldGiteeConfig.owner}/${oldGiteeConfig.repo}`,
-          owner: oldGiteeConfig.owner,
-          repo: oldGiteeConfig.repo,
-          branch: oldGiteeConfig.branch,
-          token: oldGiteeConfig.token,
-          path: oldGiteeConfig.path,
+          pluginId: 'gitee',
+          label: `${oldGiteeConfig.owner}/${oldGiteeConfig.repo}`,
+          config: {
+            owner: oldGiteeConfig.owner,
+            repo: oldGiteeConfig.repo,
+            branch: oldGiteeConfig.branch,
+            token: oldGiteeConfig.token,
+            path: oldGiteeConfig.path,
+          },
         });
         sourceStore.setSelectedSourceId(migratedSource.id);
         // 迁移后清除旧配置并标记已完成迁移
@@ -169,15 +174,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
       : sources[0] || null;
 
     if (selectedSource) {
-      const config = {
-        owner: selectedSource.owner,
-        repo: selectedSource.repo,
-        branch: selectedSource.branch,
-        token: selectedSource.token,
-        path: selectedSource.path,
-      };
+      const config = getRepoConfigFromSource(selectedSource);
 
-      if (selectedSource.type === 'github') {
+      if (selectedSource.pluginId === 'github') {
         set({
           githubConfig: config,
           giteeConfig: null,
@@ -229,26 +228,16 @@ export const useImageStore = create<ImageState>((set, get) => ({
       ? sourceStore.getSourceById(selectedSourceId)
       : null;
 
-    if (selectedSource && selectedSource.type === 'github') {
-      // 更新现有源
+    if (selectedSource && selectedSource.pluginId === 'github') {
       sourceStore.updateSource(selectedSourceId!, {
-        name: `${config.owner}/${config.repo}`,
-        owner: config.owner,
-        repo: config.repo,
-        branch: config.branch,
-        token: config.token,
-        path: config.path,
+        label: `${config.owner}/${config.repo}`,
+        config: { ...config },
       });
     } else {
-      // 创建新源
       const newSource = sourceStore.addSource({
-        type: 'github',
-        name: `${config.owner}/${config.repo}`,
-        owner: config.owner,
-        repo: config.repo,
-        branch: config.branch,
-        token: config.token,
-        path: config.path,
+        pluginId: 'github',
+        label: `${config.owner}/${config.repo}`,
+        config: { ...config },
       });
       sourceStore.setSelectedSourceId(newSource.id);
     }
@@ -274,7 +263,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
     // 这个方法保留用于向后兼容
     // 从 sourceStore 中删除所有 GitHub 源
     const sourceStore = useSourceStore.getState();
-    const githubSources = sourceStore.sources.filter(s => s.type === 'github');
+    const githubSources = sourceStore.sources.filter(
+      s => s.pluginId === 'github',
+    );
 
     // 等待所有删除操作完成
     for (const source of githubSources) {
@@ -285,7 +276,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     const currentSource = sourceStore.selectedSourceId
       ? sourceStore.getSourceById(sourceStore.selectedSourceId)
       : null;
-    if (currentSource && currentSource.type === 'github') {
+    if (currentSource && currentSource.pluginId === 'github') {
       const remainingSources = sourceStore.sources;
       if (remainingSources.length > 0) {
         sourceStore.setSelectedSourceId(remainingSources[0].id);
@@ -321,26 +312,16 @@ export const useImageStore = create<ImageState>((set, get) => ({
       ? sourceStore.getSourceById(selectedSourceId)
       : null;
 
-    if (selectedSource && selectedSource.type === 'gitee') {
-      // 更新现有源
+    if (selectedSource && selectedSource.pluginId === 'gitee') {
       sourceStore.updateSource(selectedSourceId!, {
-        name: `${config.owner}/${config.repo}`,
-        owner: config.owner,
-        repo: config.repo,
-        branch: config.branch,
-        token: config.token,
-        path: config.path,
+        label: `${config.owner}/${config.repo}`,
+        config: { ...config },
       });
     } else {
-      // 创建新源
       const newSource = sourceStore.addSource({
-        type: 'gitee',
-        name: `${config.owner}/${config.repo}`,
-        owner: config.owner,
-        repo: config.repo,
-        branch: config.branch,
-        token: config.token,
-        path: config.path,
+        pluginId: 'gitee',
+        label: `${config.owner}/${config.repo}`,
+        config: { ...config },
       });
       sourceStore.setSelectedSourceId(newSource.id);
     }
@@ -366,7 +347,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
     // 这个方法保留用于向后兼容
     // 从 sourceStore 中删除所有 Gitee 源
     const sourceStore = useSourceStore.getState();
-    const giteeSources = sourceStore.sources.filter(s => s.type === 'gitee');
+    const giteeSources = sourceStore.sources.filter(
+      s => s.pluginId === 'gitee',
+    );
 
     // 等待所有删除操作完成
     for (const source of giteeSources) {
@@ -377,7 +360,7 @@ export const useImageStore = create<ImageState>((set, get) => ({
     const currentSource = sourceStore.selectedSourceId
       ? sourceStore.getSourceById(sourceStore.selectedSourceId)
       : null;
-    if (currentSource && currentSource.type === 'gitee') {
+    if (currentSource && currentSource.pluginId === 'gitee') {
       const remainingSources = sourceStore.sources;
       if (remainingSources.length > 0) {
         sourceStore.setSelectedSourceId(remainingSources[0].id);
@@ -413,15 +396,9 @@ export const useImageStore = create<ImageState>((set, get) => ({
       : sourceStore.sources[0] || null;
 
     if (selectedSource) {
-      const config = {
-        owner: selectedSource.owner,
-        repo: selectedSource.repo,
-        branch: selectedSource.branch,
-        token: selectedSource.token,
-        path: selectedSource.path,
-      };
+      const config = getRepoConfigFromSource(selectedSource);
 
-      if (selectedSource.type === 'github') {
+      if (selectedSource.pluginId === 'github') {
         set({
           githubConfig: config,
           giteeConfig: null,

@@ -1,66 +1,56 @@
-import { create } from 'zustand';
+import {
+  createStoredSourceEntry,
+  mergeStoredSourceUpdate,
+  normalizeStoredSources,
+  type CreateStoredSourceInput,
+  type StoredSourceEntry,
+} from '@pixuli/core/sources';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
 
-export interface GitHubSourceConfig {
-  id: string;
-  type: 'github';
-  name: string;
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface GiteeSourceConfig {
-  id: string;
-  type: 'gitee';
-  name: string;
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export type SourceConfig = GitHubSourceConfig | GiteeSourceConfig;
+export type SourceConfig = StoredSourceEntry;
+export type AddSourceInput = CreateStoredSourceInput;
+export type UpdateSourceInput = Partial<{
+  label: string;
+  pluginId: string;
+  config: StoredSourceEntry['config'];
+}>;
 
 type SourceState = {
   sources: SourceConfig[];
   selectedSourceId: string | null;
-  addSource: (
-    input:
-      | Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'updatedAt'>
-      | Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'updatedAt'>,
-  ) => SourceConfig;
-  updateSource: (
-    id: string,
-    input:
-      | Partial<Omit<GitHubSourceConfig, 'id' | 'createdAt' | 'type'>>
-      | Partial<Omit<GiteeSourceConfig, 'id' | 'createdAt' | 'type'>>,
-  ) => void;
+  addSource: (input: AddSourceInput) => SourceConfig;
+  updateSource: (id: string, input: UpdateSourceInput) => void;
   removeSource: (id: string) => Promise<void>;
   getSourceById: (id: string) => SourceConfig | undefined;
   setSelectedSourceId: (id: string | null) => void;
   initialize: () => Promise<void>;
 };
 
-const STORAGE_KEY = 'pixuli.sources.v1';
+const STORAGE_KEY = 'pixuli.sources.v2';
+const LEGACY_STORAGE_KEY = 'pixuli.sources.v1';
 const SELECTED_SOURCE_KEY = 'pixuli.selectedSourceId';
 
 async function loadSources(): Promise<SourceConfig[]> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      return [];
+    if (raw) {
+      return normalizeStoredSources(JSON.parse(raw));
     }
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data)) return [];
-    return data as SourceConfig[];
+
+    const legacyRaw = await AsyncStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacyRaw) {
+      const data = JSON.parse(legacyRaw);
+      if (Array.isArray(data)) {
+        const migrated = normalizeStoredSources(data);
+        if (migrated.length > 0) {
+          await saveSources(migrated);
+          return migrated;
+        }
+      }
+    }
+
+    return [];
   } catch (error) {
     console.error('Failed to load sources:', error);
     return [];
@@ -107,13 +97,10 @@ export const useSourceStore = create<SourceState>((set, get) => ({
   },
 
   addSource: input => {
-    const now = Date.now();
-    const source: SourceConfig = {
-      id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
-      createdAt: now,
-      updatedAt: now,
-      ...input,
-    } as SourceConfig;
+    const source = createStoredSourceEntry(
+      input,
+      Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
+    );
     const next = [...get().sources, source];
     set({ sources: next });
     saveSources(next);
@@ -122,7 +109,7 @@ export const useSourceStore = create<SourceState>((set, get) => ({
 
   updateSource: (id, input) => {
     const next = get().sources.map(s =>
-      s.id === id ? { ...s, ...input, updatedAt: Date.now() } : s,
+      s.id === id ? mergeStoredSourceUpdate(s, input) : s,
     );
     set({ sources: next });
     saveSources(next);
@@ -132,7 +119,6 @@ export const useSourceStore = create<SourceState>((set, get) => ({
     const next = get().sources.filter(s => s.id !== id);
     set({ sources: next });
     await saveSources(next);
-    // 如果删除的是当前选中的源，清除选中状态
     if (get().selectedSourceId === id) {
       set({ selectedSourceId: null });
       await saveSelectedSourceId(null);

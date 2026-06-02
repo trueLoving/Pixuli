@@ -18,25 +18,19 @@ export function useConfigManagement() {
     useSourceStore();
 
   const handleSaveConfig = useCallback(
-    (config: any, editingSourceId: string | null) => {
-      if (editingSourceId) {
-        // 编辑现有源
-        updateSource(editingSourceId, {
-          ...config,
-          name: config.name || `${config.owner}/${config.repo}`,
-        });
-      } else {
-        // 添加新源
-        const newSource = addSource({
-          type: storageType!,
-          name: `${config.owner}/${config.repo}`,
-          ...config,
-        });
-        setSelectedSourceId(newSource.id);
-      }
-
-      // 切换到保存的源并加载图片
-      const sourceConfig = {
+    (
+      config: {
+        owner: string;
+        repo: string;
+        branch: string;
+        token: string;
+        path: string;
+        name?: string;
+      },
+      editingSourceId: string | null,
+    ) => {
+      const label = config.name || `${config.owner}/${config.repo}`;
+      const repoConfig = {
         owner: config.owner,
         repo: config.repo,
         branch: config.branch,
@@ -44,13 +38,26 @@ export function useConfigManagement() {
         path: config.path,
       };
 
-      if (storageType === 'github') {
-        setGitHubConfig(sourceConfig);
+      if (editingSourceId) {
+        updateSource(editingSourceId, {
+          label,
+          config: repoConfig,
+        });
       } else {
-        setGiteeConfig(sourceConfig);
+        const newSource = addSource({
+          pluginId: storageType!,
+          label,
+          config: repoConfig,
+        });
+        setSelectedSourceId(newSource.id);
       }
 
-      // 延迟加载，确保配置已更新
+      if (storageType === 'github') {
+        setGitHubConfig(repoConfig);
+      } else {
+        setGiteeConfig(repoConfig);
+      }
+
       setTimeout(() => {
         loadImages();
       }, 100);
@@ -68,12 +75,10 @@ export function useConfigManagement() {
 
   const handleClearConfig = useCallback(
     (editingSourceId: string | null) => {
-      // 如果正在编辑现有源，则移除该源
       if (editingSourceId) {
         removeSource(editingSourceId);
         setSelectedSourceId(null);
       }
-      // 根据存储类型清除相应的配置
       if (storageType === 'github') {
         clearGitHubConfig();
       } else if (storageType === 'gitee') {

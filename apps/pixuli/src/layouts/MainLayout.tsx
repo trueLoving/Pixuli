@@ -13,6 +13,7 @@ import {
   VersionInfoModal,
 } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
+import { getRepoConfigFromSource } from '@pixuli/core/sources';
 import type { ImageUploadData, MultiImageUploadData } from '@pixuli/core/types';
 import React from 'react';
 import {
@@ -151,14 +152,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             ? null
             : editingSourceId &&
                 selectedSource &&
-                selectedSource.type === 'github'
-              ? {
-                  owner: selectedSource.owner,
-                  repo: selectedSource.repo,
-                  branch: selectedSource.branch,
-                  token: selectedSource.token,
-                  path: selectedSource.path,
-                }
+                selectedSource.pluginId === 'github'
+              ? getRepoConfigFromSource(selectedSource)
               : githubConfig
         }
         onSaveConfig={onSaveConfig}
@@ -175,14 +170,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             ? null
             : editingSourceId &&
                 selectedSource &&
-                selectedSource.type === 'gitee'
-              ? {
-                  owner: selectedSource.owner,
-                  repo: selectedSource.repo,
-                  branch: selectedSource.branch,
-                  token: selectedSource.token,
-                  path: selectedSource.path,
-                }
+                selectedSource.pluginId === 'gitee'
+              ? getRepoConfigFromSource(selectedSource)
               : giteeConfig
         }
         onSaveConfig={onSaveConfig}

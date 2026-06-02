@@ -11,7 +11,8 @@
     "./platform": "./src/platform/index.ts",
     "./utils": "./src/utils/index.ts",
     "./locales": "./src/locales/index.ts",
-    "./operation-log": "./src/operation-log/index.ts"
+    "./operation-log": "./src/operation-log/index.ts",
+    "./sources": "./src/sources/index.ts"
   },
   "scripts": {
     "test": "vitest run",

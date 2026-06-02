@@ -1,3 +1,7 @@
+import {
+  getRepoConfigFromSource,
+  type StoredSourceEntry,
+} from '@pixuli/core/sources';
 import { useEffect, useRef } from 'react';
 import { useImageStore } from '../stores/imageStore';
 
@@ -5,7 +9,7 @@ import { useImageStore } from '../stores/imageStore';
  * 同步选中源到 store 的配置
  */
 export function useSelectedSourceSync(
-  selectedSource: any,
+  selectedSource: StoredSourceEntry | null,
   onConfigSynced?: () => void,
 ) {
   const { setGitHubConfig, setGiteeConfig } = useImageStore();
@@ -14,7 +18,6 @@ export function useSelectedSourceSync(
 
   useEffect(() => {
     if (selectedSource) {
-      // 避免重复同步同一个源（但首次加载时允许同步）
       if (
         lastSyncedSourceIdRef.current === selectedSource.id &&
         !isInitialMountRef.current
@@ -22,14 +25,8 @@ export function useSelectedSourceSync(
         return;
       }
 
-      const sourceConfig = {
-        owner: selectedSource.owner,
-        repo: selectedSource.repo,
-        branch: selectedSource.branch,
-        token: selectedSource.token,
-        path: selectedSource.path,
-      };
-      if (selectedSource.type === 'github') {
+      const sourceConfig = getRepoConfigFromSource(selectedSource);
+      if (selectedSource.pluginId === 'github') {
         setGitHubConfig(sourceConfig);
         useImageStore.setState({ storageType: 'github' });
       } else {
@@ -37,13 +34,10 @@ export function useSelectedSourceSync(
         useImageStore.setState({ storageType: 'gitee' });
       }
 
-      // 标记已同步，并触发回调
-      // 注意：setGitHubConfig 和 setGiteeConfig 内部已经调用了 initializeStorage()
       lastSyncedSourceIdRef.current = selectedSource.id;
       isInitialMountRef.current = false;
 
       if (onConfigSynced) {
-        // 延迟执行，确保 store 状态已更新和存储服务已初始化
         setTimeout(() => {
           const { storageProvider, initializeStorage } =
             useImageStore.getState();
