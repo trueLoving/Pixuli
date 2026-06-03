@@ -42,6 +42,8 @@ export interface SidebarSource {
   repo: string;
   path: string;
   active?: boolean;
+  /** 对应 pluginId 是否已在 Registry 注册（REF-307） */
+  available?: boolean;
 }
 
 interface SidebarProps {
@@ -544,32 +546,49 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         ) : (
           <div className="sidebar-source-list">
-            {sources.map(source => (
-              <button
-                key={source.id}
-                className={`sidebar-source-item ${
-                  selectedSourceId === source.id ? 'active' : ''
-                }`}
-                onClick={() => onSourceSelect(source.id)}
-                onContextMenu={e => handleContextMenu(e, source.id)}
-                title={`${source.owner}/${source.repo}`}
-              >
-                <div className="sidebar-source-icon">
-                  {source.type === 'github' ? (
-                    <Github size={16} />
-                  ) : (
-                    <div className="gitee-icon">码</div>
-                  )}
-                </div>
-                <div className="sidebar-source-info">
-                  <div className="sidebar-source-name">{source.name}</div>
-                  <div className="sidebar-source-path">
-                    {source.owner}/{source.repo}
+            {sources.map(source => {
+              const unavailable = source.available === false;
+              return (
+                <button
+                  key={source.id}
+                  type="button"
+                  className={`sidebar-source-item ${
+                    selectedSourceId === source.id ? 'active' : ''
+                  } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
+                  onClick={() => {
+                    if (!unavailable) {
+                      onSourceSelect(source.id);
+                    }
+                  }}
+                  onContextMenu={e => handleContextMenu(e, source.id)}
+                  title={
+                    unavailable
+                      ? translate('sidebar.pluginUnavailable')
+                      : `${source.owner}/${source.repo}`
+                  }
+                  disabled={unavailable}
+                >
+                  <div className="sidebar-source-icon">
+                    {source.type === 'github' ? (
+                      <Github size={16} />
+                    ) : (
+                      <div className="gitee-icon">码</div>
+                    )}
                   </div>
-                </div>
-                {source.active && <div className="sidebar-source-active-dot" />}
-              </button>
-            ))}
+                  <div className="sidebar-source-info">
+                    <div className="sidebar-source-name">{source.name}</div>
+                    <div className="sidebar-source-path">
+                      {unavailable
+                        ? translate('sidebar.pluginUnavailable')
+                        : `${source.owner}/${source.repo}`}
+                    </div>
+                  </div>
+                  {source.active && !unavailable && (
+                    <div className="sidebar-source-active-dot" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>

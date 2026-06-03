@@ -4,16 +4,16 @@
 
 ## 子路径导出
 
-| 路径                         | 内容                                                      |
-| ---------------------------- | --------------------------------------------------------- |
-| `@pixuli/core`               | 主入口                                                    |
-| `@pixuli/core/types`         | 图片、GitHub/Gitee、日志等类型                            |
-| `@pixuli/core/plugins`       | `StorageProvider` 契约、`StoragePluginRegistry`、配置类型 |
-| `@pixuli/core/sources`       | `StoredSourceEntry` 持久化归一化、单条配置导入/导出       |
-| `@pixuli/core/platform`      | `PlatformAdapter`                                         |
-| `@pixuli/core/utils`         | filter、sort、fileSize、image 工具                        |
-| `@pixuli/core/locales`       | 应用级词条与 `deepMerge`                                  |
-| `@pixuli/core/operation-log` | `OperationLogService`                                     |
+| 路径                         | 内容                                                               |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `@pixuli/core`               | 主入口                                                             |
+| `@pixuli/core/types`         | 图片、GitHub/Gitee、日志等类型                                     |
+| `@pixuli/core/plugins`       | `StorageProvider` 契约、`StoragePluginRegistry`、`manifestUi` 辅助 |
+| `@pixuli/core/sources`       | `StoredSourceEntry` 持久化归一化、单条配置导入/导出                |
+| `@pixuli/core/platform`      | `PlatformAdapter`                                                  |
+| `@pixuli/core/utils`         | filter、sort、fileSize、image 工具                                 |
+| `@pixuli/core/locales`       | 应用级词条与 `deepMerge`                                           |
+| `@pixuli/core/operation-log` | `OperationLogService`                                              |
 
 ## 依赖边界
 

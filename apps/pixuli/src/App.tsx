@@ -141,9 +141,11 @@ function App() {
 
   // 处理源类型选择
   const handleSelectSourceType = useCallback(
-    (type: 'github' | 'gitee') => {
+    (pluginId: string) => {
       setEditingSourceId(null);
-      useImageStore.setState({ storageType: type });
+      useImageStore.setState({
+        storageType: pluginId as 'github' | 'gitee',
+      });
       closeSourceTypeMenu();
       openConfigModal();
     },

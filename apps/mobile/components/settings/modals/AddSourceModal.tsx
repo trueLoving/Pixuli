@@ -1,7 +1,12 @@
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
-import React from 'react';
+import { listStoragePluginManifests } from '@/storage/registry';
+import {
+  getManifestDescription,
+  isKnownBuiltinPluginId,
+} from '@pixuli/core/plugins';
+import React, { useMemo } from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '../../ui/IconSymbol';
 import { ThemedText } from '../../ui/ThemedText';
@@ -10,7 +15,7 @@ import { ThemedView } from '../../ui/ThemedView';
 interface AddSourceModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelect: (type: 'github' | 'gitee') => void;
+  onSelect: (pluginId: string) => void;
 }
 
 export function AddSourceModal({
@@ -22,20 +27,14 @@ export function AddSourceModal({
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
-  const sources = [
-    {
-      type: 'github' as const,
-      name: 'GitHub',
-      icon: 'link',
-      description: t('settings.github.title') || 'GitHub 配置',
-    },
-    {
-      type: 'gitee' as const,
-      name: 'Gitee',
-      icon: 'link',
-      description: t('settings.gitee.title') || 'Gitee 配置',
-    },
-  ];
+  const pluginOptions = useMemo(() => {
+    return listStoragePluginManifests().map(manifest => ({
+      pluginId: manifest.id,
+      name: manifest.name,
+      description: getManifestDescription(manifest, key => t(key)),
+      supported: isKnownBuiltinPluginId(manifest.id),
+    }));
+  }, [t]);
 
   const dynamicStyles = StyleSheet.create({
     modalOverlay: {
@@ -74,69 +73,86 @@ export function AddSourceModal({
         >
           <View style={styles.header}>
             <ThemedText style={[styles.title, { color: colors.text }]}>
-              {t('settings.storage.add') || '添加存储配置'}
+              {t('settings.storage.selectType') || '选择仓库源类型'}
             </ThemedText>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <IconSymbol name="xmark" size={24} color={colors.text} />
+              <IconSymbol name="xmark" size={22} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.content}>
-            {sources.map((source, index) => (
-              <TouchableOpacity
-                key={source.type}
-                style={[
-                  styles.sourceItem,
-                  dynamicStyles.sourceItem,
-                  index === sources.length - 1 && styles.sourceItemLast,
-                ]}
-                onPress={() => {
-                  onSelect(source.type);
-                  onClose();
-                }}
-                activeOpacity={0.6}
+            {pluginOptions.length === 0 ? (
+              <ThemedText
+                style={[styles.emptyText, { color: colors.sectionTitle }]}
               >
-                <View style={styles.sourceItemLeft}>
-                  <View
-                    style={[
-                      styles.iconContainer,
-                      {
-                        backgroundColor: colors.primary + '20',
-                      },
-                    ]}
-                  >
-                    <IconSymbol
-                      name={source.icon as any}
-                      size={22}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <View style={styles.sourceItemContent}>
-                    <ThemedText
+                {t('sidebar.noStoragePlugins')}
+              </ThemedText>
+            ) : (
+              pluginOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={option.pluginId}
+                  style={[
+                    styles.sourceItem,
+                    dynamicStyles.sourceItem,
+                    index === pluginOptions.length - 1 && styles.sourceItemLast,
+                    !option.supported && styles.sourceItemDisabled,
+                  ]}
+                  onPress={() => {
+                    if (!option.supported) {
+                      return;
+                    }
+                    onSelect(option.pluginId);
+                    onClose();
+                  }}
+                  disabled={!option.supported}
+                  activeOpacity={0.6}
+                >
+                  <View style={styles.sourceItemLeft}>
+                    <View
                       style={[
-                        styles.sourceItemText,
-                        dynamicStyles.sourceItemText,
+                        styles.iconContainer,
+                        {
+                          backgroundColor: colors.primary + '20',
+                        },
                       ]}
                     >
-                      {source.name}
-                    </ThemedText>
-                    <ThemedText
-                      style={[
-                        styles.sourceItemSubtext,
-                        dynamicStyles.sourceItemSubtext,
-                      ]}
-                    >
-                      {source.description}
-                    </ThemedText>
+                      <IconSymbol
+                        name={
+                          option.pluginId === 'gitee'
+                            ? 'link'
+                            : 'chevron.left.forwardslash.chevron.right'
+                        }
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <View style={styles.sourceItemContent}>
+                      <ThemedText
+                        style={[
+                          styles.sourceItemText,
+                          dynamicStyles.sourceItemText,
+                        ]}
+                      >
+                        {option.name}
+                      </ThemedText>
+                      <ThemedText
+                        style={[
+                          styles.sourceItemSubtext,
+                          dynamicStyles.sourceItemSubtext,
+                        ]}
+                      >
+                        {option.description}
+                      </ThemedText>
+                    </View>
                   </View>
-                </View>
-                <IconSymbol
-                  name="chevron.right"
-                  size={18}
-                  color={colors.sectionTitle}
-                />
-              </TouchableOpacity>
-            ))}
+                  <IconSymbol
+                    name="chevron.right"
+                    size={18}
+                    color={colors.sectionTitle}
+                  />
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </ThemedView>
       </TouchableOpacity>
@@ -154,62 +170,68 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 400,
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    justifyContent: 'space-between',
+    padding: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#E5E5EA',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
   },
   closeButton: {
     padding: 4,
   },
   content: {
-    padding: 8,
+    paddingVertical: 8,
   },
   sourceItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    paddingHorizontal: 20,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   sourceItemLast: {
     borderBottomWidth: 0,
   },
+  sourceItemDisabled: {
+    opacity: 0.5,
+  },
   sourceItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 12,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: 8,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    justifyContent: 'center',
   },
   sourceItemContent: {
     flex: 1,
   },
   sourceItemText: {
-    fontSize: 17,
-    fontWeight: '400',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 2,
   },
   sourceItemSubtext: {
     fontSize: 13,
-    marginTop: 2,
+  },
+  emptyText: {
+    textAlign: 'center',
+    padding: 24,
+    fontSize: 14,
   },
 });

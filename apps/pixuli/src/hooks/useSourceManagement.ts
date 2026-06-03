@@ -3,6 +3,7 @@ import {
   pluginIdToLegacyType,
 } from '@pixuli/core/sources';
 import { useCallback, useMemo } from 'react';
+import { isStoragePluginRegistered } from '../storage/registry';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 
@@ -23,14 +24,16 @@ export function useSourceManagement() {
   const sidebarSources = useMemo(() => {
     return sources.map(source => {
       const repo = getRepoConfigFromSource(source);
+      const legacyType = pluginIdToLegacyType(source.pluginId);
       return {
         id: source.id,
         name: source.label || `${repo.owner}/${repo.repo}`,
-        type: pluginIdToLegacyType(source.pluginId),
+        type: legacyType,
         owner: repo.owner,
         repo: repo.repo,
         path: repo.path,
         active: selectedSourceId === source.id,
+        available: isStoragePluginRegistered(source.pluginId),
       };
     });
   }, [sources, selectedSourceId]);
@@ -38,18 +41,21 @@ export function useSourceManagement() {
   const handleEditSource = useCallback(
     (sourceId: string) => {
       const source = sources.find(s => s.id === sourceId);
-      if (source) {
-        const pluginId = pluginIdToLegacyType(source.pluginId);
-        const sourceConfig = getRepoConfigFromSource(source);
-        useImageStore.setState({ storageType: pluginId });
-        if (pluginId === 'github') {
-          setGitHubConfig(sourceConfig);
-        } else {
-          setGiteeConfig(sourceConfig);
-        }
-        return sourceId;
+      if (!source) {
+        return null;
       }
-      return null;
+      if (!isStoragePluginRegistered(source.pluginId)) {
+        return null;
+      }
+      const legacyType = pluginIdToLegacyType(source.pluginId);
+      const sourceConfig = getRepoConfigFromSource(source);
+      useImageStore.setState({ storageType: legacyType });
+      if (legacyType === 'github') {
+        setGitHubConfig(sourceConfig);
+      } else {
+        setGiteeConfig(sourceConfig);
+      }
+      return sourceId;
     },
     [sources, setGitHubConfig, setGiteeConfig],
   );
@@ -69,17 +75,18 @@ export function useSourceManagement() {
   const handleSourceSelect = useCallback(
     (id: string) => {
       const source = sources.find(s => s.id === id);
-      if (source) {
-        setSelectedSourceId(id);
-        const sourceConfig = getRepoConfigFromSource(source);
-        const pluginId = pluginIdToLegacyType(source.pluginId);
-        if (pluginId === 'github') {
-          setGitHubConfig(sourceConfig);
-        } else {
-          setGiteeConfig(sourceConfig);
-        }
-        loadImages();
+      if (!source || !isStoragePluginRegistered(source.pluginId)) {
+        return;
       }
+      setSelectedSourceId(id);
+      const sourceConfig = getRepoConfigFromSource(source);
+      const legacyType = pluginIdToLegacyType(source.pluginId);
+      if (legacyType === 'github') {
+        setGitHubConfig(sourceConfig);
+      } else {
+        setGiteeConfig(sourceConfig);
+      }
+      loadImages();
     },
     [sources, setSelectedSourceId, setGitHubConfig, setGiteeConfig, loadImages],
   );

@@ -1,4 +1,8 @@
-import { createStoragePluginRegistry } from '@pixuli/core/plugins';
+import {
+  createStoragePluginRegistry,
+  isStoragePluginRegistered as isPluginRegisteredOnRegistry,
+  type StoragePluginManifest,
+} from '@pixuli/core/plugins';
 import { registerGitHubProvider } from '@pixuli/provider-github/register';
 import { registerGiteeProvider } from '@pixuli/provider-gitee/register';
 
@@ -16,3 +20,11 @@ export function bootstrapStorageProviders(): void {
 }
 
 bootstrapStorageProviders();
+
+export function listStoragePluginManifests(): StoragePluginManifest[] {
+  return storageRegistry.listManifests();
+}
+
+export function isStoragePluginRegistered(pluginId: string): boolean {
+  return isPluginRegisteredOnRegistry(storageRegistry, pluginId);
+}

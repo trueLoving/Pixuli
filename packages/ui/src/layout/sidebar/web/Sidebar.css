@@ -646,6 +646,20 @@
   background: var(--active-bg, #e5e7eb);
 }
 
+.sidebar-source-item--unavailable {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sidebar-source-item--unavailable:hover {
+  background: transparent;
+}
+
+.sidebar-source-item--unavailable .sidebar-source-path {
+  color: var(--text-muted, #9ca3af);
+  font-style: italic;
+}
+
 .sidebar-source-item.active .sidebar-source-icon {
   color: var(--text-primary, #111827);
 }

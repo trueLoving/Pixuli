@@ -28,6 +28,7 @@ import { useI18n } from '../i18n/useI18n';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
+import { listStoragePluginManifests } from '../storage/registry';
 import { getPlatform } from '../utils/platform';
 import { AppMain } from './AppMain';
 import { Sidebar } from './Sidebar';
@@ -53,7 +54,7 @@ interface MainLayoutProps {
   // 配置相关 props（用于弹窗）
   onSaveConfig: (config: any) => void;
   onClearConfig: () => void;
-  onSelectSourceType: (type: 'github' | 'gitee') => void;
+  onSelectSourceType: (pluginId: string) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -138,6 +139,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* 仓库类型选择菜单 */}
       <SourceTypeMenu
         isOpen={showSourceTypeMenu}
+        manifests={listStoragePluginManifests()}
         onClose={closeSourceTypeMenu}
         onSelect={onSelectSourceType}
         t={t}
