@@ -34,7 +34,7 @@
 | M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                |
 | M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                           |
 | M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common` |
-| M4     | 文档与 CI           |                  | PRD/README/CI 与架构一致                                              |
+| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理；历史版本盘点与后续发布策略             |
 | M5     | 平台能力 L3（持续） |                  | PWA 归位、Desktop 离线/更新规划                                       |
 
 ---
@@ -369,6 +369,9 @@ Closes #42 Related: REF-101
 | REF-404 | [#83](https://github.com/trueLoving/Pixuli/issues/83)   |
 | REF-405 | [#84](https://github.com/trueLoving/Pixuli/issues/84)   |
 | REF-406 | [#85](https://github.com/trueLoving/Pixuli/issues/85)   |
+| REF-407 | [#111](https://github.com/trueLoving/Pixuli/issues/111) |
+| REF-408 | [#112](https://github.com/trueLoving/Pixuli/issues/112) |
+| REF-409 | [#113](https://github.com/trueLoving/Pixuli/issues/113) |
 | REF-501 | [#86](https://github.com/trueLoving/Pixuli/issues/86)   |
 | REF-502 | [#87](https://github.com/trueLoving/Pixuli/issues/87)   |
 | REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88)   |
@@ -502,20 +505,20 @@ native。
 
 ### 里程碑 M3 — 存储插件体系 P0
 
-| ID      | 建议标题                                        | Labels                                                 | 优先级 | Depends on         | GitHub #                                                | 状态 |
-| ------- | ----------------------------------------------- | ------------------------------------------------------ | ------ | ------------------ | ------------------------------------------------------- | ---- |
-| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry   | refactor, m3, area:core, area:plugin, priority:P0      | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
-| REF-302 | [M3] 实现 @pixuli/provider-github               | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
-| REF-303 | [M3] 实现 @pixuli/provider-gitee                | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
-| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
-| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
-| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
-| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
-| REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ⬜   |
-| REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
-| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
-| REF-311 | [M3] 删除 `packages/common` 整包                | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
-| REF-312 | [Bug] 编辑仓库源时配置表单未回显                | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ⬜   |
+| ID      | 建议标题                                             | Labels                                                 | 优先级 | Depends on         | GitHub #                                                | 状态 |
+| ------- | ---------------------------------------------------- | ------------------------------------------------------ | ------ | ------------------ | ------------------------------------------------------- | ---- |
+| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry        | refactor, m3, area:core, area:plugin, priority:P0      | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
+| REF-302 | [M3] 实现 @pixuli/provider-github                    | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
+| REF-303 | [M3] 实现 @pixuli/provider-gitee                     | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
+| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry       | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
+| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry       | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
+| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）            | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
+| REF-307 | [M3] 设置页源列表对接 registry.listManifests         | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
+| REF-308 | [M3] 编写插件开发文档 08-storage-plugin-authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ✅   |
+| REF-309 | [M3] provider 包单元测试迁移                         | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
+| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
+| REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
+| REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ⬜   |
 
 <details>
 <summary>REF-301 ~ REF-312 Issue 正文模板</summary>
@@ -533,7 +536,8 @@ native。
 
 **REF-307** — 添加源 UI 按 manifest 列表渲染。
 
-**REF-308** — 最小 provider-example 骨架 + 安全说明（Token 本地存储）。
+**REF-308** —
+[08-storage-plugin-authoring.md](docs/02-system-design/08-storage-plugin-authoring.md)：内置/热加载模式、命名与安全、最小 example 骨架 + 检查清单。
 
 **REF-309** — 迁移 `services/__tests__/*` 到 provider 包。
 
@@ -568,14 +572,107 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 
 ### 里程碑 M4 — 文档与 CI
 
-| ID      | 建议标题                                                | Labels                               | 优先级 | Depends on | GitHub #                                              | 状态 |
-| ------- | ------------------------------------------------------- | ------------------------------------ | ------ | ---------- | ----------------------------------------------------- | ---- |
-| REF-401 | [M4] 更新 PRD：三端底线、展示裁剪、无官方 Server        | refactor, m4, type:docs, priority:P1 | P1     | #46, #56   | [#80](https://github.com/trueLoving/Pixuli/issues/80) | ⬜   |
-| REF-402 | [M4] 新增 docs/backlog.md 承接已移除/未做需求           | refactor, m4, type:docs, priority:P1 | P1     | #80        | [#81](https://github.com/trueLoving/Pixuli/issues/81) | ⬜   |
-| REF-403 | [M4] 更新 README 结构、环境要求、维护范围               | refactor, m4, type:docs, priority:P1 | P1     | #54, #56   | [#82](https://github.com/trueLoving/Pixuli/issues/82) | ⬜   |
-| REF-404 | [M4] 更新 CHANGELOG 记录 Breaking Changes               | refactor, m4, type:docs, priority:P1 | P1     | #58        | [#83](https://github.com/trueLoving/Pixuli/issues/83) | ⬜   |
-| REF-405 | [M4] CI：移除 benchmark workflow；desktop 构建去掉 wasm | refactor, m4, priority:P1            | P1     | #54, #55   | [#84](https://github.com/trueLoving/Pixuli/issues/84) | ⬜   |
-| REF-406 | [M4] archive/README 说明 wasm/server 归档策略           | refactor, m4, type:docs, priority:P2 | P2     | #54, #56   | [#85](https://github.com/trueLoving/Pixuli/issues/85) | ⬜   |
+| ID      | 建议标题                                                | Labels                               | 优先级 | Depends on | GitHub #                                                | 状态 |
+| ------- | ------------------------------------------------------- | ------------------------------------ | ------ | ---------- | ------------------------------------------------------- | ---- |
+| REF-401 | [M4] 更新 PRD：三端底线、展示裁剪、无官方 Server        | refactor, m4, type:docs, priority:P1 | P1     | #46, #56   | [#80](https://github.com/trueLoving/Pixuli/issues/80)   | ⬜   |
+| REF-402 | [M4] 新增 docs/backlog.md 承接已移除/未做需求           | refactor, m4, type:docs, priority:P1 | P1     | #80        | [#81](https://github.com/trueLoving/Pixuli/issues/81)   | ⬜   |
+| REF-403 | [M4] 更新 README 结构、环境要求、维护范围               | refactor, m4, type:docs, priority:P1 | P1     | #54, #56   | [#82](https://github.com/trueLoving/Pixuli/issues/82)   | ⬜   |
+| REF-404 | [M4] 更新 CHANGELOG 记录 Breaking Changes               | refactor, m4, type:docs, priority:P1 | P1     | #58        | [#83](https://github.com/trueLoving/Pixuli/issues/83)   | ⬜   |
+| REF-405 | [M4] CI：移除 benchmark workflow；desktop 构建去掉 wasm | refactor, m4, priority:P1            | P1     | #54, #55   | [#84](https://github.com/trueLoving/Pixuli/issues/84)   | ⬜   |
+| REF-406 | [M4] archive/README 说明 wasm/server 归档策略           | refactor, m4, type:docs, priority:P2 | P2     | #54, #56   | [#85](https://github.com/trueLoving/Pixuli/issues/85)   | ⬜   |
+| REF-407 | [M4] 梳理整理 `docs/` 目录（纠错、去重、与现架构对齐）  | refactor, m4, type:docs, priority:P1 | P1     | #80, #82   | [#111](https://github.com/trueLoving/Pixuli/issues/111) | ⬜   |
+| REF-408 | [M4] 梳理 GitHub Wiki 产品使用手册（新人从零上手）      | refactor, m4, type:docs, priority:P1 | P1     | #80, #111  | [#112](https://github.com/trueLoving/Pixuli/issues/112) | ⬜   |
+| REF-409 | [M4] 历史发布版本梳理与后续版本发布策略                 | refactor, m4, type:docs, priority:P1 | P1     | #58, #83   | [#113](https://github.com/trueLoving/Pixuli/issues/113) | ⬜   |
+
+<details>
+<summary>REF-407 / REF-408 / REF-409 范围说明（点击展开）</summary>
+
+**文档分层（目标态）**
+
+| 载体                                                         | 读者             | 内容定位                                                                |
+| ------------------------------------------------------------ | ---------------- | ----------------------------------------------------------------------- |
+| **`docs/`**（仓库内）                                        | 开发、产品、协作 | PRD、系统设计、业务设计、插件开发；随代码版本演进，以 PR 评审           |
+| **[GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki)** | 终端用户、新人   | **产品使用手册**：安装、首次配置、日常操作、三端差异、FAQ；少讲实现细节 |
+| **`docs/01-product/02-Pixuli-Usage-Tutorial.md`**            | 同上（源稿）     | 可作为 Wiki 同步源或精简后迁入 Wiki，避免双份长期分叉                   |
+
+**REF-407 — `docs/` 梳理整理**
+
+背景：M1～M3 重构后，部分文档仍引用
+`packages/common`、已移除浏览模式、wasm/server 主路径等，存在**过时、重复、职责不清**问题。
+
+- [ ] 全量审计 `docs/`（含 `docs/README.md` 索引）：标注与当前代码不一致处
+- [ ] **纠错**：模块职责（`@pixuli/core` / `@pixuli/ui` /
+      `provider-*`）、三端底线、已裁剪功能（幻灯片/时间线等）
+- [ ] **去重**：合并重复叙述；系统设计与业务设计边界清晰；过时教程段落删除或迁
+      `docs/backlog.md`（REF-402）
+- [ ] **索引**：更新 `docs/README.md` 与各文档头部「相关文档」互链
+- [ ] 与 REF-401（PRD）、REF-403（README）结论一致，必要时在文首增加「最后核对版本 / 适用分支」说明
+
+验收：新人读 `docs/README`
+可按角色找到正确文档；`grep packages/common`（docs 内）仅出现在历史/迁移说明或 backlog。
+
+**REF-408 — GitHub Wiki 使用手册**
+
+目标：Wiki 作为**对外产品手册**，让新人**从零开始**完成：了解 Pixuli
+→ 选端（Web/Desktop/Mobile）→ 配置 GitHub/Gitee 源 → 上传与管理图片。
+
+- [ ] 规划 Wiki 目录结构（建议）：首页 / 快速开始 / 仓库源配置 / 图片管理 / 实用工具 / 三端说明 / 常见问题 / 更新日志链接
+- [ ] 对照当前产品 UI 与 REF-401 后 PRD 修订正文（不写已移除能力）
+- [ ] Web / Desktop / Mobile 分节说明安装或访问方式、界面差异
+- [ ] 配置步骤配图或分步说明（Token 获取、owner/repo/path）；强调 Token 仅存本地
+- [ ] 在仓库 README 与 Wiki 首页互相链接；`docs/01-product`
+      中注明 Wiki 为面向用户的发布副本
+
+验收：非技术用户仅读 Wiki 即可完成首次配置并上传一张图；Wiki 与 REF-407 后的
+`docs/` 无矛盾表述。
+
+**建议顺序**：REF-401 → REF-407 ∥ REF-403 →
+REF-408（Wiki 依赖 docs/ 纠错结果，避免把过时内容同步到 Wiki）。
+
+**REF-409 — 历史发布版本梳理与后续发布策略**
+
+背景：仓库已有 [CHANGELOG.md](CHANGELOG.md) 与 GitHub Releases（如
+`v1.3.0-desktop`、`v1.0.0-mobile`），但**三端版本号不统一**、标签命名无书面约定；M1～M3 重构将产生 Breaking
+Changes，需明确「下一版」如何发。
+
+**Part A — 历史版本梳理**
+
+- [ ] 盘点 GitHub [Releases](https://github.com/trueLoving/Pixuli/releases)
+      与 tags（desktop / mobile / 历史命名）
+- [ ] 对照
+      `CHANGELOG.md`：补缺、纠错、标注已过时条目（如 Upyun、幻灯片等已移除能力）
+- [ ] 整理**版本—能力矩阵**表：各版本三端交付物、下载入口、是否仍建议升级
+- [ ] 明确 Web/PWA 是否曾有独立版本号；若无，在文档中说明「随 main 部署、无安装包」
+
+**Part B — 后续发布策略（目标态文档）**
+
+建议产出 `docs/01-product/03-release-versioning.md`（或
+`docs/02-system-design/09-release-versioning.md`）：
+
+- [ ] **版本号规则**：SemVer
+      2.0；是否 monorepo 统一版本 vs 分端独立（`1.4.0-desktop` /
+      `1.1.0-mobile`）
+- [ ] **标签与 Release 命名**：如
+      `v{semver}-desktop`、`v{semver}-mobile`；Web 是否打 tag
+- [ ] **发布节奏**：重构里程碑（M1/M2/M3）与对外版本的对应关系；何时发 major
+- [ ] **CHANGELOG 维护**：与 #83（REF-404）分工——#83 记本次 Breaking；本 Issue 定**长期流程**（谁写、何时写、Keep
+      a Changelog 分类）
+- [ ] **CI/CD 衔接**：`release-desktop.yml`、Mobile 发版流程、GitHub
+      Release 自动生成说明
+- [ ] **用户沟通**：Wiki /
+      README 如何展示「当前稳定版」与「升级说明」；重构后首个推荐版本号建议
+
+验收：
+
+- [ ] 存在一份可执行的《版本发布策略》文档，维护者按文档即可发下一版 Desktop/Mobile
+- [ ] 历史 Releases 有对照表，用户能判断自己安装的版本是否过旧、是否含已下线功能
+- [ ] 与 #83 不重复：#83 完成**本轮**
+      CHANGELOG 条目；本 Issue 完成**制度与历史盘点**
+
+**建议顺序**：#58（M1 回归）后启动 ∥ #83；#112（Wiki）可链到 Releases
+/ 升级说明章节。
+
+</details>
 
 ---
 
@@ -652,10 +749,10 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 12       | 7      | 58%     |
-| M4       | 6        | 0      | 0%      |
+| M3       | 12       | 8      | 67%     |
+| M4       | 9        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
-| **合计** | **45**   | **8**  | **18%** |
+| **合计** | **48**   | **9**  | **19%** |
 
 ---
 
@@ -670,7 +767,12 @@ flowchart LR
 | 执行 Checklist       | `.local/简化执行-checklist.md`      |
 
 > 建议：M4 中将 `.local` 核心内容迁入
-> `docs/architecture/`，便于协作者不依赖本地文件。
+> `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。
+>
+> **对外用户文档**：仓库内 `docs/01-product/` 面向协作者与版本管理；**GitHub
+> Wiki**
+> 作为终端用户使用手册（REF-408），二者避免长期双份维护，以 Wiki 为发布面、
+> `docs/` 为源稿或定期同步。
 
 ---
 

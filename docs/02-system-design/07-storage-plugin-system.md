@@ -6,6 +6,8 @@
 - **关联 Issue**：[#70](https://github.com/trueLoving/Pixuli/issues/70)
 - **相关文档**：
   - [00-System-Design](./00-System-Design.md) — 系统分层与数据流
+  - [08-storage-plugin-authoring](./08-storage-plugin-authoring.md)
+    — 插件开发实操（REF-308）
   - [03-business-design/01-repository-source-management](../03-business-design/01-repository-source-management.md)
     — 仓库源业务模型
   - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md) — M3 REF-301～311 任务表
@@ -478,18 +480,18 @@ function createProvider(
 
 ## 十一、M3 迁移路线图
 
-| ID          | 内容                                     | 与本文关系                       |
-| ----------- | ---------------------------------------- | -------------------------------- |
-| **REF-301** | core 契约与 Registry **定稿 + 代码对齐** | **本文档 + types/registry 补全** |
-| REF-302     | `@pixuli/provider-github`                | §6 实现 GitHub                   |
-| REF-303     | `@pixuli/provider-gitee`                 | §6 实现 Gitee                    |
-| REF-304/305 | apps imageStore → Registry               | §7.2                             |
-| REF-306     | 持久化 `pluginId`                        | §8.2                             |
-| REF-307     | UI 读 `listManifests`                    | §7.3                             |
-| REF-308     | 插件开发文档 `docs/plugins/authoring.md` | 基于本文扩展                     |
-| REF-309     | 单测迁移                                 | §10.3                            |
-| REF-310     | M3 回归                                  | §10.3                            |
-| REF-311     | 删除 `packages/common`                   | §4.1 移除 legacy                 |
+| ID          | 内容                                          | 与本文关系                       |
+| ----------- | --------------------------------------------- | -------------------------------- |
+| **REF-301** | core 契约与 Registry **定稿 + 代码对齐**      | **本文档 + types/registry 补全** |
+| REF-302     | `@pixuli/provider-github`                     | §6 实现 GitHub                   |
+| REF-303     | `@pixuli/provider-gitee`                      | §6 实现 Gitee                    |
+| REF-304/305 | apps imageStore → Registry                    | §7.2                             |
+| REF-306     | 持久化 `pluginId`                             | §8.2                             |
+| REF-307     | UI 读 `listManifests`                         | §7.3                             |
+| REF-308     | 插件开发文档 `08-storage-plugin-authoring.md` | 基于本文扩展                     |
+| REF-309     | 单测迁移                                      | §10.3                            |
+| REF-310     | M3 回归                                       | §10.3                            |
+| REF-311     | 删除 `packages/common`                        | §4.1 移除 legacy                 |
 
 建议实施顺序：**301 → 302 ∥ 303 → 304 ∥ 305 → 309 → 310 →
 311**；306/307 可与 304 并行（P1）。
@@ -529,4 +531,6 @@ const githubManifest: StoragePluginManifest = {
 
 - M3 各 REF 合并后，更新 [00-System-Design](./00-System-Design.md)
   中「模块与职责」一节，将 `packages/common` 替换为 provider 包描述。
-- REF-308 产出 `docs/plugins/authoring.md` 作为本文的**开发者实操**补充。
+- REF-308 产出
+  [08-storage-plugin-authoring.md](./08-storage-plugin-authoring.md)
+  作为本文的**开发者实操**补充。
