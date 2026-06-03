@@ -1,7 +1,7 @@
 # Pixuli 重构计划
 
-> **版本**：1.0  
-> **更新**：2026-05-26  
+> **版本**：1.1  
+> **更新**：2026-05-27  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -19,13 +19,14 @@
 
 ### 1.2 架构方向
 
-| 方向     | 说明                                                                               |
-| -------- | ---------------------------------------------------------------------------------- |
-| 归档     | `packages/wasm`、`benchmark/`、`server/` 移出主构建路径                            |
-| 拆分     | `packages/common` → `@pixuli/core` + `@pixuli/ui`（M3 末 REF-311 整包删除 common） |
-| 插件     | `StorageProvider` + `provider-github` / `provider-gitee`                           |
-| 功能分层 | **L1** 基础业务 · **L2** 仅网格/列表 · **L3** 各端平台能力                         |
-| 展示裁剪 | 移除幻灯片、时间线、照片墙、3D 画廊及浏览模式路由                                  |
+| 方向     | 说明                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------- |
+| 归档     | `packages/wasm`、`benchmark/`、`server/` 移出主构建路径                                     |
+| 拆分     | `packages/common` → `@pixuli/core` + `@pixuli/ui`（M3 末 REF-311 整包删除 common）          |
+| 插件     | `StorageProvider` + `provider-github` / `provider-gitee`                                    |
+| 功能分层 | **L1** 基础业务 · **L2** 仅网格/列表 · **L3** 各端平台能力                                  |
+| 展示裁剪 | 移除幻灯片、时间线、照片墙、3D 画廊及浏览模式路由                                           |
+| 三端共享 | **逻辑层最大化复用**；UI 层 Web/Desktop 已合一，Mobile 目标与 PC 一样复用 Web 栈（见 §1.4） |
 
 ### 1.3 里程碑
 
@@ -35,7 +36,79 @@
 | M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                           |
 | M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common` |
 | M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理；历史版本盘点与后续发布策略             |
-| M5     | 平台能力 L3（持续） |                  | PWA 归位、Desktop 离线/更新规划                                       |
+| M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；**三端代码共享**（Capacitor / 逻辑层抽取，见 §1.4）  |
+
+### 1.4 三端代码最大化共享
+
+**目标**：在保持 Web / Desktop /
+Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与 Desktop 复用 Web 一样，让 Mobile 尽可能复用
+`apps/pixuli` + `@pixuli/ui` 的 Web 实现，而不是长期并行两套 UI 工程。
+
+#### 1.4.1 现状（M3 进行中）
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  apps/pixuli（Vite + React + DOM）     ← Web + Desktop 共用 UI   │
+│    └── @pixuli/ui（exports "."）       图床 L1/L2 主界面          │
+├─────────────────────────────────────────────────────────────────┤
+│  apps/mobile（Expo + React Native）    ← 独立 UI 工程              │
+│    └── @pixuli/ui/native               少量 RN 组件（EmptyState 等）│
+├─────────────────────────────────────────────────────────────────┤
+│  已共享：@pixuli/core、@pixuli/provider-*、i18n 文案模式、存储插件   │
+│  仍分叉：imageStore / sourceStore、页面与导航、RN 专用组件与样式   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+| 层级         | Web + Desktop                | Mobile（当前）                                   | 共享程度                                  |
+| ------------ | ---------------------------- | ------------------------------------------------ | ----------------------------------------- |
+| **L3 平台**  | Electron 主进程、PWA         | Expo、原生模块、AsyncStorage                     | 各端独立（预期）                          |
+| **L2 UI**    | `@pixuli/ui` web             | `apps/mobile/components/*` + `@pixuli/ui/native` | **低**（两套界面）                        |
+| **L1 业务**  | `apps/pixuli` hooks/stores   | `apps/mobile/stores/*`                           | **中**（契约已对齐 Registry，实现仍双份） |
+| **基础设施** | `@pixuli/core`、`provider-*` | 同上                                             | **高**                                    |
+
+结论：**Desktop 与 Web 已做到 UI 一套代码**；Mobile 与 Web
+**不能**直接共用同一份 JSX（DOM ≠ RN 控件），除非改走 **Web 进壳** 或
+**RN 统一 UI（RNW）**。
+
+#### 1.4.2 可选路径（详述见设计文档）
+
+正式技术分析：[06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md)。
+
+| 方案                     | 思路                                             | Mobile 与 Web 关系            | 维护成本                   | 体验                 |
+| ------------------------ | ------------------------------------------------ | ----------------------------- | -------------------------- | -------------------- |
+| **A：Capacitor**         | `apps/pixuli` 的 `dist` + 原生壳（WebView）      | **同一套 Web UI**，与 PC 一致 | **最低**（单 UI 代码库）   | WebView，偏 Web 手感 |
+| **B：RNW**               | 以 RN 为唯一 UI，Web/Desktop 用 react-native-web | 一套 RN UI                    | 高（需重写现有 Vite 界面） | 移动端原生最好       |
+| **C：双应用 + 加深共享** | 保留 `apps/mobile`，逻辑迁入 core/共享包         | 两套 UI，**L1 尽量一份**      | 中（长期仍双 UI）          | 原生体验最好         |
+
+**计划倾向（与 06 文档决策一致）**：
+
+1. **主路线（A）**：M3/M4 收尾后，在 M5 做 **Capacitor PoC
+   → 试点 → 替代或并行下线 RN 工程**，使 Mobile 与 Desktop 一样直接消费
+   `apps/pixuli`。
+2. **过渡路线（C）**：在 A 未落地前，继续
+   **抽取共享逻辑**（store 工厂、源管理、上传流程、筛选排序），避免 Mobile/Web 各改一遍；`@pixuli/ui/native`
+   仅保留 RN 无法由 Web 覆盖的少量组件。
+3. **不默认（B）**：除非产品明确要求「原生 UI + 单代码库」且接受重写 Web 端，否则不将 RNW 列为 M5 默认项。
+
+#### 1.4.3 分阶段目标
+
+| 阶段                   | 时机       | 交付物                                                                                                                                   |
+| ---------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0 逻辑对齐**        | M3 末～M4  | `imageStore` / `sourceStore` 与 `StoragePluginRegistry`、`StoredSourceEntry` 行为一致；差异仅持久化适配器（localStorage / AsyncStorage） |
+| **P1 共享包评估**      | M4         | 文档：哪些 hooks/流程可迁入 `@pixuli/core` 或新建 `packages/app-shared`（仅类型+无 UI 的 store 工厂）                                    |
+| **P2 Capacitor PoC**   | M5         | `apps/pixuli` 增加 Capacitor 配置；真机验证相机/相册/文件；`Capacitor.isNativePlatform()` 分支                                           |
+| **P3 三端单工程发布**  | M5+        | CI 产出 Web / Desktop / iOS / Android；Wiki「三端说明」与 REF-501 能力矩阵对齐                                                           |
+| **P4 RN 退场（可选）** | PoC 通过后 | `apps/mobile` 标记 deprecated，版本冻结；或仅保留极简壳调试用                                                                            |
+
+#### 1.4.4 原则与边界
+
+- **优先共享**：类型、Registry、Provider、配置导入导出、列表/上传/删除**业务流程**；UI 仅在 A 落地前按平台拆分。
+- **禁止**：为「共享」而把 `@pixuli/ui`
+  web 组件直接 import 进 RN（无 DOM 会失败）；应走 **子路径**（`./native`）或
+  **Capacitor**。
+- **L3 仍各端实现**：PWA、Electron 离线/更新、Capacitor 插件、Expo 原生能力——不强行塞进 core。
+- **验收口径**：同一用户故事（配置源 → 列表 → 上传 → 删除）在三端**行为一致**；代码层面以「UI 源码是否只有
+  `apps/pixuli` 一份」为长期 KPI。
 
 ---
 
@@ -377,6 +450,11 @@ Closes #42 Related: REF-101
 | REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88)   |
 | REF-504 | [#89](https://github.com/trueLoving/Pixuli/issues/89)   |
 | REF-505 | [#90](https://github.com/trueLoving/Pixuli/issues/90)   |
+| REF-506 | [#116](https://github.com/trueLoving/Pixuli/issues/116) |
+| REF-507 | [#117](https://github.com/trueLoving/Pixuli/issues/117) |
+| REF-508 | [#119](https://github.com/trueLoving/Pixuli/issues/119) |
+| REF-509 | [#118](https://github.com/trueLoving/Pixuli/issues/118) |
+| REF-510 | [#120](https://github.com/trueLoving/Pixuli/issues/120) |
 
 > **说明**：#53 为已合并 PR（REF-101～103 批次），非独立计划 Issue。
 
@@ -682,13 +760,43 @@ Changes，需明确「下一版」如何发。
 
 ### 里程碑 M5 — 平台能力 L3（持续）
 
-| ID      | 建议标题                                              | Labels                                  | 优先级 | Depends on | GitHub #                                              | 状态 |
-| ------- | ----------------------------------------------------- | --------------------------------------- | ------ | ---------- | ----------------------------------------------------- | ---- |
-| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile） | refactor, m5, type:docs, priority:P2    | P2     | #80        | [#86](https://github.com/trueLoving/Pixuli/issues/86) | ⬜   |
-| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定  | refactor, m5, area:desktop, priority:P2 | P2     | #64        | [#87](https://github.com/trueLoving/Pixuli/issues/87) | ⬜   |
-| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）          | refactor, m5, area:desktop, priority:P2 | P2     | #87        | [#88](https://github.com/trueLoving/Pixuli/issues/88) | ⬜   |
-| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）   | refactor, m5, area:desktop, priority:P2 | P2     | #87        | [#89](https://github.com/trueLoving/Pixuli/issues/89) | ⬜   |
-| REF-505 | [M5] Desktop 系统托盘（设计+实现）                    | refactor, m5, area:desktop, priority:P2 | P2     | #87        | [#90](https://github.com/trueLoving/Pixuli/issues/90) | ⬜   |
+| ID      | 建议标题                                              | Labels                                            | 优先级 | Depends on | GitHub #                                                | 状态 |
+| ------- | ----------------------------------------------------- | ------------------------------------------------- | ------ | ---------- | ------------------------------------------------------- | ---- |
+| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile） | refactor, m5, type:docs, priority:P2              | P2     | #80        | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ⬜   |
+| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定  | refactor, m5, area:desktop, priority:P2           | P2     | #64        | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ⬜   |
+| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）          | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
+| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）   | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
+| REF-505 | [M5] Desktop 系统托盘（设计+实现）                    | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜   |
+| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档             | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ⬜   |
+| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）    | refactor, m5, area:core, area:mobile, priority:P1 | P1     | #100, #116 | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
+| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单       | refactor, m5, area:ui, area:mobile, priority:P2   | P2     | #116       | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
+| REF-509 | [M5] Capacitor PoC：apps/pixuli 打 iOS/Android 壳     | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
+| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支          | refactor, m5, area:mobile, priority:P2            | P2     | #118       | [#120](https://github.com/trueLoving/Pixuli/issues/120) | ⬜   |
+
+<details>
+<summary>REF-506 ~ REF-510 说明（三端共享）</summary>
+
+**REF-506** — 对照 §1.4.1 输出「共享矩阵」：文件/模块级标注 Web+Desktop / Mobile
+/ 可合并；链接
+[06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md)。
+
+**REF-507** — 在 M3 Registry 与 `StoredSourceEntry`
+稳定后，将双端 store 中**与 UI 无关**的状态机、插件创建、列表刷新逻辑抽到
+`@pixuli/core` 或 `packages/app-shared`；两端仅保留持久化与导航适配。
+
+**REF-508** — 盘点 `apps/mobile` 与 `@pixuli/ui/web`
+功能重叠度；明确 Capacitor 落地后 **不必** 再迁 RN 的组件列表（避免重复劳动）。
+
+**REF-509** — 按 06 文档 §六～§七：Capacitor 接入、`webDir` 指向现有 `build:web`
+产物；真机冒烟（启动、登录配置、列表、上传一张图）。
+
+**REF-510** — 相机/相册/文件/安全区等插件选型；在 `apps/pixuli` 内用
+`Capacitor.isNativePlatform()` 收敛分支，替代 RN 侧重复实现。
+
+**建议顺序**：M3 **REF-310/311** 完成 → **#116** → **#117** ∥ **#118**（PoC）→
+PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡）。
+
+</details>
 
 ---
 
@@ -755,20 +863,21 @@ flowchart LR
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
 | M4       | 9        | 0      | 0%      |
-| M5       | 5        | 0      | 0%      |
-| **合计** | **48**   | **10** | **21%** |
+| M5       | 10       | 0      | 0%      |
+| **合计** | **53**   | **10** | **19%** |
 
 ---
 
 ## 七、相关文档
 
-| 文档                 | 位置                                |
-| -------------------- | ----------------------------------- |
-| 仓库简化方案（修订） | `.local/仓库简化方案.md`            |
-| 功能分层与裁剪       | `.local/功能分层与裁剪清单.md`      |
-| core / ui 拆分       | `.local/common拆分方案-core与ui.md` |
-| 插件体系设计         | `.local/插件体系设计.md`            |
-| 执行 Checklist       | `.local/简化执行-checklist.md`      |
+| 文档                          | 位置                                                                                               |
+| ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                           |
+| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                     |
+| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                |
+| 插件体系设计                  | `.local/插件体系设计.md`                                                                           |
+| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                     |
+| 三端统一 / Mobile 融入 pixuli | [06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md) |
 
 > 建议：M4 中将 `.local` 核心内容迁入
 > `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。
