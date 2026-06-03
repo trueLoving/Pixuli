@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as nativeServices from '../services/index.native';
 import * as webServices from '../services';
 
+/** 存储实现与单测在 @pixuli/provider-*（REF-309）；本包仅 re-export 兼容。 */
 describe('pixuli-common services exports (REF-210)', () => {
   it('native services do not export webImageProcessor', () => {
     expect('webImageProcessorService' in nativeServices).toBe(false);

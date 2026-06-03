@@ -448,16 +448,33 @@ const manifests = listStoragePluginManifests();
 
 ## 九、测试与调试
 
-### 9.1 Provider 包单测
+### 9.1 Provider 包单测（REF-309）
+
+存储 API mock 单测位于各 `@pixuli/provider-*` 包内（自 `pixuli-common` 的
+`services/__tests__` 迁出；`platformAdapter` 单测在 `@pixuli/core`）。
+
+**官方包测试目录**
+
+| 包                        | 文件                                                | 说明                                          |
+| ------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| `@pixuli/provider-github` | `src/__tests__/githubStorageProvider.test.ts`       | 主测：`GitHubStorageProvider` + mock `fetch`  |
+|                           | `src/__tests__/register.test.ts`                    | Registry 注册与 `create`                      |
+|                           | `src/__tests__/githubStorageService.compat.test.ts` | 兼容层 `GitHubStorageService` 冒烟            |
+|                           | `src/__tests__/helpers.ts`                          | 共用 `createMockResponse`                     |
+| `@pixuli/provider-gitee`  | `src/__tests__/giteeStorageProvider.test.ts`        | 主测：`GiteeStorageProvider`（含 `useProxy`） |
+|                           | `src/__tests__/register.test.ts`                    | 同上                                          |
+|                           | `src/__tests__/giteeStorageService.compat.test.ts`  | 兼容层冒烟                                    |
+|                           | `src/__tests__/helpers.ts`                          | 同上                                          |
 
 | 用例               | 说明                                                                  |
 | ------------------ | --------------------------------------------------------------------- |
 | `register.test.ts` | `register` 后 `listManifests()` 含本 manifest；`create` 返回实例      |
-| Provider 方法      | mock `fetch` 经 `ProviderContext.fetch` 注入；覆盖 list/upload/delete |
-| `validateConfig`   | 缺字段时 `ok: false`                                                  |
+| Provider 方法      | 先 `configure(config)`；mock `fetch`；覆盖 `listImages`/upload/delete |
+| `validateConfig`   | 缺字段时 `ok: false`（若实现）                                        |
 
 ```bash
-pnpm --filter @pixuli/provider-{id} test
+pnpm --filter @pixuli/provider-github test
+pnpm --filter @pixuli/provider-gitee test
 ```
 
 ### 9.2 与 Registry 集成
@@ -640,8 +657,8 @@ describe('registerExampleProvider', () => {
 | `packages/core/src/plugins/registry.ts`   | DefaultStoragePluginRegistry    |
 | `packages/core/src/plugins/manifestUi.ts` | UI 辅助（描述文案、是否已注册） |
 | `packages/core/src/sources/`              | StoredSourceEntry、导入导出     |
-| `packages/plugin-provider-github/`        | 官方参考实现                    |
-| `packages/plugin-provider-gitee/`         | 官方参考实现                    |
+| `packages/plugin-provider-github/`        | 官方参考实现；单测见 §9.1       |
+| `packages/plugin-provider-gitee/`         | 官方参考实现；单测见 §9.1       |
 | `apps/pixuli/src/storage/registry.ts`     | Web/Desktop bootstrap           |
 | `apps/mobile/storage/registry.ts`         | Mobile bootstrap                |
 
@@ -653,4 +670,4 @@ describe('registerExampleProvider', () => {
   [07-storage-plugin-system.md](./07-storage-plugin-system.md)
   与本文 §五、§十一。
 - 热加载 (#102) 落地后增补 §10 的 Loader API 与安全模型。
-- REF-309 单测迁移完成后，在 §9 增加官方包的测试目录链接。
+- §9.1 已列出官方 provider 单测路径；新增官方包时同步更新该表。
