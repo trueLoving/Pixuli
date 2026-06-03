@@ -1,31 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GiteeStorageService } from '../giteeStorageService';
+import { GiteeStorageProvider } from '../giteeStorageProvider';
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type {
   GiteeConfig,
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
+import { createMockResponse } from './helpers';
 
-describe('GiteeStorageService', () => {
-  let service: GiteeStorageService;
+describe('GiteeStorageProvider', () => {
+  let provider: GiteeStorageProvider;
   let config: GiteeConfig;
-  let mockPlatformAdapter: any;
-
-  // 辅助函数：创建 mock response
-  const createMockResponse = (
-    ok: boolean,
-    data: any = null,
-    status: number = 200,
-    statusText: string = 'OK',
-  ) => ({
-    ok,
-    status,
-    statusText,
-    headers: new Headers({ 'content-type': 'application/json' }),
-    json: async () => data,
-    text: async () => (typeof data === 'string' ? data : JSON.stringify(data)),
-  });
+  let mockPlatformAdapter: {
+    getImageDimensions: ReturnType<typeof vi.fn>;
+    fileToBase64: ReturnType<typeof vi.fn>;
+    getFileSize: ReturnType<typeof vi.fn>;
+    getMimeType: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     config = {
@@ -45,13 +36,15 @@ describe('GiteeStorageService', () => {
       getMimeType: vi.fn().mockResolvedValue('image/jpeg'),
     };
 
-    service = new GiteeStorageService(config, {
-      platform: 'web',
-      platformAdapter: mockPlatformAdapter,
-      useProxy: false,
-    });
+    provider = new GiteeStorageProvider(
+      {
+        platform: 'web',
+        platformAdapter: mockPlatformAdapter as never,
+      },
+      { useProxy: false },
+    );
+    provider.configure(config);
 
-    // Mock global fetch
     global.fetch = vi.fn();
   });
 
@@ -59,34 +52,42 @@ describe('GiteeStorageService', () => {
     vi.restoreAllMocks();
   });
 
-  describe('构造函数', () => {
-    it('应该使用默认平台适配器', () => {
-      const defaultService = new GiteeStorageService(config);
-      expect(defaultService).toBeInstanceOf(GiteeStorageService);
+  describe('configure', () => {
+    it('未 configure 时调用 listImages 应抛错', async () => {
+      const unconfigured = new GiteeStorageProvider({
+        platform: 'web',
+        platformAdapter: mockPlatformAdapter as never,
+      });
+      await expect(unconfigured.listImages()).rejects.toThrow(
+        /not configured/i,
+      );
     });
 
-    it('应该使用自定义平台适配器', () => {
+    it('应接受 ProviderContext 中的自定义 platformAdapter', () => {
       const customAdapter = new DefaultPlatformAdapter();
-      const customService = new GiteeStorageService(config, {
+      const customProvider = new GiteeStorageProvider({
         platform: 'web',
         platformAdapter: customAdapter,
       });
-      expect(customService).toBeInstanceOf(GiteeStorageService);
+      customProvider.configure(config);
+      expect(customProvider).toBeInstanceOf(GiteeStorageProvider);
+      expect(customProvider.manifest.id).toBe('gitee');
     });
 
-    it('应该支持代理模式', () => {
-      const proxyService = new GiteeStorageService(config, {
-        platform: 'web',
-        useProxy: true,
-      });
-      expect(proxyService).toBeInstanceOf(GiteeStorageService);
+    it('应支持 useProxy 构造选项', () => {
+      const proxyProvider = new GiteeStorageProvider(
+        { platform: 'web', platformAdapter: new DefaultPlatformAdapter() },
+        { useProxy: true },
+      );
+      proxyProvider.configure(config);
+      expect(proxyProvider).toBeInstanceOf(GiteeStorageProvider);
     });
   });
 
   describe('getImageDimensions', () => {
     it('应该获取图片尺寸', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const result = await service.getImageDimensions(file);
+      const result = await provider.getImageDimensions(file);
       expect(result).toEqual({ width: 100, height: 200 });
       expect(mockPlatformAdapter.getImageDimensions).toHaveBeenCalledWith(file);
     });
@@ -96,7 +97,7 @@ describe('GiteeStorageService', () => {
         new Error('Failed'),
       );
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const result = await service.getImageDimensions(file);
+      const result = await provider.getImageDimensions(file);
       expect(result).toEqual({ width: 0, height: 0 });
     });
   });
@@ -126,7 +127,7 @@ describe('GiteeStorageService', () => {
           }),
         );
 
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
 
       expect(result).toMatchObject({
         name: 'test.jpg',
@@ -163,7 +164,7 @@ describe('GiteeStorageService', () => {
           }),
         );
 
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
 
       expect(result).toMatchObject({
         name: 'image.jpg',
@@ -185,7 +186,7 @@ describe('GiteeStorageService', () => {
           createMockResponse(false, {}, 400, 'Bad Request'),
         );
 
-      await expect(service.uploadImage(uploadData)).rejects.toThrow(
+      await expect(provider.uploadImage(uploadData)).rejects.toThrow(
         '上传图片失败',
       );
     });
@@ -219,7 +220,7 @@ describe('GiteeStorageService', () => {
         );
 
       // 应该成功返回，即使元数据上传失败
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
       expect(result).toBeDefined();
       expect(result.name).toBe('test.jpg');
     });
@@ -240,9 +241,7 @@ describe('GiteeStorageService', () => {
         )
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
-      await expect(
-        service.deleteImage('test-id', 'test.jpg'),
-      ).resolves.toBeUndefined();
+      await expect(provider.deleteImage('test.jpg')).resolves.toBeUndefined();
     });
 
     it('应该处理文件不存在的情况', async () => {
@@ -250,7 +249,7 @@ describe('GiteeStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, null));
 
-      await expect(service.deleteImage('test-id', 'test.jpg')).rejects.toThrow(
+      await expect(provider.deleteImage('test.jpg')).rejects.toThrow(
         '删除图片失败',
       );
     });
@@ -263,7 +262,7 @@ describe('GiteeStorageService', () => {
           createMockResponse(false, {}, 500, 'Server error'),
         );
 
-      await expect(service.deleteImage('test-id', 'test.jpg')).rejects.toThrow(
+      await expect(provider.deleteImage('test.jpg')).rejects.toThrow(
         '删除图片失败',
       );
     });
@@ -279,13 +278,11 @@ describe('GiteeStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, null));
 
       // 应该成功，即使元数据文件不存在
-      await expect(
-        service.deleteImage('test-id', 'test.jpg'),
-      ).resolves.toBeUndefined();
+      await expect(provider.deleteImage('test.jpg')).resolves.toBeUndefined();
     });
   });
 
-  describe('getImageList', () => {
+  describe('listImages', () => {
     it('应该获取图片列表', async () => {
       const mockImageFiles = [
         {
@@ -313,7 +310,7 @@ describe('GiteeStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, mockImageFiles))
         .mockResolvedValueOnce(createMockResponse(false, {}, 404, 'Not Found'));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
 
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({
@@ -329,7 +326,7 @@ describe('GiteeStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, []));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toEqual([]);
     });
 
@@ -338,7 +335,7 @@ describe('GiteeStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toEqual([]);
     });
 
@@ -365,7 +362,7 @@ describe('GiteeStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, mockFiles))
         .mockResolvedValueOnce(createMockResponse(false, {}, 404, 'Not Found'));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('image1.jpg');
     });
@@ -395,35 +392,29 @@ describe('GiteeStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, mockImageFiles))
         .mockResolvedValueOnce(createMockResponse(false, {}, 404, 'Not Found'));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toHaveLength(2);
       // 重复的ID应该被处理
       expect(result[0].id).not.toBe(result[1].id);
     });
   });
 
-  describe('updateImageInfo', () => {
+  describe('updateImageMetadata', () => {
     it('应该更新图片信息', async () => {
       const metadata = {
-        id: 'test-id',
         name: 'test.jpg',
         description: 'Updated description',
         tags: ['tag1', 'tag2'],
-        size: 2048,
-        width: 200,
-        height: 400,
       };
 
-      // Mock getFileSha - 文件不存在（创建新文件）
-      // Mock update metadata
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, null))
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
-      ).resolves.toBeUndefined();
+        provider.updateImageMetadata('test.jpg', metadata),
+      ).resolves.toMatchObject({ name: 'test.jpg' });
     });
 
     it('应该处理更新失败的情况', async () => {
@@ -436,16 +427,16 @@ describe('GiteeStorageService', () => {
         headers: new Headers({ 'content-type': 'application/json' }),
         json: async () => null,
         text: async () => '',
-      } as any);
+      } as Response);
 
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
         status: 500,
         text: async () => 'Server error',
-      } as any);
+      } as Response);
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
+        provider.updateImageMetadata('test.jpg', metadata),
       ).rejects.toThrow('更新图片信息失败');
     });
   });
@@ -482,7 +473,7 @@ describe('GiteeStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, mockMetadata));
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -515,7 +506,7 @@ describe('GiteeStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(false, {}, 404, 'Not Found'));
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(images[0]);
@@ -540,7 +531,7 @@ describe('GiteeStorageService', () => {
 
       global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(images[0]);
@@ -568,18 +559,21 @@ describe('GiteeStorageService', () => {
           }),
         );
 
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
       expect(result.url).toContain('gitee.com');
       expect(result.url).toContain('raw');
       expect(result.url).not.toContain('api/gitee-proxy');
     });
 
     it('应该正确构建 raw URL（使用代理）', async () => {
-      const proxyService = new GiteeStorageService(config, {
-        platform: 'web',
-        platformAdapter: mockPlatformAdapter,
-        useProxy: true,
-      });
+      const proxyProvider = new GiteeStorageProvider(
+        {
+          platform: 'web',
+          platformAdapter: mockPlatformAdapter as never,
+        },
+        { useProxy: true },
+      );
+      proxyProvider.configure(config);
 
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
       const uploadData: ImageUploadData = {
@@ -600,7 +594,7 @@ describe('GiteeStorageService', () => {
           }),
         );
 
-      const result = await proxyService.uploadImage(uploadData);
+      const result = await proxyProvider.uploadImage(uploadData);
       expect(result.url).toContain('api/gitee-proxy');
     });
   });

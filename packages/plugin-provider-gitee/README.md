@@ -84,7 +84,14 @@ await service.getImageList();
 - **仅依赖** `@pixuli/core`
 - **禁止**依赖 `@pixuli/ui` 等 UI 层（REF-209）
 
-## 开发
+## 测试（REF-309）
+
+| 文件                                               | 说明                           |
+| -------------------------------------------------- | ------------------------------ |
+| `src/__tests__/giteeStorageProvider.test.ts`       | Provider 契约 + mock Gitee API |
+| `src/__tests__/register.test.ts`                   | Registry 注册                  |
+| `src/__tests__/giteeStorageService.compat.test.ts` | 兼容层冒烟                     |
+| `src/__tests__/helpers.ts`                         | 共用 mock `fetch` 响应         |
 
 ```bash
 pnpm --filter @pixuli/provider-gitee test

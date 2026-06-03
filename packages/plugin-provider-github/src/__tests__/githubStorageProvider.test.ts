@@ -1,31 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GitHubStorageService } from '../githubStorageService';
+import { GitHubStorageProvider } from '../githubStorageProvider';
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type {
   GitHubConfig,
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
+import { createMockResponse } from './helpers';
 
-describe('GitHubStorageService', () => {
-  let service: GitHubStorageService;
+describe('GitHubStorageProvider', () => {
+  let provider: GitHubStorageProvider;
   let config: GitHubConfig;
-  let mockPlatformAdapter: any;
-
-  // 辅助函数：创建 mock response
-  const createMockResponse = (
-    ok: boolean,
-    data: any = null,
-    status: number = 200,
-    statusText: string = 'OK',
-  ) => ({
-    ok,
-    status,
-    statusText,
-    headers: new Headers({ 'content-type': 'application/json' }),
-    json: async () => data,
-    text: async () => (typeof data === 'string' ? data : JSON.stringify(data)),
-  });
+  let mockPlatformAdapter: {
+    getImageDimensions: ReturnType<typeof vi.fn>;
+    fileToBase64: ReturnType<typeof vi.fn>;
+    getFileSize: ReturnType<typeof vi.fn>;
+    getMimeType: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     config = {
@@ -45,12 +36,12 @@ describe('GitHubStorageService', () => {
       getMimeType: vi.fn().mockResolvedValue('image/jpeg'),
     };
 
-    service = new GitHubStorageService(config, {
+    provider = new GitHubStorageProvider({
       platform: 'web',
-      platformAdapter: mockPlatformAdapter,
+      platformAdapter: mockPlatformAdapter as never,
     });
+    provider.configure(config);
 
-    // Mock global fetch
     global.fetch = vi.fn();
   });
 
@@ -58,26 +49,33 @@ describe('GitHubStorageService', () => {
     vi.restoreAllMocks();
   });
 
-  describe('构造函数', () => {
-    it('应该使用默认平台适配器', () => {
-      const defaultService = new GitHubStorageService(config);
-      expect(defaultService).toBeInstanceOf(GitHubStorageService);
+  describe('configure', () => {
+    it('未 configure 时调用 listImages 应抛错', async () => {
+      const unconfigured = new GitHubStorageProvider({
+        platform: 'web',
+        platformAdapter: mockPlatformAdapter as never,
+      });
+      await expect(unconfigured.listImages()).rejects.toThrow(
+        /not configured/i,
+      );
     });
 
-    it('应该使用自定义平台适配器', () => {
+    it('应接受 ProviderContext 中的自定义 platformAdapter', () => {
       const customAdapter = new DefaultPlatformAdapter();
-      const customService = new GitHubStorageService(config, {
+      const customProvider = new GitHubStorageProvider({
         platform: 'web',
         platformAdapter: customAdapter,
       });
-      expect(customService).toBeInstanceOf(GitHubStorageService);
+      customProvider.configure(config);
+      expect(customProvider).toBeInstanceOf(GitHubStorageProvider);
+      expect(customProvider.manifest.id).toBe('github');
     });
   });
 
   describe('getImageDimensions', () => {
     it('应该获取图片尺寸', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const result = await service.getImageDimensions(file);
+      const result = await provider.getImageDimensions(file);
       expect(result).toEqual({ width: 100, height: 200 });
       expect(mockPlatformAdapter.getImageDimensions).toHaveBeenCalledWith(file);
     });
@@ -87,7 +85,7 @@ describe('GitHubStorageService', () => {
         new Error('Failed'),
       );
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const result = await service.getImageDimensions(file);
+      const result = await provider.getImageDimensions(file);
       expect(result).toEqual({ width: 0, height: 0 });
     });
   });
@@ -115,7 +113,7 @@ describe('GitHubStorageService', () => {
         }),
       );
 
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
 
       expect(result).toMatchObject({
         name: 'test.jpg',
@@ -151,7 +149,7 @@ describe('GitHubStorageService', () => {
         }),
       } as any);
 
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
 
       expect(result).toMatchObject({
         name: 'image.jpg',
@@ -172,7 +170,7 @@ describe('GitHubStorageService', () => {
           createMockResponse(false, { message: 'Bad Request' }, 400),
         );
 
-      await expect(service.uploadImage(uploadData)).rejects.toThrow(
+      await expect(provider.uploadImage(uploadData)).rejects.toThrow(
         '上传图片失败',
       );
     });
@@ -206,7 +204,7 @@ describe('GitHubStorageService', () => {
         );
 
       // 应该成功返回，即使元数据上传失败
-      const result = await service.uploadImage(uploadData);
+      const result = await provider.uploadImage(uploadData);
       expect(result).toBeDefined();
       expect(result.name).toBe('test.jpg');
     });
@@ -227,9 +225,7 @@ describe('GitHubStorageService', () => {
         )
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
-      await expect(
-        service.deleteImage('test-id', 'test.jpg'),
-      ).resolves.toBeUndefined();
+      await expect(provider.deleteImage('test.jpg')).resolves.toBeUndefined();
     });
 
     it('应该处理文件不存在的情况', async () => {
@@ -239,7 +235,7 @@ describe('GitHubStorageService', () => {
           createMockResponse(false, { message: 'Not Found' }, 404),
         );
 
-      await expect(service.deleteImage('test-id', 'test.jpg')).rejects.toThrow(
+      await expect(provider.deleteImage('test.jpg')).rejects.toThrow(
         '删除图片失败',
       );
     });
@@ -252,7 +248,7 @@ describe('GitHubStorageService', () => {
           createMockResponse(false, { message: 'Server error' }, 500),
         );
 
-      await expect(service.deleteImage('test-id', 'test.jpg')).rejects.toThrow(
+      await expect(provider.deleteImage('test.jpg')).rejects.toThrow(
         '删除图片失败',
       );
     });
@@ -270,13 +266,11 @@ describe('GitHubStorageService', () => {
         );
 
       // 应该成功，即使元数据文件不存在
-      await expect(
-        service.deleteImage('test-id', 'test.jpg'),
-      ).resolves.toBeUndefined();
+      await expect(provider.deleteImage('test.jpg')).resolves.toBeUndefined();
     });
   });
 
-  describe('getImageList', () => {
+  describe('listImages', () => {
     it('应该获取图片列表', async () => {
       const mockImageFiles = [
         {
@@ -309,7 +303,7 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(false, {}, 404))
         .mockResolvedValueOnce(createMockResponse(false, {}, 404));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
 
       expect(result).toHaveLength(2);
       expect(result[0]).toMatchObject({
@@ -325,7 +319,7 @@ describe('GitHubStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, []));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toEqual([]);
     });
 
@@ -353,7 +347,7 @@ describe('GitHubStorageService', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, mockFiles));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('image1.jpg');
     });
@@ -388,7 +382,7 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(false, {}, 404))
         .mockResolvedValueOnce(createMockResponse(false, {}, 404));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
       expect(result).toHaveLength(2);
       // 重复的ID应该被处理
       expect(result[0].id).not.toBe(result[1].id);
@@ -427,7 +421,7 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, mockImageFiles))
         .mockResolvedValueOnce(createMockResponse(true, mockMetadata));
 
-      const result = await service.getImageList();
+      const result = await provider.listImages();
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -441,20 +435,14 @@ describe('GitHubStorageService', () => {
     });
   });
 
-  describe('updateImageInfo', () => {
+  describe('updateImageMetadata', () => {
     it('应该更新图片信息（创建新元数据文件）', async () => {
       const metadata = {
-        id: 'test-id',
         name: 'test.jpg',
         description: 'Updated description',
         tags: ['tag1', 'tag2'],
-        size: 2048,
-        width: 200,
-        height: 400,
       };
 
-      // Mock getFileSha - 文件不存在（创建新文件）
-      // Mock create metadata
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(
@@ -463,8 +451,8 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
-      ).resolves.toBeUndefined();
+        provider.updateImageMetadata('test.jpg', metadata),
+      ).resolves.toMatchObject({ name: 'test.jpg' });
     });
 
     it('应该更新图片信息（更新已存在的元数据文件）', async () => {
@@ -472,8 +460,6 @@ describe('GitHubStorageService', () => {
         description: 'Updated description',
       };
 
-      // Mock getFileSha - 文件存在
-      // Mock update metadata
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(
@@ -482,8 +468,8 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
-      ).resolves.toBeUndefined();
+        provider.updateImageMetadata('test.jpg', metadata),
+      ).resolves.toMatchObject({ description: 'Updated description' });
     });
 
     it('应该处理 SHA 不匹配的情况并重试', async () => {
@@ -491,10 +477,6 @@ describe('GitHubStorageService', () => {
         description: 'Updated description',
       };
 
-      // Mock getFileSha - 文件存在
-      // Mock update metadata - SHA 不匹配
-      // Mock getFileSha - 重新获取最新 SHA
-      // Mock retry update metadata
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, { sha: 'old-sha' }))
@@ -505,8 +487,8 @@ describe('GitHubStorageService', () => {
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
-      ).resolves.toBeUndefined();
+        provider.updateImageMetadata('test.jpg', metadata),
+      ).resolves.toMatchObject({ description: 'Updated description' });
     });
 
     it('应该处理更新失败的情况', async () => {
@@ -518,16 +500,16 @@ describe('GitHubStorageService', () => {
         ok: false,
         status: 404,
         json: async () => ({ message: 'Not Found' }),
-      } as any);
+      } as Response);
 
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: false,
         status: 500,
         json: async () => ({ message: 'Server error' }),
-      } as any);
+      } as Response);
 
       await expect(
-        service.updateImageInfo('test-id', 'test.jpg', metadata),
+        provider.updateImageMetadata('test.jpg', metadata),
       ).rejects.toThrow('更新图片信息失败');
     });
   });
@@ -566,7 +548,7 @@ describe('GitHubStorageService', () => {
         json: async () => mockMetadata,
       } as any);
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toMatchObject({
@@ -600,7 +582,7 @@ describe('GitHubStorageService', () => {
         status: 404,
       } as any);
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(images[0]);
@@ -625,7 +607,7 @@ describe('GitHubStorageService', () => {
 
       global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await service.loadImageMetadata(images);
+      const result = await provider.loadImageMetadata(images);
 
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(images[0]);
@@ -653,7 +635,7 @@ describe('GitHubStorageService', () => {
         }),
       } as any);
 
-      await service.uploadImage(uploadData);
+      await provider.uploadImage(uploadData);
 
       expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -684,7 +666,7 @@ describe('GitHubStorageService', () => {
         name: 'test.jpg',
       };
 
-      await expect(service.uploadImage(uploadData)).rejects.toThrow();
+      await expect(provider.uploadImage(uploadData)).rejects.toThrow();
     });
   });
 });

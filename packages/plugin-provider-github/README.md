@@ -76,7 +76,14 @@ await service.getImageList();
 - **禁止**依赖 `@pixuli/ui`、`react-dom`
   等 UI 层（REF-209，`pnpm lint:boundaries`）
 
-## 开发
+## 测试（REF-309）
+
+| 文件                                                | 说明                               |
+| --------------------------------------------------- | ---------------------------------- |
+| `src/__tests__/githubStorageProvider.test.ts`       | Provider 契约 + mock GitHub API    |
+| `src/__tests__/register.test.ts`                    | Registry 注册                      |
+| `src/__tests__/githubStorageService.compat.test.ts` | 兼容层 `GitHubStorageService` 冒烟 |
+| `src/__tests__/helpers.ts`                          | 共用 mock `fetch` 响应             |
 
 ```bash
 pnpm --filter @pixuli/provider-github test
