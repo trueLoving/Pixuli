@@ -4,6 +4,10 @@ import type {
   StorageProviderConfig,
 } from '@pixuli/core/plugins';
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
+import {
+  getStoragePluginDisplayName,
+  isKnownBuiltinPluginId,
+} from '@pixuli/core/plugins';
 import { storageRegistry } from './registry';
 
 export type StoragePluginId = 'github' | 'gitee';
@@ -13,9 +17,12 @@ export function getAppPlatform(): 'web' | 'desktop' {
 }
 
 export function createConfiguredStorageProvider(
-  pluginId: StoragePluginId,
+  pluginId: string,
   config: GitHubConfig | GiteeConfig,
 ): StorageProvider {
+  if (!isKnownBuiltinPluginId(pluginId)) {
+    throw new Error(`Unsupported storage plugin: ${pluginId}`);
+  }
   const provider = storageRegistry.create(pluginId, {
     platform: getAppPlatform(),
     platformAdapter: new DefaultPlatformAdapter(),
@@ -24,6 +31,9 @@ export function createConfiguredStorageProvider(
   return provider;
 }
 
-export function storagePluginLabel(pluginId: StoragePluginId | null): string {
-  return pluginId === 'gitee' ? 'Gitee' : 'GitHub';
+export function storagePluginLabel(pluginId: string | null): string {
+  if (!pluginId) {
+    return '存储';
+  }
+  return getStoragePluginDisplayName(storageRegistry, pluginId);
 }

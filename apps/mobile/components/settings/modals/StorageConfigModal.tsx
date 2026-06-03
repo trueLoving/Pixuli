@@ -2,7 +2,12 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
+import { listStoragePluginManifests } from '@/storage/registry';
 import { useSourceStore } from '@/stores/sourceStore';
+import {
+  getManifestDescription,
+  isKnownBuiltinPluginId,
+} from '@pixuli/core/plugins';
 import { showError, showSuccess } from '@/utils/toast';
 import {
   buildPluginConfigExport,
@@ -12,7 +17,7 @@ import {
 } from '@pixuli/core/sources';
 import type { GitHubConfig, GiteeConfig } from '@pixuli/core/types';
 import * as DocumentPicker from 'expo-document-picker';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -64,6 +69,19 @@ export function StorageConfigModal({
     path: 'images',
   });
   const prevVisibleRef = useRef(false);
+
+  const pluginOptions = useMemo(
+    () =>
+      listStoragePluginManifests()
+        .filter(manifest => isKnownBuiltinPluginId(manifest.id))
+        .map(manifest => ({
+          pluginId: manifest.id,
+          legacyType: manifest.id as 'github' | 'gitee',
+          name: manifest.name,
+          description: getManifestDescription(manifest, key => t(key)),
+        })),
+    [t],
+  );
 
   useEffect(() => {
     const wasVisible = prevVisibleRef.current;
@@ -344,128 +362,96 @@ export function StorageConfigModal({
                 </ThemedText>
               </View>
               <View style={styles.typeOptions}>
-                <TouchableOpacity
-                  style={[
-                    styles.typeOption,
-                    {
-                      backgroundColor: colors.cardBackground,
-                      borderColor: colors.cardBorder,
-                    },
-                    selectedType === 'github' && {
-                      backgroundColor: colors.primary + '10',
-                      borderColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedType('github');
-                    setFormData({
-                      owner: '',
-                      repo: '',
-                      branch: 'main',
-                      token: '',
-                      path: 'images',
-                    });
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View
+                {pluginOptions.length === 0 ? (
+                  <ThemedText
                     style={[
-                      styles.typeOptionIcon,
-                      {
-                        backgroundColor: colors.primary + '20',
-                      },
+                      styles.typeOptionDesc,
+                      { color: colors.sectionTitle, textAlign: 'center' },
                     ]}
                   >
-                    <IconSymbol
-                      name="chevron.left.forwardslash.chevron.right"
-                      size={24}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <View style={styles.typeOptionContent}>
-                    <ThemedText
-                      style={[styles.typeOptionTitle, { color: colors.text }]}
-                    >
-                      GitHub
-                    </ThemedText>
-                    <ThemedText
+                    {t('sidebar.noStoragePlugins') || '当前没有可用的存储插件'}
+                  </ThemedText>
+                ) : (
+                  pluginOptions.map(option => (
+                    <TouchableOpacity
+                      key={option.pluginId}
                       style={[
-                        styles.typeOptionDesc,
-                        { color: colors.sectionTitle },
+                        styles.typeOption,
+                        {
+                          backgroundColor: colors.cardBackground,
+                          borderColor: colors.cardBorder,
+                        },
+                        selectedType === option.legacyType && {
+                          backgroundColor: colors.primary + '10',
+                          borderColor: colors.primary,
+                        },
                       ]}
+                      onPress={() => {
+                        setSelectedType(option.legacyType);
+                        setFormData({
+                          owner: '',
+                          repo: '',
+                          branch:
+                            option.legacyType === 'github' ? 'main' : 'master',
+                          token: '',
+                          path: 'images',
+                        });
+                      }}
+                      activeOpacity={0.7}
                     >
-                      {t('settings.github.title') || 'GitHub 配置'}
-                    </ThemedText>
-                  </View>
-                  {selectedType === 'github' && (
-                    <IconSymbol
-                      name="checkmark.circle.fill"
-                      size={22}
-                      color={colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.typeOption,
-                    {
-                      backgroundColor: colors.cardBackground,
-                      borderColor: colors.cardBorder,
-                    },
-                    selectedType === 'gitee' && {
-                      backgroundColor: colors.primary + '10',
-                      borderColor: colors.primary,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedType('gitee');
-                    setFormData({
-                      owner: '',
-                      repo: '',
-                      branch: 'master',
-                      token: '',
-                      path: 'images',
-                    });
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View
-                    style={[
-                      styles.typeOptionIcon,
-                      {
-                        backgroundColor: colors.primary + '20',
-                      },
-                    ]}
-                  >
-                    <ThemedText
-                      style={[styles.giteeIconText, { color: colors.primary }]}
-                    >
-                      码
-                    </ThemedText>
-                  </View>
-                  <View style={styles.typeOptionContent}>
-                    <ThemedText
-                      style={[styles.typeOptionTitle, { color: colors.text }]}
-                    >
-                      Gitee
-                    </ThemedText>
-                    <ThemedText
-                      style={[
-                        styles.typeOptionDesc,
-                        { color: colors.sectionTitle },
-                      ]}
-                    >
-                      {t('settings.gitee.title') || 'Gitee 配置'}
-                    </ThemedText>
-                  </View>
-                  {selectedType === 'gitee' && (
-                    <IconSymbol
-                      name="checkmark.circle.fill"
-                      size={22}
-                      color={colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
+                      <View
+                        style={[
+                          styles.typeOptionIcon,
+                          {
+                            backgroundColor: colors.primary + '20',
+                          },
+                        ]}
+                      >
+                        {option.legacyType === 'gitee' ? (
+                          <ThemedText
+                            style={[
+                              styles.giteeIconText,
+                              { color: colors.primary },
+                            ]}
+                          >
+                            码
+                          </ThemedText>
+                        ) : (
+                          <IconSymbol
+                            name="chevron.left.forwardslash.chevron.right"
+                            size={24}
+                            color={colors.primary}
+                          />
+                        )}
+                      </View>
+                      <View style={styles.typeOptionContent}>
+                        <ThemedText
+                          style={[
+                            styles.typeOptionTitle,
+                            { color: colors.text },
+                          ]}
+                        >
+                          {option.name}
+                        </ThemedText>
+                        <ThemedText
+                          style={[
+                            styles.typeOptionDesc,
+                            { color: colors.sectionTitle },
+                          ]}
+                        >
+                          {option.description}
+                        </ThemedText>
+                      </View>
+                      {selectedType === option.legacyType && (
+                        <IconSymbol
+                          name="checkmark.circle.fill"
+                          size={22}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))
+                )}
               </View>
             </View>
           )}

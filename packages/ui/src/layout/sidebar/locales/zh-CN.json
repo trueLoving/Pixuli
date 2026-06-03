@@ -17,6 +17,8 @@
     "selectSourceType": "选择仓库类型",
     "githubDescription": "使用 GitHub 仓库存储图片",
     "giteeDescription": "使用 Gitee 仓库存储图片",
+    "noStoragePlugins": "当前没有可用的存储插件",
+    "pluginUnavailable": "插件未安装或不可用",
     "mainNav": "功能",
     "browseMode": "浏览模式",
     "filter": "筛选",

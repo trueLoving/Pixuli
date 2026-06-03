@@ -6,6 +6,7 @@ import {
   getRepoConfigFromSource,
   pluginIdToLegacyType,
 } from '@pixuli/core/sources';
+import { isStoragePluginRegistered } from '@/storage/registry';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -81,6 +82,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       owner: repo.owner,
       repo: repo.repo,
       isActive: selectedSourceId === source.id,
+      available: isStoragePluginRegistered(source.pluginId),
     };
   });
 
@@ -93,6 +95,13 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const handleEditSource = (sourceId: string) => {
     const source = sources.find(s => s.id === sourceId);
     if (source) {
+      if (!isStoragePluginRegistered(source.pluginId)) {
+        Alert.alert(
+          t('common.error'),
+          t('sidebar.pluginUnavailable') || '插件未安装或不可用',
+        );
+        return;
+      }
       setConfigModalType(pluginIdToLegacyType(source.pluginId));
       setEditingSourceId(sourceId);
       setConfigModalVisible(true);
@@ -162,6 +171,14 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const handleSwitchSource = async (sourceId: string) => {
     if (selectedSourceId === sourceId) {
       return; // Already active
+    }
+    const source = sources.find(s => s.id === sourceId);
+    if (source && !isStoragePluginRegistered(source.pluginId)) {
+      Alert.alert(
+        t('common.error'),
+        t('sidebar.pluginUnavailable') || '插件未安装或不可用',
+      );
+      return;
     }
     try {
       setSelectedSourceId(sourceId);
@@ -259,6 +276,7 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
               </View>
               {allSources.length > 0 ? (
                 allSources.map((source, index) => {
+                  const unavailable = !source.available;
                   return (
                     <TouchableOpacity
                       key={source.id}
@@ -270,8 +288,10 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                         source.isActive && {
                           backgroundColor: colors.primary + '10',
                         },
+                        unavailable && styles.sourceItemUnavailable,
                       ]}
                       onPress={() => handleSwitchSource(source.id)}
+                      disabled={unavailable}
                       onLongPress={() => {
                         // 长按显示操作菜单
                         Alert.alert(
@@ -351,7 +371,10 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
                             ]}
                             numberOfLines={1}
                           >
-                            {source.owner}/{source.repo}
+                            {unavailable
+                              ? t('sidebar.pluginUnavailable') ||
+                                '插件未安装或不可用'
+                              : `${source.owner}/${source.repo}`}
                           </ThemedText>
                         </View>
                       </View>
@@ -557,6 +580,9 @@ const styles = StyleSheet.create({
   },
   sourceItemLast: {
     borderBottomWidth: 0,
+  },
+  sourceItemUnavailable: {
+    opacity: 0.5,
   },
   sourceItemText: {
     fontSize: 17,

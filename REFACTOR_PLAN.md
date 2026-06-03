@@ -510,7 +510,7 @@ native。
 | REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry  | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
 | REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry  | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
 | REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）       | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
-| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ⬜   |
+| REF-307 | [M3] 设置页源列表对接 registry.listManifests    | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
 | REF-308 | [M3] 编写插件开发文档 docs/plugins/authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ⬜   |
 | REF-309 | [M3] provider 包单元测试迁移                    | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ⬜   |
 | REF-310 | [M3] M3 回归：GitHub/Gitee 全流程               | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
@@ -652,10 +652,10 @@ flowchart LR
 | -------- | -------- | ------ | ------- |
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
-| M3       | 12       | 6      | 50%     |
+| M3       | 12       | 7      | 58%     |
 | M4       | 6        | 0      | 0%      |
 | M5       | 5        | 0      | 0%      |
-| **合计** | **45**   | **7**  | **16%** |
+| **合计** | **45**   | **8**  | **18%** |
 
 ---
 

@@ -49,9 +49,11 @@ export function useUIState() {
     setShowSourceTypeMenu(true);
   }, []);
 
-  const handleSelectSourceType = useCallback((type: 'github' | 'gitee') => {
+  const handleSelectSourceType = useCallback((pluginId: string) => {
     setEditingSourceId(null);
-    useImageStore.setState({ storageType: type });
+    useImageStore.setState({
+      storageType: pluginId as 'github' | 'gitee',
+    });
     setShowSourceTypeMenu(false);
     setShowConfigModal(true);
   }, []);

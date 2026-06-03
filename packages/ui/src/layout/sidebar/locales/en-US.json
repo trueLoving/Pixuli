@@ -17,6 +17,8 @@
     "selectSourceType": "Select Repository Type",
     "githubDescription": "Store images in GitHub repository",
     "giteeDescription": "Store images in Gitee repository",
+    "noStoragePlugins": "No storage plugins available",
+    "pluginUnavailable": "Plugin not installed or unavailable",
     "mainNav": "Features",
     "browseMode": "Browse Mode",
     "filter": "Filter",
