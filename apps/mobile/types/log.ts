@@ -1,5 +1,5 @@
 /**
- * 操作日志类型 - 从 common 统一包 re-export
+ * 操作日志类型 - 从 @pixuli/core re-export
  */
 export type {
   OperationLog,

@@ -53,7 +53,7 @@
 | **Provider 无 UI** | 各 provider 包仅实现 API 调用与 Git 仓库语义，不包含 React 组件。                                      |
 | **平台差异注入**   | 文件读尺寸、Base64、MIME 等通过 `ProviderContext.platformAdapter` 注入，不在 provider 内写死 Web API。 |
 | **配置本地持久化** | Token 等敏感字段仅存客户端（localStorage / AsyncStorage），不上传官方服务。                            |
-| **渐进迁移**       | M3 先落地 GitHub/Gitee 两个官方 provider；`pixuli-common` 在 REF-311 整包删除前作为过渡空壳。          |
+| **渐进迁移**       | M3 已落地 GitHub/Gitee 官方 provider；REF-311 已删除历史包 `pixuli-common`。                           |
 
 ### 1.3 范围
 
@@ -491,7 +491,7 @@ function createProvider(
 | REF-308     | 插件开发文档 `08-storage-plugin-authoring.md` | 基于本文扩展                     |
 | REF-309     | 单测迁移                                      | §10.3                            |
 | REF-310     | M3 回归                                       | §10.3                            |
-| REF-311     | 删除 `packages/common`                        | §4.1 移除 legacy                 |
+| REF-311     | 删除 `packages/common`（**已完成**）          | §4.1 移除 legacy                 |
 
 建议实施顺序：**301 → 302 ∥ 303 → 304 ∥ 305 → 309 → 310 →
 311**；306/307 可与 304 并行（P1）。
@@ -518,14 +518,14 @@ const githubManifest: StoragePluginManifest = {
 
 ### B. 相关源码索引（M2 基线）
 
-| 路径                                                   | 说明                                     |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `packages/core/src/plugins/types.ts`                   | 契约定义                                 |
-| `packages/core/src/plugins/registry.ts`                | DefaultStoragePluginRegistry             |
-| `packages/common/src/services/githubStorageService.ts` | 已迁至 `packages/plugin-provider-github` |
-| `packages/common/src/services/giteeStorageService.ts`  | 已迁至 `packages/plugin-provider-gitee`  |
-| `apps/pixuli/src/stores/imageStore.ts`                 | 待 REF-304                               |
-| `apps/mobile/stores/imageStore.ts`                     | 待 REF-305                               |
+| 路径                                    | 说明                                          |
+| --------------------------------------- | --------------------------------------------- |
+| `packages/core/src/plugins/types.ts`    | 契约定义                                      |
+| `packages/core/src/plugins/registry.ts` | DefaultStoragePluginRegistry                  |
+| `packages/plugin-provider-github`       | GitHub provider + 可选 `GitHubStorageService` |
+| `packages/plugin-provider-gitee`        | Gitee provider + 可选 `GiteeStorageService`   |
+| `apps/pixuli/src/stores/imageStore.ts`  | REF-304 已对接 Registry                       |
+| `apps/mobile/stores/imageStore.ts`      | REF-305 已对接 Registry                       |
 
 ### C. 文档维护
 

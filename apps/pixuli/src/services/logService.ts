@@ -1,5 +1,5 @@
 /**
- * 操作日志服务 - Web/Desktop 端，使用 common 统一逻辑 + localStorage 适配器
+ * 操作日志服务 - Web/Desktop 端，@pixuli/core/operation-log + localStorage 适配器
  */
 
 import {

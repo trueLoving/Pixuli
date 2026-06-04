@@ -23,5 +23,5 @@
 根目录 `pnpm lint:boundaries` 通过 ESLint `import/no-restricted-paths` 与
 `no-restricted-imports` 强制执行（REF-209）。
 
-`pixuli-common` 仅保留 GitHub/Gitee 存储服务（见 M3
-provider 迁移），不再 re-export 本包能力。
+存储实现见 `@pixuli/provider-github`、`@pixuli/provider-gitee`（REF-311 已删除
+`pixuli-common`）。

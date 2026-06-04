@@ -1,5 +1,5 @@
 /**
- * 操作日志服务 - 移动端，使用 common 统一逻辑 + AsyncStorage 适配器
+ * 操作日志服务 - 移动端，@pixuli/core/operation-log + AsyncStorage 适配器
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

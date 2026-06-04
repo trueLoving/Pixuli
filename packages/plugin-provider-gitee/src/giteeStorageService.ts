@@ -11,7 +11,7 @@ import {
 import { GiteeStorageProvider } from './giteeStorageProvider';
 
 /**
- * 兼容 pixuli-common 构造方式，供 REF-304 前 apps 继续使用。
+ * 兼容层：委托 GiteeStorageProvider，供过渡期直接 new 使用。
  */
 export class GiteeStorageService {
   private readonly provider: GiteeStorageProvider;

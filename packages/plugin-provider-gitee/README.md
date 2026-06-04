@@ -66,18 +66,10 @@ new GiteeStorageProvider(ctx, { useProxy: true });
 `GiteeStorageService` 时传入；Registry 默认
 `useProxy: false`，REF-304 集成时再按平台/bootstrap 决策。
 
-## 兼容层（REF-304 前）
+## 兼容层（`GiteeStorageService`）
 
-```typescript
-import { GiteeStorageService } from 'pixuli-common/services';
-
-const service = new GiteeStorageService(config, {
-  platform: 'web',
-  platformAdapter,
-  useProxy: true, // Web/PWA 经 Vercel gitee-proxy
-});
-await service.getImageList();
-```
+过渡期仍可从本包导入 `GiteeStorageService`。新代码请使用
+`registerGiteeProvider` + `StorageProvider` 契约。
 
 ## 依赖边界
 

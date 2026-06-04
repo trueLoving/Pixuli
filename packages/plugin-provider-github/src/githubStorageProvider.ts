@@ -447,7 +447,7 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
     }
   }
 
-  /** @deprecated 兼容 pixuli-common GitHubStorageService，REF-304 后移除 */
+  /** @deprecated 兼容 GitHubStorageService 方法名，新代码请用 StorageProvider API */
   async updateImageInfo(
     _imageId: string,
     fileName: string,

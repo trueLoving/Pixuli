@@ -595,7 +595,7 @@ native。
 | REF-308 | [M3] 编写插件开发文档 08-storage-plugin-authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ✅   |
 | REF-309 | [M3] provider 包单元测试迁移                         | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ✅   |
 | REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ✅   |
-| REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
+| REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ✅   |
 | REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ✅   |
 
 <details>
@@ -636,18 +636,12 @@ native。
 打开对应 Modal；Demo 模式不屏蔽编辑回显；`GiteeConfigModal` `useLayoutEffect`
 同步表单；`useSelectedSourceSync` 编辑态暂停覆盖 `imageStore`。
 
-**REF-311** — 在 REF-304/305、REF-309、REF-310 完成后，删除 `packages/common`
-整包：
-
-- 移除 `apps/pixuli`、`apps/mobile` 对 `pixuli-common`
-  的 workspace 依赖（应已无 import）
-- 从 `vitest.workspace.ts`、`pnpm-workspace` 移除 common
-- 处理 `logInterceptorService`：应用未引用则随包删除，或已提前迁入 `apps/pixuli`
-  开发工具
-- 更新 `docs/`、`packages/core` / `packages/ui` README 中仍指向
-  `packages/common` 的表述
-- `grep pixuli-common` / `packages/common` 在代码库中为 0（归档目录除外）
-- `pnpm run ci` 全绿
+**REF-311** — 已删除
+`packages/common`（`pixuli-common`）整包：应用无 workspace 依赖；`vitest.workspace`
+移除 common；未使用的 `logInterceptorService` 随包删除；操作日志与存储契约在
+`@pixuli/core` /
+`@pixuli/provider-*`；核心 README 与回归清单已更新。`grep pixuli-common` 在
+`apps/`、`packages/` 源码为0（`archive/` 与历史设计文档除外）。
 
 **范围外（Backlog）**
 — 插件热加载、远程安装第三方 provider：Registry/Manifest 在 REF-301 预留扩展点；Loader 与安装 UI 不在 M3

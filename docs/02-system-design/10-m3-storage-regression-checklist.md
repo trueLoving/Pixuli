@@ -42,7 +42,7 @@ pnpm test
 | `@pixuli/provider-github` / `gitee` | Provider mock API、register                                                                                                                     |
 | `@pixuli/ui`                        | ConfigModal 打开回显等                                                                                                                          |
 | `apps/pixuli`                       | `uiStore.openConfigModalForEdit`、`resolveModalRepoConfig`、`useConfigManagement` 编辑保存、`useSourceManagement` 切源/删源、`storage/registry` |
-| `pixuli-common`                     | re-export 冒烟（REF-311 前）                                                                                                                    |
+| ~~`pixuli-common`~~                 | REF-311 已删除；存储见 `@pixuli/provider-*`                                                                                                     |
 
 ### 2.1 单测与手工用例映射（代码路径）
 
@@ -152,7 +152,8 @@ pnpm test
 | 产品/测试 |      |            | REF-310 可关闭 ☑（自动化 + 关键路径手工；上传/删除待有 Token 时补测） |
 
 全部必选用例通过后，在 [#79](https://github.com/trueLoving/Pixuli/issues/79)
-勾选任务并关闭 Issue；再启动 REF-311（删除 `packages/common`）。
+勾选任务并关闭 Issue；REF-311（删除 `packages/common`）已完成，可进入 M4 /
+REF-401。
 
 ---
 

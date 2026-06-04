@@ -25,4 +25,4 @@
 - `react-dom`（Web，optional peer）
 - `react-native` 及相关 Expo 模块（Native，optional peer）
 
-应用请直接使用 `@pixuli/ui`；`pixuli-common` 已不再聚合 UI 导出。
+应用请直接使用 `@pixuli/ui`（REF-311 已删除历史包 `pixuli-common`）。

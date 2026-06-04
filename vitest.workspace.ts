@@ -5,8 +5,6 @@ export default defineWorkspace([
   './packages/plugin-provider-github/vitest.config.ts',
   './packages/plugin-provider-gitee/vitest.config.ts',
   './packages/ui/vitest.config.ts',
-  // packages/common - 需要 jsdom 环境
-  './packages/common/vitest.config.ts',
   // apps/pixuli - jsdom 环境
   './apps/pixuli/vitest.config.ts',
   // apps/mobile - node 环境
