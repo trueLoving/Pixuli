@@ -641,7 +641,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     }
   }
 
-  /** @deprecated 兼容 pixuli-common GiteeStorageService，REF-304 后移除 */
+  /** @deprecated 兼容 GiteeStorageService 方法名，新代码请用 StorageProvider API */
   async updateImageInfo(
     _imageId: string,
     fileName: string,

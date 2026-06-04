@@ -52,23 +52,12 @@ await provider.listImages();
 | `token`  | Personal Token |
 | `path`   | 图片目录路径   |
 
-## 兼容层（REF-304 前）
+## 兼容层（`GitHubStorageService`）
 
-应用仍可通过 `pixuli-common/services` 使用旧 API：
-
-```typescript
-import { GitHubStorageService } from 'pixuli-common/services';
-
-const service = new GitHubStorageService(config, {
-  platform: 'web',
-  platformAdapter,
-});
-await service.getImageList();
-```
-
-`GitHubStorageService` 内部委托给
-`GitHubStorageProvider`，方法名保持与 M2 一致（如 `getImageList` → 内部
-`listImages`）。
+过渡期仍可从本包导入 `GitHubStorageService`（委托
+`GitHubStorageProvider`）。新代码请使用 `registerGitHubProvider` +
+`StorageProvider` 契约（见
+`docs/02-system-design/07-storage-plugin-system.md`）。
 
 ## 依赖边界
 

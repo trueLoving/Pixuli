@@ -290,28 +290,6 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@vite-pwa/assets-generator@1.0.2)(vite@5.4.21(@types/node@22.18.12)(lightningcss@1.30.2)(terser@5.44.1))(workbox-build@7.3.0(@types/babel__core@7.20.5))(workbox-window@7.3.0)
 
-  packages/common:
-    dependencies:
-      '@pixuli/core':
-        specifier: workspace:*
-        version: link:../core
-      '@pixuli/provider-gitee':
-        specifier: workspace:*
-        version: link:../plugin-provider-gitee
-      '@pixuli/provider-github':
-        specifier: workspace:*
-        version: link:../plugin-provider-github
-    devDependencies:
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.18.12
-      '@vitejs/plugin-react':
-        specifier: ^4.7.0
-        version: 4.7.0(vite@5.4.21(@types/node@22.18.12)(lightningcss@1.30.2)(terser@5.44.1))
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
-
   packages/core:
     devDependencies:
       '@types/node':
