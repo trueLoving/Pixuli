@@ -77,4 +77,35 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
       token: 'gh-token',
     });
   });
+
+  it('切换选中源应同步 imageStore 配置（W7）', () => {
+    const loadImages = vi.fn().mockResolvedValue(undefined);
+    useImageStore.setState({ loadImages });
+
+    const { result } = renderHook(() => useSourceManagement());
+
+    act(() => {
+      result.current.handleSourceSelect('gh-1');
+    });
+
+    expect(useSourceStore.getState().selectedSourceId).toBe('gh-1');
+    expect(useImageStore.getState().storageType).toBe('github');
+    expect(useImageStore.getState().githubConfig?.repo).toBe('r-gh');
+    expect(loadImages).toHaveBeenCalled();
+  });
+
+  it('删除非当前选中源后列表应更新（W15）', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const { result } = renderHook(() => useSourceManagement());
+
+    act(() => {
+      result.current.handleDeleteSource('gh-1', (key: string) => key);
+    });
+
+    expect(useSourceStore.getState().sources).toHaveLength(1);
+    expect(useSourceStore.getState().sources[0].id).toBe('gt-1');
+    expect(useSourceStore.getState().selectedSourceId).toBe('gt-1');
+
+    confirmSpy.mockRestore();
+  });
 });

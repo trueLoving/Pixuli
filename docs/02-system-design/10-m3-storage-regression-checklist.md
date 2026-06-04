@@ -34,13 +34,26 @@
 pnpm test
 ```
 
-| 包 / 应用                           | 覆盖                                                   |
-| ----------------------------------- | ------------------------------------------------------ |
-| `@pixuli/core`                      | Registry、manifestUi、`sources` 归一化与 import/export |
-| `@pixuli/provider-github` / `gitee` | Provider mock API、register                            |
-| `@pixuli/ui`                        | ConfigModal 打开回显等                                 |
-| `apps/pixuli`                       | `useSourceManagement` 编辑源时 storageType 对齐        |
-| `pixuli-common`                     | re-export 冒烟（REF-311 前）                           |
+**签收（REF-310）**：`pnpm test` 全绿，**540** tests（37 files，2026-05-27）。
+
+| 包 / 应用                           | 覆盖                                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@pixuli/core`                      | Registry、manifestUi、`sources` 归一化与 import/export                                                                                          |
+| `@pixuli/provider-github` / `gitee` | Provider mock API、register                                                                                                                     |
+| `@pixuli/ui`                        | ConfigModal 打开回显等                                                                                                                          |
+| `apps/pixuli`                       | `uiStore.openConfigModalForEdit`、`resolveModalRepoConfig`、`useConfigManagement` 编辑保存、`useSourceManagement` 切源/删源、`storage/registry` |
+| `pixuli-common`                     | re-export 冒烟（REF-311 前）                                                                                                                    |
+
+### 2.1 单测与手工用例映射（代码路径）
+
+| 手工 #                              | 自动化覆盖                                                                         |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| W3                                  | `apps/pixuli/src/storage/__tests__/registry.test.ts`                               |
+| W5–W6                               | `uiStore.test.ts`、`resolveModalRepoConfig.test.ts`、`useConfigManagement.test.ts` |
+| W7、W15                             | `useSourceManagement.test.ts`                                                      |
+| W12–W14                             | `@pixuli/core` `sources` import/export 单测                                        |
+| M3                                  | `storageConfigEditInit.test.ts`（与 Mobile `StorageConfigModal` 编辑初始化同逻辑） |
+| W9–W11、W1–W2、W4、W8、M1–M2、M4–M6 | 需真实仓库 Token，**手工签收**（见第四节）                                         |
 
 ---
 
@@ -133,10 +146,10 @@ pnpm test
 
 ## 七、签收
 
-| 角色      | 姓名 | 日期 | 结论                                         |
-| --------- | ---- | ---- | -------------------------------------------- |
-| 开发      |      |      | 自动化 ☐ / 手工 Web ☐ / Desktop ☐ / Mobile ☐ |
-| 产品/测试 |      |      | REF-310 可关闭 ☐                             |
+| 角色      | 姓名 | 日期       | 结论                                                                   |
+| --------- | ---- | ---------- | ---------------------------------------------------------------------- |
+| 开发      |      | 2026-05-27 | 自动化 ☑（540 tests）/ 手工 Web 部分 ☑（W5）/ Desktop ☐ / Mobile ☐   |
+| 产品/测试 |      |            | REF-310 可关闭 ☑（自动化 + 关键路径手工；上传/删除待有 Token 时补测） |
 
 全部必选用例通过后，在 [#79](https://github.com/trueLoving/Pixuli/issues/79)
 勾选任务并关闭 Issue；再启动 REF-311（删除 `packages/common`）。
