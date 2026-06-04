@@ -1,7 +1,7 @@
 # Pixuli 重构计划
 
 > **版本**：1.1  
-> **更新**：2026-05-27  
+> **更新**：2026-05-27（REF-313 Gitee 图片 CORS/代理）  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -436,6 +436,7 @@ Closes #42 Related: REF-101
 | REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79)   |
 | REF-311 | [#100](https://github.com/trueLoving/Pixuli/issues/100) |
 | REF-312 | [#109](https://github.com/trueLoving/Pixuli/issues/109) |
+| REF-313 | [#123](https://github.com/trueLoving/Pixuli/issues/123) |
 | REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80)   |
 | REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81)   |
 | REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82)   |
@@ -597,9 +598,10 @@ native。
 | REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ✅   |
 | REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ✅   |
 | REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ✅   |
+| REF-313 | [Bug] Gitee 源图片 CORS / 代理导致无法加载           | bug, refactor, m3, area:web, area:desktop, priority:P0 | P0     | #72, #79           | [#123](https://github.com/trueLoving/Pixuli/issues/123) | ⬜   |
 
 <details>
-<summary>REF-301 ~ REF-312 Issue 正文模板</summary>
+<summary>REF-301 ~ REF-313 Issue 正文模板</summary>
 
 **REF-301**
 — 接口：`StorageProvider`、`StoragePluginManifest`、`StoragePluginRegistry`、`ProviderContext`（含 PlatformAdapter）。
@@ -642,6 +644,20 @@ native。
 `@pixuli/core` /
 `@pixuli/provider-*`；核心 README 与回归清单已更新。`grep pixuli-common` 在
 `apps/`、`packages/` 源码为0（`archive/` 与历史设计文档除外）。
+
+**REF-313** — Gitee 仓库源**图片展示**因 CORS 与 `/api/gitee-proxy`
+代理路径异常无法加载（见
+[#123](https://github.com/trueLoving/Pixuli/issues/123)）：
+
+- **现象**：配置 Gitee 源后，列表缩略图/预览 `<img>`
+  失败；控制台常见 CORS 或代理 404。
+- **线索**：`registerGiteeProvider` 在 Web 默认 `useProxy: true`，图片 URL 为
+  `/api/gitee-proxy/...`；仅 Vite **web dev** 在 `vite.config.ts`
+  配置该代理；生产/PWA/Desktop可能无同源转发；直连 `gitee.com/.../raw/...`
+  亦受浏览器跨域限制。
+- **待办**：复现矩阵（Web
+  dev/生产、Desktop、PWA）→ 区分 API 与展示 URL 链路 → 评审方案（统一代理层 / 平台分流 / 展示降级 / 可配置
+  `useProxy`）→ 回归清单补充用例。
 
 **范围外（Backlog）**
 — 插件热加载、远程安装第三方 provider：Registry/Manifest 在 REF-301 预留扩展点；Loader 与安装 UI 不在 M3
