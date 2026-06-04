@@ -4,6 +4,7 @@ import {
 } from '@pixuli/core/sources';
 import { useEffect, useRef } from 'react';
 import { useImageStore } from '../stores/imageStore';
+import { useUIStore } from '../stores/uiStore';
 
 /**
  * 同步选中源到 store 的配置
@@ -17,6 +18,12 @@ export function useSelectedSourceSync(
   const isInitialMountRef = useRef(true);
 
   useEffect(() => {
+    const { showConfigModal, editingSourceId } = useUIStore.getState();
+    // 正在编辑某源时，不要用「当前选中源」覆盖 imageStore（避免 Gitee 编辑弹窗拿到 GitHub 配置）
+    if (showConfigModal && editingSourceId) {
+      return;
+    }
+
     if (selectedSource) {
       if (
         lastSyncedSourceIdRef.current === selectedSource.id &&

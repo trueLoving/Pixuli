@@ -38,6 +38,11 @@ export function useConfigManagement() {
         path: config.path,
       };
 
+      const editingSource = editingSourceId
+        ? useSourceStore.getState().getSourceById(editingSourceId)
+        : undefined;
+      const activePluginId = editingSource?.pluginId ?? storageType;
+
       if (editingSourceId) {
         updateSource(editingSourceId, {
           label,
@@ -52,9 +57,9 @@ export function useConfigManagement() {
         setSelectedSourceId(newSource.id);
       }
 
-      if (storageType === 'github') {
+      if (activePluginId === 'github') {
         setGitHubConfig(repoConfig);
-      } else {
+      } else if (activePluginId === 'gitee') {
         setGiteeConfig(repoConfig);
       }
 

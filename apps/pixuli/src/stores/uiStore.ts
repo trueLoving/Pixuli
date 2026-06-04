@@ -3,7 +3,20 @@
  * 管理全局 UI 状态，如模态框、侧边栏、全屏模式等
  */
 
+import {
+  getRepoConfigFromSource,
+  pluginIdToLegacyType,
+} from '@pixuli/core/sources';
+import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import { create } from 'zustand';
+import { isStoragePluginRegistered } from '../storage/registry';
+import { useImageStore } from './imageStore';
+import { useSourceStore } from './sourceStore';
+
+export type EditingSourceRepoConfig = Pick<
+  GitHubConfig,
+  'owner' | 'repo' | 'branch' | 'token' | 'path'
+>;
 
 interface UIState {
   // 模态框状态
@@ -13,8 +26,10 @@ interface UIState {
   showVersionInfo: boolean;
   showOperationLog: boolean;
 
-  // 编辑状态
+  // 编辑状态（REF-312：编辑弹窗表单数据以 sourceStore 快照为准）
   editingSourceId: string | null;
+  editingSourcePluginId: string | null;
+  editingSourceRepoConfig: EditingSourceRepoConfig | null;
 
   // 侧边栏状态
   sidebarCollapsed: boolean;
@@ -50,6 +65,8 @@ interface UIState {
   setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) => void;
 
   // Helper actions
+  /** 右键/菜单编辑：从 sourceStore 读取 config 并打开对应类型弹窗 */
+  openConfigModalForEdit: (sourceId: string) => boolean;
   openConfigModal: () => void;
   closeConfigModal: () => void;
   openKeyboardHelp: () => void;
@@ -62,6 +79,19 @@ interface UIState {
   closeSourceTypeMenu: () => void;
 }
 
+function syncImageStoreForRepoConfig(
+  pluginId: string,
+  repoConfig: EditingSourceRepoConfig,
+): void {
+  const legacyType = pluginIdToLegacyType(pluginId);
+  const { setGitHubConfig, setGiteeConfig } = useImageStore.getState();
+  if (legacyType === 'github') {
+    setGitHubConfig(repoConfig as GitHubConfig);
+  } else {
+    setGiteeConfig(repoConfig as GiteeConfig);
+  }
+}
+
 export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
   showSourceTypeMenu: false,
@@ -69,6 +99,8 @@ export const useUIStore = create<UIState>(set => ({
   showVersionInfo: false,
   showOperationLog: false,
   editingSourceId: null,
+  editingSourcePluginId: null,
+  editingSourceRepoConfig: null,
   sidebarCollapsed: false,
   activeMenu: 'photos',
   isFullscreenMode: false,
@@ -96,9 +128,36 @@ export const useUIStore = create<UIState>(set => ({
   setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) =>
     set({ currentUtilityTool: tool }),
 
-  openConfigModal: () => set({ showConfigModal: true }),
+  openConfigModalForEdit: (sourceId: string) => {
+    const source = useSourceStore.getState().getSourceById(sourceId);
+    if (!source || !isStoragePluginRegistered(source.pluginId)) {
+      return false;
+    }
+    const repoConfig = getRepoConfigFromSource(source);
+    syncImageStoreForRepoConfig(source.pluginId, repoConfig);
+    set({
+      editingSourceId: sourceId,
+      editingSourcePluginId: source.pluginId,
+      editingSourceRepoConfig: repoConfig,
+      showConfigModal: true,
+    });
+    return true;
+  },
+
+  openConfigModal: () =>
+    set({
+      showConfigModal: true,
+      editingSourceId: null,
+      editingSourcePluginId: null,
+      editingSourceRepoConfig: null,
+    }),
   closeConfigModal: () =>
-    set({ showConfigModal: false, editingSourceId: null }),
+    set({
+      showConfigModal: false,
+      editingSourceId: null,
+      editingSourcePluginId: null,
+      editingSourceRepoConfig: null,
+    }),
   openKeyboardHelp: () => set({ showKeyboardHelp: true }),
   closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
   openVersionInfo: () => set({ showVersionInfo: true }),

@@ -594,9 +594,9 @@ native。
 | REF-307 | [M3] 设置页源列表对接 registry.listManifests         | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
 | REF-308 | [M3] 编写插件开发文档 08-storage-plugin-authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ✅   |
 | REF-309 | [M3] provider 包单元测试迁移                         | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ✅   |
-| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ⬜   |
+| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ✅   |
 | REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ⬜   |
-| REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ⬜   |
+| REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ✅   |
 
 <details>
 <summary>REF-301 ~ REF-312 Issue 正文模板</summary>
@@ -623,12 +623,18 @@ native。
 `pixuli-common` 仅余 `logInterceptorService`
 单测（REF-311 随包删除或迁入 app）。
 
-**REF-310**
-— 配置源、列表、上传、删除、切换源 E2E/手工清单（含 #109 编辑回显）。
+**REF-310** —
+[10-m3-storage-regression-checklist.md](docs/02-system-design/10-m3-storage-regression-checklist.md)：配置源、列表、切换源、导入导出、编辑回显等自动化单测 +
+`pnpm test`
+全绿（540+）；上传/删除等依赖真实 Token 的用例在清单中标注为手工签收。REF-312（#109）已合入本分支。
 
-**REF-312** — 编辑源时 Modal 按 `editingSourceId` 从 `sourceStore` 回显
-`StoredSourceEntry.config`；修复 `MainLayout` 误用 `selectedSource`
-导致不回显（见 [#109](https://github.com/trueLoving/Pixuli/issues/109)）。
+**REF-312** — 编辑源时配置弹窗从 `sourceStore` 回显
+`StoredSourceEntry.config`（见
+[#109](https://github.com/trueLoving/Pixuli/issues/109)）：`uiStore.openConfigModalForEdit`
+快照 + `resolveModalRepoConfig` 按 `editingSourceId`
+解析；`configModalStorageType` 按正在编辑的 `pluginId`
+打开对应 Modal；Demo 模式不屏蔽编辑回显；`GiteeConfigModal` `useLayoutEffect`
+同步表单；`useSelectedSourceSync` 编辑态暂停覆盖 `imageStore`。
 
 **REF-311** — 在 REF-304/305、REF-309、REF-310 完成后，删除 `packages/common`
 整包：

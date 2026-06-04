@@ -13,9 +13,14 @@ import {
   VersionInfoModal,
 } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
-import { getRepoConfigFromSource } from '@pixuli/core/sources';
-import type { ImageUploadData, MultiImageUploadData } from '@pixuli/core/types';
-import React from 'react';
+import { pluginIdToLegacyType } from '@pixuli/core/sources';
+import type {
+  GiteeConfig,
+  GitHubConfig,
+  ImageUploadData,
+  MultiImageUploadData,
+} from '@pixuli/core/types';
+import React, { useMemo } from 'react';
 import {
   OfflineIndicator,
   OperationLogModal,
@@ -30,6 +35,10 @@ import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { listStoragePluginManifests } from '../storage/registry';
 import { getPlatform } from '../utils/platform';
+import {
+  configFieldsKey,
+  resolveModalRepoConfig,
+} from '../utils/resolveModalRepoConfig';
 import { AppMain } from './AppMain';
 import { Sidebar } from './Sidebar';
 
@@ -75,14 +84,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const { t } = useI18n();
   const { loading, storageType, githubConfig, giteeConfig } = useImageStore();
-  const { getSourceById } = useSourceStore();
+  const sources = useSourceStore(state => state.sources);
   const { isDemoMode } = useDemoMode();
   const platform = getPlatform();
 
-  // 路由同步：根据路由路径自动同步 activeMenu
   useRouteSync();
 
-  // UI Store 状态
   const {
     showConfigModal,
     showSourceTypeMenu,
@@ -90,6 +97,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     showVersionInfo,
     showOperationLog,
     editingSourceId,
+    editingSourcePluginId,
+    editingSourceRepoConfig,
     closeConfigModal,
     closeSourceTypeMenu,
     closeKeyboardHelp,
@@ -97,13 +106,45 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     closeOperationLog,
   } = useUIStore();
 
-  // 键盘快捷键分类
   const keyboardCategories = useKeyboardCategories(t);
 
-  // 获取正在编辑的源
-  const selectedSource = editingSourceId
-    ? getSourceById(editingSourceId)
-    : null;
+  const editingSource = useMemo(
+    () =>
+      editingSourceId
+        ? (sources.find(s => s.id === editingSourceId) ?? null)
+        : null,
+    [sources, editingSourceId],
+  );
+
+  const configModalStorageType =
+    editingSourceId && editingSourcePluginId
+      ? pluginIdToLegacyType(editingSourcePluginId)
+      : editingSource
+        ? pluginIdToLegacyType(editingSource.pluginId)
+        : storageType;
+
+  const modalResolveOptions = {
+    isDemoMode,
+    editingSourceId,
+    editingSourcePluginId,
+    editingSourceRepoConfig,
+    editingSource,
+    fallbackGithub: githubConfig,
+    fallbackGitee: giteeConfig,
+  };
+
+  const modalGitHubConfig = resolveModalRepoConfig(
+    'github',
+    modalResolveOptions,
+  ) as GitHubConfig | null;
+
+  const modalGiteeConfig = resolveModalRepoConfig(
+    'gitee',
+    modalResolveOptions,
+  ) as GiteeConfig | null;
+
+  const modalGitHubConfigKey = configFieldsKey(modalGitHubConfig);
+  const modalGiteeConfigKey = configFieldsKey(modalGiteeConfig);
 
   return (
     <div
@@ -112,7 +153,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         backgroundColor: 'var(--app-theme-background-primary, #ffffff)',
       }}
     >
-      {/* 左侧：侧边栏菜单 */}
       <Sidebar
         sidebarSources={sidebarSources}
         selectedSourceId={selectedSourceId}
@@ -124,7 +164,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      {/* 右侧：主内容区域 */}
       <AppMain
         hasConfig={hasConfig}
         onLoadImages={onLoadImages}
@@ -134,9 +173,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         {children}
       </AppMain>
 
-      {/* 弹窗组件统一管理 */}
-
-      {/* 仓库类型选择菜单 */}
       <SourceTypeMenu
         isOpen={showSourceTypeMenu}
         manifests={listStoragePluginManifests()}
@@ -145,44 +181,35 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      {/* GitHub 配置模态框 */}
       <GitHubConfigModal
-        isOpen={showConfigModal && storageType !== 'gitee'}
-        onClose={closeConfigModal}
-        githubConfig={
-          isDemoMode
-            ? null
-            : editingSourceId &&
-                selectedSource &&
-                selectedSource.pluginId === 'github'
-              ? getRepoConfigFromSource(selectedSource)
-              : githubConfig
+        key={
+          editingSourceId
+            ? `github-edit-${editingSourceId}-${modalGitHubConfigKey}`
+            : `github-new-${storageType ?? 'none'}`
         }
+        isOpen={showConfigModal && configModalStorageType !== 'gitee'}
+        onClose={closeConfigModal}
+        githubConfig={modalGitHubConfig}
         onSaveConfig={onSaveConfig}
         onClearConfig={onClearConfig}
         t={t}
       />
 
-      {/* Gitee 配置模态框 */}
       <GiteeConfigModal
-        isOpen={showConfigModal && storageType === 'gitee'}
-        onClose={closeConfigModal}
-        giteeConfig={
-          isDemoMode
-            ? null
-            : editingSourceId &&
-                selectedSource &&
-                selectedSource.pluginId === 'gitee'
-              ? getRepoConfigFromSource(selectedSource)
-              : giteeConfig
+        key={
+          editingSourceId
+            ? `gitee-edit-${editingSourceId}-${modalGiteeConfigKey}`
+            : `gitee-new-${storageType ?? 'none'}`
         }
+        isOpen={showConfigModal && configModalStorageType === 'gitee'}
+        onClose={closeConfigModal}
+        giteeConfig={modalGiteeConfig}
         onSaveConfig={onSaveConfig}
         onClearConfig={onClearConfig}
         platform={platform}
         t={t}
       />
 
-      {/* 键盘快捷键帮助模态框 */}
       <KeyboardHelpModal
         isOpen={showKeyboardHelp}
         onClose={closeKeyboardHelp}
@@ -190,7 +217,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      {/* 版本信息模态框 */}
       <VersionInfoModal
         isOpen={showVersionInfo}
         onClose={closeVersionInfo}
@@ -198,22 +224,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         versionInfo={__VERSION_INFO__}
       />
 
-      {/* 操作日志模态框 */}
       <OperationLogModal
         isOpen={showOperationLog}
         onClose={closeOperationLog}
       />
 
-      {/* 全局组件统一管理 */}
       <Toaster />
 
-      {/* 全屏 Loading - 数据请求时显示 */}
       <FullScreenLoading
         visible={loading}
         text={loading ? t('app.loadingImages') : undefined}
       />
 
-      {/* PWA：仅 Web 模式显示安装提示、更新提示与离线状态 */}
       {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && (
         <>
           <OfflineIndicator />
