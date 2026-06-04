@@ -30,7 +30,6 @@ function App() {
   const {
     showConfigModal,
     editingSourceId,
-    setEditingSourceId,
     showKeyboardHelp,
     showVersionInfo,
     showOperationLog,
@@ -46,6 +45,7 @@ function App() {
     closeOperationLog,
     addSource,
     closeSourceTypeMenu,
+    openConfigModalForEdit,
   } = useUIStore();
 
   // 源管理
@@ -53,7 +53,6 @@ function App() {
   const {
     selectedSource,
     sidebarSources,
-    handleEditSource,
     handleDeleteSource,
     handleSourceSelect,
   } = sourceManagement;
@@ -94,13 +93,9 @@ function App() {
   // 编辑源（包装以设置 editingSourceId）
   const handleEditSourceWithId = useMemo(
     () => (sourceId: string) => {
-      const newEditingId = handleEditSource(sourceId);
-      if (newEditingId) {
-        setEditingSourceId(newEditingId);
-        openConfigModal();
-      }
+      openConfigModalForEdit(sourceId);
     },
-    [handleEditSource, setEditingSourceId, openConfigModal],
+    [openConfigModalForEdit],
   );
 
   // 删除源（包装以包含翻译函数）
@@ -142,14 +137,18 @@ function App() {
   // 处理源类型选择
   const handleSelectSourceType = useCallback(
     (pluginId: string) => {
-      setEditingSourceId(null);
+      useUIStore.setState({
+        editingSourceId: null,
+        editingSourcePluginId: null,
+        editingSourceRepoConfig: null,
+      });
       useImageStore.setState({
         storageType: pluginId as 'github' | 'gitee',
       });
       closeSourceTypeMenu();
       openConfigModal();
     },
-    [setEditingSourceId, closeSourceTypeMenu, openConfigModal],
+    [closeSourceTypeMenu, openConfigModal],
   );
 
   return (

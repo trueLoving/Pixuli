@@ -1,5 +1,5 @@
 import { Download, Save, Trash2, Upload, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import {
   buildPluginConfigExport,
@@ -30,38 +30,42 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
-  const [formData, setFormData] = useState<GiteeConfig>({
-    owner: giteeConfig?.owner || '',
-    repo: giteeConfig?.repo || '',
-    branch: giteeConfig?.branch || 'main',
-    token: giteeConfig?.token || '',
-    path: giteeConfig?.path || 'images',
+  const emptyForm = (): GiteeConfig => ({
+    owner: '',
+    repo: '',
+    branch: 'master',
+    token: '',
+    path: 'images',
   });
 
-  // 当模态框打开时，更新表单数据
-  useEffect(() => {
-    if (isOpen) {
-      if (giteeConfig) {
-        // 有配置时，填充表单数据
-        setFormData({
-          owner: giteeConfig.owner || '',
-          repo: giteeConfig.repo || '',
-          branch: giteeConfig.branch || 'main',
-          token: giteeConfig.token || '',
-          path: giteeConfig.path || 'images',
-        });
-      } else {
-        // 配置被清除后，重置表单数据为空
-        setFormData({
-          owner: '',
-          repo: '',
-          branch: 'main',
-          token: '',
-          path: 'images',
-        });
-      }
+  const configToForm = (
+    config: GiteeConfig | null | undefined,
+  ): GiteeConfig => ({
+    owner: config?.owner ?? '',
+    repo: config?.repo ?? '',
+    branch: config?.branch ?? 'master',
+    token: config?.token ?? '',
+    path: config?.path ?? 'images',
+  });
+
+  const [formData, setFormData] = useState<GiteeConfig>(() =>
+    configToForm(giteeConfig),
+  );
+
+  // 弹窗打开时同步表单（layout effect 避免首帧闪默认值）
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      return;
     }
-  }, [isOpen, giteeConfig]);
+    setFormData(configToForm(giteeConfig));
+  }, [
+    isOpen,
+    giteeConfig?.owner,
+    giteeConfig?.repo,
+    giteeConfig?.branch,
+    giteeConfig?.token,
+    giteeConfig?.path,
+  ]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

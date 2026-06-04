@@ -469,12 +469,12 @@ function createProvider(
 
 ### 10.3 测试
 
-| 层级                   | 内容                                              |
-| ---------------------- | ------------------------------------------------- |
-| `@pixuli/core/plugins` | Registry register/create/list；重复 register 行为 |
-| `@pixuli/provider-*`   | 自 common 迁出的 API mock 单测（REF-309）         |
-| apps `imageStore`      | 集成测试：mock registry + mock provider           |
-| REF-310                | 手工/E2E：配置源、列表、上传、删除、切源          |
+| 层级                   | 内容                                                                             |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `@pixuli/core/plugins` | Registry register/create/list；重复 register 行为                                |
+| `@pixuli/provider-*`   | 自 common 迁出的 API mock 单测（REF-309）                                        |
+| apps `imageStore`      | 集成测试：mock registry + mock provider                                          |
+| REF-310                | [10-m3-storage-regression-checklist.md](./10-m3-storage-regression-checklist.md) |
 
 ---
 

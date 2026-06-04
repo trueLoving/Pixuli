@@ -157,6 +157,27 @@ describe('GitHubConfigModal', () => {
 
       expect(screen.queryByDisplayValue('test-owner')).not.toBeInTheDocument();
     });
+
+    it('重新打开时应回显新传入的 githubConfig（编辑另一源，REF-310）', () => {
+      const configA = { ...mockGitHubConfig, owner: 'owner-a', repo: 'repo-a' };
+      const configB = { ...mockGitHubConfig, owner: 'owner-b', repo: 'repo-b' };
+
+      const { rerender } = render(
+        <GitHubConfigModal
+          {...defaultProps}
+          isOpen={false}
+          githubConfig={configA}
+        />,
+      );
+
+      rerender(
+        <GitHubConfigModal {...defaultProps} isOpen githubConfig={configB} />,
+      );
+
+      expect(screen.getByDisplayValue('owner-b')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('repo-b')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('owner-a')).not.toBeInTheDocument();
+    });
   });
 
   describe('保存配置', () => {

@@ -153,6 +153,27 @@ describe('GiteeConfigModal', () => {
 
       expect(screen.queryByDisplayValue('test-owner')).not.toBeInTheDocument();
     });
+
+    it('重新打开时应回显新传入的 giteeConfig（编辑另一源，REF-312）', () => {
+      const configA = { ...mockGiteeConfig, owner: 'owner-a', repo: 'repo-a' };
+      const configB = { ...mockGiteeConfig, owner: 'owner-b', repo: 'repo-b' };
+
+      const { rerender } = render(
+        <GiteeConfigModal
+          {...defaultProps}
+          isOpen={false}
+          giteeConfig={configA}
+        />,
+      );
+
+      rerender(
+        <GiteeConfigModal {...defaultProps} isOpen giteeConfig={configB} />,
+      );
+
+      expect(screen.getByDisplayValue('owner-b')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('repo-b')).toBeInTheDocument();
+      expect(screen.queryByDisplayValue('owner-a')).not.toBeInTheDocument();
+    });
   });
 
   describe('保存配置', () => {
