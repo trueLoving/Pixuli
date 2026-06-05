@@ -6,7 +6,22 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./register": "./src/register.ts"
+    "./register": "./src/register.ts",
+    "./proxy": "./src/proxy/index.ts",
+    "./proxy/client": "./src/proxy/client.ts",
+    "./proxy/url": "./src/proxy/url.ts",
+    "./proxy/node": "./src/proxy/giteeProxyServer.ts",
+    "./proxy/vite": "./src/proxy/viteGiteeProxyPlugin.ts",
+    "./proxy/server": "./src/proxy/giteeImageProxy.ts",
+    "./proxy/constants": "./src/proxy/constants.js"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
   },
   "scripts": {
     "test": "vitest run",
@@ -19,6 +34,7 @@
     "@types/node": "^22.0.0",
     "jsdom": "^25.0.1",
     "typescript": "^5.0.0",
+    "vite": "^5.0.0",
     "vitest": "^2.1.8"
   }
 }

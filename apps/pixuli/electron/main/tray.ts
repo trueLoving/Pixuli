@@ -1,6 +1,7 @@
 import { BrowserWindow, Menu, nativeImage, Tray } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolvePreloadScript } from './resolvePreload';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -9,7 +10,7 @@ let mainWindow: BrowserWindow | null = null;
 
 let onQuit: (() => void) | null = null;
 
-const preload = path.join(__dirname, '../preload/index.js');
+const preload = resolvePreloadScript();
 const indexHtml = path.join(__dirname, '../../dist/index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 

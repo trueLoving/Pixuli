@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, Link, X } from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import { ImageItem } from '@pixuli/core/types';
-import { getRealGiteeUrl } from '@pixuli/core/utils';
+import { getRealGiteeUrl } from '@pixuli/provider-gitee/proxy/url';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {

@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { loading } from './loading';
 
+const giteeProxyBase = ipcRenderer.sendSync('gitee:proxy-base') as string;
+contextBridge.exposeInMainWorld(
+  'giteeProxyBase',
+  typeof giteeProxyBase === 'string' ? giteeProxyBase : '',
+);
+
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {

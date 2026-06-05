@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@pixuli/core": "workspace:*",
+    "@pixuli/provider-gitee": "workspace:*",
     "lucide-react": "^0.556.0",
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.6.0",
