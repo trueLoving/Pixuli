@@ -8,6 +8,7 @@ import {
   getStoragePluginDisplayName,
   isKnownBuiltinPluginId,
 } from '@pixuli/core/plugins';
+import { getGiteeProviderContextFields } from '@pixuli/provider-gitee/proxy/client';
 import { storageRegistry } from './registry';
 
 export type StoragePluginId = 'github' | 'gitee';
@@ -26,6 +27,7 @@ export function createConfiguredStorageProvider(
   const provider = storageRegistry.create(pluginId, {
     platform: getAppPlatform(),
     platformAdapter: new DefaultPlatformAdapter(),
+    ...getGiteeProviderContextFields(__IS_WEB__),
   });
   provider.configure(config as unknown as StorageProviderConfig);
   return provider;

@@ -137,11 +137,11 @@ pnpm test
 
 ## 六、缺陷登记
 
-| 现象                              | Issue                                                             | 状态                               |
-| --------------------------------- | ----------------------------------------------------------------- | ---------------------------------- |
-| 编辑源时表单未回显（Web/Desktop） | [#109](https://github.com/trueLoving/Pixuli/issues/109) / REF-312 | 已修并签收：REF-312 PR；回归 W5 ☑ |
-| Gitee 图片无法加载（CORS/代理）   | [#123](https://github.com/trueLoving/Pixuli/issues/123) / REF-313 | 待排查；影响 W7–W9 Gitee 路径      |
-| （测试中发现新问题）              | 新建 Issue，label `m3` + `bug`                                    |                                    |
+| 现象                              | Issue                                                             | 状态                                                       |
+| --------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
+| 编辑源时表单未回显（Web/Desktop） | [#109](https://github.com/trueLoving/Pixuli/issues/109) / REF-312 | 已修并签收：REF-312 PR；回归 W5 ☑                         |
+| Gitee 图片无法加载（CORS/代理）   | [#123](https://github.com/trueLoving/Pixuli/issues/123) / REF-313 | ✅ Web dev / 桌面打包版代理；Vercel 沿用 `api/gitee-proxy` |
+| （测试中发现新问题）              | 新建 Issue，label `m3` + `bug`                                    |                                                            |
 
 ---
 

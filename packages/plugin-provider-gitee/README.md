@@ -14,10 +14,37 @@ Pixuli 官方 **Gitee 仓库图床**存储插件（M3 REF-303）。
 
 ## 导出
 
-| 路径                              | 内容                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `@pixuli/provider-gitee`          | `GiteeStorageProvider`、`GiteeStorageService`（兼容层）、`giteeManifest` |
-| `@pixuli/provider-gitee/register` | `registerGiteeProvider(registry)`                                        |
+| 路径                                  | 内容                                                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `@pixuli/provider-gitee`              | `GiteeStorageProvider`、`GiteeStorageService`（兼容层）、`giteeManifest`、代理相关 re-export |
+| `@pixuli/provider-gitee/register`     | `registerGiteeProvider(registry)`                                                            |
+| `@pixuli/provider-gitee/proxy`        | 聚合导出（**勿在 Renderer 引用**，会打入 `node:http`）                                       |
+| `@pixuli/provider-gitee/proxy/client` | `getGiteeProxyBase`、`getGiteeProviderContextFields`（Renderer 安全）                        |
+| `@pixuli/provider-gitee/proxy/url`    | `getRealGiteeUrl`（Renderer 安全）                                                           |
+| `@pixuli/provider-gitee/proxy/node`   | `startGiteeProxyServer`（Electron 主进程）                                                   |
+| `@pixuli/provider-gitee/proxy/vite`   | `viteGiteeProxyPlugin`（仅 vite.config）                                                     |
+| `@pixuli/provider-gitee/proxy/server` | `handleGiteeImageProxy`（Vercel Serverless / Node HTTP）                                     |
+
+### 应用层接入代理
+
+```typescript
+// vite.config.ts（Web / 桌面 dev）
+import { viteGiteeProxyPlugin } from '@pixuli/provider-gitee/proxy/vite';
+
+// api/gitee-proxy.js（Vercel）
+import { handleGiteeImageProxy } from '@pixuli/provider-gitee/proxy/server';
+
+// Electron main（打包版）
+import { startGiteeProxyServer } from '@pixuli/provider-gitee/proxy/node';
+
+// 创建 Provider 时注入桌面本地代理根
+import { getGiteeProviderContextFields } from '@pixuli/provider-gitee/proxy/client';
+registry.create('gitee', {
+  platform: 'desktop',
+  platformAdapter,
+  ...getGiteeProviderContextFields(__IS_WEB__),
+});
+```
 
 ## 注册到 Registry
 

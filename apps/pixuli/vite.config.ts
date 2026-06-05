@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron/simple';
 import renderer from 'vite-plugin-electron-renderer';
 import { VitePWA } from 'vite-plugin-pwa';
+import { viteGiteeProxyPlugin } from './plugins/viteGiteeProxyPlugin';
 import pkg from './package.json';
 import fs from 'fs';
 import { execSync } from 'child_process';
@@ -99,6 +100,11 @@ export default defineConfig(({ command, mode }) => {
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
   const plugins: any[] = [react()];
+
+  // Web / 桌面 dev：Gitee 图片代理（服务端跟随 CDN 重定向，REF-313）
+  if (isServe && (isWeb || isDesktop)) {
+    plugins.push(viteGiteeProxyPlugin());
+  }
 
   // 根据模式添加 Electron 插件（仅 Desktop 模式）
   if (isDesktop) {
@@ -319,26 +325,6 @@ export default defineConfig(({ command, mode }) => {
           ? {
               open: true,
               port: 5500,
-              proxy: {
-                '/api/gitee-proxy': {
-                  target: 'https://gitee.com',
-                  changeOrigin: true,
-                  secure: true,
-                  rewrite: path => path.replace(/^\/api\/gitee-proxy/, ''),
-                  configure: (proxy, _options) => {
-                    proxy.on('proxyReq', (proxyReq, _req, _res) => {
-                      proxyReq.setHeader('Referer', 'https://gitee.com/');
-                      proxyReq.setHeader('Origin', 'https://gitee.com');
-                    });
-                    proxy.on('proxyRes', (proxyRes, _req, _res) => {
-                      proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-                      proxyRes.headers['Access-Control-Allow-Methods'] =
-                        'GET, HEAD, OPTIONS';
-                      proxyRes.headers['Access-Control-Allow-Headers'] = '*';
-                    });
-                  },
-                },
-              },
             }
           : undefined,
     clearScreen: false,

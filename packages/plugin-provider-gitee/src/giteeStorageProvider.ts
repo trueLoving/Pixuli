@@ -11,6 +11,7 @@ import type {
   StorageProviderWithMetadata,
 } from '@pixuli/core/plugins';
 import { giteeManifest } from './manifest';
+import { GITEE_PROXY_PATH } from './proxy/constants.js';
 
 function narrowGiteeConfig(
   config: StorageProviderConfig | GiteeConfig,
@@ -32,6 +33,8 @@ function narrowGiteeConfig(
 
 export interface GiteeStorageProviderOptions {
   useProxy?: boolean;
+  /** 桌面 file:// 下需绝对地址，如 http://127.0.0.1:39281 */
+  proxyBaseUrl?: string;
 }
 
 export class GiteeStorageProvider implements StorageProviderWithMetadata {
@@ -43,6 +46,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   private readonly fetchFn: typeof fetch;
   private readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
   private readonly useProxy: boolean;
+  private readonly proxyBaseUrl?: string;
 
   constructor(ctx: ProviderContext, options: GiteeStorageProviderOptions = {}) {
     this.platformAdapter = ctx.platformAdapter;
@@ -52,6 +56,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
         globalThis.fetch(input, init));
     this.logger = ctx.logger ?? console;
     this.useProxy = options.useProxy ?? false;
+    this.proxyBaseUrl = options.proxyBaseUrl ?? ctx.giteeProxyBase;
   }
 
   configure(config: StorageProviderConfig): void {
@@ -93,7 +98,10 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     const rawPath = `/${owner}/${repo}/raw/${encodeURIComponent(branch)}/${encodedPath}`;
 
     if (this.useProxy) {
-      return `/api/gitee-proxy${rawPath}`;
+      const prefix = this.proxyBaseUrl
+        ? `${this.proxyBaseUrl.replace(/\/$/, '')}${GITEE_PROXY_PATH}`
+        : GITEE_PROXY_PATH;
+      return `${prefix}${rawPath}`;
     }
 
     return `https://gitee.com${rawPath}`;

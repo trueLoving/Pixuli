@@ -1,7 +1,7 @@
 import { ExternalLink, X } from 'lucide-react';
 import React from 'react';
 import { ImageItem } from '@pixuli/core/types';
-import { getRealGiteeUrl } from '@pixuli/core/utils';
+import { getRealGiteeUrl } from '@pixuli/provider-gitee/proxy/url';
 import './ImageUrlModal.css';
 
 interface ImageUrlModalProps {

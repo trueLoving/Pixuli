@@ -11,6 +11,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
+import { startGiteeProxyServer } from '@pixuli/provider-gitee/proxy/node';
+import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
 import { createTray, updateTrayMenu, destroyTray } from './tray';
 
@@ -54,7 +56,9 @@ if (!app.requestSingleInstanceLock()) {
 
 let win: BrowserWindow | null = null;
 let appIsQuitting = false;
-const preload = path.join(__dirname, '../preload/index.js');
+/** 打包版 Gitee 代理根 URL，dev 为空（走 Vite /api/gitee-proxy） */
+let giteeProxyBaseUrl = '';
+const preload = resolvePreloadScript();
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
 /**
@@ -95,32 +99,6 @@ function setupContentSecurityPolicy() {
 
   const csp = isDev ? devCSP : prodCSP;
 
-  // 拦截 Gitee raw URL 和 assets 请求，添加必要的请求头
-  defaultSession.webRequest.onBeforeRequest(
-    {
-      urls: ['https://gitee.com/*/raw/*', 'https://assets.gitee.com/*'],
-    },
-    (details, callback) => {
-      // 允许请求继续，但会在 onBeforeSendHeaders 中添加请求头
-      callback({});
-    },
-  );
-
-  // 为 Gitee 请求添加请求头
-  defaultSession.webRequest.onBeforeSendHeaders(
-    {
-      urls: ['https://gitee.com/*/raw/*', 'https://assets.gitee.com/*'],
-    },
-    (details, callback) => {
-      const requestHeaders = {
-        ...details.requestHeaders,
-        Referer: 'https://gitee.com/',
-        Origin: 'https://gitee.com',
-      };
-      callback({ requestHeaders });
-    },
-  );
-
   // 为所有请求设置 CSP（包括主文档和所有子资源）
   defaultSession.webRequest.onHeadersReceived(
     {
@@ -131,29 +109,6 @@ function setupContentSecurityPolicy() {
 
       // 添加 CSP
       responseHeaders['Content-Security-Policy'] = [csp];
-
-      // 为 Gitee assets 域名添加 CORS 头，解决跨域问题
-      // Gitee raw URL (gitee.com/owner/repo/raw/...) 会 302 重定向到 assets.gitee.com
-      // Electron 会自动跟随重定向，onHeadersReceived 会在重定向后的响应上被调用
-      // 我们只需要在 assets.gitee.com 的响应上添加 CORS 头即可
-      if (details.url.includes('assets.gitee.com')) {
-        // 确保 Access-Control-Allow-Origin 存在
-        if (!responseHeaders['Access-Control-Allow-Origin']) {
-          responseHeaders['Access-Control-Allow-Origin'] = ['*'];
-        }
-        // 允许的请求方法
-        if (!responseHeaders['Access-Control-Allow-Methods']) {
-          responseHeaders['Access-Control-Allow-Methods'] = [
-            'GET',
-            'HEAD',
-            'OPTIONS',
-          ];
-        }
-        // 允许的请求头
-        if (!responseHeaders['Access-Control-Allow-Headers']) {
-          responseHeaders['Access-Control-Allow-Headers'] = ['*'];
-        }
-      }
 
       callback({
         responseHeaders,
@@ -251,9 +206,23 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  // 在应用准备就绪后立即设置 CSP（在任何窗口创建之前）
+ipcMain.on('gitee:proxy-base', event => {
+  event.returnValue = giteeProxyBaseUrl;
+});
+
+app.whenReady().then(async () => {
   setupContentSecurityPolicy();
+
+  if (!VITE_DEV_SERVER_URL) {
+    try {
+      const proxy = await startGiteeProxyServer();
+      giteeProxyBaseUrl = proxy.baseUrl;
+      app.on('before-quit', () => proxy.close());
+    } catch (err) {
+      console.error('[gitee-proxy] failed to start local server:', err);
+    }
+  }
+
   createWindow();
 });
 
