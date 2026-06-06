@@ -704,8 +704,8 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 | REF-402 | [M4] 新增 docs/backlog.md 承接已移除/未做需求                   | refactor, m4, type:docs, priority:P1   | P1     | #80        | [#81](https://github.com/trueLoving/Pixuli/issues/81)   | ✅   |
 | REF-403 | [M4] 更新 README 结构、环境要求、维护范围                       | refactor, m4, type:docs, priority:P1   | P1     | #54, #56   | [#82](https://github.com/trueLoving/Pixuli/issues/82)   | ✅   |
 | REF-404 | [M4] 更新 CHANGELOG 记录 Breaking Changes                       | refactor, m4, type:docs, priority:P1   | P1     | #58        | [#83](https://github.com/trueLoving/Pixuli/issues/83)   | ✅   |
-| REF-405 | [M4] CI：移除 benchmark workflow；desktop 构建去掉 wasm         | refactor, m4, priority:P1              | P1     | #54, #55   | [#84](https://github.com/trueLoving/Pixuli/issues/84)   | ⬜   |
-| REF-406 | [M4] archive/README 说明 wasm/server 归档策略                   | refactor, m4, type:docs, priority:P2   | P2     | #54, #56   | [#85](https://github.com/trueLoving/Pixuli/issues/85)   | ⬜   |
+| REF-405 | [M4] CI：移除 benchmark workflow；desktop 构建去掉 wasm         | refactor, m4, priority:P1              | P1     | #54, #55   | [#84](https://github.com/trueLoving/Pixuli/issues/84)   | ✅   |
+| REF-406 | [M4] archive/README 说明 wasm/server 归档策略                   | refactor, m4, type:docs, priority:P2   | P2     | #54, #56   | [#85](https://github.com/trueLoving/Pixuli/issues/85)   | ✅   |
 | REF-407 | [M4] 梳理整理 `docs/` 目录（纠错、去重、与现架构对齐）          | refactor, m4, type:docs, priority:P1   | P1     | #80, #82   | [#111](https://github.com/trueLoving/Pixuli/issues/111) | ⬜   |
 | REF-408 | [M4] 梳理 GitHub Wiki 产品使用手册（新人从零上手）              | refactor, m4, type:docs, priority:P1   | P1     | #80, #111  | [#112](https://github.com/trueLoving/Pixuli/issues/112) | ⬜   |
 | REF-409 | [M4] 历史发布版本梳理与后续版本发布策略                         | refactor, m4, type:docs, priority:P1   | P1     | #58, #83   | [#113](https://github.com/trueLoving/Pixuli/issues/113) | ⬜   |
@@ -768,6 +768,12 @@ Do、Server/WASM 归档、M5/M6 延后项与 PRD ⏳ 索引。
 
 **REF-404**（✅）— [CHANGELOG.md](CHANGELOG.md)
 `[Unreleased]`：M1 破坏性变更（展示裁剪、wasm/server 归档、导航变更）与迁移说明。
+
+**REF-405**（✅）— 删除 `.github/workflows/benchmark.yml`；`release-desktop.yml`
+对齐 `apps/pixuli`，移除 Rust/WASM 构建步骤。
+
+**REF-406**（✅）—
+[archive/README.md](archive/README.md)：wasm/benchmark/server 归档原则、独立构建说明与主仓 CI 关系。
 
 **建议顺序**：REF-401 → REF-402 → REF-407 ∥ REF-403 →
 REF-408（Wiki 依赖 docs/ 纠错结果，避免把过时内容同步到 Wiki）。
@@ -1092,10 +1098,10 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 14       | 4      | 29%     |
+| M4       | 14       | 6      | 43%     |
 | M5       | 10       | 0      | 0%      |
 | M6       | 5        | 0      | 0%      |
-| **合计** | **63**   | **14** | **22%** |
+| **合计** | **63**   | **16** | **25%** |
 
 ---
 
