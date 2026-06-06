@@ -1,5 +1,8 @@
 # 浏览模式 - 业务设计
 
+> **归档说明（2026-05-27）**：幻灯片/时间线/多模式浏览已在 M1 从产品中移除，本文档仅作历史参考。当前产品见
+> [PRD §4.3](../01-product/01-Product-Requirements-Document.md)、[backlog.md](../backlog.md)。
+
 - **文档版本**：1.0
 - **所属目录**：`docs/03-business-design`
 - **相关 PRD**：[01-Product-Requirements-Document](../01-product/01-Product-Requirements-Document.md)
