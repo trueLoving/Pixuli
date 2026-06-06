@@ -1,9 +1,8 @@
-English
+# Pixuli — Git-based Image Host Client
 
-# Pixuli - Intelligent Image Management Application
-
-> **Name Origin**: Pixuli is a combination of **Picture** + **uli**,
-> representing our vision of intelligent and user-friendly image management.
+> **🖼️ Pixuli** — AI-based image analysis, automatic tag generation, and batch
+> processing. A **three-platform** client for managing images in **GitHub /
+> Gitee repositories** (no official self-hosted server).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
@@ -11,168 +10,177 @@ English
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-1.0.0-blue.svg)](https://pixuli-web.vercel.app/)
 [![Documentation](https://img.shields.io/badge/Documentation-Wiki-blue.svg)](https://github.com/trueLoving/Pixuli/wiki)
 
-## 📖 Project Origin
+---
 
-The Pixuli project originated from two reasons:
+## What is Pixuli?
 
-1. **Practical Need**: Image management issues encountered while operating a
-   blog website, requiring unified storage, intelligent compression, and batch
-   processing capabilities.
-2. **Project Experience**: Based on previous experience developing an image
-   management application with Vue3, decided to reimplement using the React
-   technology stack to experience different framework design philosophies, and
-   expand and optimize functionality on this basis.
+Pixuli is a **Monorepo** image management client. Images are stored in Git
+repositories you configure; the app handles browsing, upload, metadata, and
+utility tools on **Web (PWA)**, **Desktop (Electron)**, and **Mobile (Expo)**.
 
-## 🖼️ Project Overview
+| Principle            | Detail                                                                                             |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| **Storage**          | GitHub / Gitee via `StorageProvider` plugins (`@pixuli/provider-github`, `@pixuli/provider-gitee`) |
+| **Official server**  | **None** — `server/` (NestJS) is archived; use community plugins or self-hosted APIs if needed     |
+| **Image processing** | Browser **Canvas** in Web/Desktop renderers (Rust WASM removed from main build)                    |
+| **Product focus**    | Grid/list photo host (L2) + compress/convert tools + settings                                      |
 
-Pixuli is an image management solution based on a Monorepo architecture,
-supporting multi-platform deployment:
-
-- **🖥️ Desktop**: Cross-platform desktop application built with Electron +
-  React + TypeScript
-- **🌐 Web**: Web application built with Vite + React + TypeScript, supporting
-  PWA
-- **📱 Mobile**: Mobile application built with React Native + Expo
-
-**Core Technology Stack**:
-
-- **Frontend**: React 19.1.0 + TypeScript + Vite
-- **Desktop**: Electron
-- **Mobile**: React Native + Expo
-- **Image Processing**: Browser Canvas API（Web / Desktop 渲染进程）
-- **State Management**: Zustand
-- **UI Components**: Shared component library
-- **Cloud Storage**: GitHub / Gitee
-
-## ✨ Key Features
-
-| Feature Module          | Description                                                                                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 📸 **Image Management** | Smart browsing, drag-and-drop upload, batch operations, tagging system, search functionality, metadata editing, fullscreen preview, slideshow playback |
-| 🔧 **Image Processing** | WebP compression, format conversion, size adjustment, batch processing, pre-upload compression                                                         |
-| ☁️ **Cloud Storage**    | GitHub integration, Gitee integration, storage source switching, configuration management, version control, metadata storage                           |
-| 🎨 **User Experience**  | Theme switching, multi-language support, keyboard shortcuts, responsive design, PWA support                                                            |
-
-## 🏗️ Project Structure
-
-```
-Pixuli/
-├── apps/                     # Applications
-│   ├── pixuli/                # Web + Desktop (Vite + Electron)
-│   └── mobile/                # Mobile (React Native + Expo)
-├── packages/                 # Shared packages
-│   └── common/                # Shared UI, i18n, utilities
-├── archive/                  # Archived code (wasm, benchmark; not in workspace)
-└── pnpm-workspace.yaml       # Workspace configuration
-```
-
-## 🚀 Quick Start
-
-### Requirements
-
-- **Node.js** >= 22.0.0
-- **pnpm** >= 8.0.0 (Required, project only supports pnpm)
-- **Git** >= 2.0.0
-- **Android Studio** (For Android development, mobile only)
-- **XCode** (For iOS development, mobile only)
-
-### Installation and Running
-
-```bash
-# Clone the project
-git clone https://github.com/trueLoving/Pixuli.git
-cd Pixuli
-
-# Install dependencies
-pnpm install
-
-# Start development mode
-pnpm dev:web      # Web (http://localhost:5500)
-pnpm dev:desktop  # Desktop
-pnpm dev:mobile --android   # Mobile Android
-pnpm dev:mobile --ios   # Mobile iOS
-```
-
-### Detailed Development Guide
-
-Want to learn more about development details? Check out our contributing guide:
-
-- **[Contributing Guide](./CONTRIBUTING.md)** - Complete development guide
-  covering all platforms (Desktop, Web, Mobile)
-
-## 📦 Downloads
-
-### 🖥️ Desktop
-
-Desktop application supports Windows and macOS platforms, available through:
-
-| Platform                | Download Method                                                  | Description                         |
-| ----------------------- | ---------------------------------------------------------------- | ----------------------------------- |
-| **Windows**             | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `.exe` installer           |
-| **macOS Intel**         | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `mac-x64` version `.dmg`   |
-| **macOS Apple Silicon** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `mac-arm64` version `.dmg` |
-
-**System Requirements**:
-
-- Windows: Windows 10/11 (64-bit), 4GB RAM, 2GB available disk space
-- macOS: macOS 10.15+, 4GB RAM, 2GB available disk space
-
-### 🌐 Web
-
-Web application supports online access and Docker deployment:
-
-| Method            | Link/Description                                             | Description                             |
-| ----------------- | ------------------------------------------------------------ | --------------------------------------- |
-| **Online Access** | [Live Demo](https://pixuli-web.vercel.app/)                  | Direct access, no installation required |
-| **Docker**        | [Docker Hub](https://hub.docker.com/r/trueloving/pixuli-web) | Deploy using Docker                     |
-
-#### Docker Deployment
-
-```bash
-# Pull and run the latest version
-docker run -d -p 8080:80 --name pixuli-web trueloving/pixuli-web:latest
-
-# Or use a specific version
-docker run -d -p 8080:80 --name pixuli-web trueloving/pixuli-web:1.0.0
-```
-
-### 📱 Mobile
-
-Mobile application supports iOS and Android platforms, available through:
-
-| Platform    | Download Method                                                  | Description               |
-| ----------- | ---------------------------------------------------------------- | ------------------------- |
-| **Android** | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) | Download `.apk` installer |
-
-**System Requirements**:
-
-- Android: Android 8.0 (API 26) or higher
-
-## 📚 Documentation
-
-| Documentation Type   | Documentation Link                                       | Description                                |
-| -------------------- | -------------------------------------------------------- | ------------------------------------------ |
-| **User Guides**      | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) | Complete user documentation and tutorials  |
-| **Feature Docs**     | [App Documentation](./apps/pixuli/README.md)             | App features and usage (Web & Desktop)     |
-|                      | [Mobile Documentation](./apps/mobile/README.md)          | Mobile features and usage                  |
-| **Development Docs** | [Contributing Guide](./CONTRIBUTING.md)                  | Complete development guide                 |
-| **Refactor Plan**    | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                   | Refactor milestones & GitHub Issue tracker |
-| **Changelog**        | [Changelog](./CHANGELOG.md)                              | Complete version history                   |
-
-## 🙏 Acknowledgments
-
-- [Electron](https://electronjs.org/) - Cross-platform desktop application
-  framework
-- [React](https://reactjs.org/) - User interface library
-- [React Native](https://reactnative.dev/) - Mobile application framework
-- [Vite](https://vitejs.dev/) - Fast build tool
-- [Rust](https://www.rust-lang.org/) - High-performance systems programming
-  language
-- [NAPI-RS](https://napi.rs/) - Node.js native module bindings
-- [image-rs](https://github.com/image-rs/image) - Rust image processing library
-- [Zustand](https://zustand-demo.pmnd.rs/) - Lightweight state management
-- [pnpm](https://pnpm.io/) - Fast, disk space efficient package manager
+Removed or deferred features (slideshow, timeline, photo wall, etc.) are listed
+in [docs/backlog.md](docs/backlog.md). Refactor tracking:
+[REFACTOR_PLAN.md](REFACTOR_PLAN.md).
 
 ---
 
-⭐ If this project is helpful to you, please give us a star!
+## Maintenance scope
+
+| Area                                  | Status        | Notes                                                                     |
+| ------------------------------------- | ------------- | ------------------------------------------------------------------------- |
+| **Web** (`apps/pixuli`, Vite)         | ✅ Maintained | PWA; dev server `http://localhost:5500`                                   |
+| **Desktop** (`apps/pixuli`, Electron) | ✅ Maintained | Shares UI with Web via `@pixuli/ui`                                       |
+| **Mobile** (`apps/mobile`, Expo)      | ✅ Maintained | React Native; long-term path toward Capacitor reuse of `apps/pixuli` (M5) |
+| **`@pixuli/core`**                    | ✅ Maintained | Types, utilities, `StoragePluginRegistry`                                 |
+| **`@pixuli/ui`**                      | ✅ Maintained | Web/Desktop UI; `./native` for RN                                         |
+| **`@pixuli/provider-*`**              | ✅ Maintained | Official GitHub/Gitee storage plugins                                     |
+| **`archive/wasm`**                    | 📦 Archived   | Not in workspace; reference only                                          |
+| **`archive/benchmark`**               | 📦 Archived   | Not in workspace                                                          |
+| **`archive/server`**                  | 📦 Archived   | Not in workspace; not an official deliverable                             |
+
+---
+
+## Key features (current)
+
+| Module         | Description                                                                           |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Photo host** | Grid/list browse, upload (single/batch), delete, metadata, search, fullscreen preview |
+| **Tools**      | WebP compression, format conversion (`/compress`, `/convert`)                         |
+| **Storage**    | GitHub & Gitee sources, switch sources, import/export config; tokens stored locally   |
+| **Experience** | Light/dark theme, zh/en i18n, keyboard shortcuts, responsive layout, PWA (Web)        |
+
+---
+
+## Project structure
+
+```text
+Pixuli/
+├── apps/
+│   ├── pixuli/                          # Web + Desktop (Vite + React + Electron)
+│   └── mobile/                          # Mobile (Expo + React Native)
+├── packages/
+│   ├── core/                            # @pixuli/core — types, registry, utilities
+│   ├── ui/                              # @pixuli/ui — shared Web/Desktop UI
+│   ├── plugin-provider-github/          # @pixuli/provider-github
+│   └── plugin-provider-gitee/           # @pixuli/provider-gitee
+├── archive/                             # wasm, benchmark, server (not in workspace)
+├── docs/                                # PRD, system/business design, backlog
+├── REFACTOR_PLAN.md                     # Milestones & GitHub Issue map
+└── pnpm-workspace.yaml
+```
+
+---
+
+## Requirements
+
+### All contributors
+
+| Tool        | Version                                            |
+| ----------- | -------------------------------------------------- |
+| **Node.js** | >= 22.0.0                                          |
+| **pnpm**    | >= 8.0.0 (**required**; repo uses pnpm workspaces) |
+| **Git**     | >= 2.0.0                                           |
+
+> **No Rust toolchain** is required for the main app. WASM modules live under
+> `archive/wasm/` only.
+
+### Platform-specific (optional)
+
+| Platform           | Extra                                                        |
+| ------------------ | ------------------------------------------------------------ |
+| **Desktop**        | macOS 10.15+ or Windows 10/11 for running/packaging Electron |
+| **Web**            | Modern browser with Canvas API                               |
+| **Mobile Android** | Android Studio, SDK 33+, JDK 17                              |
+| **Mobile iOS**     | Xcode (iOS build not yet released)                           |
+
+---
+
+## Quick start
+
+```bash
+git clone https://github.com/trueLoving/Pixuli.git
+cd Pixuli
+pnpm install
+
+# Development
+pnpm dev:web       # Web → http://localhost:5500
+pnpm dev:desktop   # Desktop (Electron)
+pnpm dev:mobile --android   # Mobile Android
+pnpm dev:mobile --ios       # Mobile iOS
+```
+
+### Build & verify
+
+```bash
+pnpm build:web
+pnpm build:desktop
+pnpm ci            # lint + test + web/desktop typecheck & build (CI gate)
+```
+
+See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for workflow, code style, and
+commit conventions.
+
+---
+
+## Downloads
+
+### Desktop
+
+| Platform            | Get it                                                                    |
+| ------------------- | ------------------------------------------------------------------------- |
+| Windows             | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) — `.exe` |
+| macOS Intel         | Releases — `mac-x64` `.dmg`                                               |
+| macOS Apple Silicon | Releases — `mac-arm64` `.dmg`                                             |
+
+### Web
+
+| Method    | Link                                                    |
+| --------- | ------------------------------------------------------- |
+| Live demo | [pixuli-web.vercel.app](https://pixuli-web.vercel.app/) |
+| Docker    | `docker run -d -p 8080:80 trueloving/pixuli-web:latest` |
+
+### Mobile
+
+| Platform | Get it                                                                    |
+| -------- | ------------------------------------------------------------------------- |
+| Android  | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) — `.apk` |
+
+> **Upgrade note:** Releases before the M1 refactor (e.g. `v1.3.0-desktop`) may
+> include slideshow and WASM features removed on `main`. See
+> [CHANGELOG.md](./CHANGELOG.md) `[Unreleased]` before upgrading.
+
+---
+
+## Documentation
+
+| Audience               | Document                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| **Users**              | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — install, configure sources, daily use |
+| **Product**            | [docs/01-product/](docs/01-product/) — PRD, scope & cut list, usage tutorial                     |
+| **Removed / deferred** | [docs/backlog.md](docs/backlog.md)                                                               |
+| **Developers**         | [docs/README.md](docs/README.md) — full doc index                                                |
+| **Contributing**       | [CONTRIBUTING.md](./CONTRIBUTING.md)                                                             |
+| **Refactor plan**      | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                                           |
+| **Changelog**          | [CHANGELOG.md](./CHANGELOG.md)                                                                   |
+| **App (Web/Desktop)**  | [apps/pixuli/README.md](./apps/pixuli/README.md)                                                 |
+| **Mobile**             | [apps/mobile/README.md](./apps/mobile/README.md)                                                 |
+
+---
+
+## Acknowledgments
+
+- [Electron](https://electronjs.org/) · [React](https://reactjs.org/) ·
+  [React Native](https://reactnative.dev/) · [Expo](https://expo.dev/) ·
+  [Vite](https://vitejs.dev/) · [Zustand](https://zustand-demo.pmnd.rs/) ·
+  [pnpm](https://pnpm.io/)
+
+---
+
+⭐ If this project helps you, consider giving it a star!

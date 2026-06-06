@@ -7,7 +7,74 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
+## [Unreleased]
+
+> **M1 减负与归档**（REF-101～REF-112, 2025–2026）. Detailed backlog:
+> [docs/backlog.md](docs/backlog.md). Refactor tracker:
+> [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
+
+Applies to **Web**, **Desktop**, and **Mobile** on the refactoring `main`
+branch. The next tagged release will use a new semver (see REF-409).
+
+### ⚠️ Breaking Changes
+
+#### Product — removed (not planned to return)
+
+- **Slideshow** — standalone routes, player, auto-play
+- **Timeline** — time-grouped browsing
+- **Photo Wall** and **3D Gallery** — enhanced display components
+- **Browse mode tabs** — file / slideshow / timeline switching; replaced by
+  **photo host grid/list** at `/photos`
+- **Web placeholder routes** — `analyze`, `edit`, `generate` (redirect to
+  `/photos`)
+- **Mobile** — browse-mode tab and `SlideShowPlayer` removed
+
+**New navigation (Web/Desktop):** Photos · Compress · Convert · Settings.
+
+#### Architecture — removed or archived
+
+- **`packages/wasm`** — moved to `archive/wasm/`; removed from `pnpm` workspace
+- **`benchmark/`** — moved to `archive/benchmark/`
+- **`server/`** (NestJS) — moved to `archive/server/`; **not** an official
+  deliverable
+- **Electron WASM IPC** and **`pixuli-wasm`** dependency — removed from Desktop
+  build
+- **`performance` / `devtools`** — unused UI modules removed
+- **`pptxgenjs`** and slideshow-related dependencies — removed
+
+#### Changed behavior
+
+- **Image processing** — Web/Desktop use **Canvas** in the renderer; Rust WASM
+  is no longer required to build or run the main app
+- **Desktop development** — **Rust toolchain no longer required** (WASM
+  archived)
+- **Gitee images** — dev/prod proxy via `@pixuli/provider-gitee/proxy` (REF-313)
+
+### Migration notes
+
+| If you used…                                | Now…                                                                  |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| Slideshow / Timeline / Photo Wall           | Use grid/list at `/photos`; see [backlog](docs/backlog.md)            |
+| Desktop WASM / AI via Rust                  | Canvas-based processing; archived WASM in `archive/wasm/`             |
+| Official NestJS server                      | Self-host from `archive/server/` or a custom `StorageProvider` plugin |
+| Releases `v1.3.0-desktop` / `v1.0.0-mobile` | Treat as pre-refactor; read `[Unreleased]` before upgrading           |
+
+---
+
 ## 🖥️ Desktop
+
+### [Unreleased]
+
+See **[Unreleased](#unreleased)** above for M1 breaking changes.
+
+#### 🔧 Changed (refactor branch)
+
+- Desktop shares `apps/pixuli` + `@pixuli/ui` with Web; Gitee image proxy in
+  Electron main process (REF-313)
+
+---
 
 ### [1.3.0][1.3.0] - 2025-11-21
 
@@ -161,62 +228,35 @@ and this project adheres to
 
 ### [Unreleased]
 
-#### ✨ Added
+See **[Unreleased](#unreleased)** above for M1 breaking changes.
 
-- **Slide Show Feature**: Support slide show mode for browsing images with
-  multiple transition effects
-- **Gitee Storage Support**: Added Gitee as a repository source, supporting dual
-  storage with GitHub and Gitee
-  - Gitee configuration page
-  - Configuration import/export functionality
-  - Configuration clear functionality
-  - GitHub and Gitee configurations can coexist
-  - Vercel proxy support for Gitee image resource access
-- **Enhanced Image Upload Component**: Added image compression and cropping
-  functionality
-- **Complete PWA Features**: Implemented full Progressive Web App functionality
-  - Install to home screen
-  - Offline support
-  - Background sync
-  - Push notifications
+#### 🔧 Changed (refactor branch)
 
-#### 🔧 Changed
+- Vite dev Gitee image proxy plugin; PWA and grid/list photo host as primary UX
 
-- Optimized image size and file size retrieval logic
-- Optimized image search performance
-- Optimized web version information, added Git branch and commit information
-- Web packaging optimization, configured code splitting strategy
-- Added page loading animation, consistent with desktop
-- Language pack refactoring, Toast internationalization fixes
-- Optimized App.tsx data management, moved component internal state to
-  corresponding components
-- Simplified image cropping functionality, removed multi-shape cropping, only
-  retained rectangular cropping
-- Refactored UI components and type definitions
-- Integrated web and desktop common components into packages/ui
-
-#### 🐛 Fixed
-
-- Fixed web demo mode internationalization language display issue
-- Fixed web metadata URL format and replaced error with warning
-- Fixed Vercel platform deployment errors
-- Temporarily disabled PWA cache functionality and update prompts
-
-#### 🎯 Technical
-
-- Upgraded all platforms to React 19.1.0
-- Refactored theme system, created independent theme management for web
-  applications
-- Removed Tailwind CSS dependency, switched to custom CSS styles
-- Improved internationalization functionality and component refactoring
-- Added Prettier code formatting tool
-- Added demo environment support and environment variable configuration
+> **Note:** Entries below in older Web `[Unreleased]` drafts (e.g. slideshow
+> added) describe pre-M1 work and are **superseded** by the breaking changes
+> section until the next release is cut.
 
 ---
 
 ## 📱 Mobile
 
+### [Unreleased]
+
+See **[Unreleased](#unreleased)** above for M1 breaking changes.
+
+#### ⚠️ Breaking Changes (summary)
+
+- Browse-mode tab and slideshow player removed (aligned with Web/Desktop product
+  cut)
+
+---
+
 ### [1.0.0][1.0.0-mobile] - 2025-11-21
+
+> **Pre-M1 release.** Includes slideshow and browse-mode features removed on the
+> refactoring branch. See `[Unreleased]` before upgrading from this tag.
 
 #### ✨ Added
 
