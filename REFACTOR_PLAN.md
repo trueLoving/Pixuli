@@ -1,7 +1,8 @@
 # Pixuli 重构计划
 
-> **版本**：1.3  
-> **更新**：2026-05-27（§十 产品体验：三端交互、UI、性能边界、AI 标签、批处理；REF-601～605）  
+> **版本**：1.4  
+> **更新**：2026-06-06（§1.7 / M4
+> REF-415：文档国际化中/英策略与低维护成本设计）  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -38,7 +39,7 @@
 | M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                                                                |
 | M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                                                                           |
 | M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common`                                                 |
-| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理；历史版本盘点与后续发布策略                                                             |
+| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理、**文档国际化（中/英）**；历史版本盘点与后续发布策略                                    |
 | M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；**三端代码共享**（Capacitor / 逻辑层抽取，见 §1.4）                                                  |
 | M6     | 产品体验与能力边界  |                  | 三端交互、UI 优化、性能边界、标签/AI、批处理（见 §十）；里程碑 [M6](https://github.com/trueLoving/Pixuli/milestone/6) |
 
@@ -130,6 +131,79 @@ Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与
 三端融合后交互需统一设计；图床主界面（侧栏 + 主内容 + 图片操作）待优化；大规模图片需明确**性能边界**（分页、懒加载、降级）；标签/描述与
 **AI 自动分析**、**批处理**需与产品 tagline 对齐。详见 **§十**，Issue
 **REF-601～605**。
+
+### 1.7 文档国际化（中 / 英）
+
+**现状**：`docs/`
+内 PRD、系统设计、业务设计等**正文以中文为主**；仓库根 README、CHANGELOG、CONTRIBUTING 等为**英文**，语言分裂；GitHub
+Wiki 尚未统一双语策略。
+
+**目标**：支持中文与英文两套可读文档，**不**追求逐句镜像的全量同步；优先让用户向与协作者入门文档英文化，控制维护成本。专项 Issue：**REF-415**（M4，P2）。
+
+**设计原则（低维护）**
+
+| 原则                     | 说明                                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| **单一事实源（SSOT）**   | 每种文档**只选一个 canonical 语言**撰写与评审；另一语言为**派生/翻译副本**，文首互链                               |
+| **镜像目录、不搬动中文** | 现行中文路径保持不变（`docs/01-product/…`）；英文增量放入 **`docs/en/`** 同级镜像，避免大规模 rename               |
+| **分层翻译**             | P0 用户向（教程、Wiki 源稿、快速开始）→ P1 产品向（PRD 摘要、裁剪清单）→ P2 技术向（系统设计，按需、可长期仅中文） |
+| **不翻译稳定标识**       | 包名、`REF-*`、Issue 号、路由、代码块、API 路径保持英文原文                                                        |
+| **变更联动而非实时双写** | 改中文 SSOT 后，在同一 PR 或跟进 Issue 更新英文副本；可选 CI 脚本对比 `mtime`/frontmatter 提示陈旧                 |
+
+**目录与互链（目标态）**
+
+```text
+docs/
+├── README.md                 # 语言枢纽：中/英索引、阅读路径
+├── 01-product/               # 中文 SSOT（现状）
+├── 02-system-design/
+├── 03-business-design/
+├── backlog.md
+└── en/                       # 英文镜像（逐步补齐，路径与上层对应）
+    ├── README.md
+    ├── 01-product/
+    ├── 02-system-design/     # 可选；P2 再补
+    └── …
+```
+
+文首 frontmatter（建议）：
+
+```yaml
+---
+lang: zh-CN # 或 en
+title: …
+translation_of: docs/en/01-product/01-Product-Requirements-Document.md # 可选，指向对照稿
+---
+```
+
+**交互与发现**
+
+| 触点               | 做法                                                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/README.md`   | 顶部语言切换说明 + 索引表分「中文 \| English」列                                                                                             |
+| 各文档文首         | `> **English**：[…](../en/…)` 或 `> **中文**：[…](../01-product/…)`                                                                          |
+| 根 `README.md`     | 已有英文；增加「[中文文档](docs/README.md)」链回枢纽                                                                                         |
+| GitHub Wiki        | 中文页树为主；英文并列首页（如 `Home` / `Usage-Guide`），源稿来自 `docs/en/01-product/`，**禁止** Wiki 与 `docs/` 第三份分叉（REF-408 约束） |
+| `REFACTOR_PLAN.md` | 维持中文（内部追踪）；可选文首英文摘要一段                                                                                                   |
+
+**不推荐方案**
+
+- 全仓库「每个 md 拆成 `foo.zh.md` + `foo.en.md`」并排维护——PR 体积翻倍、易漏改
+- 无 SSOT 的机器翻译覆盖 PRD/系统设计——术语与架构表述不可控
+- 将中文整体迁入 `docs/zh-CN/` 再建 `en/`——rename 成本高，与 REF-407 纠错冲突
+
+**分阶段（REF-415 验收范围）**
+
+1. **策略文档**：`docs/02-system-design/13-documentation-i18n.md`（或
+   `docs/meta/i18n-policy.md`）固化上述约定
+2. **枢纽**：更新 `docs/README.md` 双语索引；`docs/en/README.md` 英文导航
+3. **首批英文**：`02-Pixuli-Usage-Tutorial.md`、`03-Product-Scope-And-Cut-List.md`
+   摘要版（用户/协作者优先）
+4. **可选工具**：`scripts/check-docs-i18n.ts` — 配置了 `translation_of`
+   的文件对在 zh 变更时 warn
+
+**依赖与顺序**：在
+**REF-407**（中文纠错）、**REF-408**（Wiki 基线）之后推进；英文内容基于已纠错的中文 SSOT 翻译，避免翻旧稿。
 
 ---
 
@@ -488,6 +562,7 @@ Closes #42 Related: REF-101
 | REF-412 | [#127](https://github.com/trueLoving/Pixuli/issues/127) |
 | REF-413 | [#128](https://github.com/trueLoving/Pixuli/issues/128) |
 | REF-414 | [#129](https://github.com/trueLoving/Pixuli/issues/129) |
+| REF-415 | [#138](https://github.com/trueLoving/Pixuli/issues/138) |
 | REF-601 | [#130](https://github.com/trueLoving/Pixuli/issues/130) |
 | REF-602 | [#131](https://github.com/trueLoving/Pixuli/issues/131) |
 | REF-603 | [#132](https://github.com/trueLoving/Pixuli/issues/132) |
@@ -714,8 +789,9 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 | REF-412 | [M4] 集成测试体系设计与落地（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #79  | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #125 | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ⬜   |
 | REF-414 | [M4] AI 编程辅助：Agent 规则与 Skill 文件体系                   | refactor, m4, type:docs, priority:P2   | P2     | #111       | [#129](https://github.com/trueLoving/Pixuli/issues/129) | ⬜   |
+| REF-415 | [M4] 文档国际化（中/英）策略与目录设计                          | refactor, m4, type:docs, priority:P2   | P2     | #111, #112 | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
-REF-407 / REF-408 / REF-409 范围说明（点击展开）
+REF-407 / REF-408 / REF-409 / REF-415 范围说明（点击展开）
 
 **文档分层（目标态）**
 
@@ -776,7 +852,24 @@ Do、Server/WASM 归档、M5/M6 延后项与 PRD ⏳ 索引。
 [archive/README.md](archive/README.md)：wasm/benchmark/server 归档原则、独立构建说明与主仓 CI 关系。
 
 **建议顺序**：REF-401 → REF-402 → REF-407 ∥ REF-403 →
-REF-408（Wiki 依赖 docs/ 纠错结果，避免把过时内容同步到 Wiki）。
+REF-408（Wiki 依赖 docs/ 纠错结果，避免把过时内容同步到 Wiki）→
+**REF-415**（双语策略与英文镜像，依赖 407/408 后的中文 SSOT）。
+
+**REF-415 — 文档国际化（中 / 英）**
+
+背景：见
+**§1.7**。当前协作者与海外用户需在中英文档间跳转，缺乏统一目录与 SSOT 约定。
+
+- 产出《文档国际化策略》——目录（`docs/en/`
+  镜像）、frontmatter 互链、分层翻译范围、Wiki 与 `docs/` 关系
+- 更新 `docs/README.md` 为**语言枢纽**；新增 `docs/en/README.md`
+  与首批 P0 英文页（使用教程、范围摘要）
+- 明确**不翻译**清单：backlog 历史项、REFACTOR_PLAN、archive 说明可保持单语或仅摘要英文化
+- （可选）`translation_of` 文件对 + CI warn，防止英文副本长期陈旧
+- 与 REF-408 分工：Wiki **英文发布面**同步自 `docs/en/`，不单独维护第三份正文
+
+验收：新协作者从 `docs/README.md`
+可选中文或英文路径完成入门；策略文档写明「改中文后如何更新英文」；M4 不要求系统设计全文英译。
 
 **REF-409 — 历史发布版本梳理与后续发布策略**
 
@@ -1098,10 +1191,10 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 14       | 6      | 43%     |
+| M4       | 15       | 6      | 40%     |
 | M5       | 10       | 0      | 0%      |
 | M6       | 5        | 0      | 0%      |
-| **合计** | **63**   | **16** | **25%** |
+| **合计** | **64**   | **16** | **25%** |
 
 ---
 
@@ -1120,6 +1213,7 @@ flowchart LR
 | M3 存储回归清单               | [10-m3-storage-regression-checklist.md](docs/02-system-design/10-m3-storage-regression-checklist.md)  |
 | AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                            |
 | 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                         |
+| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                          |
 | 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                          |
 | 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                        |
 
@@ -1130,6 +1224,9 @@ flowchart LR
 > Wiki**
 > 作为终端用户使用手册（REF-408），二者避免长期双份维护，以 Wiki 为发布面、
 > `docs/` 为源稿或定期同步。
+>
+> **文档国际化（REF-415）**：中文 SSOT 保持现有 `docs/` 路径；英文增量置于
+> `docs/en/` 镜像；用户向文档优先双语，技术向文档可长期仅中文。详见 **§1.7**。
 
 ---
 
