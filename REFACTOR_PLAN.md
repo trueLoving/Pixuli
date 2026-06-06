@@ -700,8 +700,8 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 
 | ID      | 建议标题                                                        | Labels                                 | 优先级 | Depends on | GitHub #                                                | 状态 |
 | ------- | --------------------------------------------------------------- | -------------------------------------- | ------ | ---------- | ------------------------------------------------------- | ---- |
-| REF-401 | [M4] 更新 PRD：三端底线、展示裁剪、无官方 Server                | refactor, m4, type:docs, priority:P1   | P1     | #46, #56   | [#80](https://github.com/trueLoving/Pixuli/issues/80)   | ⬜   |
-| REF-402 | [M4] 新增 docs/backlog.md 承接已移除/未做需求                   | refactor, m4, type:docs, priority:P1   | P1     | #80        | [#81](https://github.com/trueLoving/Pixuli/issues/81)   | ⬜   |
+| REF-401 | [M4] 更新 PRD：三端底线、展示裁剪、无官方 Server                | refactor, m4, type:docs, priority:P1   | P1     | #46, #56   | [#80](https://github.com/trueLoving/Pixuli/issues/80)   | ✅   |
+| REF-402 | [M4] 新增 docs/backlog.md 承接已移除/未做需求                   | refactor, m4, type:docs, priority:P1   | P1     | #80        | [#81](https://github.com/trueLoving/Pixuli/issues/81)   | ✅   |
 | REF-403 | [M4] 更新 README 结构、环境要求、维护范围                       | refactor, m4, type:docs, priority:P1   | P1     | #54, #56   | [#82](https://github.com/trueLoving/Pixuli/issues/82)   | ⬜   |
 | REF-404 | [M4] 更新 CHANGELOG 记录 Breaking Changes                       | refactor, m4, type:docs, priority:P1   | P1     | #58        | [#83](https://github.com/trueLoving/Pixuli/issues/83)   | ⬜   |
 | REF-405 | [M4] CI：移除 benchmark workflow；desktop 构建去掉 wasm         | refactor, m4, priority:P1              | P1     | #54, #55   | [#84](https://github.com/trueLoving/Pixuli/issues/84)   | ⬜   |
@@ -756,7 +756,14 @@ REF-407 / REF-408 / REF-409 范围说明（点击展开）
 验收：非技术用户仅读 Wiki 即可完成首次配置并上传一张图；Wiki 与 REF-407 后的
 `docs/` 无矛盾表述。
 
-**建议顺序**：REF-401 → REF-407 ∥ REF-403 →
+**REF-401**（✅）— PRD
+v2.0：[01-Product-Requirements-Document.md](docs/01-product/01-Product-Requirements-Document.md)；配套
+[03-Product-Scope-And-Cut-List.md](docs/01-product/03-Product-Scope-And-Cut-List.md)（三端底线、M1 裁剪、无官方 Server）。
+
+**REF-402**（✅）— [docs/backlog.md](docs/backlog.md)：M1 已移除、Won't
+Do、Server/WASM 归档、M5/M6 延后项与 PRD ⏳ 索引。
+
+**建议顺序**：REF-401 → REF-402 → REF-407 ∥ REF-403 →
 REF-408（Wiki 依赖 docs/ 纠错结果，避免把过时内容同步到 Wiki）。
 
 **REF-409 — 历史发布版本梳理与后续发布策略**
@@ -1079,10 +1086,10 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 14       | 0      | 0%      |
+| M4       | 14       | 2      | 14%     |
 | M5       | 10       | 0      | 0%      |
 | M6       | 5        | 0      | 0%      |
-| **合计** | **63**   | **10** | **16%** |
+| **合计** | **63**   | **12** | **19%** |
 
 ---
 
@@ -1100,6 +1107,7 @@ flowchart LR
 | 插件 Host 集成（计划）        | REF-411 → 扩展 [08-storage-plugin-authoring.md](docs/02-system-design/08-storage-plugin-authoring.md) |
 | M3 存储回归清单               | [10-m3-storage-regression-checklist.md](docs/02-system-design/10-m3-storage-regression-checklist.md)  |
 | AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                            |
+| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                         |
 | 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                          |
 | 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                        |
 
