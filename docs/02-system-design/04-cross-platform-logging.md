@@ -70,7 +70,7 @@ graph TB
     subgraph 应用层
         A1[Web / Desktop / Mobile]
     end
-    subgraph packages/common
+    subgraph 应用内日志模块
         B[DevTools 组件]
         C[LogInterceptorService]
     end

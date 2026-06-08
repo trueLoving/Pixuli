@@ -1,5 +1,12 @@
 # Pixuli 整体系统设计
 
+> **最后核对**：2026-06-06 · 适用分支 `main` · REF-407  
+> **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/ui` +
+> `@pixuli/provider-*`；`packages/common`、主路径WASM、`server/`
+> 已归档。官方不提供 NestJS
+> Server。图床主界面为**网格/列表**（幻灯片/时间线已移除，见
+> [backlog](../backlog.md)）。
+
 ## 目录
 
 - [一、方案概述](#一方案概述)
@@ -28,13 +35,14 @@
 
 ### 1.2 设计原则
 
-- **多端一致**：Web、Desktop、Mobile 在业务能力与体验上尽量一致，通过
-  `packages/common` 与平台适配层实现「一套逻辑、多端运行」。
-- **存储可选**：默认以 **GitHub / Gitee 仓库**
-  作为图床，不依赖自建后端；**Pixuli Server**
-  为可选增强，提供统一 API、鉴权、MinIO 等能力。
-- **性能与体积**：Web/Desktop 使用 Rust
-  WASM 做重计算（压缩、转换等），Mobile 使用原生实现，避免在移动端引入 WASM 体积与兼容成本。
+- **多端一致**：Web、Desktop、Mobile 在业务能力上对齐；Web/Desktop 共用
+  `apps/pixuli` + `@pixuli/ui`；逻辑与类型在 `@pixuli/core`，存储经
+  `StorageProvider` 插件。
+- **存储插件化**：默认以 **GitHub / Gitee 仓库**为图床；**官方不提供** NestJS
+  Server（`archive/server/` 仅归档参考）。
+- **性能与体积**：Web/Desktop 图片处理以 **Canvas**（`@pixuli/ui`
+  imageProcessor）为主；Mobile 使用 expo-image-manipulator 等原生能力。Rust
+  WASM 已归档至 `archive/wasm/`。
 - **可扩展**：AI 能力（分析、生成）通过 Dify 工作流或本地模型接入，压缩/编辑/转换采用传统实现，便于后续按需扩展新能力。
 
 ### 1.3 系统定位
@@ -51,12 +59,12 @@
 
 ### 2.1 架构与工程术语
 
-| 术语           | 英文             | 说明                                                                                              |
-| -------------- | ---------------- | ------------------------------------------------------------------------------------------------- |
-| **Monorepo**   | Monorepo         | 单一仓库内管理多个应用与共享包，Pixuli 使用 pnpm workspace 管理 apps、packages、server、benchmark |
-| **共享包**     | Shared Package   | 被多应用引用的 npm 包，如 `packages/common`、`packages/wasm`                                      |
-| **平台适配层** | Platform Adapter | 抽象平台差异的接口与实现，使同一业务逻辑在 Web/Desktop/Mobile 上分别调用对应能力                  |
-| **图床**       | Image Hosting    | 图片存储与访问服务，本项目中指 GitHub/Gitee 仓库或 Pixuli Server 提供的存储                       |
+| 术语           | 英文             | 说明                                                                             |
+| -------------- | ---------------- | -------------------------------------------------------------------------------- |
+| **Monorepo**   | Monorepo         | pnpm workspace：`apps/*`、`packages/*`、`docs`；`archive/` 不参与日常构建        |
+| **共享包**     | Shared Package   | `@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-*`                               |
+| **平台适配层** | Platform Adapter | 抽象平台差异的接口与实现，使同一业务逻辑在 Web/Desktop/Mobile 上分别调用对应能力 |
+| **图床**       | Image Hosting    | 以用户配置的 GitHub/Gitee 仓库为后端；非官方自建 Server                          |
 
 ### 2.2 前端与多端术语
 
@@ -70,21 +78,21 @@
 
 ### 2.3 图片处理术语
 
-| 术语         | 英文              | 说明                                                                         |
-| ------------ | ----------------- | ---------------------------------------------------------------------------- |
-| **WASM**     | WebAssembly       | 由 Rust 编译得到的二进制模块，在 Web/Node 中运行，用于高性能图片压缩、转换等 |
-| **图片分析** | Image Analysis    | 由图片得到文本描述、标签、场景等（image→text），可依赖 AI 或规则             |
-| **图片生成** | Image Generation  | 由文本或条件生成图片（text→image），通常依赖 AI 工作流（如 Dify）            |
-| **格式转换** | Format Conversion | 图片在不同编码格式间转换（如 PNG→JPEG、JPEG→WebP）                           |
-| **元数据**   | Metadata          | 与图片关联的名称、描述、标签、尺寸、拍摄信息等，可存于仓库或服务端           |
+| 术语         | 英文              | 说明                                                               |
+| ------------ | ----------------- | ------------------------------------------------------------------ |
+| **WASM**     | WebAssembly       | 历史方案，已归档至 `archive/wasm/`；主应用以 Canvas 处理图片       |
+| **图片分析** | Image Analysis    | 由图片得到文本描述、标签、场景等（image→text），可依赖 AI 或规则   |
+| **图片生成** | Image Generation  | 由文本或条件生成图片（text→image），通常依赖 AI 工作流（如 Dify）  |
+| **格式转换** | Format Conversion | 图片在不同编码格式间转换（如 PNG→JPEG、JPEG→WebP）                 |
+| **元数据**   | Metadata          | 与图片关联的名称、描述、标签、尺寸、拍摄信息等，可存于仓库或服务端 |
 
 ### 2.4 服务与部署术语
 
-| 术语              | 英文           | 说明                                                                                   |
-| ----------------- | -------------- | -------------------------------------------------------------------------------------- |
-| **Pixuli Server** | Pixuli Server  | 可选的 NestJS 后端服务，提供图片 CRUD API、鉴权、MinIO/本地存储、可扩展 MCP/智能搜索等 |
-| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                     |
-| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署 |
+| 术语              | 英文           | 说明                                                                                     |
+| ----------------- | -------------- | ---------------------------------------------------------------------------------------- |
+| **Pixuli Server** | Pixuli Server  | 已归档 NestJS 后端（`archive/server/`），**非官方交付**；见 [backlog §三](../backlog.md) |
+| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                       |
+| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署   |
 
 ---
 
@@ -106,15 +114,15 @@ graph TB
             A2[apps/mobile<br/>React Native]
         end
         subgraph "共享层 packages/"
-            C[packages/common<br/>组件·Hooks·服务·类型·国际化]
-            W[packages/wasm<br/>Rust 图片处理]
+            Core[@pixuli/core<br/>类型·Registry·工具]
+            UI[@pixuli/ui<br/>Web/Desktop UI]
+            Prov[@pixuli/provider-*<br/>GitHub/Gitee 插件]
         end
     end
 
     subgraph "存储与外部服务"
         G[GitHub API]
         GE[Gitee API]
-        S[Pixuli Server<br/>可选]
         D[Dify 工作流<br/>可选]
     end
 
@@ -122,31 +130,30 @@ graph TB
     U2 --> A1
     U3 --> A2
 
-    A1 --> C
-    A1 --> W
-    A2 --> C
+    A1 --> Core
+    A1 --> UI
+    A1 --> Prov
+    A2 --> Core
+    A2 --> Prov
 
-    C -->|读写图片与元数据| G
-    C -->|读写图片与元数据| GE
-    A1 -.->|可选| S
-    A2 -.->|可选| S
+    Prov -->|读写图片与元数据| G
+    Prov -->|读写图片与元数据| GE
     A1 -.->|分析/生成| D
-    S -.->|代理或直连| D
 
-    style C fill:#e8f5e9
-    style W fill:#e3f2fd
-    style S fill:#fff3e0
+    style Core fill:#e8f5e9
+    style UI fill:#e3f2fd
+    style Prov fill:#c8e6c9
     style D fill:#f3e5f5
 ```
 
 ### 3.2 分层说明
 
-| 层级           | 含义               | 主要产物                                         |
-| -------------- | ------------------ | ------------------------------------------------ |
-| **用户端**     | 用户使用的运行环境 | 浏览器、Electron 窗口、移动设备                  |
-| **应用层**     | 各端入口应用       | `apps/pixuli`（Web/Desktop 一体）、`apps/mobile` |
-| **共享层**     | 跨端复用代码与能力 | `packages/common`、`packages/wasm`               |
-| **存储与外部** | 持久化与增强能力   | GitHub/Gitee、可选 Pixuli Server、可选 Dify      |
+| 层级           | 含义               | 主要产物                                           |
+| -------------- | ------------------ | -------------------------------------------------- |
+| **用户端**     | 用户使用的运行环境 | 浏览器、Electron 窗口、移动设备                    |
+| **应用层**     | 各端入口应用       | `apps/pixuli`（Web/Desktop 一体）、`apps/mobile`   |
+| **共享层**     | 跨端复用代码与能力 | `@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-*` |
+| **存储与外部** | 持久化与增强能力   | GitHub/Gitee API；可选 Dify                        |
 
 ### 3.3 核心数据流（简化）
 
@@ -154,22 +161,22 @@ graph TB
 sequenceDiagram
     participant User as 用户
     participant App as Pixuli 客户端
-    participant Common as packages/common
-    participant Storage as GitHub/Gitee 或 Server
+    participant Core as @pixuli/core + provider
+    participant Storage as GitHub/Gitee API
     participant AI as Dify/本地 AI
 
     User->>App: 选择仓库源 / 上传 / 浏览 / 编辑
-    App->>Common: 调用存储服务、组件、Hooks
-    Common->>Storage: 读图列表、上传、更新元数据、删除
-    Storage-->>Common: 图片 URL、元数据
-    Common-->>App: 数据与状态
+    App->>Core: Registry + StorageProvider
+    Core->>Storage: 读图列表、上传、更新元数据、删除
+    Storage-->>Core: 图片 URL、元数据
+    Core-->>App: 数据与状态
     App-->>User: 展示与交互
 
     Note over App,AI: 可选：图片分析 / 生成
     User->>App: 触发分析或生成
     App->>AI: 调用工作流或本地模型
     AI-->>App: 描述/标签 或 生成图
-    App->>Common: 保存结果到当前源
+    App->>Core: 保存结果到当前源
 ```
 
 ---
@@ -178,14 +185,14 @@ sequenceDiagram
 
 ### 4.1 仓库目录与模块映射
 
-| 路径                | 模块名称              | 职责简述                                                                                                                                              |
-| ------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **apps/pixuli**     | Web + Desktop 应用    | 同一套 Vite + React 代码，Web 以浏览器运行，Desktop 以 Electron 包装；图片列表、上传、编辑、设置、操作日志等；Desktop 主进程提供 WASM、AI、系统能力。 |
-| **apps/mobile**     | 移动端应用            | React Native + Expo，图库、上传、裁剪/压缩/转换、相机、幻灯片等；使用 common 与原生图片能力。                                                         |
-| **packages/common** | 跨端共享库            | 组件（Web/RN 双实现或平台导出）、Hooks、GitHub/Gitee 存储服务、平台适配器、类型、国际化、操作日志等。                                                 |
-| **packages/wasm**   | WASM 图片处理         | Rust 编写，编译为 WebAssembly；压缩、格式转换、基础编辑等（Web/Desktop 使用）；Mobile 不使用。                                                        |
-| **server**          | Pixuli Server（可选） | NestJS + Prisma + MySQL，图片上传/列表/详情/删除/元数据更新，Local/MinIO 存储，API Key 鉴权，标签与查询。                                             |
-| **benchmark**       | 性能基准              | 对 WASM 等做压缩/转换等基准测试，不参与主应用构建。                                                                                                   |
+| 路径                            | 模块名称           | 职责简述                                                                                                |
+| ------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------- |
+| **apps/pixuli**                 | Web + Desktop 应用 | Vite + React + Electron；图床网格/列表、上传、工具页（压缩/转换）、设置；Gitee 代理等桌面能力在主进程。 |
+| **apps/mobile**                 | 移动端应用         | Expo + React Native；图床列表、上传、工具、相机；经 Registry 使用 provider 插件。                       |
+| **packages/core**               | `@pixuli/core`     | 类型、`StoragePluginRegistry`、工具函数。                                                               |
+| **packages/ui**                 | `@pixuli/ui`       | Web/Desktop 共享 UI；`./native` 子路径供 RN 少量组件。                                                  |
+| **packages/plugin-provider-\*** | 存储插件           | 官方 GitHub/Gitee `StorageProvider` 实现。                                                              |
+| **archive/**                    | 历史归档           | wasm、benchmark、server；见 [archive/README](../../archive/README.md)。                                 |
 
 ### 4.2 应用层与共享层依赖关系
 
@@ -196,33 +203,37 @@ graph LR
         M[apps/mobile]
     end
     subgraph packages
-        C[packages/common]
-        W[packages/wasm]
+        Core[@pixuli/core]
+        UI[@pixuli/ui]
+        Prov[@pixuli/provider-*]
     end
 
-    P --> C
-    P --> W
-    M --> C
+    P --> Core
+    P --> UI
+    P --> Prov
+    M --> Core
+    M --> Prov
 
-    style C fill:#c8e6c9
-    style W fill:#bbdefb
+    style Core fill:#c8e6c9
+    style UI fill:#bbdefb
+    style Prov fill:#a5d6a7
 ```
 
-- **apps/pixuli** 依赖 **common**（UI、状态、存储、国际化）与
-  **wasm**（Web/Desktop 下图片处理）。
-- **apps/mobile** 仅依赖
-  **common**；图片处理使用原生（如 expo-image-manipulator），不依赖 wasm。
+- **apps/pixuli** 依赖
+  **@pixuli/core**、**@pixuli/ui**、**@pixuli/provider-\***；图片处理在 UI 层 Canvas 实现。
+- **apps/mobile** 依赖 **@pixuli/core**、**@pixuli/provider-\***
+  与 RN 原生图片能力。
 
 ### 4.3 平台能力矩阵（与 PRD 一致）
 
-| 能力                        | Web                | Desktop            | Mobile        |
-| --------------------------- | ------------------ | ------------------ | ------------- |
-| 仓库源管理（GitHub/Gitee）  | ✅                 | ✅                 | ✅            |
-| 图片 CRUD、幻灯片、操作日志 | ✅                 | ✅                 | ✅            |
-| 格式转换/压缩/编辑          | 框架就绪，逻辑待接 | 框架就绪，逻辑待接 | ✅ 部分已实现 |
-| PWA / 离线                  | ✅                 | ⏳                 | ⏳            |
-| AI 分析/生成                | ⏳                 | ⏳ 桌面已接本地 AI | ⏳ 低优先级   |
-| 相机/相册                   | —                  | —                  | ✅            |
+| 能力                       | Web | Desktop            | Mobile      |
+| -------------------------- | --- | ------------------ | ----------- |
+| 仓库源管理（GitHub/Gitee） | ✅  | ✅                 | ✅          |
+| 图床 CRUD（网格/列表）     | ✅  | ✅                 | ✅          |
+| 压缩/转换工具页            | ✅  | ✅                 | ✅ 部分     |
+| PWA / 离线                 | ✅  | ⏳                 | ⏳          |
+| AI 分析/生成               | ⏳  | ⏳ 桌面已接本地 AI | ⏳ 低优先级 |
+| 相机/相册                  | —   | —                  | ✅          |
 
 ---
 
@@ -230,10 +241,10 @@ graph LR
 
 ### 5.1 图片与元数据存储模式
 
-| 模式            | 说明                    | 数据所在                                                                                   |
-| --------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| **仅仓库**      | 默认模式，不启用 Server | 图片文件与元数据（如 JSON）均存于用户配置的 GitHub/Gitee 仓库                              |
-| **Server 模式** | 启用 Pixuli Server      | 图片文件存于 Server 配置的 Local/MinIO，元数据存 MySQL（Prisma）；客户端通过 REST API 读写 |
+| 模式              | 说明                   | 数据所在                                                                    |
+| ----------------- | ---------------------- | --------------------------------------------------------------------------- |
+| **Git 仓库图床**  | **默认且唯一官方路径** | 图片与元数据存于用户配置的 GitHub/Gitee 仓库；经 `StorageProvider` 读写     |
+| **自建 HTTP API** | 非官方                 | 可实现自定义 Provider 或参考 `archive/server/`；见 [backlog](../backlog.md) |
 
 ### 5.2 客户端配置与状态
 
@@ -244,11 +255,11 @@ graph LR
 
 ### 5.3 与外部系统的数据流
 
-- **GitHub/Gitee**：通过各自 REST
-  API 上传文件、读写仓库内元数据文件（如按 path 约定的 JSON）；列表与详情由 common 内存储服务封装。
-- **Pixuli Server**：通过 REST（如
-  `/api/images/*`）上传、列表、详情、元数据更新、删除；鉴权为 API
-  Key（Header 或 Bearer）。
+- **GitHub/Gitee**：通过各自 REST API 上传文件、读写仓库内元数据；由
+  `@pixuli/provider-github` / `@pixuli/provider-gitee` 封装，经
+  `StoragePluginRegistry` 注册到各端 imageStore。
+- **（归档）Pixuli Server**：`archive/server/`
+  内 NestJS 实现，**非官方主路径**；REST Key（Header 或 Bearer）。
 - **Dify**：客户端或 Server 通过 HTTP 调用工作流 run
   API，传入图片（Base64/URL）或 prompt，接收文本或图片结果；API
   Key 存客户端本地或 Server 环境变量。
@@ -354,16 +365,18 @@ flowchart LR
 
 ### 9.1 已规划方向（与 PRD 一致）
 
-- **批量元数据编辑**：多选图片后统一改标签、描述等；逻辑在 common + 各端 UI。
+- **批量元数据编辑**：多选图片后统一改标签、描述等；见 M6 REF-604/605。
 - **布局与性能**：列数/瀑布流/虚拟列表等，见 03-performance。
 - **AI 能力**：自动打标、场景识别、OCR、文生图；接入方式见 05-Dify 与现有 Desktop
   aiService。
-- **Pixuli Server 增强**：MCP、智能搜索、任务队列、审计与监控等，见 PRD 4.12。
+- **官方 Server**：不在路线图；历史能力见 [backlog §三](../backlog.md)。
 
 ### 9.2 架构扩展原则
 
-- **新端或新入口**：优先复用 `packages/common`，通过平台适配器接入新环境。
-- **新存储后端**：在 common 中抽象「存储服务接口」，新增实现（如 S3、OSS）而不破坏现有 GitHub/Gitee 调用方。
+- **新端或新入口**：优先复用 `@pixuli/core` + `@pixuli/ui`（或 Capacitor 套壳
+  `apps/pixuli`）。
+- **新存储后端**：实现 `StorageProvider` 并注册到 `StoragePluginRegistry`（见
+  [08-storage-plugin-authoring](08-storage-plugin-authoring.md)）。
 - **新 AI 能力**：优先通过 Dify 工作流扩展；若需本地模型，在 Desktop 主进程或 Server 侧扩展，对前端暴露统一「分析/生成」抽象。
 
 ---
@@ -375,17 +388,15 @@ flowchart LR
 ```
 Pixuli/
 ├── apps/
-│   ├── pixuli/              # Web + Desktop（Vite + React + Electron）
-│   └── mobile/               # React Native + Expo
+│   ├── pixuli/                    # Web + Desktop
+│   └── mobile/                    # Expo + React Native
 ├── packages/
-│   ├── common/               # 共享组件、Hooks、服务、类型、国际化
-│   └── wasm/                 # Rust WASM 图片处理（Web/Desktop）
-├── server/                   # 可选 NestJS 后端
-├── benchmark/                # 性能基准
-├── .github/
-│   ├── 01-product/           # PRD、教程
-│   ├── 02-design/            # 系统设计 + 专项设计
-│   └── workflows/            # 构建与发布 Workflow
+│   ├── core/                      # @pixuli/core
+│   ├── ui/                        # @pixuli/ui
+│   └── plugin-provider-github|gitee/
+├── docs/                          # PRD、系统设计、业务设计
+├── archive/                       # wasm、benchmark、server（非 workspace）
+├── .github/workflows/
 ├── pnpm-workspace.yaml
 └── package.json
 ```
@@ -412,10 +423,10 @@ stateDiagram-v2
 
 ### 10.4 相关文件清单
 
-| 类型       | 路径/说明                                   |
-| ---------- | ------------------------------------------- |
-| 应用入口   | `apps/pixuli`、`apps/mobile`                |
-| 共享库     | `packages/common`、`packages/wasm`          |
-| 可选服务端 | `server/`                                   |
-| 产品与设计 | `.github/01-product/`、`.github/02-design/` |
-| 流水线     | `.github/workflows/*.yml`                   |
+| 类型       | 路径/说明                                                                |
+| ---------- | ------------------------------------------------------------------------ |
+| 应用入口   | `apps/pixuli`、`apps/mobile`                                             |
+| 共享包     | `packages/core`、`packages/ui`、`packages/plugin-provider-*`             |
+| 归档       | `archive/wasm`、`archive/server`、`archive/benchmark`                    |
+| 产品与设计 | `docs/01-product/`、`docs/02-system-design/`、`docs/03-business-design/` |
+| 流水线     | `.github/workflows/*.yml`                                                |

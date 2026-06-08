@@ -54,18 +54,19 @@
 
 ### 3.1 已有能力
 
-| 能力          | 现状                                                                             | 位置                                              |
-| ------------- | -------------------------------------------------------------------------------- | ------------------------------------------------- |
-| 图片分析 (AI) | 桌面端已接 Qwen LLM、Ollama、Shimmy；Web/Mobile 待统一                           | `apps/pixuli/electron/main/services/aiService.ts` |
-| 图片生成      | 未实现，PRD 计划含 Dify 集成                                                     | F-TOOL-GEN-01                                     |
-| 格式转换      | WASM 已实现（JPEG/PNG 等），逻辑待与 UI 打通                                     | `packages/wasm/src/convert/`                      |
-| 压缩          | WASM 有 WebP 设计，因依赖 C 在 WASM 中暂不可用；Mobile 用 expo-image-manipulator | `packages/wasm/src/compress/`                     |
-| 编辑          | Mobile 有裁剪/缩放/格式；Web/Desktop 有页面框架，逻辑待接                        | `packages/wasm/src/edit/`、Mobile `processImage`  |
-| 服务端图片    | Server 使用 Sharp 做元数据等，未暴露压缩/转换 API                                | `server/src/images/`                              |
+| 能力          | 现状                                                   | 位置                                               |
+| ------------- | ------------------------------------------------------ | -------------------------------------------------- |
+| 图片分析 (AI) | 桌面端已接 Qwen LLM、Ollama、Shimmy；Web/Mobile 待统一 | `apps/pixuli/electron/main/services/aiService.ts`  |
+| 图片生成      | 未实现，PRD 计划含 Dify 集成                           | F-TOOL-GEN-01                                      |
+| 格式转换      | Web/Desktop：工具页 + Canvas；Mobile：原生处理         | `apps/pixuli` `/convert`、`apps/mobile`            |
+| 压缩          | Web/Desktop：Canvas；Mobile：expo-image-manipulator    | `@pixuli/ui` imageProcessor、Mobile `processImage` |
+| 编辑          | 裁剪等部分能力；AI 分析走 Dify 规划                    | 各端工具页                                         |
+| 归档参考      | 历史 WASM / NestJS Server 已移出主路径                 | `archive/wasm/`、`archive/server/`                 |
 
 ### 3.2 技术栈对齐
 
-- **前端**：React + Zustand，多端复用 `packages/common`。
+- **前端**：React + Zustand；Web/Desktop 共用 `apps/pixuli` +
+  `@pixuli/ui`；存储经 `@pixuli/provider-*`。
 - **桌面**：Electron，主进程可调 Node/HTTP，已有 `aiAPI` 暴露。
 - **可选后端**：NestJS + Prisma，可增加代理 Dify 或做后处理。
 

@@ -78,7 +78,9 @@ archive/        wasm、benchmark、历史 server（不参与日常构建）
 - [01-Product-Requirements-Document.md](01-Product-Requirements-Document.md) —
   PRD 主文档
 - [02-Pixuli-Usage-Tutorial.md](02-Pixuli-Usage-Tutorial.md)
-  — 用户使用教程（REF-408 Wiki 同步源稿）
+  — 用户使用教程（REF-408 Wiki 源稿）
+- [04-Wiki-Sync-Guide.md](04-Wiki-Sync-Guide.md) —
+  Wiki 目录与同步策略（REF-408）
 - [07-storage-plugin-system.md](../02-system-design/07-storage-plugin-system.md)
   — 存储插件技术设计
 - [backlog.md](../backlog.md) — 已移除/延后需求明细（REF-402）

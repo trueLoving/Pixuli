@@ -1,5 +1,11 @@
 # 跨端资源共享设计方案
 
+> **最后核对**：2026-06-06 · REF-407  
+> **现状**：`packages/common` 已删除（REF-311）。共享层为
+> **`@pixuli/core`**（类型、Registry、工具）与 **`@pixuli/ui`**（Web/Desktop
+> UI，`./native` 供 RN）。下文若仍出现 `packages/common`
+> 指**历史结构**，以本说明为准。
+
 ## 目录
 
 - [一、方案概述](#一方案概述)
@@ -17,8 +23,9 @@
 
 ### 1.1 目标
 
-本文档描述 Pixuli 项目中跨端（Web 端、Desktop 端、移动端）资源共享的设计方案，基于
-`packages/common` 共享库的实现，用于：
+本文档描述 Pixuli 跨端（Web、Desktop、Mobile）资源共享设计。当前实现基于
+`@pixuli/core` + `@pixuli/ui` + `@pixuli/provider-*`（原 `packages/common`
+已迁移），用于：
 
 - **代码复用**：最大化三端代码复用率，减少重复开发。
 - **一致性**：保证三端功能与体验一致。

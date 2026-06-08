@@ -13,7 +13,7 @@
 | **运行时** | 浏览器（DOM）                | Electron 渲染进程（DOM）             | 同一套运行环境             |
 | **UI 层**  | React + DOM（div、img、CSS） | 同上                                 | 同一套组件与样式           |
 | **构建**   | Vite `build:web`             | Vite `build:desktop` + Electron 打包 | 同一套源码，不同 mode/产物 |
-| **差异**   | 无桌面能力                   | 主进程：WASM、AI、文件、系统托盘等   | 仅「壳」与能力扩展不同     |
+| **差异**   | 无桌面能力                   | 主进程：Gitee 代理、文件、系统能力等 | 仅「壳」与能力扩展不同     |
 
 因此 **Web 与 Desktop 可以共用 `apps/pixuli`**：同一套 Vite +
 React 代码，通过 mode 与 Electron 主进程区分行为与产物。
@@ -29,10 +29,10 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 | **构建**     | Vite                         | Metro + Expo（生成 Android/iOS 二进制） |
 | **导航**     | react-router-dom             | expo-router / React Navigation          |
 | **存储**     | localStorage                 | AsyncStorage                            |
-| **图片处理** | packages/wasm（WASM）        | expo-image-manipulator（原生）          |
+| **图片处理** | Canvas（`@pixuli/ui`）       | expo-image-manipulator（原生）          |
 
-**本质差异**：Web/Desktop 是「React 渲染到 DOM」；Mobile 是「React 渲染到原生控件」。**同一份 JSX 不能既跑在 DOM 上又跑在 RN 上**（除非用跨平台抽象层或同一套 RN 用 RNW 跑 Web）。因此目前是**两个 UI 代码库**，通过
-`packages/common` 共享逻辑、类型、服务、状态与部分适配。
+**本质差异**：Web/Desktop 是「React 渲染到 DOM」；Mobile 是「React 渲染到原生控件」。**同一份 JSX 不能既跑在 DOM 上又跑在 RN 上**（除非 Capacitor 或 RNW）。因此目前是**两个 UI 代码库**，通过
+`@pixuli/core`、`@pixuli/provider-*` 共享逻辑与存储契约。
 
 ---
 

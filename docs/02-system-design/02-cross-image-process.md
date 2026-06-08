@@ -1,5 +1,9 @@
 # 跨端图片处理方案设计
 
+> **最后核对**：2026-06-06 · REF-407  
+> **现状**：契约类型在 **`@pixuli/core`** / **`@pixuli/ui`**；Web/Desktop 实现为
+> **Canvas**（非主路径 WASM）；`packages/wasm` 已归档。
+
 ## 目录
 
 - [一、方案定位与原则](#一方案定位与原则)
@@ -21,8 +25,11 @@
 本方案约定 Pixuli **三端（Web、Desktop、Mobile）**
 的图片处理在**数据格式与调用契约上统一**，但**具体处理逻辑由各端自行实现**：
 
-- **packages/common**：**不包含**任何平台相关的图片处理逻辑（不调用 Canvas、WASM、expo 等）。只负责**数据格式的统一与维护**，以及**方法签名与返回值的契约定义**。
-- **使用层（各端应用）**：各自提供符合 common 契约的**图片处理工具函数/实现**（如压缩、格式转换），内部可使用 Canvas、WASM、expo-image-manipulator 等；调用方统一使用 common 定义的类型与契约，保证入参、出参一致。
+- **@pixuli/core /
+  @pixuli/ui**：定义**数据格式与契约**（类型、接口）；**不包含**各端具体算法实现。
+- **使用层（各端应用）**：`apps/pixuli` 经 `@pixuli/ui`
+  的 Canvas 实现；`apps/mobile`
+  经 expo-image-manipulator 等原生实现；入参出参对齐共享类型。
 
 ### 1.2 设计原则
 
@@ -280,4 +287,4 @@ common 中可定义**接口**（无实现），规定使用层必须提供的方
 - [00-System-Design - 整体系统设计](./00-System-Design.md)
 - [01-cross-platform-resources - 跨端资源共享](./01-cross-platform-resources.md)
 - [05-Dify-Integration-And-Image-Processing-Design - Dify 与图片处理选型](./05-Dify-Integration-And-Image-Processing-Design.md)
-- [packages/wasm README](../../packages/wasm/README.md) - WASM 构建与现状
+- [archive/wasm/README](../../archive/wasm/README.md) - 历史 WASM（已归档）
