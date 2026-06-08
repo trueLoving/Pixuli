@@ -1,8 +1,10 @@
-# 移动端与 apps/pixuli 统一：技术分析与方案 A 落地
+# 三端设计方案（最大化代码复用）
 
-- **文档版本**：1.1
-- **所属目录**：`docs/02-system-design`
-- **关联**：[00-System-Design](00-System-Design.md) 应用层与多端
+> **最后核对**：2026-05-27 · 由原 `02-Three-Platform-Design` 改写
+> **目标**：在 Web / Desktop /
+> Mobile 差异下，**最大化三端代码复用**；明确 Capacitor 方案 A 为当前路线。
+
+- **关联**：[00-System-Design](./00-System-Design.md)、[01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md)
 
 ---
 
@@ -106,7 +108,8 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 - 把 `apps/mobile` 挪到 `apps/pixuli/mobile`（或
   `apps/pixuli-native`），在文档和 CI 里把“移动端”视为 `apps/pixuli` 的一部分；
 - 或保持 `apps/pixuli`（Web+Desktop）与 `apps/mobile` 并列，通过
-  **packages/common** 继续提高共享（业务逻辑、类型、服务、状态、i18n）。
+  **`@pixuli/core` / `@pixuli/ui`（原 `@pixuli/core` / `@pixuli/ui`）**
+  继续提高共享（业务逻辑、类型、服务、状态、i18n）。
 
 **优点**
 
@@ -147,7 +150,7 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 Native 或原生技术栈开发。
 
 **其他方案**：若未来移动端必须保持原生体验且长期要三端一套 UI，可再评估方案 B（RNW）；若短期不打算动架构，可保持方案 C，继续强化
-`packages/common`。
+`@pixuli/core` / `@pixuli/ui`。
 
 ---
 
@@ -398,12 +401,12 @@ export const getPlatform = (): 'web' | 'desktop' | 'mobile' => {
 
 ## 十一、方案 A：风险与应对
 
-| 风险                          | 应对                                                                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| WebView 与桌面/浏览器行为差异 | 在关键路径（上传、选图、路由）做真机与多机型测试；必要时在 `platforms/mobile` 做小范围适配。         |
-| 包体积偏大                    | 沿用现有 Vite 的 code split、按需加载；后续可考虑资源 CDN、子资源压缩。                              |
-| 相机/相册权限与体验           | 严格按阶段 3 做封装与权限声明；若某端体验仍不足，再考虑该端单独用 RN 或原生模块。                    |
-| 后续要切 RN/原生              | 业务逻辑已集中在 `packages/common` 与能力层，UI 仍可替换为 RN 或原生视图，仅替换「壳」与平台层实现。 |
+| 风险                          | 应对                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| WebView 与桌面/浏览器行为差异 | 在关键路径（上传、选图、路由）做真机与多机型测试；必要时在 `platforms/mobile` 做小范围适配。                     |
+| 包体积偏大                    | 沿用现有 Vite 的 code split、按需加载；后续可考虑资源 CDN、子资源压缩。                                          |
+| 相机/相册权限与体验           | 严格按阶段 3 做封装与权限声明；若某端体验仍不足，再考虑该端单独用 RN 或原生模块。                                |
+| 后续要切 RN/原生              | 业务逻辑已集中在 `@pixuli/core` / `@pixuli/ui` 与能力层，UI 仍可替换为 RN 或原生视图，仅替换「壳」与平台层实现。 |
 
 ---
 

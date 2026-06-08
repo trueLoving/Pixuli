@@ -5,7 +5,7 @@ Pixuli 官方 **GitHub 仓库图床**存储插件（M3 REF-302）。
 - **npm 包名**：`@pixuli/provider-github`
 - **Monorepo 目录**：`packages/plugin-provider-github`
 - **插件 ID**：`github`
-- **设计文档**：[存储插件体系设计](../../docs/02-system-design/07-storage-plugin-system.md)、[开发指南](../../docs/02-system-design/08-storage-plugin-authoring.md)
+- **设计文档**：[04-Plugin-System](../../docs/02-system-design/04-Plugin-System.md)（§第一部分 体系设计、§第二部分 开发指南）
 
 实现 GitHub Contents API + sidecar 元数据（`.metadata/`），符合
 [`@pixuli/core/plugins`](../core/README.md) 中的 `StorageProvider` 契约。
@@ -56,8 +56,7 @@ await provider.listImages();
 
 过渡期仍可从本包导入 `GitHubStorageService`（委托
 `GitHubStorageProvider`）。新代码请使用 `registerGitHubProvider` +
-`StorageProvider` 契约（见
-`docs/02-system-design/07-storage-plugin-system.md`）。
+`StorageProvider` 契约（见 `docs/02-system-design/04-Plugin-System.md`）。
 
 ## 依赖边界
 

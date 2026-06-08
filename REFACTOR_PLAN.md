@@ -77,7 +77,7 @@ Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与
 
 #### 1.4.2 可选路径（详述见设计文档）
 
-正式技术分析：[06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md)。
+正式技术分析：[02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)。
 
 | 方案                     | 思路                                             | Mobile 与 Web 关系            | 维护成本                   | 体验                 |
 | ------------------------ | ------------------------------------------------ | ----------------------------- | -------------------------- | -------------------- |
@@ -690,21 +690,21 @@ native。
 
 ### 里程碑 M3 — 存储插件体系 P0
 
-| ID      | 建议标题                                             | Labels                                                 | 优先级 | Depends on         | GitHub #                                                | 状态 |
-| ------- | ---------------------------------------------------- | ------------------------------------------------------ | ------ | ------------------ | ------------------------------------------------------- | ---- |
-| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry        | refactor, m3, area:core, area:plugin, priority:P0      | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
-| REF-302 | [M3] 实现 @pixuli/provider-github                    | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
-| REF-303 | [M3] 实现 @pixuli/provider-gitee                     | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
-| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry       | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
-| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry       | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
-| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）            | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
-| REF-307 | [M3] 设置页源列表对接 registry.listManifests         | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
-| REF-308 | [M3] 编写插件开发文档 08-storage-plugin-authoring.md | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ✅   |
-| REF-309 | [M3] provider 包单元测试迁移                         | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ✅   |
-| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                    | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ✅   |
-| REF-311 | [M3] 删除 `packages/common` 整包                     | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ✅   |
-| REF-312 | [Bug] 编辑仓库源时配置表单未回显                     | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ✅   |
-| REF-313 | [Bug] Gitee 源图片 CORS / 代理导致无法加载           | bug, refactor, m3, area:web, area:desktop, priority:P0 | P0     | #72, #79           | [#123](https://github.com/trueLoving/Pixuli/issues/123) | ✅   |
+| ID      | 建议标题                                                     | Labels                                                 | 优先级 | Depends on         | GitHub #                                                | 状态 |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------ | ------ | ------------------ | ------------------------------------------------------- | ---- |
+| REF-301 | [M3] 在 core 定义 StorageProvider 与 Registry                | refactor, m3, area:core, area:plugin, priority:P0      | P0     | #60                | [#70](https://github.com/trueLoving/Pixuli/issues/70)   | ✅   |
+| REF-302 | [M3] 实现 @pixuli/provider-github                            | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#71](https://github.com/trueLoving/Pixuli/issues/71)   | ✅   |
+| REF-303 | [M3] 实现 @pixuli/provider-gitee                             | refactor, m3, area:plugin, priority:P0                 | P0     | #70                | [#72](https://github.com/trueLoving/Pixuli/issues/72)   | ✅   |
+| REF-304 | [M3] 重构 apps/pixuli imageStore 使用 Registry               | refactor, m3, area:web, area:desktop, priority:P0      | P0     | #71, #72, #64      | [#73](https://github.com/trueLoving/Pixuli/issues/73)   | ✅   |
+| REF-305 | [M3] 重构 apps/mobile imageStore 使用 Registry               | refactor, m3, area:mobile, priority:P0                 | P0     | #71, #72, #65      | [#74](https://github.com/trueLoving/Pixuli/issues/74)   | ✅   |
+| REF-306 | [M3] 配置持久化增加 pluginId（导入/导出）                    | refactor, m3, priority:P1                              | P1     | #73, #74           | [#75](https://github.com/trueLoving/Pixuli/issues/75)   | ✅   |
+| REF-307 | [M3] 设置页源列表对接 registry.listManifests                 | refactor, m3, area:ui, priority:P1                     | P1     | #75                | [#76](https://github.com/trueLoving/Pixuli/issues/76)   | ✅   |
+| REF-308 | [M3] 编写插件开发文档（现合并于 04-Plugin-System §第二部分） | refactor, m3, type:docs, priority:P1                   | P1     | #70                | [#77](https://github.com/trueLoving/Pixuli/issues/77)   | ✅   |
+| REF-309 | [M3] provider 包单元测试迁移                                 | refactor, m3, priority:P1                              | P1     | #71, #72           | [#78](https://github.com/trueLoving/Pixuli/issues/78)   | ✅   |
+| REF-310 | [M3] M3 回归：GitHub/Gitee 全流程                            | refactor, m3, priority:P0                              | P0     | #73–#78, #109      | [#79](https://github.com/trueLoving/Pixuli/issues/79)   | ✅   |
+| REF-311 | [M3] 删除 `packages/common` 整包                             | refactor, m3, type:removal, priority:P0                | P0     | #73, #74, #78, #79 | [#100](https://github.com/trueLoving/Pixuli/issues/100) | ✅   |
+| REF-312 | [Bug] 编辑仓库源时配置表单未回显                             | bug, refactor, m3, area:web, area:desktop, priority:P1 | P1     | #75, #76           | [#109](https://github.com/trueLoving/Pixuli/issues/109) | ✅   |
+| REF-313 | [Bug] Gitee 源图片 CORS / 代理导致无法加载                   | bug, refactor, m3, area:web, area:desktop, priority:P0 | P0     | #72, #79           | [#123](https://github.com/trueLoving/Pixuli/issues/123) | ✅   |
 
 REF-301 ~ REF-313 Issue 正文模板
 
@@ -722,16 +722,16 @@ REF-301 ~ REF-313 Issue 正文模板
 **REF-307** — 添加源 UI 按 manifest 列表渲染。
 
 **REF-308** —
-[08-storage-plugin-authoring.md](docs/02-system-design/08-storage-plugin-authoring.md)：内置/热加载模式、命名与安全、最小 example 骨架 + 检查清单。
+[04-Plugin-System.md §第二部分](docs/02-system-design/04-Plugin-System.md#第二部分-存储插件开发指南)：内置/热加载模式、命名与安全、最小 example 骨架 + 检查清单。
 
 **REF-309** — 存储单测已在 REF-302/303 迁入 provider 包；本项对齐
 `StorageProvider` 契约（`configure` + `listImages`/`updateImageMetadata`）、共用
-`helpers.ts`、兼容层冒烟测，并更新 `08-storage-plugin-authoring.md` §9.1。
+`helpers.ts`、兼容层冒烟测，并更新 `04-Plugin-System.md` §第二部分 §9.1。
 `pixuli-common` 仅余 `logInterceptorService`
 单测（REF-311 随包删除或迁入 app）。
 
 **REF-310** —
-[10-m3-storage-regression-checklist.md](docs/02-system-design/10-m3-storage-regression-checklist.md)：配置源、列表、切换源、导入导出、编辑回显等自动化单测 +
+[04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)：配置源、列表、切换源、导入导出、编辑回显等自动化单测 +
 `pnpm test`
 全绿（540+）；上传/删除等依赖真实 Token 的用例在清单中标注为手工签收。REF-312（#109）已合入本分支。
 
@@ -941,7 +941,7 @@ REF-506 ~ REF-510 说明（三端共享）
 
 **REF-506** — 对照 §1.4.1 输出「共享矩阵」：文件/模块级标注 Web+Desktop / Mobile
 / 可合并；链接
-[06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md)。
+[02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)。
 
 **REF-507** — 在 M3 Registry 与 `StoredSourceEntry`
 稳定后，将双端 store 中**与 UI 无关**的状态机、插件创建、列表刷新逻辑抽到
@@ -1207,22 +1207,22 @@ flowchart LR
 
 ## 七、相关文档
 
-| 文档                          | 位置                                                                                                  |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                              |
-| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                        |
-| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                   |
-| 插件体系设计                  | `.local/插件体系设计.md`                                                                              |
-| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                        |
-| 三端统一 / Mobile 融入 pixuli | [06-unified-app-mobile-integration.md](docs/02-system-design/06-unified-app-mobile-integration.md)    |
-| TS/JS 策略（计划）            | REF-410 → `docs/02-system-design/11-typescript-javascript-policy.md`                                  |
-| 插件 Host 集成（计划）        | REF-411 → 扩展 [08-storage-plugin-authoring.md](docs/02-system-design/08-storage-plugin-authoring.md) |
-| M3 存储回归清单               | [10-m3-storage-regression-checklist.md](docs/02-system-design/10-m3-storage-regression-checklist.md)  |
-| AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                            |
-| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                         |
-| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                          |
-| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                          |
-| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                        |
+| 文档                          | 位置                                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                |
+| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                          |
+| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                     |
+| 插件体系设计                  | `.local/插件体系设计.md`                                                                                |
+| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                          |
+| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                        |
+| TS/JS 策略（计划）            | REF-410 → `docs/02-system-design/11-typescript-javascript-policy.md`                                    |
+| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分               |
+| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单) |
+| AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                              |
+| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                           |
+| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                            |
+| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                            |
+| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                          |
 
 > 建议：M4 中将 `.local` 核心内容迁入
 > `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。

@@ -1,6 +1,6 @@
 # Pixuli 文档目录说明
 
-> **最后核对**：2026-06-06 · 适用分支 `main` · 维护 Issue
+> **最后核对**：2026-05-27 · 适用分支 `main` · 维护 Issue
 > [REF-407](https://github.com/trueLoving/Pixuli/issues/111)
 
 本目录（`docs/`）集中存放项目文档，按职责分为子目录。终端用户日常操作见
@@ -11,13 +11,13 @@
 
 ## 按角色阅读
 
-| 角色                | 建议路径                                                                                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **终端用户**        | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) ← 源稿 [产品使用手册](01-product/02-Product-User-Manual.md)                                                                        |
-| **产品 / 测试**     | [产品需求规格说明书](01-product/01-Product-Requirements-Specification.md) → [backlog](backlog.md)（已移除项）                                                                               |
-| **前端 / 多端开发** | [00-System-Design](02-system-design/00-System-Design.md) → [存储插件](02-system-design/07-storage-plugin-system.md) → [业务：仓库源](03-business-design/01-repository-source-management.md) |
-| **插件作者**        | [08-storage-plugin-authoring](02-system-design/08-storage-plugin-authoring.md)                                                                                                              |
-| **协作者 / Issue**  | 仓库根 [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                                                                                              |
+| 角色                | 建议路径                                                                                                                                                                                                                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **终端用户**        | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) ← 源稿 [产品使用手册](01-product/02-Product-User-Manual.md)                                                                                                                                                   |
+| **产品 / 测试**     | [产品需求规格说明书](01-product/01-Product-Requirements-Specification.md) → [backlog](backlog.md)（已移除项）                                                                                                                                                          |
+| **前端 / 多端开发** | [00-System-Design](02-system-design/00-System-Design.md) → [三端能力共享](02-system-design/01-Three-Platform-Capability-Sharing.md) → [三端设计](02-system-design/02-Three-Platform-Design.md) → [业务：仓库源](03-business-design/01-repository-source-management.md) |
+| **插件作者**        | [04-Plugin-System](02-system-design/04-Plugin-System.md)（§第二部分 开发指南）                                                                                                                                                                                         |
+| **协作者 / Issue**  | 仓库根 [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                                                                                                                                                                         |
 
 ---
 
@@ -47,18 +47,13 @@
 
 ## 02-system-design（技术）
 
-| 文档                                                                                                                      | 关注内容                                                 |
-| ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [00-System-Design.md](02-system-design/00-System-Design.md)                                                               | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。 |
-| [01-cross-platform-resources.md](02-system-design/01-cross-platform-resources.md)                                         | 跨端共享：`@pixuli/core` / `@pixuli/ui` 分层与导出策略。 |
-| [02-cross-image-process.md](02-system-design/02-cross-image-process.md)                                                   | 图片处理契约与各端实现（Web：Canvas；Mobile：原生）。    |
-| [03-performance.md](02-system-design/03-performance.md)                                                                   | 列表虚拟化、懒加载、性能监控。                           |
-| [04-cross-platform-logging.md](02-system-design/04-cross-platform-logging.md)                                             | 跨端日志与 DevTools。                                    |
-| [05-Dify-Integration-And-Image-Processing-Design.md](02-system-design/05-Dify-Integration-And-Image-Processing-Design.md) | Dify 与图片处理选型。                                    |
-| [06-unified-app-mobile-integration.md](02-system-design/06-unified-app-mobile-integration.md)                             | Mobile 与 pixuli 统一（Capacitor 路线）。                |
-| [07-storage-plugin-system.md](02-system-design/07-storage-plugin-system.md)                                               | M3 存储插件体系（REF-301～311）。                        |
-| [08-storage-plugin-authoring.md](02-system-design/08-storage-plugin-authoring.md)                                         | 第三方 Provider 开发指南（REF-308）。                    |
-| [10-m3-storage-regression-checklist.md](02-system-design/10-m3-storage-regression-checklist.md)                           | M3 存储回归清单（REF-310）。                             |
+| 文档                                                                                                | 关注内容                                                                  |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [00-System-Design.md](02-system-design/00-System-Design.md)                                         | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。                  |
+| [01-Three-Platform-Capability-Sharing.md](02-system-design/01-Three-Platform-Capability-Sharing.md) | 三端能力共享：资源共享、`@pixuli/core`/`@pixuli/ui`、图片处理契约、日志。 |
+| [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                     |
+| [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                            |
+| [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。        |
 
 ---
 

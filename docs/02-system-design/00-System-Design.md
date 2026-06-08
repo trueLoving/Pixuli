@@ -285,13 +285,13 @@ graph LR
 
 ### 6.2 关键设计文档与能力对应
 
-| 能力域          | 设计文档                                                                                                | 要点                                           |
-| --------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| 跨端资源共享    | [01-cross-platform-resources](./01-cross-platform-resources.md)                                         | common 三层架构、平台导出、Web 与 RN 组件分离  |
-| 跨端图片处理    | [02-cross-image-process](./02-cross-image-process.md)                                                   | 统一接口 + 平台适配器，WASM vs 原生            |
-| 性能优化与监控  | [03-performance](./03-performance.md)                                                                   | 虚拟滚动、懒加载、Worker、性能采集与面板       |
-| 跨端日志        | [04-cross-platform-logging](./04-cross-platform-logging.md)                                             | LogInterceptorService、DevTools 面板           |
-| Dify 与处理选型 | [05-Dify-Integration-And-Image-Processing-Design](./05-Dify-Integration-And-Image-Processing-Design.md) | 分析/生成走 Dify，压缩/转换/基础编辑走传统实现 |
+| 能力域            | 设计文档                                                                          | 要点                                                       |
+| ----------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 三端能力共享      | [01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md) | 资源共享、图片处理契约、跨端日志（§第一～三部分）          |
+| 三端设计与复用    | [02-Three-Platform-Design](./02-Three-Platform-Design.md)                         | Web/Desktop/Mobile 架构选型与最大化代码复用（Capacitor A） |
+| 性能优化与监控    | [03-Performance](./03-Performance.md)                                             | 虚拟滚动、懒加载、Worker、性能采集与面板                   |
+| 存储插件体系      | [04-Plugin-System](./04-Plugin-System.md)                                         | Registry、Provider 开发、M3 回归清单                       |
+| AI / Dify（延后） | [backlog §二](../backlog.md)                                                      | 分析/生成待功能开发后再补设计文档                          |
 
 ---
 
@@ -340,15 +340,15 @@ flowchart LR
 
 ### 8.1 文档体系
 
-| 文档/目录                    | 用途                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------- |
-| [01-product](../01-product/) | 产品需求（PRD）、使用教程等                                               |
-| [02-design](./README.md)     | 架构与方案设计索引；本系统设计为 00-System-Design，与 01～05 专项设计并列 |
+| 文档/目录                        | 用途                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| [01-product](../01-product/)     | 产品需求（PRD）、使用教程等                                               |
+| [02-system-design](../README.md) | 架构与方案设计索引；本系统设计为 00-System-Design，与 01～04 专项设计并列 |
 
 ### 8.2 本系统设计与各文档的关系
 
 - **00-System-Design（本文）**：描述系统全貌、模块、数据流、技术栈与部署形态，不替代各专项设计，而是与之互补。
-- **01～05 专项设计**：在各自领域内细化（资源共享、图片处理、性能、日志、Dify）；实现时以 PRD 为需求来源、以专项设计为技术方案。
+- **01～04 专项设计**：在各自领域内细化（三端能力共享、三端设计、性能、插件体系）；实现时以 PRD 为需求来源、以专项设计为技术方案。
 - **CICD.md**：若 Pixuli 的 Web 静态站或 Pixuli
   Server 需要接入同一套 CI/CD，可按照 CICD 中的「项目契约」（build.sh、artifacts.yml、deploy.sh）与 Workflow 设计进行接入。
 
@@ -356,7 +356,8 @@ flowchart LR
 
 1. **PRD**：确认需求与优先级（01-product）。
 2. **系统设计**：判断新能力归属模块（apps/common/server）及与现有数据流的关系（本文）。
-3. **专项设计**：若涉及跨端资源、图片处理、性能、日志、AI，查阅 02-design 下对应文档。
+3. **专项设计**：若涉及跨端能力、三端架构、性能、插件或 AI，查阅
+   `02-system-design/` 下对应文档。
 4. **部署**：若涉及新制品或新服务，参考 CICD.md 的契约与 Workflow 设计。
 
 ---
@@ -366,9 +367,10 @@ flowchart LR
 ### 9.1 已规划方向（与 PRD 一致）
 
 - **批量元数据编辑**：多选图片后统一改标签、描述等；见 M6 REF-604/605。
-- **布局与性能**：列数/瀑布流/虚拟列表等，见 03-performance。
-- **AI 能力**：自动打标、场景识别、OCR、文生图；接入方式见 05-Dify 与现有 Desktop
-  aiService。
+- **布局与性能**：列数/瀑布流/虚拟列表等，见
+  [03-Performance](./03-Performance.md)。
+- **AI 能力**：自动打标、场景识别、OCR、文生图；设计文档待开发后补充，见
+  [backlog](../backlog.md) 与现有 Desktop `aiService`。
 - **官方 Server**：不在路线图；历史能力见 [backlog §三](../backlog.md)。
 
 ### 9.2 架构扩展原则
@@ -376,7 +378,7 @@ flowchart LR
 - **新端或新入口**：优先复用 `@pixuli/core` + `@pixuli/ui`（或 Capacitor 套壳
   `apps/pixuli`）。
 - **新存储后端**：实现 `StorageProvider` 并注册到 `StoragePluginRegistry`（见
-  [08-storage-plugin-authoring](08-storage-plugin-authoring.md)）。
+  [04-Plugin-System §第二部分](./04-Plugin-System.md#第二部分-存储插件开发指南)）。
 - **新 AI 能力**：优先通过 Dify 工作流扩展；若需本地模型，在 Desktop 主进程或 Server 侧扩展，对前端暴露统一「分析/生成」抽象。
 
 ---
