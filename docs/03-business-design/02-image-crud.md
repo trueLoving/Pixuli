@@ -2,7 +2,7 @@
 
 - **文档版本**：1.0
 - **所属目录**：`.github/03-business-design`
-- **相关 PRD**：[01-Product-Requirements-Document](../01-product/01-Product-Requirements-Document.md)
+- **相关 PRD**：[01-Product-Requirements-Specification](../01-product/01-Product-Requirements-Specification.md)
   第 4.2 节
 - **相关系统设计**：[00-System-Design](../02-system-design/00-System-Design.md)
 
@@ -299,7 +299,7 @@ API。
 
 ### 7.3 相关文档
 
-- [01-Product-Requirements-Document 4.2 图片 CRUD](../01-product/01-Product-Requirements-Document.md)
+- [01-Product-Requirements-Specification 5.2 图片 CRUD](../01-product/01-Product-Requirements-Specification.md)
 - [01-repository-source-management 仓库源管理](01-repository-source-management.md)
 - [00-System-Design 数据流与存储、模块与职责](../02-system-design/00-System-Design.md)
 - [02-cross-image-process 跨端图片处理](../02-system-design/02-cross-image-process.md)（处理契约，与 CRUD 存储配合）

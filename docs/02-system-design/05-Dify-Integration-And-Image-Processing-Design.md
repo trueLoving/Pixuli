@@ -234,4 +234,4 @@ graph TB
 
 - [00-System-Design - 整体系统设计](./00-System-Design.md)
 - [02-cross-image-process - 跨端图片处理](./02-cross-image-process.md)
-- [01-product PRD](../01-product/01-Product-Requirements-Document.md)
+- [01-product 产品需求规格说明书](../01-product/01-Product-Requirements-Specification.md)

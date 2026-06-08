@@ -3,7 +3,7 @@
 - **文档版本**：1.0
 - **创建日期**：2026-05-27
 - **维护**：REF-402；与
-  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[PRD](01-product/01-Product-Requirements-Document.md)
+  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[产品需求规格说明书](01-product/01-Product-Requirements-Specification.md)
   配套
 - **读者**：产品、开发、协作者；承接**不在当前主线**的需求，避免 PRD 与系统设计文档混杂历史项
 
@@ -26,7 +26,8 @@
 ## 一、已移除（M1，不恢复）
 
 > 摘要见
-> [01-product/03-Product-Scope-And-Cut-List.md](01-product/03-Product-Scope-And-Cut-List.md)。
+> [01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
+> §二。
 
 | 能力                               | 说明                                 | 计划/Issue  |
 | ---------------------------------- | ------------------------------------ | ----------- |
@@ -128,7 +129,7 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 | PWA           | F-PWA-04                     | 更新检测待完善                                                                                  |
 
 完整列表见
-[01-Product-Requirements-Document.md](01-product/01-Product-Requirements-Document.md)
+[01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
 §4.10～§4.11；新能力优先挂 M5/M6 Issue 再改 PRD。
 
 ---
@@ -145,12 +146,12 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 ## 七、相关文档
 
-| 文档                                                                                             | 关系                |
-| ------------------------------------------------------------------------------------------------ | ------------------- |
-| [01-product/01-Product-Requirements-Document.md](01-product/01-Product-Requirements-Document.md) | 当前有效需求与验收  |
-| [01-product/03-Product-Scope-And-Cut-List.md](01-product/03-Product-Scope-And-Cut-List.md)       | 范围与裁剪摘要      |
-| [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                          | 里程碑与 Issue 追踪 |
-| [docs/README.md](README.md)                                                                      | 文档索引            |
+| 文档                                                                                                       | 关系                      |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------- |
+| [01-product/01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md) | 基线产品需求与范围        |
+| [01-product/02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)                               | 产品使用手册（Wiki 源稿） |
+| [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                    | 里程碑与 Issue 追踪       |
+| [docs/README.md](README.md)                                                                                | 文档索引                  |
 
 ---
 

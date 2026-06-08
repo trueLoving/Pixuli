@@ -3,7 +3,7 @@
 - **文档版本**：1.0
 - **所属目录**：`.github/03-business-design`
 - **相关 PRD**：
-  [01-Product-Requirements-Document](../01-product/01-Product-Requirements-Document.md)
+  [01-Product-Requirements-Specification](../01-product/01-Product-Requirements-Specification.md)
   第 4.1 节
 - **相关系统设计**： [00-System-Design](../02-system-design/00-System-Design.md)
 
@@ -216,6 +216,6 @@ flowchart LR
 
 ### 7.2 相关文档
 
-- [01-Product-Requirements-Document 4.1 仓库源管理](../01-product/01-Product-Requirements-Document.md)
-- [02-Pixuli-Usage-Tutorial 仓库源配置](../01-product/02-Pixuli-Usage-Tutorial.md)
+- [01-Product-Requirements-Specification 5.1 仓库源管理](../01-product/01-Product-Requirements-Specification.md)
+- [02-Product-User-Manual 仓库源配置](../01-product/02-Product-User-Manual.md)
 - [00-System-Design 客户端配置与状态](../02-system-design/00-System-Design.md)

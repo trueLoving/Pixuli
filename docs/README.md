@@ -5,8 +5,7 @@
 
 本目录（`docs/`）集中存放项目文档，按职责分为子目录。终端用户日常操作见
 **[GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki)**（源稿：
-[01-product/02-Pixuli-Usage-Tutorial.md](01-product/02-Pixuli-Usage-Tutorial.md)，同步说明见
-[04-Wiki-Sync-Guide.md](01-product/04-Wiki-Sync-Guide.md)）。
+[01-product/02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)（含附录 Wiki 同步说明））。
 
 ---
 
@@ -14,8 +13,8 @@
 
 | 角色                | 建议路径                                                                                                                                                                                    |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **终端用户**        | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) ← 源稿 [使用教程](01-product/02-Pixuli-Usage-Tutorial.md)                                                                          |
-| **产品 / 测试**     | [PRD](01-product/01-Product-Requirements-Document.md) → [范围与裁剪](01-product/03-Product-Scope-And-Cut-List.md) → [backlog](backlog.md)（已移除项）                                       |
+| **终端用户**        | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) ← 源稿 [产品使用手册](01-product/02-Product-User-Manual.md)                                                                        |
+| **产品 / 测试**     | [产品需求规格说明书](01-product/01-Product-Requirements-Specification.md) → [backlog](backlog.md)（已移除项）                                                                               |
 | **前端 / 多端开发** | [00-System-Design](02-system-design/00-System-Design.md) → [存储插件](02-system-design/07-storage-plugin-system.md) → [业务：仓库源](03-business-design/01-repository-source-management.md) |
 | **插件作者**        | [08-storage-plugin-authoring](02-system-design/08-storage-plugin-authoring.md)                                                                                                              |
 | **协作者 / Issue**  | 仓库根 [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                                                                                              |
@@ -39,12 +38,10 @@
 
 ## 01-product（产物）
 
-| 文档                                                                                  | 关注内容                                                                |
-| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [01-Product-Requirements-Document.md](01-product/01-Product-Requirements-Document.md) | PRD v2.0：三端底线、图床网格/列表、存储插件、无官方 Server（REF-401）。 |
-| [02-Pixuli-Usage-Tutorial.md](01-product/02-Pixuli-Usage-Tutorial.md)                 | **用户使用教程（Wiki 源稿）**：配置源、上传、三端差异、FAQ（REF-408）。 |
-| [03-Product-Scope-And-Cut-List.md](01-product/03-Product-Scope-And-Cut-List.md)       | M1 裁剪、非官方范围、包结构（REF-401）。                                |
-| [04-Wiki-Sync-Guide.md](01-product/04-Wiki-Sync-Guide.md)                             | Wiki 目录规划、与源稿同步策略（REF-408）。                              |
+| 文档                                                                                            | 关注内容                                                                                 |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md) | **基线产品需求规格说明书**：底线、裁剪、功能/非功能需求、路线图（REF-401 合并）。        |
+| [02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)                               | **产品使用手册（Wiki 源稿）**：配置源、上传、三端、FAQ；附录 Wiki 同步（REF-408 合并）。 |
 
 ---
 
@@ -88,7 +85,8 @@
 
 ## 修订
 
-| 日期       | 变更                                                             |
-| ---------- | ---------------------------------------------------------------- |
-| 2026-06-06 | REF-407：角色索引、架构摘要、browse-mode 归档标注、Wiki 源稿链接 |
-| 2026-05-27 | REF-401/402：PRD v2.0、backlog 索引                              |
+| 日期       | 变更                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------ |
+| 2026-06-06 | 01-product 合并为 `01-Product-Requirements-Specification` + `02-Product-User-Manual` |
+| 2026-06-06 | REF-407：角色索引、架构摘要、browse-mode 归档标注                                    |
+| 2026-05-27 | REF-401/402：PRD v2.0、backlog 索引                                                  |

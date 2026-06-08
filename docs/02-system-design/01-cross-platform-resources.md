@@ -1,10 +1,11 @@
 # 跨端资源共享设计方案
 
-> **最后核对**：2026-06-06 · REF-407  
-> **现状**：`packages/common` 已删除（REF-311）。共享层为
-> **`@pixuli/core`**（类型、Registry、工具）与 **`@pixuli/ui`**（Web/Desktop
-> UI，`./native` 供 RN）。下文若仍出现 `packages/common`
-> 指**历史结构**，以本说明为准。
+（资源、图片处理、日志）
+
+> **最后核对**：2026-06-06 · REF-407 **现状**：`packages/common`
+> 已删除（REF-311）。共享层为 **`@pixuli/core`**（类型、Registry、工具）与
+> **`@pixuli/ui`**（Web/Desktop UI，`./native` 供 RN）。下文若仍出现
+> `packages/common` 指**历史结构**，以本说明为准。
 
 ## 目录
 

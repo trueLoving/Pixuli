@@ -419,7 +419,7 @@ stateDiagram-v2
 ### 10.3 参考文档
 
 - [Pixuli README](../../README.md) - 项目介绍与快速开始
-- [PRD - 产品需求文档](../01-product/01-Product-Requirements-Document.md)
+- [产品需求规格说明书](../01-product/01-Product-Requirements-Specification.md)
 
 ### 10.4 相关文件清单
 
