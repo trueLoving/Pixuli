@@ -3,7 +3,7 @@
 - **文档版本**：1.0
 - **创建日期**：2026-05-27
 - **维护**：REF-402；与
-  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[PRD](01-product/01-Product-Requirements-Document.md)
+  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[产品需求规格说明书](01-product/01-Product-Requirements-Specification.md)
   配套
 - **读者**：产品、开发、协作者；承接**不在当前主线**的需求，避免 PRD 与系统设计文档混杂历史项
 
@@ -26,7 +26,8 @@
 ## 一、已移除（M1，不恢复）
 
 > 摘要见
-> [01-product/03-Product-Scope-And-Cut-List.md](01-product/03-Product-Scope-And-Cut-List.md)。
+> [01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
+> §二。
 
 | 能力                               | 说明                                 | 计划/Issue  |
 | ---------------------------------- | ------------------------------------ | ----------- |
@@ -41,10 +42,9 @@
 | performance 未接入模块             | UI 性能演示，未产品化                | REF-111 #57 |
 | devtools 未接入模块                | 开发调试组件，未产品化               | REF-111 #57 |
 
-**历史业务/设计文档**（只读参考，勿按现产品验收）：
-
-- [03-business-design/03-browse-mode.md](03-business-design/03-browse-mode.md)
-  — 三模式浏览（已裁剪）
+**历史业务/设计文档**：`docs/03-business-design/`
+早期草稿已移除；幻灯片/时间线等裁剪说明见本节上表与
+[03-business-design/README.md](03-business-design/README.md)。
 
 ---
 
@@ -118,39 +118,39 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 ### 5.3 PRD 中仍为 ⏳ 的其它项（未单独开 Issue 时）
 
-| 类别          | 示例 ID                      | 说明                                                                                            |
-| ------------- | ---------------------------- | ----------------------------------------------------------------------------------------------- |
-| 搜索增强      | F-SEARCH-04                  | 高级搜索、历史                                                                                  |
-| Web 工具页    | F-TOOL-CVT/CMP/EDT-01        | 压缩/转换/编辑页逻辑待补全                                                                      |
-| 图片分析/生成 | F-TOOL-ANZ-01、F-TOOL-GEN-01 | Dify 集成见 [05-Dify 设计](02-system-design/05-Dify-Integration-And-Image-Processing-Design.md) |
-| 体验增强      | F-WEB-DESK-04～05、07～15    | 私有仓库、错误处理、手势、收藏、统计等                                                          |
-| 移动端扩展    | F-MOBILE-02～16              | 批量元数据、布局、离线等                                                                        |
-| PWA           | F-PWA-04                     | 更新检测待完善                                                                                  |
+| 类别          | 示例 ID                      | 说明                                                     |
+| ------------- | ---------------------------- | -------------------------------------------------------- |
+| 搜索增强      | F-SEARCH-04                  | 高级搜索、历史                                           |
+| Web 工具页    | F-TOOL-CVT/CMP/EDT-01        | 压缩/转换/编辑页逻辑待补全                               |
+| 图片分析/生成 | F-TOOL-ANZ-01、F-TOOL-GEN-01 | Dify 集成设计待功能开发后补充（原 `05-Dify` 文档已移除） |
+| 体验增强      | F-WEB-DESK-04～05、07～15    | 私有仓库、错误处理、手势、收藏、统计等                   |
+| 移动端扩展    | F-MOBILE-02～16              | 批量元数据、布局、离线等                                 |
+| PWA           | F-PWA-04                     | 更新检测待完善                                           |
 
 完整列表见
-[01-Product-Requirements-Document.md](01-product/01-Product-Requirements-Document.md)
+[01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
 §4.10～§4.11；新能力优先挂 M5/M6 Issue 再改 PRD。
 
 ---
 
 ## 六、存储与集成扩展（非官方 P0）
 
-| 项                                            | 说明                                                                                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 第三方图床 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [08-storage-plugin-authoring.md](02-system-design/08-storage-plugin-authoring.md) |
-| 插件热加载 / 远程安装                         | REFACTOR_PLAN Backlog #102                                                                                          |
-| 社区 MCP / Server 对接                        | 见 §三                                                                                                              |
+| 项                                            | 说明                                                                                                                           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 第三方图床 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [04-Plugin-System §第二部分](02-system-design/04-Plugin-System.md#第二部分-存储插件开发指南) |
+| 插件热加载 / 远程安装                         | REFACTOR_PLAN Backlog #102                                                                                                     |
+| 社区 MCP / Server 对接                        | 见 §三                                                                                                                         |
 
 ---
 
 ## 七、相关文档
 
-| 文档                                                                                             | 关系                |
-| ------------------------------------------------------------------------------------------------ | ------------------- |
-| [01-product/01-Product-Requirements-Document.md](01-product/01-Product-Requirements-Document.md) | 当前有效需求与验收  |
-| [01-product/03-Product-Scope-And-Cut-List.md](01-product/03-Product-Scope-And-Cut-List.md)       | 范围与裁剪摘要      |
-| [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                          | 里程碑与 Issue 追踪 |
-| [docs/README.md](README.md)                                                                      | 文档索引            |
+| 文档                                                                                                       | 关系                      |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------- |
+| [01-product/01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md) | 基线产品需求与范围        |
+| [01-product/02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)                               | 产品使用手册（Wiki 源稿） |
+| [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                    | 里程碑与 Issue 追踪       |
+| [docs/README.md](README.md)                                                                                | 文档索引                  |
 
 ---
 

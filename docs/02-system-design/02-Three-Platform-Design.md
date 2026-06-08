@@ -1,8 +1,10 @@
-# 移动端与 apps/pixuli 统一：技术分析与方案 A 落地
+# 三端设计方案（最大化代码复用）
 
-- **文档版本**：1.1
-- **所属目录**：`docs/02-system-design`
-- **关联**：[00-System-Design](00-System-Design.md) 应用层与多端
+> **最后核对**：2026-05-27 · 由原 `02-Three-Platform-Design` 改写
+> **目标**：在 Web / Desktop /
+> Mobile 差异下，**最大化三端代码复用**；明确 Capacitor 方案 A 为当前路线。
+
+- **关联**：[00-System-Design](./00-System-Design.md)、[01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md)
 
 ---
 
@@ -13,7 +15,7 @@
 | **运行时** | 浏览器（DOM）                | Electron 渲染进程（DOM）             | 同一套运行环境             |
 | **UI 层**  | React + DOM（div、img、CSS） | 同上                                 | 同一套组件与样式           |
 | **构建**   | Vite `build:web`             | Vite `build:desktop` + Electron 打包 | 同一套源码，不同 mode/产物 |
-| **差异**   | 无桌面能力                   | 主进程：WASM、AI、文件、系统托盘等   | 仅「壳」与能力扩展不同     |
+| **差异**   | 无桌面能力                   | 主进程：Gitee 代理、文件、系统能力等 | 仅「壳」与能力扩展不同     |
 
 因此 **Web 与 Desktop 可以共用 `apps/pixuli`**：同一套 Vite +
 React 代码，通过 mode 与 Electron 主进程区分行为与产物。
@@ -29,10 +31,10 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 | **构建**     | Vite                         | Metro + Expo（生成 Android/iOS 二进制） |
 | **导航**     | react-router-dom             | expo-router / React Navigation          |
 | **存储**     | localStorage                 | AsyncStorage                            |
-| **图片处理** | packages/wasm（WASM）        | expo-image-manipulator（原生）          |
+| **图片处理** | Canvas（`@pixuli/ui`）       | expo-image-manipulator（原生）          |
 
-**本质差异**：Web/Desktop 是「React 渲染到 DOM」；Mobile 是「React 渲染到原生控件」。**同一份 JSX 不能既跑在 DOM 上又跑在 RN 上**（除非用跨平台抽象层或同一套 RN 用 RNW 跑 Web）。因此目前是**两个 UI 代码库**，通过
-`packages/common` 共享逻辑、类型、服务、状态与部分适配。
+**本质差异**：Web/Desktop 是「React 渲染到 DOM」；Mobile 是「React 渲染到原生控件」。**同一份 JSX 不能既跑在 DOM 上又跑在 RN 上**（除非 Capacitor 或 RNW）。因此目前是**两个 UI 代码库**，通过
+`@pixuli/core`、`@pixuli/provider-*` 共享逻辑与存储契约。
 
 ---
 
@@ -106,7 +108,8 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 - 把 `apps/mobile` 挪到 `apps/pixuli/mobile`（或
   `apps/pixuli-native`），在文档和 CI 里把“移动端”视为 `apps/pixuli` 的一部分；
 - 或保持 `apps/pixuli`（Web+Desktop）与 `apps/mobile` 并列，通过
-  **packages/common** 继续提高共享（业务逻辑、类型、服务、状态、i18n）。
+  **`@pixuli/core` / `@pixuli/ui`（原 `@pixuli/core` / `@pixuli/ui`）**
+  继续提高共享（业务逻辑、类型、服务、状态、i18n）。
 
 **优点**
 
@@ -147,7 +150,7 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 Native 或原生技术栈开发。
 
 **其他方案**：若未来移动端必须保持原生体验且长期要三端一套 UI，可再评估方案 B（RNW）；若短期不打算动架构，可保持方案 C，继续强化
-`packages/common`。
+`@pixuli/core` / `@pixuli/ui`。
 
 ---
 
@@ -398,12 +401,12 @@ export const getPlatform = (): 'web' | 'desktop' | 'mobile' => {
 
 ## 十一、方案 A：风险与应对
 
-| 风险                          | 应对                                                                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
-| WebView 与桌面/浏览器行为差异 | 在关键路径（上传、选图、路由）做真机与多机型测试；必要时在 `platforms/mobile` 做小范围适配。         |
-| 包体积偏大                    | 沿用现有 Vite 的 code split、按需加载；后续可考虑资源 CDN、子资源压缩。                              |
-| 相机/相册权限与体验           | 严格按阶段 3 做封装与权限声明；若某端体验仍不足，再考虑该端单独用 RN 或原生模块。                    |
-| 后续要切 RN/原生              | 业务逻辑已集中在 `packages/common` 与能力层，UI 仍可替换为 RN 或原生视图，仅替换「壳」与平台层实现。 |
+| 风险                          | 应对                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| WebView 与桌面/浏览器行为差异 | 在关键路径（上传、选图、路由）做真机与多机型测试；必要时在 `platforms/mobile` 做小范围适配。                     |
+| 包体积偏大                    | 沿用现有 Vite 的 code split、按需加载；后续可考虑资源 CDN、子资源压缩。                                          |
+| 相机/相册权限与体验           | 严格按阶段 3 做封装与权限声明；若某端体验仍不足，再考虑该端单独用 RN 或原生模块。                                |
+| 后续要切 RN/原生              | 业务逻辑已集中在 `@pixuli/core` / `@pixuli/ui` 与能力层，UI 仍可替换为 RN 或原生视图，仅替换「壳」与平台层实现。 |
 
 ---
 

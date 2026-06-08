@@ -5,7 +5,7 @@ Pixuli 官方 **Gitee 仓库图床**存储插件（M3 REF-303）。
 - **npm 包名**：`@pixuli/provider-gitee`
 - **Monorepo 目录**：`packages/plugin-provider-gitee`
 - **插件 ID**：`gitee`
-- **设计文档**：[存储插件体系设计](../../docs/02-system-design/07-storage-plugin-system.md)、[开发指南](../../docs/02-system-design/08-storage-plugin-authoring.md)
+- **设计文档**：[04-Plugin-System](../../docs/02-system-design/04-Plugin-System.md)（§第一部分 体系设计、§第二部分 开发指南）
 
 实现 Gitee API v5 + sidecar 元数据，符合
 [`@pixuli/core/plugins`](../core/README.md) 中的 `StorageProvider`
