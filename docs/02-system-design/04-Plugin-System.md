@@ -6,7 +6,7 @@
 - **关联 Issue**：[#70](https://github.com/trueLoving/Pixuli/issues/70)、[#77](https://github.com/trueLoving/Pixuli/issues/77)、[#79](https://github.com/trueLoving/Pixuli/issues/79)
 - **相关文档**：
   - [00-System-Design](./00-System-Design.md)
-  - [03-business-design/01-repository-source-management](../03-business-design/01-repository-source-management.md)
+  - [01-Product-Requirements-Specification §5.1](../01-product/01-Product-Requirements-Specification.md)（仓库源需求；业务设计文档暂缓）
   - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)
 
 本文合并
@@ -532,8 +532,7 @@ const githubManifest: StoragePluginManifest = {
 # 第二部分 存储插件开发指南
 
 - [04-Plugin-System](./04-Plugin-System.md) — 架构、契约与 Registry 设计
-- [03-business-design/01-repository-source-management](../03-business-design/01-repository-source-management.md)
-  — 仓库源业务模型
+- [01-Product-Requirements-Specification §5.1](../01-product/01-Product-Requirements-Specification.md)（仓库源需求；业务设计文档暂缓）— 仓库源业务模型
 
 ## 一、读者与目标
 

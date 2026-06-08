@@ -42,10 +42,9 @@
 | performance 未接入模块             | UI 性能演示，未产品化                | REF-111 #57 |
 | devtools 未接入模块                | 开发调试组件，未产品化               | REF-111 #57 |
 
-**历史业务/设计文档**（只读参考，勿按现产品验收）：
-
-- [03-business-design/03-browse-mode.md](03-business-design/03-browse-mode.md)
-  — 三模式浏览（已裁剪）
+**历史业务/设计文档**：`docs/03-business-design/`
+早期草稿已移除；幻灯片/时间线等裁剪说明见本节上表与
+[03-business-design/README.md](03-business-design/README.md)。
 
 ---
 

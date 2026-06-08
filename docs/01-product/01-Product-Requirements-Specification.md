@@ -266,8 +266,8 @@ Pixuli/
 | F-BROWSE-03 | 时间线模式（按时间分组浏览）                                                         | —      | —      | ❌ 已移除 |
 | F-BROWSE-04 | 全平台提供仓库源设置入口，支持 GitHub / Gitee 仓库的配置、切换、多源管理与设置页访问 | P0     | 全平台 | ✅        |
 
-> 原 F-BROWSE-04（侧栏含工具入口）、F-BROWSE-05（移动端图床）已合并为本条：工具导航归入§5.6；图床列表能力归入 F-BROWSE-01。历史
-> [03-browse-mode.md](../03-business-design/03-browse-mode.md) 仅作归档参考。
+> 原 F-BROWSE-04（侧栏含工具入口）、F-BROWSE-05（移动端图床）已合并为本条：工具导航归入§5.6；图床列表能力归入 F-BROWSE-01。幻灯片/时间线已移除，见
+> [backlog](../backlog.md)。
 
 ---
 
