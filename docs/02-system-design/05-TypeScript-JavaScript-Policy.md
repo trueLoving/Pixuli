@@ -26,20 +26,21 @@
 
 ### 2.1 已迁移为 TypeScript
 
-| 原路径                                                                     | 现路径         | 说明                                             |
-| -------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
-| `packages/plugin-provider-gitee/src/proxy/constants.js` + `constants.d.ts` | `constants.ts` | 单常量 `GITEE_PROXY_PATH`；原 JS 为 REF-313 过渡 |
+| 原路径                                     | 现路径                            | 说明                                           |
+| ------------------------------------------ | --------------------------------- | ---------------------------------------------- |
+| `constants.d.ts` 单独维护（无 `.js` 实现） | `constants.js` + `constants.d.ts` | 单常量；`.js` 供 Node/Vite SSR，`.d.ts` 供 tsc |
 
 ### 2.2 登记的 JavaScript 例外（保留）
 
-| 文件                                   | 原因                                                                                                                                   |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `eslint.config.mjs`                    | ESLint 9 flat config 官方推荐 `.mjs` 入口                                                                                              |
-| `apps/pixuli/postcss.config.cjs`       | PostCSS 常用 CJS 配置格式                                                                                                              |
-| `apps/pixuli/tailwind.config.js`       | Tailwind 配置；可被 Vite/PostCSS 直接加载                                                                                              |
-| `apps/pixuli/api/gitee-proxy.js`       | Vercel Serverless **产物**；由 `build:vercel-api`（esbuild）从 `gitee-proxy.entry.ts` 打包生成，Node 无法直接 `import` workspace `.ts` |
-| `apps/pixuli/api/gitee-proxy.entry.ts` | Vercel 打包源；逻辑 SSOT 仍为 `@pixuli/provider-gitee/proxy/server`                                                                    |
-| `archive/**`                           | 已归档，非 workspace，不参与主构建                                                                                                     |
+| 文件                                                    | 原因                                                                                                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `eslint.config.mjs`                                     | ESLint 9 flat config 官方推荐 `.mjs` 入口                                                                                              |
+| `apps/pixuli/postcss.config.cjs`                        | PostCSS 常用 CJS 配置格式                                                                                                              |
+| `apps/pixuli/tailwind.config.js`                        | Tailwind 配置；可被 Vite/PostCSS 直接加载                                                                                              |
+| `apps/pixuli/api/gitee-proxy.js`                        | Vercel Serverless **产物**；由 `build:vercel-api`（esbuild）从 `gitee-proxy.entry.ts` 打包生成，Node 无法直接 `import` workspace `.ts` |
+| `apps/pixuli/api/gitee-proxy.entry.ts`                  | Vercel 打包源；逻辑 SSOT 仍为 `@pixuli/provider-gitee/proxy/server`                                                                    |
+| `packages/plugin-provider-gitee/src/proxy/constants.js` | 单常量 `GITEE_PROXY_PATH`；Node / Vite SSR / Electron main 无法解析同目录无扩展名 `.ts` 相对导入，保留 `.js`                           |
+| `archive/**`                                            | 已归档，非 workspace，不参与主构建                                                                                                     |
 
 ### 2.3 已删除的冗余
 
@@ -54,9 +55,11 @@
 1. **一致性**：同一包、同一功能域内不得 TS 与 JS 各实现一份逻辑。
 2. **类型单一来源**：禁止长期「`.js` 实现 + `.d.ts` 声明」双文件维护。
 3. **导入约定**：
-   - 包内相对导入使用**无扩展名**（`./constants`），与 `tsc` /
-     `moduleResolution: bundler` 一致；**禁止**在未开启
-     `allowImportingTsExtensions` 时使用 `./foo.ts`。
+   - 包内相对导入默认**无扩展名**；经 `package.json` exports 被 Vite SSR /
+     Node 直载的模块，子依赖宜用**包路径**（如
+     `@pixuli/provider-gitee/proxy/constants`），避免 `./foo`
+     在 monorepo 根外解析失败。
+   - Gitee `constants.js` 为登记例外；消费方通过 `/proxy/constants` 入口引用。
    - **dev-only Vite 插件**（Gitee 代理等）须在 `configureServer` 内 **动态
      `import()`**，避免 `vite build` / Vercel 加载 `vite.config.ts`
      时 Node 原生 ESM 静态解析 workspace 子图。
@@ -79,7 +82,7 @@ Gitee 代理相关文件归属（REF-411 前置）：
 | Web dev  | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts`     | TS                       |
 | Web 生产 | `api/gitee-proxy.entry.ts` → `api/gitee-proxy.js` | esbuild 打包 provider TS |
 | 共享逻辑 | `@pixuli/provider-gitee/proxy/server`             | TS                       |
-| 常量     | `@pixuli/provider-gitee/proxy/constants`          | TS                       |
+| 常量     | `@pixuli/provider-gitee/proxy/constants`          | JS（登记例外）           |
 
 ---
 

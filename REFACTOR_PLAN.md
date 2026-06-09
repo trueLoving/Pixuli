@@ -992,8 +992,9 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 
 ### 9.1 技术栈梳理：TypeScript 与 JavaScript
 
-**现状（REF-410 已落地）**：业务与包源码**默认 TypeScript**；`constants.js`
-已迁为 `constants.ts`；Vercel `api/gitee-proxy.js` 保留为登记例外。详见
+**现状（REF-410 已落地）**：业务与包源码**默认 TypeScript**；Gitee
+`constants.js` 保留为 Node/Vite SSR 登记例外；Vercel `api/gitee-proxy.js`
+为 esbuild 产物。详见
 [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)。
 
 - 各包 `src/**/*.ts`，测试与构建工具链统一走 Vitest / Vite / `tsc`

@@ -1,6 +1,6 @@
 import http from 'node:http';
-import { GITEE_PROXY_PATH } from './constants';
-import { handleGiteeImageProxy } from './giteeImageProxy';
+import { GITEE_PROXY_PATH } from '@pixuli/provider-gitee/proxy/constants';
+import { handleGiteeImageProxy } from '@pixuli/provider-gitee/proxy/server';
 
 /**
  * 桌面打包版本地 Gitee 图片代理（REF-313）
