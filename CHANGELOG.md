@@ -16,7 +16,10 @@ and this project adheres to
 > [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
 
 Applies to **Web**, **Desktop**, and **Mobile** on the refactoring `main`
-branch. The next tagged release will use a new semver (see REF-409).
+branch. **Baseline product version: 2.0.0** (unified across platforms; MAJOR
+over 1.x). The next tagged release will be `v2.0.0-desktop`, `v2.0.0-mobile`,
+and `v2.0.0-web` when cut. See
+[03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md) (REF-409).
 
 ### ⚠️ Breaking Changes
 
@@ -54,12 +57,12 @@ branch. The next tagged release will use a new semver (see REF-409).
 
 ### Migration notes
 
-| If you used…                                | Now…                                                                  |
-| ------------------------------------------- | --------------------------------------------------------------------- |
-| Slideshow / Timeline / Photo Wall           | Use grid/list at `/photos`; see [backlog](docs/backlog.md)            |
-| Desktop WASM / AI via Rust                  | Canvas-based processing; archived WASM in `archive/wasm/`             |
-| Official NestJS server                      | Self-host from `archive/server/` or a custom `StorageProvider` plugin |
-| Releases `v1.3.0-desktop` / `v1.0.0-mobile` | Treat as pre-refactor; read `[Unreleased]` before upgrading           |
+| If you used…                                | Now…                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| Slideshow / Timeline / Photo Wall           | Use grid/list at `/photos`; see [backlog](docs/backlog.md)                  |
+| Desktop WASM / AI via Rust                  | Canvas-based processing; archived WASM in `archive/wasm/`                   |
+| Official NestJS server                      | Self-host from `archive/server/` or a custom `StorageProvider` plugin       |
+| Releases `v1.3.0-desktop` / `v1.0.0-mobile` | Pre-2.0 lines; upgrade target is **2.0.0** (not 1.4.x); read `[Unreleased]` |
 
 ---
 
@@ -110,6 +113,9 @@ See **[Unreleased](#unreleased)** above for M1 breaking changes.
 
 - Upgraded all platforms to React 19.1.0
 - Implemented slide show functionality and migrated to common component library
+
+> **Historical note (REF-409):** Slideshow was removed on the post-M1 `main`
+> branch. Pre-refactor installs of this release still include slideshow.
 
 ---
 
@@ -196,6 +202,10 @@ See **[Unreleased](#unreleased)** above for M1 breaking changes.
 ---
 
 ### [1.0.0][1.0.0] - 2025-09-13
+
+> **Release note:** Git tag `v1.0.0-desktop` points to this changelog entry; the
+> GitHub Release page was published on 2025-11-12 **without** install artifacts.
+> See [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md).
 
 #### ✨ Added
 

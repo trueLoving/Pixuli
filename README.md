@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)
 [![pnpm](https://img.shields.io/badge/pnpm-10.18.3-orange.svg)](https://pnpm.io/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-1.0.0-blue.svg)](https://pixuli-web.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-2.0.0-blue.svg)](https://pixuli-web.vercel.app/)
 [![Documentation](https://img.shields.io/badge/Documentation-Wiki-blue.svg)](https://github.com/trueLoving/Pixuli/wiki)
 
 ---
@@ -154,7 +154,9 @@ commit conventions.
 
 > **Upgrade note:** Releases before the M1 refactor (e.g. `v1.3.0-desktop`) may
 > include slideshow and WASM features removed on `main`. See
-> [CHANGELOG.md](./CHANGELOG.md) `[Unreleased]` before upgrading.
+> [CHANGELOG.md](./CHANGELOG.md) `[Unreleased]` and
+> [Release versioning](docs/01-product/03-Release-Versioning.md) before
+> upgrading.
 
 ---
 

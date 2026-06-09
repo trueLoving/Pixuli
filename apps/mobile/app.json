@@ -2,7 +2,7 @@
   "expo": {
     "name": "Pixuli",
     "slug": "pixuli",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "pixuli",
@@ -11,11 +11,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pixuli.mobile",
-      "buildNumber": "1"
+      "buildNumber": "2"
     },
     "android": {
       "package": "com.pixuli.mobile",
-      "versionCode": 1,
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
