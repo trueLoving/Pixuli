@@ -1022,7 +1022,7 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 | 宿主环境     | 集成方式（当前）                                                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Web dev      | `apps/pixuli/plugins/viteGiteeProxyPlugin` → `@pixuli/provider-gitee/proxy/server`                      |
-| Web 生产     | `api/gitee-proxy.js` → 同上（Vercel 须 `.js` 入口，见策略文档 §2.2）                                    |
+| Web 生产     | `api/gitee-proxy.entry.ts` → esbuild → `api/gitee-proxy.js`（见策略文档 §2.2 / §三.4）                  |
 | Desktop 打包 | Electron `startGiteeProxyServer` + preload `giteeProxyBase`                                             |
 | Renderer     | 仅 `@pixuli/provider-gitee/proxy/client`、`/url`（**禁止** import `/proxy` 聚合入口，避免 `node:http`） |
 

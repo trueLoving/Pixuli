@@ -32,13 +32,14 @@
 
 ### 2.2 登记的 JavaScript 例外（保留）
 
-| 文件                             | 原因                                                                 |
-| -------------------------------- | -------------------------------------------------------------------- |
-| `eslint.config.mjs`              | ESLint 9 flat config 官方推荐 `.mjs` 入口                            |
-| `apps/pixuli/postcss.config.cjs` | PostCSS 常用 CJS 配置格式                                            |
-| `apps/pixuli/tailwind.config.js` | Tailwind 配置；可被 Vite/PostCSS 直接加载                            |
-| `apps/pixuli/api/gitee-proxy.js` | Vercel Serverless 入口；平台不识别 `api/*.ts`，仅薄封装转发 provider |
-| `archive/**`                     | 已归档，非 workspace，不参与主构建                                   |
+| 文件                                   | 原因                                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `eslint.config.mjs`                    | ESLint 9 flat config 官方推荐 `.mjs` 入口                                                                                              |
+| `apps/pixuli/postcss.config.cjs`       | PostCSS 常用 CJS 配置格式                                                                                                              |
+| `apps/pixuli/tailwind.config.js`       | Tailwind 配置；可被 Vite/PostCSS 直接加载                                                                                              |
+| `apps/pixuli/api/gitee-proxy.js`       | Vercel Serverless **产物**；由 `build:vercel-api`（esbuild）从 `gitee-proxy.entry.ts` 打包生成，Node 无法直接 `import` workspace `.ts` |
+| `apps/pixuli/api/gitee-proxy.entry.ts` | Vercel 打包源；逻辑 SSOT 仍为 `@pixuli/provider-gitee/proxy/server`                                                                    |
+| `archive/**`                           | 已归档，非 workspace，不参与主构建                                                                                                     |
 
 ### 2.3 已删除的冗余
 
@@ -59,10 +60,12 @@
    - **dev-only Vite 插件**（Gitee 代理等）须在 `configureServer` 内 **动态
      `import()`**，避免 `vite build` / Vercel 加载 `vite.config.ts`
      时 Node 原生 ESM 静态解析 workspace 子图。
-4. **Vercel Serverless**：`apps/pixuli/api/gitee-proxy.js` 为登记的 **`.js`
-   薄入口**（无业务逻辑）；实现复用
-   `@pixuli/provider-gitee/proxy/server`（TypeScript）。勿改为
-   `api/*.ts`，除非 Vercel 项目已启用 TypeScript 函数支持。
+4. **Vercel Serverless**：源码为
+   `api/gitee-proxy.entry.ts`；`pnpm build:vercel-api` 用 esbuild 打成
+   `api/gitee-proxy.js`（登记例外，**勿手改产物**）。运行时 Node 不能解析
+   `package.json` exports 指向的 `.ts`，故不可在 `api/*.js` 内直接
+   `import '@pixuli/provider-gitee/proxy/server'`。`build:web` 已串联
+   `build:vercel-api`。
 5. **工具链例外**：新增 `.js`/`.mjs`/`.cjs` 须在 PR 中说明并更新本文 §2.2。
 
 ---
@@ -71,12 +74,12 @@
 
 Gitee 代理相关文件归属（REF-411 前置）：
 
-| 环境     | 文件                                          | 语言                  |
-| -------- | --------------------------------------------- | --------------------- |
-| Web dev  | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` | TS                    |
-| Web 生产 | `apps/pixuli/api/gitee-proxy.js`              | JS 入口 → TS provider |
-| 共享逻辑 | `@pixuli/provider-gitee/proxy/server`         | TS                    |
-| 常量     | `@pixuli/provider-gitee/proxy/constants`      | TS                    |
+| 环境     | 文件                                              | 语言                     |
+| -------- | ------------------------------------------------- | ------------------------ |
+| Web dev  | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts`     | TS                       |
+| Web 生产 | `api/gitee-proxy.entry.ts` → `api/gitee-proxy.js` | esbuild 打包 provider TS |
+| 共享逻辑 | `@pixuli/provider-gitee/proxy/server`             | TS                       |
+| 常量     | `@pixuli/provider-gitee/proxy/constants`          | TS                       |
 
 ---
 
