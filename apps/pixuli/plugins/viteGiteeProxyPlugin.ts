@@ -1,13 +1,16 @@
 import type { Plugin } from 'vite';
-import { createGiteeProxyMiddleware } from '@pixuli/provider-gitee/proxy/server';
 
 /**
- * Web / 桌面 dev：Vite 配置专用入口（由 esbuild 打包，避免 Node 原生 ESM 解析 .ts 子路径）。
+ * Web / 桌面 dev：Gitee 图片代理。动态 import provider，避免 `vite build` 时 Node 原生 ESM
+ * 解析 workspace 包内无扩展名相对路径（Vercel 等 CI 会加载 vite.config.ts）。
  */
 export function viteGiteeProxyPlugin(): Plugin {
   return {
     name: 'pixuli-gitee-image-proxy',
-    configureServer(server) {
+    async configureServer(server) {
+      const { createGiteeProxyMiddleware } = await import(
+        '@pixuli/provider-gitee/proxy/server'
+      );
       server.middlewares.use(createGiteeProxyMiddleware());
     },
   };

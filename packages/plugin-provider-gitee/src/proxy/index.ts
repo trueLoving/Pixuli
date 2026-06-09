@@ -1,4 +1,4 @@
-export { GITEE_PROXY_PATH } from './constants';
+export { GITEE_PROXY_PATH } from './constants.ts';
 export {
   parseGiteeProxyRequest,
   fetchGiteeImage,

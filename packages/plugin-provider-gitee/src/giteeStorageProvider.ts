@@ -11,7 +11,7 @@ import type {
   StorageProviderWithMetadata,
 } from '@pixuli/core/plugins';
 import { giteeManifest } from './manifest';
-import { GITEE_PROXY_PATH } from './proxy/constants';
+import { GITEE_PROXY_PATH } from './proxy/constants.ts';
 
 function narrowGiteeConfig(
   config: StorageProviderConfig | GiteeConfig,
