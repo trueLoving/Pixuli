@@ -992,8 +992,8 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 
 ### 9.1 技术栈梳理：TypeScript 与 JavaScript
 
-**现状（REF-410 已落地）**：业务与包源码**默认 TypeScript**；原
-`constants.js`、`api/gitee-proxy.js` 已迁移为 `.ts`。详见
+**现状（REF-410 已落地）**：业务与包源码**默认 TypeScript**；`constants.js`
+已迁为 `constants.ts`；Vercel `api/gitee-proxy.js` 保留为登记例外。详见
 [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)。
 
 - 各包 `src/**/*.ts`，测试与构建工具链统一走 Vitest / Vite / `tsc`
@@ -1022,7 +1022,7 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 | 宿主环境     | 集成方式（当前）                                                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Web dev      | `apps/pixuli/plugins/viteGiteeProxyPlugin` → `@pixuli/provider-gitee/proxy/server`                      |
-| Web 生产     | `api/gitee-proxy.ts` → 同上                                                                             |
+| Web 生产     | `api/gitee-proxy.js` → 同上（Vercel 须 `.js` 入口，见策略文档 §2.2）                                    |
 | Desktop 打包 | Electron `startGiteeProxyServer` + preload `giteeProxyBase`                                             |
 | Renderer     | 仅 `@pixuli/provider-gitee/proxy/client`、`/url`（**禁止** import `/proxy` 聚合入口，避免 `node:http`） |
 

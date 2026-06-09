@@ -10,8 +10,8 @@
 ## 一、决策结论
 
 **默认使用 TypeScript**（`.ts` /
-`.tsx`）。仓库内业务代码、Provider、UI、Electron、测试与 Serverless 入口**一律 TypeScript**；仅保留经登记的**工具链配置**
-JavaScript 例外。
+`.tsx`）。仓库内业务代码、Provider、UI、Electron、测试**一律 TypeScript**；仅保留经登记的
+**JavaScript 例外**（含 Vercel `api/*.js` 与工具链配置）。
 
 | 维度     | 选择                         | 说明                                       |
 | -------- | ---------------------------- | ------------------------------------------ |
@@ -26,19 +26,19 @@ JavaScript 例外。
 
 ### 2.1 已迁移为 TypeScript
 
-| 原路径                                                                     | 现路径               | 说明                                             |
-| -------------------------------------------------------------------------- | -------------------- | ------------------------------------------------ |
-| `packages/plugin-provider-gitee/src/proxy/constants.js` + `constants.d.ts` | `constants.ts`       | 单常量 `GITEE_PROXY_PATH`；原 JS 为 REF-313 过渡 |
-| `apps/pixuli/api/gitee-proxy.js`                                           | `api/gitee-proxy.ts` | Vercel Serverless 薄封装，逻辑在 provider        |
+| 原路径                                                                     | 现路径         | 说明                                             |
+| -------------------------------------------------------------------------- | -------------- | ------------------------------------------------ |
+| `packages/plugin-provider-gitee/src/proxy/constants.js` + `constants.d.ts` | `constants.ts` | 单常量 `GITEE_PROXY_PATH`；原 JS 为 REF-313 过渡 |
 
 ### 2.2 登记的 JavaScript 例外（保留）
 
-| 文件                             | 原因                                      |
-| -------------------------------- | ----------------------------------------- |
-| `eslint.config.mjs`              | ESLint 9 flat config 官方推荐 `.mjs` 入口 |
-| `apps/pixuli/postcss.config.cjs` | PostCSS 常用 CJS 配置格式                 |
-| `apps/pixuli/tailwind.config.js` | Tailwind 配置；可被 Vite/PostCSS 直接加载 |
-| `archive/**`                     | 已归档，非 workspace，不参与主构建        |
+| 文件                             | 原因                                                                 |
+| -------------------------------- | -------------------------------------------------------------------- |
+| `eslint.config.mjs`              | ESLint 9 flat config 官方推荐 `.mjs` 入口                            |
+| `apps/pixuli/postcss.config.cjs` | PostCSS 常用 CJS 配置格式                                            |
+| `apps/pixuli/tailwind.config.js` | Tailwind 配置；可被 Vite/PostCSS 直接加载                            |
+| `apps/pixuli/api/gitee-proxy.js` | Vercel Serverless 入口；平台不识别 `api/*.ts`，仅薄封装转发 provider |
+| `archive/**`                     | 已归档，非 workspace，不参与主构建                                   |
 
 ### 2.3 已删除的冗余
 
@@ -59,8 +59,10 @@ JavaScript 例外。
    - **dev-only Vite 插件**（Gitee 代理等）须在 `configureServer` 内 **动态
      `import()`**，避免 `vite build` / Vercel 加载 `vite.config.ts`
      时 Node 原生 ESM 静态解析 workspace 子图。
-4. **Serverless**：Vercel `api/*.ts` 由平台编译；handler 复用
-   `@pixuli/provider-*` 的 TypeScript 实现，入口文件仅做转发。
+4. **Vercel Serverless**：`apps/pixuli/api/gitee-proxy.js` 为登记的 **`.js`
+   薄入口**（无业务逻辑）；实现复用
+   `@pixuli/provider-gitee/proxy/server`（TypeScript）。勿改为
+   `api/*.ts`，除非 Vercel 项目已启用 TypeScript 函数支持。
 5. **工具链例外**：新增 `.js`/`.mjs`/`.cjs` 须在 PR 中说明并更新本文 §2.2。
 
 ---
@@ -69,12 +71,12 @@ JavaScript 例外。
 
 Gitee 代理相关文件归属（REF-411 前置）：
 
-| 环境     | 文件                                          | 语言 |
-| -------- | --------------------------------------------- | ---- |
-| Web dev  | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` | TS   |
-| Web 生产 | `apps/pixuli/api/gitee-proxy.ts`              | TS   |
-| 共享逻辑 | `@pixuli/provider-gitee/proxy/server`         | TS   |
-| 常量     | `@pixuli/provider-gitee/proxy/constants`      | TS   |
+| 环境     | 文件                                          | 语言                  |
+| -------- | --------------------------------------------- | --------------------- |
+| Web dev  | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` | TS                    |
+| Web 生产 | `apps/pixuli/api/gitee-proxy.js`              | JS 入口 → TS provider |
+| 共享逻辑 | `@pixuli/provider-gitee/proxy/server`         | TS                    |
+| 常量     | `@pixuli/provider-gitee/proxy/constants`      | TS                    |
 
 ---
 
