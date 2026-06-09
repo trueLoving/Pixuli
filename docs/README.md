@@ -54,6 +54,7 @@
 | [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                     |
 | [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                            |
 | [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。        |
+| [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                     |
 
 ---
 

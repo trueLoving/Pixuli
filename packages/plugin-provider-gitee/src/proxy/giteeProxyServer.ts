@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { GITEE_PROXY_PATH } from './constants.js';
+import { GITEE_PROXY_PATH } from './constants';
 import { handleGiteeImageProxy } from './giteeImageProxy';
 
 /**

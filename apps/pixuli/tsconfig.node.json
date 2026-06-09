@@ -9,6 +9,7 @@
   "include": [
     "vite.config.ts",
     "plugins/viteGiteeProxyPlugin.ts",
+    "api/gitee-proxy.ts",
     "package.json"
   ]
 }

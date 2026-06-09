@@ -13,7 +13,7 @@
     "./proxy/node": "./src/proxy/giteeProxyServer.ts",
     "./proxy/vite": "./src/proxy/viteGiteeProxyPlugin.ts",
     "./proxy/server": "./src/proxy/giteeImageProxy.ts",
-    "./proxy/constants": "./src/proxy/constants.js"
+    "./proxy/constants": "./src/proxy/constants.ts"
   },
   "peerDependencies": {
     "vite": "^5.0.0"

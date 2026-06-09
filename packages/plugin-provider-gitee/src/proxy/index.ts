@@ -1,4 +1,4 @@
-export { GITEE_PROXY_PATH } from './constants.js';
+export { GITEE_PROXY_PATH } from './constants';
 export {
   parseGiteeProxyRequest,
   fetchGiteeImage,

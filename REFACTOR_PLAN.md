@@ -1,8 +1,7 @@
 # Pixuli 重构计划
 
-> **版本**：1.4  
-> **更新**：2026-06-06（§1.7 / M4
-> REF-415：文档国际化中/英策略与低维护成本设计）  
+> **版本**：1.5  
+> **更新**：2026-05-27（REF-410 TS/JS 统一策略；REF-511 拍照元数据、REF-606 回收站规划）  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -34,14 +33,14 @@
 
 ### 1.3 里程碑
 
-| 里程碑 | 名称                | 目标日期（可填） | 说明                                                                                                                  |
-| ------ | ------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------- |
-| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                                                                |
-| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                                                                           |
-| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common`                                                 |
-| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理、**文档国际化（中/英）**；历史版本盘点与后续发布策略                                    |
-| M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；**三端代码共享**（Capacitor / 逻辑层抽取，见 §1.4）                                                  |
-| M6     | 产品体验与能力边界  |                  | 三端交互、UI 优化、性能边界、标签/AI、批处理（见 §十）；里程碑 [M6](https://github.com/trueLoving/Pixuli/milestone/6) |
+| 里程碑 | 名称                | 目标日期（可填） | 说明                                                                                                                          |
+| ------ | ------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                                                                        |
+| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                                                                                   |
+| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common`                                                         |
+| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理、**文档国际化（中/英）**；历史版本盘点与后续发布策略                                            |
+| M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；**三端代码共享**（Capacitor / 逻辑层抽取，见 §1.4）；移动端拍照元数据（REF-511）                             |
+| M6     | 产品体验与能力边界  |                  | 三端交互、UI 优化、性能边界、标签/AI、批处理、回收站（见 §十）；里程碑 [M6](https://github.com/trueLoving/Pixuli/milestone/6) |
 
 ### 1.4 三端代码最大化共享
 
@@ -129,8 +128,8 @@ Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与
 ### 1.6 产品体验与能力边界（M6）
 
 三端融合后交互需统一设计；图床主界面（侧栏 + 主内容 + 图片操作）待优化；大规模图片需明确**性能边界**（分页、懒加载、降级）；标签/描述与
-**AI 自动分析**、**批处理**需与产品 tagline 对齐。详见 **§十**，Issue
-**REF-601～605**。
+**AI 自动分析**、**批处理**、**回收站（软删除）**需与产品 tagline 对齐。详见
+**§十**，Issue **REF-601～606**。
 
 ### 1.7 文档国际化（中 / 英）
 
@@ -568,6 +567,8 @@ Closes #42 Related: REF-101
 | REF-603 | [#132](https://github.com/trueLoving/Pixuli/issues/132) |
 | REF-604 | [#133](https://github.com/trueLoving/Pixuli/issues/133) |
 | REF-605 | [#134](https://github.com/trueLoving/Pixuli/issues/134) |
+| REF-511 | [#141](https://github.com/trueLoving/Pixuli/issues/141) |
+| REF-606 | [#140](https://github.com/trueLoving/Pixuli/issues/140) |
 
 > **说明**：#53 为已合并 PR（REF-101～103 批次），非独立计划 Issue。
 
@@ -784,7 +785,7 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 | REF-407 | [M4] 梳理整理 `docs/` 目录（纠错、去重、与现架构对齐）          | refactor, m4, type:docs, priority:P1   | P1     | #80, #82   | [#111](https://github.com/trueLoving/Pixuli/issues/111) | ✅   |
 | REF-408 | [M4] 梳理 GitHub Wiki 产品使用手册（新人从零上手）              | refactor, m4, type:docs, priority:P1   | P1     | #80, #111  | [#112](https://github.com/trueLoving/Pixuli/issues/112) | ✅   |
 | REF-409 | [M4] 历史发布版本梳理与后续版本发布策略                         | refactor, m4, type:docs, priority:P1   | P1     | #58, #83   | [#113](https://github.com/trueLoving/Pixuli/issues/113) | ⬜   |
-| REF-410 | [M4] 技术栈梳理：TypeScript / JavaScript 统一策略               | refactor, m4, type:docs, priority:P1   | P1     | #123       | [#125](https://github.com/trueLoving/Pixuli/issues/125) | ⬜   |
+| REF-410 | [M4] 技术栈梳理：TypeScript / JavaScript 统一策略               | refactor, m4, type:docs, priority:P1   | P1     | #123       | [#125](https://github.com/trueLoving/Pixuli/issues/125) | ✅   |
 | REF-411 | [M4] 插件体系：Host 运行时集成层设计（dev / 打包 / Serverless） | refactor, m4, area:plugin, priority:P1 | P1     | #70, #123  | [#126](https://github.com/trueLoving/Pixuli/issues/126) | ⬜   |
 | REF-412 | [M4] 集成测试体系设计与落地（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #79  | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #125 | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ⬜   |
@@ -924,20 +925,21 @@ Changes，需明确「下一版」如何发。
 
 ### 里程碑 M5 — 平台能力 L3（持续）
 
-| ID      | 建议标题                                              | Labels                                            | 优先级 | Depends on | GitHub #                                                | 状态 |
-| ------- | ----------------------------------------------------- | ------------------------------------------------- | ------ | ---------- | ------------------------------------------------------- | ---- |
-| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile） | refactor, m5, type:docs, priority:P2              | P2     | #80        | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ⬜   |
-| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定  | refactor, m5, area:desktop, priority:P2           | P2     | #64        | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ⬜   |
-| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）          | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
-| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）   | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
-| REF-505 | [M5] Desktop 系统托盘（设计+实现）                    | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜   |
-| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档             | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ⬜   |
-| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）    | refactor, m5, area:core, area:mobile, priority:P1 | P1     | #100, #116 | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
-| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单       | refactor, m5, area:ui, area:mobile, priority:P2   | P2     | #116       | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
-| REF-509 | [M5] Capacitor PoC：apps/pixuli 打 iOS/Android 壳     | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
-| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支          | refactor, m5, area:mobile, priority:P2            | P2     | #118       | [#120](https://github.com/trueLoving/Pixuli/issues/120) | ⬜   |
+| ID      | 建议标题                                                   | Labels                                            | 优先级 | Depends on | GitHub #                                                | 状态 |
+| ------- | ---------------------------------------------------------- | ------------------------------------------------- | ------ | ---------- | ------------------------------------------------------- | ---- |
+| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile）      | refactor, m5, type:docs, priority:P2              | P2     | #80        | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ⬜   |
+| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定       | refactor, m5, area:desktop, priority:P2           | P2     | #64        | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ⬜   |
+| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
+| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
+| REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜   |
+| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ⬜   |
+| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1 | P1     | #100, #116 | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
+| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2   | P2     | #116       | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
+| REF-509 | [M5] Capacitor PoC：apps/pixuli 打 iOS/Android 壳          | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
+| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2            | P2     | #118       | [#120](https://github.com/trueLoving/Pixuli/issues/120) | ⬜   |
+| REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1            | P1     | #118, #120 | [#141](https://github.com/trueLoving/Pixuli/issues/141) | ⬜   |
 
-REF-506 ~ REF-510 说明（三端共享）
+REF-506 ~ REF-511 说明（三端共享）
 
 **REF-506** — 对照 §1.4.1 输出「共享矩阵」：文件/模块级标注 Web+Desktop / Mobile
 / 可合并；链接
@@ -956,6 +958,12 @@ REF-506 ~ REF-510 说明（三端共享）
 **REF-510** — 相机/相册/文件/安全区等插件选型；在 `apps/pixuli` 内用
 `Capacitor.isNativePlatform()` 收敛分支，替代 RN 侧重复实现。
 
+**REF-511**
+— 移动端拍照上传时采集并持久化**拍摄上下文**：时间戳、文件信息（名/MIME/大小/尺寸）、可解析
+**EXIF**、**GPS 位置**（需权限）、设备 **localPath**（或 content URI）。类型对齐
+`@pixuli/core`
+上传/元数据 DTO；RN（Expo）与 Capacitor 路线均需验证；敏感字段遵循权限与隐私降级。
+
 **建议顺序**：M3 **REF-310/311** 完成 → **#116** → **#117** ∥ **#118**（PoC）→
 PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡）。
 
@@ -970,9 +978,11 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 | REF-603 | [M6] 大数据场景与产品性能边界（分页/懒加载/降级） | m6, area:product, area:core, area:ui, priority:P1 | P1     | #79, #117  | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜   |
 | REF-604 | [M6] 标签与描述管理 + AI 自动分析                 | m6, area:product, area:ui, priority:P1            | P1     | #131, #72  | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜   |
 | REF-605 | [M6] 图片批处理：上传、删除、更新、查看           | m6, area:product, area:ui, priority:P1            | P1     | #131, #133 | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜   |
+| REF-606 | [M6] 回收站机制：软删除与 30 天自动永久清理       | m6, area:product, area:core, priority:P1          | P1     | #79, #131  | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜   |
 
 **建议顺序**：M3/M4 基线稳定 → **#130**（交互规范）→ **#131** ∥
-**#132**（UI 与性能可并行）→ **#133** → **#134**（批处理依赖多选与元数据）。
+**#132**（UI 与性能可并行）→ **#140**（回收站，宜早于批量硬删）→ **#133** →
+**#134**（批处理依赖多选与元数据）。
 
 ---
 
@@ -982,12 +992,12 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 
 ### 9.1 技术栈梳理：TypeScript 与 JavaScript
 
-**现状**：仓库以 TypeScript 为主，但存在混用，例如：
+**现状（REF-410 已落地）**：业务与包源码**默认 TypeScript**；原
+`constants.js`、`api/gitee-proxy.js` 已迁移为 `.ts`。详见
+[05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)。
 
-- `packages/plugin-provider-gitee/src/proxy/constants.js` +
-  `constants.d.ts`（Node 原生 ESM 加载 Vite 配置链）
-- `apps/pixuli/api/gitee-proxy.js`、`plugins/viteGiteeProxyPlugin.ts`（应用层薄封装）
 - 各包 `src/**/*.ts`，测试与构建工具链统一走 Vitest / Vite / `tsc`
+- 仅登记例外：`eslint.config.mjs`、`postcss.config.cjs`、`tailwind.config.js`、`archive/**`
 
 **原则**：
 
@@ -995,14 +1005,14 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
    TS 与 JS 各实现一份逻辑；避免「运行时 .js + 类型 .ts」长期并存而无文档。
 2. **默认保留 TypeScript**：新业务、新包、Provider 与 UI 代码**一律
    `.ts`/`.tsx`**。
-3. **允许的 JS 例外**（须登记在 REF-410 产出文档中）：
-   - Vercel / Node **仅 re-export** 的 Serverless 入口（无业务逻辑）；
-   - 经论证、Node 原生 `import` 无法解析 `.ts`
-     且无 bundler 的**单文件**常量（REF-313 的 `constants.js`
-     为过渡方案，目标收敛）。
+3. **允许的 JS 例外**（已登记于
+   [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)
+   §2.2）：
+   - 工具链配置（ESLint / PostCSS / Tailwind）；
+   - `archive/**` 归档代码。
 
-**决策流程（REF-410）**：全仓审计 → 编写 `11-typescript-javascript-policy.md` →
-ESLint/CI 约束新增裸 `.js` → 按优先级迁移。
+**REF-410 交付**：全仓审计 ✅ → 策略文档 ✅ → 业务 JS 迁移 ✅；CI 扫描未登记
+`.js` 留 REF-413。
 
 ### 9.2 插件体系：运行时与 Host 环境集成
 
@@ -1012,7 +1022,7 @@ ESLint/CI 约束新增裸 `.js` → 按优先级迁移。
 | 宿主环境     | 集成方式（当前）                                                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | Web dev      | `apps/pixuli/plugins/viteGiteeProxyPlugin` → `@pixuli/provider-gitee/proxy/server`                      |
-| Web 生产     | `api/gitee-proxy.js` → 同上                                                                             |
+| Web 生产     | `api/gitee-proxy.ts` → 同上                                                                             |
 | Desktop 打包 | Electron `startGiteeProxyServer` + preload `giteeProxyBase`                                             |
 | Renderer     | 仅 `@pixuli/provider-gitee/proxy/client`、`/url`（**禁止** import `/proxy` 聚合入口，避免 `node:http`） |
 
@@ -1075,7 +1085,7 @@ ESLint/CI 约束新增裸 `.js` → 按优先级迁移。
 ## 十、产品体验专项规划
 
 本节对应 §1.6，Issue 追踪见 M6 表
-**REF-601～605**。与产品 tagline 一致：**AI 分析、自动标签、批处理**
+**REF-601～606**。与产品 tagline 一致：**AI 分析、自动标签、批处理**
 建立在稳定图床能力（M3）与清晰性能边界之上。
 
 ### 10.1 三端融合交互（REF-601）
@@ -1096,7 +1106,7 @@ AI 元数据），供 REF-602 实现引用。
 | -------------- | -------------------------------------------------------------------------------------- |
 | **左侧菜单**   | 图床 / 工具 / 设置层级；当前源状态；窄屏折叠；与 REF-601 导航决策一致                  |
 | **右侧主内容** | 工具栏（筛选、排序、网格/列表、批量模式）；空/加载/错误态；对接 REF-603 分页与虚拟列表 |
-| **图片操作**   | 预览、复制 URL、元数据、删除；多选条；收敛到 `@pixuli/ui` 可复用组件                   |
+| **图片操作**   | 预览、复制 URL、元数据、删除（进回收站）；多选条；收敛到 `@pixuli/ui` 可复用组件       |
 
 ### 10.3 大数据场景与性能边界（REF-603）
 
@@ -1125,14 +1135,29 @@ AI 元数据），供 REF-602 实现引用。
 
 与 tagline **batch processing** 对齐：
 
-| 能力     | 说明                                         |
-| -------- | -------------------------------------------- |
-| 批量查看 | 多选、计数、筛选结果内全选策略（与分页联动） |
-| 批量上传 | 队列、并发、失败重试                         |
-| 批量删除 | 二次确认、部分失败报告                       |
-| 批量更新 | 批量标签/描述；可链 REF-604 批量 AI          |
+| 能力     | 说明                                          |
+| -------- | --------------------------------------------- |
+| 批量查看 | 多选、计数、筛选结果内全选策略（与分页联动）  |
+| 批量上传 | 队列、并发、失败重试                          |
+| 批量删除 | 二次确认、移入回收站（REF-606）、部分失败报告 |
+| 批量更新 | 批量标签/描述；可链 REF-604 批量 AI           |
 
-**依赖关系**：批处理 UI 依赖 REF-602 多选态；大规模场景依赖 REF-603；批量元数据依赖 REF-604。
+**依赖关系**：批处理 UI 依赖 REF-602 多选态；大规模场景依赖 REF-603；批量元数据依赖 REF-604；删除流依赖 REF-606 软删除语义。
+
+### 10.6 回收站机制（REF-606）
+
+**原则**：删除默认**软删除**——图片移入回收站，主列表不可见；用户可恢复或立即永久删除；**30 天**内无任何操作的条目自动永久清理。
+
+| 能力           | 说明                                                                               |
+| -------------- | ---------------------------------------------------------------------------------- |
+| **移入回收站** | 用户点删除 → 远端标记/搬迁（如 `.pixuli/trash/` 或 sidecar `deletedAt`）+ 本地索引 |
+| **回收站列表** | 独立入口；展示剩余保留天数、缩略图、原路径                                         |
+| **恢复**       | 还原远端路径与列表展示                                                             |
+| **永久删除**   | 用户主动清空；或到期自动执行                                                       |
+| **保留期**     | 默认 **30 天**；`expiresAt = deletedAt + 30d`；后台任务扫描清理                    |
+
+**技术注意**：GitHub/Gitee Contents
+API 无原生回收站，需在 Provider 或应用层约定实现；三端清理任务与 Web 会话/PWA 触发策略需单独设计。与 REF-605 批量删除、操作日志（F-LOG）联动。
 
 ---
 
@@ -1198,31 +1223,33 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 15       | 8      | 53%     |
-| M5       | 10       | 0      | 0%      |
-| M6       | 5        | 0      | 0%      |
-| **合计** | **64**   | **18** | **28%** |
+| M4       | 15       | 9      | 60%     |
+| M5       | 11       | 0      | 0%      |
+| M6       | 6        | 0      | 0%      |
+| **合计** | **66**   | **19** | **29%** |
 
 ---
 
 ## 七、相关文档
 
-| 文档                          | 位置                                                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------- |
-| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                |
-| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                          |
-| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                     |
-| 插件体系设计                  | `.local/插件体系设计.md`                                                                                |
-| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                          |
-| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                        |
-| TS/JS 策略（计划）            | REF-410 → `docs/02-system-design/11-typescript-javascript-policy.md`                                    |
-| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分               |
-| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单) |
-| AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                              |
-| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                           |
-| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                            |
-| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                            |
-| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                          |
+| 文档                          | 位置                                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                  |
+| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                            |
+| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                       |
+| 插件体系设计                  | `.local/插件体系设计.md`                                                                                  |
+| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                            |
+| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                          |
+| TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410） |
+| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                 |
+| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)   |
+| AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                                |
+| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                             |
+| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                              |
+| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                              |
+| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                            |
+| 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                         |
+| 移动端拍照元数据（计划）      | REF-511 → [#141](https://github.com/trueLoving/Pixuli/issues/141)                                         |
 
 > 建议：M4 中将 `.local` 核心内容迁入
 > `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。
