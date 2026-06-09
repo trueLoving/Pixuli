@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { GITEE_PROXY_PATH } from './constants.ts';
+import { GITEE_PROXY_PATH } from './constants';
 
 const GITEE_REQUEST_HEADERS: Record<string, string> = {
   Referer: 'https://gitee.com/',

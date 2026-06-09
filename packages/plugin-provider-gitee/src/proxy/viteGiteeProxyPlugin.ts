@@ -8,9 +8,7 @@ export function viteGiteeProxyPlugin(): Plugin {
   return {
     name: 'pixuli-gitee-image-proxy',
     async configureServer(server) {
-      const { createGiteeProxyMiddleware } = await import(
-        './giteeImageProxy.ts'
-      );
+      const { createGiteeProxyMiddleware } = await import('./giteeImageProxy');
       server.middlewares.use(createGiteeProxyMiddleware());
     },
   };

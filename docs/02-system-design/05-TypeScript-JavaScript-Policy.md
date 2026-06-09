@@ -53,12 +53,12 @@ JavaScript 例外。
 1. **一致性**：同一包、同一功能域内不得 TS 与 JS 各实现一份逻辑。
 2. **类型单一来源**：禁止长期「`.js` 实现 + `.d.ts` 声明」双文件维护。
 3. **导入约定**：
-   - Vite/Vitest 打包路径：可用无扩展名相对导入（`moduleResolution: bundler`）。
-   - **Node 原生 ESM** 可能直接加载的模块（如 Vercel 解析
-     `vite.config.ts`、Serverless 依赖链）：相对导入须带 **`.ts` 扩展名**（如
-     `./constants.ts`）。
+   - 包内相对导入使用**无扩展名**（`./constants`），与 `tsc` /
+     `moduleResolution: bundler` 一致；**禁止**在未开启
+     `allowImportingTsExtensions` 时使用 `./foo.ts`。
    - **dev-only Vite 插件**（Gitee 代理等）须在 `configureServer` 内 **动态
-     `import()`**，避免 `vite build` 时静态拉取 provider 子图。
+     `import()`**，避免 `vite build` / Vercel 加载 `vite.config.ts`
+     时 Node 原生 ESM 静态解析 workspace 子图。
 4. **Serverless**：Vercel `api/*.ts` 由平台编译；handler 复用
    `@pixuli/provider-*` 的 TypeScript 实现，入口文件仅做转发。
 5. **工具链例外**：新增 `.js`/`.mjs`/`.cjs` 须在 PR 中说明并更新本文 §2.2。
