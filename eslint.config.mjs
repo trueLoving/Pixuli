@@ -1,3 +1,4 @@
+/** REF-410：业务源码默认 TypeScript；本文件为登记的 ESLint flat-config 例外。 */
 import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
 

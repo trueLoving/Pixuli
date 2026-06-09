@@ -31,7 +31,7 @@ Pixuli 官方 **Gitee 仓库图床**存储插件（M3 REF-303）。
 // vite.config.ts（Web / 桌面 dev）
 import { viteGiteeProxyPlugin } from '@pixuli/provider-gitee/proxy/vite';
 
-// api/gitee-proxy.js（Vercel）
+// api/gitee-proxy.entry.ts → pnpm build:vercel-api → api/gitee-proxy.js（Vercel）
 import { handleGiteeImageProxy } from '@pixuli/provider-gitee/proxy/server';
 
 // Electron main（打包版）

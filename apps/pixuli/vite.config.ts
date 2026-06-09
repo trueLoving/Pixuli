@@ -237,9 +237,15 @@ export default defineConfig(({ command, mode }) => {
     );
   }
 
+  const monorepoRoot = path.resolve(__dirname, '../..');
+
   return {
     resolve: {
       alias: resolveAlias,
+    },
+    ssr: {
+      // dev 中间件经 ssrLoadModule 加载 workspace provider（含相对路径子模块）
+      noExternal: ['@pixuli/provider-gitee'],
     },
     plugins,
     build: {
@@ -310,8 +316,9 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
-    server:
-      isDesktop && process.env.VSCODE_DEBUG
+    server: {
+      fs: { allow: [monorepoRoot] },
+      ...(isDesktop && process.env.VSCODE_DEBUG
         ? (() => {
             const url = new URL(
               pkg.debug?.env?.VITE_DEV_SERVER_URL || 'http://localhost:5173',
@@ -326,7 +333,8 @@ export default defineConfig(({ command, mode }) => {
               open: true,
               port: 5500,
             }
-          : undefined,
+          : {}),
+    },
     clearScreen: false,
     define: {
       // 注入版本信息到全局变量
