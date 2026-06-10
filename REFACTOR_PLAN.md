@@ -1310,7 +1310,7 @@ CI 门禁与
 - 哪些因**屏宽、输入方式、原生能力**做适配（侧栏 vs 底栏、选目录 vs 授权文件夹、快捷键）？
 - **复制链接**：本地路径 vs 远端公网 URL 的入口区分；AI 与批处理如何**同等可发现**？
 
-**交付**：《三端交互规范》+ 用户旅程（**选定本地库**
+**交付**：[04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)（三端交互规范）+ 用户旅程（**选定本地库**
 → 绑定远端 → 浏览 → 同步 → 单张/批量 → AI 元数据），供 REF-602 /
 REF-607 实现引用。
 
@@ -1525,7 +1525,7 @@ flowchart LR
 | AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                     |
 | 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                              |
 | 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                               |
-| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                               |
+| 三端交互规范                  | REF-601 → [04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)   |
 | 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                             |
 | 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                          |
 | 本地库与远端同步（计划）      | REF-607 → §1.8、§10.7、[#144](https://github.com/trueLoving/Pixuli/issues/144)                             |
