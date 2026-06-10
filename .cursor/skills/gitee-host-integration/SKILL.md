@@ -1,0 +1,66 @@
+---
+name: gitee-host-integration
+description: >-
+  Integrates Gitee image proxy across Vite dev, Vercel serverless, and Electron
+  main/preload. Use when fixing Gitee CORS, gitee-proxy, viteGiteeProxyPlugin,
+  startGiteeProxyServer, giteeProxyBase, or @pixuli/provider-gitee/proxy paths.
+---
+
+# Gitee Host Integration
+
+## Subpath rules (critical)
+
+| Import                                  | Allowed in                                     |
+| --------------------------------------- | ---------------------------------------------- |
+| `@pixuli/provider-gitee/proxy/client`   | Renderer                                       |
+| `@pixuli/provider-gitee/proxy/url`      | Renderer, provider                             |
+| `@pixuli/provider-gitee/proxy/server`   | Vite dev middleware, Vercel entry (via bundle) |
+| `@pixuli/provider-gitee/proxy/node`     | Electron main only                             |
+| `@pixuli/provider-gitee/proxy` (barrel) | **Avoid** in app — pulls node modules          |
+
+## Three hosts
+
+### 1. Web dev
+
+- `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` wraps provider plugin
+- Uses `server.ssrLoadModule('@pixuli/provider-gitee/proxy/server')` — no static
+  provider import in plugin file
+- `vite.config.ts`: `ssr.noExternal: ['@pixuli/provider-gitee']`,
+  `server.fs.allow` for monorepo root
+
+### 2. Web production (Vercel)
+
+- SSOT logic: `@pixuli/provider-gitee/proxy/server`
+- Entry: `apps/pixuli/api/gitee-proxy.entry.ts`
+- Build: `pnpm build:vercel-api` → `api/gitee-proxy.js` (committed artifact)
+- **Never** hand-edit `gitee-proxy.js`; Node cannot import workspace `.ts` at
+  runtime
+
+### 3. Desktop
+
+- Main:
+  `import { startGiteeProxyServer } from '@pixuli/provider-gitee/proxy/node'`
+- Preload: expose `window.giteeProxyBase` from
+  `ipcRenderer.sendSync('gitee:proxy-base')`
+- Renderer: `getGiteeProviderContextFields()` from `/proxy/client`
+
+## Constants
+
+- Use `@pixuli/provider-gitee/proxy/constants` (`.js` registered exception)
+- Do not add `./constants.ts` relative imports in paths loaded by Node/Vite SSR
+  outside package exports
+
+## After changes
+
+```bash
+pnpm build:vercel-api   # if server proxy logic changed
+pnpm dev:web            # smoke Gitee image load
+pnpm dev:desktop        # smoke packaged proxy + preload
+```
+
+## Docs
+
+- `docs/02-system-design/05-TypeScript-JavaScript-Policy.md` §三、§四
+- `docs/02-system-design/04-Plugin-System.md` (REF-313)
+- Future: REF-411 Host Bootstrap — keep glue thin until Registry declares
+  `hostIntegrations`

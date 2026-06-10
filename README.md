@@ -169,6 +169,7 @@ commit conventions.
 | **Removed / deferred** | [docs/backlog.md](docs/backlog.md)                                                               |
 | **Developers**         | [docs/README.md](docs/README.md) — full doc index                                                |
 | **Contributing**       | [CONTRIBUTING.md](./CONTRIBUTING.md)                                                             |
+| **AI agents**          | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills, monorepo context (REF-414)                       |
 | **Refactor plan**      | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                                           |
 | **Changelog**          | [CHANGELOG.md](./CHANGELOG.md)                                                                   |
 | **App (Web/Desktop)**  | [apps/pixuli/README.md](./apps/pixuli/README.md)                                                 |

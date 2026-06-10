@@ -843,7 +843,7 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 | REF-411 | [M4] 插件体系：Host 运行时集成层设计（dev / 打包 / Serverless） | refactor, m4, area:plugin, priority:P1 | P1     | #70, #123  | [#126](https://github.com/trueLoving/Pixuli/issues/126) | ⬜   |
 | REF-412 | [M4] 集成测试体系设计与落地（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #79  | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #125 | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ⬜   |
-| REF-414 | [M4] AI 编程辅助：Agent 规则与 Skill 文件体系                   | refactor, m4, type:docs, priority:P2   | P2     | #111       | [#129](https://github.com/trueLoving/Pixuli/issues/129) | ⬜   |
+| REF-414 | [M4] AI 编程辅助：Agent 规则与 Skill 文件体系                   | refactor, m4, type:docs, priority:P2   | P2     | #111       | [#129](https://github.com/trueLoving/Pixuli/issues/129) | ✅   |
 | REF-415 | [M4] 文档国际化（中/英）策略与目录设计                          | refactor, m4, type:docs, priority:P2   | P2     | #111, #112 | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
 REF-407 / REF-408 / REF-409 / REF-415 范围说明（点击展开）
@@ -1131,13 +1131,15 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 `index.mjs`、Gitee `proxy/client|url|node`
 子路径、禁止 Renderer 引入 Node 模块等）。
 
-**REF-414 交付物（建议）**：
+**REF-414 交付物**（✅
+[#129](https://github.com/trueLoving/Pixuli/issues/129)）：
 
-| 资产       | 路径（建议）                       | 内容要点                                           |
-| ---------- | ---------------------------------- | -------------------------------------------------- |
-| Agent 总览 | `AGENTS.md` 或 `.cursor/AGENTS.md` | 三端底线、目录结构、开 PR 流程、REFACTOR_PLAN 同步 |
-| Rules      | `.cursor/rules/*.mdc`              | monorepo、storage-plugin、electron-desktop         |
-| Skills     | `.cursor/skills/*/SKILL.md`        | 实现 provider、Gitee Host 集成、REF Issue→PR       |
+| 资产       | 路径                                                                              | 内容要点                                     |
+| ---------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| Agent 总览 | [AGENTS.md](AGENTS.md)                                                            | 三端底线、目录结构、Skill 清单、开 PR 流程   |
+| Rules      | `.cursor/rules/pixuli-monorepo.mdc`、`storage-plugin.mdc`、`electron-desktop.mdc` | monorepo、storage-plugin、electron-desktop   |
+| Skills     | `.cursor/skills/storage-provider/`、`gitee-host-integration/`、`ref-issue-pr/`    | 实现 provider、Gitee Host 集成、REF Issue→PR |
+| 索引       | [docs/README.md](docs/README.md) §AI 编程辅助、`CONTRIBUTING.md`                  | 何时更新 Agent/Skill；与用户向 docs 职责分离 |
 
 与 **REF-407**（`docs/` 梳理）协同：用户向文档、协作者向 Agent/Skill，职责分离。
 
@@ -1349,10 +1351,10 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 15       | 10     | 67%     |
+| M4       | 15       | 11     | 73%     |
 | M5       | 11       | 0      | 0%      |
 | M6       | 7        | 0      | 0%      |
-| **合计** | **67**   | **20** | **30%** |
+| **合计** | **67**   | **21** | **31%** |
 
 ---
 
@@ -1369,7 +1371,7 @@ flowchart LR
 | TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410） |
 | 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                 |
 | M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)   |
-| AI Agent / Skill（计划）      | REF-414 → `AGENTS.md`、`.cursor/rules/`、`.cursor/skills/`                                                |
+| AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                    |
 | 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                             |
 | 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                              |
 | 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                              |

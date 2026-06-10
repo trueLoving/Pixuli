@@ -1,0 +1,30 @@
+---
+description: Pixuli monorepo 全局约束：三端底线、包边界、TS 策略与测试
+alwaysApply: true
+---
+
+# Pixuli Monorepo
+
+## 底线
+
+- 维护 Web + Desktop（`apps/pixuli`）+ Mobile（`apps/mobile`）；无官方 Server
+- 存储仅经 `@pixuli/core/plugins` 契约 + `@pixuli/provider-*`；应用不直接调 Git API 细节
+- `@pixuli/core` 与 `provider-*` **禁止**依赖 `@pixuli/ui`
+
+## 包与导入
+
+- Workspace 包名：`@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-github`、`@pixuli/provider-gitee`
+- Provider 注册：`registerGitHubProvider` / `registerGiteeProvider` 从各包 `/register` 导入
+- 应用创建实例：`storageRegistry.create(pluginId, ctx)`（见 `apps/*/storage/createProvider.ts`）
+- 已删除 `packages/common`；勿引用 `pixuli-common`
+
+## TypeScript
+
+- 业务代码一律 `.ts`/`.tsx`；例外见 `docs/02-system-design/05-TypeScript-JavaScript-Policy.md`
+- 勿在 `api/gitee-proxy.js` 手改逻辑（esbuild 产物）；改 `gitee-proxy.entry.ts` 后 `pnpm build:vercel-api`
+
+## 改动原则
+
+- 最小 diff；匹配现有命名与目录约定
+- 完成功能后：`pnpm test`；涉及 Web 构建时考虑 `pnpm build:web`
+- REF Issue PR：标题含 `REF-xxx`；关闭 Issue 用 `Fixes #n`；同步 `REFACTOR_PLAN.md`

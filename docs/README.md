@@ -17,7 +17,7 @@
 | **产品 / 测试**     | [产品需求规格说明书](01-product/01-Product-Requirements-Specification.md) → [backlog](backlog.md)（已移除项）                                                                                                                                             |
 | **前端 / 多端开发** | [00-System-Design](02-system-design/00-System-Design.md) → [三端能力共享](02-system-design/01-Three-Platform-Capability-Sharing.md) → [三端设计](02-system-design/02-Three-Platform-Design.md) → [04-Plugin-System](02-system-design/04-Plugin-System.md) |
 | **插件作者**        | [04-Plugin-System](02-system-design/04-Plugin-System.md)（§第二部分 开发指南）                                                                                                                                                                            |
-| **协作者 / Issue**  | 仓库根 [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                                                                                                                                                            |
+| **协作者 / Issue**  | [REFACTOR_PLAN.md](../REFACTOR_PLAN.md) · AI 辅助 [AGENTS.md](../AGENTS.md)（REF-414）                                                                                                                                                                    |
 
 ---
 
@@ -78,6 +78,22 @@
 
 ---
 
+## AI 编程辅助（REF-414）
+
+面向 **Cursor / Copilot 等 AI 助手**与协作者，与用户向 `docs/`、Wiki
+**职责分离**：
+
+| 资产          | 路径                        | 何时更新                                              |
+| ------------- | --------------------------- | ----------------------------------------------------- |
+| Agent 总览    | [AGENTS.md](../AGENTS.md)   | 三端底线、包结构、PR 流程、Skill 清单                 |
+| Cursor Rules  | `.cursor/rules/*.mdc`       | monorepo / storage-plugin / electron-desktop 边界变更 |
+| Cursor Skills | `.cursor/skills/*/SKILL.md` | 新增 provider、Host 集成模式、REF 工作流变化          |
+
+**不必**随每个功能 PR 改 Agent 文件；架构里程碑（M1～M4 合并）或插件 Host 契约变更时再同步。详见
+[AGENTS.md §何时更新](../AGENTS.md#何时更新-agentskill)。
+
+---
+
 ## 修订
 
 | 日期       | 变更                                                                                 |
@@ -87,3 +103,4 @@
 | 2026-06-06 | REF-407：角色索引、架构摘要                                                          |
 | 2026-05-27 | REF-401/402：PRD v2.0、backlog 索引                                                  |
 | 2026-05-27 | REF-409：`03-Release-Versioning.md` 版本发布策略与历史盘点                           |
+| 2026-05-27 | REF-414：`AGENTS.md`、`.cursor/rules/`、`.cursor/skills/` AI 编程辅助资产            |

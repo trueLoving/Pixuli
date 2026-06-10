@@ -1,0 +1,39 @@
+---
+description: StorageProvider 插件开发：Registry、register、manifest、createProvider
+globs: packages/plugin-provider-*/**,packages/core/src/plugins/**,apps/**/storage/**
+alwaysApply: false
+---
+
+# Storage Plugin
+
+## 契约（@pixuli/core/plugins）
+
+- `StoragePluginManifest` + `StorageProviderFactory` → `registry.register(manifest, factory)`
+- `registry.create(pluginId, ProviderContext)` 返回 `StorageProvider`
+- `ProviderContext`：`platform`、`platformAdapter`、可选 `giteeProxyBase`（Gitee）
+
+## 官方插件结构
+
+```text
+packages/plugin-provider-{id}/src/
+  manifest.ts          # id、capabilities、configSchema
+  register.ts          # registerXxxProvider(registry)
+  *StorageProvider.ts  # 实现 list/upload/delete/buildImageUrl
+  index.ts             # 公开 API
+```
+
+## 应用侧
+
+- Bootstrap：`apps/pixuli/src/storage/registry.ts` · `apps/mobile/storage/registry.ts`
+- 配置后创建：`createConfiguredStorageProvider(pluginId, config)` → `provider.configure(config)`
+
+## 禁止
+
+- Provider 包内引入 React / `@pixuli/ui`
+- core 内写 GitHub/Gitee API 具体实现（应在 provider 包）
+- Renderer import `@pixuli/provider-gitee/proxy` 聚合入口或 `/proxy/node`
+
+## 参考
+
+- `docs/02-system-design/04-Plugin-System.md` §第二部分
+- 单测：`packages/*/src/__tests__/register.test.ts`、`packages/core/src/plugins/__tests__/`
