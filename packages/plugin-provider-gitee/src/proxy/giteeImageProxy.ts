@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { GITEE_PROXY_PATH } from '@pixuli/provider-gitee/proxy/constants';
+import { GITEE_PROXY_PATH } from './constants.js';
 
 const GITEE_REQUEST_HEADERS: Record<string, string> = {
   Referer: 'https://gitee.com/',

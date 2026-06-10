@@ -1,4 +1,4 @@
-import { GITEE_PROXY_PATH } from '@pixuli/provider-gitee/proxy/constants';
+import { GITEE_PROXY_PATH } from './constants.js';
 
 /**
  * 将代理 URL 转换为可在外部浏览器打开的 Gitee raw URL

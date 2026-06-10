@@ -6,7 +6,8 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
-    "./register": "./src/register.ts"
+    "./register": "./src/register.ts",
+    "./manifest": "./src/manifest.ts"
   },
   "scripts": {
     "test": "vitest run",

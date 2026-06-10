@@ -8,25 +8,25 @@ alwaysApply: false
 
 ## 进程边界
 
-- **Main**：`apps/pixuli/electron/main/` — Node API、`startGiteeProxyServer`（`/proxy/node`）
-- **Preload**：`electron/preload/` — `contextBridge` 暴露 `giteeProxyBase`（`ipc sendSync('gitee:proxy-base')`）
+- **Main**：`electron/main/` — `registerHostIntegrations(..., electronMain)`
+- **Preload**：`electron/preload/` — `registerHostIntegrations(..., electronPreload)` 暴露 `giteeProxyBase`
 - **Renderer**：普通 React；**禁止** `node:http`、`fs`、provider `/proxy/node|server` 静态 import
 
 ## Gitee 代理（三宿主）
 
 | 环境 | 集成点 |
 | --- | --- |
-| Web dev | `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` — `configureServer` 内 `ssrLoadModule('@pixuli/provider-gitee/proxy/server')` |
+| Web dev | `storageHostVitePlugin()` — manifest `viteDevServer` → `@pixuli/provider-gitee/proxy/vite`（dist） |
 | Web 生产 | `api/gitee-proxy.entry.ts` → `pnpm build:vercel-api` → `api/gitee-proxy.js` |
-| Desktop 打包 | main 启动 `startGiteeProxyServer`；preload 注入 base URL |
+| Desktop 打包 | manifest `electronMain` / `electronPreload` → `host/electron` |
 
-`vite.config.ts`：`ssr.noExternal` 含 `@pixuli/provider-gitee`；dev 插件用**动态 import**，避免 build 时解析 workspace TS。
+`vite.config.ts`：Renderer `resolve.conditions` 含 `development`；SSR 走 `dist`（REF-416）。勿 `ssr.noExternal` workspace 包回退源码。
 
 ## 常量
 
-- 代理路径：`@pixuli/provider-gitee/proxy/constants`（登记 `.js`）；勿 `./constants.ts` 相对导入
+- 代理路径：`@pixuli/provider-gitee/proxy/constants`（登记 `.js`）；包内用相对 `./constants.js`
 
 ## 桌面开发
 
-- `pnpm dev:desktop` — 改 main/preload 后需重启
+- `pnpm dev:desktop` — 会先 `build:packages`；改 main/preload 后需重启
 - 与 Web 共用 `apps/pixuli/src`；平台分支用 `__IS_WEB__` 或 `getAppPlatform()`

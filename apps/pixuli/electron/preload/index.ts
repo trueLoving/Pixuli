@@ -1,11 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { registerHostIntegrations } from '@pixuli/core/plugins/host';
+import { storageRegistry } from '../../src/storage/registry';
 import { loading } from './loading';
 
-const giteeProxyBase = ipcRenderer.sendSync('gitee:proxy-base') as string;
-contextBridge.exposeInMainWorld(
-  'giteeProxyBase',
-  typeof giteeProxyBase === 'string' ? giteeProxyBase : '',
-);
+await registerHostIntegrations(storageRegistry, {
+  target: 'electronPreload',
+  electronPreload: { contextBridge, ipcRenderer },
+});
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {

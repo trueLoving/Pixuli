@@ -10,6 +10,23 @@ export interface StorageCapabilities {
   maxUploadBytes?: number;
 }
 
+/** 插件需在宿主环境挂载的集成点（REF-411） */
+export type HostIntegrationKind =
+  | 'viteDevServer'
+  | 'electronMain'
+  | 'electronPreload'
+  | 'serverless';
+
+/**
+ * 由 Host Bootstrap 动态加载的集成声明。
+ * `module` 为 package exports 子路径；`exportName` 为命名导出。
+ */
+export interface HostIntegrationDescriptor {
+  kind: HostIntegrationKind;
+  module: string;
+  exportName: string;
+}
+
 export interface StoragePluginManifest {
   id: string;
   name: string;
@@ -17,6 +34,8 @@ export interface StoragePluginManifest {
   icon?: string;
   configSchema?: Record<string, unknown>;
   capabilities: StorageCapabilities;
+  /** REF-411：Vite / Electron / Serverless 宿主集成声明 */
+  hostIntegrations?: HostIntegrationDescriptor[];
 }
 
 export type StorageProviderConfig = Record<string, unknown>;
