@@ -12,6 +12,7 @@ understand how to contribute to the project development.
 - [Code Standards](#code-standards)
 - [Commit Standards](#commit-standards)
 - [Workflow](#workflow)
+- [AI-Assisted Development](#ai-assisted-development)
 - [Feedback](#feedback)
 
 ## 🔧 Requirements
@@ -265,6 +266,22 @@ Create a Pull Request on GitHub with a detailed description of your changes.
 
 Wait for maintainers to review the code and make modifications based on
 feedback.
+
+## 🤖 AI-Assisted Development
+
+When using **Cursor**, **Copilot**, or similar tools on this repo:
+
+- Read [AGENTS.md](AGENTS.md) first — monorepo layout, storage plugins, Gitee
+  proxy rules, PR conventions
+- Cursor **Rules** live in `.cursor/rules/`; **Skills** in `.cursor/skills/`
+  (see skill table in AGENTS.md)
+- Refactor issues use `REF-xxx` IDs — track them in
+  [REFACTOR_PLAN.md](REFACTOR_PLAN.md); PR titles should include the ID
+- Update Agent/Skill files when **architecture boundaries** change (new
+  provider, Host integration, TS/JS exceptions) — not on every feature PR
+- User-facing docs stay in `docs/` and
+  [Wiki](https://github.com/trueLoving/Pixuli/wiki); see
+  [docs/README.md](docs/README.md) §AI 编程辅助 (REF-414)
 
 ## 📚 Related Resources
 
