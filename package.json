@@ -5,6 +5,7 @@
   "scripts": {
     "dev:mobile": "pnpm run --filter pixuli-mobile dev",
     "build:mobile": "pnpm run --filer pixuli-mobile build",
+    "build:packages": "pnpm --filter @pixuli/core --filter @pixuli/provider-gitee build",
     "dev:web": "pnpm run --filter pixuli-app dev:web",
     "build:web": "pnpm run --filter pixuli-app build:web",
     "dev:desktop": "pnpm run --filter pixuli-app dev:desktop",

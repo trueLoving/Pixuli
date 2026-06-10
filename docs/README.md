@@ -56,6 +56,7 @@
 | [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                            |
 | [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。        |
 | [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                     |
+| [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。         |
 
 ---
 

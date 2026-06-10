@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron/simple';
 import renderer from 'vite-plugin-electron-renderer';
 import { VitePWA } from 'vite-plugin-pwa';
-import { viteGiteeProxyPlugin } from './plugins/viteGiteeProxyPlugin';
+import { storageHostVitePlugin } from './plugins/storageHostVitePlugin';
 import pkg from './package.json';
 import fs from 'fs';
 import { execSync } from 'child_process';
@@ -101,9 +101,9 @@ export default defineConfig(({ command, mode }) => {
 
   const plugins: any[] = [react()];
 
-  // Web / 桌面 dev：Gitee 图片代理（服务端跟随 CDN 重定向，REF-313）
+  // Web / 桌面 dev：扫描 manifest 挂载插件 Host 集成（REF-411 / REF-416）
   if (isServe && (isWeb || isDesktop)) {
-    plugins.push(viteGiteeProxyPlugin());
+    plugins.push(storageHostVitePlugin());
   }
 
   // 根据模式添加 Electron 插件（仅 Desktop 模式）
@@ -242,10 +242,16 @@ export default defineConfig(({ command, mode }) => {
   return {
     resolve: {
       alias: resolveAlias,
+      // Renderer dev 走 development → 源码（REF-416）
+      conditions: ['development', 'import', 'module', 'browser', 'default'],
     },
     ssr: {
-      // dev 中间件经 ssrLoadModule 加载 workspace provider（含相对路径子模块）
-      noExternal: ['@pixuli/provider-gitee'],
+      // SSR / configureServer 走 import → dist，不启用 development
+      resolve: {
+        conditions: ['import', 'module', 'node', 'default'],
+      },
+      // workspace 包走 tsup dist + package exports；勿 noExternal 回退源码
+      noExternal: [],
     },
     plugins,
     build: {

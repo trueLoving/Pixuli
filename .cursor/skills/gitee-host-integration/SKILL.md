@@ -22,11 +22,10 @@ description: >-
 
 ### 1. Web dev
 
-- `apps/pixuli/plugins/viteGiteeProxyPlugin.ts` wraps provider plugin
-- Uses `server.ssrLoadModule('@pixuli/provider-gitee/proxy/server')` — no static
-  provider import in plugin file
-- `vite.config.ts`: `ssr.noExternal: ['@pixuli/provider-gitee']`,
-  `server.fs.allow` for monorepo root
+- `apps/pixuli/plugins/storageHostVitePlugin.ts` — REF-411 Host Bootstrap
+- Scans `hostBootstrapManifests` → `registerHostIntegrations` → Gitee
+  `proxy/vite`（tsup dist，内联 server 中间件）
+- `pnpm build:packages` before `dev:web` / `dev:desktop`（REF-416）
 
 ### 2. Web production (Vercel)
 
@@ -38,10 +37,8 @@ description: >-
 
 ### 3. Desktop
 
-- Main:
-  `import { startGiteeProxyServer } from '@pixuli/provider-gitee/proxy/node'`
-- Preload: expose `window.giteeProxyBase` from
-  `ipcRenderer.sendSync('gitee:proxy-base')`
+- Main / preload: `registerHostIntegrations(storageRegistry, …)` — manifest
+  `electronMain` / `electronPreload` → `@pixuli/provider-gitee/host/electron`
 - Renderer: `getGiteeProviderContextFields()` from `/proxy/client`
 
 ## Constants
@@ -62,5 +59,5 @@ pnpm dev:desktop        # smoke packaged proxy + preload
 
 - `docs/02-system-design/05-TypeScript-JavaScript-Policy.md` §三、§四
 - `docs/02-system-design/04-Plugin-System.md` (REF-313)
-- Future: REF-411 Host Bootstrap — keep glue thin until Registry declares
-  `hostIntegrations`
+- [06-Plugin-Host-Integration.md](../../docs/02-system-design/06-Plugin-Host-Integration.md)
+  (REF-411 ✅)

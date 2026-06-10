@@ -11,7 +11,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
-import { startGiteeProxyServer } from '@pixuli/provider-gitee/proxy/node';
+import { registerHostIntegrations } from '@pixuli/core/plugins/host';
+import { storageRegistry } from '../../src/storage/registry';
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
 import { createTray, updateTrayMenu, destroyTray } from './tray';
@@ -56,8 +57,6 @@ if (!app.requestSingleInstanceLock()) {
 
 let win: BrowserWindow | null = null;
 let appIsQuitting = false;
-/** 打包版 Gitee 代理根 URL，dev 为空（走 Vite /api/gitee-proxy） */
-let giteeProxyBaseUrl = '';
 const preload = resolvePreloadScript();
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
@@ -206,22 +205,17 @@ async function createWindow() {
   });
 }
 
-ipcMain.on('gitee:proxy-base', event => {
-  event.returnValue = giteeProxyBaseUrl;
-});
-
 app.whenReady().then(async () => {
   setupContentSecurityPolicy();
 
-  if (!VITE_DEV_SERVER_URL) {
-    try {
-      const proxy = await startGiteeProxyServer();
-      giteeProxyBaseUrl = proxy.baseUrl;
-      app.on('before-quit', () => proxy.close());
-    } catch (err) {
-      console.error('[gitee-proxy] failed to start local server:', err);
-    }
-  }
+  await registerHostIntegrations(storageRegistry, {
+    target: 'electronMain',
+    electronMain: {
+      isDev: !!VITE_DEV_SERVER_URL,
+      onBeforeQuit: handler => app.on('before-quit', handler),
+      ipcMain,
+    },
+  });
 
   createWindow();
 });

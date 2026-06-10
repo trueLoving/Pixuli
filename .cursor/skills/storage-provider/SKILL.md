@@ -21,8 +21,9 @@ description: >-
 ## Add or change a provider
 
 1. Read `docs/02-system-design/04-Plugin-System.md` §第二部分
-2. In provider package: `manifest.ts` → `*StorageProvider.ts` → `register.ts` →
-   export in `package.json` `exports`
+2. In provider package: `manifest.ts`（含可选 `hostIntegrations`）→
+   `*StorageProvider.ts` → `register.ts` → `package.json` `exports`（REF-416：
+   `development` + `dist`）
 3. Register in both app `registry.ts` bootstrap functions
 4. Extend `createConfiguredStorageProvider` if new `pluginId` / config type
 5. Add Vitest: `register.test.ts` + provider behavior tests
@@ -45,7 +46,8 @@ storageRegistry.create(pluginId, {
   provider
 - Proxy URL building: `@pixuli/provider-gitee/proxy/url` in provider
   implementation
-- Host integration is **not** in provider register — see skill
+- Host 集成：在 `manifest.hostIntegrations` 声明；实现见
+  `docs/02-system-design/06-Plugin-Host-Integration.md` 与 skill
   `gitee-host-integration`
 
 ## Verify

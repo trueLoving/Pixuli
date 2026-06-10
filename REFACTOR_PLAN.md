@@ -1,7 +1,7 @@
 # Pixuli 重构计划
 
-> **版本**：1.6  
-> **更新**：2026-05-27（§1.8 / §10.7 本地库 + 远程同步产品方向；REF-607 规划）  
+> **版本**：1.7  
+> **更新**：2026-05-27（§9.5 Workspace 包消费与模块解析策略）  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -119,14 +119,15 @@ Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与
 
 ### 1.5 工程基线（跨里程碑）
 
-以下专项见 **§九**，并已登记 Issue **REF-410～414**：
+以下专项见 **§九**，并已登记 Issue **REF-410～414**、**REF-416**：
 
-| 主题               | 要点                                                                                 |
-| ------------------ | ------------------------------------------------------------------------------------ |
-| **TS / JS 一致**   | 禁止同一能力域 TS+JS 混用；**默认 TypeScript**，极少数 Node/Vercel 薄 `.js` 需文档化 |
-| **插件 Host 集成** | Provider 除运行时外，可能需改 Vite/Electron/Serverless 环境（Gitee 代理为先例）      |
-| **测试金字塔**     | 现状以单元测试为主；**集成 / 冒烟**在基线版本稳定后设计（REF-409 后）                |
-| **AI 编程辅助**    | 补充 Agent 规则与 Skill，降低重构期上下文成本                                        |
+| 主题                 | 要点                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------ |
+| **TS / JS 一致**     | 禁止同一能力域 TS+JS 混用；**默认 TypeScript**，极少数 Node/Vercel 薄 `.js` 需文档化 |
+| **Workspace 包消费** | 应用引用 `packages/*` 的分层与 dist/conditions 策略；见 **§9.5**                     |
+| **插件 Host 集成**   | Provider 除运行时外，可能需改 Vite/Electron/Serverless 环境（Gitee 代理为先例）      |
+| **测试金字塔**       | 现状以单元测试为主；**集成 / 冒烟**在基线版本稳定后设计（REF-409 后）                |
+| **AI 编程辅助**      | 补充 Agent 规则与 Skill，降低重构期上下文成本                                        |
 
 ### 1.6 产品体验与能力边界（M6）
 
@@ -615,6 +616,7 @@ Closes #42 Related: REF-101
 | REF-413 | [#128](https://github.com/trueLoving/Pixuli/issues/128) |
 | REF-414 | [#129](https://github.com/trueLoving/Pixuli/issues/129) |
 | REF-415 | [#138](https://github.com/trueLoving/Pixuli/issues/138) |
+| REF-416 | [#146](https://github.com/trueLoving/Pixuli/issues/146) |
 | REF-601 | [#130](https://github.com/trueLoving/Pixuli/issues/130) |
 | REF-602 | [#131](https://github.com/trueLoving/Pixuli/issues/131) |
 | REF-603 | [#132](https://github.com/trueLoving/Pixuli/issues/132) |
@@ -841,6 +843,7 @@ P0，见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（#70 / #76 /
 | REF-409 | [M4] 历史发布版本梳理与后续版本发布策略                         | refactor, m4, type:docs, priority:P1   | P1     | #58, #83   | [#113](https://github.com/trueLoving/Pixuli/issues/113) | ✅   |
 | REF-410 | [M4] 技术栈梳理：TypeScript / JavaScript 统一策略               | refactor, m4, type:docs, priority:P1   | P1     | #123       | [#125](https://github.com/trueLoving/Pixuli/issues/125) | ✅   |
 | REF-411 | [M4] 插件体系：Host 运行时集成层设计（dev / 打包 / Serverless） | refactor, m4, area:plugin, priority:P1 | P1     | #70, #123  | [#126](https://github.com/trueLoving/Pixuli/issues/126) | ⬜   |
+| REF-416 | [M4] Workspace 包构建与 exports conditions（模块解析）          | refactor, m4, area:core, priority:P1   | P1     | #125, #126 | [#146](https://github.com/trueLoving/Pixuli/issues/146) | ⬜   |
 | REF-412 | [M4] 集成测试体系设计与落地（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #79  | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁（基线版本稳定后）                   | refactor, m4, priority:P2              | P2     | #113, #125 | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ⬜   |
 | REF-414 | [M4] AI 编程辅助：Agent 规则与 Skill 文件体系                   | refactor, m4, type:docs, priority:P2   | P2     | #111       | [#129](https://github.com/trueLoving/Pixuli/issues/129) | ✅   |
@@ -1082,9 +1085,9 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 
 | 宿主环境     | 集成方式（当前）                                                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
-| Web dev      | `apps/pixuli/plugins/viteGiteeProxyPlugin` → `@pixuli/provider-gitee/proxy/server`                      |
+| Web dev      | `storageHostVitePlugin` → manifest `viteDevServer` → `@pixuli/provider-gitee/proxy/vite`（dist）        |
 | Web 生产     | `api/gitee-proxy.entry.ts` → esbuild → `api/gitee-proxy.js`（见策略文档 §2.2 / §三.4）                  |
-| Desktop 打包 | Electron `startGiteeProxyServer` + preload `giteeProxyBase`                                             |
+| Desktop 打包 | `registerHostIntegrations` → `@pixuli/provider-gitee/host/electron`                                     |
 | Renderer     | 仅 `@pixuli/provider-gitee/proxy/client`、`/url`（**禁止** import `/proxy` 聚合入口，避免 `node:http`） |
 
 **问题**：插件能力散落在
@@ -1142,6 +1145,151 @@ PoC 通过则优先 **#118/#120**，否则继续 **#117/#119**（方案 C 过渡
 | 索引       | [docs/README.md](docs/README.md) §AI 编程辅助、`CONTRIBUTING.md`                  | 何时更新 Agent/Skill；与用户向 docs 职责分离 |
 
 与 **REF-407**（`docs/` 梳理）协同：用户向文档、协作者向 Agent/Skill，职责分离。
+
+### 9.5 Workspace 包消费与模块解析（规划）
+
+**背景**：当前 `packages/*` 的 `package.json` `exports`
+**直接指向 `src/**/\*.ts`源码**（无`dist` 构建步骤）。应用在 **Vite Renderer**
+中消费通常正常（bundler 负责转译与解析），但在以下宿主会反复踩坑（REF-410 /
+REF-411 已遇到）：
+
+| 宿主 / 场景                               | 解析方              | 典型问题                                                                                  |
+| ----------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
+| `vite.config.ts` 顶层 `import`            | Node 原生 ESM       | 无法解析 `exports` 入口内 `./types` 等**无后缀**相对路径 → `ERR_MODULE_NOT_FOUND`         |
+| Vite `ssrLoadModule('@pixuli/…')`         | Vite SSR            | 经 **package exports 子路径**加载单文件时，同目录 `./registry` 等相对 import 可能解析失败 |
+| Vite `ssrLoadModule` + 整条 `registry` 链 | Vite SSR + Node     | 牵出 `register.ts` → provider 实现，放大解析面                                            |
+| Electron main / preload                   | Vite 打包（一般可） | 与 Renderer 不同图，偶发 `external` / 条件导出不一致                                      |
+| Vercel `api/*.js`                         | Node 运行时         | **不能**直接 `import` 指向 `.ts` 的 workspace 包 → 必须 esbuild 预打包（REF-410）         |
+| Vitest（`packages/*`）                    | Vitest bundler      | 多数正常，与生产宿主行为不一致，易「测试绿、dev 挂」                                      |
+
+根因不是「TypeScript 写错了」，而是
+**同一 workspace 包被多种模块解析器以不同规则消费**；靠不断改
+`ssr.noExternal`、`server.fs.allow`、绝对路径 `ssrLoadModule`、登记 `.js`
+例外，属于**打补丁**，难扩展。
+
+#### 9.5.1 目标
+
+- **单一心智模型**：协作者能回答「这个 `import` 在 Renderer / Node /
+  SSR 谁解析、该不该走 dist」。
+- **减少应用层胶水**：`apps/pixuli`
+  不为每个包改 Vite/Electron 配置；**包对外接口稳定**。
+- **开发体验**：改 `packages/core` 后，Web/Desktop
+  dev 仍应**快速反馈**（避免每次全量 build 所有包）。
+
+#### 9.5.2 方案对比
+
+| 方案                                           | 做法                                                                                             | 优点                                                          | 缺点                                                       |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| **A. 维持源码 exports + 宿主补丁**（现状）     | `exports` → `./src/index.ts`；应用侧 `noExternal`、动态 `import`、`api` esbuild                  | 零包构建；改包即时生效                                        | 配置散落；新宿主/新子路径重复踩坑；见 REF-411 dev 启动问题 |
+| **B. 包统一构建 `dist`**                       | 各包 `tsup`/`unbuild` → `dist/*.js` + `.d.ts`；`exports` 指向 dist                               | **Node / SSR / Vercel 与 npm 包一致**；相对路径在构建时已消解 | 需 `build` 顺序与 watch；调试依赖 source map；CI 变长      |
+| **C. 混合 + `exports` conditions**（**推荐**） | **Renderer**：dev 仍用 `development` → 源码；**Node 边界**：`import` → dist 或专用 `node` 子路径 | 兼顾 dev 速度与运行时稳定                                     | 需约定「谁能 import 源码」；过渡期双轨                     |
+| **D. 应用不 import 包，仅拷贝**                | 反模式                                                                                           | —                                                             | 禁止                                                       |
+
+**推荐结论（Pixuli）**：采用 **C — 混合 +
+conditions**，分阶段落地；**不**在 M4 末期一次性改完全仓构建，而与
+**REF-413（冒烟/CI）**、**REF-411 收尾** 对齐。
+
+#### 9.5.3 推荐目标态（包 `package.json`）
+
+```json
+{
+  "name": "@pixuli/core",
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --dts --watch"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./plugins": {
+      "development": "./src/plugins/index.ts",
+      "types": "./dist/plugins/index.d.ts",
+      "import": "./dist/plugins/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}
+```
+
+说明：
+
+- **Vite / Vitest dev**（`development` 条件）：继续吃
+  **源码**，保持当前 monorepo 改包即刷新的体验。
+- **Node 直跑**（`vite.config` 若必须静态 import、Vercel、部分 SSR）：走
+  **`import` → dist**，行为与发布到 npm 的包一致。
+- 子路径（`./plugins`、`./proxy/server`）**每个对外入口**独立 build 或在 `tsup`
+  配置 **multi-entry**，避免应用 deep import 包内文件。
+
+可选：为 Node-only 能力增加显式子路径，避免 Renderer 误用：
+
+```text
+@pixuli/provider-gitee/proxy/node   → dist，仅 electron main / serverless 构建链引用
+@pixuli/provider-gitee/proxy/client → dist 或 development，Renderer 安全
+```
+
+#### 9.5.4 应用侧消费分层（约定）
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 1 — Bundler 消费（Vite client / RN Metro / Vitest 单测）   │
+│    import '@pixuli/core' / '@pixuli/ui' / '@pixuli/provider-*'   │
+│    dev：development → 源码；prod build：可仍由应用 bundler 打进去      │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 2 — Vite SSR / configureServer / ssrLoadModule           │
+│    优先：dist 子路径 或 包内已构建的 node 入口                        │
+│    避免：ssrLoadModule 整条 registry + register 链（REF-411）       │
+│    避免：vite.config 顶层静态 import workspace barrel               │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 3 — Node 运行时（Vercel api、esbuild 入口、纯 Node 脚本）    │
+│    必须：dist 或 apps 内 esbuild 单文件产物（gitee-proxy.js）        │
+│    禁止：runtime import 指向 .ts 的 package exports                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**硬规则（写入 Code Review / AGENTS）**：
+
+1. **`vite.config.ts` / `electron` 构建配置**：禁止顶层 `import` 会拉取
+   `@pixuli/*/plugins` 整链的模块；Host 集成在 `configureServer`
+   内动态加载，或只 import **已构建的 dist / 应用内薄封装**。
+2. **包内 import**：发布给 Node 的入口文件，构建后不再依赖「无后缀相对路径 + 裸 .ts」；源码阶段包内统一
+   **无扩展名**（给 bundler），由 **tsup 打包** 消解 Node 差异。
+3. **对外只暴露 `exports` 子路径**；应用禁止
+   `import '../../../packages/core/src/...'`（除 SSR 过渡期的
+   **monorepo 绝对路径** 加载 core 单文件，应随 dist 上线删除）。
+4. **例外登记**：继续沿用
+   [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)
+   §2.2（`constants.js`、`api/gitee-proxy.js` 等），不扩大 `.js` 业务面。
+
+#### 9.5.5 分阶段落地（建议）
+
+| 阶段              | 时机                | 交付                                                                                                                               |
+| ----------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **P0 文档与分层** | M4（本文 + AGENTS） | 消费分层、禁止项、与 REF-410/411 案例互链                                                                                          |
+| **P1 试点 build** | M4～M5              | `@pixuli/core`、`@pixuli/provider-gitee` 增加 `build`/`dev`；`exports` 增加 `development` + dist；`api/gitee-proxy` 改 import dist |
+| **P2 CI 门禁**    | REF-413             | 根脚本 `pnpm -r build`（packages only）→ 再 `build:web` / `build:desktop`；缺 dist 则失败                                          |
+| **P3 全面 dist**  | M5+                 | `@pixuli/ui`、provider-github、mobile 对齐；移除应用内绝对路径 `ssrLoadModule` 补丁                                                |
+
+**与 REF-411 关系**：Host
+Bootstrap 扫描 manifest 是正确方向；**dev 侧**应通过「轻量 manifest 列表 +
+dist/node 入口」加载，而不是 `ssrLoadModule` 整条
+`storage/registry.ts`（会拖入全部 provider 实现）。
+
+**Issue 归属**：**REF-416**（[#146](https://github.com/trueLoving/Pixuli/issues/146)）承载 P1 试点 build；P2
+CI 门禁与
+**REF-413**（[#128](https://github.com/trueLoving/Pixuli/issues/128)）协同；P0 由本文档 +
+[AGENTS.md](AGENTS.md) 承载。
+
+#### 9.5.6 为何「全 dist」不是唯一答案
+
+若 **所有** 消费都强制 dist，本地改 `packages/core` 后须先
+`pnpm --filter @pixuli/core build` 才能看到 Web 效果，显著拖慢 M3～M6 迭代。因此
+**conditions 双轨**（dev 源码、Node dist）是更均衡的「优雅」方案；**生产 CI**
+则统一以 dist 为准，保证与发布后行为一致。
 
 ---
 
@@ -1351,10 +1499,10 @@ flowchart LR
 | M1       | 12       | 7      | 58%     |
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
-| M4       | 15       | 11     | 73%     |
+| M4       | 16       | 11     | 69%     |
 | M5       | 11       | 0      | 0%      |
 | M6       | 7        | 0      | 0%      |
-| **合计** | **67**   | **21** | **31%** |
+| **合计** | **68**   | **21** | **31%** |
 
 ---
 
@@ -1369,6 +1517,7 @@ flowchart LR
 | 执行 Checklist                | `.local/简化执行-checklist.md`                                                                            |
 | 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                          |
 | TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410） |
+| Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                      |
 | 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                 |
 | M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)   |
 | AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                    |
