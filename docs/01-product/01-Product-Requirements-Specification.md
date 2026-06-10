@@ -106,11 +106,11 @@ archive/        wasm、benchmark、历史 server（不参与日常构建）
 
 ### 2.5 规划中能力（里程碑）
 
-| 里程碑 | 产品向交付                                   | 计划 Issue   |
-| ------ | -------------------------------------------- | ------------ |
-| **M4** | PRD/README/Wiki/CHANGELOG 与现架构一致       | REF-401～415 |
-| **M5** | PWA 深化、Desktop L3；Capacitor 三端共享 PoC | REF-501～510 |
-| **M6** | 三端交互规范、UI、性能边界、标签/AI、批处理  | REF-601～605 |
+| 里程碑 | 产品向交付                                   | 计划 Issue                                                                                                |
+| ------ | -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **M4** | PRD/README/Wiki/CHANGELOG 与现架构一致       | REF-401～415                                                                                              |
+| **M5** | PWA 深化、Desktop L3；Capacitor 三端共享 PoC | REF-501～510                                                                                              |
+| **M6** | 三端交互规范、UI、性能边界、标签/AI、批处理  | REF-601～605；交互规范见 [04-three-platform-interaction-spec.md](./04-three-platform-interaction-spec.md) |
 
 详见 [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)。
 

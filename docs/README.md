@@ -43,6 +43,7 @@
 | [01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md) | **基线产品需求规格说明书**：底线、裁剪、功能/非功能需求、路线图（REF-401 合并）。             |
 | [02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)                               | **产品使用手册（Wiki 源稿）**：配置源、上传、三端、FAQ；附录 Wiki 同步（REF-408 合并）。      |
 | [03-Release-Versioning.md](01-product/03-Release-Versioning.md)                                 | **版本发布策略**（REF-409）：基线 **2.0.0**、三端统一 semver、`v*-{desktop,mobile,web}` tag。 |
+| [04-three-platform-interaction-spec.md](01-product/04-three-platform-interaction-spec.md)       | **三端交互规范**（REF-601）：IA、旅程、差异矩阵、断点与验收路径（#130）。                     |
 
 ---
 
