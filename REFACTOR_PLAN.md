@@ -992,7 +992,7 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 | REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
 | REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
 | REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2           | P2     | #87        | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜   |
-| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ⬜   |
+| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ✅   |
 | REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1 | P1     | #100, #116 | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
 | REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2   | P2     | #116       | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
 | REF-509 | [M5] Capacitor PoC：apps/pixuli 打 iOS/Android 壳          | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
@@ -1002,7 +1002,8 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 REF-506 ~ REF-511 说明（三端共享）
 
 **REF-506** — 对照 §1.4.1 输出「共享矩阵」：文件/模块级标注 Web+Desktop / Mobile
-/ 可合并；链接
+/ 可合并；交付
+[09-cross-platform-sharing-matrix.md](docs/02-system-design/09-cross-platform-sharing-matrix.md)；路线见
 [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)。
 
 **REF-507** — 在 M3 Registry 与 `StoredSourceEntry`
@@ -1500,35 +1501,36 @@ flowchart LR
 | M2       | 10       | 0      | 0%      |
 | M3       | 12       | 9      | 75%     |
 | M4       | 16       | 11     | 69%     |
-| M5       | 11       | 0      | 0%      |
+| M5       | 11       | 1      | 9%      |
 | M6       | 7        | 0      | 0%      |
-| **合计** | **68**   | **21** | **31%** |
+| **合计** | **68**   | **22** | **32%** |
 
 ---
 
 ## 七、相关文档
 
-| 文档                          | 位置                                                                                                      |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                  |
-| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                            |
-| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                       |
-| 插件体系设计                  | `.local/插件体系设计.md`                                                                                  |
-| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                            |
-| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                          |
-| TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410） |
-| Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                      |
-| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                 |
-| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)   |
-| AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                    |
-| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                             |
-| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                              |
-| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                              |
-| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                            |
-| 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                         |
-| 本地库与远端同步（计划）      | REF-607 → §1.8、§10.7、[#144](https://github.com/trueLoving/Pixuli/issues/144)                            |
-| 移动端拍照元数据（计划）      | REF-511 → [#141](https://github.com/trueLoving/Pixuli/issues/141)                                         |
-| 版本发布策略                  | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)（REF-409）                           |
+| 文档                          | 位置                                                                                                       |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                   |
+| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                             |
+| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                        |
+| 插件体系设计                  | `.local/插件体系设计.md`                                                                                   |
+| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                             |
+| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                           |
+| TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410）  |
+| Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                       |
+| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                  |
+| 三端代码共享矩阵              | REF-506 → [09-cross-platform-sharing-matrix.md](docs/02-system-design/09-cross-platform-sharing-matrix.md) |
+| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)    |
+| AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                     |
+| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                              |
+| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                               |
+| 三端交互规范（计划）          | REF-601 → `docs/01-product/`                                                                               |
+| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                             |
+| 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                          |
+| 本地库与远端同步（计划）      | REF-607 → §1.8、§10.7、[#144](https://github.com/trueLoving/Pixuli/issues/144)                             |
+| 移动端拍照元数据（计划）      | REF-511 → [#141](https://github.com/trueLoving/Pixuli/issues/141)                                          |
+| 版本发布策略                  | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)（REF-409）                            |
 
 > 建议：M4 中将 `.local` 核心内容迁入
 > `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。
