@@ -13,11 +13,12 @@ import {
   useDemoMode,
 } from '@pixuli/ui';
 import type { ImageUploadData, MultiImageUploadData } from '@pixuli/core/types';
-import { ScrollText } from 'lucide-react';
+import { Menu, ScrollText } from 'lucide-react';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { ROUTES } from '../router/routes';
 import { useSearchContextSafe } from '../contexts/SearchContext';
+import { useMobileViewport } from '../hooks/useMobileViewport';
 import { useI18n } from '../i18n/useI18n';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
@@ -42,18 +43,36 @@ export const AppMain: React.FC<AppMainProps> = ({
     useI18n();
   const { loading, batchUploadProgress, images } = useImageStore();
   const { sources } = useSourceStore();
-  const { isFullscreenMode, openOperationLog } = useUIStore();
+  const {
+    isFullscreenMode,
+    openOperationLog,
+    toggleMobileSidebar,
+    mobileSidebarOpen,
+  } = useUIStore();
   const { isDemoMode } = useDemoMode();
   const location = useLocation();
   const searchContext = useSearchContextSafe();
+  const isMobile = useMobileViewport();
 
   // 判断是否在照片页面，如果是则显示搜索框
   const isPhotosPage = location.pathname === ROUTES.PHOTOS;
 
-  // 构建左侧操作区域（搜索框）
-  const leftActions =
+  const mobileMenuButton = isMobile ? (
+    <button
+      type="button"
+      className="header-button icon-only mobile-menu-btn"
+      onClick={toggleMobileSidebar}
+      title={t('header.openMenu')}
+      aria-label={t('header.openMenu')}
+      aria-expanded={mobileSidebarOpen}
+    >
+      <Menu size={20} />
+    </button>
+  ) : null;
+
+  const searchAction =
     isPhotosPage && searchContext && searchContext.showSearch ? (
-      <div className="flex-1 max-w-2xl">
+      <div className="flex-1 min-w-0 max-w-2xl">
         <Search
           searchQuery={searchContext.searchQuery}
           onSearchChange={searchContext.setSearchQuery}
@@ -72,6 +91,14 @@ export const AppMain: React.FC<AppMainProps> = ({
           t={t}
         />
       </div>
+    ) : null;
+
+  const leftActions =
+    mobileMenuButton || searchAction ? (
+      <>
+        {mobileMenuButton}
+        {searchAction}
+      </>
     ) : null;
 
   return (

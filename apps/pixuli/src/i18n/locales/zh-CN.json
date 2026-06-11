@@ -24,7 +24,8 @@
     "repository": "仓库"
   },
   "header": {
-    "operationLog": "操作日志"
+    "operationLog": "操作日志",
+    "openMenu": "打开菜单"
   },
   "compressPage": {
     "title": "图片压缩",

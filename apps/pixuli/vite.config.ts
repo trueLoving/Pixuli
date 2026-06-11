@@ -98,6 +98,11 @@ export default defineConfig(({ command, mode }) => {
   const isServe = command === 'serve';
   const isBuild = command === 'build';
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
+  const isAndroidDev = isServe && isWeb && !!process.env.CAPACITOR_ANDROID_DEV;
+  const androidDevPort = Number(process.env.CAPACITOR_DEV_PORT || 5500);
+  // 离线 APK：相对资源路径 + 禁用 PWA/SW（Capacitor WebView 易白屏）
+  const isCapacitorNativeBuild =
+    isWeb && isBuild && !!process.env.CAPACITOR_NATIVE;
 
   const plugins: any[] = [react()];
 
@@ -153,8 +158,8 @@ export default defineConfig(({ command, mode }) => {
     );
   }
 
-  // PWA：仅 Web 模式启用（Desktop 不注册 SW）
-  if (isWeb) {
+  // PWA：Web 浏览器；Capacitor 离线包不生成 SW（见 isCapacitorNativeBuild）
+  if (isWeb && !isCapacitorNativeBuild) {
     plugins.push(
       VitePWA({
         registerType: 'prompt',
@@ -229,8 +234,8 @@ export default defineConfig(({ command, mode }) => {
     '@platforms/web': path.resolve(__dirname, 'src/platforms/web'),
     '@platforms/desktop': path.resolve(__dirname, 'src/platforms/desktop'),
   };
-  // Desktop 构建时无 PWA 插件，将 virtual:pwa-register 指向 no-op 避免报错
-  if (isDesktop) {
+  // Desktop / Capacitor 离线包无 PWA 插件，virtual:pwa-register 走 no-op
+  if (isDesktop || isCapacitorNativeBuild) {
     resolveAlias['virtual:pwa-register/react'] = path.resolve(
       __dirname,
       'src/features/pwa/pwaRegisterStub.ts',
@@ -240,6 +245,7 @@ export default defineConfig(({ command, mode }) => {
   const monorepoRoot = path.resolve(__dirname, '../..');
 
   return {
+    base: isCapacitorNativeBuild ? './' : '/',
     resolve: {
       alias: resolveAlias,
       // Renderer dev 走 development → 源码（REF-416）
@@ -336,8 +342,10 @@ export default defineConfig(({ command, mode }) => {
           })()
         : isWeb
           ? {
-              open: true,
-              port: 5500,
+              open: !isAndroidDev,
+              host: isAndroidDev ? '0.0.0.0' : undefined,
+              port: isAndroidDev ? androidDevPort : 5500,
+              strictPort: isAndroidDev,
             }
           : {}),
     },

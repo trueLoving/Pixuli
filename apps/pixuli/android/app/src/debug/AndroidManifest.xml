@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 开发联调：允许 Live Reload 走 HTTP（仅 debug 构建） -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

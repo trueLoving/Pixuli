@@ -4,8 +4,9 @@
  */
 
 import { Sidebar as CommonSidebar, type SidebarMenuItem } from '@pixuli/ui';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
 import { useUIStore } from '../stores/uiStore';
 
@@ -31,16 +32,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   t,
 }) => {
   const navigate = useNavigate();
+  const isMobile = useMobileViewport();
   const {
     activeMenu,
     sidebarCollapsed,
+    mobileSidebarOpen,
     isFullscreenMode,
     toggleSidebar,
+    closeMobileSidebar,
     setCurrentView,
     setCurrentUtilityTool,
     setActiveMenu,
     openConfigModal,
   } = useUIStore();
+
+  useEffect(() => {
+    if (!isMobile && mobileSidebarOpen) {
+      closeMobileSidebar();
+    }
+  }, [isMobile, mobileSidebarOpen, closeMobileSidebar]);
+
+  useEffect(() => {
+    if (!isMobile) return;
+    document.body.style.overflow = mobileSidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobile, mobileSidebarOpen]);
+
+  const closeDrawerIfMobile = () => {
+    if (isMobile) {
+      closeMobileSidebar();
+    }
+  };
 
   const handleMenuClick = (menuItem: SidebarMenuItem) => {
     if (menuItem.type === 'photos') {
@@ -66,6 +90,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
       setActiveMenu('settings');
       openConfigModal();
     }
+    closeDrawerIfMobile();
+  };
+
+  const handleSourceSelect = (id: string) => {
+    onSourceSelect(id);
+    closeDrawerIfMobile();
+  };
+
+  const handleAddSource = () => {
+    onAddSource();
+    closeDrawerIfMobile();
   };
 
   if (isFullscreenMode) {
@@ -78,13 +113,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeMenu={activeMenu}
       sources={sidebarSources}
       selectedSourceId={selectedSourceId}
-      onSourceSelect={onSourceSelect}
+      onSourceSelect={handleSourceSelect}
       onSourceEdit={onSourceEdit}
       onSourceDelete={onSourceDelete}
       hasConfig={hasConfig}
-      onAddSource={onAddSource}
-      collapsed={sidebarCollapsed}
-      onToggleCollapse={toggleSidebar}
+      onAddSource={handleAddSource}
+      collapsed={isMobile ? false : sidebarCollapsed}
+      onToggleCollapse={isMobile ? undefined : toggleSidebar}
+      mobileOpen={isMobile && mobileSidebarOpen}
+      onMobileClose={closeMobileSidebar}
       t={t}
     />
   );
