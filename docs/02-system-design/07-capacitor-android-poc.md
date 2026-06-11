@@ -16,7 +16,7 @@
 | **工程位置**    | `apps/pixuli`（与 Web/Desktop 同源）                           |
 | **webDir**      | `dist`（`vite build --mode web`）                              |
 | **appId**       | `com.pixuli.app`（与 RN `com.pixuli.mobile` 区分，可并存安装） |
-| **是否进入 P3** | 待真机冒烟通过后确认（见 §六）                                 |
+| **是否进入 P3** | 工程已交付（REF-509 ✅）；待 §六真机冒烟勾选后确认             |
 
 ---
 
@@ -134,12 +134,25 @@ pnpm build:android
 
 ### 4.2 产物路径
 
-| 类型        | 路径                                                                         |
-| ----------- | ---------------------------------------------------------------------------- |
-| Debug APK   | `apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk`              |
-| Release APK | `apps/pixuli/android/app/build/outputs/apk/release/app-release-unsigned.apk` |
+| 类型        | 路径                                                                |
+| ----------- | ------------------------------------------------------------------- |
+| Debug APK   | `apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk`     |
+| Release APK | `apps/pixuli/android/app/build/outputs/apk/release/app-release.apk` |
 
-Release 需自行签名后方可上架；PoC 阶段使用 debug 或 unsigned release 即可。
+**签名**：`assembleRelease` 会自动签名。未配置 `android/keystore.properties`
+时回退到本机
+`~/.android/debug.keystore`（可真机安装，**不可上架**）。正式发版复制
+`keystore.properties.example` 并填写 release 证书（REF-515 CI 注入）。
+
+**真机安装推荐**：
+
+- 冒烟 / 离线验证：`pnpm build:android:debug` → `app-debug.apk`
+- 接近生产包：`pnpm build:android` → 已签名的 `app-release.apk`
+
+> **勿安装**
+> `app-release-unsigned.apk`（若 Gradle 未跑签名步骤的残留物）。Android
+> 11+（`targetSdk ≥ 30`）对未签名包会报
+> **`packageInfo is null`**（小米等机型常见）。
 
 ### 4.3 Gitee 生产包
 
@@ -217,3 +230,36 @@ apps/pixuli/
 
 PoC 通过后，产品文档与 CI 逐步以 Capacitor
 Android 为 Mobile 主路径；RN 按 REF-508 评估退场。
+
+---
+
+## 九、故障排查
+
+### 打开应用白屏
+
+| 现象                                                          | 原因                                              | 处理                                                                                                                    |
+| ------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `dev:android` / `run:android` 装的 debug 包，关掉 Vite 后打开 | APK 内 `server.url` 仍指向 dev server             | 先起 `pnpm dev:android:server`，或改打 **离线包**：`pnpm build:android:debug`                                           |
+| `build:android:debug` 仍白屏                                  | 资源绝对路径或 PWA Service Worker 在 WebView 失效 | 拉最新代码（`CAPACITOR_NATIVE=1` 构建：`base: './'`、不生成 `sw.js`），重新 `pnpm build:android:debug` 并**先卸载旧包** |
+| 仅白屏、无报错                                                | 曾注册过 SW                                       | 卸载应用重装；或 `chrome://inspect` 看 WebView 控制台                                                                   |
+
+离线验收请用：
+
+```bash
+pnpm build:android:debug
+# 安装 apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### `packageInfo is null`（真机无法安装 APK）
+
+| 现象                                 | 原因                                                  | 处理                                                                                           |
+| ------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 安装 `app-release-unsigned.apk` 失败 | **未签名**；Android 11+ 要求 APK Signature Scheme v2+ | 改用 `app-release.apk`（`pnpm build:android`）或 `app-debug.apk`（`pnpm build:android:debug`） |
+| `assembleRelease` 后只有 unsigned    | 旧版 `build.gradle` 未配置 `signingConfig`            | 拉取最新代码后重新 `pnpm build:android`                                                        |
+| debug 可装、release 仍失败           | 曾装过同包名但签名不同的包                            | 先卸载 `com.pixuli.app`，再安装                                                                |
+
+验证签名（可选）：
+
+```bash
+apksigner verify --verbose apps/pixuli/android/app/build/outputs/apk/release/app-release.apk
+```

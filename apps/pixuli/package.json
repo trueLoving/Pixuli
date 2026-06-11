@@ -21,7 +21,7 @@
     "dev:android": "node scripts/dev-android.mjs",
     "dev:android:server": "pnpm build:packages && vite --mode web --host 0.0.0.0 --port 5500",
     "run:android": "node scripts/run-android.mjs",
-    "build:android": "pnpm run build:web && cap sync android",
+    "build:android": "CAPACITOR_NATIVE=1 CAPACITOR_SERVER_URL= pnpm run build:web && cap sync android",
     "build:android:debug": "pnpm run build:android && cd android && ./gradlew assembleDebug",
     "build:android:release": "pnpm run build:android && cd android && ./gradlew assembleRelease",
     "cap:sync": "cap sync android",
