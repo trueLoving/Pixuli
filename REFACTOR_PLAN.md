@@ -995,7 +995,7 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 | REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1 | P1     | #79, #86   | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ✅   |
 | REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1 | P1     | #100, #116 | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
 | REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2   | P2     | #116       | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
-| REF-509 | [M5] Capacitor PoC：apps/pixuli 打 iOS/Android 壳          | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
+| REF-509 | [M5] Capacitor Android PoC：apps/pixuli Web 壳 + APK       | refactor, m5, area:mobile, area:web, priority:P1  | P1     | #116, #84  | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ⬜   |
 | REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2            | P2     | #118       | [#120](https://github.com/trueLoving/Pixuli/issues/120) | ⬜   |
 | REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1            | P1     | #118, #120 | [#141](https://github.com/trueLoving/Pixuli/issues/141) | ⬜   |
 
@@ -1013,8 +1013,9 @@ REF-506 ~ REF-511 说明（三端共享）
 **REF-508** — 盘点 `apps/mobile` 与 `@pixuli/ui/web`
 功能重叠度；明确 Capacitor 落地后 **不必** 再迁 RN 的组件列表（避免重复劳动）。
 
-**REF-509** — 按 06 文档 §六～§七：Capacitor 接入、`webDir` 指向现有 `build:web`
-产物；真机冒烟（启动、登录配置、列表、上传一张图）。
+**REF-509** — Capacitor **仅 Android** 接入（见
+[07-capacitor-android-poc.md](docs/02-system-design/07-capacitor-android-poc.md)）：`webDir`
+指向 `build:web`；dev（Live Reload）+ prod（APK）构建；真机冒烟。
 
 **REF-510** — 相机/相册/文件/安全区等插件选型；在 `apps/pixuli` 内用
 `Capacitor.isNativePlatform()` 收敛分支，替代 RN 侧重复实现。

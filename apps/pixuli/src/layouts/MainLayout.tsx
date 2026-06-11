@@ -34,7 +34,7 @@ import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { listStoragePluginManifests } from '../storage/registry';
-import { getPlatform } from '../utils/platform';
+import { getPlatform, isNativeMobile } from '../utils/platform';
 import {
   configFieldsKey,
   resolveModalRepoConfig,
@@ -148,8 +148,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   return (
     <div
-      className="h-screen flex overflow-hidden"
+      className="flex overflow-hidden min-h-0 h-screen max-h-screen"
       style={{
+        height: '100dvh',
+        maxHeight: '100dvh',
         backgroundColor: 'var(--app-theme-background-primary, #ffffff)',
       }}
     >
@@ -236,7 +238,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         text={loading ? t('app.loadingImages') : undefined}
       />
 
-      {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && (
+      {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && !isNativeMobile() && (
         <>
           <OfflineIndicator />
           <PWAInstallPrompt />

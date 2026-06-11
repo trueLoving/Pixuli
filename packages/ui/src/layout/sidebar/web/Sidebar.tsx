@@ -61,6 +61,10 @@ interface SidebarProps {
   onAddSource: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  /** 窄屏抽屉是否展开（配合 CSS `.sidebar.open`） */
+  mobileOpen?: boolean;
+  /** 点击遮罩或完成导航后关闭抽屉 */
+  onMobileClose?: () => void;
   t?: (key: string) => string;
 }
 
@@ -131,9 +135,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAddSource,
   collapsed = false,
   onToggleCollapse,
+  mobileOpen = false,
+  onMobileClose,
   t,
 }) => {
   const translate = t || defaultTranslate;
+  const sidebarClassName = [
+    'sidebar',
+    collapsed ? 'collapsed' : '',
+    mobileOpen ? 'open' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
   const [contextMenu, setContextMenu] = useState<{
     visible: boolean;
     x: number;
@@ -317,316 +330,340 @@ const Sidebar: React.FC<SidebarProps> = ({
       : null;
   };
 
+  const renderMobileOverlay = () => {
+    if (!mobileOpen || !onMobileClose) return null;
+
+    const overlay = (
+      <div
+        className="sidebar-overlay"
+        onClick={onMobileClose}
+        aria-hidden="true"
+      />
+    );
+
+    return typeof document !== 'undefined'
+      ? createPortal(overlay, document.body)
+      : null;
+  };
+
   if (collapsed) {
     return (
-      <aside ref={sidebarRef} className="sidebar collapsed">
-        {/* Logo 图标 */}
-        <div className="sidebar-collapsed-header">
-          <button
-            onClick={onToggleCollapse}
-            className="sidebar-collapsed-logo-btn"
-            title={translate('sidebar.expand')}
-          >
-            <img
-              src="/icon.png"
-              alt="Pixuli"
-              className="sidebar-collapsed-logo"
-            />
-          </button>
-        </div>
+      <>
+        <aside ref={sidebarRef} className={sidebarClassName}>
+          {/* Logo 图标 */}
+          <div className="sidebar-collapsed-header">
+            <button
+              onClick={onToggleCollapse}
+              className="sidebar-collapsed-logo-btn"
+              title={translate('sidebar.expand')}
+            >
+              <img
+                src="/icon.png"
+                alt="Pixuli"
+                className="sidebar-collapsed-logo"
+              />
+            </button>
+          </div>
 
-        {/* 主导航 - 折叠状态 */}
-        {onMenuClick && (
-          <nav className="sidebar-collapsed-nav">
-            {mainNavItems.map(item => {
-              const disabled = item.requiresConfig && !hasConfig;
-              return (
+          {/* 主导航 - 折叠状态 */}
+          {onMenuClick && (
+            <nav className="sidebar-collapsed-nav">
+              {mainNavItems.map(item => {
+                const disabled = item.requiresConfig && !hasConfig;
+                return (
+                  <button
+                    key={item.menuKey}
+                    className={`sidebar-collapsed-item ${
+                      activeMenu === item.menuKey ? 'active' : ''
+                    } ${disabled ? 'disabled' : ''}`}
+                    onClick={
+                      !disabled ? () => onMenuClick(item.menuItem) : undefined
+                    }
+                    disabled={disabled}
+                    title={
+                      disabled ? translate('sidebar.needSource') : item.label
+                    }
+                  >
+                    {React.cloneElement(
+                      item.icon as React.ReactElement<{ size?: number }>,
+                      { size: 28 },
+                    )}
+                    <span className="sidebar-collapsed-tooltip">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* 仓库源 - 折叠状态 */}
+          {sources.length > 0 && (
+            <div className="sidebar-collapsed-sources">
+              {sources.slice(0, 3).map(source => (
                 <button
-                  key={item.menuKey}
-                  className={`sidebar-collapsed-item ${
-                    activeMenu === item.menuKey ? 'active' : ''
-                  } ${disabled ? 'disabled' : ''}`}
-                  onClick={
-                    !disabled ? () => onMenuClick(item.menuItem) : undefined
-                  }
-                  disabled={disabled}
-                  title={
-                    disabled ? translate('sidebar.needSource') : item.label
-                  }
+                  key={source.id}
+                  className={`sidebar-collapsed-source-item ${
+                    selectedSourceId === source.id ? 'active' : ''
+                  }`}
+                  onClick={() => onSourceSelect(source.id)}
+                  onContextMenu={e => handleContextMenu(e, source.id)}
+                  title={`${source.name}\n${source.owner}/${source.repo}`}
                 >
-                  {React.cloneElement(
-                    item.icon as React.ReactElement<{ size?: number }>,
-                    { size: 28 },
+                  {source.type === 'github' ? (
+                    <Github size={26} />
+                  ) : (
+                    <div className="gitee-icon-small">码</div>
                   )}
                   <span className="sidebar-collapsed-tooltip">
-                    {item.label}
+                    {source.name}
                   </span>
                 </button>
-              );
-            })}
-          </nav>
-        )}
+              ))}
+              {sources.length > 3 && (
+                <div
+                  className="sidebar-collapsed-more"
+                  title={`还有 ${sources.length - 3} 个源`}
+                >
+                  <Plus size={16} />
+                  <span className="sidebar-collapsed-tooltip">
+                    {translate('sidebar.sources')} (+{sources.length - 3})
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* 仓库源 - 折叠状态 */}
-        {sources.length > 0 && (
-          <div className="sidebar-collapsed-sources">
-            {sources.slice(0, 3).map(source => (
-              <button
-                key={source.id}
-                className={`sidebar-collapsed-source-item ${
-                  selectedSourceId === source.id ? 'active' : ''
-                }`}
-                onClick={() => onSourceSelect(source.id)}
-                onContextMenu={e => handleContextMenu(e, source.id)}
-                title={`${source.name}\n${source.owner}/${source.repo}`}
-              >
-                {source.type === 'github' ? (
-                  <Github size={26} />
-                ) : (
-                  <div className="gitee-icon-small">码</div>
-                )}
-                <span className="sidebar-collapsed-tooltip">{source.name}</span>
-              </button>
-            ))}
-            {sources.length > 3 && (
-              <div
-                className="sidebar-collapsed-more"
-                title={`还有 ${sources.length - 3} 个源`}
-              >
-                <Plus size={16} />
-                <span className="sidebar-collapsed-tooltip">
-                  {translate('sidebar.sources')} (+{sources.length - 3})
-                </span>
-              </div>
-            )}
+          {/* 添加源按钮 - 折叠状态 */}
+          <div className="sidebar-collapsed-add">
+            <button
+              onClick={onAddSource}
+              className="sidebar-collapsed-add-btn"
+              title={translate('sidebar.addSource')}
+            >
+              <Plus size={28} />
+              <span className="sidebar-collapsed-tooltip">
+                {translate('sidebar.addSource')}
+              </span>
+            </button>
+          </div>
+
+          {/* 底部操作 - 折叠状态 */}
+          <div className="sidebar-collapsed-footer">
+            <button
+              className="sidebar-collapsed-item"
+              onClick={() => {
+                window.open(
+                  'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                  '_blank',
+                );
+              }}
+              title={translate('sidebar.docs')}
+            >
+              <HelpCircle size={28} />
+              <span className="sidebar-collapsed-tooltip">
+                {translate('sidebar.docs')}
+              </span>
+            </button>
+            <button
+              className="sidebar-collapsed-item"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+              }}
+              title={translate('sidebar.keyboardShortcuts')}
+            >
+              <Keyboard size={28} />
+              <span className="sidebar-collapsed-tooltip">
+                {translate('sidebar.keyboardShortcuts')}
+              </span>
+            </button>
+            <button
+              className="sidebar-collapsed-item"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openVersionInfo'));
+              }}
+              title={translate('sidebar.versionInfo')}
+            >
+              <Info size={28} />
+              <span className="sidebar-collapsed-tooltip">
+                {translate('sidebar.versionInfo')}
+              </span>
+            </button>
+          </div>
+
+          {/* 右键菜单 - 折叠状态（使用 Portal） */}
+          {renderContextMenu()}
+        </aside>
+        {renderMobileOverlay()}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <aside ref={sidebarRef} className={sidebarClassName}>
+        {/* Logo/Header */}
+        <div className="sidebar-header">
+          <div className="sidebar-logo-container">
+            <img src="/icon.png" alt="Pixuli" className="sidebar-logo-icon" />
+            <span className="sidebar-logo-text">Pixuli</span>
+          </div>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="sidebar-collapse-btn"
+              title={translate('sidebar.collapse')}
+            >
+              ←
+            </button>
+          )}
+        </div>
+
+        {/* 主导航：图床 + 工具 + 设置 */}
+        {onMenuClick && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-header">
+              <span className="sidebar-section-title">
+                {translate('sidebar.mainNav')}
+              </span>
+            </div>
+            <nav className="sidebar-nav">
+              {mainNavItems.map(item => {
+                const disabled = item.requiresConfig && !hasConfig;
+                return (
+                  <NavItem
+                    key={item.menuKey}
+                    icon={item.icon}
+                    label={item.label}
+                    active={activeMenu === item.menuKey}
+                    disabled={disabled}
+                    onClick={
+                      !disabled ? () => onMenuClick(item.menuItem) : undefined
+                    }
+                    tooltip={
+                      disabled ? translate('sidebar.needSource') : undefined
+                    }
+                    t={t}
+                  />
+                );
+              })}
+            </nav>
           </div>
         )}
 
-        {/* 添加源按钮 - 折叠状态 */}
-        <div className="sidebar-collapsed-add">
-          <button
-            onClick={onAddSource}
-            className="sidebar-collapsed-add-btn"
-            title={translate('sidebar.addSource')}
-          >
-            <Plus size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.addSource')}
+        {/* 仓库源列表 */}
+        <div className="sidebar-section sidebar-sources">
+          <div className="sidebar-section-header">
+            <span className="sidebar-section-title">
+              {translate('sidebar.sources')}
             </span>
-          </button>
+            <button
+              onClick={onAddSource}
+              className="sidebar-add-source-btn"
+              title={translate('sidebar.addSource')}
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
+          {sources.length === 0 ? (
+            <div className="sidebar-empty-state">
+              <div className="sidebar-empty-icon">
+                <Plus size={24} className="text-gray-400" />
+              </div>
+              <p className="sidebar-empty-text">
+                {translate('sidebar.emptyState.text')}
+              </p>
+              <button onClick={onAddSource} className="sidebar-add-button">
+                <Plus size={16} />
+                {translate('sidebar.emptyState.addSource')}
+              </button>
+            </div>
+          ) : (
+            <div className="sidebar-source-list">
+              {sources.map(source => {
+                const unavailable = source.available === false;
+                return (
+                  <button
+                    key={source.id}
+                    type="button"
+                    className={`sidebar-source-item ${
+                      selectedSourceId === source.id ? 'active' : ''
+                    } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
+                    onClick={() => {
+                      if (!unavailable) {
+                        onSourceSelect(source.id);
+                      }
+                    }}
+                    onContextMenu={e => handleContextMenu(e, source.id)}
+                    title={
+                      unavailable
+                        ? translate('sidebar.pluginUnavailable')
+                        : `${source.owner}/${source.repo}`
+                    }
+                    disabled={unavailable}
+                  >
+                    <div className="sidebar-source-icon">
+                      {source.type === 'github' ? (
+                        <Github size={16} />
+                      ) : (
+                        <div className="gitee-icon">码</div>
+                      )}
+                    </div>
+                    <div className="sidebar-source-info">
+                      <div className="sidebar-source-name">{source.name}</div>
+                      <div className="sidebar-source-path">
+                        {unavailable
+                          ? translate('sidebar.pluginUnavailable')
+                          : `${source.owner}/${source.repo}`}
+                      </div>
+                    </div>
+                    {source.active && !unavailable && (
+                      <div className="sidebar-source-active-dot" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* 底部操作 - 折叠状态 */}
-        <div className="sidebar-collapsed-footer">
-          <button
-            className="sidebar-collapsed-item"
+        {/* 底部操作 */}
+        <div className="sidebar-footer">
+          <NavItem
+            icon={<HelpCircle size={20} />}
+            label={translate('sidebar.docs')}
             onClick={() => {
+              // 打开文档链接
               window.open(
                 'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
                 '_blank',
               );
             }}
-            title={translate('sidebar.docs')}
-          >
-            <HelpCircle size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.docs')}
-            </span>
-          </button>
-          <button
-            className="sidebar-collapsed-item"
+          />
+          <NavItem
+            icon={<Keyboard size={20} />}
+            label={translate('sidebar.keyboardShortcuts')}
             onClick={() => {
+              // 触发快捷键说明事件
               window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
             }}
-            title={translate('sidebar.keyboardShortcuts')}
-          >
-            <Keyboard size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.keyboardShortcuts')}
-            </span>
-          </button>
-          <button
-            className="sidebar-collapsed-item"
+          />
+          <NavItem
+            icon={<Info size={20} />}
+            label={translate('sidebar.versionInfo')}
             onClick={() => {
+              // 触发版本信息事件
               window.dispatchEvent(new CustomEvent('openVersionInfo'));
             }}
-            title={translate('sidebar.versionInfo')}
-          >
-            <Info size={28} />
-            <span className="sidebar-collapsed-tooltip">
-              {translate('sidebar.versionInfo')}
-            </span>
-          </button>
+          />
         </div>
 
-        {/* 右键菜单 - 折叠状态（使用 Portal） */}
+        {/* 右键菜单（使用 Portal） */}
         {renderContextMenu()}
       </aside>
-    );
-  }
-
-  return (
-    <aside ref={sidebarRef} className="sidebar">
-      {/* Logo/Header */}
-      <div className="sidebar-header">
-        <div className="sidebar-logo-container">
-          <img src="/icon.png" alt="Pixuli" className="sidebar-logo-icon" />
-          <span className="sidebar-logo-text">Pixuli</span>
-        </div>
-        {onToggleCollapse && (
-          <button
-            onClick={onToggleCollapse}
-            className="sidebar-collapse-btn"
-            title={translate('sidebar.collapse')}
-          >
-            ←
-          </button>
-        )}
-      </div>
-
-      {/* 主导航：图床 + 工具 + 设置 */}
-      {onMenuClick && (
-        <div className="sidebar-section">
-          <div className="sidebar-section-header">
-            <span className="sidebar-section-title">
-              {translate('sidebar.mainNav')}
-            </span>
-          </div>
-          <nav className="sidebar-nav">
-            {mainNavItems.map(item => {
-              const disabled = item.requiresConfig && !hasConfig;
-              return (
-                <NavItem
-                  key={item.menuKey}
-                  icon={item.icon}
-                  label={item.label}
-                  active={activeMenu === item.menuKey}
-                  disabled={disabled}
-                  onClick={
-                    !disabled ? () => onMenuClick(item.menuItem) : undefined
-                  }
-                  tooltip={
-                    disabled ? translate('sidebar.needSource') : undefined
-                  }
-                  t={t}
-                />
-              );
-            })}
-          </nav>
-        </div>
-      )}
-
-      {/* 仓库源列表 */}
-      <div className="sidebar-section sidebar-sources">
-        <div className="sidebar-section-header">
-          <span className="sidebar-section-title">
-            {translate('sidebar.sources')}
-          </span>
-          <button
-            onClick={onAddSource}
-            className="sidebar-add-source-btn"
-            title={translate('sidebar.addSource')}
-          >
-            <Plus size={16} />
-          </button>
-        </div>
-
-        {sources.length === 0 ? (
-          <div className="sidebar-empty-state">
-            <div className="sidebar-empty-icon">
-              <Plus size={24} className="text-gray-400" />
-            </div>
-            <p className="sidebar-empty-text">
-              {translate('sidebar.emptyState.text')}
-            </p>
-            <button onClick={onAddSource} className="sidebar-add-button">
-              <Plus size={16} />
-              {translate('sidebar.emptyState.addSource')}
-            </button>
-          </div>
-        ) : (
-          <div className="sidebar-source-list">
-            {sources.map(source => {
-              const unavailable = source.available === false;
-              return (
-                <button
-                  key={source.id}
-                  type="button"
-                  className={`sidebar-source-item ${
-                    selectedSourceId === source.id ? 'active' : ''
-                  } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
-                  onClick={() => {
-                    if (!unavailable) {
-                      onSourceSelect(source.id);
-                    }
-                  }}
-                  onContextMenu={e => handleContextMenu(e, source.id)}
-                  title={
-                    unavailable
-                      ? translate('sidebar.pluginUnavailable')
-                      : `${source.owner}/${source.repo}`
-                  }
-                  disabled={unavailable}
-                >
-                  <div className="sidebar-source-icon">
-                    {source.type === 'github' ? (
-                      <Github size={16} />
-                    ) : (
-                      <div className="gitee-icon">码</div>
-                    )}
-                  </div>
-                  <div className="sidebar-source-info">
-                    <div className="sidebar-source-name">{source.name}</div>
-                    <div className="sidebar-source-path">
-                      {unavailable
-                        ? translate('sidebar.pluginUnavailable')
-                        : `${source.owner}/${source.repo}`}
-                    </div>
-                  </div>
-                  {source.active && !unavailable && (
-                    <div className="sidebar-source-active-dot" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 底部操作 */}
-      <div className="sidebar-footer">
-        <NavItem
-          icon={<HelpCircle size={20} />}
-          label={translate('sidebar.docs')}
-          onClick={() => {
-            // 打开文档链接
-            window.open(
-              'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
-              '_blank',
-            );
-          }}
-        />
-        <NavItem
-          icon={<Keyboard size={20} />}
-          label={translate('sidebar.keyboardShortcuts')}
-          onClick={() => {
-            // 触发快捷键说明事件
-            window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-          }}
-        />
-        <NavItem
-          icon={<Info size={20} />}
-          label={translate('sidebar.versionInfo')}
-          onClick={() => {
-            // 触发版本信息事件
-            window.dispatchEvent(new CustomEvent('openVersionInfo'));
-          }}
-        />
-      </div>
-
-      {/* 右键菜单（使用 Portal） */}
-      {renderContextMenu()}
-    </aside>
+      {renderMobileOverlay()}
+    </>
   );
 };
 

@@ -24,7 +24,8 @@
     "repository": "Repository"
   },
   "header": {
-    "operationLog": "Operation Log"
+    "operationLog": "Operation Log",
+    "openMenu": "Open menu"
   },
   "compressPage": {
     "title": "Image Compression",

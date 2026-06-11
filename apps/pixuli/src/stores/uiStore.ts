@@ -33,6 +33,8 @@ interface UIState {
 
   // 侧边栏状态
   sidebarCollapsed: boolean;
+  /** 窄屏抽屉式侧边栏是否展开 */
+  mobileSidebarOpen: boolean;
   activeMenu: string;
 
   // 全屏模式（应用级别，用于隐藏 Sidebar 和 Header）
@@ -55,6 +57,9 @@ interface UIState {
   // Actions - 侧边栏
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
+  setMobileSidebarOpen: (open: boolean) => void;
+  toggleMobileSidebar: () => void;
+  closeMobileSidebar: () => void;
   setActiveMenu: (menu: string) => void;
 
   // Actions - 全屏模式
@@ -102,6 +107,7 @@ export const useUIStore = create<UIState>(set => ({
   editingSourcePluginId: null,
   editingSourceRepoConfig: null,
   sidebarCollapsed: false,
+  mobileSidebarOpen: false,
   activeMenu: 'photos',
   isFullscreenMode: false,
   currentView: 'photos',
@@ -119,6 +125,10 @@ export const useUIStore = create<UIState>(set => ({
     set({ sidebarCollapsed: collapsed }),
   toggleSidebar: () =>
     set(state => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+  setMobileSidebarOpen: (open: boolean) => set({ mobileSidebarOpen: open }),
+  toggleMobileSidebar: () =>
+    set(state => ({ mobileSidebarOpen: !state.mobileSidebarOpen })),
+  closeMobileSidebar: () => set({ mobileSidebarOpen: false }),
   setActiveMenu: (menu: string) => set({ activeMenu: menu }),
 
   setIsFullscreenMode: (isFullscreen: boolean) =>

@@ -58,6 +58,7 @@
 | [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。        |
 | [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                     |
 | [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。         |
+| [07-capacitor-android-poc.md](02-system-design/07-capacitor-android-poc.md)                         | Capacitor Android PoC：dev/prod 构建与冒烟清单（REF-509 #118）。          |
 | [09-cross-platform-sharing-matrix.md](02-system-design/09-cross-platform-sharing-matrix.md)         | 三端代码共享矩阵：pixuli vs mobile 现状与 REF-507～509 映射（REF-506）。  |
 
 ---

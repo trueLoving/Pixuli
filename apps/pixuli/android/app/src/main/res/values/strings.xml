@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pixuli</string>
+    <string name="title_activity_main">Pixuli</string>
+    <string name="package_name">com.pixuli.app</string>
+    <string name="custom_url_scheme">com.pixuli.app</string>
+</resources>

@@ -98,6 +98,8 @@ export default defineConfig(({ command, mode }) => {
   const isServe = command === 'serve';
   const isBuild = command === 'build';
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
+  const isAndroidDev = isServe && isWeb && !!process.env.CAPACITOR_ANDROID_DEV;
+  const androidDevPort = Number(process.env.CAPACITOR_DEV_PORT || 5500);
 
   const plugins: any[] = [react()];
 
@@ -336,8 +338,10 @@ export default defineConfig(({ command, mode }) => {
           })()
         : isWeb
           ? {
-              open: true,
-              port: 5500,
+              open: !isAndroidDev,
+              host: isAndroidDev ? '0.0.0.0' : undefined,
+              port: isAndroidDev ? androidDevPort : 5500,
+              strictPort: isAndroidDev,
             }
           : {}),
     },
