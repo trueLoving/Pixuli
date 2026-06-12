@@ -49,17 +49,18 @@
 
 ## 02-system-design（技术）
 
-| 文档                                                                                                | 关注内容                                                                  |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [00-System-Design.md](02-system-design/00-System-Design.md)                                         | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。                  |
-| [01-Three-Platform-Capability-Sharing.md](02-system-design/01-Three-Platform-Capability-Sharing.md) | 三端能力共享：资源共享、`@pixuli/core`/`@pixuli/ui`、图片处理契约、日志。 |
-| [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                     |
-| [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                            |
-| [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。        |
-| [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                     |
-| [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。         |
-| [07-capacitor-android-poc.md](02-system-design/07-capacitor-android-poc.md)                         | Capacitor Android PoC：dev/prod 构建与冒烟清单（REF-509 #118）。          |
-| [09-cross-platform-sharing-matrix.md](02-system-design/09-cross-platform-sharing-matrix.md)         | 三端代码共享矩阵：pixuli vs mobile 现状与 REF-507～509 映射（REF-506）。  |
+| 文档                                                                                                | 关注内容                                                                             |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [00-System-Design.md](02-system-design/00-System-Design.md)                                         | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。                             |
+| [01-Three-Platform-Capability-Sharing.md](02-system-design/01-Three-Platform-Capability-Sharing.md) | 三端能力共享：资源共享、`@pixuli/core`/`@pixuli/ui`、图片处理契约、日志。            |
+| [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                                |
+| [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                                       |
+| [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。                   |
+| [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                                |
+| [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。                    |
+| [07-capacitor-android-poc.md](02-system-design/07-capacitor-android-poc.md)                         | Capacitor Android PoC：dev/prod 构建与冒烟清单（REF-509 #118）。                     |
+| [09-cross-platform-sharing-matrix.md](02-system-design/09-cross-platform-sharing-matrix.md)         | 三端代码共享矩阵：pixuli vs mobile 现状与 REF-507～509 映射（REF-506）。             |
+| [10-local-workspace-sync.md](02-system-design/10-local-workspace-sync.md)                           | 本地工作区 + 远端同步：`LocalVault` / `SyncEngine` / Provider 扩展（REF-607 #144）。 |
 
 ---
 

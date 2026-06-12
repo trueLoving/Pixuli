@@ -7,6 +7,8 @@
 - **相关文档**：
   - [00-System-Design](./00-System-Design.md)
   - [01-Product-Requirements-Specification §5.1](../01-product/01-Product-Requirements-Specification.md)（仓库源需求；业务设计文档暂缓）
+  - [10-local-workspace-sync.md](./10-local-workspace-sync.md)（REF-607：Provider
+    `sync` / `buildPublicUrl` 扩展，M6）
   - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)
 
 本文合并
