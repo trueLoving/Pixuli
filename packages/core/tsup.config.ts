@@ -12,6 +12,7 @@ export default defineConfig({
     'locales/index': 'src/locales/index.ts',
     'operation-log/index': 'src/operation-log/index.ts',
     'sources/index': 'src/sources/index.ts',
+    'vault/index': 'src/vault/index.ts',
   },
   format: ['esm'],
   dts: true,
