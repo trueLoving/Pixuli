@@ -1,7 +1,7 @@
 # Pixuli 重构计划
 
-> **版本**：1.8  
-> **更新**：2026-05-27（REF-509 ✅ 工程交付；§1.9 / REF-512～515；§9.5.7）  
+> **版本**：1.9  
+> **更新**：2026-05-27（REF-516 三端对齐里程碑 #8；产品基线：本地工作区 + 三端融合；REF-509 ✅）  
 > **状态**：规划中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -39,14 +39,14 @@
 
 ### 1.3 里程碑
 
-| 里程碑 | 名称                | 目标日期（可填） | 说明                                                                                                                                           |
-| ------ | ------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                                                                                         |
-| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                                                                                                    |
-| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common`                                                                          |
-| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理、**文档国际化（中/英）**；历史版本盘点与后续发布策略                                                             |
-| M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；**Capacitor Android** + **移动端 Web 适配**；`apps/mobile` 归档；`apps/pixuli` 工程/CI 整理（§1.9）；REF-511 拍照元数据       |
-| M6     | 产品体验与能力边界  |                  | **本地库 + 远程同步**交互、三端 UI、性能边界、标签/AI、批处理、回收站（见 §十）；里程碑 [M6](https://github.com/trueLoving/Pixuli/milestone/6) |
+| 里程碑 | 名称                | 目标日期（可填） | 说明                                                                                                                                                                                                      |
+| ------ | ------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1     | 减负与归档          |                  | 展示裁剪、wasm/server 归档、死代码删除                                                                                                                                                                    |
+| M2     | core / ui 拆分      |                  | 新建包、迁移 import、兼容层                                                                                                                                                                               |
+| M3     | 存储插件 P0         |                  | Provider 接口、双端 imageStore、pluginId 配置、删除 `packages/common`                                                                                                                                     |
+| M4     | 文档与 CI           |                  | PRD/README/CI、docs/Wiki 梳理、**文档国际化（中/英）**；历史版本盘点与后续发布策略                                                                                                                        |
+| M5     | 平台能力 L3（持续） |                  | PWA、Desktop L3；Capacitor / RN 对齐见 **[里程碑 #8 三端融合](https://github.com/trueLoving/Pixuli/milestone/8)**（REF-516）；REF-511 拍照元数据                                                          |
+| M6     | 产品体验与能力边界  |                  | **本地库 + 远程同步**（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7) REF-607）、三端 UI、性能边界、标签/AI、批处理、回收站（§十、[M6](https://github.com/trueLoving/Pixuli/milestone/6)） |
 
 ### 1.4 三端代码最大化共享
 
@@ -102,14 +102,15 @@ Mobile 三端产品底线的前提下，**尽量少维护多套实现**——与
 
 #### 1.4.3 分阶段目标
 
-| 阶段                  | 时机       | 交付物                                                                                                                                   |
-| --------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **P0 逻辑对齐**       | M3 末～M4  | `imageStore` / `sourceStore` 与 `StoragePluginRegistry`、`StoredSourceEntry` 行为一致；差异仅持久化适配器（localStorage / AsyncStorage） |
-| **P1 共享包评估**     | M4         | 文档：哪些 hooks/流程可迁入 `@pixuli/core` 或新建 `packages/app-shared`（仅类型+无 UI 的 store 工厂）                                    |
-| **P2 Capacitor PoC**  | M5 ✅      | Android 壳 + dev/prod 脚本 + 平台分支 + PoC 文档（REF-509）；§六真机冒烟与 P3 结论待勾选                                                 |
-| **P3 三端单工程发布** | M5+        | CI 产出 Web / Desktop / iOS / Android；Wiki「三端说明」与 REF-501 能力矩阵对齐                                                           |
-| **P4 RN 归档**        | 功能对齐后 | `apps/mobile` 迁入 `archive/apps/mobile`，移出 workspace；Mobile 发版改 Capacitor APK（§1.9.2）                                          |
-| **P5 主应用工程整理** | P4 前后    | `apps/pixuli` 目录/脚本/多目标构建分轨；CI 三端单工程（§1.9.3～§1.9.4）                                                                  |
+| 阶段                  | 时机      | 交付物                                                                                                                                   |
+| --------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0 逻辑对齐**       | M3 末～M4 | `imageStore` / `sourceStore` 与 `StoragePluginRegistry`、`StoredSourceEntry` 行为一致；差异仅持久化适配器（localStorage / AsyncStorage） |
+| **P1 共享包评估**     | M4        | 文档：哪些 hooks/流程可迁入 `@pixuli/core` 或新建 `packages/app-shared`（仅类型+无 UI 的 store 工厂）                                    |
+| **P2 Capacitor PoC**  | M5 ✅     | Android 壳 + dev/prod 脚本 + 平台分支 + PoC 文档（REF-509）；§六真机冒烟并入 REF-516 P6（#166）                                          |
+| **P3 功能对齐**       | M5+       | 以 Web/PC 为 SSOT，RN 能力对齐至 Capacitor（**REF-516**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）                 |
+| **P4 三端单工程发布** | 对齐后    | CI 产出 Web / Desktop / Android；Wiki 与 REF-501 能力矩阵对齐（REF-515 #153）                                                            |
+| **P5 RN 归档**        | P6 验收后 | `apps/mobile` → `archive/`（REF-513 #151）                                                                                               |
+| **P6 主应用工程整理** | P5 前后   | `apps/pixuli` 目录/脚本/多目标构建（REF-514 #152）                                                                                       |
 
 #### 1.4.4 原则与边界
 
@@ -252,6 +253,44 @@ pnpm build:packages  →  pnpm build:web  →  （Desktop）build:desktop
 **冒烟矩阵补充（REF-413）**：Web 窄屏布局、Android debug
 APK 安装启动、Desktop 安装包启动——三目标各一条。
 
+### 1.10 Mobile 功能对齐与三端融合基线（REF-516）
+
+**启动时机**：REF-509 Capacitor 工程 ✅ 后，正式进入 **RN →
+Capacitor 功能对齐**阶段。
+
+| 原则          | 说明                                                                                                                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SSOT**      | **Web + Desktop（`apps/pixuli`）** 为产品行为与 UI 的唯一准绳；RN 仅作差距对照，**禁止**在 `apps/mobile` 新增产品能力                                                                        |
+| **交付载体**  | Mobile 用户能力由 **Capacitor + 同一套 Web UI** 提供；对齐完成后再执行 REF-513 RN 归档                                                                                                       |
+| **双基线**    | 与 M6 **本地工作区**（REF-607）并行：远端图床路径先 parity（本里程碑），本地 Vault 按 [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7) 推进；新代码避免加深「纯远端双份 store」 |
+| **交互 SSOT** | [04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)（REF-601 ✅）；实现验收与 REF-512 共用清单                                                    |
+
+#### 1.10.1 分阶段交付（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）
+
+父 Issue：[#163 REF-516](https://github.com/trueLoving/Pixuli/issues/163)
+
+| 阶段              | 范围                                                         | GitHub #                                                                                                                                                                  | 依赖             |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅ |
+| **P1 L1 逻辑**    | `imageStore` / `sourceStore` 抽取与 `pixuli.sources.v3` 统一 | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | P0               |
+| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅          |
+| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P1∥P2        |
+| **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2               |
+| **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3   |
+| **P6 验收冒烟**   | Android 真机 parity 签收；更新 #118 §六 / #151 Checklist     | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4           |
+| **P7 归档与工程** | RN → `archive/`；`apps/pixuli` 工程整理；CI APK 发版         | [#151](https://github.com/trueLoving/Pixuli/issues/151)、[#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153) | P6               |
+
+**首项交付（已启动）**：将 `apps/mobile/assets/images/` 品牌资源同步至
+`apps/pixuli`（`pnpm sync:brand`；SSOT 见 `apps/pixuli/brand/README.md`）——Web
+favicon/PWA、Desktop 托盘、Capacitor Android 启动器与 splash 与 RN 一致。
+
+**建议顺序**：**#164** → **品牌资源同步** → **#117** ∥ **#150** → **#165** →
+**#119/#120/#141** →（与 REF-607 **#156→#158** 桌面 PoC 可并行）→ **#161** →
+**#166** → **#152/#153** → **#151**。
+
+**与 REF-507～515 关系**：REF-512～515 仍保留计划编号；追踪统一归入
+[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)，避免 M5 表与执行里程碑脱节。
+
 #### 1.9.5 Workspace 包消费：源码 vs 先编译（§9.5 / REF-416）
 
 **当前痛点**：`dev:web` / `dev:android` 前常须先执行
@@ -287,14 +326,15 @@ conditions 双轨**，**不**改为全源码或全 dist）：
 
 以下专项见 **§九**，并已登记 Issue **REF-410～414**、**REF-416**：
 
-| 主题                 | 要点                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------ |
-| **TS / JS 一致**     | 禁止同一能力域 TS+JS 混用；**默认 TypeScript**，极少数 Node/Vercel 薄 `.js` 需文档化 |
-| **Workspace 包消费** | 应用引用 `packages/`\* 的分层与 dist/conditions 策略；见 **§9.5**                    |
-| **插件 Host 集成**   | Provider 除运行时外，可能需改 Vite/Electron/Serverless 环境（Gitee 代理为先例）      |
-| **测试金字塔**       | 现状以单元测试为主；**集成 / 冒烟**在基线版本稳定后设计（REF-409 后）                |
-| **AI 编程辅助**      | 补充 Agent 规则与 Skill，降低重构期上下文成本                                        |
-| **三端工程收敛**     | `apps/pixuli` 移动适配、RN 归档、构建/CI 整理；见 **§1.9**、REF-512～515             |
+| 主题                 | 要点                                                                                                                                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TS / JS 一致**     | 禁止同一能力域 TS+JS 混用；**默认 TypeScript**，极少数 Node/Vercel 薄 `.js` 需文档化                                                                                                                                        |
+| **Workspace 包消费** | 应用引用 `packages/`\* 的分层与 dist/conditions 策略；见 **§9.5**                                                                                                                                                           |
+| **插件 Host 集成**   | Provider 除运行时外，可能需改 Vite/Electron/Serverless 环境（Gitee 代理为先例）                                                                                                                                             |
+| **测试金字塔**       | 现状以单元测试为主；**集成 / 冒烟**在基线版本稳定后设计（REF-409 后）                                                                                                                                                       |
+| **AI 编程辅助**      | 补充 Agent 规则与 Skill，降低重构期上下文成本                                                                                                                                                                               |
+| **三端工程收敛**     | `apps/pixuli` 移动适配、RN 归档、构建/CI 整理；见 **§1.9**、**§1.10**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)                                                                                        |
+| **产品基线（当前）** | **本地工作区**（REF-607 / [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）+ **三端融合**（REF-516 / [里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）；新功能默认在 `apps/pixuli` 三端同构交付 |
 
 ### 1.6 产品体验与能力边界（M6）
 
@@ -721,81 +761,82 @@ Closes #42 Related: REF-101
 
 **M1 已关联 GitHub Issue（计划编号 ↔ Issue）**
 
-| 计划 ID | GitHub Issue                                                                                                                         |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| REF-101 | [#46](https://github.com/trueLoving/Pixuli/issues/46)                                                                                |
-| REF-102 | [#47](https://github.com/trueLoving/Pixuli/issues/47)                                                                                |
-| REF-103 | [#48](https://github.com/trueLoving/Pixuli/issues/48)                                                                                |
-| REF-104 | [#49](https://github.com/trueLoving/Pixuli/issues/49)                                                                                |
-| REF-105 | [#50](https://github.com/trueLoving/Pixuli/issues/50)                                                                                |
-| REF-106 | [#51](https://github.com/trueLoving/Pixuli/issues/51)                                                                                |
-| REF-107 | [#52](https://github.com/trueLoving/Pixuli/issues/52)                                                                                |
-| REF-108 | [#54](https://github.com/trueLoving/Pixuli/issues/54)                                                                                |
-| REF-109 | [#55](https://github.com/trueLoving/Pixuli/issues/55)                                                                                |
-| REF-110 | [#56](https://github.com/trueLoving/Pixuli/issues/56)                                                                                |
-| REF-111 | [#57](https://github.com/trueLoving/Pixuli/issues/57)                                                                                |
-| REF-112 | [#58](https://github.com/trueLoving/Pixuli/issues/58)                                                                                |
-| REF-201 | [#60](https://github.com/trueLoving/Pixuli/issues/60)                                                                                |
-| REF-202 | [#61](https://github.com/trueLoving/Pixuli/issues/61)                                                                                |
-| REF-203 | [#62](https://github.com/trueLoving/Pixuli/issues/62)                                                                                |
-| REF-204 | [#69](https://github.com/trueLoving/Pixuli/issues/69)                                                                                |
-| REF-205 | [#63](https://github.com/trueLoving/Pixuli/issues/63)                                                                                |
-| REF-206 | [#64](https://github.com/trueLoving/Pixuli/issues/64)                                                                                |
-| REF-207 | [#65](https://github.com/trueLoving/Pixuli/issues/65)                                                                                |
-| REF-208 | [#66](https://github.com/trueLoving/Pixuli/issues/66)                                                                                |
-| REF-209 | [#67](https://github.com/trueLoving/Pixuli/issues/67)                                                                                |
-| REF-210 | [#68](https://github.com/trueLoving/Pixuli/issues/68)                                                                                |
-| REF-301 | [#70](https://github.com/trueLoving/Pixuli/issues/70)                                                                                |
-| REF-302 | [#71](https://github.com/trueLoving/Pixuli/issues/71)                                                                                |
-| REF-303 | [#72](https://github.com/trueLoving/Pixuli/issues/72)                                                                                |
-| REF-304 | [#73](https://github.com/trueLoving/Pixuli/issues/73)                                                                                |
-| REF-305 | [#74](https://github.com/trueLoving/Pixuli/issues/74)                                                                                |
-| REF-306 | [#75](https://github.com/trueLoving/Pixuli/issues/75)                                                                                |
-| REF-307 | [#76](https://github.com/trueLoving/Pixuli/issues/76)                                                                                |
-| REF-308 | [#77](https://github.com/trueLoving/Pixuli/issues/77)                                                                                |
-| REF-309 | [#78](https://github.com/trueLoving/Pixuli/issues/78)                                                                                |
-| REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79)                                                                                |
-| REF-311 | [#100](https://github.com/trueLoving/Pixuli/issues/100)                                                                              |
-| REF-312 | [#109](https://github.com/trueLoving/Pixuli/issues/109)                                                                              |
-| REF-313 | [#123](https://github.com/trueLoving/Pixuli/issues/123)                                                                              |
-| REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80)                                                                                |
-| REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81)                                                                                |
-| REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82)                                                                                |
-| REF-404 | [#83](https://github.com/trueLoving/Pixuli/issues/83)                                                                                |
-| REF-405 | [#84](https://github.com/trueLoving/Pixuli/issues/84)                                                                                |
-| REF-406 | [#85](https://github.com/trueLoving/Pixuli/issues/85)                                                                                |
-| REF-407 | [#111](https://github.com/trueLoving/Pixuli/issues/111)                                                                              |
-| REF-408 | [#112](https://github.com/trueLoving/Pixuli/issues/112)                                                                              |
-| REF-409 | [#113](https://github.com/trueLoving/Pixuli/issues/113)                                                                              |
-| REF-501 | [#86](https://github.com/trueLoving/Pixuli/issues/86)                                                                                |
-| REF-502 | [#87](https://github.com/trueLoving/Pixuli/issues/87)                                                                                |
-| REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88)                                                                                |
-| REF-504 | [#89](https://github.com/trueLoving/Pixuli/issues/89)                                                                                |
-| REF-505 | [#90](https://github.com/trueLoving/Pixuli/issues/90)                                                                                |
-| REF-506 | [#116](https://github.com/trueLoving/Pixuli/issues/116)                                                                              |
-| REF-507 | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                              |
-| REF-508 | [#119](https://github.com/trueLoving/Pixuli/issues/119)                                                                              |
-| REF-509 | [#118](https://github.com/trueLoving/Pixuli/issues/118)                                                                              |
-| REF-510 | [#120](https://github.com/trueLoving/Pixuli/issues/120)                                                                              |
-| REF-410 | [#125](https://github.com/trueLoving/Pixuli/issues/125)                                                                              |
-| REF-411 | [#126](https://github.com/trueLoving/Pixuli/issues/126)                                                                              |
-| REF-412 | [#127](https://github.com/trueLoving/Pixuli/issues/127)                                                                              |
-| REF-413 | [#128](https://github.com/trueLoving/Pixuli/issues/128)                                                                              |
-| REF-414 | [#129](https://github.com/trueLoving/Pixuli/issues/129)                                                                              |
-| REF-415 | [#138](https://github.com/trueLoving/Pixuli/issues/138)                                                                              |
-| REF-416 | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                                              |
-| REF-601 | [#130](https://github.com/trueLoving/Pixuli/issues/130)                                                                              |
-| REF-602 | [#131](https://github.com/trueLoving/Pixuli/issues/131)                                                                              |
-| REF-603 | [#132](https://github.com/trueLoving/Pixuli/issues/132)                                                                              |
-| REF-604 | [#133](https://github.com/trueLoving/Pixuli/issues/133)                                                                              |
-| REF-605 | [#134](https://github.com/trueLoving/Pixuli/issues/134)                                                                              |
-| REF-511 | [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                              |
-| REF-512 | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                              |
-| REF-513 | [#151](https://github.com/trueLoving/Pixuli/issues/151)                                                                              |
-| REF-514 | [#152](https://github.com/trueLoving/Pixuli/issues/152)                                                                              |
-| REF-515 | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                                              |
-| REF-606 | [#140](https://github.com/trueLoving/Pixuli/issues/140)                                                                              |
-| REF-607 | [#144](https://github.com/trueLoving/Pixuli/issues/144)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)：#155～#161） |
+| 计划 ID | GitHub Issue                                                                                                                            |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| REF-101 | [#46](https://github.com/trueLoving/Pixuli/issues/46)                                                                                   |
+| REF-102 | [#47](https://github.com/trueLoving/Pixuli/issues/47)                                                                                   |
+| REF-103 | [#48](https://github.com/trueLoving/Pixuli/issues/48)                                                                                   |
+| REF-104 | [#49](https://github.com/trueLoving/Pixuli/issues/49)                                                                                   |
+| REF-105 | [#50](https://github.com/trueLoving/Pixuli/issues/50)                                                                                   |
+| REF-106 | [#51](https://github.com/trueLoving/Pixuli/issues/51)                                                                                   |
+| REF-107 | [#52](https://github.com/trueLoving/Pixuli/issues/52)                                                                                   |
+| REF-108 | [#54](https://github.com/trueLoving/Pixuli/issues/54)                                                                                   |
+| REF-109 | [#55](https://github.com/trueLoving/Pixuli/issues/55)                                                                                   |
+| REF-110 | [#56](https://github.com/trueLoving/Pixuli/issues/56)                                                                                   |
+| REF-111 | [#57](https://github.com/trueLoving/Pixuli/issues/57)                                                                                   |
+| REF-112 | [#58](https://github.com/trueLoving/Pixuli/issues/58)                                                                                   |
+| REF-201 | [#60](https://github.com/trueLoving/Pixuli/issues/60)                                                                                   |
+| REF-202 | [#61](https://github.com/trueLoving/Pixuli/issues/61)                                                                                   |
+| REF-203 | [#62](https://github.com/trueLoving/Pixuli/issues/62)                                                                                   |
+| REF-204 | [#69](https://github.com/trueLoving/Pixuli/issues/69)                                                                                   |
+| REF-205 | [#63](https://github.com/trueLoving/Pixuli/issues/63)                                                                                   |
+| REF-206 | [#64](https://github.com/trueLoving/Pixuli/issues/64)                                                                                   |
+| REF-207 | [#65](https://github.com/trueLoving/Pixuli/issues/65)                                                                                   |
+| REF-208 | [#66](https://github.com/trueLoving/Pixuli/issues/66)                                                                                   |
+| REF-209 | [#67](https://github.com/trueLoving/Pixuli/issues/67)                                                                                   |
+| REF-210 | [#68](https://github.com/trueLoving/Pixuli/issues/68)                                                                                   |
+| REF-301 | [#70](https://github.com/trueLoving/Pixuli/issues/70)                                                                                   |
+| REF-302 | [#71](https://github.com/trueLoving/Pixuli/issues/71)                                                                                   |
+| REF-303 | [#72](https://github.com/trueLoving/Pixuli/issues/72)                                                                                   |
+| REF-304 | [#73](https://github.com/trueLoving/Pixuli/issues/73)                                                                                   |
+| REF-305 | [#74](https://github.com/trueLoving/Pixuli/issues/74)                                                                                   |
+| REF-306 | [#75](https://github.com/trueLoving/Pixuli/issues/75)                                                                                   |
+| REF-307 | [#76](https://github.com/trueLoving/Pixuli/issues/76)                                                                                   |
+| REF-308 | [#77](https://github.com/trueLoving/Pixuli/issues/77)                                                                                   |
+| REF-309 | [#78](https://github.com/trueLoving/Pixuli/issues/78)                                                                                   |
+| REF-310 | [#79](https://github.com/trueLoving/Pixuli/issues/79)                                                                                   |
+| REF-311 | [#100](https://github.com/trueLoving/Pixuli/issues/100)                                                                                 |
+| REF-312 | [#109](https://github.com/trueLoving/Pixuli/issues/109)                                                                                 |
+| REF-313 | [#123](https://github.com/trueLoving/Pixuli/issues/123)                                                                                 |
+| REF-401 | [#80](https://github.com/trueLoving/Pixuli/issues/80)                                                                                   |
+| REF-402 | [#81](https://github.com/trueLoving/Pixuli/issues/81)                                                                                   |
+| REF-403 | [#82](https://github.com/trueLoving/Pixuli/issues/82)                                                                                   |
+| REF-404 | [#83](https://github.com/trueLoving/Pixuli/issues/83)                                                                                   |
+| REF-405 | [#84](https://github.com/trueLoving/Pixuli/issues/84)                                                                                   |
+| REF-406 | [#85](https://github.com/trueLoving/Pixuli/issues/85)                                                                                   |
+| REF-407 | [#111](https://github.com/trueLoving/Pixuli/issues/111)                                                                                 |
+| REF-408 | [#112](https://github.com/trueLoving/Pixuli/issues/112)                                                                                 |
+| REF-409 | [#113](https://github.com/trueLoving/Pixuli/issues/113)                                                                                 |
+| REF-501 | [#86](https://github.com/trueLoving/Pixuli/issues/86)                                                                                   |
+| REF-502 | [#87](https://github.com/trueLoving/Pixuli/issues/87)                                                                                   |
+| REF-503 | [#88](https://github.com/trueLoving/Pixuli/issues/88)                                                                                   |
+| REF-504 | [#89](https://github.com/trueLoving/Pixuli/issues/89)                                                                                   |
+| REF-505 | [#90](https://github.com/trueLoving/Pixuli/issues/90)                                                                                   |
+| REF-506 | [#116](https://github.com/trueLoving/Pixuli/issues/116)                                                                                 |
+| REF-507 | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                 |
+| REF-508 | [#119](https://github.com/trueLoving/Pixuli/issues/119)                                                                                 |
+| REF-509 | [#118](https://github.com/trueLoving/Pixuli/issues/118)                                                                                 |
+| REF-510 | [#120](https://github.com/trueLoving/Pixuli/issues/120)                                                                                 |
+| REF-410 | [#125](https://github.com/trueLoving/Pixuli/issues/125)                                                                                 |
+| REF-411 | [#126](https://github.com/trueLoving/Pixuli/issues/126)                                                                                 |
+| REF-412 | [#127](https://github.com/trueLoving/Pixuli/issues/127)                                                                                 |
+| REF-413 | [#128](https://github.com/trueLoving/Pixuli/issues/128)                                                                                 |
+| REF-414 | [#129](https://github.com/trueLoving/Pixuli/issues/129)                                                                                 |
+| REF-415 | [#138](https://github.com/trueLoving/Pixuli/issues/138)                                                                                 |
+| REF-416 | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                                                 |
+| REF-601 | [#130](https://github.com/trueLoving/Pixuli/issues/130)                                                                                 |
+| REF-602 | [#131](https://github.com/trueLoving/Pixuli/issues/131)                                                                                 |
+| REF-603 | [#132](https://github.com/trueLoving/Pixuli/issues/132)                                                                                 |
+| REF-604 | [#133](https://github.com/trueLoving/Pixuli/issues/133)                                                                                 |
+| REF-605 | [#134](https://github.com/trueLoving/Pixuli/issues/134)                                                                                 |
+| REF-511 | [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                                 |
+| REF-512 | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                 |
+| REF-513 | [#151](https://github.com/trueLoving/Pixuli/issues/151)                                                                                 |
+| REF-514 | [#152](https://github.com/trueLoving/Pixuli/issues/152)                                                                                 |
+| REF-515 | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                                                 |
+| REF-516 | [#163](https://github.com/trueLoving/Pixuli/issues/163)（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)：#164～#166 等） |
+| REF-606 | [#140](https://github.com/trueLoving/Pixuli/issues/140)                                                                                 |
+| REF-607 | [#144](https://github.com/trueLoving/Pixuli/issues/144)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)：#155～#161）    |
 
 > **说明**：#53 为已合并 PR（REF-101～103 批次），非独立计划 Issue。
 
@@ -1156,25 +1197,41 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 
 ### 里程碑 M5 — 平台能力 L3（持续）
 
-| ID      | 建议标题                                                   | Labels                                                         | 优先级 | Depends on      | GitHub #                                                | 状态 |
-| ------- | ---------------------------------------------------------- | -------------------------------------------------------------- | ------ | --------------- | ------------------------------------------------------- | ---- |
-| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile）      | refactor, m5, type:docs, priority:P2                           | P2     | #80             | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ⬜   |
-| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定       | refactor, m5, area:desktop, priority:P2                        | P2     | #64             | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ⬜   |
-| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2                        | P2     | #87             | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
-| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2                        | P2     | #87             | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
-| REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2                        | P2     | #87             | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜   |
-| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1              | P1     | #79, #86        | [#116](https://github.com/trueLoving/Pixuli/issues/116) | ✅   |
-| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1              | P1     | #100, #116      | [#117](https://github.com/trueLoving/Pixuli/issues/117) | ⬜   |
-| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2                | P2     | #116            | [#119](https://github.com/trueLoving/Pixuli/issues/119) | ⬜   |
-| REF-509 | [M5] Capacitor Android PoC：apps/pixuli Web 壳 + APK       | refactor, m5, area:mobile, area:web, priority:P1               | P1     | #116, #84       | [#118](https://github.com/trueLoving/Pixuli/issues/118) | ✅   |
-| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2                         | P2     | #118            | [#120](https://github.com/trueLoving/Pixuli/issues/120) | ⬜   |
-| REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1                         | P1     | #118, #120      | [#141](https://github.com/trueLoving/Pixuli/issues/141) | ⬜   |
-| REF-512 | [M5] apps/pixuli 移动端 Web UI 适配（窄屏/安全区/触控）    | refactor, m5, area:web, area:mobile, priority:P1               | P1     | #118            | [#150](https://github.com/trueLoving/Pixuli/issues/150) | ⬜   |
-| REF-513 | [M5] apps/mobile 功能对齐清单与 RN 工程归档                | refactor, m5, area:mobile, type:removal, priority:P1           | P1     | #118, #119      | [#151](https://github.com/trueLoving/Pixuli/issues/151) | ⬜   |
-| REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）  | refactor, m5, area:web, area:desktop, area:mobile, priority:P1 | P1     | #118, #87       | [#152](https://github.com/trueLoving/Pixuli/issues/152) | ⬜   |
-| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）         | refactor, m5, priority:P1                                      | P1     | #84, #118, #128 | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ⬜   |
+| ID      | 建议标题                                                   | Labels                                                         | 优先级 | Depends on       | GitHub #                                                                                                                 | 状态 |
+| ------- | ---------------------------------------------------------- | -------------------------------------------------------------- | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ---- |
+| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile）      | refactor, m5, type:docs, priority:P2                           | P2     | #80              | [#86](https://github.com/trueLoving/Pixuli/issues/86)                                                                    | ⬜   |
+| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定       | refactor, m5, area:desktop, priority:P2                        | P2     | #64              | [#87](https://github.com/trueLoving/Pixuli/issues/87)                                                                    | ⬜   |
+| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#88](https://github.com/trueLoving/Pixuli/issues/88)                                                                    | ⬜   |
+| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#89](https://github.com/trueLoving/Pixuli/issues/89)                                                                    | ⬜   |
+| REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#90](https://github.com/trueLoving/Pixuli/issues/90)                                                                    | ⬜   |
+| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1              | P1     | #79, #86         | [#116](https://github.com/trueLoving/Pixuli/issues/116)                                                                  | ✅   |
+| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1              | P1     | #100, #116       | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                  | ⬜   |
+| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2                | P2     | #116             | [#119](https://github.com/trueLoving/Pixuli/issues/119)                                                                  | ⬜   |
+| REF-509 | [M5] Capacitor Android PoC：apps/pixuli Web 壳 + APK       | refactor, m5, area:mobile, area:web, priority:P1               | P1     | #116, #84        | [#118](https://github.com/trueLoving/Pixuli/issues/118)                                                                  | ✅   |
+| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2                         | P2     | #118             | [#120](https://github.com/trueLoving/Pixuli/issues/120)                                                                  | ⬜   |
+| REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1                         | P1     | #118, #120       | [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                  | ⬜   |
+| REF-512 | [M5] apps/pixuli 移动端 Web UI 适配（窄屏/安全区/触控）    | refactor, m5, area:web, area:mobile, priority:P1               | P1     | #118             | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                  | ⬜   |
+| REF-513 | [M5] apps/mobile 功能对齐清单与 RN 工程归档                | refactor, m5, area:mobile, type:removal, priority:P1           | P1     | #118, #119       | [#151](https://github.com/trueLoving/Pixuli/issues/151)                                                                  | ⬜   |
+| REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）  | refactor, m5, area:web, area:desktop, area:mobile, priority:P1 | P1     | #118, #87        | [#152](https://github.com/trueLoving/Pixuli/issues/152)                                                                  | ⬜   |
+| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）         | refactor, m5, priority:P1                                      | P1     | #84, #118, #128  | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                                  | ⬜   |
+| REF-516 | [三端融合] 以 Web/PC 为 SSOT 的 Mobile 功能对齐（总览）    | refactor, m5, area:mobile, area:product, priority:P1           | P1     | #118, #130, #116 | [#163](https://github.com/trueLoving/Pixuli/issues/163)（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)） | ⬜   |
 
-REF-506 ~ REF-515 说明（三端共享与工程收敛）
+#### REF-516 分阶段交付（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）
+
+详见 **§1.10**。
+
+| 阶段 | 标题                            | GitHub #                                                                                                                                                                  | 状态 |
+| ---- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
+| P0   | RN ↔ pixuli 功能对齐矩阵       | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ⬜   |
+| P1   | store / 持久化统一（REF-507）   | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | ⬜   |
+| P2   | 移动端 Web UI（REF-512）        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ⬜   |
+| P3   | 业务能力补齐（Capacitor）       | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ⬜   |
+| P4   | L3：REF-508 / REF-510 / REF-511 | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | ⬜   |
+| P5   | 本地工作区 Mobile（REF-607-P6） | [#161](https://github.com/trueLoving/Pixuli/issues/161)                                                                                                                   | ⬜   |
+| P6   | 对齐验收与真机冒烟              | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | ⬜   |
+| P7   | RN 归档 + 工程 + CI             | [#151](https://github.com/trueLoving/Pixuli/issues/151)、[#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153) | ⬜   |
+
+REF-506 ~ REF-516 说明（三端共享与工程收敛）
 
 **REF-506** — 对照 §1.4.1 输出「共享矩阵」：文件/模块级标注 Web+Desktop / Mobile
 / 可合并；交付
@@ -1219,10 +1276,14 @@ mode 与三构建目标矩阵文档化；归档后主应用**仍位于 `apps/pix
 release 替代 RN 发版；REF-413 冒烟矩阵增加窄屏 Web + Android
 debug；与 REF-409 版本标签策略对齐。
 
-**建议顺序**：M3 **REF-310/311** 完成 → **#116** → **#117** ∥
-**#118**（PoC 工程 ✅）→ **#150** ∥ **#120**（可并行；#118
-§六冒烟建议同步勾选）→ **#119/#141** 对齐 → **#152** → **#153** →
-**#151**（RN 归档，最后执行）。
+**REF-516** — **三端融合执行总线**（§1.10）：以 `apps/pixuli` 为 SSOT 对齐 RN →
+Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
+统一追踪 #117/#150/#151 等与新建 #164/#165/#166。
+
+**建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** →
+**品牌资源同步**（`apps/pixuli` `pnpm sync:brand`）→ **#117** ∥ **#150** →
+**#165** → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。与 REF-607
+**#156→#158**（桌面本地库 PoC）可并行；**#161** 在 vault 契约就绪后接入。
 
 ---
 
@@ -1745,7 +1806,7 @@ flowchart LR
 | 执行 Checklist                | `.local/简化执行-checklist.md`                                                                                                                                 |
 | 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                                                                               |
 | Capacitor Android PoC         | [07-capacitor-android-poc.md](docs/02-system-design/07-capacitor-android-poc.md)（REF-509 #118）                                                               |
-| 三端融合工程收敛              | REFACTOR_PLAN **§1.9**；REF-512 [#150](https://github.com/trueLoving/Pixuli/issues/150)～515 [#153](https://github.com/trueLoving/Pixuli/issues/153)           |
+| 三端融合与 Mobile 对齐        | REF-516 → **§1.10**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163)；§1.9、REF-512～515 |
 | TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410）                                                      |
 | Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                                                                           |
 | 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                                                                      |

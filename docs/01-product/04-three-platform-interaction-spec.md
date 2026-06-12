@@ -45,12 +45,13 @@
 
 ### 1.3 与 REF-506 / REF-509 的联动
 
-| 文档 / Issue                                                                                   | 关系                                                                                                                        |
-| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| [09-cross-platform-sharing-matrix.md](../02-system-design/09-cross-platform-sharing-matrix.md) | **代码**重复处；本文规定 **交互**应一致处                                                                                   |
-| REF-509 Capacitor PoC                                                                          | 验收「Web 交互 + 原生壳」是否成立；PoC 通过则 Mobile 不再单独定侧栏/底栏                                                    |
-| REF-602                                                                                        | UI 实现本规范的侧栏、主内容、图片操作                                                                                       |
-| REF-607                                                                                        | 首次选目录、同步状态、复制链接分项；技术设计见 [10-local-workspace-sync.md](../02-system-design/10-local-workspace-sync.md) |
+| 文档 / Issue                                                                                   | 关系                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [09-cross-platform-sharing-matrix.md](../02-system-design/09-cross-platform-sharing-matrix.md) | **代码**重复处；本文规定 **交互**应一致处                                                                                                                              |
+| REF-509 Capacitor PoC                                                                          | 验收「Web 交互 + 原生壳」是否成立；PoC 通过则 Mobile 不再单独定侧栏/底栏                                                                                               |
+| REF-602                                                                                        | UI 实现本规范的侧栏、主内容、图片操作                                                                                                                                  |
+| REF-607                                                                                        | 首次选目录、同步状态、复制链接分项；技术设计见 [10-local-workspace-sync.md](../02-system-design/10-local-workspace-sync.md)                                            |
+| REF-516                                                                                        | Mobile 以本文 + Web/PC 行为为准对齐至 Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163) |
 
 ---
 
