@@ -56,6 +56,11 @@
       "development": "./src/sources/index.ts",
       "types": "./dist/sources/index.d.ts",
       "import": "./dist/sources/index.js"
+    },
+    "./vault": {
+      "development": "./src/vault/index.ts",
+      "types": "./dist/vault/index.d.ts",
+      "import": "./dist/vault/index.js"
     }
   },
   "scripts": {

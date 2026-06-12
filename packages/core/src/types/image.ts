@@ -1,7 +1,13 @@
+/** REF-607：与 `StorageProviderPublicUrl.resolveLinkKind` 一致 */
+export type LinkKind = 'local' | 'remote-raw' | 'remote-proxy';
+
 export interface ImageItem {
   id: string;
   name: string;
   url: string;
+  /**
+   * @deprecated 使用 `publicUrl`；保留以兼容现有 GitHub raw 字段与远端列表。
+   */
   githubUrl: string;
   size: number;
   width: number;
@@ -11,6 +17,12 @@ export interface ImageItem {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  /** REF-607：工作区内相对路径 */
+  localPath?: string;
+  /** REF-607：链接形态（本地预览 vs 远端公网） */
+  linkKind?: LinkKind;
+  /** REF-607：当前绑定远端下的公网 URL */
+  publicUrl?: string;
 }
 
 export interface ImageUploadData {

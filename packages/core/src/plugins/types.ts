@@ -1,4 +1,4 @@
-import type { ImageItem, ImageUploadData } from '../types/image';
+import type { ImageItem, ImageUploadData, LinkKind } from '../types/image';
 import type { PlatformAdapter } from '../platform/platformAdapter';
 
 export interface StorageCapabilities {
@@ -8,6 +8,10 @@ export interface StorageCapabilities {
   updateMetadata: boolean;
   needsProxy?: boolean;
   maxUploadBytes?: number;
+  /** REF-607：支持 syncPull / syncPush */
+  sync?: boolean;
+  /** REF-607：支持 buildPublicUrl / resolveLinkKind */
+  publicUrl?: boolean;
 }
 
 /** 插件需在宿主环境挂载的集成点（REF-411） */
@@ -84,6 +88,69 @@ export interface StorageProviderWithMetadata extends StorageProvider {
     images: ImageItem[],
     options?: ImageMetadataLoadOptions,
   ): Promise<ImageItem[]>;
+}
+
+/** REF-607：远端同步拉取 */
+export interface SyncPullOptions {
+  since?: string;
+  pathPrefix?: string;
+}
+
+export interface SyncPullResult {
+  items: Array<{
+    remotePath: string;
+    action: 'add' | 'update' | 'delete';
+    contentHash?: string;
+    metadata?: Partial<ImageItem>;
+  }>;
+  nextCursor?: string;
+}
+
+export interface SyncPushItem {
+  localRelativePath: string;
+  remotePath: string;
+  action: 'upload' | 'delete' | 'metadata';
+  file?: Uint8Array;
+  metadata?: Partial<ImageItem>;
+}
+
+export interface StorageProviderSync {
+  syncPull(options?: SyncPullOptions): Promise<SyncPullResult>;
+  syncPush(items: SyncPushItem[]): Promise<void>;
+  getSyncCursor(): Promise<string | null>;
+}
+
+export type { LinkKind };
+
+export interface StorageProviderPublicUrl {
+  buildPublicUrl(remotePath: string): string;
+  resolveLinkKind(url: string): LinkKind;
+}
+
+export interface StorageProviderWithSync
+  extends StorageProvider,
+    StorageProviderSync,
+    StorageProviderPublicUrl {}
+
+export function hasStorageProviderSync(
+  provider: StorageProvider,
+): provider is StorageProvider & StorageProviderSync {
+  const candidate = provider as Partial<StorageProviderSync>;
+  return (
+    typeof candidate.syncPull === 'function' &&
+    typeof candidate.syncPush === 'function' &&
+    typeof candidate.getSyncCursor === 'function'
+  );
+}
+
+export function hasStorageProviderPublicUrl(
+  provider: StorageProvider,
+): provider is StorageProvider & StorageProviderPublicUrl {
+  const candidate = provider as Partial<StorageProviderPublicUrl>;
+  return (
+    typeof candidate.buildPublicUrl === 'function' &&
+    typeof candidate.resolveLinkKind === 'function'
+  );
 }
 
 /** M3 后期（REF-306）持久化的单条仓库源 */
