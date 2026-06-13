@@ -79,6 +79,17 @@
     "pushManual": "Push to remote",
     "pushing": "Pushing…",
     "pushNeedsRemote": "Add a GitHub or Gitee remote source to push",
+    "pullNeedsRemote": "Add a GitHub or Gitee remote source to pull",
+    "syncNeedsRemote": "Add a GitHub or Gitee remote source to sync",
+    "pullManual": "Pull from remote",
+    "pulling": "Pulling…",
+    "syncBoth": "Sync both ways",
+    "syncing": "Syncing…",
+    "scan": "Scan index",
+    "lastSync": "Last sync",
+    "syncNever": "Never synced",
+    "pendingPush": "Pending push {{count}}",
+    "conflicts": "Conflicts {{count}}",
     "dismiss": "Dismiss"
   }
 }

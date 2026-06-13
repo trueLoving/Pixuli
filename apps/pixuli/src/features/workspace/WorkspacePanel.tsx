@@ -1,8 +1,28 @@
 import React from 'react';
-import { FolderOpen, UploadCloud } from 'lucide-react';
+import {
+  DownloadCloud,
+  FolderOpen,
+  RefreshCw,
+  ScanSearch,
+  UploadCloud,
+} from 'lucide-react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useI18n } from '@/i18n/useI18n';
+
+function formatSyncTime(
+  iso: string | null | undefined,
+  t: (key: string) => string,
+) {
+  if (!iso) {
+    return t('workspace.syncNever');
+  }
+  try {
+    return new Date(iso).toLocaleString();
+  } catch {
+    return iso;
+  }
+}
 
 export const WorkspaceSetupPanel: React.FC = () => {
   const { t } = useI18n();
@@ -41,13 +61,19 @@ export const WorkspaceToolbar: React.FC = () => {
     displayName,
     rootPath,
     pushing,
+    syncing,
+    syncStatus,
     syncMessage,
     error,
     pushPendingToRemote,
+    pullFromRemote,
+    runSync,
+    scanWorkspace,
     clearError,
   } = useWorkspaceStore();
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
+  const busy = pushing || syncing;
 
   return (
     <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
@@ -61,17 +87,68 @@ export const WorkspaceToolbar: React.FC = () => {
               {rootPath}
             </p>
           )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-xs text-gray-700 border border-gray-200">
+              {t('workspace.lastSync')}:{' '}
+              {formatSyncTime(syncStatus?.lastSyncAt, t)}
+            </span>
+            {(syncStatus?.pendingPush ?? 0) > 0 && (
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                {t('workspace.pendingPush', {
+                  count: syncStatus?.pendingPush ?? 0,
+                })}
+              </span>
+            )}
+            {(syncStatus?.conflicts ?? 0) > 0 && (
+              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-800">
+                {t('workspace.conflicts', {
+                  count: syncStatus?.conflicts ?? 0,
+                })}
+              </span>
+            )}
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void pushPendingToRemote()}
-          disabled={pushing || !hasRemote}
-          title={hasRemote ? undefined : t('workspace.pushNeedsRemote')}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <UploadCloud size={16} />
-          {pushing ? t('workspace.pushing') : t('workspace.pushManual')}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void scanWorkspace()}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+          >
+            <ScanSearch size={16} />
+            {t('workspace.scan')}
+          </button>
+          <button
+            type="button"
+            onClick={() => void pullFromRemote()}
+            disabled={busy || !hasRemote}
+            title={hasRemote ? undefined : t('workspace.pullNeedsRemote')}
+            className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <DownloadCloud size={16} />
+            {syncing ? t('workspace.pulling') : t('workspace.pullManual')}
+          </button>
+          <button
+            type="button"
+            onClick={() => void pushPendingToRemote()}
+            disabled={busy || !hasRemote}
+            title={hasRemote ? undefined : t('workspace.pushNeedsRemote')}
+            className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <UploadCloud size={16} />
+            {pushing ? t('workspace.pushing') : t('workspace.pushManual')}
+          </button>
+          <button
+            type="button"
+            onClick={() => void runSync('both')}
+            disabled={busy || !hasRemote}
+            title={hasRemote ? undefined : t('workspace.syncNeedsRemote')}
+            className="inline-flex items-center gap-1.5 rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm text-blue-800 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw size={16} />
+            {syncing ? t('workspace.syncing') : t('workspace.syncBoth')}
+          </button>
+        </div>
       </div>
       {syncMessage && (
         <p className="mt-2 text-xs text-green-700">{syncMessage}</p>
