@@ -1,5 +1,5 @@
 import { useDemoMode } from '@pixuli/ui';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
 import { SearchProvider } from './contexts/SearchContext';
 import {
@@ -11,15 +11,29 @@ import {
 } from './hooks';
 import { useI18n } from './i18n/useI18n';
 import { MainLayout } from './layouts/MainLayout';
+import { isDesktopWorkspaceAvailable } from './platforms/desktop/workspaceAdapter';
 import { AppRoutes } from './router/routes';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
 import { useUIStore } from './stores/uiStore';
+import { useWorkspaceStore } from './stores/workspaceStore';
 
 // 主应用组件（统一 Web 和 Desktop）
 function App() {
   const { t } = useI18n();
   const { loadImages, uploadImage, uploadMultipleImages } = useImageStore();
+  const initializeWorkspace = useWorkspaceStore(state => state.initialize);
+  const isLocalActive = useWorkspaceStore(state => state.isLocalActive);
+  const importLocalImage = useWorkspaceStore(state => state.importLocalImage);
+  const refreshLocalImages = useWorkspaceStore(
+    state => state.refreshLocalImages,
+  );
+
+  useEffect(() => {
+    if (isDesktopWorkspaceAvailable()) {
+      void initializeWorkspace();
+    }
+  }, [initializeWorkspace]);
 
   const { sources, selectedSourceId } = useSourceStore();
 
@@ -60,17 +74,52 @@ function App() {
   // 配置管理
   const { handleSaveConfig, handleClearConfig } = useConfigManagement();
 
-  // 判断是否有配置
-  const hasConfig = sources.length > 0;
+  const workspaceMode = useWorkspaceStore(state => state.mode);
 
-  // 加载图片
+  const hasConfig =
+    sources.length > 0 ||
+    (isDesktopWorkspaceAvailable() && workspaceMode === 'local');
+
   const handleLoadImages = useCallback(async () => {
     try {
+      if (isLocalActive()) {
+        await refreshLocalImages();
+        return;
+      }
       await loadImages();
     } catch (error) {
       console.error('Failed to load images:', error);
     }
-  }, [loadImages]);
+  }, [isLocalActive, refreshLocalImages, loadImages]);
+
+  const handleUploadImage = useCallback(
+    async (data: Parameters<typeof uploadImage>[0]) => {
+      if (isLocalActive()) {
+        await importLocalImage(data);
+        return;
+      }
+      await uploadImage(data);
+    },
+    [isLocalActive, importLocalImage, uploadImage],
+  );
+
+  const handleUploadMultipleImages = useCallback(
+    async (data: Parameters<typeof uploadMultipleImages>[0]) => {
+      if (isLocalActive()) {
+        for (const file of data.files) {
+          await importLocalImage({
+            file,
+            name: data.name,
+            description: data.description,
+            tags: data.tags,
+          });
+        }
+        return;
+      }
+      await uploadMultipleImages(data);
+    },
+    [isLocalActive, importLocalImage, uploadMultipleImages],
+  );
 
   // 保存配置（包装以包含 editingSourceId）
   const handleSaveConfigWithId = useMemo(
@@ -108,6 +157,9 @@ function App() {
 
   // 同步选中源到配置，并在同步后加载图片
   useSelectedSourceSync(selectedSource ?? null, () => {
+    if (isLocalActive()) {
+      return;
+    }
     if (sources.length > 0 && selectedSource) {
       handleLoadImages();
     }
@@ -162,8 +214,8 @@ function App() {
         hasConfig={hasConfig}
         onAddSource={addSource}
         onLoadImages={handleLoadImages}
-        onUploadImage={uploadImage}
-        onUploadMultipleImages={uploadMultipleImages}
+        onUploadImage={handleUploadImage}
+        onUploadMultipleImages={handleUploadMultipleImages}
         onSaveConfig={handleSaveConfigWithId}
         onClearConfig={handleClearConfigWithId}
         onSelectSourceType={handleSelectSourceType}

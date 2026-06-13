@@ -68,6 +68,24 @@ contextBridge.exposeInMainWorld('fileAPI', {
     ipcRenderer.invoke('file:save', fileName, content, mimeType),
 });
 
+// --------- Expose Workspace API (REF-607 Desktop) -------------------------
+contextBridge.exposeInMainWorld('workspaceAPI', {
+  getRoot: () => ipcRenderer.invoke('workspace:getRoot'),
+  pickRoot: () => ipcRenderer.invoke('workspace:pickRoot'),
+  setRoot: (rootPath: string) =>
+    ipcRenderer.invoke('workspace:setRoot', rootPath),
+  readFile: (relativePath: string) =>
+    ipcRenderer.invoke('workspace:readFile', relativePath),
+  writeFile: (relativePath: string, data: Uint8Array) =>
+    ipcRenderer.invoke('workspace:writeFile', relativePath, data),
+  deleteFile: (relativePath: string) =>
+    ipcRenderer.invoke('workspace:deleteFile', relativePath),
+  listFiles: (relativeDir: string, recursive?: boolean) =>
+    ipcRenderer.invoke('workspace:listFiles', relativeDir, recursive),
+  exists: (relativePath: string) =>
+    ipcRenderer.invoke('workspace:exists', relativePath),
+});
+
 // --------- Expose Electron API to the Renderer process ---------
 contextBridge.exposeInMainWorld('electronAPI', {
   onReceiveMessage: (callback: (message: string) => void) => {

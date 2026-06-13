@@ -20,9 +20,11 @@ import { ROUTES } from '../router/routes';
 import { useSearchContextSafe } from '../contexts/SearchContext';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { useI18n } from '../i18n/useI18n';
+import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
+import { useWorkspaceStore } from '../stores/workspaceStore';
 
 interface AppMainProps {
   children: React.ReactNode;
@@ -42,6 +44,13 @@ export const AppMain: React.FC<AppMainProps> = ({
   const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
     useI18n();
   const { loading, batchUploadProgress, images } = useImageStore();
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const localImages = useWorkspaceStore(state => state.localImages);
+  const workspaceLoading = useWorkspaceStore(state => state.loading);
+  const localActive =
+    isDesktopWorkspaceAvailable() && workspaceMode === 'local';
+  const displayLoading = localActive ? workspaceLoading : loading;
+  const displayImages = localActive ? localImages : images;
   const { sources } = useSourceStore();
   const {
     isFullscreenMode,
@@ -78,7 +87,7 @@ export const AppMain: React.FC<AppMainProps> = ({
           onSearchChange={searchContext.setSearchQuery}
           variant="header"
           hasConfig={hasConfig}
-          images={images}
+          images={displayImages}
           externalFilters={searchContext.filters}
           onFiltersChange={searchContext.setFilters}
           showFilter={true}
@@ -114,7 +123,7 @@ export const AppMain: React.FC<AppMainProps> = ({
                 <UploadButton
                   onUploadImage={onUploadImage}
                   onUploadMultipleImages={onUploadMultipleImages}
-                  loading={loading}
+                  loading={displayLoading}
                   batchUploadProgress={batchUploadProgress}
                   t={t}
                 />
@@ -122,7 +131,7 @@ export const AppMain: React.FC<AppMainProps> = ({
               {hasConfig && (
                 <RefreshButton
                   onRefresh={onLoadImages}
-                  loading={loading}
+                  loading={displayLoading}
                   disabled={!hasConfig}
                   t={t}
                 />

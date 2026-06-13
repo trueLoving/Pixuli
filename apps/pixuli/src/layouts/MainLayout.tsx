@@ -33,6 +33,8 @@ import { useI18n } from '../i18n/useI18n';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
+import { useWorkspaceStore } from '../stores/workspaceStore';
+import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
 import { listStoragePluginManifests } from '../storage/registry';
 import { getPlatform, isNativeMobile } from '../utils/platform';
 import {
@@ -84,6 +86,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 }) => {
   const { t } = useI18n();
   const { loading, storageType, githubConfig, giteeConfig } = useImageStore();
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const workspaceLoading = useWorkspaceStore(state => state.loading);
+  const localActive =
+    isDesktopWorkspaceAvailable() && workspaceMode === 'local';
+  const showGlobalLoading = localActive ? workspaceLoading : loading;
   const sources = useSourceStore(state => state.sources);
   const { isDemoMode } = useDemoMode();
   const platform = getPlatform();
@@ -234,8 +241,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <Toaster />
 
       <FullScreenLoading
-        visible={loading}
-        text={loading ? t('app.loadingImages') : undefined}
+        visible={showGlobalLoading}
+        text={showGlobalLoading ? t('app.loadingImages') : undefined}
       />
 
       {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && !isNativeMobile() && (

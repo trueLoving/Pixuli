@@ -198,6 +198,16 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       }
       return count;
     },
+
+    async updateSyncMeta(relativePath, patch) {
+      const entry = index.find(item => item.relativePath === relativePath);
+      if (!entry || entry.deletedAt) {
+        throw new Error(`Image not found: ${relativePath}`);
+      }
+      Object.assign(entry, patch, { updatedAt: nowIso() });
+      await persistIndex();
+      return { ...entry };
+    },
   };
 
   return vault;
