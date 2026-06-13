@@ -79,6 +79,17 @@
     "pushManual": "推送到远端",
     "pushing": "推送中…",
     "pushNeedsRemote": "请先添加 GitHub 或 Gitee 远端源以推送",
+    "pullNeedsRemote": "请先添加 GitHub 或 Gitee 远端源以拉取",
+    "syncNeedsRemote": "请先添加 GitHub 或 Gitee 远端源以同步",
+    "pullManual": "从远端拉取",
+    "pulling": "拉取中…",
+    "syncBoth": "双向同步",
+    "syncing": "同步中…",
+    "scan": "扫描索引",
+    "lastSync": "上次同步",
+    "syncNever": "从未同步",
+    "pendingPush": "待推送 {{count}}",
+    "conflicts": "冲突 {{count}}",
     "dismiss": "关闭"
   }
 }

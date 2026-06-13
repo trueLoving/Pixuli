@@ -11,6 +11,7 @@ export const giteeManifest: StoragePluginManifest = {
     delete: true,
     updateMetadata: true,
     needsProxy: true,
+    sync: true,
   },
   hostIntegrations: [
     {

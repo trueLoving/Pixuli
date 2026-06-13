@@ -9,6 +9,9 @@ import type {
   ProviderContext,
   StorageProviderConfig,
   StorageProviderWithMetadata,
+  SyncPullOptions,
+  SyncPullResult,
+  SyncPushItem,
 } from '@pixuli/core/plugins';
 import { giteeManifest } from './manifest';
 import { GITEE_PROXY_PATH } from './proxy/constants.js';
@@ -47,6 +50,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   private readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
   private readonly useProxy: boolean;
   private readonly proxyBaseUrl?: string;
+  private syncCursor: string | null = null;
 
   constructor(ctx: ProviderContext, options: GiteeStorageProviderOptions = {}) {
     this.platformAdapter = ctx.platformAdapter;
@@ -843,6 +847,62 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       this.logger.error('Load image metadata failed:', error);
       // 即使加载元数据失败，也返回原始图片列表
       return images;
+    }
+  }
+
+  async getSyncCursor(): Promise<string | null> {
+    return this.syncCursor;
+  }
+
+  async syncPull(options?: SyncPullOptions): Promise<SyncPullResult> {
+    const images = await this.listImages();
+    const since = options?.since;
+    const items = images
+      .map(img => ({
+        remotePath: img.name,
+        action: 'update' as const,
+        contentHash: img.id,
+        metadata: {
+          name: img.name,
+          tags: img.tags,
+          description: img.description,
+          width: img.width,
+          height: img.height,
+          size: img.size,
+          type: img.type,
+          createdAt: img.createdAt,
+          updatedAt: img.updatedAt,
+          url: img.url,
+        },
+      }))
+      .filter(item => !since || (item.metadata.updatedAt ?? '') > since);
+
+    this.syncCursor = new Date().toISOString();
+    return { items, nextCursor: this.syncCursor };
+  }
+
+  async syncPush(items: SyncPushItem[]): Promise<void> {
+    for (const item of items) {
+      if (item.action === 'delete') {
+        await this.deleteImage(item.remotePath);
+        continue;
+      }
+      if (item.action === 'metadata') {
+        await this.updateImageMetadata(item.remotePath, item.metadata ?? {});
+        continue;
+      }
+      if (!item.file) {
+        throw new Error(`Missing file bytes for ${item.remotePath}`);
+      }
+      const file = new File([Uint8Array.from(item.file)], item.remotePath, {
+        type: item.metadata?.type ?? this.getMimeType(item.remotePath),
+      });
+      await this.uploadImage({
+        file,
+        name: item.metadata?.name,
+        tags: item.metadata?.tags,
+        description: item.metadata?.description,
+      });
     }
   }
 

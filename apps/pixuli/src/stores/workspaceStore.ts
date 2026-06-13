@@ -7,7 +7,11 @@ import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import {
   createLocalVault,
+  createSyncEngine,
+  providerSupportsSync,
   type LocalVault,
+  type SyncEngine,
+  type SyncStatusSummary,
   type WorkspaceMode,
 } from '@pixuli/core/vault';
 import { getUploadFileName } from '@pixuli/core/types';
@@ -36,19 +40,26 @@ interface WorkspaceState {
   localImages: ImageItem[];
   loading: boolean;
   pushing: boolean;
+  syncing: boolean;
+  syncStatus: SyncStatusSummary | null;
   error: string | null;
   syncMessage: string | null;
   isLocalActive: () => boolean;
   initialize: () => Promise<void>;
   pickWorkspace: () => Promise<boolean>;
   refreshLocalImages: () => Promise<void>;
+  refreshSyncStatus: () => Promise<void>;
+  scanWorkspace: () => Promise<void>;
   importLocalImage: (uploadData: ImageUploadData) => Promise<void>;
   pushPendingToRemote: () => Promise<void>;
+  pullFromRemote: () => Promise<void>;
+  runSync: (direction?: 'push' | 'pull' | 'both') => Promise<void>;
   softDeleteLocal: (relativePath: string) => Promise<void>;
   clearError: () => void;
 }
 
 let vaultInstance: LocalVault | null = null;
+let syncEngineInstance: SyncEngine | null = null;
 let adapterInstance: DesktopWorkspaceAdapter | null = null;
 
 function getAdapter(): DesktopWorkspaceAdapter {
@@ -63,6 +74,30 @@ function getVault(): LocalVault {
     vaultInstance = createLocalVault(getAdapter());
   }
   return vaultInstance;
+}
+
+function getSyncEngine(): SyncEngine {
+  if (!syncEngineInstance) {
+    syncEngineInstance = createSyncEngine({
+      vault: getVault(),
+      getBindings: () => {
+        const source = resolveSelectedSource();
+        const provider = resolveSelectedProvider();
+        if (!source || !provider || !providerSupportsSync(provider)) {
+          return [];
+        }
+        return [{ bindingId: source.id, provider }];
+      },
+      readFileBytes: relativePath => getAdapter().readFile(relativePath),
+    });
+  }
+  return syncEngineInstance;
+}
+
+function resetWorkspaceRuntime(): void {
+  clearLocalPreviewCache();
+  vaultInstance = null;
+  syncEngineInstance = null;
 }
 
 function loadPersistedWorkspace(): WorkspacePersist | null {
@@ -112,6 +147,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   localImages: [],
   loading: false,
   pushing: false,
+  syncing: false,
+  syncStatus: null,
   error: null,
   syncMessage: null,
 
@@ -143,6 +180,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         loading: false,
       });
       await get().refreshLocalImages();
+      await get().refreshSyncStatus();
     } catch (error) {
       set({
         mode: 'unset',
@@ -159,8 +197,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
     set({ loading: true, error: null });
     try {
-      clearLocalPreviewCache();
-      vaultInstance = null;
+      resetWorkspaceRuntime();
       const adapter = getAdapter();
       const picked = await adapter.pickRoot();
       if (!picked || !adapter.getRootPath()) {
@@ -181,6 +218,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         syncMessage: null,
       });
       await get().refreshLocalImages();
+      await get().refreshSyncStatus();
       return true;
     } catch (error) {
       set({
@@ -211,6 +249,40 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
+  refreshSyncStatus: async () => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    try {
+      const status = await getSyncEngine().getStatus();
+      set({ syncStatus: status });
+    } catch {
+      // ignore status refresh errors
+    }
+  },
+
+  scanWorkspace: async () => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      const added = await getVault().scan();
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      set({
+        loading: false,
+        syncMessage:
+          added > 0 ? `扫描完成，新增 ${added} 张图片` : '扫描完成，索引已更新',
+      });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '扫描工作区失败',
+      });
+    }
+  },
+
   importLocalImage: async uploadData => {
     if (get().mode !== 'local') {
       set({ error: '请先选择本地工作区' });
@@ -236,7 +308,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         syncState: 'local-only',
       });
 
+      await getSyncEngine().enqueuePush({
+        type: 'upload',
+        relativePath: targetPath,
+      });
+
       await get().refreshLocalImages();
+      await get().refreshSyncStatus();
       set({ loading: false, syncMessage: '已保存到本地工作区' });
     } catch (error) {
       set({
@@ -247,62 +325,84 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   pushPendingToRemote: async () => {
+    await get().runSync('push');
+  },
+
+  pullFromRemote: async () => {
+    await get().runSync('pull');
+  },
+
+  runSync: async (direction = 'both') => {
     if (get().mode !== 'local') {
       set({ error: '请先选择本地工作区' });
       return;
     }
 
-    const provider = resolveSelectedProvider();
-    if (!provider) {
+    if (resolveSelectedProvider() === null) {
       set({ error: '请先添加并选择 GitHub/Gitee 远端源' });
       return;
     }
 
-    set({ pushing: true, error: null, syncMessage: null });
-    try {
-      const vault = getVault();
-      const entries = await vault.list();
-      const pending = entries.filter(
-        e => e.syncState === 'local-only' || e.syncState === 'pending-push',
+    if (direction === 'push') {
+      const entries = await getVault().list();
+      const hasPending = entries.some(
+        entry =>
+          !entry.deletedAt &&
+          (entry.syncState === 'local-only' ||
+            entry.syncState === 'pending-push'),
       );
+      const status = await getSyncEngine().getStatus();
+      if (!hasPending && status.pendingPush === 0) {
+        set({ syncMessage: '没有待推送的本地图片' });
+        return;
+      }
+    }
 
-      if (pending.length === 0) {
-        set({ pushing: false, syncMessage: '没有待推送的本地图片' });
+    set({
+      syncing: true,
+      pushing: direction === 'push' || direction === 'both',
+      error: null,
+      syncMessage: null,
+    });
+
+    try {
+      const result = await getSyncEngine().run({ direction });
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+
+      if (result.errors.length > 0) {
+        set({
+          syncing: false,
+          pushing: false,
+          error: result.errors.map(item => item.message).join('；'),
+        });
         return;
       }
 
-      let pushed = 0;
-      const source = resolveSelectedSource();
-      for (const entry of pending) {
-        const bytes = await getAdapter().readFile(entry.relativePath);
-        const file = new File([Uint8Array.from(bytes)], entry.name, {
-          type: entry.mimeType,
-        });
-
-        await provider.uploadImage({
-          file,
-          name: entry.name,
-          tags: entry.tags,
-          description: entry.description,
-        });
-
-        await vault.updateSyncMeta(entry.relativePath, {
-          syncState: 'synced',
-          remotePath: entry.name,
-          bindingId: source?.id,
-        });
-        pushed += 1;
+      const messages: string[] = [];
+      if (result.pushed > 0) {
+        messages.push(`已推送 ${result.pushed} 项`);
+      }
+      if (result.pulled > 0) {
+        messages.push(`已拉取 ${result.pulled} 项`);
+      }
+      if (result.conflicts.length > 0) {
+        messages.push(`${result.conflicts.length} 项冲突需手动处理`);
+      }
+      if (messages.length === 0) {
+        messages.push('同步完成，无变更');
       }
 
-      await get().refreshLocalImages();
       set({
+        syncing: false,
         pushing: false,
-        syncMessage: `已推送 ${pushed} 张图片到远端`,
+        syncMessage: messages.join('；'),
       });
     } catch (error) {
       set({
+        syncing: false,
         pushing: false,
-        error: error instanceof Error ? error.message : '推送到远端失败',
+        error: error instanceof Error ? error.message : '同步失败',
       });
     }
   },
@@ -314,7 +414,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await getVault().softDelete(relativePath);
+      await getSyncEngine().enqueuePush({
+        type: 'delete',
+        relativePath,
+      });
       await get().refreshLocalImages();
+      await get().refreshSyncStatus();
       set({ loading: false });
     } catch (error) {
       set({

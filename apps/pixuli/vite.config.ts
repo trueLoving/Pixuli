@@ -141,6 +141,7 @@ export default defineConfig(({ command, mode }) => {
           input: 'electron/preload/index.ts',
           vite: {
             build: {
+              target: 'esnext',
               sourcemap: sourcemap ? 'inline' : undefined,
               minify: isBuild,
               outDir: 'dist-electron/preload',
@@ -148,6 +149,12 @@ export default defineConfig(({ command, mode }) => {
                 external: Object.keys(
                   'dependencies' in pkg ? pkg.dependencies : {},
                 ),
+                output: {
+                  // sandbox: false + nodeIntegration: false → ESM preload 可用 import / top-level await
+                  format: 'es',
+                  entryFileNames: 'index.mjs',
+                  inlineDynamicImports: true,
+                },
               },
             },
           },
