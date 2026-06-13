@@ -8,7 +8,9 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
+import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
 import { useUIStore } from '../stores/uiStore';
+import { useWorkspaceStore } from '../stores/workspaceStore';
 
 interface SidebarProps {
   sidebarSources: any[];
@@ -33,6 +35,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useMobileViewport();
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const displayName = useWorkspaceStore(state => state.displayName);
+  const showWorkspaceHint =
+    isDesktopWorkspaceAvailable() && workspaceMode === 'local';
   const {
     activeMenu,
     sidebarCollapsed,
@@ -108,21 +114,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <CommonSidebar
-      onMenuClick={handleMenuClick}
-      activeMenu={activeMenu}
-      sources={sidebarSources}
-      selectedSourceId={selectedSourceId}
-      onSourceSelect={handleSourceSelect}
-      onSourceEdit={onSourceEdit}
-      onSourceDelete={onSourceDelete}
-      hasConfig={hasConfig}
-      onAddSource={handleAddSource}
-      collapsed={isMobile ? false : sidebarCollapsed}
-      onToggleCollapse={isMobile ? undefined : toggleSidebar}
-      mobileOpen={isMobile && mobileSidebarOpen}
-      onMobileClose={closeMobileSidebar}
-      t={t}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <CommonSidebar
+          onMenuClick={handleMenuClick}
+          activeMenu={activeMenu}
+          sources={sidebarSources}
+          selectedSourceId={selectedSourceId}
+          onSourceSelect={handleSourceSelect}
+          onSourceEdit={onSourceEdit}
+          onSourceDelete={onSourceDelete}
+          hasConfig={hasConfig}
+          onAddSource={handleAddSource}
+          collapsed={isMobile ? false : sidebarCollapsed}
+          onToggleCollapse={isMobile ? undefined : toggleSidebar}
+          mobileOpen={isMobile && mobileSidebarOpen}
+          onMobileClose={closeMobileSidebar}
+          t={t}
+        />
+      </div>
+      {showWorkspaceHint && (
+        <div
+          className="border-t border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
+          title={displayName ?? undefined}
+        >
+          <span className="font-medium">{t('workspace.current')}:</span>{' '}
+          <span className="truncate">
+            {displayName || t('workspace.unnamed')}
+          </span>
+        </div>
+      )}
+    </div>
   );
 };

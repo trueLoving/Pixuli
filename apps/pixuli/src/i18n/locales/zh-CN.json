@@ -68,5 +68,17 @@
     "noFiles": "请先选择要转换的图片",
     "clear": "清空",
     "keepAspectRatio": "保持宽高比"
+  },
+  "workspace": {
+    "setupTitle": "选择本地工作区",
+    "setupHint": "选择一个文件夹作为 Pixuli 本地图床工作区，图片将保存在该目录下的 images/ 中。",
+    "pickFolder": "选择文件夹",
+    "picking": "正在打开…",
+    "current": "当前工作区",
+    "unnamed": "未命名工作区",
+    "pushManual": "推送到远端",
+    "pushing": "推送中…",
+    "pushNeedsRemote": "请先添加 GitHub 或 Gitee 远端源以推送",
+    "dismiss": "关闭"
   }
 }

@@ -83,6 +83,12 @@ export interface LocalVault {
   ): Promise<LocalImageIndexEntry>;
   softDelete(relativePath: string): Promise<void>;
   scan(): Promise<number>;
+  updateSyncMeta(
+    relativePath: string,
+    patch: Partial<
+      Pick<LocalImageIndexEntry, 'syncState' | 'remotePath' | 'bindingId'>
+    >,
+  ): Promise<LocalImageIndexEntry>;
 }
 
 export type SyncDirection = 'push' | 'pull' | 'both';

@@ -68,5 +68,17 @@
     "noFiles": "Select images to convert first",
     "clear": "Clear",
     "keepAspectRatio": "Keep aspect ratio"
+  },
+  "workspace": {
+    "setupTitle": "Choose a local workspace",
+    "setupHint": "Pick a folder as your Pixuli local image workspace. Images are stored under images/ in that directory.",
+    "pickFolder": "Choose folder",
+    "picking": "Opening…",
+    "current": "Workspace",
+    "unnamed": "Unnamed workspace",
+    "pushManual": "Push to remote",
+    "pushing": "Pushing…",
+    "pushNeedsRemote": "Add a GitHub or Gitee remote source to push",
+    "dismiss": "Dismiss"
   }
 }

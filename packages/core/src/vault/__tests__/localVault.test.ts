@@ -77,6 +77,31 @@ describe('createLocalVault', () => {
     expect((await vault.list({ includeDeleted: true })).length).toBe(1);
   });
 
+  it('updateSyncMeta updates sync fields', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    const file = new File([new Uint8Array([1])], 'a.jpg', {
+      type: 'image/jpeg',
+    });
+    await vault.importFile(file, 'images/a.jpg');
+
+    const updated = await vault.updateSyncMeta('images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'a.jpg',
+      bindingId: 'source-1',
+    });
+
+    expect(updated.syncState).toBe('synced');
+    expect(updated.remotePath).toBe('a.jpg');
+    expect(updated.bindingId).toBe('source-1');
+
+    const listed = await vault.list();
+    expect(listed[0].syncState).toBe('synced');
+    expect(listed[0].remotePath).toBe('a.jpg');
+  });
+
   it('scan discovers files under images/', async () => {
     const adapter = new MemoryWorkspaceAdapter();
     const vault = createLocalVault(adapter);
