@@ -4,6 +4,7 @@ import type {
   LocalListOptions,
   LocalVault,
   WorkspaceAdapter,
+  WorkspaceBinding,
   WorkspaceConfig,
 } from './types';
 import {
@@ -207,6 +208,22 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       Object.assign(entry, patch, { updatedAt: nowIso() });
       await persistIndex();
       return { ...entry };
+    },
+
+    async upsertBindings(bindings) {
+      if (!config) {
+        throw new Error('LocalVault is not open; call open() first');
+      }
+      const byId = new Map(config.bindings.map(item => [item.id, item]));
+      for (const binding of bindings) {
+        byId.set(binding.id, binding);
+      }
+      config = {
+        ...config,
+        bindings: Array.from(byId.values()),
+      };
+      await persistConfig();
+      return config;
     },
   };
 

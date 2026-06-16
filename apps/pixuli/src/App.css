@@ -446,3 +446,29 @@ body {
     font-size: 1.125rem;
   }
 }
+
+/* 工具页窄屏排版（REF-512 #150） */
+@media (max-width: 767px) {
+  .utility-page {
+    padding-left: max(1rem, env(safe-area-inset-left, 0));
+    padding-right: max(1rem, env(safe-area-inset-right, 0));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0));
+  }
+
+  .utility-page .utility-page-actions button {
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: center;
+  }
+
+  .utility-page input[type='range'] {
+    min-height: 2.75rem;
+  }
+
+  .utility-page label[for='compress-file-input'],
+  .utility-page label[for='convert-file-input'] {
+    display: block;
+    min-height: 2.75rem;
+    padding: 0.75rem;
+  }
+}

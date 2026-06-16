@@ -177,8 +177,8 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     if (screenWidth >= 1280) return 5; // xl: 5列
     if (screenWidth >= 1024) return 4; // lg: 4列
     if (screenWidth >= 768) return 3; // md: 3列
-    if (screenWidth >= 640) return 2; // sm: 2列
-    return 1; // 默认1列
+    if (screenWidth >= 480) return 2; // 窄屏手机: 2列
+    return 2;
   }, []);
 
   // 滚动到选中项的函数

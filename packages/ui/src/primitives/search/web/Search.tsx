@@ -190,10 +190,16 @@ const Search: React.FC<SearchProps> = ({
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilterPanel]);
+
+  // Capacitor 硬件返回键关闭筛选（REF-512 #150）
+  useEffect(() => {
+    const onCloseFilter = () => setShowFilterPanel(false);
+    window.addEventListener('pixuli:closeFilterPanel', onCloseFilter);
+    return () =>
+      window.removeEventListener('pixuli:closeFilterPanel', onCloseFilter);
+  }, []);
 
   // 检查是否有活动的筛选条件
   const hasActiveFilters =

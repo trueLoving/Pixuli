@@ -1,4 +1,5 @@
 export { useAppInitialization } from './useAppInitialization';
+export { useCapacitorBackButton } from './useCapacitorBackButton';
 export { useConfigManagement } from './useConfigManagement';
 export { useImageOperations } from './useImageOperations';
 export { useKeyboardCategories } from './useKeyboardCategories';

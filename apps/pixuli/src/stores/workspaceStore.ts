@@ -9,8 +9,10 @@ import {
   createLocalVault,
   createSyncEngine,
   providerSupportsSync,
+  storedSourcesToWorkspaceBindings,
   type LocalVault,
   type SyncEngine,
+  type SyncEngineBinding,
   type SyncStatusSummary,
   type WorkspaceMode,
 } from '@pixuli/core/vault';
@@ -27,6 +29,7 @@ import {
 } from '../platforms/desktop/workspaceAdapter';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
+const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
 
 interface WorkspacePersist {
   rootPath: string;
@@ -45,12 +48,20 @@ interface WorkspaceState {
   error: string | null;
   syncMessage: string | null;
   isLocalActive: () => boolean;
+  needsWorkspaceSetup: () => boolean;
   initialize: () => Promise<void>;
-  pickWorkspace: () => Promise<boolean>;
+  pickWorkspace: (options?: { pullAfter?: boolean }) => Promise<boolean>;
+  setRemoteOnlyMode: () => void;
+  resumeLocalWorkspace: () => Promise<boolean>;
+  syncBindingsFromSources: () => Promise<void>;
   refreshLocalImages: () => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
   importLocalImage: (uploadData: ImageUploadData) => Promise<void>;
+  updateLocalMetadata: (
+    relativePath: string,
+    patch: { name?: string; tags?: string[]; description?: string },
+  ) => Promise<void>;
   pushPendingToRemote: () => Promise<void>;
   pullFromRemote: () => Promise<void>;
   runSync: (direction?: 'push' | 'pull' | 'both') => Promise<void>;
@@ -80,24 +91,41 @@ function getSyncEngine(): SyncEngine {
   if (!syncEngineInstance) {
     syncEngineInstance = createSyncEngine({
       vault: getVault(),
-      getBindings: () => {
-        const source = resolveSelectedSource();
-        const provider = resolveSelectedProvider();
-        if (!source || !provider || !providerSupportsSync(provider)) {
-          return [];
-        }
-        return [{ bindingId: source.id, provider }];
-      },
+      getBindings: resolveSyncBindings,
       readFileBytes: relativePath => getAdapter().readFile(relativePath),
     });
   }
   return syncEngineInstance;
 }
 
+function resetSyncEngineOnly(): void {
+  syncEngineInstance = null;
+}
+
 function resetWorkspaceRuntime(): void {
   clearLocalPreviewCache();
   vaultInstance = null;
   syncEngineInstance = null;
+}
+
+function loadModePref(): WorkspaceMode | null {
+  try {
+    const raw = localStorage.getItem(WORKSPACE_MODE_KEY);
+    if (raw === 'local' || raw === 'remote-only') {
+      return raw;
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function saveModePref(mode: Exclude<WorkspaceMode, 'unset'>): void {
+  try {
+    localStorage.setItem(WORKSPACE_MODE_KEY, mode);
+  } catch {
+    // ignore
+  }
 }
 
 function loadPersistedWorkspace(): WorkspacePersist | null {
@@ -156,8 +184,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     return isDesktopWorkspaceAvailable() && get().mode === 'local';
   },
 
+  needsWorkspaceSetup: () => {
+    return isDesktopWorkspaceAvailable() && get().mode === 'unset';
+  },
+
   initialize: async () => {
     if (!isDesktopWorkspaceAvailable()) {
+      set({ mode: 'remote-only' });
+      return;
+    }
+
+    const modePref = loadModePref();
+    if (modePref === 'remote-only') {
       set({ mode: 'remote-only' });
       return;
     }
@@ -173,12 +211,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const vault = await openVaultWithRoot(persisted.rootPath);
       const config = vault.getConfig();
       savePersistedWorkspace(persisted.rootPath, config.workspaceId);
+      saveModePref('local');
       set({
         mode: 'local',
         rootPath: persisted.rootPath,
         displayName: config.displayName,
         loading: false,
       });
+      await get().syncBindingsFromSources();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
     } catch (error) {
@@ -190,7 +230,73 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  pickWorkspace: async () => {
+  setRemoteOnlyMode: () => {
+    saveModePref('remote-only');
+    resetWorkspaceRuntime();
+    set({
+      mode: 'remote-only',
+      rootPath: null,
+      displayName: null,
+      localImages: [],
+      loading: false,
+      pushing: false,
+      syncing: false,
+      syncStatus: null,
+      error: null,
+      syncMessage: null,
+    });
+  },
+
+  resumeLocalWorkspace: async () => {
+    if (!isDesktopWorkspaceAvailable()) {
+      return false;
+    }
+    const persisted = loadPersistedWorkspace();
+    if (!persisted?.rootPath) {
+      set({ mode: 'unset' });
+      return false;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      resetWorkspaceRuntime();
+      const vault = await openVaultWithRoot(persisted.rootPath);
+      const config = vault.getConfig();
+      saveModePref('local');
+      set({
+        mode: 'local',
+        rootPath: persisted.rootPath,
+        displayName: config.displayName,
+        loading: false,
+        syncMessage: null,
+      });
+      await get().syncBindingsFromSources();
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      return true;
+    } catch (error) {
+      set({
+        mode: 'unset',
+        loading: false,
+        error: error instanceof Error ? error.message : '恢复本地工作区失败',
+      });
+      return false;
+    }
+  },
+
+  syncBindingsFromSources: async () => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    const sources = useSourceStore.getState().sources;
+    if (sources.length === 0) {
+      return;
+    }
+    await getVault().upsertBindings(storedSourcesToWorkspaceBindings(sources));
+    resetSyncEngineOnly();
+  },
+
+  pickWorkspace: async (options?: { pullAfter?: boolean }) => {
     if (!isDesktopWorkspaceAvailable()) {
       return false;
     }
@@ -209,6 +315,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const vault = await openVaultWithRoot(rootPath);
       const config = vault.getConfig();
       savePersistedWorkspace(rootPath, config.workspaceId);
+      saveModePref('local');
 
       set({
         mode: 'local',
@@ -217,8 +324,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         loading: false,
         syncMessage: null,
       });
+      await get().syncBindingsFromSources();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
+      if (options?.pullAfter) {
+        await get().pullFromRemote();
+      }
       return true;
     } catch (error) {
       set({
@@ -321,6 +432,29 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         loading: false,
         error: error instanceof Error ? error.message : '保存到本地工作区失败',
       });
+    }
+  },
+
+  updateLocalMetadata: async (relativePath, patch) => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      await getVault().updateMetadata(relativePath, patch);
+      await getSyncEngine().enqueuePush({
+        type: 'metadata',
+        relativePath,
+      });
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      set({ loading: false });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '更新元数据失败',
+      });
+      throw error;
     }
   },
 
@@ -431,6 +565,40 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 }));
+
+function resolveSyncBindings(): SyncEngineBinding[] {
+  if (vaultInstance && useWorkspaceStore.getState().mode === 'local') {
+    const config = vaultInstance.getConfig();
+    const bindingDefs =
+      config.bindings.length > 0
+        ? config.bindings
+        : storedSourcesToWorkspaceBindings(useSourceStore.getState().sources);
+
+    return bindingDefs
+      .map(binding => {
+        try {
+          const provider = createConfiguredStorageProvider(
+            binding.pluginId as StoragePluginId,
+            binding.config as never,
+          );
+          if (!providerSupportsSync(provider)) {
+            return null;
+          }
+          return { bindingId: binding.id, provider };
+        } catch {
+          return null;
+        }
+      })
+      .filter((item): item is SyncEngineBinding => item !== null);
+  }
+
+  const source = resolveSelectedSource();
+  const provider = resolveSelectedProvider();
+  if (!source || !provider || !providerSupportsSync(provider)) {
+    return [];
+  }
+  return [{ bindingId: source.id, provider }];
+}
 
 function resolveSelectedSource() {
   const { selectedSourceId, sources, getSourceById } =

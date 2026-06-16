@@ -89,6 +89,8 @@ export interface LocalVault {
       Pick<LocalImageIndexEntry, 'syncState' | 'remotePath' | 'bindingId'>
     >,
   ): Promise<LocalImageIndexEntry>;
+  /** 合并写入 bindings（按 id 去重更新） */
+  upsertBindings(bindings: WorkspaceBinding[]): Promise<WorkspaceConfig>;
 }
 
 export type SyncDirection = 'push' | 'pull' | 'both';

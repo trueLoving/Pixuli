@@ -90,6 +90,16 @@
     "syncNever": "从未同步",
     "pendingPush": "待推送 {{count}}",
     "conflicts": "冲突 {{count}}",
-    "dismiss": "关闭"
+    "dismiss": "关闭",
+    "migrationTitle": "升级到本地工作区",
+    "migrationHint": "检测到 {{count}} 个远端源，请选择使用方式：",
+    "migrationLocalTitle": "使用本地文件夹",
+    "migrationLocalHint": "选择文件夹作为工作区，现有远端源将自动绑定以便同步。",
+    "migrationPickFolder": "选择文件夹并继续",
+    "migrationPullAfter": "设置完成后从远端全量拉取（可能耗时较长）",
+    "migrationRemoteTitle": "继续仅远端浏览",
+    "migrationRemoteHint": "不选本地目录，继续直接从 GitHub/Gitee 拉取列表。",
+    "migrationRemoteOnly": "仅使用远端",
+    "switchRemoteOnly": "切换为仅远端浏览"
   }
 }

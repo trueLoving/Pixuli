@@ -412,6 +412,37 @@
   }
 }
 
+/* 窄屏触控优化（REF-512 #150） */
+@media (max-width: 767px) {
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .image-browser-item {
+    min-height: 0;
+  }
+
+  .image-info-section {
+    min-height: 100px;
+    max-height: 120px;
+    padding: 0.5rem;
+  }
+
+  .image-grid-actions button,
+  .image-grid-overlay button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem;
+  }
+
+  .image-grid-selected-indicator {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+}
+
 @media (min-width: 1280px) {
   .image-browser-item {
     min-height: 380px;

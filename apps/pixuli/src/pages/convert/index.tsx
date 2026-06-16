@@ -102,7 +102,7 @@ export const ConvertPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full w-full overflow-auto p-6">
+    <div className="utility-page h-full w-full overflow-auto p-4 sm:p-6">
       <div className="mx-auto max-w-4xl">
         <h1 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
           {t('convertPage.title')}
@@ -222,7 +222,7 @@ export const ConvertPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="mb-6 flex gap-3">
+        <div className="utility-page-actions mb-6 flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
             onClick={handleConvert}

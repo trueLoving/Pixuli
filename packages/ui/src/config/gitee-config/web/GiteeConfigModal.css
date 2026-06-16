@@ -279,9 +279,24 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .gitee-config-modal-container {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .gitee-config-modal-content {
-    max-width: 100%;
-    margin: 0.5rem;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    max-height: none;
+    height: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .gitee-config-modal-header {
+    padding-top: max(1rem, env(safe-area-inset-top, 0));
   }
 
   .gitee-config-form-row {
@@ -297,5 +312,10 @@
   .gitee-config-modal-actions-right {
     width: 100%;
     justify-content: center;
+  }
+
+  .gitee-config-form-save-button,
+  .gitee-config-modal-actions button {
+    min-height: 2.75rem;
   }
 }
