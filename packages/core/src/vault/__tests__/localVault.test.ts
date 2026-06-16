@@ -102,6 +102,52 @@ describe('createLocalVault', () => {
     expect(listed[0].remotePath).toBe('a.jpg');
   });
 
+  it('upsertBindings merges bindings by id', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    const first = await vault.upsertBindings([
+      {
+        id: 'source-1',
+        label: 'GitHub',
+        pluginId: 'github',
+        remotePathPrefix: 'images',
+        localPathPrefix: 'images',
+        config: { owner: 'a', repo: 'b', token: 't', path: 'images' },
+      },
+    ]);
+    expect(first.bindings).toHaveLength(1);
+    expect(first.bindings[0].label).toBe('GitHub');
+
+    const second = await vault.upsertBindings([
+      {
+        id: 'source-1',
+        label: 'GitHub updated',
+        pluginId: 'github',
+        remotePathPrefix: 'photos',
+        localPathPrefix: 'photos',
+        config: { owner: 'a', repo: 'b', token: 't', path: 'photos' },
+      },
+      {
+        id: 'source-2',
+        label: 'Gitee',
+        pluginId: 'gitee',
+        remotePathPrefix: 'img',
+        localPathPrefix: 'img',
+        config: { owner: 'x', repo: 'y', token: 't', path: 'img' },
+      },
+    ]);
+    expect(second.bindings).toHaveLength(2);
+    expect(second.bindings.find(item => item.id === 'source-1')?.label).toBe(
+      'GitHub updated',
+    );
+
+    const reopened = createLocalVault(adapter);
+    await reopened.open();
+    expect(reopened.getConfig().bindings).toHaveLength(2);
+  });
+
   it('scan discovers files under images/', async () => {
     const adapter = new MemoryWorkspaceAdapter();
     const vault = createLocalVault(adapter);

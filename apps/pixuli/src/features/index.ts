@@ -7,3 +7,4 @@ export { OfflineIndicator } from './pwa/OfflineIndicator';
 export { PWAInstallPrompt } from './pwa/PWAInstallPrompt';
 export { SourceTypeMenu } from './source-type-menu/SourceTypeMenu';
 export { WorkspaceSetupPanel, WorkspaceToolbar } from './workspace';
+export { WorkspaceMigrationWizard } from './workspace';

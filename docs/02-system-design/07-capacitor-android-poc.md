@@ -156,15 +156,25 @@ pnpm build:android
 
 ### 4.3 Gitee 生产包
 
-壳内无同源 `/api/gitee-proxy`。构建时设置已部署 Web 站点根 URL：
+壳内无同源 `/api/gitee-proxy`。构建 **release APK**
+前设置已部署 Web 站点根 URL（须已启用 `api/gitee-proxy`）：
 
 ```bash
+# 仓库根目录或 apps/pixuli
 VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
-  pnpm build:android:sync
+  pnpm --filter pixuli-app build:android:release
 ```
 
-应用内 `resolveGiteeProviderContextFields()` 会将 Gitee 图片代理指向该站点的
+等价于先 `build:web`（注入 `import.meta.env.VITE_GITEE_PROXY_ORIGIN`）再
+`cap sync` + Gradle `assembleRelease`。应用内
+`resolveGiteeProviderContextFields()` 会将 Gitee 图片代理指向该站点的
 `/api/gitee-proxy`。
+
+**验证步骤**（#150）：
+
+1. 使用含 Gitee 源的测试仓库配置 APK
+2. 打开图床列表，确认缩略图可加载（非裂图）
+3. 打开预览并复制 Gitee 链接，确认可访问
 
 **GitHub 源**无需此变量，可直接冒烟。
 
@@ -182,7 +192,7 @@ VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
 | 场景               | 预期                             | 风险 / 备注                                                           |
 | ------------------ | -------------------------------- | --------------------------------------------------------------------- |
 | 启动与路由         | `BrowserRouter` + `homepage: ./` | Capacitor `https` scheme 下一般正常；深链待 REF-510                   |
-| 侧栏 / 窄屏        | 与 Web 同构（REF-601）           | `<768px` 汉堡抽屉需在真机验证触控目标                                 |
+| 侧栏 / 窄屏        | 与 Web 同构（REF-601）           | `<768px` 汉堡抽屉 + 全屏弹层（#150 ✅）                               |
 | 列表滚动           | 虚拟列表 + 懒加载                | 大图多时 WebView 内存与滚动帧率待测                                   |
 | 上传选图           | `<input type="file">`            | 系统文件选择器；相机/相册原生能力属 REF-510 #120                      |
 | PWA Service Worker | 构建仍生成 `sw.js`               | 壳内已隐藏 PWA UI；若 SW 干扰加载，后续可按 `isNativeMobile` 禁用注册 |

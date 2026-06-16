@@ -15,6 +15,7 @@ import {
 } from '@/storage/createProvider';
 import { LogActionType, LogStatus } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type {
   BatchUploadProgress,
   GiteeConfig,
@@ -61,6 +62,29 @@ interface ImageState {
   setError: (error: string | null) => void;
   clearError: () => void;
   setBatchUploadProgress: (progress: BatchUploadProgress | null) => void;
+}
+
+function isLocalListMode(): boolean {
+  return useWorkspaceStore.getState().isLocalActive();
+}
+
+async function refreshLocalIntoImageStore(
+  set: (partial: Partial<ImageState>) => void,
+): Promise<void> {
+  const workspace = useWorkspaceStore.getState();
+  set({ loading: true, error: null });
+  try {
+    await workspace.refreshLocalImages();
+    set({
+      images: useWorkspaceStore.getState().localImages,
+      loading: false,
+    });
+  } catch (error) {
+    set({
+      loading: false,
+      error: error instanceof Error ? error.message : '加载本地图片失败',
+    });
+  }
 }
 
 export const useImageStore = create<ImageState>((set, get) => {
@@ -168,6 +192,11 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     loadImages: async () => {
+      if (isLocalListMode()) {
+        await refreshLocalIntoImageStore(set);
+        return;
+      }
+
       const { storageProvider, storageType } = get();
 
       if (!storageProvider) {
@@ -206,6 +235,12 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadImage: async (uploadData: ImageUploadData) => {
+      if (isLocalListMode()) {
+        await useWorkspaceStore.getState().importLocalImage(uploadData);
+        await refreshLocalIntoImageStore(set);
+        return;
+      }
+
       const { storageProvider, storageType } = get();
       if (!storageProvider) {
         set({
@@ -251,6 +286,20 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
+      if (isLocalListMode()) {
+        const { files, name, description, tags } = uploadData;
+        for (const file of files) {
+          await useWorkspaceStore.getState().importLocalImage({
+            file,
+            name,
+            description,
+            tags,
+          });
+        }
+        await refreshLocalIntoImageStore(set);
+        return;
+      }
+
       const { storageProvider, storageType } = get();
       if (!storageProvider) {
         set({
@@ -403,6 +452,22 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     deleteImage: async (imageId: string, fileName: string) => {
+      if (isLocalListMode()) {
+        const image = get().images.find(img => img.id === imageId);
+        const relativePath = image?.localPath ?? fileName;
+        set({ loading: true, error: null });
+        try {
+          await useWorkspaceStore.getState().softDeleteLocal(relativePath);
+          await refreshLocalIntoImageStore(set);
+        } catch (error) {
+          set({
+            loading: false,
+            error: error instanceof Error ? error.message : '删除图片失败',
+          });
+        }
+        return;
+      }
+
       const { storageProvider, storageType } = get();
       if (!storageProvider) {
         set({
@@ -446,6 +511,31 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
+      if (isLocalListMode()) {
+        if (imageIds.length === 0) {
+          return;
+        }
+        set({ loading: true, error: null });
+        try {
+          const { images } = get();
+          for (const imageId of imageIds) {
+            const image = images.find(img => img.id === imageId);
+            if (image?.localPath) {
+              await useWorkspaceStore
+                .getState()
+                .softDeleteLocal(image.localPath);
+            }
+          }
+          await refreshLocalIntoImageStore(set);
+        } catch (error) {
+          set({
+            loading: false,
+            error: error instanceof Error ? error.message : '批量删除图片失败',
+          });
+        }
+        return;
+      }
+
       const { storageProvider, storageType } = get();
       if (!storageProvider) {
         set({
@@ -506,6 +596,47 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     updateImage: async (editData: ImageEditData) => {
       const { storageProvider, storageType, images } = get();
+      const image = images.find(img => img.id === editData.id);
+      if (!image) {
+        set({ error: '图片不存在', loading: false });
+        return;
+      }
+
+      if (isLocalListMode()) {
+        if (!image.localPath) {
+          set({ error: '本地路径缺失', loading: false });
+          return;
+        }
+        set({ loading: true, error: null });
+        const startTime = Date.now();
+        try {
+          await useWorkspaceStore
+            .getState()
+            .updateLocalMetadata(image.localPath, {
+              name: editData.name || image.name,
+              description: editData.description ?? image.description,
+              tags: editData.tags ?? image.tags,
+            });
+          await refreshLocalIntoImageStore(set);
+          useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
+            imageId: editData.id,
+            imageName: editData.name || image.name,
+            duration: Date.now() - startTime,
+          });
+        } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : '更新图片失败';
+          set({ error: errorMsg, loading: false });
+          useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
+            imageId: editData.id,
+            imageName: image.name,
+            error: errorMsg,
+            duration: Date.now() - startTime,
+          });
+        }
+        return;
+      }
+
       if (!storageProvider) {
         set({
           error: `${storagePluginLabel(storageType)} 配置未初始化`,
@@ -516,12 +647,6 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       if (!storageProvider.updateImageMetadata) {
         set({ error: '当前存储插件不支持更新元数据', loading: false });
-        return;
-      }
-
-      const image = images.find(img => img.id === editData.id);
-      if (!image) {
-        set({ error: '图片不存在', loading: false });
         return;
       }
 

@@ -272,25 +272,26 @@ Capacitor 功能对齐**阶段。
 
 父 Issue：[#163 REF-516](https://github.com/trueLoving/Pixuli/issues/163)
 
-| 阶段              | 范围                                                         | GitHub #                                                                                                                                                                  | 依赖              |
-| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅  |
-| **P1 L1 逻辑**    | ~~`imageStore` / `sourceStore` 抽取（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | —                 |
-| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           |
-| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            |
-| **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2                |
-| **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3 ✅ |
-| **P6 验收冒烟**   | Android 真机 parity 签收；更新 #118 §六 / #151 Checklist     | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4            |
-| **P7 归档与工程** | RN → `archive/`；`apps/pixuli` 工程整理；CI APK 发版         | [#151](https://github.com/trueLoving/Pixuli/issues/151)、[#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153) | P6                |
+| 阶段              | 范围                                                         | GitHub #                                                                                                                                                                  | 依赖              | 状态 |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---- |
+| **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅  | ✅   |
+| **P1 L1 逻辑**    | ~~`imageStore` / `sourceStore` 抽取（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | —                 | ❌   |
+| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           | ⬜   |
+| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            | ⬜   |
+| **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2                | ⬜   |
+| **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3 ✅ | ⬜   |
+| **P6 验收冒烟**   | Android 真机 parity 签收；更新 #118 §六 / #151 Checklist     | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4            | ⬜   |
+| **P7 归档与工程** | RN → `archive/`；`apps/pixuli` 工程整理；CI APK 发版         | [#151](https://github.com/trueLoving/Pixuli/issues/151)、[#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153) | P6                | ⬜   |
 
 **首项交付（✅）**：`apps/mobile/assets/images/` 品牌资源已同步至
 `apps/pixuli`（`pnpm sync:brand`；SSOT 见 `apps/pixuli/brand/README.md`）——Web
 favicon/PWA、Desktop 托盘、Capacitor
 Android 启动器与 splash 与 RN 一致（#167）。
 
-**建议顺序**：**#164** → **#150** → **#165** → **#119/#120/#141** →
+**建议顺序**：**#164** ✅ → **#150** → **#165** → **#119/#120/#141** →
 **#161**（REF-607 P1～P3 ✅ 后）→ **#166** → **#152/#153** →
-**#151**。REF-607 下一步：**#159**（`imageStore` local 模式）。
+**#151**。REF-607 下一步：**#160**（Web OPFS 工作区）；**#159** ✅（`imageStore`
+local 模式）。
 
 **与 REF-507～515 关系**：REF-512～515 仍保留计划编号；追踪统一归入
 [里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)，避免 M5 表与执行里程碑脱节。
@@ -1226,7 +1227,7 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 
 | 阶段 | 标题                                          | GitHub #                                                                                                                                                                  | 状态 |
 | ---- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| P0   | RN ↔ pixuli 功能对齐矩阵                     | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ⬜   |
+| P0   | RN ↔ pixuli 功能对齐矩阵                     | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ✅   |
 | P1   | ~~store / 持久化统一（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | ❌   |
 | P2   | 移动端 Web UI（REF-512）                      | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ⬜   |
 | P3   | 业务能力补齐（Capacitor）                     | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ⬜   |
@@ -1286,9 +1287,10 @@ debug；与 REF-409 版本标签策略对齐。
 Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 统一追踪 #150/#151 等与 #164/#165/#166（#117 已取消）。
 
-**建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** → **#150** →
+**建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** ✅ → **#150** →
 **#165** → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。REF-607
-**#156→#158** ✅；下一步 **#159**；**#161** 在 vault 契约就绪后接入。
+**#156→#158** ✅、**#159** ✅；下一步 **#160**；**#161**
+在 vault 契约就绪后接入。
 
 ---
 
@@ -1314,12 +1316,12 @@ Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 | P1      | Core 契约：`@pixuli/core/vault` 类型与单测          | [#156](https://github.com/trueLoving/Pixuli/issues/156) | ✅   |
 | P2      | Desktop PoC：选目录、本地列表、手动 push            | [#157](https://github.com/trueLoving/Pixuli/issues/157) | ✅   |
 | P3      | 索引与 pull：`index.json`、`scan()`、SyncEngine MVP | [#158](https://github.com/trueLoving/Pixuli/issues/158) | ✅   |
-| P4      | 应用切换：`imageStore` local 模式与迁移向导         | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ⬜   |
+| P4      | 应用切换：`imageStore` local 模式与迁移向导         | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ✅   |
 | P5      | Web：OPFS/IDB 虚拟工作区适配器                      | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ⬜   |
 | P6      | Mobile：SAF / Capacitor 工作区适配器                | [#161](https://github.com/trueLoving/Pixuli/issues/161) | ⬜   |
 
 **建议顺序**：M3/M4 基线稳定 → **#130** ✅（交互规范）→ **#144** / **#156→#158**
-✅（REF-607 P1～P3）→ **#159**（`imageStore` local 模式）→ **#131** ∥
+✅（REF-607 P1～P3）→ **#159** ✅（`imageStore` local 模式）→ **#131** ∥
 **#132**（UI 与性能可并行）→ **#140**（回收站）→ **#133** →
 **#134**（批处理依赖多选与元数据）。
 
@@ -1816,6 +1818,7 @@ flowchart LR
 | Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                                                                           |
 | 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                                                                      |
 | 三端代码共享矩阵              | REF-506 → [09-cross-platform-sharing-matrix.md](docs/02-system-design/09-cross-platform-sharing-matrix.md)                                                     |
+| Mobile 功能对齐矩阵（旅程级） | REF-516 P0 → [11-mobile-feature-parity-matrix.md](docs/02-system-design/11-mobile-feature-parity-matrix.md)（#164）                                            |
 | M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)                                                        |
 | AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                                                                         |
 | 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                                                                                  |

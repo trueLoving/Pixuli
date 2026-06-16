@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
 import { getDemoGitHubConfig, getDemoGiteeConfig } from '@pixuli/ui';
-import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
-import { useWorkspaceStore } from '../stores/workspaceStore';
 
 /**
  * 应用初始化相关的 hooks
@@ -66,14 +64,6 @@ export function useAppInitialization(
   useEffect(() => {
     // Demo 模式下不自动加载图片
     if (isDemoMode) {
-      return;
-    }
-
-    // 本地工作区模式由 workspaceStore.initialize 负责加载
-    if (
-      isDesktopWorkspaceAvailable() &&
-      useWorkspaceStore.getState().mode === 'local'
-    ) {
       return;
     }
 

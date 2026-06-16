@@ -459,9 +459,23 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .github-config-modal-container {
+    padding: 0;
+    align-items: stretch;
+  }
+
   .github-config-modal-content {
-    max-width: 100%;
-    margin: 0.5rem;
+    max-width: none;
+    width: 100%;
+    max-height: none;
+    height: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .github-config-modal-header {
+    padding-top: max(1rem, env(safe-area-inset-top, 0));
   }
 
   .github-config-form-row {
@@ -477,5 +491,10 @@
   .github-config-modal-actions-right {
     width: 100%;
     justify-content: center;
+  }
+
+  .github-config-form-save-button,
+  .github-config-modal-actions button {
+    min-height: 2.75rem;
   }
 }

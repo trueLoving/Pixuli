@@ -7,6 +7,7 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useI18n } from '@/i18n/useI18n';
 
@@ -27,6 +28,14 @@ function formatSyncTime(
 export const WorkspaceSetupPanel: React.FC = () => {
   const { t } = useI18n();
   const { pickWorkspace, loading, error } = useWorkspaceStore();
+  const loadImages = useImageStore(state => state.loadImages);
+
+  const handlePick = async () => {
+    const ok = await pickWorkspace();
+    if (ok) {
+      await loadImages();
+    }
+  };
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -38,7 +47,7 @@ export const WorkspaceSetupPanel: React.FC = () => {
         <p className="text-sm text-gray-600 mb-6">{t('workspace.setupHint')}</p>
         <button
           type="button"
-          onClick={() => void pickWorkspace()}
+          onClick={() => void handlePick()}
           disabled={loading}
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
         >
@@ -70,7 +79,9 @@ export const WorkspaceToolbar: React.FC = () => {
     runSync,
     scanWorkspace,
     clearError,
+    setRemoteOnlyMode,
   } = useWorkspaceStore();
+  const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
   const busy = pushing || syncing;
@@ -170,6 +181,18 @@ export const WorkspaceToolbar: React.FC = () => {
           {t('workspace.pushNeedsRemote')}
         </p>
       )}
+      <div className="mt-3 border-t border-gray-200 pt-3">
+        <button
+          type="button"
+          onClick={() => {
+            setRemoteOnlyMode();
+            void loadImages();
+          }}
+          className="text-xs text-gray-500 hover:text-gray-800 hover:underline"
+        >
+          {t('workspace.switchRemoteOnly')}
+        </button>
+      </div>
     </div>
   );
 };

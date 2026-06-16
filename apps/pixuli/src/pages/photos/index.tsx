@@ -1,9 +1,12 @@
 import { useSearchContextSafe } from '@/contexts/SearchContext';
 import { ImageContent } from '@/features/image-content/ImageContent';
-import { WorkspaceSetupPanel, WorkspaceToolbar } from '@/features/workspace';
+import {
+  WorkspaceMigrationWizard,
+  WorkspaceSetupPanel,
+  WorkspaceToolbar,
+} from '@/features/workspace';
 import { useImageOperations } from '@/hooks/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
-import { isDesktopWorkspaceAvailable } from '@/platforms/desktop/workspaceAdapter';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -18,31 +21,21 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   onOpenConfigModal,
 }) => {
   const { t } = useI18n();
-  const remoteImages = useImageStore(state => state.images);
-  const remoteLoading = useImageStore(state => state.loading);
-  const remoteError = useImageStore(state => state.error);
-  const clearRemoteError = useImageStore(state => state.clearError);
+  const images = useImageStore(state => state.images);
+  const loading = useImageStore(state => state.loading);
+  const error = useImageStore(state => state.error);
+  const clearError = useImageStore(state => state.clearError);
   const { sources } = useSourceStore();
-  const workspaceMode = useWorkspaceStore(state => state.mode);
-  const localImages = useWorkspaceStore(state => state.localImages);
-  const workspaceLoading = useWorkspaceStore(state => state.loading);
-  const workspaceError = useWorkspaceStore(state => state.error);
-  const clearWorkspaceError = useWorkspaceStore(state => state.clearError);
-  const softDeleteLocal = useWorkspaceStore(state => state.softDeleteLocal);
+  const needsSetup = useWorkspaceStore(state => state.needsWorkspaceSetup());
+  const localActive = useWorkspaceStore(state => state.isLocalActive());
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
   const searchContext = useSearchContextSafe();
   const searchContextRef = useRef(searchContext);
 
-  const desktopWorkspace = isDesktopWorkspaceAvailable();
-  const localActive = desktopWorkspace && workspaceMode === 'local';
-  const needsSetup = desktopWorkspace && workspaceMode === 'unset';
-
-  const images = localActive ? localImages : remoteImages;
-  const loading = localActive ? workspaceLoading : remoteLoading;
-  const error = localActive ? workspaceError : remoteError;
-  const clearError = localActive ? clearWorkspaceError : clearRemoteError;
-  const hasConfig = localActive ? true : sources.length > 0;
+  const showMigration = needsSetup && sources.length > 0;
+  const showSetup = needsSetup && sources.length === 0;
+  const hasConfig = sources.length > 0 || localActive;
 
   useEffect(() => {
     searchContextRef.current = searchContext;
@@ -88,34 +81,15 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     return filterImages(images, searchContext.filters);
   }, [images, searchContext]);
 
-  const onDeleteImage = async (imageId: string, fileName: string) => {
-    if (localActive) {
-      const target = images.find(img => img.id === imageId);
-      if (target?.localPath) {
-        await softDeleteLocal(target.localPath);
-      }
-      return;
-    }
-    await handleDeleteImage(imageId, fileName);
-  };
+  if (showMigration) {
+    return (
+      <div className="photos-page h-full flex flex-col overflow-hidden">
+        <WorkspaceMigrationWizard />
+      </div>
+    );
+  }
 
-  const onDeleteMultipleImages = async (
-    imageIds: string[],
-    fileNames: string[],
-  ) => {
-    if (localActive) {
-      for (const id of imageIds) {
-        const target = images.find(img => img.id === id);
-        if (target?.localPath) {
-          await softDeleteLocal(target.localPath);
-        }
-      }
-      return;
-    }
-    await handleDeleteMultipleImages(imageIds, fileNames);
-  };
-
-  if (needsSetup) {
+  if (showSetup) {
     return (
       <div className="photos-page h-full flex flex-col overflow-hidden">
         <WorkspaceSetupPanel />
@@ -137,8 +111,8 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
           onClearError={clearError}
           images={filteredImages}
           loading={loading}
-          onDeleteImage={onDeleteImage}
-          onDeleteMultipleImages={onDeleteMultipleImages}
+          onDeleteImage={handleDeleteImage}
+          onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
           onOpenConfigModal={onOpenConfigModal}
           t={t}

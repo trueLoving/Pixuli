@@ -90,6 +90,16 @@
     "syncNever": "Never synced",
     "pendingPush": "Pending push {{count}}",
     "conflicts": "Conflicts {{count}}",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "migrationTitle": "Upgrade to local workspace",
+    "migrationHint": "You have {{count}} remote source(s). Choose how to continue:",
+    "migrationLocalTitle": "Use a local folder",
+    "migrationLocalHint": "Pick a folder as your workspace. Existing remote sources will be bound for sync.",
+    "migrationPickFolder": "Choose folder and continue",
+    "migrationPullAfter": "Pull all images from remote after setup (may take a while)",
+    "migrationRemoteTitle": "Keep remote-only browsing",
+    "migrationRemoteHint": "Continue listing images directly from GitHub/Gitee without a local folder.",
+    "migrationRemoteOnly": "Continue with remote only",
+    "switchRemoteOnly": "Switch to remote-only browsing"
   }
 }

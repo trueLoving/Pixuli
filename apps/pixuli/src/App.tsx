@@ -4,6 +4,7 @@ import './App.css';
 import { SearchProvider } from './contexts/SearchContext';
 import {
   useAppInitialization,
+  useCapacitorBackButton,
   useConfigManagement,
   useKeyboardShortcuts,
   useSelectedSourceSync,
@@ -23,17 +24,19 @@ function App() {
   const { t } = useI18n();
   const { loadImages, uploadImage, uploadMultipleImages } = useImageStore();
   const initializeWorkspace = useWorkspaceStore(state => state.initialize);
-  const isLocalActive = useWorkspaceStore(state => state.isLocalActive);
-  const importLocalImage = useWorkspaceStore(state => state.importLocalImage);
-  const refreshLocalImages = useWorkspaceStore(
-    state => state.refreshLocalImages,
-  );
+  const workspaceMode = useWorkspaceStore(state => state.mode);
 
   useEffect(() => {
-    if (isDesktopWorkspaceAvailable()) {
-      void initializeWorkspace();
+    if (!isDesktopWorkspaceAvailable()) {
+      return;
     }
-  }, [initializeWorkspace]);
+    void initializeWorkspace().then(() => {
+      const mode = useWorkspaceStore.getState().mode;
+      if (mode === 'local' || mode === 'remote-only') {
+        void loadImages();
+      }
+    });
+  }, [initializeWorkspace, loadImages]);
 
   const { sources, selectedSourceId } = useSourceStore();
 
@@ -74,52 +77,20 @@ function App() {
   // 配置管理
   const { handleSaveConfig, handleClearConfig } = useConfigManagement();
 
-  const workspaceMode = useWorkspaceStore(state => state.mode);
-
   const hasConfig =
     sources.length > 0 ||
     (isDesktopWorkspaceAvailable() && workspaceMode === 'local');
 
   const handleLoadImages = useCallback(async () => {
     try {
-      if (isLocalActive()) {
-        await refreshLocalImages();
-        return;
-      }
       await loadImages();
     } catch (error) {
       console.error('Failed to load images:', error);
     }
-  }, [isLocalActive, refreshLocalImages, loadImages]);
+  }, [loadImages]);
 
-  const handleUploadImage = useCallback(
-    async (data: Parameters<typeof uploadImage>[0]) => {
-      if (isLocalActive()) {
-        await importLocalImage(data);
-        return;
-      }
-      await uploadImage(data);
-    },
-    [isLocalActive, importLocalImage, uploadImage],
-  );
-
-  const handleUploadMultipleImages = useCallback(
-    async (data: Parameters<typeof uploadMultipleImages>[0]) => {
-      if (isLocalActive()) {
-        for (const file of data.files) {
-          await importLocalImage({
-            file,
-            name: data.name,
-            description: data.description,
-            tags: data.tags,
-          });
-        }
-        return;
-      }
-      await uploadMultipleImages(data);
-    },
-    [isLocalActive, importLocalImage, uploadMultipleImages],
-  );
+  const handleUploadImage = uploadImage;
+  const handleUploadMultipleImages = uploadMultipleImages;
 
   // 保存配置（包装以包含 editingSourceId）
   const handleSaveConfigWithId = useMemo(
@@ -157,7 +128,7 @@ function App() {
 
   // 同步选中源到配置，并在同步后加载图片
   useSelectedSourceSync(selectedSource ?? null, () => {
-    if (isLocalActive()) {
+    if (useWorkspaceStore.getState().isLocalActive()) {
       return;
     }
     if (sources.length > 0 && selectedSource) {
@@ -167,6 +138,9 @@ function App() {
 
   // 应用初始化
   useAppInitialization(isDemoMode, hasConfig, handleLoadImages);
+
+  // Capacitor Android 返回键（REF-512 #150）
+  useCapacitorBackButton();
 
   // 键盘快捷键
   useKeyboardShortcuts(
