@@ -1,8 +1,8 @@
 # Pixuli 重构计划
 
 > **版本**：2.0  
-> **更新**：2026-05-27（REF-607 P1～P3 ✅；REF-516 品牌资源同步 ✅；REF-507/#117
-> ❌ 取消——`apps/pixuli` 单工程三端同构，无需抽离 store）  
+> **更新**：2026-06-16（REF-607 补充 P7：Gitee 图片代理退役与 local-only 收官；REF-607 P4
+> ✅）  
 > **状态**：执行中
 
 本文档是仓库级重构的**总览与 Issue 追踪表**。详细设计见 `.local/`
@@ -290,8 +290,8 @@ Android 启动器与 splash 与 RN 一致（#167）。
 
 **建议顺序**：**#164** ✅ → **#150** → **#165** → **#119/#120/#141** →
 **#161**（REF-607 P1～P3 ✅ 后）→ **#166** → **#152/#153** →
-**#151**。REF-607 下一步：**#160**（Web OPFS 工作区）；**#159** ✅（`imageStore`
-local 模式）。
+**#151**。REF-607 下一步：**#160**（Web OPFS）→ **#161**（Mobile SAF）→
+**P7**（Gitee 代理退役）；**#159** ✅（`imageStore` local 模式）。
 
 **与 REF-507～515 关系**：REF-512～515 仍保留计划编号；追踪统一归入
 [里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)，避免 M5 表与执行里程碑脱节。
@@ -369,12 +369,13 @@ Gitee 等远端。在线浏览与「复制链接」时，按**当前绑定的远
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-| 概念           | 说明                                                                                                                                                                                               |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **本地工作区** | 用户选择的文件夹；Desktop 为真实路径；Mobile 为应用沙箱或用户授权目录；Web/PWA 为 OPFS / IndexedDB 等**受控本地持久化**（能力边界见 M5 REF-503）                                                   |
-| **远端绑定**   | 在工作区内为「相册/子路径」绑定一个 `StorageProvider` 配置（owner/repo/path 等），类似 Obsidian 里为库配置 Git 或 Publish                                                                          |
-| **同步**       | 本地变更 → 插件上传；远端变更 → 拉取合并；需定义冲突与离线队列（REF-607）                                                                                                                          |
-| **URL 形态**   | **本地预览**：`file://` / 应用内 blob URI（仅本机）；**远端直链**：Provider 构建（GitHub `raw`、Gitee raw + 代理）；**对外分享**：复制给用户的是**当前绑定远端**下的公网 URL，不同服务链接格式不同 |
+| 概念           | 说明                                                                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **本地工作区** | 用户选择的文件夹；Desktop 为真实路径；Mobile 为应用沙箱或用户授权目录；Web/PWA 为 OPFS / IndexedDB 等**受控本地持久化**（能力边界见 M5 REF-503）                                     |
+| **远端绑定**   | 在工作区内为「相册/子路径」绑定一个 `StorageProvider` 配置（owner/repo/path 等），类似 Obsidian 里为库配置 Git 或 Publish                                                            |
+| **同步**       | 本地变更 → 插件上传；远端变更 → 拉取合并；需定义冲突与离线队列（REF-607）                                                                                                            |
+| **URL 形态**   | **本地预览**：`file://` / 应用内 blob URI（仅本机）；**对外分享**：`buildPublicUrl` 返回各远端**公网直链**（GitHub/Gitee raw）；**不再**经站点 `/api/gitee-proxy` 预览（见 §10.7.6） |
+| **浏览模式**   | **仅 local**（终态）：列表与预览以本地 Vault 为 SSOT；**废弃** `remote-only` 直连远端列表；未 pull 条目显示「待同步」而非拉远端图                                                    |
 
 **与现状（M3）关系**：
 
@@ -387,12 +388,12 @@ Gitee 等远端。在线浏览与「复制链接」时，按**当前绑定的远
 
 **Obsidian 对照（产品语义，非实现拷贝）**：
 
-| Obsidian              | Pixuli（规划）                                  |
-| --------------------- | ----------------------------------------------- |
-| 本地 Vault 文件夹     | 本地工作区目录                                  |
-| 社区插件 / Sync / Git | `StorageProvider` 同步插件（官方 GitHub/Gitee） |
-| 对外发布 URL          | Provider 返回的 raw / 代理 URL，按服务不同      |
-| 仅本地打开            | 本地路径预览，不暴露公网链接                    |
+| Obsidian              | Pixuli（规划）                                     |
+| --------------------- | -------------------------------------------------- |
+| 本地 Vault 文件夹     | 本地工作区目录                                     |
+| 社区插件 / Sync / Git | `StorageProvider` 同步插件（官方 GitHub/Gitee）    |
+| 对外发布 URL          | Provider `buildPublicUrl` 公网直链（不经站点代理） |
+| 仅本地打开            | 本地路径预览，不暴露公网链接                       |
 
 **Issue**：详细交互与接口见 **§10.7
 REF-607**；与 REF-601（三端交互）、REF-603（大库性能）、REF-606（回收站本地+远端）强相关。
@@ -1289,8 +1290,8 @@ Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 
 **建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** ✅ → **#150** →
 **#165** → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。REF-607
-**#156→#158** ✅、**#159** ✅；下一步 **#160**；**#161**
-在 vault 契约就绪后接入。
+**#156→#158** ✅、**#159** ✅；下一步 **#160** → **#161** →
+**P7**（代理退役与 local-only 收官）。
 
 ---
 
@@ -1310,18 +1311,20 @@ Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 
 设计 SSOT：[10-local-workspace-sync.md §九](docs/02-system-design/10-local-workspace-sync.md#九分阶段交付)
 
-| 阶段    | 标题                                                | GitHub #                                                | 状态 |
-| ------- | --------------------------------------------------- | ------------------------------------------------------- | ---- |
-| P0 设计 | 技术设计：LocalVault + SyncEngine + Provider 扩展   | [#155](https://github.com/trueLoving/Pixuli/issues/155) | ✅   |
-| P1      | Core 契约：`@pixuli/core/vault` 类型与单测          | [#156](https://github.com/trueLoving/Pixuli/issues/156) | ✅   |
-| P2      | Desktop PoC：选目录、本地列表、手动 push            | [#157](https://github.com/trueLoving/Pixuli/issues/157) | ✅   |
-| P3      | 索引与 pull：`index.json`、`scan()`、SyncEngine MVP | [#158](https://github.com/trueLoving/Pixuli/issues/158) | ✅   |
-| P4      | 应用切换：`imageStore` local 模式与迁移向导         | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ✅   |
-| P5      | Web：OPFS/IDB 虚拟工作区适配器                      | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ⬜   |
-| P6      | Mobile：SAF / Capacitor 工作区适配器                | [#161](https://github.com/trueLoving/Pixuli/issues/161) | ⬜   |
+| 阶段    | 标题                                                                | GitHub #                                                | 状态 |
+| ------- | ------------------------------------------------------------------- | ------------------------------------------------------- | ---- |
+| P0 设计 | 技术设计：LocalVault + SyncEngine + Provider 扩展                   | [#155](https://github.com/trueLoving/Pixuli/issues/155) | ✅   |
+| P1      | Core 契约：`@pixuli/core/vault` 类型与单测                          | [#156](https://github.com/trueLoving/Pixuli/issues/156) | ✅   |
+| P2      | Desktop PoC：选目录、本地列表、手动 push                            | [#157](https://github.com/trueLoving/Pixuli/issues/157) | ✅   |
+| P3      | 索引与 pull：`index.json`、`scan()`、SyncEngine MVP                 | [#158](https://github.com/trueLoving/Pixuli/issues/158) | ✅   |
+| P4      | 应用切换：`imageStore` local 模式与迁移向导                         | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ✅   |
+| P5      | Web：OPFS/IDB 虚拟工作区适配器                                      | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ⬜   |
+| P6      | Mobile：SAF / Capacitor 工作区适配器                                | [#161](https://github.com/trueLoving/Pixuli/issues/161) | ⬜   |
+| P7      | **收官**：Gitee 图片代理退役 + `remote-only` 移除 + local-only 锁死 | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⬜   |
 
 **建议顺序**：M3/M4 基线稳定 → **#130** ✅（交互规范）→ **#144** / **#156→#158**
-✅（REF-607 P1～P3）→ **#159** ✅（`imageStore` local 模式）→ **#131** ∥
+✅（REF-607 P1～P3）→ **#159** ✅（`imageStore` local 模式）→ **#160** /
+**#161** （三端工作区适配器）→ **P7**（代理退役，依赖 P5+P6）→ **#131** ∥
 **#132**（UI 与性能可并行）→ **#140**（回收站）→ **#133** →
 **#134**（批处理依赖多选与元数据）。
 
@@ -1700,14 +1703,52 @@ for 用户可见库）；远端是**可插拔的同步目标**，不是唯一数
 
 在现有 `StorageProvider` 上演进（不必另起一套插件名）：
 
-| 能力                | 说明                                                                                    |
-| ------------------- | --------------------------------------------------------------------------------------- |
-| **sync.push**       | 本地新增/修改/删除 → 映射为 Contents API 操作                                           |
-| **sync.pull**       | 远端变更 → 更新本地文件与索引                                                           |
-| **buildPublicUrl**  | 按服务返回不同形态：GitHub raw、Gitee raw、Gitee 经 `api/gitee-proxy` 的站点相对 URL 等 |
-| **resolveLinkKind** | 区分 `local` / `remote-raw` / `remote-proxy`，供 UI「复制链接」菜单                     |
+| 能力                | 说明                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
+| **sync.push**       | 本地新增/修改/删除 → 映射为 Contents API 操作                                 |
+| **sync.pull**       | 远端变更 → 更新本地文件与索引                                                 |
+| **buildPublicUrl**  | 各远端**公网直链**（GitHub raw、Gitee raw）；不经站点代理；仅用于「复制链接」 |
+| **resolveLinkKind** | 区分 `local` / `remote-raw`；`remote-proxy` 在 P7 后删除                      |
 
-**UI 规则**：未绑定远端或仅本地的条目，只提供本地打开/导出；已同步且 Provider 支持公网 raw 的，提供**与当前服务一致的**在线 URL（用户粘贴到 Markdown 时应得到可外链地址）。
+**UI 规则**：未绑定远端或仅本地的条目，只提供本地打开/导出；已同步且 Provider 支持公网 raw 的，提供**与当前服务一致的**在线 URL（用户粘贴到 Markdown 时应得到可外链地址）。**预览**一律走本地 Vault（`blob:`
+/ `file:`），不拼远端 raw 或代理 URL。
+
+#### 10.7.6 Gitee 图片代理退役（REF-607 P7）
+
+**背景**：Gitee raw URL 在浏览器 `<img>`
+中受 CORS 限制，M3 引入站点同源代理（Vite dev / Vercel `api/gitee-proxy` /
+Electron `127.0.0.1` / Capacitor `VITE_GITEE_PROXY_ORIGIN`）。该能力是
+**remote-only 远端浏览**的补丁，与 local-first 终态冲突，且每增一种「raw CDN +
+CORS」图床都会复制一套 Host 集成——**不可作为新 Provider（Google
+Drive、OneDrive 等）的模板**。
+
+**产品决策**：
+
+| 项          | 终态                                                                |
+| ----------- | ------------------------------------------------------------------- |
+| 浏览数据源  | **仅 local**；废弃 `remote-only`                                    |
+| 图片预览    | LocalVault → `blob:` / `file:`；未 pull 显示「待同步」              |
+| 对外分享    | `buildPublicUrl` → 各平台公网直链（不经 Pixuli 代理）               |
+| 新 Provider | 只实现 Sync API（OAuth/REST push-pull）；**禁止**引入同源图片代理层 |
+
+**前置条件**（P7 开工前须满足）：P5 Web OPFS（#160）✅ · P6 Mobile SAF（#161）✅
+· 三端 `imageStore` 默认 local · 预览路径审计无代理 URL 依赖。
+
+**P7 交付（删除，非长期兼容）**：
+
+| 层级       | 移除范围（示例）                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| Host       | `viteGiteeProxyPlugin`、`startGiteeProxyServer`、Vercel `api/gitee-proxy`、`giteeProxyBase` / `window.giteeProxyBase` |
+| Provider   | `useProxy`、`proxyBaseUrl`、`GITEE_PROXY_PATH` 拼预览 URL；`needsProxy` 能力位                                        |
+| 应用       | `VITE_GITEE_PROXY_ORIGIN`、Capacitor 代理 env、Renderer 代理分支                                                      |
+| 文档/Skill | `gitee-host-integration` skill 退役或改为「历史说明」                                                                 |
+
+**保留**：`GiteeStorageProvider` 的 Contents
+API（list/upload/delete/sync）、token、仓库配置；`buildPublicUrl`
+返回 Gitee 公网 raw 直链（供用户复制到 Markdown，非应用内预览）。
+
+**扩展原则**：未来 Google Drive / OneDrive 等走 **StorageProvider + SyncEngine**
+统一抽象；内容经 API 同步至 LocalVault，预览读本地字节——与 Gitee Proxy 无关。
 
 #### 10.7.4 三端差异
 
@@ -1804,31 +1845,31 @@ flowchart LR
 
 ## 七、相关文档
 
-| 文档                          | 位置                                                                                                                                                           |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                                                                       |
-| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                                                                                 |
-| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                                                                            |
-| 插件体系设计                  | `.local/插件体系设计.md`                                                                                                                                       |
-| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                                                                                 |
-| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                                                                               |
-| Capacitor Android PoC         | [07-capacitor-android-poc.md](docs/02-system-design/07-capacitor-android-poc.md)（REF-509 #118）                                                               |
-| 三端融合与 Mobile 对齐        | REF-516 → **§1.10**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163)；§1.9、REF-512～515 |
-| TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410）                                                      |
-| Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                                                                           |
-| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                                                                      |
-| 三端代码共享矩阵              | REF-506 → [09-cross-platform-sharing-matrix.md](docs/02-system-design/09-cross-platform-sharing-matrix.md)                                                     |
-| Mobile 功能对齐矩阵（旅程级） | REF-516 P0 → [11-mobile-feature-parity-matrix.md](docs/02-system-design/11-mobile-feature-parity-matrix.md)（#164）                                            |
-| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)                                                        |
-| AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                                                                         |
-| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                                                                                  |
-| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                                                                                   |
-| 三端交互规范                  | REF-601 → [04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)                                                       |
-| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                                                                                 |
-| 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                                                                              |
-| 本地库与远端同步              | REF-607 → [10-local-workspace-sync.md](docs/02-system-design/10-local-workspace-sync.md)、§1.8、§10.7、[#144](https://github.com/trueLoving/Pixuli/issues/144) |
-| 移动端拍照元数据（计划）      | REF-511 → [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                                              |
-| 版本发布策略                  | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)（REF-409）                                                                                |
+| 文档                          | 位置                                                                                                                                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 仓库简化方案（修订）          | `.local/仓库简化方案.md`                                                                                                                                                           |
+| 功能分层与裁剪                | `.local/功能分层与裁剪清单.md`                                                                                                                                                     |
+| core / ui 拆分                | `.local/common拆分方案-core与ui.md`                                                                                                                                                |
+| 插件体系设计                  | `.local/插件体系设计.md`                                                                                                                                                           |
+| 执行 Checklist                | `.local/简化执行-checklist.md`                                                                                                                                                     |
+| 三端统一 / Mobile 融入 pixuli | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)                                                                                                   |
+| Capacitor Android PoC         | [07-capacitor-android-poc.md](docs/02-system-design/07-capacitor-android-poc.md)（REF-509 #118）                                                                                   |
+| 三端融合与 Mobile 对齐        | REF-516 → **§1.10**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163)；§1.9、REF-512～515                     |
+| TS/JS 策略                    | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)（REF-410）                                                                          |
+| Workspace 包消费策略          | REF-416 → REFACTOR_PLAN **§9.5**（exports conditions + dist 分阶段）                                                                                                               |
+| 插件 Host 集成（计划）        | REF-411 → 扩展 [04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md) §第二部分                                                                                          |
+| 三端代码共享矩阵              | REF-506 → [09-cross-platform-sharing-matrix.md](docs/02-system-design/09-cross-platform-sharing-matrix.md)                                                                         |
+| Mobile 功能对齐矩阵（旅程级） | REF-516 P0 → [11-mobile-feature-parity-matrix.md](docs/02-system-design/11-mobile-feature-parity-matrix.md)（#164）                                                                |
+| M3 存储回归清单               | [04-Plugin-System.md §第三部分](docs/02-system-design/04-Plugin-System.md#第三部分-m3-存储插件回归清单)                                                                            |
+| AI Agent / Skill              | [AGENTS.md](AGENTS.md)（REF-414）、`.cursor/rules/`、`.cursor/skills/`                                                                                                             |
+| 产品 Backlog（已移除/延后）   | [docs/backlog.md](docs/backlog.md)（REF-402）                                                                                                                                      |
+| 文档国际化策略（计划）        | REF-415 → §1.7、`docs/en/` 镜像与 `13-documentation-i18n.md`                                                                                                                       |
+| 三端交互规范                  | REF-601 → [04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)                                                                           |
+| 性能边界（计划）              | REF-603 → `docs/02-system-design/12-performance-boundaries.md`                                                                                                                     |
+| 回收站机制（计划）            | REF-606 → [#140](https://github.com/trueLoving/Pixuli/issues/140)                                                                                                                  |
+| 本地库与远端同步              | REF-607 → [10-local-workspace-sync.md](docs/02-system-design/10-local-workspace-sync.md)（含 §8.1 代理退役）、§1.8、§10.7、[#144](https://github.com/trueLoving/Pixuli/issues/144) |
+| 移动端拍照元数据（计划）      | REF-511 → [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                                                                  |
+| 版本发布策略                  | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)（REF-409）                                                                                                    |
 
 > 建议：M4 中将 `.local` 核心内容迁入
 > `docs/architecture/`，便于协作者不依赖本地文件（可纳入 REF-407）。
