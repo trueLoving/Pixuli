@@ -1,0 +1,135 @@
+/* 侧栏演示模式（REF-512 移动端菜单） */
+.sidebar-demo-section {
+  margin: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e9d5ff;
+  background: linear-gradient(180deg, #faf5ff 0%, #f5f3ff 100%);
+  flex-shrink: 0;
+}
+
+.sidebar-demo-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-demo-section-icon {
+  color: #7c3aed;
+  flex-shrink: 0;
+}
+
+.sidebar-demo-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4c1d95;
+}
+
+.sidebar-demo-section-badge {
+  margin-left: auto;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: #e9d5ff;
+  color: #6b21a8;
+}
+
+.sidebar-demo-section-desc {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #5b21b6;
+}
+
+.sidebar-demo-section-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.sidebar-demo-section-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-demo-download-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-demo-download-btn:hover {
+  background: #f9fafb;
+}
+
+.sidebar-demo-gitee-icon {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.sidebar-demo-download-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.sidebar-demo-download-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.sidebar-demo-download-desc {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.sidebar-demo-exit-btn {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-demo-exit-btn:hover {
+  background: #fef2f2;
+}

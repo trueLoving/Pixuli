@@ -813,6 +813,8 @@
     max-width: min(85vw, 280px);
     height: 100%;
     height: 100dvh;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
     transform: translateX(-100%);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;

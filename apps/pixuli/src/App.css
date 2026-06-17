@@ -449,6 +449,11 @@ body {
 
 /* 工具页窄屏排版（REF-512 #150） */
 @media (max-width: 767px) {
+  .photos-page {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+
   .utility-page {
     padding-left: max(1rem, env(safe-area-inset-left, 0));
     padding-right: max(1rem, env(safe-area-inset-right, 0));

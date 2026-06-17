@@ -37,6 +37,65 @@ interface ImageGridProps {
   t: (key: string) => string;
 }
 
+interface ImageGridActionsProps {
+  image: ImageItem;
+  translate: (key: string) => string;
+  onPreview: (image: ImageItem) => void;
+  onViewUrl: (image: ImageItem) => void;
+  onEdit: (image: ImageItem) => void;
+  onDelete: (image: ImageItem) => void;
+}
+
+function ImageGridActions({
+  image,
+  translate,
+  onPreview,
+  onViewUrl,
+  onEdit,
+  onDelete,
+}: ImageGridActionsProps) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onPreview(image)}
+        className="image-action-button"
+        title={translate('image.grid.preview')}
+        aria-label={translate('image.grid.preview')}
+      >
+        <Eye className="image-action-icon" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onViewUrl(image)}
+        className="image-action-button"
+        title={translate('image.grid.viewUrl')}
+        aria-label={translate('image.grid.viewUrl')}
+      >
+        <Link className="image-action-icon" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onEdit(image)}
+        className="image-action-button"
+        title={translate('image.grid.edit')}
+        aria-label={translate('image.grid.edit')}
+      >
+        <Edit className="image-action-icon" />
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(image)}
+        className="image-action-button image-action-button--danger"
+        title={translate('image.grid.delete')}
+        aria-label={translate('image.grid.delete')}
+      >
+        <Trash2 className="image-action-icon" />
+      </button>
+    </>
+  );
+}
+
 const ImageGridComponent: React.FC<ImageGridProps> = ({
   images,
   className = '',
@@ -352,42 +411,37 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
               }}
             />
 
-            {/* 操作按钮 */}
+            {/* 桌面端：悬停操作层 */}
             <div
               className="image-grid-overlay"
               onClick={e => e.stopPropagation()}
             >
               <div className="image-grid-actions">
-                <button
-                  onClick={() => handlePreview(image)}
-                  className="image-action-button"
-                  title={translate('image.grid.preview')}
-                >
-                  <Eye className="image-action-icon" />
-                </button>
-                <button
-                  onClick={() => handleViewUrl(image)}
-                  className="image-action-button"
-                  title={translate('image.grid.viewUrl')}
-                >
-                  <Link className="image-action-icon" />
-                </button>
-                <button
-                  onClick={() => handleEdit(image)}
-                  className="image-action-button"
-                  title={translate('image.grid.edit')}
-                >
-                  <Edit className="image-action-icon" />
-                </button>
-                <button
-                  onClick={() => handleDelete(image)}
-                  className="image-action-button"
-                  title={translate('image.grid.delete')}
-                >
-                  <Trash2 className="image-action-icon" />
-                </button>
+                <ImageGridActions
+                  image={image}
+                  translate={translate}
+                  onPreview={handlePreview}
+                  onViewUrl={handleViewUrl}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               </div>
             </div>
+          </div>
+
+          {/* 窄屏：缩略图下方操作栏（不遮挡图片） */}
+          <div
+            className="image-grid-actions-mobile"
+            onClick={e => e.stopPropagation()}
+          >
+            <ImageGridActions
+              image={image}
+              translate={translate}
+              onPreview={handlePreview}
+              onViewUrl={handleViewUrl}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
 
           {/* 图片信息 */}

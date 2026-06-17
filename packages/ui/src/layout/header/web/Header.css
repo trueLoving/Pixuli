@@ -300,16 +300,37 @@
   flex-shrink: 0;
 }
 
+.header-search-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-search-slot--mobile {
+  max-width: none;
+}
+
+.header-search-slot .search-wrapper--header {
+  width: 100%;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .app-header {
     padding: 0 1rem;
+    padding-left: max(1rem, env(safe-area-inset-left, 0));
+    padding-right: max(1rem, env(safe-area-inset-right, 0));
     gap: 1rem;
+  }
+
+  .header-button.icon-only {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .header-left {
     flex: 1;
     min-width: 0;
+    gap: 0.5rem;
   }
 
   .header-left .search-bar {

@@ -12,3 +12,7 @@ export {
   isEnvConfigured,
 } from './Demo';
 export { default as DemoIcon } from './DemoIcon';
+export {
+  default as DemoSidebarSection,
+  type DemoSidebarSectionProps,
+} from './DemoSidebarSection';

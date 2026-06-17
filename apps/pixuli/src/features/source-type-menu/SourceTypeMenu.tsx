@@ -5,6 +5,7 @@ import {
 } from '@pixuli/core/plugins';
 import { Github, X } from 'lucide-react';
 import React from 'react';
+import './SourceTypeMenu.css';
 
 interface SourceTypeMenuProps {
   isOpen: boolean;
@@ -63,21 +64,35 @@ export const SourceTypeMenu: React.FC<SourceTypeMenuProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
+    <div
+      className="source-type-menu-overlay fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="source-type-menu-panel bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="source-type-menu-title"
+      >
+        <div className="source-type-menu-header flex items-center justify-between p-4 border-b border-gray-200">
+          <h3
+            id="source-type-menu-title"
+            className="text-lg font-semibold text-gray-900"
+          >
             {t('sidebar.selectSourceType')}
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="source-type-menu-close text-gray-400 hover:text-gray-600 transition-colors"
             type="button"
+            aria-label={t('common.cancel')}
           >
             <X size={20} />
           </button>
         </div>
-        <div className="p-4 space-y-3">
+        <div className="source-type-menu-body p-4 space-y-3">
           {manifests.length === 0 ? (
             <p className="text-sm text-gray-500 text-center py-4">
               {t('sidebar.noStoragePlugins')}
@@ -94,7 +109,7 @@ export const SourceTypeMenu: React.FC<SourceTypeMenuProps> = ({
                   onSelect(manifest.id);
                 }}
                 disabled={!isKnownBuiltinPluginId(manifest.id)}
-                className={`w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg transition-all group disabled:opacity-50 disabled:cursor-not-allowed ${hoverClassForPlugin(manifest.id)}`}
+                className={`source-type-menu-option w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg transition-all group disabled:opacity-50 disabled:cursor-not-allowed ${hoverClassForPlugin(manifest.id)}`}
               >
                 <PluginTypeIcon pluginId={manifest.id} name={manifest.name} />
                 <div className="flex-1 text-left">
@@ -109,11 +124,11 @@ export const SourceTypeMenu: React.FC<SourceTypeMenuProps> = ({
             ))
           )}
         </div>
-        <div className="p-4 border-t border-gray-200">
+        <div className="source-type-menu-footer p-4 border-t border-gray-200">
           <button
             type="button"
             onClick={onClose}
-            className="w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="source-type-menu-cancel w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             {t('common.cancel')}
           </button>
