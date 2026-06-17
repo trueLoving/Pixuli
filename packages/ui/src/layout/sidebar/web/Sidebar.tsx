@@ -65,6 +65,8 @@ interface SidebarProps {
   mobileOpen?: boolean;
   /** 点击遮罩或完成导航后关闭抽屉 */
   onMobileClose?: () => void;
+  /** 侧栏底部区域上方插槽（如演示模式区块） */
+  footerExtra?: React.ReactNode;
   t?: (key: string) => string;
 }
 
@@ -137,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   mobileOpen = false,
   onMobileClose,
+  footerExtra,
   t,
 }) => {
   const translate = t || defaultTranslate;
@@ -627,6 +630,8 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
+
+        {footerExtra}
 
         {/* 底部操作 */}
         <div className="sidebar-footer">

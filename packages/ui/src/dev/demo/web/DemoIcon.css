@@ -224,3 +224,53 @@
   color: #6b7280; /* gray-500 */
   line-height: 1.4;
 }
+
+/* 窄屏：Header 内隐藏（侧栏 Demo 区块替代）；下拉改全宽 sheet（REF-512） */
+@media (max-width: 767px) {
+  .demo-icon--hide-mobile {
+    display: none;
+  }
+
+  .demo-icon-text {
+    display: none;
+  }
+
+  .demo-icon-button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .demo-icon-dropdown {
+    position: fixed;
+    top: auto;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom, 0));
+    width: auto;
+    max-height: min(72vh, 24rem);
+    overflow-y: auto;
+    border-radius: 1rem;
+    animation: demo-icon-sheet-up 0.22s ease-out;
+  }
+
+  .demo-icon-dropdown-item {
+    min-height: 2.75rem;
+  }
+
+  .demo-icon-dropdown-close {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+@keyframes demo-icon-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

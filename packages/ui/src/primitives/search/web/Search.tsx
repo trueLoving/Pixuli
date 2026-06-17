@@ -201,6 +201,19 @@ const Search: React.FC<SearchProps> = ({
       window.removeEventListener('pixuli:closeFilterPanel', onCloseFilter);
   }, []);
 
+  // 窄屏筛选 sheet：锁定背景滚动（REF-512 #150）
+  useEffect(() => {
+    if (!showFilterPanel) return;
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(max-width: 767px)');
+    if (!mq.matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [showFilterPanel]);
+
   // 检查是否有活动的筛选条件
   const hasActiveFilters =
     externalFilters &&
@@ -266,69 +279,77 @@ const Search: React.FC<SearchProps> = ({
               {hasActiveFilters && <span className="search-filter-badge" />}
             </button>
             {showFilterPanel && (
-              <div className="search-filter-panel">
-                <div className="search-filter-panel-header">
-                  <span className="search-filter-panel-title">
-                    {translate('search.header.filter') || '筛选'}
-                  </span>
-                  {hasActiveFilters && (
-                    <button
-                      onClick={handleClearAll}
-                      className="search-filter-clear"
-                    >
-                      {translate('search.header.clearFilters') || '清除'}
-                    </button>
+              <>
+                <button
+                  type="button"
+                  className="search-filter-backdrop"
+                  aria-label={translate('common.cancel') || '关闭'}
+                  onClick={() => setShowFilterPanel(false)}
+                />
+                <div className="search-filter-panel">
+                  <div className="search-filter-panel-header">
+                    <span className="search-filter-panel-title">
+                      {translate('search.header.filter') || '筛选'}
+                    </span>
+                    {hasActiveFilters && (
+                      <button
+                        onClick={handleClearAll}
+                        className="search-filter-clear"
+                      >
+                        {translate('search.header.clearFilters') || '清除'}
+                      </button>
+                    )}
+                  </div>
+                  {availableTypes.length > 0 && (
+                    <div className="search-filter-section">
+                      <label className="search-filter-label">
+                        {translate('image.filter.imageType') || '图片类型'}
+                      </label>
+                      <div className="search-filter-options">
+                        {availableTypes.map(type => (
+                          <label key={type} className="search-filter-option">
+                            <input
+                              type="checkbox"
+                              checked={
+                                externalFilters?.selectedTypes.includes(type) ||
+                                false
+                              }
+                              onChange={e =>
+                                handleTypeChange(type, e.target.checked)
+                              }
+                            />
+                            <span>{type}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {availableTags.length > 0 && (
+                    <div className="search-filter-section">
+                      <label className="search-filter-label">
+                        {translate('image.filter.tags') || '标签'}
+                      </label>
+                      <div className="search-filter-options">
+                        {availableTags.map(tag => (
+                          <label key={tag} className="search-filter-option">
+                            <input
+                              type="checkbox"
+                              checked={
+                                externalFilters?.selectedTags.includes(tag) ||
+                                false
+                              }
+                              onChange={e =>
+                                handleTagChange(tag, e.target.checked)
+                              }
+                            />
+                            <span>{tag}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
-                {availableTypes.length > 0 && (
-                  <div className="search-filter-section">
-                    <label className="search-filter-label">
-                      {translate('image.filter.imageType') || '图片类型'}
-                    </label>
-                    <div className="search-filter-options">
-                      {availableTypes.map(type => (
-                        <label key={type} className="search-filter-option">
-                          <input
-                            type="checkbox"
-                            checked={
-                              externalFilters?.selectedTypes.includes(type) ||
-                              false
-                            }
-                            onChange={e =>
-                              handleTypeChange(type, e.target.checked)
-                            }
-                          />
-                          <span>{type}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {availableTags.length > 0 && (
-                  <div className="search-filter-section">
-                    <label className="search-filter-label">
-                      {translate('image.filter.tags') || '标签'}
-                    </label>
-                    <div className="search-filter-options">
-                      {availableTags.map(tag => (
-                        <label key={tag} className="search-filter-option">
-                          <input
-                            type="checkbox"
-                            checked={
-                              externalFilters?.selectedTags.includes(tag) ||
-                              false
-                            }
-                            onChange={e =>
-                              handleTagChange(tag, e.target.checked)
-                            }
-                          />
-                          <span>{tag}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              </>
             )}
           </div>
         )}

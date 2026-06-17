@@ -442,21 +442,12 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             <button
               type="button"
               onClick={handleOpenBatchDelete}
-              style={{
-                padding: '0.375rem 0.75rem',
-                fontSize: '0.875rem',
-                border: '1px solid #dc2626',
-                borderRadius: '0.375rem',
-                backgroundColor: '#ffffff',
-                color: '#dc2626',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-              }}
+              className="image-browser-batch-delete-btn"
             >
-              <Trash2 style={{ width: '1rem', height: '1rem' }} />
-              {t('image.batchDelete.button')}
+              <Trash2 className="image-browser-batch-delete-icon" />
+              <span className="image-browser-batch-delete-label">
+                {t('image.batchDelete.button')}
+              </span>
             </button>
           )}
 

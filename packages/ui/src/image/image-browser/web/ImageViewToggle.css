@@ -45,3 +45,26 @@
   font-size: 0.875rem;
   font-weight: 500;
 }
+
+/* 窄屏：仅图标 + 触控热区（REF-512 #150） */
+@media (max-width: 767px) {
+  .image-view-toggle-container {
+    flex-shrink: 0;
+  }
+
+  .image-view-toggle-button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem;
+    justify-content: center;
+  }
+
+  .image-view-toggle-text {
+    display: none;
+  }
+
+  .image-view-toggle-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}

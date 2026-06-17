@@ -12,6 +12,7 @@
 .image-preview-modal-container {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -192,7 +193,7 @@
 @media (max-width: 768px) {
   .image-preview-modal-container {
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     padding: 0;
   }
 
@@ -202,13 +203,17 @@
   }
 
   .image-preview-modal-close {
-    top: 1rem;
-    right: 1rem;
+    top: max(1rem, env(safe-area-inset-top, 0));
+    right: max(1rem, env(safe-area-inset-right, 0));
+    min-width: 2.75rem;
+    min-height: 2.75rem;
     padding: 0.5rem;
   }
 
   .image-preview-modal-nav {
     padding: 0.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
   }
 
   .image-preview-modal-nav-left {

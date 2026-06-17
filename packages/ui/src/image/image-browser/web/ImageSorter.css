@@ -63,32 +63,35 @@
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .image-sorter-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+  }
+
+  .image-sorter-label {
+    display: none;
   }
 
   .sort-button {
-    width: 100%;
+    width: auto;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0.5rem 0.625rem;
+    white-space: nowrap;
     justify-content: center;
   }
-}
 
-@media (max-width: 640px) {
-  .image-sorter-container {
-    margin-top: 0.5rem;
+  .sort-label {
+    display: none;
   }
 
-  .sort-button {
-    padding: 0.375rem 0.5rem;
-    font-size: 0.75rem;
-  }
-
-  .sort-icon {
-    width: 0.875rem;
-    height: 0.875rem;
+  .sort-icon,
+  .image-sorter-icon {
+    width: 1.125rem;
+    height: 1.125rem;
   }
 }
 

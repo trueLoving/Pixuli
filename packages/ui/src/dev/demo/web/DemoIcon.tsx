@@ -14,10 +14,16 @@ interface DemoIconProps {
   t?: (key: string) => string;
   /** 是否处于 Demo 模式（可选，如果不提供则自动检测） */
   isDemoMode?: boolean;
+  /** 附加 class（如窄屏隐藏 Header 内入口） */
+  className?: string;
 }
 
 // Demo 图标组件（Web 版本）- 用于 Header 右上角
-export function DemoIcon({ t, isDemoMode: propIsDemoMode }: DemoIconProps) {
+export function DemoIcon({
+  t,
+  isDemoMode: propIsDemoMode,
+  className,
+}: DemoIconProps) {
   const translate =
     t || ((key: string) => defaultTranslate(key, demoLocales['zh-CN']));
   const [showDropdown, setShowDropdown] = useState(false);
@@ -90,7 +96,10 @@ export function DemoIcon({ t, isDemoMode: propIsDemoMode }: DemoIconProps) {
   }, [showDropdown, handleClickOutside]);
 
   return (
-    <div className="demo-icon-wrapper" ref={dropdownRef}>
+    <div
+      className={['demo-icon-wrapper', className].filter(Boolean).join(' ')}
+      ref={dropdownRef}
+    >
       <button
         onClick={() => setShowDropdown(!showDropdown)}
         className="demo-icon-button"

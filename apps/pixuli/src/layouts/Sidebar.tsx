@@ -3,7 +3,12 @@
  * 处理侧边栏的显示和交互逻辑
  */
 
-import { Sidebar as CommonSidebar, type SidebarMenuItem } from '@pixuli/ui';
+import {
+  Sidebar as CommonSidebar,
+  DemoSidebarSection,
+  type SidebarMenuItem,
+  useDemoMode,
+} from '@pixuli/ui';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '../hooks/useMobileViewport';
@@ -35,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useMobileViewport();
+  const { isDemoMode } = useDemoMode();
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const displayName = useWorkspaceStore(state => state.displayName);
   const showWorkspaceHint =
@@ -130,6 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onToggleCollapse={isMobile ? undefined : toggleSidebar}
           mobileOpen={isMobile && mobileSidebarOpen}
           onMobileClose={closeMobileSidebar}
+          footerExtra={isDemoMode ? <DemoSidebarSection t={t} /> : undefined}
           t={t}
         />
       </div>

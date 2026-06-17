@@ -81,7 +81,13 @@ export const AppMain: React.FC<AppMainProps> = ({
 
   const searchAction =
     isPhotosPage && searchContext && searchContext.showSearch ? (
-      <div className="flex-1 min-w-0 max-w-2xl">
+      <div
+        className={
+          isMobile
+            ? 'header-search-slot header-search-slot--mobile'
+            : 'header-search-slot flex-1 min-w-0 max-w-2xl'
+        }
+      >
         <Search
           searchQuery={searchContext.searchQuery}
           onSearchChange={searchContext.setSearchQuery}
@@ -118,7 +124,11 @@ export const AppMain: React.FC<AppMainProps> = ({
           leftActions={leftActions}
           rightActions={
             <>
-              <DemoIcon t={t} isDemoMode={isDemoMode} />
+              <DemoIcon
+                t={t}
+                isDemoMode={isDemoMode}
+                className={isMobile ? 'demo-icon--hide-mobile' : undefined}
+              />
               {hasConfig && (
                 <UploadButton
                   onUploadImage={onUploadImage}
