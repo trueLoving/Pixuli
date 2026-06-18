@@ -53,6 +53,19 @@ export async function storeFsaDirectoryHandle(
   db.close();
 }
 
+export async function deleteFsaDirectoryHandle(
+  workspaceId: string,
+): Promise<void> {
+  const db = await openFsaDb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(FSA_STORE, 'readwrite');
+    tx.objectStore(FSA_STORE).delete(workspaceId);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('IDB delete failed'));
+  });
+  db.close();
+}
+
 export async function loadFsaDirectoryHandle(
   workspaceId: string,
 ): Promise<FileSystemDirectoryHandle | null> {

@@ -29,6 +29,10 @@ import {
   resetWorkspaceAdapter,
 } from '../platforms/workspacePlatform';
 import { isWebWorkspaceAdapter } from '../platforms/web/workspaceAdapter';
+import {
+  deleteFsaDirectoryHandle,
+  parseFsaRootPath,
+} from '../platforms/web/fsaWorkspaceFs';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
 const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
@@ -57,6 +61,7 @@ interface WorkspaceState {
     pullAfter?: boolean;
     backend?: 'opfs' | 'fsa';
   }) => Promise<boolean>;
+  clearWorkspace: () => Promise<void>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;
   refreshLocalImages: () => Promise<void>;
@@ -144,6 +149,30 @@ function savePersistedWorkspace(
     );
   } catch {
     // ignore
+  }
+}
+
+function clearPersistedWorkspace(): void {
+  try {
+    localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+    localStorage.removeItem(WORKSPACE_MODE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+async function cleanupFsaWorkspaceRoot(rootPath: string | null): Promise<void> {
+  if (!rootPath) {
+    return;
+  }
+  const workspaceId = parseFsaRootPath(rootPath);
+  if (!workspaceId) {
+    return;
+  }
+  try {
+    await deleteFsaDirectoryHandle(workspaceId);
+  } catch {
+    // ignore stale handle cleanup errors
   }
 }
 
@@ -317,13 +346,29 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return false;
     }
 
+    const previousRootPath = get().rootPath;
+    const previousDisplayName = get().displayName;
+    const hadLocal = get().mode === 'local' && Boolean(previousRootPath);
+
     set({ loading: true, error: null });
     try {
       resetWorkspaceRuntime();
       const adapter = getAdapter();
       const picked = await pickAdapterRoot(adapter, options?.backend);
       if (!picked || !adapter.getRootPath()) {
-        set({ loading: false });
+        if (hadLocal && previousRootPath) {
+          await openVaultWithRoot(previousRootPath);
+          set({
+            mode: 'local',
+            rootPath: previousRootPath,
+            displayName: previousDisplayName,
+            loading: false,
+          });
+          await get().refreshLocalImages();
+          await get().refreshSyncStatus();
+        } else {
+          set({ loading: false });
+        }
         return false;
       }
 
@@ -333,6 +378,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const config = vault.getConfig();
       savePersistedWorkspace(rootPath, config.workspaceId, folderLabel);
       saveModePref('local');
+
+      if (previousRootPath && previousRootPath !== rootPath) {
+        await cleanupFsaWorkspaceRoot(previousRootPath);
+      }
 
       set({
         mode: 'local',
@@ -355,6 +404,27 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       });
       return false;
     }
+  },
+
+  clearWorkspace: async () => {
+    const { rootPath } = get();
+    await cleanupFsaWorkspaceRoot(rootPath);
+    clearPersistedWorkspace();
+    resetWorkspaceRuntime();
+    set({
+      mode: 'unset',
+      rootPath: null,
+      displayName: null,
+      localImages: [],
+      loading: false,
+      pushing: false,
+      syncing: false,
+      syncStatus: null,
+      error: null,
+      syncMessage: null,
+    });
+    const { useImageStore } = await import('./imageStore');
+    useImageStore.setState({ images: [], loading: false, error: null });
   },
 
   refreshLocalImages: async () => {

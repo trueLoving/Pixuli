@@ -22,6 +22,12 @@ export type SidebarView = 'photos' | 'explore' | 'tags' | 'favorites';
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarUtilityTool = 'compress' | 'convert';
 
+/** 暂时隐藏的侧栏菜单项（恢复显示时从此集合移除 key） */
+const TEMPORARILY_HIDDEN_MENU_KEYS = new Set(['compress', 'convert']);
+
+/** 暂时隐藏的侧栏底部项 */
+const TEMPORARILY_HIDDEN_FOOTER_KEYS = new Set(['docs', 'keyboardShortcuts']);
+
 // 统一的菜单项类型（图床 + 工具）
 export type SidebarMenuItem =
   | { type: 'photos' }
@@ -211,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: translate('sidebar.imageConvert'),
       menuItem: { type: 'utility', tool: 'convert' },
     },
-  ];
+  ].filter(item => !TEMPORARILY_HIDDEN_MENU_KEYS.has(item.menuKey));
 
   // 处理右键菜单
   const handleContextMenu = (
@@ -445,33 +451,37 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* 底部操作 - 折叠状态 */}
           <div className="sidebar-collapsed-footer">
-            <button
-              className="sidebar-collapsed-item"
-              onClick={() => {
-                window.open(
-                  'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
-                  '_blank',
-                );
-              }}
-              title={translate('sidebar.docs')}
-            >
-              <HelpCircle size={28} />
-              <span className="sidebar-collapsed-tooltip">
-                {translate('sidebar.docs')}
-              </span>
-            </button>
-            <button
-              className="sidebar-collapsed-item"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-              }}
-              title={translate('sidebar.keyboardShortcuts')}
-            >
-              <Keyboard size={28} />
-              <span className="sidebar-collapsed-tooltip">
-                {translate('sidebar.keyboardShortcuts')}
-              </span>
-            </button>
+            {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('docs') && (
+              <button
+                className="sidebar-collapsed-item"
+                onClick={() => {
+                  window.open(
+                    'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                    '_blank',
+                  );
+                }}
+                title={translate('sidebar.docs')}
+              >
+                <HelpCircle size={28} />
+                <span className="sidebar-collapsed-tooltip">
+                  {translate('sidebar.docs')}
+                </span>
+              </button>
+            )}
+            {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('keyboardShortcuts') && (
+              <button
+                className="sidebar-collapsed-item"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+                }}
+                title={translate('sidebar.keyboardShortcuts')}
+              >
+                <Keyboard size={28} />
+                <span className="sidebar-collapsed-tooltip">
+                  {translate('sidebar.keyboardShortcuts')}
+                </span>
+              </button>
+            )}
             <button
               className="sidebar-collapsed-item"
               onClick={() => {
@@ -629,25 +639,27 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* 底部操作 */}
         <div className="sidebar-footer">
-          <NavItem
-            icon={<HelpCircle size={20} />}
-            label={translate('sidebar.docs')}
-            onClick={() => {
-              // 打开文档链接
-              window.open(
-                'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
-                '_blank',
-              );
-            }}
-          />
-          <NavItem
-            icon={<Keyboard size={20} />}
-            label={translate('sidebar.keyboardShortcuts')}
-            onClick={() => {
-              // 触发快捷键说明事件
-              window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-            }}
-          />
+          {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('docs') && (
+            <NavItem
+              icon={<HelpCircle size={20} />}
+              label={translate('sidebar.docs')}
+              onClick={() => {
+                window.open(
+                  'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                  '_blank',
+                );
+              }}
+            />
+          )}
+          {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('keyboardShortcuts') && (
+            <NavItem
+              icon={<Keyboard size={20} />}
+              label={translate('sidebar.keyboardShortcuts')}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+              }}
+            />
+          )}
           <NavItem
             icon={<Info size={20} />}
             label={translate('sidebar.versionInfo')}
