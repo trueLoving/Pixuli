@@ -6,14 +6,28 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ImageItem } from '@pixuli/core/types';
+import {
+  BatchUploadProgress,
+  ImageItem,
+  ImageUploadData,
+  MultiImageUploadData,
+} from '@pixuli/core/types';
+import Search, {
+  type SearchHistoryItem,
+} from '../../../primitives/search/web/Search';
+import UploadButton from '../../../primitives/upload-button/web/UploadButton';
 import {
   COMMON_SHORTCUTS,
   keyboardManager,
   SHORTCUT_CATEGORIES,
 } from '@pixuli/ui/utils/keyboardShortcuts';
-import { getSortedImages } from '@pixuli/core/utils';
-import type { SortField, SortOrder, ViewMode } from '../common/types';
+import { filterImages, getSortedImages } from '@pixuli/core/utils';
+import type {
+  FilterOptions,
+  SortField,
+  SortOrder,
+  ViewMode,
+} from '../common/types';
 import BatchDeleteModal from './ImageBatchDeleteModal';
 import './ImageBrowser.css';
 import ImageGrid from './ImageGrid';
@@ -21,9 +35,25 @@ import ImageList from './ImageList';
 import ImageSorter from './ImageSorter';
 import ViewToggle from './ImageViewToggle';
 
+export interface ImageBrowserSearchConfig {
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  filters: FilterOptions;
+  onFiltersChange: (
+    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
+  ) => void;
+  history?: SearchHistoryItem[];
+  onSelectHistory?: (query: string) => void;
+  onDeleteHistory?: (query: string) => void;
+  onClearHistory?: () => void;
+  onSaveHistory?: (query: string) => void;
+}
+
 interface ImageBrowserProps {
   images: ImageItem[];
   className?: string;
+  hasConfig?: boolean;
+  search?: ImageBrowserSearchConfig;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onUpdateImage?: (data: any) => Promise<void>;
@@ -32,23 +62,53 @@ interface ImageBrowserProps {
   ) => Promise<{ width: number; height: number }>;
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
+  onUploadImage?: (data: ImageUploadData) => Promise<void>;
+  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<void>;
+  uploadLoading?: boolean;
+  batchUploadProgress?: BatchUploadProgress | null;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
   images,
   className = '',
+  hasConfig = true,
+  search,
   onDeleteImage,
   onDeleteMultipleImages,
   onUpdateImage,
   getImageDimensionsFromUrl,
   formatFileSize,
   t,
+  onUploadImage,
+  onUploadMultipleImages,
+  uploadLoading = false,
+  batchUploadProgress,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
   const [showBatchDeleteModal, setShowBatchDeleteModal] = useState(false);
+
+  useEffect(() => {
+    if (!search) return;
+    search.onFiltersChange(prev => {
+      if (prev.searchTerm === search.searchQuery) {
+        return prev;
+      }
+      return {
+        ...prev,
+        searchTerm: search.searchQuery,
+      };
+    });
+  }, [search?.searchQuery, search?.onFiltersChange]);
+
+  const filteredImages = useMemo(() => {
+    if (!search?.filters) {
+      return images;
+    }
+    return filterImages(images, search.filters);
+  }, [images, search?.filters]);
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view);
@@ -92,11 +152,13 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   // 排序图片，并确保没有重复ID
   const sortedImages = useMemo(() => {
     // 生成依赖项的字符串表示，用于比较
-    const imagesIds = images.map(img => `${img.id}:${img.updatedAt}`).join(',');
+    const imagesIds = filteredImages
+      .map(img => `${img.id}:${img.updatedAt}`)
+      .join(',');
     const sortKey = `${currentSort}:${currentOrder}`;
 
     // 去重：确保没有重复的图片ID
-    const uniqueImages = images.reduce((acc: ImageItem[], current) => {
+    const uniqueImages = filteredImages.reduce((acc: ImageItem[], current) => {
       const existingIndex = acc.findIndex(img => img.id === current.id);
       if (existingIndex === -1) {
         acc.push(current);
@@ -133,7 +195,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     // 如果结果不同，检查依赖项是否变化
     if (
       prevDeps &&
-      prevDeps.imagesLength === images.length &&
+      prevDeps.imagesLength === filteredImages.length &&
       prevDeps.imagesIds === imagesIds &&
       prevDeps.sort === sortKey &&
       prevResultRef.current.length > 0
@@ -144,7 +206,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
 
     // 更新缓存
     prevDepsRef.current = {
-      imagesLength: images.length,
+      imagesLength: filteredImages.length,
       imagesIds,
       sort: sortKey,
       resultIds,
@@ -152,7 +214,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     prevResultRef.current = result;
 
     return result;
-  }, [images, currentSort, currentOrder]);
+  }, [filteredImages, currentSort, currentOrder]);
 
   // 预览选中的图片
   const handlePreviewSelectedImage = useCallback(() => {
@@ -424,6 +486,29 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
 
   return (
     <div className={`image-browser ${className}`}>
+      {search && (
+        <div className="image-browser-filter-section">
+          <Search
+            variant="header"
+            searchQuery={search.searchQuery}
+            onSearchChange={search.onSearchChange}
+            hasConfig={hasConfig}
+            images={images}
+            externalFilters={search.filters}
+            onFiltersChange={search.onFiltersChange}
+            showFilter={true}
+            showHistory={true}
+            history={search.history}
+            onSelectHistory={search.onSelectHistory}
+            onDeleteHistory={search.onDeleteHistory}
+            onClearHistory={search.onClearHistory}
+            onSaveHistory={search.onSaveHistory}
+            t={t}
+            className="image-browser-search"
+          />
+        </div>
+      )}
+
       {/* 工具栏 */}
       <div className="image-browser-toolbar">
         <div className="image-browser-header">
@@ -431,12 +516,29 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           <span className="image-browser-count">
             {t('image.list.totalImages').replace(
               '{count}',
-              images.length.toString(),
+              sortedImages.length.toString(),
+            )}
+            {search && sortedImages.length !== images.length && (
+              <span className="image-browser-filter-count">
+                {' '}
+                / {images.length}
+              </span>
             )}
           </span>
         </div>
 
         <div className="image-browser-controls">
+          {onUploadImage && onUploadMultipleImages && (
+            <UploadButton
+              onUploadImage={onUploadImage}
+              onUploadMultipleImages={onUploadMultipleImages}
+              loading={uploadLoading}
+              batchUploadProgress={batchUploadProgress}
+              t={t}
+              className="image-browser-upload-btn"
+            />
+          )}
+
           {/* 批量删除按钮 */}
           {onDeleteMultipleImages && sortedImages.length > 0 && (
             <button

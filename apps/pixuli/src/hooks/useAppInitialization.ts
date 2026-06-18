@@ -67,8 +67,8 @@ export function useAppInitialization(
       return;
     }
 
-    // 如果使用仓库源模式（hasConfig），不在这里加载，由 useSelectedSourceSync 处理
-    if (hasConfig && sources.length > 0) {
+    // local 工作区由 workspace 初始化触发加载
+    if (hasConfig) {
       return;
     }
 

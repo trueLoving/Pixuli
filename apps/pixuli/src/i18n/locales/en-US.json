@@ -72,6 +72,12 @@
   "workspace": {
     "setupTitle": "Choose a local workspace",
     "setupHint": "Pick a folder as your Pixuli local image workspace. Images are stored under images/ in that directory.",
+    "setupHintWeb": "Create a browser-local workspace (OPFS). Images and index stay on this device; clearing site data may remove the workspace.",
+    "setupHintWebLocal": "Web supports local workspace only. Connect a folder on your computer (recommended) or create a browser workspace.",
+    "connectFolder": "Connect local folder",
+    "fsaStorage": "Connected local folder",
+    "createWorkspace": "Create browser workspace",
+    "webStorage": "Browser local storage (OPFS)",
     "pickFolder": "Choose folder",
     "picking": "Opening…",
     "current": "Workspace",
@@ -95,11 +101,10 @@
     "migrationHint": "You have {{count}} remote source(s). Choose how to continue:",
     "migrationLocalTitle": "Use a local folder",
     "migrationLocalHint": "Pick a folder as your workspace. Existing remote sources will be bound for sync.",
+    "migrationHintWebLocal": "You have {{count}} remote source(s). On Web, choose a local workspace first, then sync.",
+    "migrationLocalTitleWeb": "Choose a local workspace",
+    "migrationLocalHintWeb": "Connect a local folder or create a browser workspace; existing remotes will be bound for sync.",
     "migrationPickFolder": "Choose folder and continue",
-    "migrationPullAfter": "Pull all images from remote after setup (may take a while)",
-    "migrationRemoteTitle": "Keep remote-only browsing",
-    "migrationRemoteHint": "Continue listing images directly from GitHub/Gitee without a local folder.",
-    "migrationRemoteOnly": "Continue with remote only",
-    "switchRemoteOnly": "Switch to remote-only browsing"
+    "migrationPullAfter": "Pull all images from remote after setup (may take a while)"
   }
 }

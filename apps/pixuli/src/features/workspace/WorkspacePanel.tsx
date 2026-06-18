@@ -2,14 +2,21 @@ import React from 'react';
 import {
   DownloadCloud,
   FolderOpen,
+  FolderSync,
   RefreshCw,
   ScanSearch,
   UploadCloud,
 } from 'lucide-react';
+import {
+  isFileSystemAccessSupported,
+  isOpfsSupported,
+  isWebWorkspaceActive,
+} from '@/platforms/workspacePlatform';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useI18n } from '@/i18n/useI18n';
+
+import { WorkspaceSourceSection } from './WorkspaceSourceSection';
 
 function formatSyncTime(
   iso: string | null | undefined,
@@ -29,9 +36,12 @@ export const WorkspaceSetupPanel: React.FC = () => {
   const { t } = useI18n();
   const { pickWorkspace, loading, error } = useWorkspaceStore();
   const loadImages = useImageStore(state => state.loadImages);
+  const isWebWorkspace = isWebWorkspaceActive();
+  const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
+  const canCreateOpfs = isWebWorkspace && isOpfsSupported();
 
-  const handlePick = async () => {
-    const ok = await pickWorkspace();
+  const handlePick = async (backend: 'opfs' | 'fsa') => {
+    const ok = await pickWorkspace({ backend });
     if (ok) {
       await loadImages();
     }
@@ -44,16 +54,52 @@ export const WorkspaceSetupPanel: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-2">
           {t('workspace.setupTitle')}
         </h2>
-        <p className="text-sm text-gray-600 mb-6">{t('workspace.setupHint')}</p>
-        <button
-          type="button"
-          onClick={() => void handlePick()}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
-        >
-          <FolderOpen size={16} />
-          {loading ? t('workspace.picking') : t('workspace.pickFolder')}
-        </button>
+        <p className="text-sm text-gray-600 mb-6">
+          {isWebWorkspace
+            ? t('workspace.setupHintWebLocal')
+            : t('workspace.setupHint')}
+        </p>
+        <div className="flex flex-col gap-3">
+          {canPickFolder && (
+            <button
+              type="button"
+              onClick={() => void handlePick('fsa')}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              <FolderSync size={16} />
+              {loading ? t('workspace.picking') : t('workspace.connectFolder')}
+            </button>
+          )}
+          {canCreateOpfs && (
+            <button
+              type="button"
+              onClick={() => void handlePick('opfs')}
+              disabled={loading}
+              className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 ${
+                canPickFolder
+                  ? 'border border-blue-300 bg-white text-blue-800 hover:bg-blue-50'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              <FolderOpen size={16} />
+              {loading
+                ? t('workspace.picking')
+                : t('workspace.createWorkspace')}
+            </button>
+          )}
+          {!isWebWorkspace && (
+            <button
+              type="button"
+              onClick={() => void handlePick('opfs')}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              <FolderOpen size={16} />
+              {loading ? t('workspace.picking') : t('workspace.pickFolder')}
+            </button>
+          )}
+        </div>
         {error && (
           <p className="mt-4 text-sm text-red-600" role="alert">
             {error}
@@ -79,9 +125,7 @@ export const WorkspaceToolbar: React.FC = () => {
     runSync,
     scanWorkspace,
     clearError,
-    setRemoteOnlyMode,
   } = useWorkspaceStore();
-  const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
   const busy = pushing || syncing;
@@ -93,11 +137,19 @@ export const WorkspaceToolbar: React.FC = () => {
           <p className="text-sm font-medium text-gray-900">
             {t('workspace.current')}: {displayName || t('workspace.unnamed')}
           </p>
-          {rootPath && (
-            <p className="text-xs text-gray-500 truncate" title={rootPath}>
-              {rootPath}
-            </p>
+          {rootPath?.startsWith('fsa://') && (
+            <p className="text-xs text-gray-500">{t('workspace.fsaStorage')}</p>
           )}
+          {rootPath?.startsWith('opfs://') && (
+            <p className="text-xs text-gray-500">{t('workspace.webStorage')}</p>
+          )}
+          {rootPath &&
+            !rootPath.startsWith('opfs://') &&
+            !rootPath.startsWith('fsa://') && (
+              <p className="text-xs text-gray-500 truncate" title={rootPath}>
+                {rootPath}
+              </p>
+            )}
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-xs text-gray-700 border border-gray-200">
               {t('workspace.lastSync')}:{' '}
@@ -181,18 +233,8 @@ export const WorkspaceToolbar: React.FC = () => {
           {t('workspace.pushNeedsRemote')}
         </p>
       )}
-      <div className="mt-3 border-t border-gray-200 pt-3">
-        <button
-          type="button"
-          onClick={() => {
-            setRemoteOnlyMode();
-            void loadImages();
-          }}
-          className="text-xs text-gray-500 hover:text-gray-800 hover:underline"
-        >
-          {t('workspace.switchRemoteOnly')}
-        </button>
-      </div>
+
+      <WorkspaceSourceSection showDivider />
     </div>
   );
 };

@@ -23,10 +23,12 @@ import {
   mapEntriesToImageItems,
 } from '../features/workspace/localImageMapper';
 import {
-  createDesktopWorkspaceAdapter,
-  DesktopWorkspaceAdapter,
-  isDesktopWorkspaceAvailable,
-} from '../platforms/desktop/workspaceAdapter';
+  getWorkspaceAdapter,
+  isWebWorkspaceActive,
+  isWorkspaceAvailable,
+  resetWorkspaceAdapter,
+} from '../platforms/workspacePlatform';
+import { isWebWorkspaceAdapter } from '../platforms/web/workspaceAdapter';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
 const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
@@ -34,6 +36,7 @@ const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
 interface WorkspacePersist {
   rootPath: string;
   workspaceId: string;
+  folderLabel?: string;
 }
 
 interface WorkspaceState {
@@ -50,8 +53,10 @@ interface WorkspaceState {
   isLocalActive: () => boolean;
   needsWorkspaceSetup: () => boolean;
   initialize: () => Promise<void>;
-  pickWorkspace: (options?: { pullAfter?: boolean }) => Promise<boolean>;
-  setRemoteOnlyMode: () => void;
+  pickWorkspace: (options?: {
+    pullAfter?: boolean;
+    backend?: 'opfs' | 'fsa';
+  }) => Promise<boolean>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;
   refreshLocalImages: () => Promise<void>;
@@ -71,13 +76,9 @@ interface WorkspaceState {
 
 let vaultInstance: LocalVault | null = null;
 let syncEngineInstance: SyncEngine | null = null;
-let adapterInstance: DesktopWorkspaceAdapter | null = null;
 
-function getAdapter(): DesktopWorkspaceAdapter {
-  if (!adapterInstance) {
-    adapterInstance = createDesktopWorkspaceAdapter();
-  }
-  return adapterInstance;
+function getAdapter() {
+  return getWorkspaceAdapter();
 }
 
 function getVault(): LocalVault {
@@ -106,18 +107,7 @@ function resetWorkspaceRuntime(): void {
   clearLocalPreviewCache();
   vaultInstance = null;
   syncEngineInstance = null;
-}
-
-function loadModePref(): WorkspaceMode | null {
-  try {
-    const raw = localStorage.getItem(WORKSPACE_MODE_KEY);
-    if (raw === 'local' || raw === 'remote-only') {
-      return raw;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
+  resetWorkspaceAdapter();
 }
 
 function saveModePref(mode: Exclude<WorkspaceMode, 'unset'>): void {
@@ -142,15 +132,38 @@ function loadPersistedWorkspace(): WorkspacePersist | null {
   return null;
 }
 
-function savePersistedWorkspace(rootPath: string, workspaceId: string): void {
+function savePersistedWorkspace(
+  rootPath: string,
+  workspaceId: string,
+  folderLabel?: string,
+): void {
   try {
     localStorage.setItem(
       WORKSPACE_STORAGE_KEY,
-      JSON.stringify({ rootPath, workspaceId }),
+      JSON.stringify({ rootPath, workspaceId, folderLabel }),
     );
   } catch {
     // ignore
   }
+}
+
+async function pickAdapterRoot(
+  adapter: ReturnType<typeof getWorkspaceAdapter>,
+  backend?: 'opfs' | 'fsa',
+): Promise<boolean> {
+  if (backend === 'fsa' && isWebWorkspaceAdapter(adapter)) {
+    return adapter.pickFsaRoot();
+  }
+  return adapter.pickRoot();
+}
+
+function readFolderLabel(
+  adapter: ReturnType<typeof getWorkspaceAdapter>,
+): string | null {
+  if (isWebWorkspaceAdapter(adapter)) {
+    return adapter.getFolderLabel();
+  }
+  return null;
 }
 
 function sanitizeFileName(name: string): string {
@@ -159,7 +172,9 @@ function sanitizeFileName(name: string): string {
 
 async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   const adapter = getAdapter();
-  adapter.setRootPath(rootPath);
+  if ('setRootPath' in adapter && typeof adapter.setRootPath === 'function') {
+    adapter.setRootPath(rootPath);
+  }
   if (window.workspaceAPI) {
     await window.workspaceAPI.setRoot(rootPath);
   }
@@ -181,22 +196,29 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   syncMessage: null,
 
   isLocalActive: () => {
-    return isDesktopWorkspaceAvailable() && get().mode === 'local';
+    return isWorkspaceAvailable() && get().mode === 'local';
   },
 
   needsWorkspaceSetup: () => {
-    return isDesktopWorkspaceAvailable() && get().mode === 'unset';
+    return isWorkspaceAvailable() && get().mode === 'unset';
   },
 
   initialize: async () => {
-    if (!isDesktopWorkspaceAvailable()) {
-      set({ mode: 'remote-only' });
-      return;
+    try {
+      if (localStorage.getItem(WORKSPACE_MODE_KEY) === 'remote-only') {
+        localStorage.removeItem(WORKSPACE_MODE_KEY);
+      }
+    } catch {
+      // ignore
     }
 
-    const modePref = loadModePref();
-    if (modePref === 'remote-only') {
-      set({ mode: 'remote-only' });
+    if (!isWorkspaceAvailable()) {
+      set({
+        mode: 'unset',
+        error: isWebWorkspaceActive()
+          ? '当前浏览器不支持本地工作区（需 OPFS 或文件夹访问 API）'
+          : null,
+      });
       return;
     }
 
@@ -210,12 +232,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     try {
       const vault = await openVaultWithRoot(persisted.rootPath);
       const config = vault.getConfig();
-      savePersistedWorkspace(persisted.rootPath, config.workspaceId);
+      const folderLabel =
+        persisted.folderLabel ?? readFolderLabel(getAdapter()) ?? undefined;
+      savePersistedWorkspace(
+        persisted.rootPath,
+        config.workspaceId,
+        folderLabel,
+      );
       saveModePref('local');
       set({
         mode: 'local',
         rootPath: persisted.rootPath,
-        displayName: config.displayName,
+        displayName: folderLabel ?? config.displayName,
         loading: false,
       });
       await get().syncBindingsFromSources();
@@ -230,25 +258,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  setRemoteOnlyMode: () => {
-    saveModePref('remote-only');
-    resetWorkspaceRuntime();
-    set({
-      mode: 'remote-only',
-      rootPath: null,
-      displayName: null,
-      localImages: [],
-      loading: false,
-      pushing: false,
-      syncing: false,
-      syncStatus: null,
-      error: null,
-      syncMessage: null,
-    });
-  },
-
   resumeLocalWorkspace: async () => {
-    if (!isDesktopWorkspaceAvailable()) {
+    if (!isWorkspaceAvailable()) {
       return false;
     }
     const persisted = loadPersistedWorkspace();
@@ -262,11 +273,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       resetWorkspaceRuntime();
       const vault = await openVaultWithRoot(persisted.rootPath);
       const config = vault.getConfig();
+      const folderLabel =
+        persisted.folderLabel ?? readFolderLabel(getAdapter()) ?? undefined;
       saveModePref('local');
       set({
         mode: 'local',
         rootPath: persisted.rootPath,
-        displayName: config.displayName,
+        displayName: folderLabel ?? config.displayName,
         loading: false,
         syncMessage: null,
       });
@@ -296,8 +309,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     resetSyncEngineOnly();
   },
 
-  pickWorkspace: async (options?: { pullAfter?: boolean }) => {
-    if (!isDesktopWorkspaceAvailable()) {
+  pickWorkspace: async (options?: {
+    pullAfter?: boolean;
+    backend?: 'opfs' | 'fsa';
+  }) => {
+    if (!isWorkspaceAvailable()) {
       return false;
     }
 
@@ -305,22 +321,23 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     try {
       resetWorkspaceRuntime();
       const adapter = getAdapter();
-      const picked = await adapter.pickRoot();
+      const picked = await pickAdapterRoot(adapter, options?.backend);
       if (!picked || !adapter.getRootPath()) {
         set({ loading: false });
         return false;
       }
 
       const rootPath = adapter.getRootPath()!;
+      const folderLabel = readFolderLabel(adapter) ?? undefined;
       const vault = await openVaultWithRoot(rootPath);
       const config = vault.getConfig();
-      savePersistedWorkspace(rootPath, config.workspaceId);
+      savePersistedWorkspace(rootPath, config.workspaceId, folderLabel);
       saveModePref('local');
 
       set({
         mode: 'local',
         rootPath,
-        displayName: config.displayName,
+        displayName: folderLabel ?? config.displayName,
         loading: false,
         syncMessage: null,
       });
