@@ -105,6 +105,12 @@
     "migrationLocalTitleWeb": "选择本地工作区",
     "migrationLocalHintWeb": "连接本机文件夹或创建浏览器工作区；现有远端源将自动绑定以便同步。",
     "migrationPickFolder": "选择文件夹并继续",
-    "migrationPullAfter": "设置完成后从远端全量拉取（可能耗时较长）"
+    "migrationPullAfter": "设置完成后从远端全量拉取（可能耗时较长）",
+    "manageTitle": "工作区管理",
+    "manageHint": "切换文件夹会改用新工作区；断开连接将清除本机记录并返回初始设置（不删除磁盘上的图片文件）。",
+    "switchFolder": "更换文件夹",
+    "switchOpfs": "新建浏览器工作区",
+    "clearWorkspace": "断开工作区",
+    "clearConfirm": "确定断开当前工作区？将清除本机保存的工作区记录，需要重新选择文件夹或创建工作区。磁盘上的图片文件不会被删除。"
   }
 }

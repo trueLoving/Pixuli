@@ -13,6 +13,7 @@ import {
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useI18n } from '@/i18n/useI18n';
 
@@ -120,15 +121,36 @@ export const WorkspaceToolbar: React.FC = () => {
     syncStatus,
     syncMessage,
     error,
+    loading,
     pushPendingToRemote,
     pullFromRemote,
     runSync,
     scanWorkspace,
+    pickWorkspace,
+    clearWorkspace,
     clearError,
   } = useWorkspaceStore();
+  const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
-  const busy = pushing || syncing;
+  const busy = pushing || syncing || loading;
+  const isWebWorkspace = isWebWorkspaceActive();
+  const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
+  const canCreateOpfs = isWebWorkspace && isOpfsSupported();
+
+  const handleSwitchWorkspace = async (backend: 'opfs' | 'fsa') => {
+    const ok = await pickWorkspace({ backend });
+    if (ok) {
+      await loadImages();
+    }
+  };
+
+  const handleClearWorkspace = () => {
+    if (!window.confirm(t('workspace.clearConfirm'))) {
+      return;
+    }
+    void clearWorkspace().then(() => loadImages());
+  };
 
   return (
     <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
@@ -233,6 +255,58 @@ export const WorkspaceToolbar: React.FC = () => {
           {t('workspace.pushNeedsRemote')}
         </p>
       )}
+
+      <div className="mt-3 border-t border-gray-200 pt-3">
+        <p className="text-xs font-medium text-gray-700 mb-2">
+          {t('workspace.manageTitle')}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {canPickFolder && (
+            <button
+              type="button"
+              onClick={() => void handleSwitchWorkspace('fsa')}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FolderSync size={16} />
+              {loading ? t('workspace.picking') : t('workspace.switchFolder')}
+            </button>
+          )}
+          {canCreateOpfs && (
+            <button
+              type="button"
+              onClick={() => void handleSwitchWorkspace('opfs')}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FolderOpen size={16} />
+              {loading ? t('workspace.picking') : t('workspace.switchOpfs')}
+            </button>
+          )}
+          {!isWebWorkspace && (
+            <button
+              type="button"
+              onClick={() => void handleSwitchWorkspace('opfs')}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FolderOpen size={16} />
+              {loading ? t('workspace.picking') : t('workspace.switchFolder')}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleClearWorkspace}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+          >
+            {t('workspace.clearWorkspace')}
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          {t('workspace.manageHint')}
+        </p>
+      </div>
 
       <WorkspaceSourceSection showDivider />
     </div>

@@ -105,6 +105,12 @@
     "migrationLocalTitleWeb": "Choose a local workspace",
     "migrationLocalHintWeb": "Connect a local folder or create a browser workspace; existing remotes will be bound for sync.",
     "migrationPickFolder": "Choose folder and continue",
-    "migrationPullAfter": "Pull all images from remote after setup (may take a while)"
+    "migrationPullAfter": "Pull all images from remote after setup (may take a while)",
+    "manageTitle": "Workspace",
+    "manageHint": "Switching folders uses a new workspace. Disconnect clears saved workspace state and returns to setup (files on disk are not deleted).",
+    "switchFolder": "Change folder",
+    "switchOpfs": "New browser workspace",
+    "clearWorkspace": "Disconnect workspace",
+    "clearConfirm": "Disconnect the current workspace? Saved workspace state will be cleared and you will need to pick a folder or create a workspace again. Files on disk will not be deleted."
   }
 }
