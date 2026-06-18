@@ -13,6 +13,7 @@ import {
   storagePluginLabel,
   type StoragePluginId,
 } from '@/storage/createProvider';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { LogActionType, LogStatus } from '@/types/log';
 import { useLogStore } from '@/stores/logStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -192,6 +193,10 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     loadImages: async () => {
+      if (isWorkspaceAvailable() && !isLocalListMode()) {
+        return;
+      }
+
       if (isLocalListMode()) {
         await refreshLocalIntoImageStore(set);
         return;

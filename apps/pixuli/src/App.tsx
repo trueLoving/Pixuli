@@ -12,7 +12,7 @@ import {
 } from './hooks';
 import { useI18n } from './i18n/useI18n';
 import { MainLayout } from './layouts/MainLayout';
-import { isDesktopWorkspaceAvailable } from './platforms/desktop/workspaceAdapter';
+import { isWorkspaceAvailable } from './platforms/workspacePlatform';
 import { AppRoutes } from './router/routes';
 import { useImageStore } from './stores/imageStore';
 import { useSourceStore } from './stores/sourceStore';
@@ -22,17 +22,16 @@ import { useWorkspaceStore } from './stores/workspaceStore';
 // 主应用组件（统一 Web 和 Desktop）
 function App() {
   const { t } = useI18n();
-  const { loadImages, uploadImage, uploadMultipleImages } = useImageStore();
+  const { loadImages } = useImageStore();
   const initializeWorkspace = useWorkspaceStore(state => state.initialize);
-  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const localActive = useWorkspaceStore(state => state.isLocalActive());
 
   useEffect(() => {
-    if (!isDesktopWorkspaceAvailable()) {
+    if (!isWorkspaceAvailable()) {
       return;
     }
     void initializeWorkspace().then(() => {
-      const mode = useWorkspaceStore.getState().mode;
-      if (mode === 'local' || mode === 'remote-only') {
+      if (useWorkspaceStore.getState().isLocalActive()) {
         void loadImages();
       }
     });
@@ -77,9 +76,7 @@ function App() {
   // 配置管理
   const { handleSaveConfig, handleClearConfig } = useConfigManagement();
 
-  const hasConfig =
-    sources.length > 0 ||
-    (isDesktopWorkspaceAvailable() && workspaceMode === 'local');
+  const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
   const handleLoadImages = useCallback(async () => {
     try {
@@ -88,9 +85,6 @@ function App() {
       console.error('Failed to load images:', error);
     }
   }, [loadImages]);
-
-  const handleUploadImage = uploadImage;
-  const handleUploadMultipleImages = uploadMultipleImages;
 
   // 保存配置（包装以包含 editingSourceId）
   const handleSaveConfigWithId = useMemo(
@@ -126,9 +120,9 @@ function App() {
     [handleDeleteSource, t],
   );
 
-  // 同步选中源到配置，并在同步后加载图片
+  // 同步选中源到配置（远端源仅用于同步绑定，不触发远端列表加载）
   useSelectedSourceSync(selectedSource ?? null, () => {
-    if (useWorkspaceStore.getState().isLocalActive()) {
+    if (isWorkspaceAvailable()) {
       return;
     }
     if (sources.length > 0 && selectedSource) {
@@ -187,9 +181,6 @@ function App() {
         onSourceDelete={handleDeleteSourceWithT}
         hasConfig={hasConfig}
         onAddSource={addSource}
-        onLoadImages={handleLoadImages}
-        onUploadImage={handleUploadImage}
-        onUploadMultipleImages={handleUploadMultipleImages}
         onSaveConfig={handleSaveConfigWithId}
         onClearConfig={handleClearConfigWithId}
         onSelectSourceType={handleSelectSourceType}

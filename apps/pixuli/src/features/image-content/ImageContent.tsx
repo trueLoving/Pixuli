@@ -1,8 +1,11 @@
 import { EmptyState, ImageBrowser } from '@pixuli/ui';
+import type { ImageBrowserSearchConfig } from '@pixuli/ui';
 import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
+import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageStore } from '../../stores/imageStore';
+import { useWorkspaceStore } from '../../stores/workspaceStore';
 
 interface ImageContentProps {
   hasConfig: boolean;
@@ -18,6 +21,7 @@ interface ImageContentProps {
   onUpdateImage: (data: any) => Promise<void>;
   onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, any>) => string;
+  search?: ImageBrowserSearchConfig;
 }
 
 export const ImageContent: React.FC<ImageContentProps> = ({
@@ -31,7 +35,19 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   onUpdateImage,
   onOpenConfigModal,
   t,
+  search,
 }) => {
+  const uploadImage = useImageStore(state => state.uploadImage);
+  const uploadMultipleImages = useImageStore(
+    state => state.uploadMultipleImages,
+  );
+  const batchUploadProgress = useImageStore(state => state.batchUploadProgress);
+  const imageLoading = useImageStore(state => state.loading);
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const workspaceLoading = useWorkspaceStore(state => state.loading);
+  const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
+  const uploadLoading = localActive ? workspaceLoading : imageLoading;
+
   if (!hasConfig) {
     return (
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
@@ -94,9 +110,15 @@ export const ImageContent: React.FC<ImageContentProps> = ({
         <ImageBrowser
           t={t}
           images={images}
+          hasConfig={hasConfig}
+          search={search}
           onDeleteImage={onDeleteImage}
           onDeleteMultipleImages={onDeleteMultipleImages}
           onUpdateImage={onUpdateImage}
+          onUploadImage={uploadImage}
+          onUploadMultipleImages={uploadMultipleImages}
+          uploadLoading={uploadLoading}
+          batchUploadProgress={batchUploadProgress}
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           formatFileSize={formatFileSize}
         />

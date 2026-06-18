@@ -141,4 +141,4 @@ export interface SyncEngine {
   run(options?: SyncRunOptions): Promise<SyncRunResult>;
 }
 
-export type WorkspaceMode = 'unset' | 'local' | 'remote-only';
+export type WorkspaceMode = 'unset' | 'local';

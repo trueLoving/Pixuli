@@ -1,5 +1,9 @@
 import type { ImageItem, LinkKind } from '@pixuli/core/types';
 import type { LocalImageIndexEntry } from '@pixuli/core/vault';
+import {
+  getWorkspaceAdapter,
+  isWorkspaceAvailable,
+} from '@/platforms/workspacePlatform';
 
 const previewUrlCache = new Map<string, string>();
 
@@ -18,10 +22,10 @@ export async function resolveLocalPreviewUrl(
   if (cached) {
     return cached;
   }
-  if (!window.workspaceAPI) {
-    throw new Error('workspaceAPI unavailable');
+  if (!isWorkspaceAvailable()) {
+    throw new Error('workspace unavailable');
   }
-  const bytes = await window.workspaceAPI.readFile(relativePath);
+  const bytes = await getWorkspaceAdapter().readFile(relativePath);
   const blob = new Blob([Uint8Array.from(bytes)], {
     type: mimeType || 'image/jpeg',
   });

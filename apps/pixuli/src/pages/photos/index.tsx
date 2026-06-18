@@ -10,8 +10,9 @@ import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import { createDefaultFilters, filterImages } from '@pixuli/core/utils';
-import React, { useEffect, useMemo, useRef } from 'react';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import type { ImageBrowserSearchConfig } from '@pixuli/ui';
+import React, { useMemo } from 'react';
 
 interface PhotosPageProps {
   onOpenConfigModal: () => void;
@@ -31,55 +32,29 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
   const searchContext = useSearchContextSafe();
-  const searchContextRef = useRef(searchContext);
 
   const showMigration = needsSetup && sources.length > 0;
   const showSetup = needsSetup && sources.length === 0;
-  const hasConfig = sources.length > 0 || localActive;
+  const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
-  useEffect(() => {
-    searchContextRef.current = searchContext;
+  const search = useMemo<ImageBrowserSearchConfig | undefined>(() => {
+    if (!searchContext) {
+      return undefined;
+    }
+    return {
+      searchQuery: searchContext.searchQuery,
+      onSearchChange: searchContext.setSearchQuery,
+      filters: searchContext.filters,
+      onFiltersChange: searchContext.setFilters,
+      history: searchContext.history,
+      onSelectHistory: searchContext.handleSelectHistory,
+      onDeleteHistory: searchContext.handleDeleteHistory,
+      onClearHistory: searchContext.handleClearHistory,
+      onSaveHistory: searchContext.handleSaveHistory,
+    };
   }, [searchContext]);
 
-  useEffect(() => {
-    if (searchContextRef.current) {
-      searchContextRef.current.setShowSearch(true);
-      return () => {
-        if (searchContextRef.current) {
-          searchContextRef.current.setShowSearch(false);
-        }
-      };
-    }
-  }, []);
-
-  const searchQuery = searchContext?.searchQuery ?? '';
-  const setFiltersRef = useRef(searchContext?.setFilters);
-
-  useEffect(() => {
-    setFiltersRef.current = searchContext?.setFilters;
-  }, [searchContext?.setFilters]);
-
-  useEffect(() => {
-    if (!setFiltersRef.current) return;
-
-    const currentQuery = searchQuery;
-    setFiltersRef.current(prev => {
-      if (prev.searchTerm === currentQuery) {
-        return prev;
-      }
-      return {
-        ...prev,
-        searchTerm: currentQuery,
-      };
-    });
-  }, [searchQuery]);
-
-  const filteredImages = useMemo(() => {
-    if (!searchContext) {
-      return filterImages(images, createDefaultFilters());
-    }
-    return filterImages(images, searchContext.filters);
-  }, [images, searchContext]);
+  const showWorkspaceBar = localActive;
 
   if (showMigration) {
     return (
@@ -100,7 +75,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   return (
     <div className="photos-page h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
-        {localActive && (
+        {showWorkspaceBar && (
           <div className="px-4 pt-4 sm:px-6 lg:px-8">
             <WorkspaceToolbar />
           </div>
@@ -109,12 +84,13 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
           hasConfig={hasConfig}
           error={error}
           onClearError={clearError}
-          images={filteredImages}
+          images={images}
           loading={loading}
           onDeleteImage={handleDeleteImage}
           onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
           onOpenConfigModal={onOpenConfigModal}
+          search={search}
           t={t}
         />
       </div>

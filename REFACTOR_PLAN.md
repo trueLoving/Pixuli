@@ -290,8 +290,9 @@ Android 启动器与 splash 与 RN 一致（#167）。
 
 **建议顺序**：**#164** ✅ → **#150** → **#165** → **#119/#120/#141** →
 **#161**（REF-607 P1～P3 ✅ 后）→ **#166** → **#152/#153** →
-**#151**。REF-607 下一步：**#160**（Web OPFS）→ **#161**（Mobile SAF）→
-**P7**（Gitee 代理退役）；**#159** ✅（`imageStore` local 模式）。
+**#151**。REF-607 下一步：**#161**（Mobile SAF）→
+**P7**（Gitee 代理退役）；**#159** ✅（`imageStore` local 模式）；**#160**
+✅（Web OPFS/FSA）。
 
 **与 REF-507～515 关系**：REF-512～515 仍保留计划编号；追踪统一归入
 [里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)，避免 M5 表与执行里程碑脱节。
@@ -1290,7 +1291,7 @@ Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 
 **建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** ✅ → **#150** →
 **#165** → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。REF-607
-**#156→#158** ✅、**#159** ✅；下一步 **#160** → **#161** →
+**#156→#158** ✅、**#159** ✅、**#160** ✅；下一步 **#161** →
 **P7**（代理退役与 local-only 收官）。
 
 ---
@@ -1318,7 +1319,7 @@ Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 | P2      | Desktop PoC：选目录、本地列表、手动 push                            | [#157](https://github.com/trueLoving/Pixuli/issues/157) | ✅   |
 | P3      | 索引与 pull：`index.json`、`scan()`、SyncEngine MVP                 | [#158](https://github.com/trueLoving/Pixuli/issues/158) | ✅   |
 | P4      | 应用切换：`imageStore` local 模式与迁移向导                         | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ✅   |
-| P5      | Web：OPFS/IDB 虚拟工作区适配器                                      | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ⬜   |
+| P5      | Web：OPFS/IDB 虚拟工作区适配器                                      | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ✅   |
 | P6      | Mobile：SAF / Capacitor 工作区适配器                                | [#161](https://github.com/trueLoving/Pixuli/issues/161) | ⬜   |
 | P7      | **收官**：Gitee 图片代理退役 + `remote-only` 移除 + local-only 锁死 | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⬜   |
 

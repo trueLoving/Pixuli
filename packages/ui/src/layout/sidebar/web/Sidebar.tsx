@@ -11,28 +11,21 @@ import {
   Trash2,
   Zap,
   FileImage,
-  Settings,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import './Sidebar.css';
 
-export type SidebarView =
-  | 'photos'
-  | 'explore'
-  | 'tags'
-  | 'favorites'
-  | 'settings';
+export type SidebarView = 'photos' | 'explore' | 'tags' | 'favorites';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarUtilityTool = 'compress' | 'convert';
 
-// 统一的菜单项类型（图床 + 工具 + 设置）
+// 统一的菜单项类型（图床 + 工具）
 export type SidebarMenuItem =
   | { type: 'photos' }
-  | { type: 'utility'; tool: SidebarUtilityTool }
-  | { type: 'settings' };
+  | { type: 'utility'; tool: SidebarUtilityTool };
 
 export interface SidebarSource {
   id: string;
@@ -67,6 +60,8 @@ interface SidebarProps {
   onMobileClose?: () => void;
   /** 侧栏底部区域上方插槽（如演示模式区块） */
   footerExtra?: React.ReactNode;
+  /** 为 true 时不渲染侧栏内仓库源区块（由主内容区工作区栏承载） */
+  hideSources?: boolean;
   t?: (key: string) => string;
 }
 
@@ -140,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen = false,
   onMobileClose,
   footerExtra,
+  hideSources = false,
   t,
 }) => {
   const translate = t || defaultTranslate;
@@ -214,12 +210,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
       menuItem: { type: 'utility', tool: 'convert' },
-    },
-    {
-      menuKey: 'settings',
-      icon: <Settings size={20} />,
-      label: translate('sidebar.settings'),
-      menuItem: { type: 'settings' },
     },
   ];
 
@@ -401,7 +391,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {/* 仓库源 - 折叠状态 */}
-          {sources.length > 0 && (
+          {!hideSources && sources.length > 0 && (
             <div className="sidebar-collapsed-sources">
               {sources.slice(0, 3).map(source => (
                 <button
@@ -438,18 +428,20 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {/* 添加源按钮 - 折叠状态 */}
-          <div className="sidebar-collapsed-add">
-            <button
-              onClick={onAddSource}
-              className="sidebar-collapsed-add-btn"
-              title={translate('sidebar.addSource')}
-            >
-              <Plus size={28} />
-              <span className="sidebar-collapsed-tooltip">
-                {translate('sidebar.addSource')}
-              </span>
-            </button>
-          </div>
+          {!hideSources && (
+            <div className="sidebar-collapsed-add">
+              <button
+                onClick={onAddSource}
+                className="sidebar-collapsed-add-btn"
+                title={translate('sidebar.addSource')}
+              >
+                <Plus size={28} />
+                <span className="sidebar-collapsed-tooltip">
+                  {translate('sidebar.addSource')}
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* 底部操作 - 折叠状态 */}
           <div className="sidebar-collapsed-footer">
@@ -555,81 +547,83 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* 仓库源列表 */}
-        <div className="sidebar-section sidebar-sources">
-          <div className="sidebar-section-header">
-            <span className="sidebar-section-title">
-              {translate('sidebar.sources')}
-            </span>
-            <button
-              onClick={onAddSource}
-              className="sidebar-add-source-btn"
-              title={translate('sidebar.addSource')}
-            >
-              <Plus size={16} />
-            </button>
-          </div>
-
-          {sources.length === 0 ? (
-            <div className="sidebar-empty-state">
-              <div className="sidebar-empty-icon">
-                <Plus size={24} className="text-gray-400" />
-              </div>
-              <p className="sidebar-empty-text">
-                {translate('sidebar.emptyState.text')}
-              </p>
-              <button onClick={onAddSource} className="sidebar-add-button">
+        {!hideSources && (
+          <div className="sidebar-section sidebar-sources">
+            <div className="sidebar-section-header">
+              <span className="sidebar-section-title">
+                {translate('sidebar.sources')}
+              </span>
+              <button
+                onClick={onAddSource}
+                className="sidebar-add-source-btn"
+                title={translate('sidebar.addSource')}
+              >
                 <Plus size={16} />
-                {translate('sidebar.emptyState.addSource')}
               </button>
             </div>
-          ) : (
-            <div className="sidebar-source-list">
-              {sources.map(source => {
-                const unavailable = source.available === false;
-                return (
-                  <button
-                    key={source.id}
-                    type="button"
-                    className={`sidebar-source-item ${
-                      selectedSourceId === source.id ? 'active' : ''
-                    } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
-                    onClick={() => {
-                      if (!unavailable) {
-                        onSourceSelect(source.id);
-                      }
-                    }}
-                    onContextMenu={e => handleContextMenu(e, source.id)}
-                    title={
-                      unavailable
-                        ? translate('sidebar.pluginUnavailable')
-                        : `${source.owner}/${source.repo}`
-                    }
-                    disabled={unavailable}
-                  >
-                    <div className="sidebar-source-icon">
-                      {source.type === 'github' ? (
-                        <Github size={16} />
-                      ) : (
-                        <div className="gitee-icon">码</div>
-                      )}
-                    </div>
-                    <div className="sidebar-source-info">
-                      <div className="sidebar-source-name">{source.name}</div>
-                      <div className="sidebar-source-path">
-                        {unavailable
+
+            {sources.length === 0 ? (
+              <div className="sidebar-empty-state">
+                <div className="sidebar-empty-icon">
+                  <Plus size={24} className="text-gray-400" />
+                </div>
+                <p className="sidebar-empty-text">
+                  {translate('sidebar.emptyState.text')}
+                </p>
+                <button onClick={onAddSource} className="sidebar-add-button">
+                  <Plus size={16} />
+                  {translate('sidebar.emptyState.addSource')}
+                </button>
+              </div>
+            ) : (
+              <div className="sidebar-source-list">
+                {sources.map(source => {
+                  const unavailable = source.available === false;
+                  return (
+                    <button
+                      key={source.id}
+                      type="button"
+                      className={`sidebar-source-item ${
+                        selectedSourceId === source.id ? 'active' : ''
+                      } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
+                      onClick={() => {
+                        if (!unavailable) {
+                          onSourceSelect(source.id);
+                        }
+                      }}
+                      onContextMenu={e => handleContextMenu(e, source.id)}
+                      title={
+                        unavailable
                           ? translate('sidebar.pluginUnavailable')
-                          : `${source.owner}/${source.repo}`}
+                          : `${source.owner}/${source.repo}`
+                      }
+                      disabled={unavailable}
+                    >
+                      <div className="sidebar-source-icon">
+                        {source.type === 'github' ? (
+                          <Github size={16} />
+                        ) : (
+                          <div className="gitee-icon">码</div>
+                        )}
                       </div>
-                    </div>
-                    {source.active && !unavailable && (
-                      <div className="sidebar-source-active-dot" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      <div className="sidebar-source-info">
+                        <div className="sidebar-source-name">{source.name}</div>
+                        <div className="sidebar-source-path">
+                          {unavailable
+                            ? translate('sidebar.pluginUnavailable')
+                            : `${source.owner}/${source.repo}`}
+                        </div>
+                      </div>
+                      {source.active && !unavailable && (
+                        <div className="sidebar-source-active-dot" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {footerExtra}
 

@@ -13,9 +13,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
-import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
 import { useUIStore } from '../stores/uiStore';
-import { useWorkspaceStore } from '../stores/workspaceStore';
 
 interface SidebarProps {
   sidebarSources: any[];
@@ -41,10 +39,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate();
   const isMobile = useMobileViewport();
   const { isDemoMode } = useDemoMode();
-  const workspaceMode = useWorkspaceStore(state => state.mode);
-  const displayName = useWorkspaceStore(state => state.displayName);
-  const showWorkspaceHint =
-    isDesktopWorkspaceAvailable() && workspaceMode === 'local';
   const {
     activeMenu,
     sidebarCollapsed,
@@ -55,7 +49,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setCurrentView,
     setCurrentUtilityTool,
     setActiveMenu,
-    openConfigModal,
   } = useUIStore();
 
   useEffect(() => {
@@ -96,11 +89,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (route) {
         navigate(route);
       }
-    } else if (menuItem.type === 'settings') {
-      setCurrentView('settings');
-      setCurrentUtilityTool(null);
-      setActiveMenu('settings');
-      openConfigModal();
     }
     closeDrawerIfMobile();
   };
@@ -132,6 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onSourceDelete={onSourceDelete}
           hasConfig={hasConfig}
           onAddSource={handleAddSource}
+          hideSources
           collapsed={isMobile ? false : sidebarCollapsed}
           onToggleCollapse={isMobile ? undefined : toggleSidebar}
           mobileOpen={isMobile && mobileSidebarOpen}
@@ -140,17 +129,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           t={t}
         />
       </div>
-      {showWorkspaceHint && (
-        <div
-          className="border-t border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400"
-          title={displayName ?? undefined}
-        >
-          <span className="font-medium">{t('workspace.current')}:</span>{' '}
-          <span className="truncate">
-            {displayName || t('workspace.unnamed')}
-          </span>
-        </div>
-      )}
     </div>
   );
 };

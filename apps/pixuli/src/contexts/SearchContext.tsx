@@ -1,6 +1,6 @@
 /**
  * 搜索上下文
- * 用于在 Header 中显示搜索框
+ * 用于照片页 ImageBrowser 中的搜索与筛选
  */
 
 import React, {
@@ -28,8 +28,6 @@ interface SearchContextValue {
   setFilters: (
     filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
   ) => void;
-  showSearch: boolean;
-  setShowSearch: (show: boolean) => void;
   history: SearchHistoryItem[];
   handleSelectHistory: (query: string) => void;
   handleDeleteHistory: (query: string) => void;
@@ -61,7 +59,6 @@ interface SearchProviderProps {
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterOptions>(createDefaultFilters());
-  const [showSearch, setShowSearch] = useState(false);
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
   // 加载历史记录
@@ -110,8 +107,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         setSearchQuery: handleSearchQueryChange,
         filters,
         setFilters,
-        showSearch,
-        setShowSearch,
         history,
         handleSelectHistory,
         handleDeleteHistory,

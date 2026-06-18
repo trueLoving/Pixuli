@@ -14,12 +14,7 @@ import {
 } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
-import type {
-  GiteeConfig,
-  GitHubConfig,
-  ImageUploadData,
-  MultiImageUploadData,
-} from '@pixuli/core/types';
+import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
 import {
   OfflineIndicator,
@@ -34,7 +29,7 @@ import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';
-import { isDesktopWorkspaceAvailable } from '../platforms/desktop/workspaceAdapter';
+import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
 import { listStoragePluginManifests } from '../storage/registry';
 import { getPlatform, isNativeMobile } from '../utils/platform';
 import {
@@ -58,10 +53,6 @@ interface MainLayoutProps {
   onSourceDelete: (sourceId: string) => void;
   hasConfig: boolean;
   onAddSource: () => void;
-  // Header 相关 props
-  onLoadImages: () => Promise<void>;
-  onUploadImage: (data: ImageUploadData) => Promise<void>;
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
   // 配置相关 props（用于弹窗）
   onSaveConfig: (config: any) => void;
   onClearConfig: () => void;
@@ -77,9 +68,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onSourceDelete,
   hasConfig,
   onAddSource,
-  onLoadImages,
-  onUploadImage,
-  onUploadMultipleImages,
   onSaveConfig,
   onClearConfig,
   onSelectSourceType,
@@ -88,8 +76,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { loading, storageType, githubConfig, giteeConfig } = useImageStore();
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
-  const localActive =
-    isDesktopWorkspaceAvailable() && workspaceMode === 'local';
+  const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
   const showGlobalLoading = localActive ? workspaceLoading : loading;
   const sources = useSourceStore(state => state.sources);
   const { isDemoMode } = useDemoMode();
@@ -173,14 +160,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      <AppMain
-        hasConfig={hasConfig}
-        onLoadImages={onLoadImages}
-        onUploadImage={onUploadImage}
-        onUploadMultipleImages={onUploadMultipleImages}
-      >
-        {children}
-      </AppMain>
+      <AppMain>{children}</AppMain>
 
       <SourceTypeMenu
         isOpen={showSourceTypeMenu}
