@@ -74,7 +74,7 @@ export const WorkspaceSourceSection: React.FC<{
 
   return (
     <div
-      className={showDivider ? 'mt-3 border-t border-gray-200 pt-3' : undefined}
+      className={`workspace-source-section${showDivider ? ' mt-3 border-t border-gray-200 pt-3' : ''}`}
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-xs font-medium text-gray-700">
@@ -83,7 +83,7 @@ export const WorkspaceSourceSection: React.FC<{
         <button
           type="button"
           onClick={addSource}
-          className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+          className="workspace-source-add-btn inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
           title={t('sidebar.addSource')}
         >
           <Plus size={14} />
@@ -114,7 +114,7 @@ export const WorkspaceSourceSection: React.FC<{
                       ? t('sidebar.pluginUnavailable')
                       : `${source.owner}/${source.repo}`
                   }
-                  className={`inline-flex max-w-[min(100%,14rem)] items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-left text-xs transition-colors ${
+                  className={`workspace-source-chip inline-flex max-w-[min(100%,14rem)] items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-left text-xs transition-colors ${
                     active
                       ? 'border-blue-400 bg-blue-50 text-blue-900'
                       : 'border-gray-200 bg-white text-gray-800 hover:bg-gray-50'
@@ -132,7 +132,7 @@ export const WorkspaceSourceSection: React.FC<{
                 </button>
                 <button
                   type="button"
-                  className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                  className="workspace-source-menu-btn rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                   title={t('sidebar.editSource')}
                   onClick={event => openContextMenu(event, source.id)}
                   aria-label={t('sidebar.editSource')}

@@ -15,7 +15,7 @@ interface GiteeConfigModalProps {
   giteeConfig?: GiteeConfig | null;
   onSaveConfig: (config: GiteeConfig) => void;
   onClearConfig: () => void;
-  platform?: 'web' | 'desktop';
+  platform?: 'web' | 'desktop' | 'mobile';
   t?: (key: string) => string;
 }
 

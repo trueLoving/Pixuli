@@ -291,17 +291,131 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
+      const { files, name, description, tags } = uploadData;
+
       if (isLocalListMode()) {
-        const { files, name, description, tags } = uploadData;
-        for (const file of files) {
-          await useWorkspaceStore.getState().importLocalImage({
-            file,
-            name,
-            description,
-            tags,
-          });
+        const total = files.length;
+        if (total === 0) {
+          return;
         }
-        await refreshLocalIntoImageStore(set);
+
+        let completed = 0;
+        let failed = 0;
+        const startTime = Date.now();
+        const items: UploadProgress[] = files.map((_file, index) => ({
+          id: `${Date.now()}-${index}`,
+          progress: 0,
+          status: 'uploading' as const,
+          message: '等待导入...',
+        }));
+
+        set({
+          loading: true,
+          error: null,
+          batchUploadProgress: {
+            total,
+            completed: 0,
+            failed: 0,
+            current: files[0]?.name,
+            items,
+          },
+        });
+
+        try {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const itemId = items[i].id;
+            set(state => ({
+              batchUploadProgress: state.batchUploadProgress
+                ? {
+                    ...state.batchUploadProgress,
+                    current: file.name,
+                    items: state.batchUploadProgress.items.map(item =>
+                      item.id === itemId
+                        ? {
+                            ...item,
+                            status: 'uploading',
+                            message: '正在导入...',
+                          }
+                        : item,
+                    ),
+                  }
+                : null,
+            }));
+
+            try {
+              await useWorkspaceStore.getState().importLocalImage({
+                file,
+                name,
+                description,
+                tags,
+              });
+              completed++;
+              set(state => ({
+                batchUploadProgress: state.batchUploadProgress
+                  ? {
+                      ...state.batchUploadProgress,
+                      completed,
+                      items: state.batchUploadProgress.items.map(item =>
+                        item.id === itemId
+                          ? {
+                              ...item,
+                              status: 'success',
+                              progress: 100,
+                              message: '导入成功',
+                            }
+                          : item,
+                      ),
+                    }
+                  : null,
+              }));
+            } catch (error) {
+              failed++;
+              const errorMessage =
+                error instanceof Error ? error.message : '导入失败';
+              set(state => ({
+                batchUploadProgress: state.batchUploadProgress
+                  ? {
+                      ...state.batchUploadProgress,
+                      failed,
+                      items: state.batchUploadProgress.items.map(item =>
+                        item.id === itemId
+                          ? {
+                              ...item,
+                              status: 'error',
+                              message: errorMessage,
+                            }
+                          : item,
+                      ),
+                    }
+                  : null,
+              }));
+            }
+          }
+
+          await refreshLocalIntoImageStore(set);
+          set({ batchUploadProgress: null });
+          useLogStore
+            .getState()
+            .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
+              details: { total, completed, failed },
+              duration: Date.now() - startTime,
+            });
+        } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : '批量导入失败';
+          set({
+            error: errorMsg,
+            loading: false,
+            batchUploadProgress: null,
+          });
+          useLogStore
+            .getState()
+            .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
+              error: errorMsg,
+              details: { total, completed, failed },
+            });
+        }
         return;
       }
 
@@ -314,7 +428,6 @@ export const useImageStore = create<ImageState>((set, get) => {
         return;
       }
 
-      const { files, name, description, tags } = uploadData;
       const total = files.length;
       let completed = 0;
       let failed = 0;
@@ -516,10 +629,18 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
+      if (imageIds.length === 0) {
+        return;
+      }
+
+      const batchLogDetails = {
+        imageIds,
+        imageNames: fileNames,
+        count: imageIds.length,
+      };
+
       if (isLocalListMode()) {
-        if (imageIds.length === 0) {
-          return;
-        }
+        const startTime = Date.now();
         set({ loading: true, error: null });
         try {
           const { images } = get();
@@ -532,11 +653,25 @@ export const useImageStore = create<ImageState>((set, get) => {
             }
           }
           await refreshLocalIntoImageStore(set);
+          useLogStore
+            .getState()
+            .addLog(LogActionType.BATCH_DELETE, LogStatus.SUCCESS, {
+              details: batchLogDetails,
+              duration: Date.now() - startTime,
+            });
         } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : '批量删除图片失败';
           set({
             loading: false,
-            error: error instanceof Error ? error.message : '批量删除图片失败',
+            error: errorMsg,
           });
+          useLogStore
+            .getState()
+            .addLog(LogActionType.BATCH_DELETE, LogStatus.FAILED, {
+              details: batchLogDetails,
+              error: errorMsg,
+            });
         }
         return;
       }
@@ -547,10 +682,6 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: `${storagePluginLabel(storageType)} 配置未初始化`,
           loading: false,
         });
-        return;
-      }
-
-      if (imageIds.length === 0) {
         return;
       }
 
@@ -568,14 +699,12 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false,
         }));
 
-        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
-          details: {
-            imageIds,
-            imageNames: fileNames,
-            count: imageIds.length,
-          },
-          duration,
-        });
+        useLogStore
+          .getState()
+          .addLog(LogActionType.BATCH_DELETE, LogStatus.SUCCESS, {
+            details: batchLogDetails,
+            duration,
+          });
       } catch (error) {
         const duration = Date.now() - startTime;
         const errorMsg =
@@ -585,15 +714,13 @@ export const useImageStore = create<ImageState>((set, get) => {
           loading: false,
         });
 
-        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
-          details: {
-            imageIds,
-            imageNames: fileNames,
-            count: imageIds.length,
-          },
-          error: errorMsg,
-          duration,
-        });
+        useLogStore
+          .getState()
+          .addLog(LogActionType.BATCH_DELETE, LogStatus.FAILED, {
+            details: batchLogDetails,
+            error: errorMsg,
+            duration,
+          });
       } finally {
         set({ loading: false });
       }

@@ -181,6 +181,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         githubConfig={modalGitHubConfig}
         onSaveConfig={onSaveConfig}
         onClearConfig={onClearConfig}
+        platform={platform}
         t={t}
       />
 

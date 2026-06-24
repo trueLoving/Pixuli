@@ -256,8 +256,21 @@
     padding-top: max(1rem, env(safe-area-inset-top, 0));
   }
 
+  .image-batch-delete-modal-close {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
   .image-batch-delete-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0));
+  }
+
+  .image-batch-delete-modal-cancel,
+  .image-batch-delete-modal-confirm {
+    width: 100%;
+    justify-content: center;
   }
 
   .image-batch-delete-modal-image-list {
