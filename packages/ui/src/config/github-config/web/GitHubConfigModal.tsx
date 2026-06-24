@@ -15,7 +15,7 @@ interface GitHubConfigModalProps {
   githubConfig?: GitHubConfig | null;
   onSaveConfig: (config: GitHubConfig) => void;
   onClearConfig: () => void;
-  platform?: 'web' | 'desktop';
+  platform?: 'web' | 'desktop' | 'mobile';
   t?: (key: string) => string;
 }
 

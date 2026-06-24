@@ -456,6 +456,22 @@ body {
     max-width: 100%;
   }
 
+  .image-content-stats {
+    display: none;
+  }
+
+  .workspace-source-section .workspace-source-add-btn,
+  .workspace-source-section .workspace-source-menu-btn {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+
+  .workspace-source-section .workspace-source-chip {
+    min-height: 2.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
   .workspace-toolbar {
     padding-left: max(0.75rem, env(safe-area-inset-left, 0));
     padding-right: max(0.75rem, env(safe-area-inset-right, 0));
