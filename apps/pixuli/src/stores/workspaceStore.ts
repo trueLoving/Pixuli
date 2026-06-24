@@ -24,10 +24,12 @@ import {
 } from '../features/workspace/localImageMapper';
 import {
   getWorkspaceAdapter,
+  isMobileWorkspaceActive,
   isWebWorkspaceActive,
   isWorkspaceAvailable,
   resetWorkspaceAdapter,
 } from '../platforms/workspacePlatform';
+import { isMobileWorkspaceAdapter } from '../platforms/mobile/workspaceAdapter';
 import { isWebWorkspaceAdapter } from '../platforms/web/workspaceAdapter';
 import {
   deleteFsaDirectoryHandle,
@@ -189,7 +191,7 @@ async function pickAdapterRoot(
 function readFolderLabel(
   adapter: ReturnType<typeof getWorkspaceAdapter>,
 ): string | null {
-  if (isWebWorkspaceAdapter(adapter)) {
+  if (isWebWorkspaceAdapter(adapter) || isMobileWorkspaceAdapter(adapter)) {
     return adapter.getFolderLabel();
   }
   return null;
@@ -246,7 +248,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         mode: 'unset',
         error: isWebWorkspaceActive()
           ? '当前浏览器不支持本地工作区（需 OPFS 或文件夹访问 API）'
-          : null,
+          : isMobileWorkspaceActive()
+            ? '当前设备无法初始化本地工作区'
+            : null,
       });
       return;
     }

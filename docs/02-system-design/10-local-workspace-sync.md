@@ -477,16 +477,16 @@ OneDrive 等不得沿用此模式**）。
 
 ## 九、分阶段交付
 
-| 阶段               | 范围                                                               | 产物                                                    | 依赖             | Issue                                                      |
-| ------------------ | ------------------------------------------------------------------ | ------------------------------------------------------- | ---------------- | ---------------------------------------------------------- |
-| **P0 设计**        | 本文 + #144 勾选「技术设计」                                       | 本文件、接口草案                                        | REF-601 ✅       | [#155](https://github.com/trueLoving/Pixuli/issues/155) ✅ |
-| **P1 Core 契约**   | `@pixuli/core/vault` 类型 + 内存/假适配器单测                      | `vault/types.ts`、测试                                  | P0               | [#156](https://github.com/trueLoving/Pixuli/issues/156)    |
-| **P2 Desktop PoC** | 选目录、本地列表、单文件上传至本地、手动 push 一张到 GitHub/Gitee  | Electron `WorkspaceAdapter`、`workspaceStore`、最小 UI  | P1、M3 Provider  | [#157](https://github.com/trueLoving/Pixuli/issues/157)    |
-| **P3 索引与 pull** | `index.json`、`scan()`、单向 pull、同步状态徽章                    | `SyncEngine` MVP                                        | P2               | [#158](https://github.com/trueLoving/Pixuli/issues/158)    |
-| **P4 应用切换**    | `imageStore` 在 local 模式走 `LocalVault`；迁移向导与 binding 同步 | 特性开关 / 迁移向导（`remote-only` 已于 P5 移除）       | P3、REF-507 可选 | [#159](https://github.com/trueLoving/Pixuli/issues/159) ✅ |
-| **P5 Web**         | OPFS 或 IDB 虚拟工作区；FSA 可选增强                               | Web `WorkspaceAdapter`                                  | REF-503 能力说明 | [#160](https://github.com/trueLoving/Pixuli/issues/160)    |
-| **P6 Mobile**      | SAF / Capacitor 文件插件                                           | Mobile 适配器                                           | REF-510          | [#161](https://github.com/trueLoving/Pixuli/issues/161)    |
-| **P7 代理退役**    | Gitee image proxy 整段删除；`remote-only` 移除；local-only 锁死    | 无 `useProxy` / Host 集成；新 Provider 禁止同源图片代理 | P5、P6           | [#173](https://github.com/trueLoving/Pixuli/issues/173)    |
+| 阶段               | 范围                                                               | 产物                                                                                             | 依赖             | Issue                                                      |
+| ------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------- |
+| **P0 设计**        | 本文 + #144 勾选「技术设计」                                       | 本文件、接口草案                                                                                 | REF-601 ✅       | [#155](https://github.com/trueLoving/Pixuli/issues/155) ✅ |
+| **P1 Core 契约**   | `@pixuli/core/vault` 类型 + 内存/假适配器单测                      | `vault/types.ts`、测试                                                                           | P0               | [#156](https://github.com/trueLoving/Pixuli/issues/156)    |
+| **P2 Desktop PoC** | 选目录、本地列表、单文件上传至本地、手动 push 一张到 GitHub/Gitee  | Electron `WorkspaceAdapter`、`workspaceStore`、最小 UI                                           | P1、M3 Provider  | [#157](https://github.com/trueLoving/Pixuli/issues/157)    |
+| **P3 索引与 pull** | `index.json`、`scan()`、单向 pull、同步状态徽章                    | `SyncEngine` MVP                                                                                 | P2               | [#158](https://github.com/trueLoving/Pixuli/issues/158)    |
+| **P4 应用切换**    | `imageStore` 在 local 模式走 `LocalVault`；迁移向导与 binding 同步 | 特性开关 / 迁移向导（`remote-only` 已于 P5 移除）                                                | P3、REF-507 可选 | [#159](https://github.com/trueLoving/Pixuli/issues/159) ✅ |
+| **P5 Web**         | OPFS 或 IDB 虚拟工作区；FSA 可选增强                               | Web `WorkspaceAdapter`                                                                           | REF-503 能力说明 | [#160](https://github.com/trueLoving/Pixuli/issues/160)    |
+| **P6 Mobile**      | SAF / Capacitor 文件插件                                           | Mobile 适配器（`Directory.Data` 沙箱，`mobile://`；`@capacitor/clipboard` 复制链接；SAF → #120） | REF-510          | [#161](https://github.com/trueLoving/Pixuli/issues/161) ✅ |
+| **P7 代理退役**    | Gitee image proxy 整段删除；`remote-only` 移除；local-only 锁死    | 无 `useProxy` / Host 集成；新 Provider 禁止同源图片代理                                          | P5、P6           | [#173](https://github.com/trueLoving/Pixuli/issues/173)    |
 
 里程碑：[REF-607-本地工作区分阶段](https://github.com/trueLoving/Pixuli/milestone/7)
 · 父 Issue [#144](https://github.com/trueLoving/Pixuli/issues/144)
@@ -526,15 +526,26 @@ OneDrive 等不得沿用此模式**）。
 
 ## 十一、三端平台适配
 
-| 端                      | 本地根                  | 实现优先级 | 说明                                |
-| ----------------------- | ----------------------- | ---------- | ----------------------------------- |
-| **Desktop**             | 用户任选文件夹          | **P0**     | Electron main FS + IPC              |
-| **Web**                 | OPFS / IndexedDB 虚拟根 | P2         | 无真实 `file://`；复制链接仅 remote |
-| **Mobile（Capacitor）** | SAF / 应用沙箱          | P3         | REF-510；与 RN 过渡期并存           |
+| 端                      | 本地根                  | 实现优先级 | 说明                                                    |
+| ----------------------- | ----------------------- | ---------- | ------------------------------------------------------- |
+| **Desktop**             | 用户任选文件夹          | **P0**     | Electron main FS + IPC                                  |
+| **Web**                 | OPFS / IndexedDB 虚拟根 | P2         | 无真实 `file://`；复制链接仅 remote                     |
+| **Mobile（Capacitor）** | SAF / 应用沙箱          | P3         | P6 PoC：`Directory.Data` 沙箱 + `mobile://`；SAF → #120 |
 
 Web **File System Access
 API**：可用则允许「连接本地文件夹」；不可用则仅 OPFS + 文案说明（REF-601
 §2.2）。
+
+### 11.1 与 `apps/mobile`（Expo RN）边界
+
+| 项           | Capacitor（`apps/pixuli`）                                | RN（`apps/mobile`）                               |
+| ------------ | --------------------------------------------------------- | ------------------------------------------------- |
+| **包名**     | `com.pixuli.app`                                          | `com.pixuli.mobile`                               |
+| **工作区**   | `MobileWorkspaceAdapter` + `@capacitor/filesystem`        | 独立 RN 存储，**不共享** vault 实现               |
+| **产品路线** | REF-509 / REF-607 P6 主路径                               | REF-508 过渡维护，PoC 通过后评估退场              |
+| **代码复用** | `@pixuli/core` vault 契约、`workspaceStore`、`SyncEngine` | 仅 core / provider 层；无 `WorkspaceAdapter` 复用 |
+
+Capacitor 与 RN 可并存安装；本地工作区数据**不**跨应用迁移（各自沙箱）。
 
 ---
 

@@ -37,6 +37,7 @@ interface ImageListProps {
   ) => Promise<{ width: number; height: number }>;
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
+  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
 }
 
 const ImageListComponent: React.FC<ImageListProps> = ({
@@ -48,6 +49,7 @@ const ImageListComponent: React.FC<ImageListProps> = ({
   getImageDimensionsFromUrl,
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   t,
+  onCopyUrl: onCopyUrlProp,
 }) => {
   const translate = t;
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
@@ -247,7 +249,11 @@ const ImageListComponent: React.FC<ImageListProps> = ({
   const handleCopyUrl = useCallback(
     async (url: string, type: 'url' | 'githubUrl') => {
       try {
-        await navigator.clipboard.writeText(url);
+        if (onCopyUrlProp) {
+          await onCopyUrlProp(url, type);
+        } else {
+          await navigator.clipboard.writeText(url);
+        }
         const urlTypeText =
           type === 'url'
             ? translate('image.list.imageUrlCopied')
@@ -270,7 +276,7 @@ const ImageListComponent: React.FC<ImageListProps> = ({
         });
       }
     },
-    [translate],
+    [translate, onCopyUrlProp],
   );
 
   const handleOpenUrl = useCallback((url: string) => {

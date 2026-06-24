@@ -66,6 +66,7 @@ interface ImageBrowserProps {
   onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<void>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
+  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
@@ -83,6 +84,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onUploadMultipleImages,
   uploadLoading = false,
   batchUploadProgress,
+  onCopyUrl,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
@@ -584,6 +586,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             onUpdateImage={onUpdateImage}
             getImageDimensionsFromUrl={getImageDimensionsFromUrl}
             formatFileSize={formatFileSize}
+            onCopyUrl={onCopyUrl}
           />
         </div>
         <div
@@ -598,6 +601,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             onUpdateImage={onUpdateImage}
             getImageDimensionsFromUrl={getImageDimensionsFromUrl}
             formatFileSize={formatFileSize}
+            onCopyUrl={onCopyUrl}
           />
         </div>
       </div>

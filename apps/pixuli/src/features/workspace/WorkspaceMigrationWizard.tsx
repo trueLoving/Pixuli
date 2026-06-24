@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FolderOpen, FolderSync } from 'lucide-react';
 import {
   isFileSystemAccessSupported,
+  isMobileWorkspaceActive,
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
@@ -23,6 +24,7 @@ export const WorkspaceMigrationWizard: React.FC<
   const loadImages = useImageStore(state => state.loadImages);
   const [pullAfter, setPullAfter] = useState(false);
   const isWebWorkspace = isWebWorkspaceActive();
+  const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
 
@@ -31,8 +33,10 @@ export const WorkspaceMigrationWizard: React.FC<
     onComplete?.();
   };
 
-  const handlePickLocal = async (backend: 'opfs' | 'fsa') => {
-    const ok = await pickWorkspace({ pullAfter, backend });
+  const handlePickLocal = async (backend?: 'opfs' | 'fsa') => {
+    const ok = await pickWorkspace(
+      backend ? { pullAfter, backend } : { pullAfter },
+    );
     if (ok) {
       await finish();
     }
@@ -45,9 +49,11 @@ export const WorkspaceMigrationWizard: React.FC<
           {t('workspace.migrationTitle')}
         </h2>
         <p className="text-sm text-gray-600 mb-6">
-          {isWebWorkspace
-            ? t('workspace.migrationHintWebLocal', { count: sourceCount })
-            : t('workspace.migrationHint', { count: sourceCount })}
+          {isMobileWorkspace
+            ? t('workspace.migrationHintMobile', { count: sourceCount })
+            : isWebWorkspace
+              ? t('workspace.migrationHintWebLocal', { count: sourceCount })
+              : t('workspace.migrationHint', { count: sourceCount })}
         </p>
 
         <div className="rounded-lg border border-gray-200 p-4">
@@ -55,14 +61,18 @@ export const WorkspaceMigrationWizard: React.FC<
             <FolderOpen className="mt-0.5 shrink-0 text-blue-600" size={22} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900">
-                {isWebWorkspace
-                  ? t('workspace.migrationLocalTitleWeb')
-                  : t('workspace.migrationLocalTitle')}
+                {isMobileWorkspace
+                  ? t('workspace.migrationLocalTitleMobile')
+                  : isWebWorkspace
+                    ? t('workspace.migrationLocalTitleWeb')
+                    : t('workspace.migrationLocalTitle')}
               </p>
               <p className="mt-1 text-xs text-gray-600">
-                {isWebWorkspace
-                  ? t('workspace.migrationLocalHintWeb')
-                  : t('workspace.migrationLocalHint')}
+                {isMobileWorkspace
+                  ? t('workspace.migrationLocalHintMobile')
+                  : isWebWorkspace
+                    ? t('workspace.migrationLocalHintWeb')
+                    : t('workspace.migrationLocalHint')}
               </p>
               <label className="mt-3 flex items-center gap-2 text-xs text-gray-700">
                 <input
@@ -74,6 +84,19 @@ export const WorkspaceMigrationWizard: React.FC<
                 {t('workspace.migrationPullAfter')}
               </label>
               <div className="mt-3 flex flex-col gap-2">
+                {isMobileWorkspace && (
+                  <button
+                    type="button"
+                    onClick={() => void handlePickLocal()}
+                    disabled={loading}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                  >
+                    <FolderOpen size={16} />
+                    {loading
+                      ? t('workspace.picking')
+                      : t('workspace.createMobileWorkspace')}
+                  </button>
+                )}
                 {canPickFolder && (
                   <button
                     type="button"
@@ -104,10 +127,10 @@ export const WorkspaceMigrationWizard: React.FC<
                       : t('workspace.createWorkspace')}
                   </button>
                 )}
-                {!isWebWorkspace && (
+                {!isWebWorkspace && !isMobileWorkspace && (
                   <button
                     type="button"
-                    onClick={() => void handlePickLocal('opfs')}
+                    onClick={() => void handlePickLocal()}
                     disabled={loading}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
                   >

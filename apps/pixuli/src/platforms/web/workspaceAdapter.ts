@@ -1,4 +1,5 @@
 import type { WorkspaceAdapter } from '@pixuli/core/vault';
+import { randomUUID } from '@pixuli/core/utils';
 import { isNativeMobile } from '@/utils/platform';
 import {
   formatFsaRootPath,
@@ -110,7 +111,7 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
     if (!isOpfsSupported()) {
       return false;
     }
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     await opfsEnsureWorkspace(id);
     this.backend = 'opfs';
     this.workspaceId = id;
@@ -126,7 +127,7 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
     if (!handle) {
       return false;
     }
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     await storeFsaDirectoryHandle(id, handle);
     await fsaEnsureWorkspace(handle);
     this.backend = 'fsa';

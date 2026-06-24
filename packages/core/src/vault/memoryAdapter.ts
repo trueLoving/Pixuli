@@ -1,4 +1,5 @@
 import type { WorkspaceAdapter, WorkspaceAdapterKind } from './types';
+import { randomUUID } from '../utils/randomUUID';
 
 /**
  * 内存工作区适配器，供单测与 P1 契约验证；不依赖真实 FS。
@@ -21,7 +22,7 @@ export class MemoryWorkspaceAdapter implements WorkspaceAdapter {
   }
 
   async pickRoot(): Promise<boolean> {
-    this.root = `memory://${crypto.randomUUID()}`;
+    this.root = `memory://${randomUUID()}`;
     return true;
   }
 

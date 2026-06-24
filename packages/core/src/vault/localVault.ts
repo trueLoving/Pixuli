@@ -1,4 +1,5 @@
 import { WORKSPACE_PATHS, WORKSPACE_SCHEMA_VERSION } from './paths';
+import { randomUUID } from '../utils/randomUUID';
 import type {
   LocalImageIndexEntry,
   LocalListOptions,
@@ -54,7 +55,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
 
     const initial: WorkspaceConfig = {
       schemaVersion: WORKSPACE_SCHEMA_VERSION,
-      workspaceId: crypto.randomUUID(),
+      workspaceId: randomUUID(),
       displayName: 'Pixuli Library',
       createdAt: nowIso(),
       bindings: [],
