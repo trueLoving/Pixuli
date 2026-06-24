@@ -392,7 +392,8 @@
 
 .image-grid-actions-mobile .image-action-button {
   flex: 1;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
   border-radius: 0.375rem;
   border: 1px solid #e5e7eb;
   background: #f9fafb;

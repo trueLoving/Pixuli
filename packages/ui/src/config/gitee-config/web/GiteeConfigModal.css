@@ -314,6 +314,14 @@
     justify-content: center;
   }
 
+  .gitee-config-modal-close {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .gitee-config-form-save-button,
   .gitee-config-modal-actions button {
     min-height: 2.75rem;

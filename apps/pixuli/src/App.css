@@ -452,6 +452,39 @@ body {
   .photos-page {
     padding-left: env(safe-area-inset-left, 0);
     padding-right: env(safe-area-inset-right, 0);
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  .workspace-toolbar {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0));
+  }
+
+  .workspace-toolbar-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 0.125rem;
+  }
+
+  .workspace-toolbar-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .workspace-toolbar-actions > button {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    white-space: nowrap;
+  }
+
+  .operation-log-modal-panel {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
   .utility-page {

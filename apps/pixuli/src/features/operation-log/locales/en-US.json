@@ -47,5 +47,6 @@
   "startDate": "Start Date",
   "endDate": "End Date",
   "reset": "Reset",
-  "apply": "Apply"
+  "apply": "Apply",
+  "close": "Close"
 }
