@@ -210,17 +210,22 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       return { ...entry };
     },
 
-    async upsertBindings(bindings) {
+    async upsertBindings(bindings, options) {
       if (!config) {
         throw new Error('LocalVault is not open; call open() first');
       }
-      const byId = new Map(config.bindings.map(item => [item.id, item]));
-      for (const binding of bindings) {
-        byId.set(binding.id, binding);
-      }
+      const nextBindings = options?.replace
+        ? bindings
+        : (() => {
+            const byId = new Map(config.bindings.map(item => [item.id, item]));
+            for (const binding of bindings) {
+              byId.set(binding.id, binding);
+            }
+            return Array.from(byId.values());
+          })();
       config = {
         ...config,
-        bindings: Array.from(byId.values()),
+        bindings: nextBindings,
       };
       await persistConfig();
       return config;

@@ -7,4 +7,5 @@ export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useRouteSync } from './useRouteSync';
 export { useSelectedSourceSync } from './useSelectedSourceSync';
 export { useSourceManagement } from './useSourceManagement';
+export { useWorkspaceBindingSync } from './useWorkspaceBindingSync';
 export { useUIState } from './useUIState';
