@@ -331,10 +331,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
     const sources = useSourceStore.getState().sources;
-    if (sources.length === 0) {
-      return;
-    }
-    await getVault().upsertBindings(storedSourcesToWorkspaceBindings(sources));
+    await getVault().upsertBindings(storedSourcesToWorkspaceBindings(sources), {
+      replace: true,
+    });
     resetSyncEngineOnly();
   },
 

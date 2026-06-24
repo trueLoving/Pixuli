@@ -9,6 +9,7 @@ import {
   useKeyboardShortcuts,
   useSelectedSourceSync,
   useSourceManagement,
+  useWorkspaceBindingSync,
 } from './hooks';
 import { useI18n } from './i18n/useI18n';
 import { MainLayout } from './layouts/MainLayout';
@@ -129,6 +130,8 @@ function App() {
       handleLoadImages();
     }
   });
+
+  useWorkspaceBindingSync();
 
   // 应用初始化
   useAppInitialization(isDemoMode, hasConfig, handleLoadImages);
