@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import {
   isFileSystemAccessSupported,
+  isMobileWorkspaceActive,
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
@@ -38,11 +39,12 @@ export const WorkspaceSetupPanel: React.FC = () => {
   const { pickWorkspace, loading, error } = useWorkspaceStore();
   const loadImages = useImageStore(state => state.loadImages);
   const isWebWorkspace = isWebWorkspaceActive();
+  const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
 
-  const handlePick = async (backend: 'opfs' | 'fsa') => {
-    const ok = await pickWorkspace({ backend });
+  const handlePick = async (backend?: 'opfs' | 'fsa') => {
+    const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
       await loadImages();
     }
@@ -56,11 +58,26 @@ export const WorkspaceSetupPanel: React.FC = () => {
           {t('workspace.setupTitle')}
         </h2>
         <p className="text-sm text-gray-600 mb-6">
-          {isWebWorkspace
-            ? t('workspace.setupHintWebLocal')
-            : t('workspace.setupHint')}
+          {isMobileWorkspace
+            ? t('workspace.setupHintMobile')
+            : isWebWorkspace
+              ? t('workspace.setupHintWebLocal')
+              : t('workspace.setupHint')}
         </p>
         <div className="flex flex-col gap-3">
+          {isMobileWorkspace && (
+            <button
+              type="button"
+              onClick={() => void handlePick()}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            >
+              <FolderOpen size={16} />
+              {loading
+                ? t('workspace.picking')
+                : t('workspace.createMobileWorkspace')}
+            </button>
+          )}
           {canPickFolder && (
             <button
               type="button"
@@ -89,10 +106,10 @@ export const WorkspaceSetupPanel: React.FC = () => {
                 : t('workspace.createWorkspace')}
             </button>
           )}
-          {!isWebWorkspace && (
+          {!isWebWorkspace && !isMobileWorkspace && (
             <button
               type="button"
-              onClick={() => void handlePick('opfs')}
+              onClick={() => void handlePick()}
               disabled={loading}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
             >
@@ -135,11 +152,12 @@ export const WorkspaceToolbar: React.FC = () => {
   const hasRemote = sources.length > 0;
   const busy = pushing || syncing || loading;
   const isWebWorkspace = isWebWorkspaceActive();
+  const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
 
-  const handleSwitchWorkspace = async (backend: 'opfs' | 'fsa') => {
-    const ok = await pickWorkspace({ backend });
+  const handleSwitchWorkspace = async (backend?: 'opfs' | 'fsa') => {
+    const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
       await loadImages();
     }
@@ -159,6 +177,11 @@ export const WorkspaceToolbar: React.FC = () => {
           <p className="text-sm font-medium text-gray-900">
             {t('workspace.current')}: {displayName || t('workspace.unnamed')}
           </p>
+          {rootPath?.startsWith('mobile://') && (
+            <p className="text-xs text-gray-500">
+              {t('workspace.mobileStorage')}
+            </p>
+          )}
           {rootPath?.startsWith('fsa://') && (
             <p className="text-xs text-gray-500">{t('workspace.fsaStorage')}</p>
           )}
@@ -167,7 +190,8 @@ export const WorkspaceToolbar: React.FC = () => {
           )}
           {rootPath &&
             !rootPath.startsWith('opfs://') &&
-            !rootPath.startsWith('fsa://') && (
+            !rootPath.startsWith('fsa://') &&
+            !rootPath.startsWith('mobile://') && (
               <p className="text-xs text-gray-500 truncate" title={rootPath}>
                 {rootPath}
               </p>
@@ -283,10 +307,23 @@ export const WorkspaceToolbar: React.FC = () => {
               {loading ? t('workspace.picking') : t('workspace.switchOpfs')}
             </button>
           )}
-          {!isWebWorkspace && (
+          {isMobileWorkspace && (
             <button
               type="button"
-              onClick={() => void handleSwitchWorkspace('opfs')}
+              onClick={() => void handleSwitchWorkspace()}
+              disabled={busy}
+              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <FolderOpen size={16} />
+              {loading
+                ? t('workspace.picking')
+                : t('workspace.switchMobileWorkspace')}
+            </button>
+          )}
+          {!isWebWorkspace && !isMobileWorkspace && (
+            <button
+              type="button"
+              onClick={() => void handleSwitchWorkspace()}
               disabled={busy}
               className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
             >

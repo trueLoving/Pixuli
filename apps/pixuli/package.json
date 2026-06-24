@@ -36,6 +36,7 @@
     "@capacitor/android": "^7.6.6",
     "@capacitor/app": "^7.1.2",
     "@capacitor/core": "^7.6.6",
+    "@capacitor/filesystem": "^7.1.8",
     "@pixuli/core": "workspace:*",
     "@pixuli/provider-gitee": "workspace:*",
     "@pixuli/provider-github": "workspace:*",
