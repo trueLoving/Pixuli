@@ -4,6 +4,7 @@ import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import { RefreshCw } from 'lucide-react';
 import React from 'react';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
+import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
 import { useImageStore } from '../../stores/imageStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 
@@ -47,6 +48,7 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
   const uploadLoading = localActive ? workspaceLoading : imageLoading;
+  const onCopyUrl = useImageCopyUrl();
 
   if (!hasConfig) {
     return (
@@ -121,6 +123,7 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           batchUploadProgress={batchUploadProgress}
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           formatFileSize={formatFileSize}
+          onCopyUrl={onCopyUrl}
         />
       </div>
     </div>

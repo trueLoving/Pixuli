@@ -217,6 +217,23 @@ VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
 **P3 三端单工程发布**（CI 产出 Web/Desktop/Android）；否则继续 **#117/#119**
 RN 过渡方案。
 
+### 6.1 Mobile 本地工作区（#161 / REF-607 P6）
+
+Capacitor 沙箱工作区（`Directory.Data` + `mobile://`
+虚拟根）。**功能已交付**；Android 真机 parity 冒烟归入
+[#166](https://github.com/trueLoving/Pixuli/issues/166)，若发现问题另开 Issue 跟进。
+
+```bash
+# 首次或新增原生依赖后
+pnpm --filter pixuli-app exec cap sync android
+pnpm dev:android   # 或 build:android:debug 离线包
+```
+
+参考流程：创建应用工作区 → 上传 → 配源 → push/pull → 复制远端链接。
+
+> **SAF 用户目录**（可选外部存储）规划于
+> [#120](https://github.com/trueLoving/Pixuli/issues/120)，不阻塞 P6。
+
 ---
 
 ## 七、仓库结构（Android）

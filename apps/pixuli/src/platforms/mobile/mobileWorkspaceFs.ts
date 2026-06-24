@@ -48,15 +48,46 @@ async function getFilesystem() {
   return { Filesystem, Directory };
 }
 
+export function isDirectoryExistsError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /already exists/i.test(message);
+}
+
+/** Capacitor mkdir 在目录已存在时会抛错，需幂等（#161）。 */
+async function safeMkdir(dirPath: string): Promise<void> {
+  const { Filesystem, Directory } = await getFilesystem();
+  try {
+    await Filesystem.mkdir({
+      path: dirPath,
+      directory: Directory.Data,
+      recursive: true,
+    });
+  } catch (error) {
+    if (!isDirectoryExistsError(error)) {
+      throw error;
+    }
+  }
+}
+
+async function safeReaddir(
+  dirPath: string,
+): Promise<Array<{ name: string; type: string }>> {
+  try {
+    const { Filesystem, Directory } = await getFilesystem();
+    const entries = await Filesystem.readdir({
+      path: dirPath,
+      directory: Directory.Data,
+    });
+    return entries.files ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function mobileEnsureWorkspace(
   workspaceId: string,
 ): Promise<void> {
-  const { Filesystem, Directory } = await getFilesystem();
-  await Filesystem.mkdir({
-    path: workspaceBasePath(workspaceId),
-    directory: Directory.Data,
-    recursive: true,
-  });
+  await safeMkdir(workspaceBasePath(workspaceId));
 }
 
 export async function mobileWriteFile(
@@ -68,11 +99,7 @@ export async function mobileWriteFile(
   const path = toStoragePath(workspaceId, relativePath);
   const lastSlash = path.lastIndexOf('/');
   if (lastSlash > 0) {
-    await Filesystem.mkdir({
-      path: path.slice(0, lastSlash),
-      directory: Directory.Data,
-      recursive: true,
-    });
+    await safeMkdir(path.slice(0, lastSlash));
   }
   await Filesystem.writeFile({
     path,
@@ -124,19 +151,15 @@ async function listDirRecursive(
   workspaceId: string,
   relativeDir: string,
 ): Promise<string[]> {
-  const { Filesystem, Directory } = await getFilesystem();
   const base = workspaceBasePath(workspaceId);
   const dirPath = relativeDir
     ? `${base}/${normalizeRelativePath(relativeDir)}`
     : base;
 
-  const entries = await Filesystem.readdir({
-    path: dirPath,
-    directory: Directory.Data,
-  });
+  const entries = await safeReaddir(dirPath);
 
   const paths: string[] = [];
-  for (const entry of entries.files) {
+  for (const entry of entries) {
     const entryRelative = relativeDir
       ? `${normalizeRelativePath(relativeDir)}/${entry.name}`
       : entry.name;
@@ -160,18 +183,14 @@ export async function mobileListFiles(
     return listDirRecursive(workspaceId, normalizedDir);
   }
 
-  const { Filesystem, Directory } = await getFilesystem();
   const dirPath = normalizedDir
     ? `${workspaceBasePath(workspaceId)}/${normalizedDir}`
     : workspaceBasePath(workspaceId);
 
-  const entries = await Filesystem.readdir({
-    path: dirPath,
-    directory: Directory.Data,
-  });
+  const entries = await safeReaddir(dirPath);
 
   const prefix = normalizedDir ? `${normalizedDir}/` : '';
-  return entries.files
+  return entries
     .filter(entry => entry.type === 'file')
     .map(entry => normalizeRelativePath(`${prefix}${entry.name}`))
     .sort();

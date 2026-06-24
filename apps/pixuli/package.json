@@ -35,6 +35,7 @@
   "dependencies": {
     "@capacitor/android": "^7.6.6",
     "@capacitor/app": "^7.1.2",
+    "@capacitor/clipboard": "^7.0.4",
     "@capacitor/core": "^7.6.6",
     "@capacitor/filesystem": "^7.1.8",
     "@pixuli/core": "workspace:*",

@@ -35,6 +35,7 @@ interface ImageGridProps {
   ) => Promise<{ width: number; height: number }>;
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
+  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
 }
 
 interface ImageGridActionsProps {
@@ -106,6 +107,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
   getImageDimensionsFromUrl,
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   t,
+  onCopyUrl: onCopyUrlProp,
 }) => {
   const translate = t;
   // 滚动加载配置
@@ -331,7 +333,11 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
   const handleCopyUrl = useCallback(
     async (url: string, type: 'url' | 'githubUrl') => {
       try {
-        await navigator.clipboard.writeText(url);
+        if (onCopyUrlProp) {
+          await onCopyUrlProp(url, type);
+        } else {
+          await navigator.clipboard.writeText(url);
+        }
         const urlTypeText =
           type === 'url'
             ? translate('image.grid.imageUrlCopied')
@@ -354,7 +360,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         });
       }
     },
-    [translate],
+    [translate, onCopyUrlProp],
   );
 
   const handleOpenUrl = useCallback((url: string) => {
