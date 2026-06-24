@@ -493,6 +493,14 @@
     justify-content: center;
   }
 
+  .github-config-modal-close {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .github-config-form-save-button,
   .github-config-modal-actions button {
     min-height: 2.75rem;

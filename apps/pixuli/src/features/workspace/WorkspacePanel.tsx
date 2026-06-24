@@ -153,7 +153,7 @@ export const WorkspaceToolbar: React.FC = () => {
   };
 
   return (
-    <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+    <div className="workspace-toolbar mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-gray-900">
@@ -193,7 +193,7 @@ export const WorkspaceToolbar: React.FC = () => {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="workspace-toolbar-actions flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => void scanWorkspace()}
@@ -260,7 +260,7 @@ export const WorkspaceToolbar: React.FC = () => {
         <p className="text-xs font-medium text-gray-700 mb-2">
           {t('workspace.manageTitle')}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="workspace-toolbar-actions flex flex-wrap gap-2">
           {canPickFolder && (
             <button
               type="button"

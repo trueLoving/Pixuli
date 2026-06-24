@@ -50,7 +50,7 @@ export const AppMain: React.FC<AppMainProps> = ({ children }) => {
                 type="button"
                 onClick={openOperationLog}
                 title={t('header.operationLog')}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+                className="header-button icon-only p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
                 aria-label={t('header.operationLog')}
               >
                 <ScrollText size={18} />

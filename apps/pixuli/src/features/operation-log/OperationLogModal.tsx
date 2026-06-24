@@ -167,44 +167,58 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
 
   if (!isOpen) return null;
 
+  const iconButtonClass =
+    'inline-flex min-h-[2.75rem] min-w-[2.75rem] items-center justify-center rounded-md hover:bg-gray-100';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-[90vw] h-[90vh] flex flex-col">
+    <div className="operation-log-modal-overlay fixed inset-0 z-50 flex bg-black/50 md:items-center md:justify-center md:p-4">
+      <div className="operation-log-modal-panel flex h-full w-full flex-col bg-white shadow-xl md:h-[90vh] md:max-h-[90vh] md:w-[90vw] md:rounded-lg">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">{t('title')}</h2>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between border-b p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+          <h2 className="text-lg font-semibold md:text-xl">{t('title')}</h2>
+          <div className="flex shrink-0 items-center gap-1">
             <button
+              type="button"
               onClick={() => setShowFilter(!showFilter)}
-              className="p-2 hover:bg-gray-100 rounded"
+              className={iconButtonClass}
               title={t('filter')}
+              aria-label={t('filter')}
             >
-              <Filter className="w-5 h-5" />
+              <Filter className="h-5 w-5" />
             </button>
             <button
+              type="button"
               onClick={() => handleExport('json')}
-              className="p-2 hover:bg-gray-100 rounded"
+              className={iconButtonClass}
               title={t('exportJSON')}
+              aria-label={t('exportJSON')}
             >
-              <Download className="w-5 h-5" />
+              <Download className="h-5 w-5" />
             </button>
             <button
+              type="button"
               onClick={() => handleClearLogs('all')}
-              className="p-2 hover:bg-gray-100 rounded text-red-600"
+              className={`${iconButtonClass} text-red-600`}
               title={t('clearAll')}
+              aria-label={t('clearAll')}
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="h-5 w-5" />
             </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded">
-              <X className="w-5 h-5" />
+            <button
+              type="button"
+              onClick={onClose}
+              className={iconButtonClass}
+              aria-label={t('close')}
+            >
+              <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
         {/* Statistics */}
         {statistics && (
-          <div className="p-4 border-b bg-gray-50">
-            <div className="grid grid-cols-4 gap-4">
+          <div className="border-b bg-gray-50 p-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{statistics.total}</div>
                 <div className="text-sm text-gray-600">{t('total')}</div>
@@ -233,8 +247,8 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
 
         {/* Filter Panel */}
         {showFilter && (
-          <div className="p-4 border-b bg-gray-50">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="border-b bg-gray-50 p-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium mb-1">
                   {t('action')}
