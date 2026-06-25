@@ -210,6 +210,9 @@ importers:
       '@capacitor/app':
         specifier: ^7.1.2
         version: 7.1.2(@capacitor/core@7.6.6)
+      '@capacitor/camera':
+        specifier: ^7.0.5
+        version: 7.0.5(@capacitor/core@7.6.6)
       '@capacitor/clipboard':
         specifier: ^7.0.4
         version: 7.0.4(@capacitor/core@7.6.6)
@@ -219,6 +222,9 @@ importers:
       '@capacitor/filesystem':
         specifier: ^7.1.8
         version: 7.1.8(@capacitor/core@7.6.6)
+      '@capacitor/share':
+        specifier: ^7.0.4
+        version: 7.0.4(@capacitor/core@7.6.6)
       '@pixuli/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -1180,6 +1186,11 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
+  '@capacitor/camera@7.0.5':
+    resolution: {integrity: sha512-+53f1xHq8on7O+ULXbgWp00ooWvn3fUkWxTP3p5zHi1nVriCxLbYnY0zTpZQqn52M96vclFKkoABbTVQ3x755w==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+
   '@capacitor/cli@7.6.6':
     resolution: {integrity: sha512-gZm1c40trhPKi4r6cGdgd/WaW20+yunq5XEmWm/ylHzG6Qd72gAxarihIdXptoxTz4rs9JIU6f60EnTNncvXeQ==}
     engines: {node: '>=20.0.0'}
@@ -1195,6 +1206,11 @@ packages:
 
   '@capacitor/filesystem@7.1.8':
     resolution: {integrity: sha512-Qpw/2SE4/CzqAUvGgSM9hw/uXQ5qoOaF4wxbToXwpAaKPS+tzletS1h5ti3jjLmGcqizTs2sEXMtcsARW/Ceew==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+
+  '@capacitor/share@7.0.4':
+    resolution: {integrity: sha512-wNXxmXUcChrtbZ5jQv8scFIbIGKo3rk6B7qpWySxfUhYJP5NANgAqQ9Z69m0k/zYsucdh66SBU7XW1ykd9aUug==}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
 
@@ -9499,6 +9515,10 @@ snapshots:
     dependencies:
       '@capacitor/core': 7.6.6
 
+  '@capacitor/camera@7.0.5(@capacitor/core@7.6.6)':
+    dependencies:
+      '@capacitor/core': 7.6.6
+
   '@capacitor/cli@7.6.6':
     dependencies:
       '@ionic/cli-framework-output': 2.2.8
@@ -9533,6 +9553,10 @@ snapshots:
     dependencies:
       '@capacitor/core': 7.6.6
       '@capacitor/synapse': 1.0.4
+
+  '@capacitor/share@7.0.4(@capacitor/core@7.6.6)':
+    dependencies:
+      '@capacitor/core': 7.6.6
 
   '@capacitor/synapse@1.0.4': {}
 

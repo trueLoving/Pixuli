@@ -99,6 +99,8 @@
       "githubUrlCopied": "GitHub地址",
       "copiedToClipboard": "已复制到剪贴板",
       "copyFailed": "复制失败，请手动复制",
+      "shareImage": "分享图片",
+      "shareFailed": "分享失败",
       "updateSuccessMessage": "图片 \"{name}\" 信息已成功更新",
       "viewUrlMessage": "查看图片 \"{name}\" 的在线地址"
     },

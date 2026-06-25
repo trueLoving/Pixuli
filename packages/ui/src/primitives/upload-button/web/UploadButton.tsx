@@ -8,6 +8,7 @@ import type {
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
+import type { NativeImagePickers } from '../../../image/image-upload/common/nativePickers';
 import ImageUploadModal from '../../../image/image-upload/web/ImageUploadModal';
 import './UploadButton.css';
 
@@ -32,6 +33,8 @@ export interface UploadButtonProps {
   compressionOptions?: ImageCompressionOptions;
   /** 自定义 CSS 类名 */
   className?: string;
+  /** Capacitor 原生选图 */
+  nativePickers?: NativeImagePickers;
 }
 
 const UploadButton: React.FC<UploadButtonProps> = ({
@@ -45,6 +48,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   enableCompression = false,
   compressionOptions,
   className = '',
+  nativePickers,
 }) => {
   const translate = t || defaultTranslate;
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,6 +112,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           cropOptions={cropOptions}
           enableCompression={enableCompression}
           compressionOptions={compressionOptions}
+          nativePickers={nativePickers}
         />
       )}
     </>

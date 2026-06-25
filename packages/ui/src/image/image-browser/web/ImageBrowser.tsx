@@ -28,6 +28,7 @@ import type {
   SortOrder,
   ViewMode,
 } from '../common/types';
+import type { NativeImagePickers } from '../../image-upload/common/nativePickers';
 import BatchDeleteModal from './ImageBatchDeleteModal';
 import './ImageBrowser.css';
 import ImageGrid from './ImageGrid';
@@ -67,6 +68,8 @@ interface ImageBrowserProps {
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  nativePickers?: NativeImagePickers;
+  onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
@@ -85,6 +88,8 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   uploadLoading = false,
   batchUploadProgress,
   onCopyUrl,
+  nativePickers,
+  onShareImage,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
@@ -538,6 +543,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
               batchUploadProgress={batchUploadProgress}
               t={t}
               className="image-browser-upload-btn"
+              nativePickers={nativePickers}
             />
           )}
 
@@ -587,6 +593,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             getImageDimensionsFromUrl={getImageDimensionsFromUrl}
             formatFileSize={formatFileSize}
             onCopyUrl={onCopyUrl}
+            onShareImage={onShareImage}
           />
         </div>
         <div
@@ -602,6 +609,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             getImageDimensionsFromUrl={getImageDimensionsFromUrl}
             formatFileSize={formatFileSize}
             onCopyUrl={onCopyUrl}
+            onShareImage={onShareImage}
           />
         </div>
       </div>

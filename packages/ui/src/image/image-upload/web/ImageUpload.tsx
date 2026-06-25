@@ -1,8 +1,10 @@
 import {
   AlertCircle,
+  Camera,
   CheckCircle,
   Crop,
   Image as ImageIcon,
+  Images,
   Loader2,
   Upload,
   X,
@@ -25,6 +27,7 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@pixuli/ui/feedback/toast';
+import type { NativeImagePickers } from '../common/nativePickers';
 import ImageCropModal from './ImageCropModal';
 import './ImageUpload.css';
 
@@ -38,6 +41,8 @@ interface ImageUploadProps {
   cropOptions?: ImageCropOptions;
   enableCompression?: boolean;
   compressionOptions?: ImageCompressionOptions;
+  /** Capacitor 等原生壳注入的相机/相册选图（REF-510 #120） */
+  nativePickers?: NativeImagePickers;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -50,6 +55,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   cropOptions,
   enableCompression = false,
   compressionOptions,
+  nativePickers,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -333,6 +339,28 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       }
     },
     [translate, getImageDimensions],
+  );
+
+  const handleNativePick = useCallback(
+    async (source: 'camera' | 'gallery') => {
+      if (!nativePickers) {
+        return;
+      }
+      try {
+        const files =
+          source === 'camera'
+            ? await nativePickers.pickFromCamera()
+            : await nativePickers.pickFromGallery();
+        if (files.length > 0) {
+          await onDrop(files);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'unknown error';
+        showInfo(`${translate('image.upload.nativePickFailed')}: ${message}`);
+      }
+    },
+    [nativePickers, onDrop, translate],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -1754,6 +1782,36 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   </span>
                 ))}
               </div>
+              {nativePickers && (
+                <div className="image-upload-native-actions">
+                  <button
+                    type="button"
+                    className="image-upload-native-button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      void handleNativePick('camera');
+                    }}
+                  >
+                    <Camera className="image-upload-native-icon" />
+                    <span>
+                      {translate('image.upload.pickFromCamera') || '拍照'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="image-upload-native-button"
+                    onClick={e => {
+                      e.stopPropagation();
+                      void handleNativePick('gallery');
+                    }}
+                  >
+                    <Images className="image-upload-native-icon" />
+                    <span>
+                      {translate('image.upload.pickFromGallery') || '相册'}
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

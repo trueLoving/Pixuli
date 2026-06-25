@@ -99,6 +99,8 @@
       "githubUrlCopied": "GitHub URL",
       "copiedToClipboard": "copied to clipboard",
       "copyFailed": "Copy failed, please copy manually",
+      "shareImage": "Share image",
+      "shareFailed": "Share failed",
       "updateSuccessMessage": "Image \"{name}\" information updated successfully",
       "viewUrlMessage": "View online URL for image \"{name}\""
     },

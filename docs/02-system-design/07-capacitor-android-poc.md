@@ -189,15 +189,15 @@ VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
 
 ## 五、WebView 体验与风险（待真机填写）
 
-| 场景               | 预期                             | 风险 / 备注                                                           |
-| ------------------ | -------------------------------- | --------------------------------------------------------------------- |
-| 启动与路由         | `BrowserRouter` + `homepage: ./` | Capacitor `https` scheme 下一般正常；深链待 REF-510                   |
-| 侧栏 / 窄屏        | 与 Web 同构（REF-601）           | `<768px` 汉堡抽屉 + 全屏弹层（#150 ✅）                               |
-| 列表滚动           | 虚拟列表 + 懒加载                | 大图多时 WebView 内存与滚动帧率待测                                   |
-| 上传选图           | `<input type="file">`            | 系统文件选择器；相机/相册原生能力属 REF-510 #120                      |
-| PWA Service Worker | 构建仍生成 `sw.js`               | 壳内已隐藏 PWA UI；若 SW 干扰加载，后续可按 `isNativeMobile` 禁用注册 |
-| Gitee 图床         | 生产需 `VITE_GITEE_PROXY_ORIGIN` | 无代理时列表缩略图可能失败                                            |
-| 包体积             | 整包 Web dist ~1.4MB+ 预缓存     | 可接受；后续可做按需加载优化                                          |
+| 场景               | 预期                                      | 风险 / 备注                                                                                                         |
+| ------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 启动与路由         | `BrowserRouter` + `homepage: ./`          | Capacitor `https` scheme 下一般正常；深链待 REF-510                                                                 |
+| 侧栏 / 窄屏        | 与 Web 同构（REF-601）                    | `<768px` 汉堡抽屉 + 全屏弹层（#150 ✅）                                                                             |
+| 列表滚动           | 虚拟列表 + 懒加载                         | 大图多时 WebView 内存与滚动帧率待测                                                                                 |
+| 上传选图           | `<input type="file">` + 原生「拍照/相册」 | #120：`@capacitor/camera` 注入 `ImageUpload`；见 [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md) |
+| PWA Service Worker | 构建仍生成 `sw.js`                        | 壳内已隐藏 PWA UI；若 SW 干扰加载，后续可按 `isNativeMobile` 禁用注册                                               |
+| Gitee 图床         | 生产需 `VITE_GITEE_PROXY_ORIGIN`          | 无代理时列表缩略图可能失败                                                                                          |
+| 包体积             | 整包 Web dist ~1.4MB+ 预缓存              | 可接受；后续可做按需加载优化                                                                                        |
 
 ---
 

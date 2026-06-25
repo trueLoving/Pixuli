@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, ExternalLink, Link, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Link,
+  Share2,
+  X,
+} from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import { ImageItem } from '@pixuli/core/types';
@@ -14,6 +21,7 @@ interface ImagePreviewModalProps {
   onNavigate?: (index: number) => void;
   formatFileSize?: (size: number) => string;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onShareImage?: (image: ImageItem) => Promise<void>;
   onOpenUrl?: (url: string) => void;
   t?: (key: string) => string;
 }
@@ -27,6 +35,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   onNavigate,
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   onCopyUrl,
+  onShareImage,
   onOpenUrl,
   t,
 }) => {
@@ -110,6 +119,12 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
       onOpenUrl(realUrl);
     } else {
       window.open(realUrl, '_blank');
+    }
+  };
+
+  const handleShareImage = async () => {
+    if (onShareImage && image) {
+      await onShareImage(image);
     }
   };
 
@@ -200,6 +215,15 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               <ExternalLink className="w-3 h-3" />
               <span>{translate('image.grid.openUrl')}</span>
             </button>
+            {onShareImage && (
+              <button
+                onClick={() => void handleShareImage()}
+                className="image-preview-modal-action-button image-preview-modal-action-button-secondary"
+              >
+                <Share2 className="w-3 h-3" />
+                <span>{translate('image.grid.shareImage')}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

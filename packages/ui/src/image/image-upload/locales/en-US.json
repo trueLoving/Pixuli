@@ -39,7 +39,10 @@
       "cropHint": "with crop support",
       "cropComplete": "Crop completed",
       "skipCrop": "Skip crop",
-      "optional": "(Optional)"
+      "optional": "(Optional)",
+      "pickFromCamera": "Take photo",
+      "pickFromGallery": "Choose from gallery",
+      "nativePickFailed": "Failed to pick image"
     },
     "crop": {
       "title": "Crop Image",

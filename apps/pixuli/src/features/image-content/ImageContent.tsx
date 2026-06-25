@@ -5,6 +5,10 @@ import { RefreshCw } from 'lucide-react';
 import React from 'react';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
+import {
+  useNativeImagePickers,
+  useNativeShareImage,
+} from '../../hooks/useNativeImageActions';
 import { useImageStore } from '../../stores/imageStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 
@@ -49,6 +53,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
   const uploadLoading = localActive ? workspaceLoading : imageLoading;
   const onCopyUrl = useImageCopyUrl();
+  const nativePickers = useNativeImagePickers();
+  const onShareImage = useNativeShareImage();
 
   if (!hasConfig) {
     return (
@@ -124,6 +130,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           formatFileSize={formatFileSize}
           onCopyUrl={onCopyUrl}
+          nativePickers={nativePickers}
+          onShareImage={onShareImage}
         />
       </div>
     </div>
