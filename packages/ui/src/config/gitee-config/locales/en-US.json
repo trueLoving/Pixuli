@@ -43,6 +43,7 @@
     "configSaved": "Gitee configuration saved successfully!",
     "configCleared": "Gitee configuration cleared successfully!",
     "configExported": "Gitee configuration exported successfully!",
+    "configExportedToClipboard": "Gitee configuration JSON copied to clipboard",
     "configImported": "Gitee configuration imported successfully!",
     "saveFailed": "Failed to save configuration",
     "clearFailed": "Failed to clear configuration",

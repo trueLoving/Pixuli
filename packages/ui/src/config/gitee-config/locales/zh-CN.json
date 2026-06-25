@@ -43,6 +43,7 @@
     "configSaved": "Gitee 配置已成功保存！",
     "configCleared": "Gitee 配置已成功清除！",
     "configExported": "Gitee 配置已成功导出！",
+    "configExportedToClipboard": "Gitee 配置 JSON 已复制到剪贴板",
     "configImported": "Gitee 配置已成功导入！",
     "saveFailed": "保存配置失败",
     "clearFailed": "清除配置失败",
