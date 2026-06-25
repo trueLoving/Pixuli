@@ -17,6 +17,10 @@ interface GiteeConfigModalProps {
   onClearConfig: () => void;
   platform?: 'web' | 'desktop' | 'mobile';
   t?: (key: string) => string;
+  exportJsonFile?: (
+    filename: string,
+    content: string,
+  ) => Promise<'file' | 'clipboard'>;
 }
 
 const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
@@ -27,6 +31,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
   onClearConfig,
   platform = 'web',
   t,
+  exportJsonFile,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -97,7 +102,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
   };
 
   // 导出配置
-  const handleExportConfig = () => {
+  const handleExportConfig = async () => {
     try {
       if (!giteeConfig) {
         showError(translate('messages.noConfigToExport'));
@@ -110,19 +115,30 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
         config: { ...giteeConfig },
       });
 
-      const blob = new Blob([JSON.stringify(configData, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `pixuli-gitee-config-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const filename = `pixuli-gitee-config-${new Date().toISOString().split('T')[0]}.json`;
+      const json = JSON.stringify(configData, null, 2);
+      const mode = exportJsonFile
+        ? await exportJsonFile(filename, json)
+        : await (async () => {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            return 'file' as const;
+          })();
 
-      showSuccess(translate('messages.configExported'));
+      showSuccess(
+        translate(
+          mode === 'clipboard'
+            ? 'messages.configExportedToClipboard'
+            : 'messages.configExported',
+        ),
+      );
     } catch (error) {
       showError(
         `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`,
@@ -250,7 +266,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
               </button>
               {giteeConfig && (
                 <button
-                  onClick={handleExportConfig}
+                  onClick={() => void handleExportConfig()}
                   className="gitee-config-modal-action-button"
                   title={translate('gitee.config.export')}
                 >

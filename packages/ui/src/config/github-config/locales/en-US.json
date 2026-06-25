@@ -41,6 +41,7 @@
     "configSaved": "GitHub configuration saved successfully!",
     "configCleared": "GitHub configuration cleared successfully!",
     "configExported": "GitHub configuration exported successfully!",
+    "configExportedToClipboard": "GitHub configuration JSON copied to clipboard",
     "configImported": "GitHub configuration imported successfully!",
     "saveFailed": "Failed to save configuration",
     "clearFailed": "Failed to clear configuration",

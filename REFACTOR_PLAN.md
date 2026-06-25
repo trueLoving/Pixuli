@@ -276,8 +276,8 @@ Capacitor 功能对齐**阶段。
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---- |
 | **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅  | ✅   |
 | **P1 L1 逻辑**    | ~~`imageStore` / `sourceStore` 抽取（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | —                 | ❌   |
-| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           | ⬜   |
-| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            | ⬜   |
+| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           | ✅   |
+| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            | ✅   |
 | **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2                | ⬜   |
 | **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3 ✅ | ✅   |
 | **P6 验收冒烟**   | Android 真机 parity 签收；更新 #118 §六 / #151 Checklist     | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4            | ⬜   |
@@ -288,8 +288,8 @@ Capacitor 功能对齐**阶段。
 favicon/PWA、Desktop 托盘、Capacitor
 Android 启动器与 splash 与 RN 一致（#167）。
 
-**建议顺序**：**#164** ✅ → **#150** → **#165** → **#119/#120/#141** → **#161**
-✅ → **#166** → **#152/#153** →
+**建议顺序**：**#164** ✅ → **#150** ✅ → **#165** ✅ → **#119/#120/#141** →
+**#161** ✅ → **#166** → **#152/#153** →
 **#151**。REF-607 下一步：**P7**（Gitee 代理退役）；**#159** ✅（`imageStore`
 local 模式）；**#160** ✅（Web OPFS/FSA）；**#161**
 ✅（Mobile 沙箱工作区，真机冒烟归 **#166**）。
@@ -1231,8 +1231,8 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 | ---- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | P0   | RN ↔ pixuli 功能对齐矩阵                     | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ✅   |
 | P1   | ~~store / 持久化统一（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | ❌   |
-| P2   | 移动端 Web UI（REF-512）                      | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ⬜   |
-| P3   | 业务能力补齐（Capacitor）                     | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ⬜   |
+| P2   | 移动端 Web UI（REF-512）                      | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ✅   |
+| P3   | 业务能力补齐（Capacitor）                     | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ✅   |
 | P4   | L3：REF-508 / REF-510 / REF-511               | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | ⬜   |
 | P5   | 本地工作区 Mobile（REF-607-P6）               | [#161](https://github.com/trueLoving/Pixuli/issues/161)                                                                                                                   | ✅   |
 | P6   | 对齐验收与真机冒烟                            | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | ⬜   |
@@ -1289,8 +1289,8 @@ debug；与 REF-409 版本标签策略对齐。
 Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)
 统一追踪 #150/#151 等与 #164/#165/#166（#117 已取消）。
 
-**建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** ✅ → **#150** →
-**#165** → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。REF-607
+**建议顺序（REF-516）**：**#116** ✅ → **#118** ✅ → **#164** ✅ → **#150** ✅ →
+**#165** ✅ → **#119/#120/#141** → **#166** → **#152/#153** → **#151**。REF-607
 **#156→#158** ✅、**#159** ✅、**#160** ✅、**#161** ✅；下一步
 **P7**（代理退役与 local-only 收官）；真机 parity 冒烟见 **#166**。
 

@@ -28,12 +28,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="filter"
-        options={{
-          href: null, // 隐藏此路由，不显示在底部导航栏
-        }}
-      />
-      <Tabs.Screen
         name="settings"
         options={{
           title: t('tabs.settings'),

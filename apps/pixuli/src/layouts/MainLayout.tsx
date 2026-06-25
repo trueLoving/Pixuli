@@ -31,6 +31,7 @@ import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
 import { listStoragePluginManifests } from '../storage/registry';
+import { exportJsonFile } from '../utils/exportJsonFile';
 import { getPlatform, isNativeMobile } from '../utils/platform';
 import {
   configFieldsKey,
@@ -182,6 +183,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onSaveConfig={onSaveConfig}
         onClearConfig={onClearConfig}
         platform={platform}
+        exportJsonFile={exportJsonFile}
         t={t}
       />
 
@@ -197,6 +199,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onSaveConfig={onSaveConfig}
         onClearConfig={onClearConfig}
         platform={platform}
+        exportJsonFile={exportJsonFile}
         t={t}
       />
 

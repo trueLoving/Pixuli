@@ -17,6 +17,10 @@ interface GitHubConfigModalProps {
   onClearConfig: () => void;
   platform?: 'web' | 'desktop' | 'mobile';
   t?: (key: string) => string;
+  exportJsonFile?: (
+    filename: string,
+    content: string,
+  ) => Promise<'file' | 'clipboard'>;
 }
 
 const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
@@ -27,6 +31,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
   onClearConfig,
   platform = 'web',
   t,
+  exportJsonFile,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -93,7 +98,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
   };
 
   // 导出配置
-  const handleExportConfig = () => {
+  const handleExportConfig = async () => {
     try {
       if (!githubConfig) {
         showError(translate('messages.noConfigToExport'));
@@ -106,19 +111,30 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
         config: { ...githubConfig },
       });
 
-      const blob = new Blob([JSON.stringify(configData, null, 2)], {
-        type: 'application/json',
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `pixuli-github-config-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const filename = `pixuli-github-config-${new Date().toISOString().split('T')[0]}.json`;
+      const json = JSON.stringify(configData, null, 2);
+      const mode = exportJsonFile
+        ? await exportJsonFile(filename, json)
+        : await (async () => {
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            return 'file' as const;
+          })();
 
-      showSuccess(translate('messages.configExported'));
+      showSuccess(
+        translate(
+          mode === 'clipboard'
+            ? 'messages.configExportedToClipboard'
+            : 'messages.configExported',
+        ),
+      );
     } catch (error) {
       showError(
         `${translate('messages.exportFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
@@ -246,7 +262,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
               </button>
               {githubConfig && (
                 <button
-                  onClick={handleExportConfig}
+                  onClick={() => void handleExportConfig()}
                   className="github-config-modal-action-button"
                   title={translate('github.help.importExport.export')}
                 >
