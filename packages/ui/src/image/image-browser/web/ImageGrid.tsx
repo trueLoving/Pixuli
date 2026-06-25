@@ -36,6 +36,7 @@ interface ImageGridProps {
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
 interface ImageGridActionsProps {
@@ -108,6 +109,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   t,
   onCopyUrl: onCopyUrlProp,
+  onShareImage: onShareImageProp,
 }) => {
   const translate = t;
   // 滚动加载配置
@@ -363,6 +365,25 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
     [translate, onCopyUrlProp],
   );
 
+  const handleShareImage = useCallback(
+    async (image: ImageItem) => {
+      if (!onShareImageProp) {
+        return;
+      }
+      try {
+        await onShareImageProp(image);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'unknown error';
+        if (/cancel|abort|dismiss|user/i.test(message)) {
+          return;
+        }
+        showError(`${translate('image.grid.shareFailed')}: ${message}`);
+      }
+    },
+    [onShareImageProp, translate],
+  );
+
   const handleOpenUrl = useCallback((url: string) => {
     window.open(url, '_blank');
   }, []);
@@ -591,6 +612,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         onNavigate={handlePreviewNavigate}
         formatFileSize={formatFileSize}
         onCopyUrl={handleCopyUrl}
+        onShareImage={onShareImageProp ? handleShareImage : undefined}
         onOpenUrl={handleOpenUrl}
         t={translate}
       />

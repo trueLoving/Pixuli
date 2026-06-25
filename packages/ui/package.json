@@ -14,7 +14,8 @@
     "./layout/empty-state/locales": "./src/layout/empty-state/locales/index.ts",
     "./features/version-info/locales": "./src/features/version-info/locales/index.ts",
     "./dev/demo/locales": "./src/dev/demo/locales/index.ts",
-    "./dev/demo/common": "./src/dev/demo/common/index.ts"
+    "./dev/demo/common": "./src/dev/demo/common/index.ts",
+    "./image/image-upload/common/nativePickers": "./src/image/image-upload/common/nativePickers.ts"
   },
   "scripts": {
     "test": "vitest run",

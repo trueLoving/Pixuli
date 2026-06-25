@@ -7,6 +7,7 @@ import type {
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
+import type { NativeImagePickers } from '../common/nativePickers';
 import ImageUpload from './ImageUpload';
 import './ImageUploadModal.css';
 
@@ -33,6 +34,8 @@ export interface ImageUploadModalProps {
   enableCompression?: boolean;
   /** 压缩选项 */
   compressionOptions?: ImageCompressionOptions;
+  /** Capacitor 原生选图 */
+  nativePickers?: NativeImagePickers;
 }
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
@@ -47,6 +50,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   cropOptions,
   enableCompression = false,
   compressionOptions,
+  nativePickers,
 }) => {
   if (!isOpen) return null;
 
@@ -80,6 +84,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             cropOptions={cropOptions}
             enableCompression={enableCompression}
             compressionOptions={compressionOptions}
+            nativePickers={nativePickers}
           />
         </div>
       </div>

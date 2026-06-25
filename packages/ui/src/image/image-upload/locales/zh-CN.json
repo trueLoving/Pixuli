@@ -39,7 +39,10 @@
       "cropHint": "支持裁剪",
       "cropComplete": "裁剪完成",
       "skipCrop": "跳过裁剪",
-      "optional": "(可选)"
+      "optional": "(可选)",
+      "pickFromCamera": "拍照",
+      "pickFromGallery": "从相册选择",
+      "nativePickFailed": "选图失败"
     },
     "crop": {
       "title": "裁剪图片",
