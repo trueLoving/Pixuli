@@ -10,13 +10,13 @@
 
 ## 一、结论（PoC 范围）
 
-| 项              | 决议                                                           |
-| --------------- | -------------------------------------------------------------- |
-| **平台**        | 仅 Android；iOS 不在 Pixuli 当前范围                           |
-| **工程位置**    | `apps/pixuli`（与 Web/Desktop 同源）                           |
-| **webDir**      | `dist`（`vite build --mode web`）                              |
-| **appId**       | `com.pixuli.app`（与 RN `com.pixuli.mobile` 区分，可并存安装） |
-| **是否进入 P3** | 工程已交付（REF-509 ✅）；待 §六真机冒烟勾选后确认             |
+| 项              | 决议                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| **平台**        | 仅 Android；iOS 不在 Pixuli 当前范围                                                       |
+| **工程位置**    | `apps/pixuli`（与 Web/Desktop 同源）                                                       |
+| **webDir**      | `dist`（`vite build --mode web`）                                                          |
+| **appId**       | `com.pixuli.app`（与 RN `com.pixuli.mobile` 区分，可并存安装）                             |
+| **是否进入 P3** | 工程已交付（REF-509 ✅）；P6 真机签收见 [#166](./14-capacitor-android-smoke-acceptance.md) |
 
 ---
 
@@ -201,21 +201,25 @@ VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
 
 ---
 
-## 六、冒烟验收清单（#118）
+## 六、冒烟验收清单（#118 → #166 P6）
 
-在 **Android 真机或模拟器** 上勾选：
+> **签收 SSOT**：[14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md)（REF-516
+> P6 / [#166](https://github.com/trueLoving/Pixuli/issues/166)）
+
+在 **Android 真机或模拟器** 上勾选（结果表见 §14 文档 §2）：
 
 - [ ] **Development**：`dev:android` + `run:android` 启动，界面与 Web 一致
 - [ ] **Production**：`build:android:debug` 安装后 **离线** 可打开（不依赖 dev
       server）
-- [ ] 配置仓库源（GitHub 或 Gitee+代理）
-- [ ] 图片列表加载
-- [ ] 上传一张图片
+- [ ] **P1** 配置仓库源（GitHub 或 Gitee+代理）+ 列表加载
+- [ ] **P2** 上传一张（文件选择 / 拍照 / 相册）
+- [ ] **P3** 复制远端链接
+- [ ] **P4** 批量删除（#165）
+- [ ] 搜索筛选、预览、分享（#166 扩展项）
 - [ ] 记录 §五 中滚动/大图/手势结论
 
-**PoC 通过标准**（Issue #118）：上述核心图床流程可在真机完成 → 建议进入
-**P3 三端单工程发布**（CI 产出 Web/Desktop/Android）；否则继续 **#117/#119**
-RN 过渡方案。
+**PoC 通过标准**（#118 工程 ✅）：核心图床 P1–P4 可在真机完成。**P6 签收**以 #166 结果表为准 → 通过后建议进入
+**#152/#153** CI/APK 发版；RN 归档见 **#151**。
 
 ### 6.1 Mobile 本地工作区（#161 / REF-607 P6）
 
@@ -250,13 +254,12 @@ apps/pixuli/
 
 ## 八、与 RN 应用关系
 
-| 应用                       | 包名                | 状态                                                  |
-| -------------------------- | ------------------- | ----------------------------------------------------- |
-| `apps/mobile`（Expo RN）   | `com.pixuli.mobile` | 过渡维护；`pnpm dev:mobile` / `build:mobile:rn`       |
-| `apps/pixuli`（Capacitor） | `com.pixuli.app`    | **本 PoC 目标**；`pnpm dev:android` / `build:android` |
+| 应用                       | 包名                | 状态                                                    |
+| -------------------------- | ------------------- | ------------------------------------------------------- |
+| `apps/mobile`（Expo RN）   | `com.pixuli.mobile` | **已归档** → `archive/apps/mobile/`（只读参考）         |
+| `apps/pixuli`（Capacitor） | `com.pixuli.app`    | **Mobile 主路径**；`pnpm dev:android` / `build:android` |
 
-PoC 通过后，产品文档与 CI 逐步以 Capacitor
-Android 为 Mobile 主路径；RN 按 REF-508 评估退场。
+Capacitor Android 为 Mobile 唯一交付载体；RN 已于 REF-513 迁入 `archive/`。
 
 ---
 

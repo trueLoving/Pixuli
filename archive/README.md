@@ -22,11 +22,26 @@ workspace，**不会**被 `pnpm install`、`pnpm ci` 或日常应用构建引用
 
 ## 目录说明
 
-| 目录                       | 原路径          | 用途                                                   | 移出时机                                                   |
-| -------------------------- | --------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
-| [`wasm/`](wasm/)           | `packages/wasm` | Rust / NAPI / wasm-pack 图片处理（压缩、转换、分析等） | M1 **REF-108** — 主仓移除 wasm 与 benchmark workspace 成员 |
-| [`benchmark/`](benchmark/) | `benchmark/`    | WASM vs JavaScript 压缩性能对比                        | M1 **REF-108**（依赖 wasm）                                |
-| [`server/`](server/)       | `server/`       | NestJS 可选后端（Prisma、MinIO、API Key 等）           | M1 **REF-110** — 移出 workspace；**非官方**图床服务端      |
+| 目录                           | 原路径          | 用途                                                   | 移出时机                                                   |
+| ------------------------------ | --------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| [`wasm/`](wasm/)               | `packages/wasm` | Rust / NAPI / wasm-pack 图片处理（压缩、转换、分析等） | M1 **REF-108** — 主仓移除 wasm 与 benchmark workspace 成员 |
+| [`benchmark/`](benchmark/)     | `benchmark/`    | WASM vs JavaScript 压缩性能对比                        | M1 **REF-108**（依赖 wasm）                                |
+| [`server/`](server/)           | `server/`       | NestJS 可选后端（Prisma、MinIO、API Key 等）           | M1 **REF-110** — 移出 workspace；**非官方**图床服务端      |
+| [`apps/mobile/`](apps/mobile/) | `apps/mobile/`  | Expo + React Native 移动端（过渡对照）                 | M5 **REF-513** — Capacitor 对齐后迁入 archive（2026-06）   |
+
+### apps/mobile/
+
+- **包名**：`pixuli-mobile`（历史）
+- **主应用现状**：Mobile 由 **`apps/pixuli` + Capacitor Android**
+  交付；与 Web/Desktop 共用 UI 与 store
+- **替代路径**：`pnpm dev:android` · `pnpm build:android`（根目录）
+- **单独构建**（仅供参考）：
+  ```bash
+  cd archive/apps/mobile
+  pnpm install
+  pnpm dev
+  ```
+- 详见 [apps/mobile/README.md](apps/mobile/README.md)
 
 ### wasm/
 
@@ -76,18 +91,19 @@ workspace，**不会**被 `pnpm install`、`pnpm ci` 或日常应用构建引用
 
 ```text
 Pixuli/（主 workspace）
-├── apps/pixuli, apps/mobile
+├── apps/pixuli
 ├── packages/core, packages/ui, packages/plugin-provider-*
 └── pnpm-workspace.yaml   ← 仅包含 apps/*、packages/*、docs
 
 archive/                  ← 本目录，不在 workspace 内
 ├── wasm/
 ├── benchmark/
-└── server/
+├── server/
+└── apps/mobile/
 ```
 
 主仓 **CI**（`.github/workflows/ci.yml`）：`pnpm ci` = Vitest +
-Web/Desktop 构建 + Mobile `tsc`，**不含** Rust/WASM 步骤。
+Web/Desktop 构建，**不含** Rust/WASM / Expo RN 步骤。
 
 桌面 **发布**（`.github/workflows/release-desktop.yml`）：在 `apps/pixuli` 执行
 `tsc` → `vite build --mode desktop` → `electron-builder`，**不含**
@@ -110,4 +126,4 @@ wasm 构建（REF-405）。
 
 | 版本 | 日期       | 变更                                                |
 | ---- | ---------- | --------------------------------------------------- |
-| 1.0  | 2026-05-27 | REF-406：归档策略、三子目录说明、独立构建与 CI 关系 |
+| 1.1  | 2026-06-17 | REF-513：新增 `apps/mobile/` 归档说明与 CI 关系更新 |

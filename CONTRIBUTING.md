@@ -85,15 +85,14 @@ pnpm preview:web
 
 ### Mobile
 
-#### Android
+#### Android (Capacitor)
 
 ```bash
-# Start Android development
-pnpm dev:mobile --android
+# Start Android development (emulator or device + Live Reload)
+pnpm dev:android
 
-# Build Android APK
-cd apps/mobile
-pnpm android
+# Build signed release APK
+pnpm build:android
 ```
 
 ## 📦 Project Structure
@@ -135,22 +134,10 @@ apps/web/
 └── dist/                       # Build output
 ```
 
-### Mobile (apps/mobile)
+### Mobile (archived Expo RN)
 
-```
-apps/mobile/
-├── app/                         # Expo Router routes (pages)
-├── components/                  # Reusable components
-├── services/                    # Business services
-├── stores/                      # State management (Zustand)
-├── hooks/                       # Custom Hooks
-├── utils/                       # Utility functions
-├── config/                      # Configuration files
-├── constants/                   # Constants
-├── i18n/                        # Internationalization
-├── assets/                      # Static resources
-└── android/                     # Android native code
-```
+历史 RN 工程已迁入 `archive/apps/mobile/`（REF-513）。Mobile 开发与构建见上文
+**Android (Capacitor)**；归档代码仅供只读参考。
 
 ## 📝 Code Standards
 

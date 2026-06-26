@@ -1,3 +1,10 @@
+# Pixuli Mobile — Archived
+
+> **已归档（REF-513 / #151）**：本目录自 `apps/mobile`
+> 迁入，**不参与**主仓 workspace 与 CI。  
+> Mobile 用户能力由 **`apps/pixuli` + Capacitor Android**
+> 提供（`pnpm dev:android`）。
+
 English
 
 # Pixuli Mobile - Intelligent Image Management Mobile Application

@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 底线
 
-- 维护 Web + Desktop（`apps/pixuli`）+ Mobile（`apps/mobile`）；无官方 Server
+- 维护 Web + Desktop + Mobile（`apps/pixuli` + Capacitor）；无官方 Server
 - 存储仅经 `@pixuli/core/plugins` 契约 + `@pixuli/provider-*`；应用不直接调 Git API 细节
 - `@pixuli/core` 与 `provider-*` **禁止**依赖 `@pixuli/ui`
 
@@ -15,7 +15,7 @@ alwaysApply: true
 
 - Workspace 包名：`@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-github`、`@pixuli/provider-gitee`
 - Provider 注册：`registerGitHubProvider` / `registerGiteeProvider` 从各包 `/register` 导入
-- 应用创建实例：`storageRegistry.create(pluginId, ctx)`（见 `apps/*/storage/createProvider.ts`）
+- 应用创建实例：`storageRegistry.create(pluginId, ctx)`（见 `apps/pixuli/src/storage/createProvider.ts`）
 - 已删除 `packages/common`；勿引用 `pixuli-common`
 
 ## TypeScript
