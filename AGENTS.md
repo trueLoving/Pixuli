@@ -27,8 +27,8 @@ archive/              wasm, server, benchmark, apps/mobile（非 workspace，勿
 ```
 
 **常用命令**（根目录）：`pnpm test` · `pnpm build:packages` · `pnpm dev:web` ·
-`pnpm dev:desktop` · `pnpm build:web`（含 `build:vercel-api`）·
-`pnpm build:desktop` · `pnpm dev:android`（模拟器一键联调 + Live Reload）·
+`pnpm dev:desktop` · `pnpm build:web` · `pnpm build:desktop` ·
+`pnpm dev:android`（模拟器一键联调 + Live Reload）·
 `run:android`（server 已起时重连）· `pnpm build:android`（已签名 release
 APK；真机勿装 unsigned）
 
@@ -49,31 +49,19 @@ APK；真机勿装 unsigned）
 
 三端工程（脚本/构建矩阵）：[15-apps-pixuli-engineering.md](docs/02-system-design/15-apps-pixuli-engineering.md)（REF-514）
 
-### Gitee 代理子路径（易踩坑）
+### Gitee 存储插件（`@pixuli/provider-gitee`）
 
-Renderer **仅**使用 `@pixuli/provider-gitee/proxy/client` 与 `/proxy/url`。
-**禁止**在 Renderer 或 Vite 客户端 bundle 引入
-`/proxy`、`/proxy/node`、`/proxy/server`（会拉入 `node:http`）。
-
-| 子路径             | 用途                                                           |
-| ------------------ | -------------------------------------------------------------- |
-| `/proxy/client`    | `getGiteeProviderContextFields()` — 读 `window.giteeProxyBase` |
-| `/proxy/url`       | 构建代理图片 URL                                               |
-| `/proxy/server`    | Vite dev 中间件、`api/gitee-proxy.entry.ts` 打包源             |
-| `/proxy/node`      | Electron main：`startGiteeProxyServer`                         |
-| `/proxy/constants` | `GITEE_PROXY_PATH`（登记 `.js` 例外）                          |
-
-Host 集成（REF-411）：`plugins/storageHostVitePlugin.ts` · manifest
-`hostIntegrations` · `registerHostIntegrations`（electron main/preload）·
-`api/gitee-proxy.entry.ts`。
+`apps/pixuli` **不再挂载**
+Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
+`src/storage/registerGiteeProvider.ts`（`useProxy: false`）。`@pixuli/provider-gitee`
+包内仍保留 `/proxy/*` 子路径供历史参考，**勿**在 Renderer 引入 `/proxy/node` 或
+`/proxy/server`（会拉入 `node:http`）。
 
 ## 代码约束
 
 - **默认 TypeScript**；登记 JS 例外见
   [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)
 - **包边界**：`core` ↛ `ui`；`provider-*` ↛ `ui`（REF-209 ESLint）
-- **Vercel API**：改代理逻辑后运行 `pnpm build:vercel-api`，提交生成的
-  `api/gitee-proxy.js`
 - **范围控制**：只改 Issue/PR 相关文件；勿顺手重构无关代码
 
 ## 开 PR 与 Issue 同步

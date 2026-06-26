@@ -21,7 +21,6 @@ alwaysApply: true
 ## TypeScript
 
 - 业务代码一律 `.ts`/`.tsx`；例外见 `docs/02-system-design/05-TypeScript-JavaScript-Policy.md`
-- 勿在 `api/gitee-proxy.js` 手改逻辑（esbuild 产物）；改 `gitee-proxy.entry.ts` 后 `pnpm build:vercel-api`
 
 ## 改动原则
 

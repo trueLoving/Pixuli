@@ -4,7 +4,7 @@ import {
   type StoragePluginManifest,
 } from '@pixuli/core/plugins';
 import { registerGitHubProvider } from '@pixuli/provider-github/register';
-import { registerGiteeProvider } from '@pixuli/provider-gitee/register';
+import { registerPixuliGiteeProvider } from './registerGiteeProvider';
 
 export const storageRegistry = createStoragePluginRegistry();
 
@@ -15,7 +15,7 @@ export function bootstrapStorageProviders(): void {
     return;
   }
   registerGitHubProvider(storageRegistry);
-  registerGiteeProvider(storageRegistry);
+  registerPixuliGiteeProvider(storageRegistry);
   bootstrapped = true;
 }
 

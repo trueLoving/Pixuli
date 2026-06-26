@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron/simple';
 import renderer from 'vite-plugin-electron-renderer';
 import { VitePWA } from 'vite-plugin-pwa';
-import { storageHostVitePlugin } from './plugins/storageHostVitePlugin';
 import pkg from './package.json';
 import { resolveViteModeFlags } from './vite/modes';
 import { createVersionInfo } from './vite/versionInfo';
@@ -33,10 +32,6 @@ export default defineConfig(({ command, mode }) => {
   const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
 
   const plugins: any[] = [react()];
-
-  if (isServe && (isWeb || isDesktop)) {
-    plugins.push(storageHostVitePlugin());
-  }
 
   if (isDesktop) {
     plugins.push(

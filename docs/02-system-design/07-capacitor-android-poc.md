@@ -154,36 +154,30 @@ pnpm build:android
 > 11+（`targetSdk ≥ 30`）对未签名包会报
 > **`packageInfo is null`**（小米等机型常见）。
 
-### 4.3 Gitee 生产包
+### 4.3 Gitee 与远端图床
 
-壳内无同源 `/api/gitee-proxy`。构建 **release APK**
-前设置已部署 Web 站点根 URL（须已启用 `api/gitee-proxy`）：
+`apps/pixuli` **已移除** Gitee 图片 Host 代理（Vite 中间件 / Electron 本地代理 /
+Vercel `api/gitee-proxy`）。Gitee 插件使用 **直连 raw
+URL**；浏览与预览以**本地工作区**缓存为主（REF-607），远端列表同步仍走 Gitee
+API。
+
+生产 APK 构建无需 `VITE_GITEE_PROXY_ORIGIN`：
 
 ```bash
-# 仓库根目录或 apps/pixuli
-VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
-  pnpm --filter pixuli-app build:android:release
+pnpm --filter pixuli-app build:android:release
 ```
-
-等价于先 `build:web`（注入 `import.meta.env.VITE_GITEE_PROXY_ORIGIN`）再
-`cap sync` + Gradle `assembleRelease`。应用内
-`resolveGiteeProviderContextFields()` 会将 Gitee 图片代理指向该站点的
-`/api/gitee-proxy`。
 
 **验证步骤**（#150）：
 
-1. 使用含 Gitee 源的测试仓库配置 APK
-2. 打开图床列表，确认缩略图可加载（非裂图）
-3. 打开预览并复制 Gitee 链接，确认可访问
-
-**GitHub 源**无需此变量，可直接冒烟。
+1. 配置 Gitee 或 GitHub 源，或导入本地工作区图片
+2. 打开图床/工作区列表，确认缩略图可加载
+3. 预览与复制链接行为符合本地工作区策略
 
 ### 4.4 环境变量一览
 
-| 变量                      | 阶段     | 说明                                                       |
-| ------------------------- | -------- | ---------------------------------------------------------- |
-| `CAPACITOR_SERVER_URL`    | 开发     | `cap sync` 前设置，写入 `capacitor.config` 的 `server.url` |
-| `VITE_GITEE_PROXY_ORIGIN` | 生产构建 | 已部署 Web 根 URL，供 Gitee 代理                           |
+| 变量                   | 阶段 | 说明                                                       |
+| ---------------------- | ---- | ---------------------------------------------------------- |
+| `CAPACITOR_SERVER_URL` | 开发 | `cap sync` 前设置，写入 `capacitor.config` 的 `server.url` |
 
 ---
 
@@ -196,7 +190,7 @@ VITE_GITEE_PROXY_ORIGIN=https://your-pixuli-web.example.com \
 | 列表滚动           | 虚拟列表 + 懒加载                         | 大图多时 WebView 内存与滚动帧率待测                                                                                 |
 | 上传选图           | `<input type="file">` + 原生「拍照/相册」 | #120：`@capacitor/camera` 注入 `ImageUpload`；见 [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md) |
 | PWA Service Worker | 构建仍生成 `sw.js`                        | 壳内已隐藏 PWA UI；若 SW 干扰加载，后续可按 `isNativeMobile` 禁用注册                                               |
-| Gitee 图床         | 生产需 `VITE_GITEE_PROXY_ORIGIN`          | 无代理时列表缩略图可能失败                                                                                          |
+| Gitee 图床         | 直连 raw URL；本地工作区优先              | WebView 跨域加载 Gitee 缩略图可能受限，以本地缓存为准                                                               |
 | 包体积             | 整包 Web dist ~1.4MB+ 预缓存              | 可接受；后续可做按需加载优化                                                                                        |
 
 ---

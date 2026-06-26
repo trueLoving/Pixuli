@@ -46,7 +46,7 @@ apps/pixuli/
 |           | `dev:desktop`                      | Electron 联调                                  |
 |           | `dev:android`                      | Capacitor：起 Vite + 模拟器/真机 Live Reload   |
 |           | `run:android`                      | 已有 dev server 时重连 Android                 |
-| **build** | `build:web`                        | Web 静态资源 + Vercel gitee-proxy              |
+| **build** | `build:web`                        | Web 静态资源（`dist/`）                        |
 |           | `build:desktop`                    | `tsc` + Vite desktop + electron-builder        |
 |           | `build:android`                    | `CAPACITOR_NATIVE=1` 的 web build + `cap sync` |
 |           | `build:android:debug` / `:release` | Gradle 组装 APK                                |
@@ -66,7 +66,7 @@ apps/pixuli/
 
 | 目标        | Vite `--mode` | 关键环境变量                     | 额外步骤                    | 产物                |
 | ----------- | ------------- | -------------------------------- | --------------------------- | ------------------- |
-| **Web**     | `web`         | —                                | `build:vercel-api`          | `dist/`             |
+| **Web**     | `web`         | —                                | —                           | `dist/`             |
 | **Desktop** | `desktop`     | —                                | `tsc` + `electron-builder`  | `dist/` + 安装包    |
 | **Android** | `web`         | `CAPACITOR_NATIVE=1`（离线 APK） | `cap sync android` + Gradle | `android/.../*.apk` |
 

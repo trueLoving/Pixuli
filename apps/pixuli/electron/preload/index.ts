@@ -1,13 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { registerHostIntegrations } from '@pixuli/core/plugins/host';
-import { storageRegistry } from '../../src/storage/registry';
 import { loading } from './loading';
-
-await registerHostIntegrations(storageRegistry, {
-  target: 'electronPreload',
-  electronPreload: { contextBridge, ipcRenderer },
-});
-
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
