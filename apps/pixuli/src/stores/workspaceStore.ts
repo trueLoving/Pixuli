@@ -507,6 +507,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         width: dimensions.width,
         height: dimensions.height,
         syncState: 'local-only',
+        createdAt: uploadData.captureMetadata?.takenAt,
+        captureMetadata: uploadData.captureMetadata,
       });
 
       await getSyncEngine().enqueuePush({

@@ -1,4 +1,23 @@
+import type { ImageCaptureMetadata } from '@pixuli/core/types';
+import type { ImageCaptureSource } from '@pixuli/core/types';
+import { buildImageCaptureMetadata } from '@pixuli/core/utils';
 import { isNativeMobile } from './platform';
+import {
+  buildCaptureMetadataFromFile,
+  mapCapacitorExif,
+} from './imageCaptureMetadata';
+
+export interface NativePickedImage {
+  file: File;
+  captureMetadata: ImageCaptureMetadata;
+}
+
+type CapacitorPhoto = {
+  webPath?: string;
+  path?: string;
+  format?: string;
+  exif?: Record<string, unknown>;
+};
 
 async function webPathToFile(
   webPath: string,
@@ -48,8 +67,48 @@ function basename(path: string): string {
   return parts[parts.length - 1] || path;
 }
 
-/** 相机拍摄单张，返回 File[]（0 或 1 项）。 */
-export async function pickImageFromCamera(): Promise<File[]> {
+async function photoToPickedImage(
+  photo: CapacitorPhoto,
+  source: ImageCaptureSource,
+  fallbackName: string,
+): Promise<NativePickedImage | null> {
+  if (!photo.webPath) {
+    return null;
+  }
+
+  const name =
+    (photo.path && basename(photo.path)) ||
+    `${fallbackName}.${photo.format ?? 'jpeg'}`;
+  const file = await webPathToFile(
+    photo.webPath,
+    name,
+    `image/${photo.format ?? 'jpeg'}`,
+  );
+
+  const fromPlugin = mapCapacitorExif(photo.exif);
+  const fromFile = await buildCaptureMetadataFromFile(file, {
+    source,
+    localPath: photo.path,
+  });
+
+  const captureMetadata = buildImageCaptureMetadata({
+    source,
+    fileName: file.name,
+    mimeType: file.type || undefined,
+    fileSize: file.size,
+    localPath: photo.path,
+    fileLastModified: file.lastModified,
+    takenAt: fromPlugin.takenAt ?? fromFile.takenAt,
+    location: fromPlugin.location ?? fromFile.location,
+    exif: fromPlugin.exif ?? fromFile.exif,
+    capturedAt: fromFile.capturedAt,
+  });
+
+  return { file, captureMetadata };
+}
+
+/** 相机拍摄单张。 */
+export async function pickImageFromCamera(): Promise<NativePickedImage[]> {
   if (!isNativeMobile()) {
     return [];
   }
@@ -65,18 +124,12 @@ export async function pickImageFromCamera(): Promise<File[]> {
       resultType: CameraResultType.Uri,
       source: CameraSource.Camera,
     });
-    if (!photo.webPath) {
-      return [];
-    }
-    const name =
-      (photo.path && basename(photo.path)) ||
-      `camera-${Date.now()}.${photo.format ?? 'jpeg'}`;
-    const file = await webPathToFile(
-      photo.webPath,
-      name,
-      `image/${photo.format ?? 'jpeg'}`,
+    const picked = await photoToPickedImage(
+      photo,
+      'camera',
+      `camera-${Date.now()}`,
     );
-    return [file];
+    return picked ? [picked] : [];
   } catch (error) {
     if (isUserCancelled(error)) {
       return [];
@@ -86,7 +139,7 @@ export async function pickImageFromCamera(): Promise<File[]> {
 }
 
 /** 系统相册多选。 */
-export async function pickImagesFromGallery(): Promise<File[]> {
+export async function pickImagesFromGallery(): Promise<NativePickedImage[]> {
   if (!isNativeMobile()) {
     return [];
   }
@@ -98,24 +151,18 @@ export async function pickImagesFromGallery(): Promise<File[]> {
       quality: 90,
       limit: 0,
     });
-    const files: File[] = [];
+    const picks: NativePickedImage[] = [];
     for (let i = 0; i < result.photos.length; i++) {
-      const photo = result.photos[i];
-      if (!photo.webPath) {
-        continue;
-      }
-      const name =
-        (photo.path && basename(photo.path)) ||
-        `gallery-${Date.now()}-${i}.${photo.format ?? 'jpeg'}`;
-      files.push(
-        await webPathToFile(
-          photo.webPath,
-          name,
-          `image/${photo.format ?? 'jpeg'}`,
-        ),
+      const picked = await photoToPickedImage(
+        result.photos[i],
+        'gallery',
+        `gallery-${Date.now()}-${i}`,
       );
+      if (picked) {
+        picks.push(picked);
+      }
     }
-    return files;
+    return picks;
   } catch (error) {
     if (isUserCancelled(error)) {
       return [];

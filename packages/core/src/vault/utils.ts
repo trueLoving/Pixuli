@@ -61,6 +61,7 @@ export function createIndexEntry(
     bindingId: meta?.bindingId,
     remotePath: meta?.remotePath,
     syncState: meta?.syncState ?? 'local-only',
+    captureMetadata: meta?.captureMetadata,
   };
 }
 

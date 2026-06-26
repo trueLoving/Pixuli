@@ -59,11 +59,13 @@ describe('nativeMedia', () => {
       }),
     );
 
-    const files = await pickImageFromCamera();
+    const picks = await pickImageFromCamera();
 
     expect(getPhoto).toHaveBeenCalled();
-    expect(files).toHaveLength(1);
-    expect(files[0].name).toBe('photo.jpg');
+    expect(picks).toHaveLength(1);
+    expect(picks[0].file.name).toBe('photo.jpg');
+    expect(picks[0].captureMetadata.source).toBe('camera');
+    expect(picks[0].captureMetadata.localPath).toBe('/cache/photo.jpg');
   });
 
   it('shares via navigator.share on web when available', async () => {

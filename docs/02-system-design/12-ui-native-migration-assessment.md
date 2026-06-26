@@ -126,9 +126,9 @@ components/ui/*              → RN 专属；归档后删除
 ## 七、与下游 Issue 的引用关系
 
 | Issue               | 引用本文                         |
-| ------------------- | -------------------------------- | --------------------------------------------------------------------- |
-| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md) |
-| **#141** REF-511    | §四；Capacitor 上传链            |
+| ------------------- | -------------------------------- | ------------------------------------------------------------------------ |
+| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md)    |
+| **#141** REF-511    | §四；Capacitor 上传链            | ✅ [13-capacitor-native-plugins.md §6](./13-capacitor-native-plugins.md) |
 | **#151** REF-513    | §五 RN / `./native` **整体归档** |
 | **#166** REF-516 P6 | 冒烟以 pixuli 为准               |
 

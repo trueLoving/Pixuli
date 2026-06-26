@@ -1,3 +1,5 @@
+import type { ImageCaptureMetadata } from './imageCapture';
+
 /** REF-607：与 `StorageProviderPublicUrl.resolveLinkKind` 一致 */
 export type LinkKind = 'local' | 'remote-raw' | 'remote-proxy';
 
@@ -23,6 +25,8 @@ export interface ImageItem {
   linkKind?: LinkKind;
   /** REF-607：当前绑定远端下的公网 URL */
   publicUrl?: string;
+  /** REF-511 #141：原生选图/拍照采集上下文 */
+  captureMetadata?: ImageCaptureMetadata;
 }
 
 export interface ImageUploadData {
@@ -31,6 +35,8 @@ export interface ImageUploadData {
   name?: string;
   description?: string;
   tags?: string[];
+  /** REF-511 #141：拍照/选图采集上下文 */
+  captureMetadata?: ImageCaptureMetadata;
 }
 
 /** Web/Desktop 上传表单：file 恒为 File */
@@ -72,6 +78,8 @@ export interface MultiImageUploadData {
   name?: string;
   description?: string;
   tags?: string[];
+  /** 与 `files` 同序；无元数据项可省略 */
+  captureMetadataList?: (ImageCaptureMetadata | undefined)[];
 }
 
 export interface BatchUploadProgress {
