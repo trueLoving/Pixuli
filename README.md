@@ -33,17 +33,18 @@ in [docs/backlog.md](docs/backlog.md). Refactor tracking:
 
 ## Maintenance scope
 
-| Area                                  | Status        | Notes                                                                     |
-| ------------------------------------- | ------------- | ------------------------------------------------------------------------- |
-| **Web** (`apps/pixuli`, Vite)         | ✅ Maintained | PWA; dev server `http://localhost:5500`                                   |
-| **Desktop** (`apps/pixuli`, Electron) | ✅ Maintained | Shares UI with Web via `@pixuli/ui`                                       |
-| **Mobile** (`apps/mobile`, Expo)      | ✅ Maintained | React Native; long-term path toward Capacitor reuse of `apps/pixuli` (M5) |
-| **`@pixuli/core`**                    | ✅ Maintained | Types, utilities, `StoragePluginRegistry`                                 |
-| **`@pixuli/ui`**                      | ✅ Maintained | Web/Desktop UI; `./native` for RN                                         |
-| **`@pixuli/provider-*`**              | ✅ Maintained | Official GitHub/Gitee storage plugins                                     |
-| **`archive/wasm`**                    | 📦 Archived   | Not in workspace; reference only                                          |
-| **`archive/benchmark`**               | 📦 Archived   | Not in workspace                                                          |
-| **`archive/server`**                  | 📦 Archived   | Not in workspace; not an official deliverable                             |
+| Area                                  | Status        | Notes                                                               |
+| ------------------------------------- | ------------- | ------------------------------------------------------------------- |
+| **Web** (`apps/pixuli`, Vite)         | ✅ Maintained | PWA; dev server `http://localhost:5500`                             |
+| **Desktop** (`apps/pixuli`, Electron) | ✅ Maintained | Shares UI with Web via `@pixuli/ui`                                 |
+| **Mobile** (`apps/pixuli`, Capacitor) | ✅ Maintained | Android via `dev:android` / `build:android`; same UI as Web/Desktop |
+| **`@pixuli/core`**                    | ✅ Maintained | Types, utilities, `StoragePluginRegistry`                           |
+| **`@pixuli/ui`**                      | ✅ Maintained | Web/Desktop/Mobile UI; `./native` deprecated                        |
+| **`@pixuli/provider-*`**              | ✅ Maintained | Official GitHub/Gitee storage plugins                               |
+| **`archive/wasm`**                    | 📦 Archived   | Not in workspace; reference only                                    |
+| **`archive/benchmark`**               | 📦 Archived   | Not in workspace                                                    |
+| **`archive/apps/mobile`**             | 📦 Archived   | Expo RN; reference only; use Capacitor in `apps/pixuli`             |
+| **`archive/server`**                  | 📦 Archived   | Not in workspace; not an official deliverable                       |
 
 ---
 
@@ -112,8 +113,8 @@ pnpm install
 # Development
 pnpm dev:web       # Web → http://localhost:5500
 pnpm dev:desktop   # Desktop (Electron)
-pnpm dev:mobile --android   # Mobile Android
-pnpm dev:mobile --ios       # Mobile iOS
+pnpm dev:android       # Mobile Android (Capacitor + Live Reload)
+pnpm run:android       # Reconnect to running dev server
 ```
 
 ### Build & verify
@@ -162,18 +163,18 @@ commit conventions.
 
 ## Documentation
 
-| Audience               | Document                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------------------ |
-| **Users**              | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — install, configure sources, daily use |
-| **Product**            | [docs/01-product/](docs/01-product/) — PRD, scope & cut list, usage tutorial                     |
-| **Removed / deferred** | [docs/backlog.md](docs/backlog.md)                                                               |
-| **Developers**         | [docs/README.md](docs/README.md) — full doc index                                                |
-| **Contributing**       | [CONTRIBUTING.md](./CONTRIBUTING.md)                                                             |
-| **AI agents**          | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills, monorepo context (REF-414)                       |
-| **Refactor plan**      | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                                           |
-| **Changelog**          | [CHANGELOG.md](./CHANGELOG.md)                                                                   |
-| **App (Web/Desktop)**  | [apps/pixuli/README.md](./apps/pixuli/README.md)                                                 |
-| **Mobile**             | [apps/mobile/README.md](./apps/mobile/README.md)                                                 |
+| Audience                     | Document                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Users**                    | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — install, configure sources, daily use |
+| **Product**                  | [docs/01-product/](docs/01-product/) — PRD, scope & cut list, usage tutorial                     |
+| **Removed / deferred**       | [docs/backlog.md](docs/backlog.md)                                                               |
+| **Developers**               | [docs/README.md](docs/README.md) — full doc index                                                |
+| **Contributing**             | [CONTRIBUTING.md](./CONTRIBUTING.md)                                                             |
+| **AI agents**                | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills, monorepo context (REF-414)                       |
+| **Refactor plan**            | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                                           |
+| **Changelog**                | [CHANGELOG.md](./CHANGELOG.md)                                                                   |
+| **App (Web/Desktop/Mobile)** | [apps/pixuli/README.md](./apps/pixuli/README.md)                                                 |
+| **Mobile (archived RN)**     | [archive/apps/mobile/README.md](./archive/apps/mobile/README.md)                                 |
 
 ---
 

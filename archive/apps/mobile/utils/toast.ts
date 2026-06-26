@@ -18,7 +18,7 @@ const activeToasts = new Map<string, ToastInfo>();
 // 成功消息提示
 export const showSuccess = (
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   Alert.alert('成功', message);
   const toastId = `success-${Date.now()}`;
@@ -36,7 +36,7 @@ export const showSuccess = (
 // 错误消息提示
 export const showError = (
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   Alert.alert('错误', message);
   const toastId = `error-${Date.now()}`;
@@ -54,7 +54,7 @@ export const showError = (
 // 警告消息提示
 export const showWarning = (
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   Alert.alert('警告', message);
   const toastId = `warning-${Date.now()}`;
@@ -72,7 +72,7 @@ export const showWarning = (
 // 信息消息提示
 export const showInfo = (
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   Alert.alert('提示', message);
   const toastId = `info-${Date.now()}`;
@@ -90,7 +90,7 @@ export const showInfo = (
 // 加载中消息提示（移动端使用 Alert，不显示 loading）
 export const showLoading = (
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   // 移动端不显示 loading Alert，只在内存中记录
   const toastId = `loading-${Date.now()}`;
@@ -109,7 +109,7 @@ export const showLoading = (
 export const updateLoadingToSuccess = (
   toastId: string,
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   activeToasts.delete(toastId);
   Alert.alert('成功', message);
@@ -127,7 +127,7 @@ export const updateLoadingToSuccess = (
 export const updateLoadingToError = (
   toastId: string,
   message: string,
-  options?: { messageKey?: string; getMessage?: () => string }
+  options?: { messageKey?: string; getMessage?: () => string },
 ) => {
   activeToasts.delete(toastId);
   Alert.alert('错误', message);

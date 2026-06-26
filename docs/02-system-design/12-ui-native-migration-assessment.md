@@ -11,13 +11,13 @@
 
 ## 一、结论（执行摘要）
 
-| 项                        | 决议                                                                                                                                                            |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **现阶段工作**            | **仅功能对齐**：在 `apps/pixuli`（Capacitor）补齐与 Web/Desktop 一致的用户能力（见 [11-mobile-feature-parity-matrix.md](./11-mobile-feature-parity-matrix.md)） |
-| **Mobile 主路线**         | Capacitor 壳 + `@pixuli/ui` **web**；对齐验收以 pixuli 为准（#166）                                                                                             |
-| **RN `apps/mobile`**      | **不维护、不对齐**；`components/`**、stores、屏幕整体待 **#151** 迁入 `archive/`，**不做\*\*迁入评估式改造                                                      |
-| `**@pixuli/ui/native`\*\* | 仅被 RN 引用；Capacitor **零依赖**；随 #151 **与 RN 一并归档/删除**，不在过渡期单独演进                                                                         |
-| **L3 缺口**               | 在 pixuli 侧用 Capacitor 插件补齐（**#120** / **#141**），**不在 RN 实现**                                                                                      |
+| 项                           | 决议                                                                                                                                                            |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **现阶段工作**               | **仅功能对齐**：在 `apps/pixuli`（Capacitor）补齐与 Web/Desktop 一致的用户能力（见 [11-mobile-feature-parity-matrix.md](./11-mobile-feature-parity-matrix.md)） |
+| **Mobile 主路线**            | Capacitor 壳 + `@pixuli/ui` **web**；对齐验收以 pixuli 为准（#166）                                                                                             |
+| **RN `archive/apps/mobile`** | **已归档**；`components/`、stores、屏幕在 `archive/apps/mobile/` 只读参考                                                                                       |
+| `**@pixuli/ui/native`\*\*    | 仅被 RN 引用；Capacitor **零依赖**；随 #151 **与 RN 一并归档/删除**，不在过渡期单独演进                                                                         |
+| **L3 缺口**                  | 在 pixuli 侧用 Capacitor 插件补齐（**#120** / **#141**），**不在 RN 实现**                                                                                      |
 
 **验收（#119）**：明确「对齐在 Capacitor、RN 直接归档」边界；无「应在 RN 补做或迁 UI」的 L2 项。
 
@@ -31,7 +31,7 @@ Android 上完成与窄屏 Web 等价的旅程；**不是**让 RN 与 pixuli 代
 | 标注                  | 含义                                                       | 现阶段动作                               |
 | --------------------- | ---------------------------------------------------------- | ---------------------------------------- |
 | **功能对齐**          | pixuli / Capacitor 须达到的能力；Web 已有或 #120/#141 补齐 | 只在 `apps/pixuli` 实现或验收            |
-| **RN 归档**           | `apps/mobile` 与 `@pixuli/ui/native` 中的重复实现          | **不改动**；#151 整体迁入 `archive/`     |
+| **RN 归档**           | `archive/apps/mobile` 与 `@pixuli/ui/native` 中的重复实现  | **已完成**（REF-513）                    |
 | **需 Capacitor 插件** | 原生能力，非 React 组件                                    | `isNativeMobile()` + 插件（#120 / #141） |
 
 > **不做**：向 RN 迁入 Web 组件、在 RN 修 parity、维护 `./native` 新能力。
@@ -126,11 +126,11 @@ components/ui/*              → RN 专属；归档后删除
 ## 七、与下游 Issue 的引用关系
 
 | Issue               | 引用本文                         |
-| ------------------- | -------------------------------- | ------------------------------------------------------------------------ |
-| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md)    |
-| **#141** REF-511    | §四；Capacitor 上传链            | ✅ [13-capacitor-native-plugins.md §6](./13-capacitor-native-plugins.md) |
+| ------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
+| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md)                  |
+| **#141** REF-511    | §四；Capacitor 上传链            | ✅ [13-capacitor-native-plugins.md §6](./13-capacitor-native-plugins.md)               |
 | **#151** REF-513    | §五 RN / `./native` **整体归档** |
-| **#166** REF-516 P6 | 冒烟以 pixuli 为准               |
+| **#166** REF-516 P6 | 冒烟以 pixuli 为准               | [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md) |
 
 ---
 

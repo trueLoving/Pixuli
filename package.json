@@ -3,8 +3,6 @@
   "description": "Pixuli - 智能图片管理应用 Monorepo",
   "private": true,
   "scripts": {
-    "dev:mobile": "pnpm run --filter pixuli-mobile dev",
-    "build:mobile:rn": "pnpm run --filter pixuli-mobile build",
     "build:packages": "pnpm --filter @pixuli/core --filter @pixuli/provider-gitee build",
     "dev:web": "pnpm run --filter pixuli-app dev:web",
     "build:web": "pnpm run --filter pixuli-app build:web",
@@ -17,7 +15,7 @@
     "test": "vitest run",
     "lint": "eslint packages/core",
     "lint:boundaries": "eslint packages/core",
-    "ci": "pnpm lint:boundaries && pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop && pnpm --filter pixuli-mobile exec tsc --noEmit",
+    "ci": "pnpm lint:boundaries && pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop",
     "prepare": "husky"
   },
   "keywords": [

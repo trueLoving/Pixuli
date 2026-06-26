@@ -1,7 +1,8 @@
 # Pixuli 品牌资源（三端 SSOT）
 
-**来源**：过渡期从 `apps/mobile/assets/images/`
-同步（REF-516）；RN 归档后以本目录为唯一源。
+**来源**：`brand/source/` 为三端 SSOT；首次自
+`archive/apps/mobile/assets/images/` 同步（REF-516）。重新拉取源图可运行
+`pnpm sync:brand`。
 
 **同步命令**（在 `apps/pixuli` 下）：
 

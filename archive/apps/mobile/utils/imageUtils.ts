@@ -28,7 +28,7 @@ export interface ImageInfo extends ImageDimensions {
  * @returns Promise<ImageDimensions> 图片尺寸信息
  */
 export async function getImageDimensionsFromUri(
-  uri: string
+  uri: string,
 ): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
     Image.getSize(
@@ -38,7 +38,7 @@ export async function getImageDimensionsFromUri(
       },
       (error: Error) => {
         reject(new Error('图片加载失败: ' + error.message));
-      }
+      },
     );
   });
 }
@@ -101,7 +101,7 @@ export function calculateDisplayDimensions(
   originalHeight: number,
   maxWidth?: number,
   maxHeight?: number,
-  keepAspectRatio: boolean = true
+  keepAspectRatio: boolean = true,
 ): ImageDimensions {
   let width = originalWidth;
   let height = originalHeight;
@@ -195,7 +195,7 @@ export interface ImageProcessResult {
  */
 export async function processImage(
   uri: string,
-  options: ImageProcessOptions = {}
+  options: ImageProcessOptions = {},
 ): Promise<ImageProcessResult> {
   try {
     const {
@@ -295,7 +295,7 @@ export async function processImage(
   } catch (error) {
     console.error('图片处理失败:', error);
     throw new Error(
-      `图片处理失败: ${error instanceof Error ? error.message : '未知错误'}`
+      `图片处理失败: ${error instanceof Error ? error.message : '未知错误'}`,
     );
   }
 }

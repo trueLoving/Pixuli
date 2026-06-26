@@ -6,7 +6,7 @@
   · 父 Issue [#163](https://github.com/trueLoving/Pixuli/issues/163)
 - **盘点日期**：2026-05-27 · 基线：`main`（REF-607 P1～P3 ✅、REF-507 ❌ 取消）
 - **SSOT 原则**：**`apps/pixuli`（Web + Desktop + Capacitor 目标）**
-  为产品行为准绳；`apps/mobile`（RN）仅作差距对照，归档前禁止新增产品能力
+  为产品行为准绳；`archive/apps/mobile`（RN）仅作历史对照，已归档
 - **相关文档**：
   - [04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)
     — REF-601 旅程与 IA（§2.1、§3、§四）
@@ -27,7 +27,7 @@
 | 列                 | 含义                                                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **pixuli**         | `apps/pixuli` + `@pixuli/ui` web（Web / Desktop / Capacitor 共用）                                                                   |
-| **RN**             | `apps/mobile`（Expo，过渡对照）                                                                                                      |
+| **RN**             | `archive/apps/mobile`（Expo，已归档）                                                                                                |
 | **Capacitor 目标** | 以 pixuli 窄屏 + 原生壳为准；缺口在 Capacitor 路线补齐或书面降级                                                                     |
 | **决策**           | **实现** = Capacitor 须达到 pixuli 同等能力 · **降级** = 保留差异并文档化 · **放弃** = RN 独有且产品不保留 · **已有** = 无需额外工作 |
 
@@ -181,7 +181,7 @@
 
 ## 五、#165（REF-516 P3 业务补齐）输入清单
 
-按优先级排序，Capacitor 路线在 `apps/pixuli` 实现（**不**改 `apps/mobile`）。
+按优先级排序，Capacitor 路线在 `apps/pixuli` 实现（RN 已归档，不再维护）。
 
 | 优先级 | 任务                     | 旅程 ID      | 验收要点                                                 | 状态             |
 | ------ | ------------------------ | ------------ | -------------------------------------------------------- | ---------------- |
@@ -220,17 +220,17 @@
 对照 [Issue #151](https://github.com/trueLoving/Pixuli/issues/151)
 归档前置条件：
 
-| #151 Checklist 项      | 勾选依据（本文）                                                                     | 当前状态                                 |
-| ---------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
-| #118 真机冒烟          | [07-capacitor-android-poc.md §六](./07-capacitor-android-poc.md)                     | ⏳ 工程 ✅，冒烟待 #166                  |
-| #120 相机/相册 L3      | §四、§六 #120                                                                        | ✅ **#120 已交付**（真机冒烟 → #166）    |
-| #141 拍照元数据        | J4-08                                                                                | ✅ **#141 已交付**（列表反序列化待后续） |
-| #119 仅 RN 能力决策    | §四 + [12-ui-native-migration-assessment.md](./12-ui-native-migration-assessment.md) | ✅ **#119 已交付**                       |
-| ~~#117~~ store 覆盖 RN | REF-507 取消；pixuli store 为三端 SSOT                                               | ✅ **已满足**（#117 已关闭）             |
-| Wiki / APK 发版说明    | REF-515 #153                                                                         | ⏳                                       |
-| **功能对齐矩阵 SSOT**  | **本文档**                                                                           | ✅ **#164 交付**                         |
-| P3 业务补齐完成        | §五 #165                                                                             | ✅                                       |
-| P6 验收冒烟            | #166                                                                                 | ⏳                                       |
+| #151 Checklist 项      | 勾选依据（本文）                                                                                                                                          | 当前状态                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| #118 真机冒烟          | [07-capacitor-android-poc.md §六](./07-capacitor-android-poc.md) · [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md) | ⏳ **#166 签收中**（待真机填表）         |
+| #120 相机/相册 L3      | §四、§六 #120                                                                                                                                             | ✅ 代码已交付（真机确认 → #166 §2.2）    |
+| #141 拍照元数据        | J4-08                                                                                                                                                     | ✅ **#141 已交付**（列表反序列化待后续） |
+| #119 仅 RN 能力决策    | §四 + [12-ui-native-migration-assessment.md](./12-ui-native-migration-assessment.md)                                                                      | ✅ **#119 已交付**                       |
+| ~~#117~~ store 覆盖 RN | REF-507 取消；pixuli store 为三端 SSOT                                                                                                                    | ✅ **已满足**（#117 已关闭）             |
+| Wiki / APK 发版说明    | REF-515 #153                                                                                                                                              | ⏳                                       |
+| **功能对齐矩阵 SSOT**  | **本文档**                                                                                                                                                | ✅ **#164 交付**                         |
+| P3 业务补齐完成        | §五 #165                                                                                                                                                  | ✅                                       |
+| P6 验收冒烟            | #166 · [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md)                                                             | ⏳ 待真机                                |
 
 `REFACTOR_PLAN.md` §1.9.2 归档 Checklist 与上表同步。
 
@@ -273,3 +273,4 @@ PRD 标 Mobile「批量删除 ✅」与 RN **实现不符**
 | 1.0  | 2026-05-27 | REF-516 P0 / #164 初稿：旅程矩阵、§三 覆盖、#165/#119/#151 输入清单   |
 | 1.1  | 2026-06-25 | #119 链至 12-ui-native-migration-assessment；#165 ✅；filter Tab 已删 |
 | 1.2  | 2026-06-16 | #120 ✅：Capacitor Camera/Share；矩阵 §六/§七 更新                    |
+| 1.3  | 2026-06-17 | #166：链至 14-capacitor-android-smoke-acceptance.md                   |

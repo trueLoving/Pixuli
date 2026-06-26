@@ -13,7 +13,7 @@ description: >-
 | What               | Where                                                                    |
 | ------------------ | ------------------------------------------------------------------------ |
 | Registry factory   | `createStoragePluginRegistry()` — `@pixuli/core/plugins`                 |
-| App registry       | `apps/pixuli/src/storage/registry.ts`, `apps/mobile/storage/registry.ts` |
+| App registry       | `apps/pixuli/src/storage/registry.ts`                                    |
 | Create + configure | `createConfiguredStorageProvider()` — `apps/*/storage/createProvider.ts` |
 | GitHub register    | `registerGitHubProvider` — `@pixuli/provider-github/register`            |
 | Gitee register     | `registerGiteeProvider` — `@pixuli/provider-gitee/register`              |
