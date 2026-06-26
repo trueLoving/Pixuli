@@ -56,11 +56,25 @@ Web / Desktop 仍用 `<input type="file">` / 拖拽；`navigator.share`
 ## 5. 与 #119 / #141 边界
 
 - **#119** ✅：RN 组件不迁入；L3 仅在 pixuli 补齐
-- **#141**：拍照 EXIF/GPS/`localPath` 元数据写入上传 DTO，**不在** #120 范围
-- **#166**：真机冒烟验收（选图上传、分享）
+- **#141** ✅：拍照 EXIF/GPS/`localPath` 元数据 →
+  `ImageUploadData.captureMetadata` → sidecar `capture`
+- **#166**：真机冒烟验收（选图上传、分享、元数据）
 
-## 6. 修订记录
+## 6. 拍照元数据（REF-511 / #141）
+
+| 字段       | 来源                                            | 说明                                               |
+| ---------- | ----------------------------------------------- | -------------------------------------------------- |
+| `takenAt`  | EXIF `DateTimeOriginal` → 文件 mtime → 采集时刻 | 可写入 `ImageItem.createdAt`                       |
+| 文件信息   | `File` + Capacitor `Photo.path`                 | `fileName` / `mimeType` / `fileSize` / `localPath` |
+| EXIF 子集  | `exifr` + Capacitor `Photo.exif`                | `make` / `model` / `orientation` 等                |
+| `location` | EXIF GPS only                                   | 不调用持续定位；无 GPS 则为空                      |
+
+链路：`imageCaptureMetadata.ts` → `nativeMedia.ts` → `ImageUpload` → Provider
+sidecar `capture`。
+
+## 7. 修订记录
 
 | 版本 | 日期       | 说明                                        |
 | ---- | ---------- | ------------------------------------------- |
 | 1.0  | 2026-06-16 | REF-510 #120 初稿：插件选型、分支、降级说明 |
+| 1.1  | 2026-06-17 | REF-511 #141：拍照元数据采集与 sidecar 字段 |

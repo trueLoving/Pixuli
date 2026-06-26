@@ -1,4 +1,5 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import { buildProviderSidecarPayload } from '@pixuli/core/utils';
 import type { GitHubConfig } from '@pixuli/core/types';
 import type {
   ImageListOptions,
@@ -221,8 +222,10 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
         type: mimeType,
         tags: tags || [],
         description: description || '',
-        createdAt: new Date().toISOString(),
+        createdAt:
+          uploadData.captureMetadata?.takenAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        captureMetadata: uploadData.captureMetadata,
       };
 
       // ========== 步骤2：上传图片元数据 ==========
@@ -468,18 +471,7 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
       const metadataFileName = this.getMetadataFileName(fileName);
       const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
 
-      // 构建元数据内容
-      const metadataContent = {
-        id: metadata.id || fileName,
-        name: metadata.name || fileName,
-        description: metadata.description || '',
-        tags: metadata.tags || [],
-        size: metadata.size || 0, // 文件大小（字节）
-        width: metadata.width || 0,
-        height: metadata.height || 0,
-        updatedAt: metadata.updatedAt || new Date().toISOString(),
-        createdAt: metadata.createdAt || new Date().toISOString(),
-      };
+      const metadataContent = buildProviderSidecarPayload(metadata);
 
       // 将元数据转换为 base64
       const jsonString = JSON.stringify(metadataContent, null, 2);

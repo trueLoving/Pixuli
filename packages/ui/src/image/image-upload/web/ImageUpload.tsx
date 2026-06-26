@@ -14,6 +14,7 @@ import { useDropzone } from 'react-dropzone';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import type {
   BatchUploadProgress,
+  ImageCaptureMetadata,
   ImageCompressionOptions,
   ImageCropOptions,
   ImageUploadData,
@@ -96,6 +97,37 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       },
     );
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const captureMetadataByFileRef = useRef(
+    new WeakMap<File, ImageCaptureMetadata>(),
+  );
+
+  const rememberCaptureMetadata = useCallback(
+    (file: File, metadata?: ImageCaptureMetadata) => {
+      if (metadata) {
+        captureMetadataByFileRef.current.set(file, metadata);
+      }
+    },
+    [],
+  );
+
+  const transferCaptureMetadata = useCallback((from: File, to: File) => {
+    const metadata = captureMetadataByFileRef.current.get(from);
+    if (metadata) {
+      captureMetadataByFileRef.current.set(to, metadata);
+      captureMetadataByFileRef.current.delete(from);
+    }
+  }, []);
+
+  const getCaptureMetadata = useCallback(
+    (file: File): ImageCaptureMetadata | undefined =>
+      captureMetadataByFileRef.current.get(file),
+    [],
+  );
+
+  const buildCaptureMetadataList = useCallback(
+    (files: File[]) => files.map(file => getCaptureMetadata(file)),
+    [getCaptureMetadata],
+  );
 
   // 使用 ref 存储预览数据，避免依赖变化导致函数重新创建
   const compressionPreviewRef = useRef(compressionPreview);
@@ -351,8 +383,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           source === 'camera'
             ? await nativePickers.pickFromCamera()
             : await nativePickers.pickFromGallery();
+        for (const pick of files) {
+          rememberCaptureMetadata(pick.file, pick.captureMetadata);
+        }
         if (files.length > 0) {
-          await onDrop(files);
+          await onDrop(files.map(pick => pick.file));
         }
       } catch (error) {
         const message =
@@ -360,7 +395,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         showInfo(`${translate('image.upload.nativePickFailed')}: ${message}`);
       }
     },
-    [nativePickers, onDrop, translate],
+    [nativePickers, onDrop, translate, rememberCaptureMetadata],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -393,7 +428,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       if (userWantsCompress && enableCompression) {
         const compressionToast = showLoading('正在压缩图片...');
         try {
-          finalFile = await compressFileIfNeeded(finalFile, true);
+          const compressed = await compressFileIfNeeded(finalFile, true);
+          transferCaptureMetadata(finalFile, compressed);
+          finalFile = compressed;
           updateLoadingToSuccess(compressionToast, '图片压缩完成');
         } catch (error) {
           updateLoadingToError(
@@ -420,6 +457,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData.name || finalFile.name,
           description: uploadData.description || '',
           tags: uploadData.tags || [],
+          captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
@@ -475,7 +513,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         );
         try {
           processedFiles = await Promise.all(
-            multiUploadData.files.map(file => compressFileIfNeeded(file, true)),
+            multiUploadData.files.map(async file => {
+              const compressed = await compressFileIfNeeded(file, true);
+              transferCaptureMetadata(file, compressed);
+              return compressed;
+            }),
           );
           updateLoadingToSuccess(compressionToast, '图片压缩完成');
         } catch (error) {
@@ -497,6 +539,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: multiUploadData.name || '',
           description: multiUploadData.description || '',
           tags: multiUploadData.tags || [],
+          captureMetadataList: buildCaptureMetadataList(processedFiles),
         };
         await onUploadMultipleImages(completeMultiUploadData);
         updateLoadingToSuccess(
@@ -540,12 +583,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // 处理裁剪完成
   const handleCropComplete = async (croppedFile: File) => {
+    if (cropFile) {
+      transferCaptureMetadata(cropFile, croppedFile);
+    }
     // 如果用户选择了压缩，压缩裁剪后的文件
     let finalFile = croppedFile;
     if (userWantsCompress && enableCompression) {
       try {
         const compressionToast = showLoading('正在压缩裁剪后的图片...');
-        finalFile = await compressFileIfNeeded(croppedFile, true);
+        const compressed = await compressFileIfNeeded(croppedFile, true);
+        transferCaptureMetadata(croppedFile, compressed);
+        finalFile = compressed;
         updateLoadingToSuccess(compressionToast, '压缩完成');
       } catch (error) {
         console.warn('裁剪后压缩失败，使用原文件:', error);
@@ -573,6 +621,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData?.name || finalFile.name,
           description: uploadData?.description || '',
           tags: uploadData?.tags || [],
+          captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
@@ -599,6 +648,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       // 多张图片中的第一张裁剪完成，继续处理剩余图片
       if (multiUploadData) {
         const newFiles = [...multiUploadData.files];
+        if (cropFile) {
+          transferCaptureMetadata(cropFile, finalFile);
+        }
         newFiles[cropFileIndex] = finalFile;
 
         // 如果还有其他图片需要裁剪，继续裁剪下一张
@@ -626,7 +678,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           );
           try {
             processedFiles = await Promise.all(
-              newFiles.map(file => compressFileIfNeeded(file, true)),
+              newFiles.map(async file => {
+                const compressed = await compressFileIfNeeded(file, true);
+                transferCaptureMetadata(file, compressed);
+                return compressed;
+              }),
             );
             updateLoadingToSuccess(compressionToast, '图片压缩完成');
           } catch (error) {
@@ -648,6 +704,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             name: multiUploadData.name || '',
             description: multiUploadData.description || '',
             tags: multiUploadData.tags || [],
+            captureMetadataList: buildCaptureMetadataList(processedFiles),
           };
           await onUploadMultipleImages(completeMultiUploadData);
           updateLoadingToSuccess(
@@ -678,7 +735,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     if (userWantsCompress && enableCompression) {
       try {
         const compressionToast = showLoading('正在压缩图片...');
-        finalFile = await compressFileIfNeeded(originalFile, true);
+        const compressed = await compressFileIfNeeded(originalFile, true);
+        transferCaptureMetadata(originalFile, compressed);
+        finalFile = compressed;
         updateLoadingToSuccess(compressionToast, '压缩完成');
       } catch (error) {
         console.warn('压缩失败，使用原文件:', error);
@@ -706,6 +765,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData?.name || finalFile.name,
           description: uploadData?.description || '',
           tags: uploadData?.tags || [],
+          captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
@@ -732,6 +792,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       // 多张图片中的第一张跳过裁剪，继续处理
       if (multiUploadData) {
         const newFiles = [...multiUploadData.files];
+        if (cropFile) {
+          transferCaptureMetadata(cropFile, finalFile);
+        }
         newFiles[cropFileIndex] = finalFile;
 
         // 如果还有其他图片需要裁剪，继续裁剪下一张
@@ -756,7 +819,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           );
           try {
             processedFiles = await Promise.all(
-              newFiles.map(file => compressFileIfNeeded(file, true)),
+              newFiles.map(async file => {
+                const compressed = await compressFileIfNeeded(file, true);
+                transferCaptureMetadata(file, compressed);
+                return compressed;
+              }),
             );
             updateLoadingToSuccess(compressionToast, '图片压缩完成');
           } catch (error) {
@@ -778,6 +845,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             name: multiUploadData.name || '',
             description: multiUploadData.description || '',
             tags: multiUploadData.tags || [],
+            captureMetadataList: buildCaptureMetadataList(processedFiles),
           };
           await onUploadMultipleImages(completeMultiUploadData);
           updateLoadingToSuccess(

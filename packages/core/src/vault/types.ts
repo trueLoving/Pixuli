@@ -1,4 +1,5 @@
 import type { StorageProviderConfig } from '../plugins/types';
+import type { ImageCaptureMetadata } from '../types/imageCapture';
 
 export type WorkspaceAdapterKind = 'desktop' | 'web' | 'mobile';
 
@@ -58,6 +59,8 @@ export interface LocalImageIndexEntry {
   bindingId?: string;
   remotePath?: string;
   syncState?: LocalImageSyncState;
+  /** REF-511 #141 */
+  captureMetadata?: ImageCaptureMetadata;
 }
 
 export interface LocalListOptions {

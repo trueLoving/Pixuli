@@ -270,7 +270,11 @@ export const useImageStore = create<ImageState>((set, get) => {
           imageId: newImage.id,
           imageName: newImage.name,
           duration,
-          details: { size: newImage.size, type: newImage.type },
+          details: {
+            size: newImage.size,
+            type: newImage.type,
+            capture: newImage.captureMetadata,
+          },
         });
       } catch (error) {
         const duration = Date.now() - startTime;
@@ -291,7 +295,8 @@ export const useImageStore = create<ImageState>((set, get) => {
     },
 
     uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
-      const { files, name, description, tags } = uploadData;
+      const { files, name, description, tags, captureMetadataList } =
+        uploadData;
 
       if (isLocalListMode()) {
         const total = files.length;
@@ -349,6 +354,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                 name,
                 description,
                 tags,
+                captureMetadata: captureMetadataList?.[i],
               });
               completed++;
               set(state => ({
@@ -484,6 +490,7 @@ export const useImageStore = create<ImageState>((set, get) => {
               name: fileName,
               description,
               tags,
+              captureMetadata: captureMetadataList?.[i],
             };
 
             const newImage =

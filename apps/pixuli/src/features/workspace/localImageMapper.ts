@@ -56,6 +56,7 @@ export function localEntryToImageItem(
     description: entry.description,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
+    captureMetadata: entry.captureMetadata,
   };
 }
 
