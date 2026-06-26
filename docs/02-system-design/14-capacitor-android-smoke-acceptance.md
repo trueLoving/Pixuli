@@ -25,7 +25,7 @@ pnpm build:android:debug
 adb install -r apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Gitee 源生产包需设置 `VITE_GITEE_PROXY_ORIGIN`（见 PoC §4.3）。
+Gitee 源使用直连 raw URL；本地工作区优先（见 PoC §4.3）。
 
 ---
 
@@ -88,14 +88,14 @@ Gitee 源生产包需设置 `VITE_GITEE_PROXY_ORIGIN`（见 PoC §4.3）。
 
 ## 4. 已知降级项（不阻塞远端图床 parity）
 
-| 能力                   | 状态     | 说明                                     |
-| ---------------------- | -------- | ---------------------------------------- |
-| 保存到系统相册         | 降级     | #120 书面降级；可用分享面板保存          |
-| 状态栏 / 深链          | 降级     | CSS safe-area；深链未实现                |
-| SAF 用户目录           | 未交付   | #120 不阻塞；P6 用 `Directory.Data` 沙箱 |
-| 列表反序列化 `capture` | 待后续   | #141 写入 sidecar；列表加载待补          |
-| 本地工作区全链路       | 单独验收 | #161 工程 ✅；真机工作区冒烟可另记 §6    |
-| Gitee 无代理生产包     | 环境依赖 | 须 `VITE_GITEE_PROXY_ORIGIN`             |
+| 能力                   | 状态             | 说明                                     |
+| ---------------------- | ---------------- | ---------------------------------------- |
+| 保存到系统相册         | 降级             | #120 书面降级；可用分享面板保存          |
+| 状态栏 / 深链          | 降级             | CSS safe-area；深链未实现                |
+| SAF 用户目录           | 未交付           | #120 不阻塞；P6 用 `Directory.Data` 沙箱 |
+| 列表反序列化 `capture` | 待后续           | #141 写入 sidecar；列表加载待补          |
+| 本地工作区全链路       | 单独验收         | #161 工程 ✅；真机工作区冒烟可另记 §6    |
+| Gitee 直连 raw URL     | 已移除 Host 代理 | 远端缩略图以本地工作区缓存为准           |
 
 ---
 

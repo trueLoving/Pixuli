@@ -11,8 +11,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setApp } from './app';
-import { registerHostIntegrations } from '@pixuli/core/plugins/host';
-import { storageRegistry } from '../../src/storage/registry';
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
 import { createTray, updateTrayMenu, destroyTray } from './tray';
@@ -205,18 +203,8 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   setupContentSecurityPolicy();
-
-  await registerHostIntegrations(storageRegistry, {
-    target: 'electronMain',
-    electronMain: {
-      isDev: !!VITE_DEV_SERVER_URL,
-      onBeforeQuit: handler => app.on('before-quit', handler),
-      ipcMain,
-    },
-  });
-
   createWindow();
 });
 
