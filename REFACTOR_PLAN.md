@@ -229,13 +229,18 @@ apps/pixuli/
 | **Desktop** | `desktop`                | `tsc` + `electron-builder`  | `dist/` + 安装包    |
 | **Android** | `web`（同 Web 静态资源） | `cap sync android` + Gradle | `android/.../*.apk` |
 
-**整理项**：
+**整理项**（2026-06-17 #152 进度）：
 
-- 平台检测（`__IS_WEB__`、`getPlatform()`、`Capacitor.isNativePlatform()`）收敛到
-  `src/platforms/`
-- 全屏/侧栏/Header 等平台壳与业务路由解耦
-- `electron/` 或 `platforms/desktop/` 目录约定与 REF-502 合并落地
-- 删除或更新文档中对 `apps/mobile` 双工程并列的表述
+- [x] 平台检测收敛至 `src/platforms/platform.ts`；`WebBrowserChrome` 壳层解耦
+- [x] `vite/modes.ts`、`vite/versionInfo.ts` 分轨；`package.json` 脚本分组
+- [x] 工程 SSOT 文档 `15-apps-pixuli-engineering.md`；`electron/README.md`
+- [x] CI 根 `pnpm ci` 前置 `build:packages`；文档清扫 RN 双工程
+- [ ] **Follow-up**（不阻塞 #152）：更深 `layouts` 壳层拆分、`vite.config`
+      插件块模块化
+
+**验收（#152 ✅）**：新协作者可按根 `pnpm dev:*` /
+[15-apps-pixuli-engineering.md](docs/02-system-design/15-apps-pixuli-engineering.md)
+启动各端，无需读 vite 源码猜脚本。
 
 **终态位置**：归档完成后**无需**将主应用上提到仓库根目录；**统一留在
 `apps/pixuli`** 即可——`apps/` 下仅保留这一份三端主应用（与历史
@@ -245,13 +250,13 @@ apps/pixuli/
 
 与 REF-409 发布策略、REF-413 冒烟矩阵、§1.9.2 归档步骤对齐。
 
-| 流水线 / 脚本       | 现状                                      | 目标                                                                                           |
-| ------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **CI（pr/push）**   | `test` + `build:web` + `build:desktop` 等 | 增加 **`pnpm build:packages` 门禁**；可选 `cap sync android` / `assembleDebug`（不跑模拟器）   |
-| **release-web**     | Vercel / Docker / `v*-web`                | 保持                                                                                           |
-| **release-desktop** | Win / macOS / `v*-desktop`                | 保持                                                                                           |
-| **Mobile 发版**     | RN / Expo（`apps/mobile`）                | **改为** `build:android:release` → APK 上传 GitHub Release（`v*-android` 命名与 REF-409 对齐） |
-| **根脚本**          | `build:mobile:rn`                         | RN 归档后**删除**；`dev:android` / `build:android` 为一等公民                                  |
+| 流水线 / 脚本       | 现状                                      | 目标                                                                                                     |
+| ------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **CI（pr/push）**   | `test` + `build:web` + `build:desktop` 等 | **`pnpm build:packages` 门禁**（#152 ✅）；可选 `cap sync android` / `assembleDebug`（不跑模拟器，#153） |
+| **release-web**     | Vercel / Docker / `v*-web`                | 保持                                                                                                     |
+| **release-desktop** | Win / macOS / `v*-desktop`                | 保持                                                                                                     |
+| **Mobile 发版**     | ~~RN / Expo~~ 已归档                      | **`build:android:release` → APK**（`v*-android`，#153 workflow）                                         |
+| **根脚本**          | ~~`build:mobile:rn`~~ 已删除              | `dev:android` / `build:android` 为一等公民                                                               |
 
 **推荐构建顺序（CI 与本地 release 一致）**：
 
@@ -279,16 +284,16 @@ Capacitor 功能对齐**阶段。
 
 父 Issue：[#163 REF-516](https://github.com/trueLoving/Pixuli/issues/163)
 
-| 阶段              | 范围                                                         | GitHub #                                                                                                                                                                  | 依赖              | 状态 |
-| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ---- |
-| **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅  | ✅   |
-| **P1 L1 逻辑**    | ~~`imageStore` / `sourceStore` 抽取（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | —                 | ❌   |
-| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           | ✅   |
-| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            | ✅   |
-| **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2                | ✅   |
-| **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3 ✅ | ✅   |
-| **P6 验收冒烟**   | Android parity 工程签收；RN 归档                             | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4            | ✅   |
-| **P7 归档与工程** | `apps/pixuli` 工程整理；CI APK 发版；Wiki                    | [#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153)                                                          | P6                | ⏳   |
+| 阶段              | 范围                                                         | GitHub #                                                                                                                                                                  | 依赖              | 状态    |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------- |
+| **P0 对齐矩阵**   | RN ↔ pixuli 功能对照文档（用户旅程级）                      | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | #116 ✅、#130 ✅  | ✅      |
+| **P1 L1 逻辑**    | ~~`imageStore` / `sourceStore` 抽取（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | —                 | ❌      |
+| **P2 移动 UI**    | 窄屏/安全区/触控；与 REF-601 布局一致                        | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | #118 ✅           | ✅      |
+| **P3 业务补齐**   | 批删、筛选、上传、配置 Modal 等 Capacitor 路径缺口           | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | P0、P2            | ✅      |
+| **P4 L3 原生**    | RN 独有能力决策 + Capacitor 插件 + 拍照元数据                | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | P2                | ✅      |
+| **P5 本地工作区** | Mobile `WorkspaceAdapter`（SAF / Capacitor 文件）            | [#161](https://github.com/trueLoving/Pixuli/issues/161)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）                                                  | REF-607 P1～P3 ✅ | ✅      |
+| **P6 验收冒烟**   | Android parity 工程签收；RN 归档                             | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | P3、P4            | ✅      |
+| **P7 归档与工程** | `apps/pixuli` 工程整理；CI APK 发版；Wiki                    | [#152](https://github.com/trueLoving/Pixuli/issues/152) ✅、[#153](https://github.com/trueLoving/Pixuli/issues/153)                                                       | P6                | ⏳ #153 |
 
 **首项交付（✅）**：`apps/mobile/assets/images/` 品牌资源已同步至
 `apps/pixuli`（`pnpm sync:brand`；SSOT 见 `apps/pixuli/brand/README.md`）——Web
@@ -1211,39 +1216,39 @@ Breaking 后**基线定为 2.0.0**，三端 semver 统一，2.0.0 起打齐
 
 ### 里程碑 M5 — 平台能力 L3（持续）
 
-| ID      | 建议标题                                                   | Labels                                                         | 优先级 | Depends on       | GitHub #                                                                                                                 | 状态                        |
-| ------- | ---------------------------------------------------------- | -------------------------------------------------------------- | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
-| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile）      | refactor, m5, type:docs, priority:P2                           | P2     | #80              | [#86](https://github.com/trueLoving/Pixuli/issues/86)                                                                    | ⬜                          |
-| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定       | refactor, m5, area:desktop, priority:P2                        | P2     | #64              | [#87](https://github.com/trueLoving/Pixuli/issues/87)                                                                    | ⬜                          |
-| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#88](https://github.com/trueLoving/Pixuli/issues/88)                                                                    | ⬜                          |
-| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#89](https://github.com/trueLoving/Pixuli/issues/89)                                                                    | ⬜                          |
-| REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#90](https://github.com/trueLoving/Pixuli/issues/90)                                                                    | ⬜                          |
-| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1              | P1     | #79, #86         | [#116](https://github.com/trueLoving/Pixuli/issues/116)                                                                  | ✅                          |
-| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1              | P1     | #100, #116       | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                  | ❌                          |
-| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2                | P2     | #116             | [#119](https://github.com/trueLoving/Pixuli/issues/119)                                                                  | ✅                          |
-| REF-509 | [M5] Capacitor Android PoC：apps/pixuli Web 壳 + APK       | refactor, m5, area:mobile, area:web, priority:P1               | P1     | #116, #84        | [#118](https://github.com/trueLoving/Pixuli/issues/118)                                                                  | ✅                          |
-| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2                         | P2     | #118             | [#120](https://github.com/trueLoving/Pixuli/issues/120)                                                                  | ✅                          |
-| REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1                         | P1     | #118, #120       | [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                  | ✅                          |
-| REF-512 | [M5] apps/pixuli 移动端 Web UI 适配（窄屏/安全区/触控）    | refactor, m5, area:web, area:mobile, priority:P1               | P1     | #118             | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                  | ⬜                          |
-| REF-513 | [M5] apps/mobile 功能对齐清单与 RN 工程归档                | refactor, m5, area:mobile, type:removal, priority:P1           | P1     | #118, #119       | [#151](https://github.com/trueLoving/Pixuli/issues/151)                                                                  | ✅ 主体归档；Wiki #153 待办 |
-| REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）  | refactor, m5, area:web, area:desktop, area:mobile, priority:P1 | P1     | #118, #87        | [#152](https://github.com/trueLoving/Pixuli/issues/152)                                                                  | ⬜                          |
-| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）         | refactor, m5, priority:P1                                      | P1     | #84, #118, #128  | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                                  | ⬜                          |
-| REF-516 | [三端融合] 以 Web/PC 为 SSOT 的 Mobile 功能对齐（总览）    | refactor, m5, area:mobile, area:product, priority:P1           | P1     | #118, #130, #116 | [#163](https://github.com/trueLoving/Pixuli/issues/163)（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)） | ⬜                          |
+| ID      | 建议标题                                                   | Labels                                                         | 优先级 | Depends on       | GitHub #                                                                                                                 | 状态                            |
+| ------- | ---------------------------------------------------------- | -------------------------------------------------------------- | ------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| REF-501 | [M5] 文档化 L3 能力矩阵（Web PWA / Desktop / Mobile）      | refactor, m5, type:docs, priority:P2                           | P2     | #80              | [#86](https://github.com/trueLoving/Pixuli/issues/86)                                                                    | ⬜                              |
+| REF-502 | [M5] 建立 apps/pixuli/src/platforms/desktop 目录约定       | refactor, m5, area:desktop, priority:P2                        | P2     | #64              | [#87](https://github.com/trueLoving/Pixuli/issues/87)                                                                    | ⬜                              |
+| REF-503 | [M5] Desktop 离线浏览与上传队列（设计+实现）               | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#88](https://github.com/trueLoving/Pixuli/issues/88)                                                                    | ⬜                              |
+| REF-504 | [M5] Desktop 自动更新 electron-updater（设计+实现）        | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#89](https://github.com/trueLoving/Pixuli/issues/89)                                                                    | ⬜                              |
+| REF-505 | [M5] Desktop 系统托盘（设计+实现）                         | refactor, m5, area:desktop, priority:P2                        | P2     | #87              | [#90](https://github.com/trueLoving/Pixuli/issues/90)                                                                    | ⬜                              |
+| REF-506 | [M5] 三端代码共享：现状盘点与分层差距文档                  | refactor, m5, type:docs, area:mobile, priority:P1              | P1     | #79, #86         | [#116](https://github.com/trueLoving/Pixuli/issues/116)                                                                  | ✅                              |
+| REF-507 | [M5] 抽取 imageStore/sourceStore 共享逻辑（无 UI）         | refactor, m5, area:core, area:mobile, priority:P1              | P1     | #100, #116       | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                  | ❌                              |
+| REF-508 | [M5] @pixuli/ui：L1/L2 组件 native 迁入评估清单            | refactor, m5, area:ui, area:mobile, priority:P2                | P2     | #116             | [#119](https://github.com/trueLoving/Pixuli/issues/119)                                                                  | ✅                              |
+| REF-509 | [M5] Capacitor Android PoC：apps/pixuli Web 壳 + APK       | refactor, m5, area:mobile, area:web, priority:P1               | P1     | #116, #84        | [#118](https://github.com/trueLoving/Pixuli/issues/118)                                                                  | ✅                              |
+| REF-510 | [M5] Capacitor 原生能力插件与 Web 运行时分支               | refactor, m5, area:mobile, priority:P2                         | P2     | #118             | [#120](https://github.com/trueLoving/Pixuli/issues/120)                                                                  | ✅                              |
+| REF-511 | [M5] 移动端拍照采集元数据（时间/文件/EXIF/位置/localPath） | refactor, m5, area:mobile, priority:P1                         | P1     | #118, #120       | [#141](https://github.com/trueLoving/Pixuli/issues/141)                                                                  | ✅                              |
+| REF-512 | [M5] apps/pixuli 移动端 Web UI 适配（窄屏/安全区/触控）    | refactor, m5, area:web, area:mobile, priority:P1               | P1     | #118             | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                  | ⬜                              |
+| REF-513 | [M5] apps/mobile 功能对齐清单与 RN 工程归档                | refactor, m5, area:mobile, type:removal, priority:P1           | P1     | #118, #119       | [#151](https://github.com/trueLoving/Pixuli/issues/151)                                                                  | ✅ 主体归档；Wiki #153 待办     |
+| REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）  | refactor, m5, area:web, area:desktop, area:mobile, priority:P1 | P1     | #118, #87        | [#152](https://github.com/trueLoving/Pixuli/issues/152)                                                                  | ✅ follow-up: layouts/vite 插件 |
+| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）         | refactor, m5, priority:P1                                      | P1     | #84, #118, #128  | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                                  | ⬜                              |
+| REF-516 | [三端融合] 以 Web/PC 为 SSOT 的 Mobile 功能对齐（总览）    | refactor, m5, area:mobile, area:product, priority:P1           | P1     | #118, #130, #116 | [#163](https://github.com/trueLoving/Pixuli/issues/163)（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)） | ⬜                              |
 
 #### REF-516 分阶段交付（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）
 
 详见 **§1.10**。
 
-| 阶段 | 标题                                          | GitHub #                                                                                                                                                                  | 状态 |
-| ---- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| P0   | RN ↔ pixuli 功能对齐矩阵                     | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ✅   |
-| P1   | ~~store / 持久化统一（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | ❌   |
-| P2   | 移动端 Web UI（REF-512）                      | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ✅   |
-| P3   | 业务能力补齐（Capacitor）                     | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ✅   |
-| P4   | L3：REF-508 / REF-510 / REF-511               | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | ✅   |
-| P5   | 本地工作区 Mobile（REF-607-P6）               | [#161](https://github.com/trueLoving/Pixuli/issues/161)                                                                                                                   | ✅   |
-| P6   | 对齐验收与工程签收（含 RN 归档）              | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | ✅   |
-| P7   | 工程整理 + CI APK                             | [#152](https://github.com/trueLoving/Pixuli/issues/152)、[#153](https://github.com/trueLoving/Pixuli/issues/153)                                                          | ⏳   |
+| 阶段 | 标题                                          | GitHub #                                                                                                                                                                  | 状态    |
+| ---- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| P0   | RN ↔ pixuli 功能对齐矩阵                     | [#164](https://github.com/trueLoving/Pixuli/issues/164)                                                                                                                   | ✅      |
+| P1   | ~~store / 持久化统一（REF-507）~~ **❌ 取消** | [#117](https://github.com/trueLoving/Pixuli/issues/117)                                                                                                                   | ❌      |
+| P2   | 移动端 Web UI（REF-512）                      | [#150](https://github.com/trueLoving/Pixuli/issues/150)                                                                                                                   | ✅      |
+| P3   | 业务能力补齐（Capacitor）                     | [#165](https://github.com/trueLoving/Pixuli/issues/165)                                                                                                                   | ✅      |
+| P4   | L3：REF-508 / REF-510 / REF-511               | [#119](https://github.com/trueLoving/Pixuli/issues/119)、[#120](https://github.com/trueLoving/Pixuli/issues/120)、[#141](https://github.com/trueLoving/Pixuli/issues/141) | ✅      |
+| P5   | 本地工作区 Mobile（REF-607-P6）               | [#161](https://github.com/trueLoving/Pixuli/issues/161)                                                                                                                   | ✅      |
+| P6   | 对齐验收与工程签收（含 RN 归档）              | [#166](https://github.com/trueLoving/Pixuli/issues/166)                                                                                                                   | ✅      |
+| P7   | 工程整理 + CI APK                             | [#152](https://github.com/trueLoving/Pixuli/issues/152) ✅、[#153](https://github.com/trueLoving/Pixuli/issues/153)                                                       | ⏳ #153 |
 
 REF-506 ~ REF-516 说明（三端共享与工程收敛）
 

@@ -4,6 +4,10 @@
 > **目标**：在 Web / Desktop /
 > Mobile 差异下，**最大化三端代码复用**；明确 Capacitor 方案 A 为当前路线。
 
+> **现状（2026-06）**：Mobile 已并入 `apps/pixuli`（Capacitor）；Expo RN 在
+> `archive/apps/mobile` 只读。下文 §二 等保留**历史背景**；当前路线见
+> [15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md)。
+
 - **关联**：[00-System-Design](./00-System-Design.md)、[01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md)
 
 ---
@@ -22,9 +26,11 @@ React 代码，通过 mode 与 Electron 主进程区分行为与产物。
 
 ---
 
-## 二、为什么 Mobile 目前是独立工程（apps/mobile）
+## 二、历史：为什么 Mobile 曾是独立工程（`archive/apps/mobile`）
 
-| 维度         | Web / Desktop（apps/pixuli） | Mobile（apps/mobile）                   |
+> RN 已归档（REF-513）。本节说明过渡期的技术差异，**非当前交付路径**。
+
+| 维度         | Web / Desktop（apps/pixuli） | RN（archive/apps/mobile）               |
 | ------------ | ---------------------------- | --------------------------------------- |
 | **运行时**   | DOM                          | React Native（原生 View/Text/Image）    |
 | **UI 层**    | React + DOM + Tailwind       | React + RN 组件 + StyleSheet            |
@@ -312,16 +318,12 @@ apps/pixuli/
 
 ---
 
-### 阶段 4：与现有 apps/mobile 的关系与收尾
+### 阶段 4：RN 归档与收尾（✅ REF-513）
 
-- **短期**：可与现有 `apps/mobile`（React
-  Native）并存；文档与 README 中明确「新移动端」来自 `apps/pixuli` +
-  Capacitor，「旧移动端」为 RN 版本，按需下线或仅做维护。
-- **若决定全面采用方案 A**：
-  - 将 RN 相关脚本从根 `package.json` 中改为指向 `apps/pixuli` 的 `build:mobile`
-    与 `cap:ios`/`cap:android`。
-  - 可保留 `apps/mobile` 目录一段时间作为参考，或迁移为「Pixuli
-    Native」（方案 C）的占位，待后续若性能不足再启用 RN/原生重写。
+- Expo RN 已迁入 `archive/apps/mobile`；根脚本 `dev:mobile` /
+  `release-mobile.yml` 已移除。
+- Mobile 用户安装 **Capacitor APK**（`pnpm dev:android` /
+  `build:android`）；发版 workflow 见 **#153**。
 
 ---
 

@@ -29,5 +29,5 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 运行 CI（Vitest + Web/Desktop 构建）
+      - name: 运行 CI（build:packages + Vitest + Web/Desktop 构建）
         run: pnpm run ci

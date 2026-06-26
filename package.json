@@ -15,7 +15,7 @@
     "test": "vitest run",
     "lint": "eslint packages/core",
     "lint:boundaries": "eslint packages/core",
-    "ci": "pnpm lint:boundaries && pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop",
+    "ci": "pnpm build:packages && pnpm lint:boundaries && pnpm test && pnpm run build:web && pnpm --filter pixuli-app exec tsc && pnpm --filter pixuli-app exec vite build --mode desktop",
     "prepare": "husky"
   },
   "keywords": [

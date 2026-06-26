@@ -6,7 +6,7 @@ import {
   pickImagesFromGallery,
   shareImageFile,
 } from '@/utils/nativeMedia';
-import { isNativeMobile } from '@/utils/platform';
+import { isNativeMobile } from '@/platforms/platform';
 
 export function useNativeImagePickers(): NativeImagePickers | undefined {
   return useMemo(() => {

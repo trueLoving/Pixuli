@@ -1,6 +1,6 @@
 import type { WorkspaceAdapter } from '@pixuli/core/vault';
 import { randomUUID } from '@pixuli/core/utils';
-import { isNativeMobile } from '@/utils/platform';
+import { isNativeMobile, isWeb } from '../platform';
 import {
   formatFsaRootPath,
   fsaDeleteFile,
@@ -198,7 +198,7 @@ export function isWebWorkspaceAvailable(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  if (typeof __IS_WEB__ !== 'undefined' && !__IS_WEB__) {
+  if (!isWeb()) {
     return false;
   }
   if (typeof window.workspaceAPI !== 'undefined' && window.workspaceAPI) {

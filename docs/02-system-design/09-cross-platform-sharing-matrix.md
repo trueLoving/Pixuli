@@ -23,14 +23,14 @@
 
 ## 一、盘点范围与方法
 
-对照 `REFACTOR_PLAN.md` **§1.4.1**，对 `apps/pixuli`（Web + Desktop）与
-`apps/mobile`（Expo RN）做**模块级**标注：
+对照 `REFACTOR_PLAN.md` **§1.4.1**，对 `apps/pixuli`（Web + Desktop +
+Capacitor）与历史 RN（`archive/apps/mobile`）做**模块级**标注：
 
 | 标注            | 含义                                                                     |
 | --------------- | ------------------------------------------------------------------------ |
 | **共享**        | 已在 `@pixuli/core` / `@pixuli/ui` / `provider-*`，或两端文件实质相同    |
-| **Web+Desktop** | 仅 `apps/pixuli`（Electron 与 Web 共用）                                 |
-| **Mobile**      | 仅 `apps/mobile`                                                         |
+| **Web+Desktop** | 仅 `apps/pixuli` Electron 与 Web 共用（Capacitor 亦共用 pixuli UI）      |
+| **RN（归档）**  | 仅 `archive/apps/mobile` 历史对照                                        |
 | **重复**        | 两端各有一份实现，行为应对齐但代码未合并                                 |
 | **可合并**      | ~~建议迁入 `packages/app-shared`（REF-507）~~ — **已取消**（单工程三端） |
 | **仅 L3**       | 平台能力，不强行塞进 core                                                |
@@ -45,7 +45,8 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │  apps/pixuli（Vite + React）     Web + Desktop 同一 UI 源码       │
 ├─────────────────────────────────────────────────────────────────┤
-│  apps/mobile（Expo + RN）        独立 UI；共享 core / provider    │
+│  apps/pixuli（Web + Desktop + Capacitor）  单工程三端；共享 core / ui / provider │
+│  archive/apps/mobile（RN，只读）             历史对照                            │
 ├─────────────────────────────────────────────────────────────────┤
 │  已共享：@pixuli/core、@pixuli/provider-*、Registry、类型、i18n 基座 │
 │  仍分叉：imageStore / sourceStore、导航、RN 组件、部分持久化 key    │
@@ -118,12 +119,12 @@ dist + 原生壳）；**过渡 C
 
 ### 3.4 配置 Modal 与存储设置
 
-| 模块                   | 位置                                                | 标注                                            |
-| ---------------------- | --------------------------------------------------- | ----------------------------------------------- |
-| GitHub / Gitee 配置 UI | `@pixuli/ui` `config/*/web/*Modal.tsx`              | **共享 UI 包** · **Web+Desktop**                |
-| 集成入口               | `layouts/MainLayout.tsx` + `uiStore`                | **Web+Desktop**                                 |
-| `StorageConfigModal`   | `apps/mobile/components/settings/modals/` (~830 行) | **Mobile** · **重复**                           |
-| 编辑态配置解析         | `utils/resolveModalRepoConfig.ts`                   | **Web+Desktop**（注释要求与 Mobile 编辑态对齐） |
+| 模块                   | 位置                                                        | 标注                                            |
+| ---------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| GitHub / Gitee 配置 UI | `@pixuli/ui` `config/*/web/*Modal.tsx`                      | **共享 UI 包** · **Web+Desktop**                |
+| 集成入口               | `layouts/MainLayout.tsx` + `uiStore`                        | **Web+Desktop**                                 |
+| `StorageConfigModal`   | `archive/apps/mobile/components/settings/modals/` (~830 行) | **RN 归档** · 重复（Capacitor 用 web Modal）    |
+| 编辑态配置解析         | `utils/resolveModalRepoConfig.ts`                           | **Web+Desktop**（注释要求与 Mobile 编辑态对齐） |
 
 长期：表单**校验与 save 流程**下沉 core（无 UI）；Capacitor 路线下 Mobile 直接复用
 `@pixuli/ui` web Modal。
@@ -175,12 +176,12 @@ config 共用（REF-507 P0）。
 
 ### 3.9 国际化
 
-| 模块                          | 标注                                                                   |
-| ----------------------------- | ---------------------------------------------------------------------- |
-| `@pixuli/ui/locales` 基座     | **共享**                                                               |
-| `apps/pixuli/src/i18n/*`      | **Web+Desktop** 增量                                                   |
-| `apps/mobile/i18n/locales.ts` | **Mobile** 增量（tabs、upload 等）                                     |
-| 检测器                        | browser + localStorage vs expo-localization + AsyncStorage · **仅 L3** |
+| 模块                                  | 标注                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| `@pixuli/ui/locales` 基座             | **共享**                                                               |
+| `apps/pixuli/src/i18n/*`              | **Web+Desktop** 增量                                                   |
+| `archive/apps/mobile/i18n/locales.ts` | **RN 归档** 增量（tabs、upload 等）                                    |
+| 检测器                                | browser + localStorage vs expo-localization + AsyncStorage · **仅 L3** |
 
 ### 3.10 平台适配
 
@@ -212,13 +213,13 @@ config 共用（REF-507 P0）。
 
 对照 `REFACTOR_PLAN.md` **§1.4.3**：
 
-| 阶段                  | 时机       | 交付                                                      | 本矩阵对应动作                              | Issue                     |
-| --------------------- | ---------- | --------------------------------------------------------- | ------------------------------------------- | ------------------------- |
-| **P0 逻辑对齐**       | M3 末～M4  | Registry / `StoredSourceEntry` 行为一致；差异仅持久化适配 | ✅ M3 已达成；⚠️ `sources` key v2/v3 未统一 | —                         |
-| **P1 共享包评估**     | M4         | 文档：可迁入 core 的 store 工厂清单                       | **本文档 §三、§六**                         | **REF-506 #116**（本文）  |
-| **P2 Capacitor PoC**  | M5 ✅      | `apps/pixuli` + Capacitor Android 工程；§六冒烟待勾选     | 验证 §3.3～3.7 Web UI 可替代 RN             | **REF-509 #118** ✅       |
-| **P3 三端单工程发布** | M5+        | CI 产出 Web/Desktop/Android（iOS 不在范围）               | Wiki 与 REF-501 能力矩阵对齐                | REF-501 #86、REF-515 #153 |
-| **P4 RN 归档**        | 功能对齐后 | `apps/mobile` → `archive/`                                | REF-508 评估 + REF-513 归档                 | **REF-508 #119、#151**    |
+| 阶段                  | 时机      | 交付                                                      | 本矩阵对应动作                              | Issue                     |
+| --------------------- | --------- | --------------------------------------------------------- | ------------------------------------------- | ------------------------- |
+| **P0 逻辑对齐**       | M3 末～M4 | Registry / `StoredSourceEntry` 行为一致；差异仅持久化适配 | ✅ M3 已达成；⚠️ `sources` key v2/v3 未统一 | —                         |
+| **P1 共享包评估**     | M4        | 文档：可迁入 core 的 store 工厂清单                       | **本文档 §三、§六**                         | **REF-506 #116**（本文）  |
+| **P2 Capacitor PoC**  | M5 ✅     | `apps/pixuli` + Capacitor Android 工程；§六冒烟待勾选     | 验证 §3.3～3.7 Web UI 可替代 RN             | **REF-509 #118** ✅       |
+| **P3 三端单工程发布** | M5+       | CI 产出 Web/Desktop/Android（iOS 不在范围）               | Wiki 与 REF-501 能力矩阵对齐                | REF-501 #86、REF-515 #153 |
+| **P4 RN 归档**        | 已完成    | `archive/apps/mobile`                                     | REF-513                                     | **#151** ✅               |
 
 **M5 建议实施顺序**（`REFACTOR_PLAN` §1.10
 **REF-516**、[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）：**#116（本文）**

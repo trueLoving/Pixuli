@@ -536,16 +536,16 @@ Web **File System Access
 API**：可用则允许「连接本地文件夹」；不可用则仅 OPFS + 文案说明（REF-601
 §2.2）。
 
-### 11.1 与 `apps/mobile`（Expo RN）边界
+### 11.1 与历史 RN（`archive/apps/mobile`）边界
 
-| 项           | Capacitor（`apps/pixuli`）                                | RN（`apps/mobile`）                               |
+| 项           | Capacitor（`apps/pixuli`）                                | RN（`archive/apps/mobile`，已归档）               |
 | ------------ | --------------------------------------------------------- | ------------------------------------------------- |
 | **包名**     | `com.pixuli.app`                                          | `com.pixuli.mobile`                               |
 | **工作区**   | `MobileWorkspaceAdapter` + `@capacitor/filesystem`        | 独立 RN 存储，**不共享** vault 实现               |
-| **产品路线** | REF-509 / REF-607 P6 主路径                               | REF-508 过渡维护，PoC 通过后评估退场              |
+| **产品路线** | **Mobile 唯一交付路径**（REF-509 / REF-607 P6）           | REF-513 已归档，只读参考                          |
 | **代码复用** | `@pixuli/core` vault 契约、`workspaceStore`、`SyncEngine` | 仅 core / provider 层；无 `WorkspaceAdapter` 复用 |
 
-Capacitor 与 RN 可并存安装；本地工作区数据**不**跨应用迁移（各自沙箱）。
+Capacitor 与旧 RN 包可并存安装；本地工作区数据**不**跨应用迁移（各自沙箱）。
 
 ---
 

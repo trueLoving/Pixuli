@@ -1,7 +1,6 @@
 # Pixuli 文档目录说明
 
-> **最后核对**：2026-05-27 · 适用分支 `main` · 维护 Issue
-> [REF-407](https://github.com/trueLoving/Pixuli/issues/111)
+> **最后核对**：2026-06-17 · 适用分支 `main`
 
 本目录（`docs/`）集中存放项目文档，按职责分为子目录。终端用户日常操作见
 **[GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki)**（源稿：
@@ -30,9 +29,9 @@
 | **02-system-design**   | 技术 | 架构、跨端、插件、性能等；描述「怎么实现」。           |
 | **03-business-design** | 业务 | 业务场景与规则（**暂缓编写**，见目录 README）。        |
 
-**当前架构（摘要）**：`apps/pixuli`（Web+Desktop）· `apps/mobile` ·
-`@pixuli/core` · `@pixuli/ui` · `@pixuli/provider-*` ·
-`archive/`（wasm/server/benchmark，非 workspace）。
+**当前架构（摘要）**：`apps/pixuli`（Web + Desktop + Capacitor Android）·
+`@pixuli/core` · `@pixuli/ui` · `@pixuli/provider-*` · `archive/`（`apps/mobile`
+RN、wasm、server、benchmark，非 workspace）。
 
 ---
 
@@ -49,20 +48,21 @@
 
 ## 02-system-design（技术）
 
-| 文档                                                                                                | 关注内容                                                                                          |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [00-System-Design.md](02-system-design/00-System-Design.md)                                         | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。                                          |
-| [01-Three-Platform-Capability-Sharing.md](02-system-design/01-Three-Platform-Capability-Sharing.md) | 三端能力共享：资源共享、`@pixuli/core`/`@pixuli/ui`、图片处理契约、日志。                         |
-| [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                                             |
-| [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                                                    |
-| [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。                                |
-| [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                                             |
-| [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。                                 |
-| [07-capacitor-android-poc.md](02-system-design/07-capacitor-android-poc.md)                         | Capacitor Android PoC：dev/prod 构建与冒烟清单（REF-509 #118）。                                  |
-| [09-cross-platform-sharing-matrix.md](02-system-design/09-cross-platform-sharing-matrix.md)         | 三端代码共享矩阵：pixuli vs mobile 现状（REF-506）。                                              |
-| [11-mobile-feature-parity-matrix.md](02-system-design/11-mobile-feature-parity-matrix.md)           | **Mobile 功能对齐矩阵**：用户旅程、Capacitor 决策、#165 输入（REF-516 P0 / #164）。               |
-| [12-ui-native-migration-assessment.md](02-system-design/12-ui-native-migration-assessment.md)       | **UI 对齐与 RN 归档边界**（REF-508 / #119）：Capacitor 功能对齐；RN/`./native` 待 #151 整体归档。 |
-| [10-local-workspace-sync.md](02-system-design/10-local-workspace-sync.md)                           | 本地工作区 + 远端同步：`LocalVault` / `SyncEngine` / Provider 扩展（REF-607 #144）。              |
+| 文档                                                                                                | 关注内容                                                                             |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [00-System-Design.md](02-system-design/00-System-Design.md)                                         | 整体架构、模块职责、数据流（REF-407 已对齐 M3 后结构）。                             |
+| [01-Three-Platform-Capability-Sharing.md](02-system-design/01-Three-Platform-Capability-Sharing.md) | 三端能力共享：资源共享、`@pixuli/core`/`@pixuli/ui`、图片处理契约、日志。            |
+| [02-Three-Platform-Design.md](02-system-design/02-Three-Platform-Design.md)                         | 三端设计方案：最大化代码复用（Capacitor 方案 A 等）。                                |
+| [03-Performance.md](02-system-design/03-Performance.md)                                             | 列表虚拟化、懒加载、性能监控。                                                       |
+| [04-Plugin-System.md](02-system-design/04-Plugin-System.md)                                         | Pixuli 插件体系：存储架构、开发指南、M3 回归清单（REF-301～311）。                   |
+| [05-TypeScript-JavaScript-Policy.md](02-system-design/05-TypeScript-JavaScript-Policy.md)           | TS/JS 统一策略与例外登记（REF-410）。                                                |
+| [06-Plugin-Host-Integration.md](02-system-design/06-Plugin-Host-Integration.md)                     | 插件 Host 集成：manifest、`registerHostIntegrations`（REF-411）。                    |
+| [07-capacitor-android-poc.md](02-system-design/07-capacitor-android-poc.md)                         | Capacitor Android PoC：dev/prod 构建与冒烟清单（REF-509 #118）。                     |
+| [15-apps-pixuli-engineering.md](02-system-design/15-apps-pixuli-engineering.md)                     | **apps/pixuli 工程约定**：目录、脚本分组、构建矩阵、CI（REF-514 #152）。             |
+| [09-cross-platform-sharing-matrix.md](02-system-design/09-cross-platform-sharing-matrix.md)         | 三端代码共享矩阵：pixuli vs 归档 RN（REF-506）。                                     |
+| [11-mobile-feature-parity-matrix.md](02-system-design/11-mobile-feature-parity-matrix.md)           | **Mobile 功能对齐矩阵**：用户旅程、Capacitor 决策、#165 输入（REF-516 P0 / #164）。  |
+| [12-ui-native-migration-assessment.md](02-system-design/12-ui-native-migration-assessment.md)       | **UI 对齐与 RN 归档边界**（REF-508 / #119）；RN 已迁入 `archive/`（REF-513）。       |
+| [10-local-workspace-sync.md](02-system-design/10-local-workspace-sync.md)                           | 本地工作区 + 远端同步：`LocalVault` / `SyncEngine` / Provider 扩展（REF-607 #144）。 |
 
 ---
 

@@ -247,7 +247,7 @@ apps/pixuli/
 ├── capacitor.config.ts      # Android 专用；CAPACITOR_SERVER_URL 控制 dev/prod
 ├── android/                 # Capacitor 原生工程（入版本库）
 ├── dist/                    # build:web 输出（gitignore，sync 时复制进 APK）
-└── src/utils/platform.ts    # isNativeMobile() / getPlatform() → 'mobile'
+└── src/platforms/platform.ts    # isNativeMobile() / getPlatform() → 'mobile'
 ```
 
 ---
