@@ -119,7 +119,7 @@ apps/pixuli / apps/mobile
 
 ```mermaid
 flowchart TB
-  subgraph apps [应用层 apps/pixuli · apps/mobile]
+  subgraph apps [应用层 apps/pixuli]
     Store[imageStore]
     Boot[bootstrapProviders]
   end
@@ -513,14 +513,14 @@ const githubManifest: StoragePluginManifest = {
 
 ### B. 相关源码索引（M2 基线）
 
-| 路径                                    | 说明                                          |
-| --------------------------------------- | --------------------------------------------- |
-| `packages/core/src/plugins/types.ts`    | 契约定义                                      |
-| `packages/core/src/plugins/registry.ts` | DefaultStoragePluginRegistry                  |
-| `packages/plugin-provider-github`       | GitHub provider + 可选 `GitHubStorageService` |
-| `packages/plugin-provider-gitee`        | Gitee provider + 可选 `GiteeStorageService`   |
-| `apps/pixuli/src/stores/imageStore.ts`  | REF-304 已对接 Registry                       |
-| `apps/mobile/stores/imageStore.ts`      | REF-305 已对接 Registry                       |
+| 路径                                       | 说明                                          |
+| ------------------------------------------ | --------------------------------------------- |
+| `packages/core/src/plugins/types.ts`       | 契约定义                                      |
+| `packages/core/src/plugins/registry.ts`    | DefaultStoragePluginRegistry                  |
+| `packages/plugin-provider-github`          | GitHub provider + 可选 `GitHubStorageService` |
+| `packages/plugin-provider-gitee`           | Gitee provider + 可选 `GiteeStorageService`   |
+| `apps/pixuli/src/stores/imageStore.ts`     | REF-304 已对接 Registry                       |
+| `archive/apps/mobile/stores/imageStore.ts` | REF-305 已对接 Registry（RN 已归档）          |
 
 ### C. 文档维护
 
@@ -548,8 +548,7 @@ const githubManifest: StoragePluginManifest = {
 1. 创建一个仅依赖 `@pixuli/core` 的 Provider npm 包。
 2. 实现 `StoragePluginManifest` + `registerXxxProvider(registry)` +
    `StorageProvider`。
-3. 在 `apps/pixuli` 或 `apps/mobile` 的 `bootstrapStorageProviders()`
-   中注册（内置模式）。
+3. 在 `apps/pixuli` 的 `bootstrapStorageProviders()` 中注册（内置模式）。
 4. 理解 Token 仅存客户端、不得写入 Manifest 的安全边界。
 5. （可选）为 REF-307 之后的动态表单准备 `configSchema`。
 
@@ -668,8 +667,8 @@ export function bootstrapStorageProviders(): void {
 }
 ```
 
-**Mobile**（`apps/mobile/storage/registry.ts`）：同样增加 `register` 调用，并在
-`apps/mobile/package.json` 增加 workspace 依赖。
+**RN（归档）**（`archive/apps/mobile/storage/registry.ts`）：历史参考；新 Mobile 仅
+`apps/pixuli` bootstrap。
 
 ### 步骤 5：配置 UI（M3 P0 过渡）
 
@@ -914,7 +913,7 @@ Provider 文档应说明本插件 `config` 字段含义；工具函数见 `@pixu
 各应用维护模块级单例（已存在）：
 
 - `apps/pixuli/src/storage/registry.ts`
-- `apps/mobile/storage/registry.ts`
+- `archive/apps/mobile/storage/registry.ts`（只读）
 
 对外辅助：
 
@@ -1163,7 +1162,7 @@ describe('registerExampleProvider', () => {
 | `packages/plugin-provider-github/`        | 官方参考实现；单测见 §9.1       |
 | `packages/plugin-provider-gitee/`         | 官方参考实现；单测见 §9.1       |
 | `apps/pixuli/src/storage/registry.ts`     | Web/Desktop bootstrap           |
-| `apps/mobile/storage/registry.ts`         | Mobile bootstrap                |
+| `archive/apps/mobile/storage/registry.ts` | RN bootstrap（归档）            |
 
 ---
 
@@ -1238,7 +1237,7 @@ pnpm test
 - [ ] 准备 **Gitee** 测试仓库与 Token
 - [ ] Web：`pnpm --filter pixuli dev`（或项目既定 web 脚本）
 - [ ] Desktop：`pnpm --filter pixuli dev:desktop`（或 Electron 开发命令）
-- [ ] Mobile：`pnpm --filter pixuli-mobile dev`（Expo）
+- [ ] Mobile（Capacitor）：`pnpm dev:android` / 真机安装 debug APK
 - [ ] 可选：清空本地存储后测「首次添加源」（Web：`localStorage` 键
   ```
   `pixuli.sources.v3`）

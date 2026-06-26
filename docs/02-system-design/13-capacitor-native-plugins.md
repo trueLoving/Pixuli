@@ -21,7 +21,7 @@
 
 ## 2. 运行时分支
 
-- 检测：`apps/pixuli/src/utils/platform.ts` →
+- 检测：`apps/pixuli/src/platforms/platform.ts` →
   `isNativeMobile()`（`Capacitor.isNativePlatform()`）
 - 实现：`apps/pixuli/src/utils/nativeMedia.ts`（**不**放入 `@pixuli/ui`，与
   `clipboard.ts` 同层）

@@ -1,6 +1,6 @@
 import type { WorkspaceAdapter } from '@pixuli/core/vault';
 import { randomUUID } from '@pixuli/core/utils';
-import { isNativeMobile } from '@/utils/platform';
+import { isNativeMobile } from '../platform';
 import {
   formatMobileRootPath,
   mobileDeleteFile,

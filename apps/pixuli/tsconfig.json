@@ -19,6 +19,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@packages/*": ["../../packages/*"],
+      "@platforms": ["src/platforms"],
       "@platforms/web/*": ["src/platforms/web/*"],
       "@platforms/desktop/*": ["src/platforms/desktop/*"]
     }

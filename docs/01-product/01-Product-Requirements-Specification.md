@@ -96,12 +96,11 @@
 ### 2.4 当前架构与包（产品视角）
 
 ```text
-apps/pixuli     Web + Desktop 共用（Vite + React + Electron）
-apps/mobile     Mobile（Expo + RN，过渡；长期倾向 Capacitor 复用 pixuli，见 M5）
+apps/pixuli     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron + android/）
 packages/core   类型、工具、StoragePluginRegistry 契约
-packages/ui     Web/Desktop 共享 UI（@pixuli/ui）；RN 子路径 ./native
+packages/ui     三端共享 UI（@pixuli/ui web）；./native 已 deprecated
 packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
-archive/        wasm、benchmark、历史 server（不参与日常构建）
+archive/        apps/mobile（RN）、wasm、benchmark、历史 server（不参与日常构建）
 ```
 
 ### 2.5 规划中能力（里程碑）

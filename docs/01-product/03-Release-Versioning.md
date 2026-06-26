@@ -34,11 +34,11 @@
 **产品 semver 三端一致**；**每端各打一条 git tag**（`{semver}`
 相同，后缀区分渠道）：
 
-| 端            | Git tag             | 当前交付物                                                                                                                | 平台 / 渠道说明                                                         |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **Desktop**   | `v{semver}-desktop` | Windows `.exe`；macOS Intel `.dmg`（x64）；macOS Apple Silicon `.dmg`（arm64）                                            | 经 GitHub Releases 附件分发；`apps/pixuli` **2.0.0**                    |
-| **Mobile**    | `v{semver}-mobile`  | Android `.apk`                                                                                                            | **iOS 后续再定**，首发不含 `.ipa`；`apps/mobile` + `app.json` **2.0.0** |
-| **Web / PWA** | `v{semver}-web`     | ① **网站部署实例**（如 [pixuli-web.vercel.app](https://pixuli-web.vercel.app/)）；② **Docker 镜像** `pixuli-web:{semver}` | 构建元数据来自 `apps/pixuli`；应用内 `__VERSION_INFO__` 与 Desktop 同源 |
+| 端            | Git tag                           | 当前交付物                                                                                                                | 平台 / 渠道说明                                                                      |
+| ------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Desktop**   | `v{semver}-desktop`               | Windows `.exe`；macOS Intel `.dmg`（x64）；macOS Apple Silicon `.dmg`（arm64）                                            | 经 GitHub Releases 附件分发；`apps/pixuli` **2.0.0**                                 |
+| **Mobile**    | `v{semver}-android`（目标，#153） | Android `.apk`（Capacitor）                                                                                               | `apps/pixuli` + `android/` **2.0.0**；历史 RN 见 `v*-mobile` / `archive/apps/mobile` |
+| **Web / PWA** | `v{semver}-web`                   | ① **网站部署实例**（如 [pixuli-web.vercel.app](https://pixuli-web.vercel.app/)）；② **Docker 镜像** `pixuli-web:{semver}` | 构建元数据来自 `apps/pixuli`；应用内 `__VERSION_INFO__` 与 Desktop 同源              |
 
 > **1.x 与 2.x 差异**：1.x 仅 Desktop / Mobile 有 tag，Web 无
 > `v*-web`。**2.0.0 起 Web 与 Desktop、Mobile 一样打
@@ -115,19 +115,18 @@ WASM 依赖。
 
 **Monorepo 原则（2.0.0 起执行，已确定）**：
 
-1. **统一产品版本号**：`apps/pixuli`、`apps/mobile`（及
-   `app.json`）、Web 构建元数据 **共用同一 semver**（当前
-   **2.0.0**）。三端融合（Capacitor / 共享
-   `apps/pixuli`，见 M5）后仍保持**一个对用户可见的版本号**。
-2. **分端体现在 git tag 与交付物**：同一 `{semver}` 对应三条 tag —
-   `v{semver}-desktop`、`v{semver}-mobile`、`v{semver}-web`
-   — 分别标记 Desktop 安装包、Mobile 安装包、Web 部署（站点 +
-   Docker）的**发布锚点**。
-3. **升版须三端对齐**：发 MINOR/PATCH 时，同一发布周期内同步更新各 app 版本字段，并打齐三端 tag（Web 含 Docker 镜像 tag
-   `{semver}` 与演示站部署）；CHANGELOG 使用**单一版本节**
+1. **统一产品版本号**：`apps/pixuli`（含 Capacitor `android/`
+   与 Web 构建元数据）**共用同一 semver**（当前
+   **2.0.0**）。三端融合后仍保持**一个对用户可见的版本号**。
+2. **分端体现在 git tag 与交付物**：同一 `{semver}` 对应 tag —
+   `v{semver}-desktop`、`v{semver}-android`（目标）、`v{semver}-web`
+   — 分别标记 Desktop 安装包、Mobile APK、Web 部署（站点 +
+   Docker）的**发布锚点**。历史 RN 使用 `v*-mobile`。
+3. **升版须三端对齐**：发 MINOR/PATCH 时，同一发布周期内同步更新 `apps/pixuli`
+   版本字段，并打齐各端 tag；CHANGELOG 使用**单一版本节**
    `## [2.x.y]`，下分 Desktop / Web / Mobile 子项（若该端有差异）。
-4. 根目录 `package.json` **无** `version` 字段；`apps/pixuli` 与 `apps/mobile`
-   的 `version` **必须相等**（Mobile 未发 iOS 时仍随 Android 同步升版）。
+4. 根目录 `package.json` **无** `version` 字段；版本以
+   `apps/pixuli/package.json` 为 SSOT。
 
 **与 1.x 的差异**：1.x 时代 Desktop（1.3.0）与 Mobile（1.0.0）版本号独立；**2.0.0 起废弃该做法**。
 
@@ -207,12 +206,12 @@ Mobile 同步 bump。
 
 ### 3.5 CI/CD 衔接
 
-| Workflow                                                           | 触发                      | 产出                                             | 与版本关系                                                                                    |
-| ------------------------------------------------------------------ | ------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push                 | lint、test、build:web、desktop tsc               | 不发版                                                                                        |
-| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch`       | Win/mac 安装包；`v{input}-desktop` tag + Release | 输入 version，写回 `apps/pixuli/package.json`                                                 |
-| [release-mobile.yml](../../.github/workflows/release-mobile.yml)   | `workflow_dispatch` / tag | Android APK；可选附到 `v*-mobile` Release        | version 来自 input 或 `apps/mobile/package.json`                                              |
-| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch`       | Docker 镜像 push                                 | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
+| Workflow                                                           | 触发                | 产出                                                     | 与版本关系                                                                                    |
+| ------------------------------------------------------------------ | ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push           | **`build:packages`**、lint、test、build:web、desktop tsc | 不发版                                                                                        |
+| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch` | Win/mac 安装包；`v{input}-desktop` tag + Release         | 输入 version，写回 `apps/pixuli/package.json`                                                 |
+| Capacitor Android（#153）                                          | 待建 workflow       | `build:android:release` → APK；`v{semver}-android`       | 替代已删除的 `release-mobile.yml`（Expo RN）                                                  |
+| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch` | Docker 镜像 push                                         | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
 
 **Desktop 发版步骤（摘要）**：
 
@@ -222,12 +221,15 @@ Mobile 同步 bump。
 3. 核对 Release 附件与 tag `v{version}-desktop`。
 4. 更新 README / Wiki「当前稳定版」表述（若对外宣布）。
 
-**Mobile 发版步骤（摘要）**：
+**Mobile（Capacitor Android）发版步骤（摘要，#153 落地 workflow 后）**：
 
-1. 确认 `apps/mobile` 版本与 `apps/pixuli` 一致；更新 CHANGELOG。
-2. Actions →「发布 Pixuli Mobile」→
-   **Android**（iOS 路线确定后再扩展 workflow）。
-3. 确认 `v{version}-mobile` Release 含 APK。
+1. 确认 `apps/pixuli` 版本与 CHANGELOG；`pnpm build:android:release`
+   本地或 CI 通过。
+2. Actions → Capacitor Android 发版 workflow（待 #153）→ 上传 APK。
+3. 确认 `v{version}-android` Release 含 APK。
+
+**历史**：Expo RN 曾用 `release-mobile.yml` + `v*-mobile`；RN 已归档至
+`archive/apps/mobile`。
 
 **Web 发版步骤（摘要）**：
 
@@ -277,8 +279,8 @@ Mobile 同步 bump。
 
 - [ ] `pnpm ci`（或等价 lint + test + build:web + desktop tsc）通过
 - [ ] `CHANGELOG.md` `[Unreleased]` 已分类、Breaking 已汇总
-- [ ] `apps/pixuli` 与 `apps/mobile`（含 `app.json`）`version`
-      **相同**，且与待发 tag 中 `{semver}` 一致
+- [ ] `apps/pixuli` `version` 与 CHANGELOG 一致 **相同**，且与待发 tag 中
+      `{semver}` 一致
 - [ ] 升级说明（配置迁移、已移除功能）已写入 CHANGELOG 或 Wiki
 
 ### Desktop

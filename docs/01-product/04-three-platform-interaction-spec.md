@@ -23,14 +23,14 @@
 
 ### 1.1 三端定义
 
-| 端          | 运行时                                     | UI 代码库（现状 → 目标）               |
-| ----------- | ------------------------------------------ | -------------------------------------- |
-| **Web**     | 浏览器 / PWA                               | `apps/pixuli`                          |
-| **Desktop** | Electron 渲染进程                          | `apps/pixuli`（与 Web 同一套）         |
-| **Mobile**  | Expo RN（过渡）→ Capacitor WebView（目标） | `apps/mobile` → **并入 `apps/pixuli`** |
+| 端          | 运行时                       | UI 代码库（现状 → 目标）               |
+| ----------- | ---------------------------- | -------------------------------------- |
+| **Web**     | 浏览器 / PWA                 | `apps/pixuli`                          |
+| **Desktop** | Electron 渲染进程            | `apps/pixuli`（与 Web 同一套）         |
+| **Mobile**  | Capacitor WebView（Android） | `apps/pixuli`（与 Web/Desktop 同一套） |
 
-**决策**：M5 Capacitor PoC（REF-509）通过后，Mobile
-**不再维护独立信息架构**；RN 仅作过渡，交互规范以 **Web+Desktop 现网行为**
+**决策（2026-06）**：Mobile 已由 Capacitor 交付；Expo RN 迁入
+`archive/apps/mobile`（REF-513）。交互规范以 **Web+Desktop 现网行为**
 为 SSOT，窄屏做响应式适配。
 
 ### 1.2 设计原则

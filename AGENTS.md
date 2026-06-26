@@ -47,6 +47,8 @@ APK；真机勿装 unsigned）
 
 详细设计：[docs/02-system-design/04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md)
 
+三端工程（脚本/构建矩阵）：[15-apps-pixuli-engineering.md](docs/02-system-design/15-apps-pixuli-engineering.md)（REF-514）
+
 ### Gitee 代理子路径（易踩坑）
 
 Renderer **仅**使用 `@pixuli/provider-gitee/proxy/client` 与 `/proxy/url`。

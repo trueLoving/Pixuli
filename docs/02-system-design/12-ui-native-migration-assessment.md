@@ -38,9 +38,9 @@ Android 上完成与窄屏 Web 等价的旅程；**不是**让 RN 与 pixuli 代
 
 ---
 
-## 三、L2 组件对照：`@pixuli/ui` web ↔ `apps/mobile`
+## 三、L2 组件对照：`@pixuli/ui` web ↔ `archive/apps/mobile`
 
-| L2 能力           | `@pixuli/ui` web                           | `apps/mobile`（归档，不维护） | Capacitor 对齐目标 | 决策                    |
+| L2 能力           | `@pixuli/ui` web                           | `archive/apps/mobile`（归档） | Capacitor 对齐目标 | 决策                    |
 | ----------------- | ------------------------------------------ | ----------------------------- | ------------------ | ----------------------- |
 | 空态引导          | `EmptyState`                               | `@pixuli/ui/native`           | web `EmptyState`   | **功能对齐** ✅         |
 | 图片网格/列表     | `ImageBrowser` / `ImageGrid` / `ImageList` | 重复实现                      | web 组件           | **功能对齐** ✅         |
@@ -85,20 +85,20 @@ RN 列仅作归档对照；**不在 RN 侧做任何补齐**。
 
 ### 5.1 原则
 
-- **现阶段**：不在 `apps/mobile` 或 `./native`
+- **现阶段**：不在 `archive/apps/mobile` 或 `./native`
   投入对齐开发；仅保留仓库内只读对照（必要时）。
-- **#151**：`apps/mobile` 整包 + `packages/ui/src/**/native` +
+- **#151**：`archive/apps/mobile` 整包 + `packages/ui/src/**/native` +
   `exports["./native"]` **一并**迁入 `archive/` 或删除，无渐进迁移。
 
 ### 5.2 当前 RN 对 `./native` 的引用（归档时删除即可）
 
-| 符号               | RN 引用处                             | Capacitor 已用         |
-| ------------------ | ------------------------------------- | ---------------------- |
-| `EmptyState`       | `apps/mobile/app/(tabs)/index.tsx`    | web `EmptyState`       |
-| `VersionInfoModal` | `apps/mobile/app/(tabs)/settings.tsx` | web `VersionInfoModal` |
-| `DemoNative` 等    | 可选                                  | web `Demo`             |
+| 符号               | RN 引用处                                     | Capacitor 已用         |
+| ------------------ | --------------------------------------------- | ---------------------- |
+| `EmptyState`       | `archive/apps/mobile/app/(tabs)/index.tsx`    | web `EmptyState`       |
+| `VersionInfoModal` | `archive/apps/mobile/app/(tabs)/settings.tsx` | web `VersionInfoModal` |
+| `DemoNative` 等    | 可选                                          | web `Demo`             |
 
-### 5.3 `apps/mobile/components/`\*\*（归档清单，不迁 Capacitor）
+### 5.3 `archive/apps/mobile/components/`（归档清单，不迁 Capacitor）
 
 ```text
 components/image/*           → 已由 pixuli ImageBrowser / ImageUpload 对齐
@@ -113,7 +113,7 @@ components/ui/*              → RN 专属；归档后删除
 
 ---
 
-## 六、`apps/mobile` 屏幕级映射
+## 六、`archive/apps/mobile` 屏幕级映射
 
 | RN 屏幕             | Capacitor 对齐  | 说明            |
 | ------------------- | --------------- | --------------- |

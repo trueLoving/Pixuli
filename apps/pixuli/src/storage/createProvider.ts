@@ -9,13 +9,13 @@ import {
   isKnownBuiltinPluginId,
 } from '@pixuli/core/plugins';
 import { getGiteeProviderContextFields } from '@pixuli/provider-gitee/proxy/client';
-import { isNativeMobile } from '../utils/platform';
+import { isNativeMobile, isWeb } from '@/platforms/platform';
 import { storageRegistry } from './registry';
 
 export type StoragePluginId = 'github' | 'gitee';
 
 export function getAppPlatform(): 'web' | 'desktop' {
-  return __IS_WEB__ ? 'web' : 'desktop';
+  return isWeb() ? 'web' : 'desktop';
 }
 
 /** Capacitor 壳内无同源 /api；可经 VITE_GITEE_PROXY_ORIGIN 指向已部署 Web 代理 */
@@ -26,7 +26,7 @@ function resolveGiteeProviderContextFields(): { giteeProxyBase?: string } {
       return { giteeProxyBase: origin.replace(/\/$/, '') };
     }
   }
-  return getGiteeProviderContextFields(__IS_WEB__);
+  return getGiteeProviderContextFields(isWeb());
 }
 
 export function createConfiguredStorageProvider(

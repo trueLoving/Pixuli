@@ -1,10 +1,8 @@
 # 三端能力共享设计
 
-> **最后核对**：2026-05-27 · 合并自
-> `01-cross-platform-resources`、`02-cross-image-process`、`04-cross-platform-logging`
-> **现状**：`packages/common` 已删除（REF-311）。共享层为
-> **`@pixuli/core`**（类型、Registry、工具）与 **`@pixuli/ui`**（Web/Desktop
-> UI，`./native` 供 RN）。
+> **现状（2026-06）**：Mobile 由 `apps/pixuli` + Capacitor 交付；RN 在
+> `archive/apps/mobile`。`./native`
+> 已 deprecated。下文部分段落保留 M2/M3 迁移**历史**。
 
 本文描述 Pixuli **Web、Desktop、Mobile**
 三端在资源共享、图片处理契约、日志收集上的统一设计，与

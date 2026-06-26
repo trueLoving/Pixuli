@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useUIStore } from '../stores/uiStore';
-import { isNativeMobile } from '../utils/platform';
+import { isNativeMobile } from '@/platforms/platform';
 
 const OVERLAY_CLOSE_SELECTORS = [
   '.image-preview-modal-overlay .image-preview-modal-close',

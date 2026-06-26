@@ -16,12 +16,7 @@ import type { VersionInfo } from '@pixuli/ui';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
-import {
-  OfflineIndicator,
-  OperationLogModal,
-  PWAInstallPrompt,
-  SourceTypeMenu,
-} from '../features';
+import { OperationLogModal, SourceTypeMenu } from '../features';
 import { useKeyboardCategories } from '../hooks/useKeyboardCategories';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
@@ -32,7 +27,7 @@ import { useWorkspaceStore } from '../stores/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
 import { listStoragePluginManifests } from '../storage/registry';
 import { exportJsonFile } from '../utils/exportJsonFile';
-import { getPlatform, isNativeMobile } from '../utils/platform';
+import { getPlatform, WebBrowserChrome } from '@/platforms';
 import {
   configFieldsKey,
   resolveModalRepoConfig,
@@ -42,7 +37,6 @@ import { Sidebar } from './Sidebar';
 
 // 声明构建时注入的全局变量
 declare const __VERSION_INFO__: VersionInfo;
-declare const __IS_WEB__: boolean;
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -229,12 +223,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         text={showGlobalLoading ? t('app.loadingImages') : undefined}
       />
 
-      {typeof __IS_WEB__ !== 'undefined' && __IS_WEB__ && !isNativeMobile() && (
-        <>
-          <OfflineIndicator />
-          <PWAInstallPrompt />
-        </>
-      )}
+      <WebBrowserChrome />
     </div>
   );
 };

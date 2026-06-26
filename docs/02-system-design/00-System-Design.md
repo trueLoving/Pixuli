@@ -110,8 +110,7 @@ graph TB
 
     subgraph "Pixuli 客户端 (Monorepo)"
         subgraph "应用层 apps/"
-            A1[apps/pixuli<br/>Web + Desktop]
-            A2[apps/mobile<br/>React Native]
+            A1[apps/pixuli<br/>Web + Desktop + Capacitor Android]
         end
         subgraph "共享层 packages/"
             Core[@pixuli/core<br/>类型·Registry·工具]
@@ -128,13 +127,11 @@ graph TB
 
     U1 --> A1
     U2 --> A1
-    U3 --> A2
+    U3 --> A1
 
     A1 --> Core
     A1 --> UI
     A1 --> Prov
-    A2 --> Core
-    A2 --> Prov
 
     Prov -->|读写图片与元数据| G
     Prov -->|读写图片与元数据| GE
@@ -148,12 +145,12 @@ graph TB
 
 ### 3.2 分层说明
 
-| 层级           | 含义               | 主要产物                                           |
-| -------------- | ------------------ | -------------------------------------------------- |
-| **用户端**     | 用户使用的运行环境 | 浏览器、Electron 窗口、移动设备                    |
-| **应用层**     | 各端入口应用       | `apps/pixuli`（Web/Desktop 一体）、`apps/mobile`   |
-| **共享层**     | 跨端复用代码与能力 | `@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-*` |
-| **存储与外部** | 持久化与增强能力   | GitHub/Gitee API；可选 Dify                        |
+| 层级           | 含义               | 主要产物                                                |
+| -------------- | ------------------ | ------------------------------------------------------- |
+| **用户端**     | 用户使用的运行环境 | 浏览器、Electron 窗口、移动设备                         |
+| **应用层**     | 各端入口应用       | `apps/pixuli`（Web / Desktop / Capacitor Android 一体） |
+| **共享层**     | 跨端复用代码与能力 | `@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-*`      |
+| **存储与外部** | 持久化与增强能力   | GitHub/Gitee API；可选 Dify                             |
 
 ### 3.3 核心数据流（简化）
 
@@ -185,14 +182,14 @@ sequenceDiagram
 
 ### 4.1 仓库目录与模块映射
 
-| 路径                            | 模块名称           | 职责简述                                                                                                |
-| ------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------- |
-| **apps/pixuli**                 | Web + Desktop 应用 | Vite + React + Electron；图床网格/列表、上传、工具页（压缩/转换）、设置；Gitee 代理等桌面能力在主进程。 |
-| **apps/mobile**                 | 移动端应用         | Expo + React Native；图床列表、上传、工具、相机；经 Registry 使用 provider 插件。                       |
-| **packages/core**               | `@pixuli/core`     | 类型、`StoragePluginRegistry`、工具函数。                                                               |
-| **packages/ui**                 | `@pixuli/ui`       | Web/Desktop 共享 UI；`./native` 子路径供 RN 少量组件。                                                  |
-| **packages/plugin-provider-\*** | 存储插件           | 官方 GitHub/Gitee `StorageProvider` 实现。                                                              |
-| **archive/**                    | 历史归档           | wasm、benchmark、server；见 [archive/README](../../archive/README.md)。                                 |
+| 路径                            | 模块名称       | 职责简述                                                                                             |
+| ------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| **apps/pixuli**                 | 三端主应用     | Vite + React + Electron + Capacitor Android；图床、上传、工具、设置；各端薄适配见 `src/platforms/`。 |
+| **archive/apps/mobile**         | RN 历史归档    | Expo RN 只读参考（REF-513）；非 workspace。                                                          |
+| **packages/core**               | `@pixuli/core` | 类型、`StoragePluginRegistry`、工具函数。                                                            |
+| **packages/ui**                 | `@pixuli/ui`   | Web/Desktop/Mobile（Capacitor）共享 UI；`./native` 已 deprecated（随 RN 归档）。                     |
+| **packages/plugin-provider-\*** | 存储插件       | 官方 GitHub/Gitee `StorageProvider` 实现。                                                           |
+| **archive/**                    | 历史归档       | wasm、benchmark、server；见 [archive/README](../../archive/README.md)。                              |
 
 ### 4.2 应用层与共享层依赖关系
 
@@ -200,7 +197,6 @@ sequenceDiagram
 graph LR
     subgraph apps
         P[apps/pixuli]
-        M[apps/mobile]
     end
     subgraph packages
         Core[@pixuli/core]
@@ -211,8 +207,6 @@ graph LR
     P --> Core
     P --> UI
     P --> Prov
-    M --> Core
-    M --> Prov
 
     style Core fill:#c8e6c9
     style UI fill:#bbdefb
@@ -220,9 +214,7 @@ graph LR
 ```
 
 - **apps/pixuli** 依赖
-  **@pixuli/core**、**@pixuli/ui**、**@pixuli/provider-\***；图片处理在 UI 层 Canvas 实现。
-- **apps/mobile** 依赖 **@pixuli/core**、**@pixuli/provider-\***
-  与 RN 原生图片能力。
+  **@pixuli/core**、**@pixuli/ui**、**@pixuli/provider-\***；图片处理在 UI 层 Canvas 实现。Mobile 与 Web/Desktop 共用同一应用与 store。
 
 ### 4.3 平台能力矩阵（与 PRD 一致）
 
@@ -427,7 +419,7 @@ stateDiagram-v2
 
 | 类型       | 路径/说明                                                                |
 | ---------- | ------------------------------------------------------------------------ |
-| 应用入口   | `apps/pixuli`、`apps/mobile`                                             |
+| 应用入口   | `apps/pixuli`（三端）                                                    |
 | 共享包     | `packages/core`、`packages/ui`、`packages/plugin-provider-*`             |
 | 归档       | `archive/wasm`、`archive/server`、`archive/benchmark`                    |
 | 产品与设计 | `docs/01-product/`、`docs/02-system-design/`、`docs/03-business-design/` |
