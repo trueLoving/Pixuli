@@ -1,12 +1,19 @@
 # 三端能力共享设计
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：M2/M3 RN 共享层与 `./native`
+> 设计已过时；Capacitor 三端已落地（REF-509～516）。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md) ·
+> [01-system-design.md](../../docs/02-system-design/01-system-design.md) · 索引
+> [README.md](./README.md)
+
 > **现状（2026-06）**：Mobile 由 `apps/pixuli` + Capacitor 交付；RN 在
 > `archive/apps/mobile`。`./native`
 > 已 deprecated。下文部分段落保留 M2/M3 迁移**历史**。
 
 本文描述 Pixuli **Web、Desktop、Mobile**
 三端在资源共享、图片处理契约、日志收集上的统一设计，与
-[00-System-Design](./00-System-Design.md)、[02-Three-Platform-Design](./02-Three-Platform-Design.md)、[04-Plugin-System](./04-Plugin-System.md)
+[01-system-design](../../docs/02-system-design/01-system-design.md)、[02-three-platform-design](./02-three-platform-design.md)、[03-plugin-system](../../docs/02-system-design/03-plugin-system.md)
 配合使用。
 
 ## 目录
@@ -47,7 +54,7 @@
   Expo）。
 - 共享范围：组件、Hooks、工具函数、服务、类型定义、国际化语言包。
 - 与
-  [00-System-Design](./00-System-Design.md)、[第二部分 跨端图片处理](#第二部分-跨端图片处理)、[04-Plugin-System](./04-Plugin-System.md)
+  [01-system-design](../../docs/02-system-design/01-system-design.md)、[第二部分 跨端图片处理](#第二部分-跨端图片处理)、[03-plugin-system](../../docs/02-system-design/03-plugin-system.md)
   等设计文档配合使用。
 
 ---
@@ -305,9 +312,9 @@ components/my-component/
 
 ### 8.3 相关文档
 
-- [00-System-Design - 整体系统设计](./00-System-Design.md)
+- [01-system-design - 整体系统设计](../../docs/02-system-design/01-system-design.md)
 - [第二部分 跨端图片处理](#第二部分-跨端图片处理)
-- [03-Performance](./03-Performance.md)
+- [02-performance](../../docs/02-system-design/02-performance.md)
 
 ---
 
@@ -581,9 +588,9 @@ common 中可定义**接口**（无实现），规定使用层必须提供的方
 
 ### 9.3 相关文档
 
-- [00-System-Design - 整体系统设计](./00-System-Design.md)
+- [01-system-design - 整体系统设计](../../docs/02-system-design/01-system-design.md)
 - [第一部分 跨端资源共享](#第一部分-跨端资源共享)
-- （Dify 设计待功能开发后补充，见 [backlog](../backlog.md)）
+- （Dify 设计待功能开发后补充，见 [backlog](../../docs/04-backlog.md)）
 - [archive/wasm/README](../../archive/wasm/README.md) - 历史 WASM（已归档）
 
 ---
@@ -615,7 +622,7 @@ common 中可定义**接口**（无实现），规定使用层必须提供的方
 
 - 适用端：Web、Desktop（Electron 渲染进程/主进程）、Mobile（React Native）。
 - 与
-  [03-Performance](./03-Performance.md)（性能面板可集成）、[第一部分 跨端资源共享](#第一部分-跨端资源共享)（common 内实现）配合使用。
+  [02-performance](../../docs/02-system-design/02-performance.md)（性能面板可集成）、[第一部分 跨端资源共享](#第一部分-跨端资源共享)（common 内实现）配合使用。
 
 ---
 
@@ -720,13 +727,13 @@ interface LogEntry {
 
 ### 4.2 DevTools 组件
 
-| 功能         | 说明                                                        |
-| ------------ | ----------------------------------------------------------- |
-| 浮球按钮     | 可拖动，点击打开侧边面板                                    |
-| 侧边面板     | 从右侧滑出，高度撑满视口；标签：日志 / 性能                 |
-| 日志列表     | 按级别颜色区分，支持过滤、自动滚动、导出 JSON               |
-| 国际化       | 中英文等                                                    |
-| 性能（可选） | 与 [03-Performance](./03-Performance.md) 集成，展示关键指标 |
+| 功能         | 说明                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------- |
+| 浮球按钮     | 可拖动，点击打开侧边面板                                                              |
+| 侧边面板     | 从右侧滑出，高度撑满视口；标签：日志 / 性能                                           |
+| 日志列表     | 按级别颜色区分，支持过滤、自动滚动、导出 JSON                                         |
+| 国际化       | 中英文等                                                                              |
+| 性能（可选） | 与 [02-performance](../../docs/02-system-design/02-performance.md) 集成，展示关键指标 |
 
 ---
 
@@ -784,6 +791,6 @@ interface LogEntry {
 
 ### 7.2 相关文档
 
-- [00-System-Design - 整体系统设计](./00-System-Design.md)
+- [01-system-design - 整体系统设计](../../docs/02-system-design/01-system-design.md)
 - [第一部分 跨端资源共享](#第一部分-跨端资源共享)
-- [03-Performance](./03-Performance.md)
+- [02-performance](../../docs/02-system-design/02-performance.md)

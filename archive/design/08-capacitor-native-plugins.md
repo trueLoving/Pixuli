@@ -1,5 +1,10 @@
 # Capacitor 原生能力插件（REF-510 / #120）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-510 #120 ✅；L3 插件选型已落地于 `apps/pixuli`。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md) · 索引
+> [README.md](./README.md)
+
 > 三端融合 P4 L3：在 `apps/pixuli`
 > 内用 Capacitor 插件补齐 PoC 未覆盖的原生能力；**不在** `apps/mobile`
 > 重复实现。

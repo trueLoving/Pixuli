@@ -10,9 +10,9 @@
 ## 当前情况
 
 此前本目录下的业务文档（仓库源管理、图片 CRUD、浏览模式等）为早期草稿，结构与现行
-[产品需求规格说明书（PRS）](../01-product/01-Product-Requirements-Specification.md)
+[产品需求规格说明书（PRS）](../01-product/01-product-requirements-specification.md)
 不完全一致，且部分能力已在 M1 裁剪（如幻灯片/时间线，见
-[backlog](../backlog.md)）。
+[backlog](../04-backlog.md)）。
 
 **上述文件已全部删除**，待后续依据 PRS 重新编写，避免与现产品验收口径冲突。
 
@@ -35,10 +35,10 @@
 
 | 需求             | 文档                                                                                               |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
-| 做什么、验收标准 | [01-Product-Requirements-Specification.md](../01-product/01-Product-Requirements-Specification.md) |
-| 怎么用           | [02-Product-User-Manual.md](../01-product/02-Product-User-Manual.md)                               |
+| 做什么、验收标准 | [01-product-requirements-specification.md](../01-product/01-product-requirements-specification.md) |
+| 怎么用           | [02-product-user-manual.md](../01-product/02-product-user-manual.md)                               |
 | 怎么实现         | [02-system-design/](../02-system-design/)（架构、三端、插件等）                                    |
-| 已移除/延后项    | [backlog.md](../backlog.md)                                                                        |
+| 已移除/延后项    | [04-backlog.md](../04-backlog.md)                                                                  |
 
 ---
 

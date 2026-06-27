@@ -1,180 +1,170 @@
-# Contributing Guide
+# 贡献指南
 
-Thank you for your interest in the Pixuli project! This document will help you
-understand how to contribute to the project development.
+感谢你对 Pixuli 项目的关注！本文说明如何参与项目开发。
 
-## 📋 Table of Contents
+## 📋 目录
 
-- [Requirements](#requirements)
-- [Project Setup](#project-setup)
-- [Development Workflow](#development-workflow)
-- [Project Structure](#project-structure)
-- [Code Standards](#code-standards)
-- [Commit Standards](#commit-standards)
-- [Workflow](#workflow)
-- [AI-Assisted Development](#ai-assisted-development)
-- [Feedback](#feedback)
+- [环境要求](#环境要求)
+- [项目设置](#项目设置)
+- [开发工作流](#开发工作流)
+- [项目结构](#项目结构)
+- [代码规范](#代码规范)
+- [提交规范](#提交规范)
+- [协作流程](#协作流程)
+- [AI 辅助开发](#ai-辅助开发)
+- [反馈](#反馈)
 
-## 🔧 Requirements
+## 🔧 环境要求
 
-### Common Requirements
+### 通用
 
 - **Node.js** >= 22.0.0
-- **pnpm** >= 8.0.0 (Required, project only supports pnpm)
+- **pnpm** >= 8.0.0（必需，项目仅支持 pnpm）
 - **Git** >= 2.0.0
 
-### Desktop Development
+> 主应用**不需要** Rust 工具链。历史 WASM 见 `archive/wasm/`。
 
-- **Rust** >= 1.70.0 - For building WASM modules
-- **Platform Support**:
-  - 🍎 macOS (x64, ARM64)
-  - 🪟 Windows (x64)
+### Desktop 开发
 
-### Web Development
+- **平台**：macOS（x64、ARM64）或 Windows（x64）
+- **额外**：macOS 10.15+ / Windows 10/11（运行 Electron）
 
-- **Modern Browser** - Support for Canvas API
+### Web 开发
 
-### Mobile Development
+- **现代浏览器** — 需支持 Canvas API
 
-#### Android Development
+### Mobile 开发
 
-- **Android Studio** - Android development environment
-- **Android SDK** - Android SDK Platform 33 or higher
-- **Java Development Kit (JDK)** - JDK 17
+#### Android（Capacitor）
 
-## 🚀 Project Setup
+- **Android Studio** — Android 开发环境
+- **Android SDK** — Platform 33 或更高
+- **JDK** — 17
 
-### 1. Clone Repository
+## 🚀 项目设置
+
+### 1. 克隆仓库
 
 ```bash
 git clone https://github.com/trueLoving/Pixuli.git
 cd Pixuli
 ```
 
-### 2. Install Dependencies
+### 2. 安装依赖
 
 ```bash
-# Install all dependencies from project root
+# 在仓库根目录安装全部 workspace 依赖
 pnpm install
 ```
 
-## 💻 Development Workflow
+## 💻 开发工作流
 
 ### Desktop
 
 ```bash
-# Development mode
-pnpm run dev:desktop
+# 开发模式
+pnpm dev:desktop
 
-# Build application
-pnpm run build:desktop
+# 构建
+pnpm build:desktop
 ```
 
 ### Web
 
 ```bash
-# Development mode
+# 开发模式
 pnpm dev:web
 
-# Build application
+# 构建
 pnpm build:web
 
-# Preview build result
+# 预览构建结果
 pnpm preview:web
 ```
 
 ### Mobile
 
-#### Android (Capacitor)
+#### Android（Capacitor）
 
 ```bash
-# Start Android development (emulator or device + Live Reload)
+# 启动 Android 开发（模拟器或真机 + Live Reload）
 pnpm dev:android
 
-# Build signed release APK
+# 构建已签名的 release APK
 pnpm build:android
 ```
 
-## 📦 Project Structure
+## 📦 项目结构
 
-### App (apps/pixuli)
+### 主应用（apps/pixuli）
 
-```
+```text
 apps/pixuli/
-├── src/                           # Source code
-│   ├── components/                # React components
-│   ├── config/                    # Configuration files
-│   ├── features/                  # Feature modules
-│   ├── i18n/                      # Internationalization
-│   ├── layouts/                   # Layout components
-│   ├── pages/                     # Page components
-│   ├── services/                  # Business services
-│   └── stores/                    # State management
-├── electron/                      # Electron main process
-│   ├── main/                      # Main process code
-│   └── preload/                   # Preload scripts
-├── build/                         # Build resources
-├── dist/                          # Build output
-└── release/                       # Distribution files
+├── src/                           # 源码
+│   ├── components/                # React 组件
+│   ├── config/                    # 配置
+│   ├── features/                  # 功能模块
+│   ├── i18n/                      # 国际化
+│   ├── layouts/                   # 布局
+│   ├── pages/                     # 页面
+│   ├── platforms/                 # Web / Desktop / Mobile 平台分支
+│   ├── services/                  # 业务服务
+│   └── stores/                    # 状态管理
+├── electron/                      # Electron 主进程
+│   ├── main/
+│   └── preload/
+├── android/                       # Capacitor Android 工程
+├── build/                         # 构建资源
+├── dist/                          # 构建输出
+└── release/                       # 分发产物
 ```
 
-### Web (apps/web)
-
-```
-apps/web/
-├── src/                        # Source code
-│   ├── components/             # React components
-│   ├── config/                 # Configuration files
-│   ├── i18n/                   # Internationalization
-│   ├── services/               # Business services
-│   ├── stores/                 # State management
-│   └── utils/                  # Utility functions
-├── public/                     # Static resources
-├── api/                        # API proxy (for Vercel)
-└── dist/                       # Build output
-```
-
-### Mobile (archived Expo RN)
+### Mobile（已归档 Expo RN）
 
 历史 RN 工程已迁入 `archive/apps/mobile/`（REF-513）。Mobile 开发与构建见上文
-**Android (Capacitor)**；归档代码仅供只读参考。
+**Android（Capacitor）**；归档代码仅供只读参考。
 
-## 📝 Code Standards
+## 📝 代码规范
 
 ### TypeScript
 
-- Use TypeScript for development
-- All files use `.ts` or `.tsx` extensions
-- Avoid using `any` type, prefer specific types
-- Use interfaces to define object types
+- 业务代码使用 TypeScript（`.ts` / `.tsx`）
+- 避免使用 `any`，优先具体类型
+- 用 interface 定义对象类型
+- JS 例外见
+  [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)
 
-### Component Standards
+### 组件
 
-- Use functional components and Hooks
-- Component files use PascalCase naming
-- Components should be exported as named exports
-- Use TypeScript to define Props types
+- 使用函数组件与 Hooks
+- 组件文件 PascalCase 命名
+- 优先命名导出（named export）
+- 用 TypeScript 定义 Props 类型
 
-### File Naming
+### 文件命名
 
-- Component files: `PascalCase.tsx`
-- Utility files: `camelCase.ts`
-- Constant files: `camelCase.ts`
+- 组件：`PascalCase.tsx`
+- 工具 / 常量：`camelCase.ts`
 
-### Code Style
+### 代码风格
 
-- Use 2 spaces for indentation
-- Use single quotes (') instead of double quotes (")
-- Use semicolons at the end of statements
-- Use ESLint and Prettier to maintain consistent code style
+- 缩进 2 空格
+- 字符串使用单引号 `'`
+- 语句末尾分号
+- 使用 ESLint 与 Prettier 保持一致
 
-## 📤 Commit Standards
+### 包边界
 
-### Git Commit Message Format
+- `@pixuli/core` 与 `@pixuli/provider-*` **禁止**依赖 `@pixuli/ui`（REF-209）
+- 存储仅经 `@pixuli/core/plugins` 契约 + provider 包；应用不直接写 Git API 细节
 
-Use [Conventional Commits](https://www.conventionalcommits.org/) specification:
+## 📤 提交规范
 
-```
+### Git 提交信息格式
+
+遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
+
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -182,126 +172,114 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) specification:
 <footer>
 ```
 
-### Commit Types
+### 提交类型
 
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation update
-- `style`: Code style changes (no functional changes)
-- `refactor`: Code refactoring
-- `perf`: Performance optimization
-- `test`: Test related
-- `chore`: Build process or auxiliary tool changes
+- `feat`：新功能
+- `fix`：缺陷修复
+- `docs`：文档
+- `style`：格式（不影响逻辑）
+- `refactor`：重构
+- `perf`：性能
+- `test`：测试
+- `chore`：构建或工具
 
-### Commit Example
+### 示例
 
 ```bash
-feat(desktop): Add image compression feature
+feat(desktop): 添加图片压缩功能
 
-- Support WebP format compression
-- Adjustable compression quality
-- Real-time compression preview
+- 支持 WebP 压缩
+- 可调压缩质量
+- 实时预览
 
 Closes #123
 ```
 
-### Scope
+### Scope 示例
 
-- `desktop` - Desktop related
-- `web` - Web related
-- `mobile` - Mobile related
-- `common` - Shared packages related
-- `wasm` - WASM module related
-- `docs` - Documentation related
+- `desktop` — Desktop
+- `web` — Web
+- `mobile` — Mobile / Capacitor
+- `core` / `ui` / `provider` — 对应 workspace 包
+- `docs` — 文档
 
-## 🔄 Workflow
+重构 Issue 请在标题或正文中含 **REF-xxx** 或 `Fixes #n`（完整关闭 Issue 时）。
 
-### 1. Fork Repository
+## 🔄 协作流程
 
-Fork this project to your account on GitHub.
+### 1. Fork 仓库
 
-### 2. Create Branch
+在 GitHub 上 Fork 到个人账户。
+
+### 2. 创建分支
 
 ```bash
 git checkout -b feat/your-feature-name
 ```
 
-### 3. Develop
+### 3. 开发
 
-- Write code
-- Add tests
-- Update documentation
+- 编写代码
+- 按需补充测试（`pnpm test`）
+- 更新相关文档
 
-### 4. Commit Changes
+### 4. 提交
 
 ```bash
 git add .
-git commit -m "feat(scope): Add new feature"
+git commit -m "feat(scope): 添加新功能"
 ```
 
-### 5. Push Branch
+### 5. 推送
 
 ```bash
 git push origin feat/your-feature-name
 ```
 
-### 6. Create Pull Request
+### 6. 创建 Pull Request
 
-Create a Pull Request on GitHub with a detailed description of your changes.
+在 GitHub 上创建 PR，说明变更内容与测试方式。
 
 ### 7. Code Review
 
-Wait for maintainers to review the code and make modifications based on
-feedback.
+等待维护者 Review，按反馈修改。
 
-## 🤖 AI-Assisted Development
+## 🤖 AI 辅助开发
 
-When using **Cursor**, **Copilot**, or similar tools on this repo:
+使用 **Cursor**、**Copilot** 等工具时：
 
-- Read [AGENTS.md](AGENTS.md) first — monorepo layout, storage plugins, Gitee
-  proxy rules, PR conventions
-- Cursor **Rules** live in `.cursor/rules/`; **Skills** in `.cursor/skills/`
-  (see skill table in AGENTS.md)
-- Refactor issues use `REF-xxx` IDs — track them in
-  [REFACTOR_PLAN.md](REFACTOR_PLAN.md); PR titles should include the ID
-- Update Agent/Skill files when **architecture boundaries** change (new
-  provider, Host integration, TS/JS exceptions) — not on every feature PR
-- User-facing docs stay in `docs/` and
-  [Wiki](https://github.com/trueLoving/Pixuli/wiki); see
-  [docs/README.md](docs/README.md) §AI 编程辅助 (REF-414)
+- 先读 [AGENTS.md](AGENTS.md) — Monorepo 结构、存储插件、PR 约定
+- Cursor **Rules** 在 `.cursor/rules/`；**Skills** 在
+  `.cursor/skills/`（见 AGENTS.md 表格）
+- 重构 Issue 使用 `REF-xxx`，追踪表见 [REFACTOR_PLAN.md](REFACTOR_PLAN.md)
+- **架构边界**变更（新 provider、插件体系、TS/JS 例外）时再更新 Agent/Skill
+  — 非每个功能 PR 都改
+- 用户向文档在 `docs/` 与 [Wiki](https://github.com/trueLoving/Pixuli/wiki)；见
+  [docs/README.md](docs/README.md)
 
-## 📚 Related Resources
+## 📚 相关资源
 
-### Common Resources
+### 通用
 
-- [TypeScript Documentation](https://www.typescriptlang.org/)
-- [Zustand Documentation](https://zustand-demo.pmnd.rs/)
-- [i18next Documentation](https://www.i18next.com/)
+- [TypeScript 文档](https://www.typescriptlang.org/)
+- [Zustand 文档](https://zustand-demo.pmnd.rs/)
+- [i18next 文档](https://www.i18next.com/)
 
-### Desktop Resources
+### Desktop / Web
 
-- [Electron Documentation](https://electronjs.org/)
-- [React Documentation](https://reactjs.org/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/)
+- [Electron 文档](https://electronjs.org/)
+- [React 文档](https://react.dev/)
+- [Vite 文档](https://vitejs.dev/)
 
-### Web Resources
+### Mobile
 
-- [React Documentation](https://react.dev/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/)
+- [Capacitor 文档](https://capacitorjs.com/docs)
+- [Expo 文档](https://docs.expo.dev/)（仅归档 RN 参考）
 
-### Mobile Resources
+## 🙏 致谢
 
-- [React Native Documentation](https://reactnative.dev/)
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Navigation](https://reactnavigation.org/)
-
-## 🙏 Acknowledgments
-
-Thank you to all developers who contribute to the Pixuli project!
+感谢所有为 Pixuli 贡献的开发者！
 
 ---
 
-If you have any questions, please contact us through
-[Issues](https://github.com/trueLoving/Pixuli/issues).
+如有问题，请通过 [Issues](https://github.com/trueLoving/Pixuli/issues) 联系。

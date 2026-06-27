@@ -1,14 +1,19 @@
 # 三端设计方案（最大化代码复用）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：Capacitor 方案 A 已选型并交付；§二 RN 对比为历史背景。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md) · 索引
+> [README.md](./README.md)
+
 > **最后核对**：2026-05-27 · 由原 `02-Three-Platform-Design` 改写
 > **目标**：在 Web / Desktop /
 > Mobile 差异下，**最大化三端代码复用**；明确 Capacitor 方案 A 为当前路线。
 
 > **现状（2026-06）**：Mobile 已并入 `apps/pixuli`（Capacitor）；Expo RN 在
 > `archive/apps/mobile` 只读。下文 §二 等保留**历史背景**；当前路线见
-> [15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md)。
+> [06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md)。
 
-- **关联**：[00-System-Design](./00-System-Design.md)、[01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md)
+- **关联**：[01-system-design](../../docs/02-system-design/01-system-design.md)、[01-three-platform-capability-sharing](./01-three-platform-capability-sharing.md)
 
 ---
 
