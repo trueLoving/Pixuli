@@ -4,15 +4,15 @@
 > **归档原因**：Gitee Host 代理已从 `apps/pixuli`
 > 移除；REF-411 范围已改为 Obsidian 式插件重设计（[#126](https://github.com/trueLoving/Pixuli/issues/126)）。  
 > **当前请读**：[REFACTOR_PLAN §1.6](../../REFACTOR_PLAN.md#16-ref-411--插件体系重设计obsidian-参考)
-> · [04-Plugin-System.md](../../02-system-design/04-Plugin-System.md) · 索引
+> · [03-plugin-system.md](../../02-system-design/03-plugin-system.md) · 索引
 > [README.md](./README.md)
 
 - **文档版本**：1.0
 - **计划编号**：REF-411（M4）· 模块解析 REF-416
 - **关联 Issue**：[#126](https://github.com/trueLoving/Pixuli/issues/126)
-- **相关文档**：[04-Plugin-System.md](../../02-system-design/04-Plugin-System.md)
+- **相关文档**：[03-plugin-system.md](../../02-system-design/03-plugin-system.md)
   ·
-  [05-TypeScript-JavaScript-Policy.md](../../02-system-design/05-TypeScript-JavaScript-Policy.md)
+  [04-typescript-javascript-policy.md](../../02-system-design/04-typescript-javascript-policy.md)
 
 ---
 

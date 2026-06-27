@@ -16,11 +16,11 @@
 - **相关文档**：
   - [04-three-platform-interaction-spec.md](../../01-product/04-three-platform-interaction-spec.md)
     — REF-601 旅程与 IA（§2.1、§3、§四）
-  - [09-cross-platform-sharing-matrix.md](./09-cross-platform-sharing-matrix.md)
+  - [05-cross-platform-sharing-matrix.md](./05-cross-platform-sharing-matrix.md)
     — REF-506 代码级重复/缺口（§三）
-  - [01-Product-Requirements-Specification.md](../../01-product/01-Product-Requirements-Specification.md)
+  - [01-product-requirements-specification.md](../../01-product/01-product-requirements-specification.md)
     — PRD §4.3 产品能力矩阵（REF-501 / #86）
-  - [07-capacitor-android-poc.md](./07-capacitor-android-poc.md) — REF-509
+  - [04-capacitor-android-poc.md](./04-capacitor-android-poc.md) — REF-509
     PoC 与冒烟清单
 
 > **与 REF-506 的分工**：`09-*.md`
@@ -148,7 +148,7 @@
 
 ---
 
-## 三、覆盖 `09-cross-platform-sharing-matrix.md` §三「重复 / 缺口」
+## 三、覆盖 `05-cross-platform-sharing-matrix.md` §三「重复 / 缺口」
 
 | §三 条目                            | 本文 ID          | Capacitor 决策摘要                                                 |
 | ----------------------------------- | ---------------- | ------------------------------------------------------------------ |
@@ -208,8 +208,8 @@
 
 | Issue            | 范围                   | 来自本文                                                                       | 决策摘要                                                                                                                   |
 | ---------------- | ---------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| **#119** REF-508 | RN 组件不必迁入清单    | [12-ui-native-migration-assessment.md](./12-ui-native-migration-assessment.md) | ✅ 功能对齐在 pixuli；RN 待 #151 整体归档                                                                                  |
-| **#120** REF-510 | Capacitor 原生插件选型 | J4-03, J4-04, J5-05, L3-05                                                     | Camera、Filesystem、Share；`isNativeMobile()` 分支 — ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md) |
+| **#119** REF-508 | RN 组件不必迁入清单    | [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md) | ✅ 功能对齐在 pixuli；RN 待 #151 整体归档                                                                                  |
+| **#120** REF-510 | Capacitor 原生插件选型 | J4-03, J4-04, J5-05, L3-05                                                     | Camera、Filesystem、Share；`isNativeMobile()` 分支 — ✅ [08-capacitor-native-plugins.md](./08-capacitor-native-plugins.md) |
 | **#141** REF-511 | 拍照元数据             | J4-08                                                                          | ✅ EXIF/GPS/localPath → `captureMetadata` / sidecar `capture`                                                              |
 
 **#120 最小插件集（建议）**：
@@ -228,15 +228,15 @@
 
 | #151 Checklist 项      | 勾选依据（本文）                                                                                                                                          | 当前状态                                 |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| #118 真机冒烟          | [07-capacitor-android-poc.md §六](./07-capacitor-android-poc.md) · [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md) | ⏳ **#166 签收中**（待真机填表）         |
+| #118 真机冒烟          | [04-capacitor-android-poc.md §六](./04-capacitor-android-poc.md) · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md) | ⏳ **#166 签收中**（待真机填表）         |
 | #120 相机/相册 L3      | §四、§六 #120                                                                                                                                             | ✅ 代码已交付（真机确认 → #166 §2.2）    |
 | #141 拍照元数据        | J4-08                                                                                                                                                     | ✅ **#141 已交付**（列表反序列化待后续） |
-| #119 仅 RN 能力决策    | §四 + [12-ui-native-migration-assessment.md](./12-ui-native-migration-assessment.md)                                                                      | ✅ **#119 已交付**                       |
+| #119 仅 RN 能力决策    | §四 + [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md)                                                                      | ✅ **#119 已交付**                       |
 | ~~#117~~ store 覆盖 RN | REF-507 取消；pixuli store 为三端 SSOT                                                                                                                    | ✅ **已满足**（#117 已关闭）             |
 | Wiki / APK 发版说明    | REF-515 #153                                                                                                                                              | ⏳                                       |
 | **功能对齐矩阵 SSOT**  | **本文档**                                                                                                                                                | ✅ **#164 交付**                         |
 | P3 业务补齐完成        | §五 #165                                                                                                                                                  | ✅                                       |
-| P6 验收冒烟            | #166 · [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md)                                                             | ⏳ 待真机                                |
+| P6 验收冒烟            | #166 · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md)                                                             | ⏳ 待真机                                |
 
 `REFACTOR_PLAN.md` §1.9.2 归档 Checklist 与上表同步。
 
@@ -279,4 +279,4 @@ PRD 标 Mobile「批量删除 ✅」与 RN **实现不符**
 | 1.0  | 2026-05-27 | REF-516 P0 / #164 初稿：旅程矩阵、§三 覆盖、#165/#119/#151 输入清单   |
 | 1.1  | 2026-06-25 | #119 链至 12-ui-native-migration-assessment；#165 ✅；filter Tab 已删 |
 | 1.2  | 2026-06-16 | #120 ✅：Capacitor Camera/Share；矩阵 §六/§七 更新                    |
-| 1.3  | 2026-06-17 | #166：链至 14-capacitor-android-smoke-acceptance.md                   |
+| 1.3  | 2026-06-17 | #166：链至 09-capacitor-android-smoke-acceptance.md                   |

@@ -5,9 +5,9 @@
 - **计划编号**：REF-301～311、REF-308、REF-310
 - **关联 Issue**：[#70](https://github.com/trueLoving/Pixuli/issues/70)、[#77](https://github.com/trueLoving/Pixuli/issues/77)、[#79](https://github.com/trueLoving/Pixuli/issues/79)
 - **相关文档**：
-  - [00-System-Design](./00-System-Design.md)
-  - [01-Product-Requirements-Specification §5.1](../01-product/01-Product-Requirements-Specification.md)（仓库源需求；业务设计文档暂缓）
-  - [10-local-workspace-sync.md](./10-local-workspace-sync.md)（REF-607：Provider
+  - [01-system-design](./01-system-design.md)
+  - [01-product-requirements-specification §5.1](../01-product/01-product-requirements-specification.md)（仓库源需求；业务设计文档暂缓）
+  - [05-local-workspace-sync.md](./05-local-workspace-sync.md)（REF-607：Provider
     `sync` / `buildPublicUrl` 扩展，M6）
   - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)
 
@@ -54,7 +54,7 @@
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | GitHub / Gitee 仓库图床的 list / upload / delete / 元数据更新 | Pixuli Server、MinIO、S3 等后端模式                                                                                                                        |
 | `StoragePluginRegistry` 注册与 `create(pluginId, ctx)`        | 插件热加载、远程下载第三方 provider                                                                                                                        |
-| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件，见 [archive/design/01 §第二部分](../archive/design/01-Three-Platform-Capability-Sharing.md#第二部分-跨端图片处理)） |
+| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件，见 [archive/design/01 §第二部分](../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)） |
 
 ---
 
@@ -483,7 +483,7 @@ function createProvider(
 | REF-304/305 | apps imageStore → Registry                   | §7.2                             |
 | REF-306     | 持久化 `pluginId`                            | §8.2                             |
 | REF-307     | UI 读 `listManifests`                        | §7.3                             |
-| REF-308     | 插件开发文档 `04-Plugin-System.md §第二部分` | 基于本文扩展                     |
+| REF-308     | 插件开发文档 `03-plugin-system.md §第二部分` | 基于本文扩展                     |
 | REF-309     | 单测迁移                                     | §10.3                            |
 | REF-310     | M3 回归                                      | §10.3                            |
 | REF-311     | 删除 `packages/common`（**已完成**）         | §4.1 移除 legacy                 |
@@ -524,7 +524,7 @@ const githubManifest: StoragePluginManifest = {
 
 ### C. 文档维护
 
-- M3 各 REF 合并后，更新 [00-System-Design](./00-System-Design.md)
+- M3 各 REF 合并后，更新 [01-system-design](./01-system-design.md)
   中「模块与职责」一节，将 `packages/common` 替换为 provider 包描述。
 - REF-308 产出 [第二部分 存储插件开发指南](#第二部分-存储插件开发指南)
   作为本文的**开发者实操**补充。
@@ -533,8 +533,8 @@ const githubManifest: StoragePluginManifest = {
 
 # 第二部分 存储插件开发指南
 
-- [04-Plugin-System](./04-Plugin-System.md) — 架构、契约与 Registry 设计
-- [01-Product-Requirements-Specification §5.1](../01-product/01-Product-Requirements-Specification.md)（仓库源需求；业务设计文档暂缓）— 仓库源业务模型
+- [03-plugin-system](./03-plugin-system.md) — 架构、契约与 Registry 设计
+- [01-product-requirements-specification §5.1](../01-product/01-product-requirements-specification.md)（仓库源需求；业务设计文档暂缓）— 仓库源业务模型
 
 ## 一、读者与目标
 
@@ -1168,7 +1168,7 @@ describe('registerExampleProvider', () => {
 
 ## 文档维护
 
-- 契约变更时同步更新 [04-Plugin-System](./04-Plugin-System.md)
+- 契约变更时同步更新 [03-plugin-system](./03-plugin-system.md)
   与本文 §五、§十一。
 - 热加载 (#102) 落地后增补 §10 的 Loader API 与安全模型。
 - §9.1 已列出官方 provider 单测路径；新增官方包时同步更新该表。

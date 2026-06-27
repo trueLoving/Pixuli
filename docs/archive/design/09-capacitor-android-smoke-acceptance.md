@@ -2,8 +2,8 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-516 P6 #166 ✅；工程签收见
-> [15-apps-pixuli-engineering.md](../../02-system-design/15-apps-pixuli-engineering.md)。  
-> **当前请读**：[15-apps-pixuli-engineering.md](../../02-system-design/15-apps-pixuli-engineering.md)
+> [06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)
 > · 索引 [README.md](./README.md)
 
 > **Issue**：[#166](https://github.com/trueLoving/Pixuli/issues/166) · 父 Issue
@@ -12,7 +12,7 @@
 > **非目标**：RN 归档 git 操作（#151）；本地工作区全量 parity（#161 单独验收）
 
 PoC 工程清单见
-[07-capacitor-android-poc.md §六](./07-capacitor-android-poc.md)；本文为
+[04-capacitor-android-poc.md §六](./04-capacitor-android-poc.md)；本文为
 **P6 远端图床核心路径** 签收 SSOT。
 
 ---
@@ -49,7 +49,7 @@ Gitee 源使用直连 raw URL；本地工作区优先（见 PoC §4.3）。
 ### 2.1 核心图床路径（REF-601 P1–P4）
 
 与
-[11-mobile-feature-parity-matrix.md §九](./11-mobile-feature-parity-matrix.md)
+[06-mobile-feature-parity-matrix.md §九](./06-mobile-feature-parity-matrix.md)
 一致。
 
 | ID     | 用户故事     | 步骤摘要                                                      | 结果                 | 备注 |

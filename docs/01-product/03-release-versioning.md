@@ -93,7 +93,7 @@ WASM 依赖。
 
 | 项                              | 处理                                                                                                                |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 过时能力描述（Upyun、幻灯片等） | 历史版本条目**保留**作考古；顶部 `[Unreleased]` 与 [backlog.md](../backlog.md) 标明「非当前产品」                   |
+| 过时能力描述（Upyun、幻灯片等） | 历史版本条目**保留**作考古；顶部 `[Unreleased]` 与 [04-backlog.md](../04-backlog.md) 标明「非当前产品」             |
 | Desktop 1.0.0 日期              | CHANGELOG 写 2025-09-13（tag 指向提交日）；GitHub Release 页面为 2025-11-12，**无安装包** — 以 tag + Release 表为准 |
 | Web 独立章节                    | CHANGELOG 仅有 `[Unreleased]`；1.x 无 `v*-web` tag                                                                  |
 | 下一步                          | 首发 **2.0.0** 时打齐三端 tag，并将 `[Unreleased]` 下沉为 `## [2.0.0]`                                              |
@@ -314,5 +314,5 @@ Mobile 同步 bump。
 
 - [CHANGELOG.md](../../CHANGELOG.md)
 - [REFACTOR_PLAN.md § REF-409](../../REFACTOR_PLAN.md)
-- [02-Product-User-Manual.md](./02-Product-User-Manual.md)（Wiki 源稿）
-- [backlog.md](../backlog.md)（已移除能力）
+- [02-product-user-manual.md](./02-product-user-manual.md)（Wiki 源稿）
+- [04-backlog.md](../04-backlog.md)（已移除能力）

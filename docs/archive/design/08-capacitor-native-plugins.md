@@ -2,7 +2,7 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-510 #120 ✅；L3 插件选型已落地于 `apps/pixuli`。  
-> **当前请读**：[15-apps-pixuli-engineering.md](../../02-system-design/15-apps-pixuli-engineering.md) · 索引
+> **当前请读**：[06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md) · 索引
 > [README.md](./README.md)
 
 > 三端融合 P4 L3：在 `apps/pixuli`

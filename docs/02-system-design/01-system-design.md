@@ -6,7 +6,7 @@
 > 已归档。Mobile 由 **`apps/pixuli` + Capacitor Android** 交付（非 Expo
 > RN）。官方不提供 NestJS
 > Server。图床主界面为**网格/列表**（幻灯片/时间线已移除，见
-> [backlog](../backlog.md)）。
+> [backlog](../04-backlog.md)）。
 
 ## 目录
 
@@ -89,11 +89,11 @@
 
 ### 2.4 服务与部署术语
 
-| 术语              | 英文           | 说明                                                                                     |
-| ----------------- | -------------- | ---------------------------------------------------------------------------------------- |
-| **Pixuli Server** | Pixuli Server  | 已归档 NestJS 后端（`archive/server/`），**非官方交付**；见 [backlog §三](../backlog.md) |
-| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                       |
-| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署   |
+| 术语              | 英文           | 说明                                                                                        |
+| ----------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| **Pixuli Server** | Pixuli Server  | 已归档 NestJS 后端（`archive/server/`），**非官方交付**；见 [backlog §三](../04-backlog.md) |
+| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                          |
+| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署      |
 
 ---
 
@@ -234,10 +234,10 @@ graph LR
 
 ### 5.1 图片与元数据存储模式
 
-| 模式              | 说明                   | 数据所在                                                                    |
-| ----------------- | ---------------------- | --------------------------------------------------------------------------- |
-| **Git 仓库图床**  | **默认且唯一官方路径** | 图片与元数据存于用户配置的 GitHub/Gitee 仓库；经 `StorageProvider` 读写     |
-| **自建 HTTP API** | 非官方                 | 可实现自定义 Provider 或参考 `archive/server/`；见 [backlog](../backlog.md) |
+| 模式              | 说明                   | 数据所在                                                                       |
+| ----------------- | ---------------------- | ------------------------------------------------------------------------------ |
+| **Git 仓库图床**  | **默认且唯一官方路径** | 图片与元数据存于用户配置的 GitHub/Gitee 仓库；经 `StorageProvider` 读写        |
+| **自建 HTTP API** | 非官方                 | 可实现自定义 Provider 或参考 `archive/server/`；见 [backlog](../04-backlog.md) |
 
 ### 5.2 客户端配置与状态
 
@@ -278,13 +278,13 @@ graph LR
 
 ### 6.2 关键设计文档与能力对应
 
-| 能力域            | 设计文档                                                      | 要点                                              |
-| ----------------- | ------------------------------------------------------------- | ------------------------------------------------- |
-| 三端工程与复用    | [15-apps-pixuli-engineering](./15-apps-pixuli-engineering.md) | Capacitor 三端、目录、脚本、构建（**SSOT**）      |
-| 性能优化与监控    | [03-Performance](./03-Performance.md)                         | 虚拟滚动、懒加载、Worker、性能采集与面板          |
-| 存储插件体系      | [04-Plugin-System](./04-Plugin-System.md)                     | Registry、Provider 开发、M3 回归清单              |
-| 历史选型 / 矩阵   | [archive/design/](../archive/design/README.md)                | `01`/`02`/`06`～`14` 归档快照；原路径 stub 重定向 |
-| AI / Dify（延后） | [backlog §二](../backlog.md)                                  | 分析/生成待功能开发后再补设计文档                 |
+| 能力域            | 设计文档                                                      | 要点                                         |
+| ----------------- | ------------------------------------------------------------- | -------------------------------------------- |
+| 三端工程与复用    | [06-apps-pixuli-engineering](./06-apps-pixuli-engineering.md) | Capacitor 三端、目录、脚本、构建（**SSOT**） |
+| 性能优化与监控    | [02-performance](./02-performance.md)                         | 虚拟滚动、懒加载、Worker、性能采集与面板     |
+| 存储插件体系      | [03-plugin-system](./03-plugin-system.md)                     | Registry、Provider 开发、M3 回归清单         |
+| 历史选型 / 矩阵   | [archive/design/](../archive/design/README.md)                | REF 交付快照（9 篇，只读）                   |
+| AI / Dify（延后） | [backlog §二](../04-backlog.md)                               | 分析/生成待功能开发后再补设计文档            |
 
 ---
 
@@ -336,11 +336,11 @@ flowchart LR
 | 文档/目录                        | 用途                                                                      |
 | -------------------------------- | ------------------------------------------------------------------------- |
 | [01-product](../01-product/)     | 产品需求（PRD）、使用教程等                                               |
-| [02-system-design](../README.md) | 架构与方案设计索引；本系统设计为 00-System-Design，与 01～04 专项设计并列 |
+| [02-system-design](../README.md) | 架构与方案设计索引；本系统设计为 01-system-design，与 01～04 专项设计并列 |
 
 ### 8.2 本系统设计与各文档的关系
 
-- **00-System-Design（本文）**：描述系统全貌、模块、数据流、技术栈与部署形态，不替代各专项设计，而是与之互补。
+- **01-system-design（本文）**：描述系统全貌、模块、数据流、技术栈与部署形态，不替代各专项设计，而是与之互补。
 - **01～04 专项设计**：在各自领域内细化（三端能力共享、三端设计、性能、插件体系）；实现时以 PRD 为需求来源、以专项设计为技术方案。
 - **CICD.md**：若 Pixuli 的 Web 静态站或 Pixuli
   Server 需要接入同一套 CI/CD，可按照 CICD 中的「项目契约」（build.sh、artifacts.yml、deploy.sh）与 Workflow 设计进行接入。
@@ -361,17 +361,17 @@ flowchart LR
 
 - **批量元数据编辑**：多选图片后统一改标签、描述等；见 M6 REF-604/605。
 - **布局与性能**：列数/瀑布流/虚拟列表等，见
-  [03-Performance](./03-Performance.md)。
+  [02-performance](./02-performance.md)。
 - **AI 能力**：自动打标、场景识别、OCR、文生图；设计文档待开发后补充，见
-  [backlog](../backlog.md) 与现有 Desktop `aiService`。
-- **官方 Server**：不在路线图；历史能力见 [backlog §三](../backlog.md)。
+  [backlog](../04-backlog.md) 与现有 Desktop `aiService`。
+- **官方 Server**：不在路线图；历史能力见 [backlog §三](../04-backlog.md)。
 
 ### 9.2 架构扩展原则
 
 - **新端或新入口**：优先复用 `@pixuli/core` + `@pixuli/ui`（或 Capacitor 套壳
   `apps/pixuli`）。
 - **新存储后端**：实现 `StorageProvider` 并注册到 `StoragePluginRegistry`（见
-  [04-Plugin-System §第二部分](./04-Plugin-System.md#第二部分-存储插件开发指南)）。
+  [03-plugin-system §第二部分](./03-plugin-system.md#第二部分-存储插件开发指南)）。
 - **新 AI 能力**：优先通过 Dify 工作流扩展；若需本地模型，在 Desktop 主进程或 Server 侧扩展，对前端暴露统一「分析/生成」抽象。
 
 ---
@@ -413,7 +413,7 @@ stateDiagram-v2
 ### 10.3 参考文档
 
 - [Pixuli README](../../README.md) - 项目介绍与快速开始
-- [产品需求规格说明书](../01-product/01-Product-Requirements-Specification.md)
+- [产品需求规格说明书](../01-product/01-product-requirements-specification.md)
 
 ### 10.4 相关文件清单
 

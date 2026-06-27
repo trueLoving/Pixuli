@@ -2,14 +2,14 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-509 #118 ✅；PoC 工程约定已并入
-> [15-apps-pixuli-engineering.md](../../02-system-design/15-apps-pixuli-engineering.md)。  
-> **当前请读**：[15-apps-pixuli-engineering.md](../../02-system-design/15-apps-pixuli-engineering.md)
+> [06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)
 > · 索引 [README.md](./README.md)
 
 > **Issue**：[#118](https://github.com/trueLoving/Pixuli/issues/118) ·
 > **范围**：仅 **Android**（不含 iOS）  
 > **路线**：方案 A — `apps/pixuli` 的 `build:web` 产物 + Capacitor WebView 壳  
-> **关联**：[02-Three-Platform-Design.md](./02-Three-Platform-Design.md) §九、[09-cross-platform-sharing-matrix.md](./09-cross-platform-sharing-matrix.md)
+> **关联**：[02-three-platform-design.md](./02-three-platform-design.md) §九、[05-cross-platform-sharing-matrix.md](./05-cross-platform-sharing-matrix.md)
 > §五 P2
 
 ---
@@ -22,7 +22,7 @@
 | **工程位置**    | `apps/pixuli`（与 Web/Desktop 同源）                                                       |
 | **webDir**      | `dist`（`vite build --mode web`）                                                          |
 | **appId**       | `com.pixuli.app`（与 RN `com.pixuli.mobile` 区分，可并存安装）                             |
-| **是否进入 P3** | 工程已交付（REF-509 ✅）；P6 真机签收见 [#166](./14-capacitor-android-smoke-acceptance.md) |
+| **是否进入 P3** | 工程已交付（REF-509 ✅）；P6 真机签收见 [#166](./09-capacitor-android-smoke-acceptance.md) |
 
 ---
 
@@ -194,7 +194,7 @@ pnpm --filter pixuli-app build:android:release
 | 启动与路由         | `BrowserRouter` + `homepage: ./`          | Capacitor `https` scheme 下一般正常；深链待 REF-510                                                                 |
 | 侧栏 / 窄屏        | 与 Web 同构（REF-601）                    | `<768px` 汉堡抽屉 + 全屏弹层（#150 ✅）                                                                             |
 | 列表滚动           | 虚拟列表 + 懒加载                         | 大图多时 WebView 内存与滚动帧率待测                                                                                 |
-| 上传选图           | `<input type="file">` + 原生「拍照/相册」 | #120：`@capacitor/camera` 注入 `ImageUpload`；见 [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md) |
+| 上传选图           | `<input type="file">` + 原生「拍照/相册」 | #120：`@capacitor/camera` 注入 `ImageUpload`；见 [08-capacitor-native-plugins.md](./08-capacitor-native-plugins.md) |
 | PWA Service Worker | 构建仍生成 `sw.js`                        | 壳内已隐藏 PWA UI；若 SW 干扰加载，后续可按 `isNativeMobile` 禁用注册                                               |
 | Gitee 图床         | 直连 raw URL；本地工作区优先              | WebView 跨域加载 Gitee 缩略图可能受限，以本地缓存为准                                                               |
 | 包体积             | 整包 Web dist ~1.4MB+ 预缓存              | 可接受；后续可做按需加载优化                                                                                        |
@@ -203,7 +203,7 @@ pnpm --filter pixuli-app build:android:release
 
 ## 六、冒烟验收清单（#118 → #166 P6）
 
-> **签收 SSOT**：[14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md)（REF-516
+> **签收 SSOT**：[09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md)（REF-516
 > P6 / [#166](https://github.com/trueLoving/Pixuli/issues/166)）
 
 在 **Android 真机或模拟器** 上勾选（结果表见 §14 文档 §2）：

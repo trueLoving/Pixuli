@@ -96,4 +96,4 @@ Gitee 代理相关文件归属（REF-411 前置）：
 ## 相关文档
 
 - [REFACTOR_PLAN.md §9.1](../../REFACTOR_PLAN.md)
-- [04-Plugin-System.md](./04-Plugin-System.md)（Gitee 代理 REF-313）
+- [03-plugin-system.md](./03-plugin-system.md)（Gitee 代理 REF-313）

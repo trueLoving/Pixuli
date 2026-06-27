@@ -20,7 +20,7 @@ description: >-
 
 ## Add or change a provider
 
-1. Read `docs/02-system-design/04-Plugin-System.md` §第二部分
+1. Read `docs/02-system-design/03-plugin-system.md` §第二部分
 2. In provider package: `manifest.ts`（含可选 `hostIntegrations`）→
    `*StorageProvider.ts` → `register.ts` → `package.json` `exports`（REF-416：
    `development` + `dist`）
@@ -47,7 +47,7 @@ storageRegistry.create(pluginId, {
 - Proxy URL building: `@pixuli/provider-gitee/proxy/url` in provider
   implementation
 - Host 集成：在 `manifest.hostIntegrations` 声明；实现见
-  `docs/archive/design/06-Plugin-Host-Integration.md`（已归档）与 skill
+  `docs/archive/design/03-plugin-host-integration.md`（已归档）与 skill
   `gitee-host-integration`
 
 ## Verify
