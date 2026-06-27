@@ -1,68 +1,65 @@
-# Changelog
+# 变更日志
 
-This document records all significant changes across all Pixuli platforms
-(Desktop, Web, Mobile).
+本文记录 Pixuli 各平台（Desktop、Web、Mobile）的重要变更。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本号遵循
+[语义化版本](https://semver.org/lang/zh-CN/)。
 
 ---
 
 ## [Unreleased]
 
-> **M1 减负与归档**（REF-101～REF-112, 2025–2026）. Detailed backlog:
-> [docs/backlog.md](docs/backlog.md). Refactor tracker:
-> [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
+> **M1 减负与归档**（REF-101～REF-112，2025–2026）。详细 backlog：[docs/04-backlog.md](docs/04-backlog.md)。重构追踪：[REFACTOR_PLAN.md](REFACTOR_PLAN.md)。
 
-Applies to **Web**, **Desktop**, and **Mobile** on the refactoring `main`
-branch. **Baseline product version: 2.0.0** (unified across platforms; MAJOR
-over 1.x). The next tagged release will be `v2.0.0-desktop`, `v2.0.0-mobile`,
-and `v2.0.0-web` when cut. See
-[03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md) (REF-409).
+适用于重构分支 `main` 上的
+**Web**、**Desktop**、**Mobile**。**基线产品版本：2.0.0**（三端统一 semver，相对 1.x 为 MAJOR）。下次打 tag 预计为
+`v2.0.0-desktop`、`v2.0.0-android`、`v2.0.0-web`。见
+[03-release-versioning.md](docs/01-product/03-release-versioning.md)（REF-409）。
 
-### ⚠️ Breaking Changes
+### ⚠️ 破坏性变更
 
-#### Product — removed (not planned to return)
+#### 产品 — 已移除（不计划恢复）
 
-- **Slideshow** — standalone routes, player, auto-play
-- **Timeline** — time-grouped browsing
-- **Photo Wall** and **3D Gallery** — enhanced display components
-- **Browse mode tabs** — file / slideshow / timeline switching; replaced by
-  **photo host grid/list** at `/photos`
-- **Web placeholder routes** — `analyze`, `edit`, `generate` (redirect to
-  `/photos`)
-- **Mobile** — browse-mode tab and `SlideShowPlayer` removed
+- **幻灯片（Slideshow）** — 独立路由、播放器、自动播放
+- **时间线（Timeline）** — 按时间分组浏览
+- **照片墙（Photo Wall）** 与 **3D 画廊** — 增强展示组件
+- **浏览模式 Tab** — 文件 / 幻灯片 / 时间线切换；改为 `/photos` 图床网格/列表
+- **Web 占位路由** — `analyze`、`edit`、`generate`（重定向至 `/photos`）
+- **Mobile（归档 RN）** — 浏览模式 Tab 与 `SlideShowPlayer`
+  已移除；主线为 Capacitor + `apps/pixuli`
 
-**New navigation (Web/Desktop):** Photos · Compress · Convert · Settings.
+**新导航（Web/Desktop）：** 照片 · 压缩 · 转换 · 设置。
 
-#### Architecture — removed or archived
+#### 架构 — 移除或归档
 
-- **`packages/wasm`** — moved to `archive/wasm/`; removed from `pnpm` workspace
-- **`benchmark/`** — moved to `archive/benchmark/`
-- **`server/`** (NestJS) — moved to `archive/server/`; **not** an official
-  deliverable
-- **Electron WASM IPC** and **`pixuli-wasm`** dependency — removed from Desktop
-  build
-- **`performance` / `devtools`** — unused UI modules removed
-- **`pptxgenjs`** and slideshow-related dependencies — removed
+- **`packages/wasm`** — 迁至 `archive/wasm/`；移出 `pnpm` workspace
+- **`benchmark/`** — 迁至 `archive/benchmark/`
+- **`server/`**（NestJS）— 迁至 `archive/server/`；**非**官方交付物
+- **`apps/mobile`**（Expo RN）— 迁至
+  `archive/apps/mobile/`（REF-513）；Mobile 由 Capacitor 交付
+- **Electron WASM IPC** 与 **`pixuli-wasm`** 依赖 — 已从 Desktop 构建移除
+- **`performance` / `devtools`** — 未接入 UI 模块已删
+- **`pptxgenjs`** 及幻灯片相关依赖 — 已移除
 
-#### Changed behavior
+#### 行为变更
 
-- **Image processing** — Web/Desktop use **Canvas** in the renderer; Rust WASM
-  is no longer required to build or run the main app
-- **Desktop development** — **Rust toolchain no longer required** (WASM
-  archived)
-- **Gitee images** — dev/prod proxy via `@pixuli/provider-gitee/proxy` (REF-313)
+- **图片处理** — Web/Desktop 渲染进程使用
+  **Canvas**；主应用构建与运行**不再需要** Rust WASM
+- **Desktop 开发** — **不再需要** Rust 工具链（WASM 已归档）
+- **Gitee 图片** — `apps/pixuli` 已移除 Host 代理，改为本地工作区 + 直连 raw
+  URL；全仓收官见 REF-607 P7（#173）
+- **三端工程** — Web / Desktop / Mobile 共用 `apps/pixuli` +
+  `@pixuli/ui`（REF-514、REF-516）
 
-### Migration notes
+### 迁移说明
 
-| If you used…                                | Now…                                                                        |
-| ------------------------------------------- | --------------------------------------------------------------------------- |
-| Slideshow / Timeline / Photo Wall           | Use grid/list at `/photos`; see [backlog](docs/backlog.md)                  |
-| Desktop WASM / AI via Rust                  | Canvas-based processing; archived WASM in `archive/wasm/`                   |
-| Official NestJS server                      | Self-host from `archive/server/` or a custom `StorageProvider` plugin       |
-| Releases `v1.3.0-desktop` / `v1.0.0-mobile` | Pre-2.0 lines; upgrade target is **2.0.0** (not 1.4.x); read `[Unreleased]` |
+| 若你曾使用…                                | 现在…                                                           |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| 幻灯片 / 时间线 / 照片墙                   | 使用 `/photos` 网格/列表；见 [backlog](docs/04-backlog.md)      |
+| Desktop WASM / Rust AI                     | Canvas 处理；WASM 见 `archive/wasm/`                            |
+| 官方 NestJS Server                         | 自建见 `archive/server/` 或自定义 `StorageProvider`             |
+| Expo RN `apps/mobile`                      | 使用 Capacitor Android APK；归档代码见 `archive/apps/mobile/`   |
+| Release `v1.3.0-desktop` / `v1.0.0-mobile` | 1.x 线；升级目标为 **2.0.0**（非 1.4.x）；请先读 `[Unreleased]` |
 
 ---
 
@@ -70,167 +67,131 @@ and `v2.0.0-web` when cut. See
 
 ### [Unreleased]
 
-See **[Unreleased](#unreleased)** above for M1 breaking changes.
+见上方 **[Unreleased](#unreleased)** 中 M1 破坏性变更。
 
-#### 🔧 Changed (refactor branch)
+#### 🔧 变更（重构分支）
 
-- Desktop shares `apps/pixuli` + `@pixuli/ui` with Web; Gitee image proxy in
-  Electron main process (REF-313)
+- Desktop 与 Web 共用 `apps/pixuli` + `@pixuli/ui`
+- 工程整理见 REF-514（#152）
 
 ---
 
 ### [1.3.0][1.3.0] - 2025-11-21
 
-#### ✨ Added
+#### ✨ 新增
 
-- **Enhanced Metadata Tags**: Support for adding multiple tags, fixed tag data
-  loss issue during upload
-- **Image Browser UI Optimization**: Unified card height, fixed list mode issues
-- **Repository Source Management Layout Optimization**: Changed to vertical list
-  layout, added collapse animation effects
-- **Enhanced Image Upload Component**: Added image compression functionality
+- **增强元数据标签**：支持多标签；修复上传时标签丢失
+- **图片浏览器 UI**：统一卡片高度；修复列表模式问题
+- **仓库源管理布局**：改为纵向列表；折叠动画
+- **上传组件增强**：支持压缩
 
-#### 🔧 Changed
+#### 🔧 变更
 
-- Fixed desktop image upload/edit/delete full-screen loading freeze issue
-- Optimized image size and file size retrieval logic
-- Optimized Gitee storage service metadata loading
-- Optimized release-desktop pipeline, support for selecting different branches
-  and platforms for release
-- Code optimization and feature improvements
+- 修复 Desktop 上传/编辑/删除时全屏 loading 卡死
+- 优化图片尺寸与文件大小获取
+- 优化 Gitee 存储服务元数据加载
+- 优化 release-desktop 流水线；支持选分支与平台发版
+- 代码优化与功能改进
 
-#### 🐛 Fixed
+#### 🐛 修复
 
-- Fixed TypeScript compilation errors
-- Fixed Gitee storage service metadata loading issues
-- Fixed metadata tag functionality related issues
+- 修复 TypeScript 编译错误
+- 修复 Gitee 元数据加载问题
+- 修复标签相关缺陷
 
-#### 🗑️ Removed
+#### 🗑️ 移除
 
-- **Removed Upyun Repository Source Support**: Removed Upyun storage support
+- **又拍云（Upyun）仓库源** — 已移除
 
-#### 🎯 Technical
+#### 🎯 技术
 
-- Upgraded all platforms to React 19.1.0
-- Implemented slide show functionality and migrated to common component library
+- 全平台升级至 React 19.1.0
+- 实现幻灯片功能并迁入 common 组件库
 
-> **Historical note (REF-409):** Slideshow was removed on the post-M1 `main`
-> branch. Pre-refactor installs of this release still include slideshow.
+> **历史注记（REF-409）：** 幻灯片已在 post-M1 的 `main`
+> 分支移除。安装本 Release 的旧版本仍含幻灯片。
 
 ---
 
 ### [1.2.0][1.2.0] - 2025-10-26
 
-#### ✨ Added
+#### ✨ 新增
 
-- **Operation Log Feature**: Implemented complete operation log recording and
-  viewing functionality
-- **Batch Image Deletion**: Support for batch selection and deletion of images
-- **Gitee Storage Support**: Added Gitee as a repository source, supporting dual
-  storage with GitHub and Gitee
-  - Gitee configuration page
-  - Configuration import/export functionality
-  - Configuration clear functionality
-  - GitHub and Gitee configurations can coexist
-- **System Tray Feature**: Support for system tray, can open image compression
-  and conversion independent windows from tray
-- **Version Information Viewing**: Added version information viewing
-  functionality
-- **Left Menu Collapse**: Support for left menu collapse functionality with
-  persistent state
-- **ESC Shortcut Key**: Support for ESC shortcut key to close dialogs and modals
-- **Enhanced Image Preview**: Image preview added left/right arrows to switch
-  current preview image
-- **AI Analysis Optimization**: Migrated AI analysis to Rust WASM, optimized tag
-  and description generation
-- **Image Size Optimization**: Optimized image size and file size retrieval
-  logic
+- **操作日志**：完整记录与查看
+- **批量删除图片**
+- **Gitee 存储**：与 GitHub 双源；配置页、导入/导出、清空；可与 GitHub 共存
+- **系统托盘**：可从托盘打开压缩/转换独立窗口
+- **版本信息查看**
+- **左侧菜单折叠**（状态持久化）
+- **ESC 快捷键**关闭对话框
+- **预览增强**：左右键切换当前预览图
+- **AI 分析优化**：迁移至 Rust WASM；优化标签与描述生成
+- **图片尺寸优化**
 
-#### 🔧 Changed
+#### 🔧 变更
 
-- Refactored directory structure and optimized data management
-- Completed component internationalization and image compression service
-  organization
-- Optimized WASM module build and verification process
-- Support for multi-architecture Mac builds and Linux platform
-- Optimized electron-builder configuration, excluded pixuli-wasm unused files
-- Fixed desktop layout scrolling issues
-- Unified dialog component open/close methods
-- Optimized App.tsx data management, moved component internal state to
-  corresponding components
+- 重构目录与数据管理
+- 组件国际化与压缩服务整理
+- 优化 WASM 构建与校验
+- 多架构 Mac 与 Linux 支持
+- 优化 electron-builder；排除 pixuli-wasm 无用文件
+- 修复 Desktop 布局滚动
+- 统一 Dialog 开关方式
+- 优化 App.tsx 状态归属
 
-#### 🎯 Technical
+#### 🎯 技术
 
-- Refactored project to monorepo structure
-- Integrated web and desktop common components into packages/ui
-- Replaced duplicate components in desktop with packages/ui components
-- Removed Tailwind CSS dependency, switched to custom CSS styles
-- Added Prettier code formatting tool
-- Language pack refactoring, Toast internationalization fixes
-- Electron CSP security configuration optimization
+- 重构为 Monorepo
+- Web/Desktop 共用组件迁入 packages/ui
+- Desktop 替换重复组件
+- 移除 Tailwind，改用自定义 CSS
+- 增加 Prettier
+- 语言包重构；Toast 国际化修复
+- Electron CSP 优化
 
 ---
 
 ### [1.1.0][1.1.0] - 2025-09-15
 
-#### ✨ Added
+#### ✨ 新增
 
-- **Image Compression Feature**: New independent compression window
-  - WebP compression support
-  - Adjustable compression quality (10%-100%)
-  - Batch compression functionality
-  - Compression preview functionality
-- **Image Format Conversion Feature**: New independent conversion window
-  - Support for JPEG, PNG, WebP format conversion
-  - Batch format conversion
-  - Conversion preview functionality
-- **Enhanced GitHub Configuration Management**
-  - Configuration import/export functionality
-  - Configuration clear functionality
-- **Upyun Storage Support** (removed in later versions)
-- **Menu Feature**: Added application menu bar functionality
-- **Improved Internationalization**: Completed image component
-  internationalization functionality support
-- **Layout Optimization**: Refactored desktop layout components
+- **图片压缩**：独立压缩窗口；WebP；可调质量；批量与预览
+- **格式转换**：JPEG / PNG / WebP；批量与预览
+- **GitHub 配置增强**：导入/导出/清空
+- **又拍云存储**（后续版本已移除）
+- **菜单栏**
+- **国际化改进**
+- **布局优化**
 
-#### 🔧 Changed
+#### 🔧 变更
 
-- Fixed build issues
-- Optimized documentation structure and content
-- Fixed wasm import persistence issues
+- 修复构建问题
+- 优化文档结构
+- 修复 wasm import 持久化问题
 
 ---
 
 ### [1.0.0][1.0.0] - 2025-09-13
 
-> **Release note:** Git tag `v1.0.0-desktop` points to this changelog entry; the
-> GitHub Release page was published on 2025-11-12 **without** install artifacts.
-> See [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md).
+> **发布说明：** Git tag `v1.0.0-desktop` 对应本条目；GitHub
+> Release 页面于 2025-11-12 发布但**无**安装包。见
+> [03-release-versioning.md](docs/01-product/03-release-versioning.md)。
 
-#### ✨ Added
+#### ✨ 新增
 
-- Initial desktop version release
-- **Image Management**
-  - Image grid display (responsive layout)
-  - Drag-and-drop upload (single/batch)
-  - Full-screen preview (supports zoom and rotation)
-  - Metadata viewing (name, size, description, tags)
-  - Search functionality (by name, description, tags)
-  - Tag system (add, filter)
-- **GitHub Storage Integration**
-  - GitHub configuration management
-  - Use GitHub repositories as image storage backend
-- **Theme Switching**: Support for light/dark themes
-- **Multi-language Support**: Chinese and English interface switching
-- **Multi-window Management**: Support for main window, compression window,
-  conversion window, AI analysis window
+- Desktop 首个版本
+- **图片管理**：网格、拖拽上传、全屏预览、元数据、搜索、标签
+- **GitHub 集成**：配置管理；仓库作图床后端
+- **主题**：明暗切换
+- **多语言**：中/英
+- **多窗口**：主窗口、压缩、转换、AI 分析
 
-#### 🎯 Technical
+#### 🎯 技术
 
-- Built with Electron + React + TypeScript
-- High-performance image processing using Rust WASM modules
-- Support for macOS (x64, ARM64) and Windows (x64)
-- Refactored WASM modules and optimized AI analysis functionality
+- Electron + React + TypeScript
+- Rust WASM 高性能图片处理
+- macOS（x64、ARM64）与 Windows（x64）
+- WASM 重构与 AI 优化
 
 ---
 
@@ -238,15 +199,15 @@ See **[Unreleased](#unreleased)** above for M1 breaking changes.
 
 ### [Unreleased]
 
-See **[Unreleased](#unreleased)** above for M1 breaking changes.
+见上方 **[Unreleased](#unreleased)** 中 M1 破坏性变更。
 
-#### 🔧 Changed (refactor branch)
+#### 🔧 变更（重构分支）
 
-- Vite dev Gitee image proxy plugin; PWA and grid/list photo host as primary UX
+- PWA 与网格/列表图床为主 UX；三端单工程 `apps/pixuli`
 
-> **Note:** Entries below in older Web `[Unreleased]` drafts (e.g. slideshow
-> added) describe pre-M1 work and are **superseded** by the breaking changes
-> section until the next release is cut.
+> **说明：** 下方旧版 Web `[Unreleased]`
+> 草稿（如曾写「新增幻灯片」）描述 M1 之前工作，在下次发版前以本节
+> **破坏性变更** 为准。
 
 ---
 
@@ -254,54 +215,41 @@ See **[Unreleased](#unreleased)** above for M1 breaking changes.
 
 ### [Unreleased]
 
-See **[Unreleased](#unreleased)** above for M1 breaking changes.
+见上方 **[Unreleased](#unreleased)** 中 M1 破坏性变更。
 
-#### ⚠️ Breaking Changes (summary)
+#### ⚠️ 破坏性变更（摘要）
 
-- Browse-mode tab and slideshow player removed (aligned with Web/Desktop product
-  cut)
+- 归档 RN 的浏览模式 Tab 与幻灯片播放器已移除
+- 主线：**Capacitor Android** + 与 Web/Desktop 同一套 UI（REF-509～516）
 
 ---
 
 ### [1.0.0][1.0.0-mobile] - 2025-11-21
 
-> **Pre-M1 release.** Includes slideshow and browse-mode features removed on the
-> refactoring branch. See `[Unreleased]` before upgrading from this tag.
+> **M1 前 Release。** 含幻灯片与浏览模式；重构分支已移除。从该 tag 升级请先读
+> `[Unreleased]`。
 
-#### ✨ Added
+#### ✨ 新增
 
-- Initial Android version release
-- **Image Management**: Browse, upload, delete, preview
-- **Image Processing**: Compression, format conversion, size adjustment,
-  cropping
-- **Cloud Storage**: GitHub and Gitee integration
-- **Search and Filter**: Support for name search, tag/size/date filtering,
-  multiple sorting options
-- **Camera Integration**: Photo capture upload, post-capture editing
-- **Slide Show**: Support for auto-play, sequential/random modes, multiple
-  transition effects
-  - Auto-play: Configurable playback interval and auto-play mode
-  - Playback Modes: Support for sequential and random playback
-  - Transition Effects: Fade, slide, zoom, and other transition animations
-  - Loop Playback: Support for looping through all images
-  - Playback Controls: Play/pause/stop, previous/next
-  - Image List: Sidebar displaying all image thumbnails
-  - Image Information: Show/hide image metadata information
-- **Theme Switching**: Light/dark/auto themes
-- **Multi-language Support**: Chinese and English interfaces
-- **Responsive Design**: Adapted to different screen sizes
+- Android 首个版本（Expo RN）
+- **图片管理**：浏览、上传、删除、预览
+- **图片处理**：压缩、转换、尺寸调整、裁剪
+- **云存储**：GitHub、Gitee
+- **搜索与筛选**：名称、标签/尺寸/日期、排序
+- **相机**：拍照上传、拍后编辑
+- **幻灯片**：自动播放、顺序/随机、转场、循环、控制条、缩略图列表、信息面板
+- **主题**：明/暗/跟随系统
+- **多语言**：中/英
+- **响应式布局**
 
-#### 🎯 Technical
+#### 🎯 技术
 
-- Built with React Native 0.81.5
-- Using Expo SDK 54
-- TypeScript type safety
-- Smooth animations and interactive experience
+- React Native 0.81.5 · Expo SDK 54 · TypeScript
 
-#### ⚠️ Known Issues
+#### ⚠️ 已知问题
 
-- iOS version not yet released
-- Batch upload functionality under development
+- iOS 尚未发版
+- 批量上传开发中
 
 ---
 
