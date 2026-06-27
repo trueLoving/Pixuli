@@ -2,8 +2,8 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-516 P0 #164 ✅；产品交互 SSOT 已收敛至
-> [04-three-platform-interaction-spec.md](../../01-product/04-three-platform-interaction-spec.md)。  
-> **当前请读**：[04-three-platform-interaction-spec.md](../../01-product/04-three-platform-interaction-spec.md)
+> [04-three-platform-interaction-spec.md](../../docs/01-product/04-three-platform-interaction-spec.md)。  
+> **当前请读**：[04-three-platform-interaction-spec.md](../../docs/01-product/04-three-platform-interaction-spec.md)
 > · 索引 [README.md](./README.md)
 
 - **文档版本**：1.0
@@ -14,11 +14,11 @@
 - **SSOT 原则**：**`apps/pixuli`（Web + Desktop + Capacitor 目标）**
   为产品行为准绳；`archive/apps/mobile`（RN）仅作历史对照，已归档
 - **相关文档**：
-  - [04-three-platform-interaction-spec.md](../../01-product/04-three-platform-interaction-spec.md)
+  - [04-three-platform-interaction-spec.md](../../docs/01-product/04-three-platform-interaction-spec.md)
     — REF-601 旅程与 IA（§2.1、§3、§四）
   - [05-cross-platform-sharing-matrix.md](./05-cross-platform-sharing-matrix.md)
     — REF-506 代码级重复/缺口（§三）
-  - [01-product-requirements-specification.md](../../01-product/01-product-requirements-specification.md)
+  - [01-product-requirements-specification.md](../../docs/01-product/01-product-requirements-specification.md)
     — PRD §4.3 产品能力矩阵（REF-501 / #86）
   - [04-capacitor-android-poc.md](./04-capacitor-android-poc.md) — REF-509
     PoC 与冒烟清单
@@ -45,7 +45,7 @@
 ## 二、用户旅程对齐矩阵
 
 对照
-[REF-601 §2.1](../../01-product/04-three-platform-interaction-spec.md#21-核心旅程现状--远端图床)
+[REF-601 §2.1](../../docs/01-product/04-three-platform-interaction-spec.md#21-核心旅程现状--远端图床)
 核心旅程。
 
 ### 2.1 配置仓库源

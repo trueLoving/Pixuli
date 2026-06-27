@@ -4,8 +4,9 @@
 workspace，**不会**被 `pnpm install`、`pnpm ci` 或日常应用构建引用。
 
 维护策略见本文；产品层面的「已移除 / 不做」说明见
-[docs/backlog.md](../docs/backlog.md)；里程碑追踪见
-[REFACTOR_PLAN.md](../REFACTOR_PLAN.md)（M1 REF-108、REF-110）。
+[docs/04-backlog.md](../docs/04-backlog.md)；里程碑追踪见
+[REFACTOR_PLAN.md](../REFACTOR_PLAN.md)；**已完成 REF Issue 表**见
+[refactor-plan/](refactor-plan/)（M1 REF-108、REF-110 等）。
 
 ---
 
@@ -22,12 +23,14 @@ workspace，**不会**被 `pnpm install`、`pnpm ci` 或日常应用构建引用
 
 ## 目录说明
 
-| 目录                           | 原路径          | 用途                                                   | 移出时机                                                   |
-| ------------------------------ | --------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
-| [`wasm/`](wasm/)               | `packages/wasm` | Rust / NAPI / wasm-pack 图片处理（压缩、转换、分析等） | M1 **REF-108** — 主仓移除 wasm 与 benchmark workspace 成员 |
-| [`benchmark/`](benchmark/)     | `benchmark/`    | WASM vs JavaScript 压缩性能对比                        | M1 **REF-108**（依赖 wasm）                                |
-| [`server/`](server/)           | `server/`       | NestJS 可选后端（Prisma、MinIO、API Key 等）           | M1 **REF-110** — 移出 workspace；**非官方**图床服务端      |
-| [`apps/mobile/`](apps/mobile/) | `apps/mobile/`  | Expo + React Native 移动端（过渡对照）                 | M5 **REF-513** — Capacitor 对齐后迁入 archive（2026-06）   |
+| 目录                               | 原路径                | 用途                                                   | 移出时机                                                   |
+| ---------------------------------- | --------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| [`wasm/`](wasm/)                   | `packages/wasm`       | Rust / NAPI / wasm-pack 图片处理（压缩、转换、分析等） | M1 **REF-108** — 主仓移除 wasm 与 benchmark workspace 成员 |
+| [`benchmark/`](benchmark/)         | `benchmark/`          | WASM vs JavaScript 压缩性能对比                        | M1 **REF-108**（依赖 wasm）                                |
+| [`server/`](server/)               | `server/`             | NestJS 可选后端（Prisma、MinIO、API Key 等）           | M1 **REF-110** — 移出 workspace；**非官方**图床服务端      |
+| [`apps/mobile/`](apps/mobile/)     | `apps/mobile/`        | Expo + React Native 移动端（过渡对照）                 | M5 **REF-513** — Capacitor 对齐后迁入 archive（2026-06）   |
+| [`design/`](design/)               | `docs/archive/design` | REF 交付的设计文档快照（PoC、矩阵、历史选型）          | 2026-06 文档整理时迁入                                     |
+| [`refactor-plan/`](refactor-plan/) | —                     | REFACTOR_PLAN v2.0 已完成 Issue / 分阶段快照           | 2026-06 精简主追踪文档时归档                               |
 
 ### apps/mobile/
 
@@ -75,7 +78,7 @@ workspace，**不会**被 `pnpm install`、`pnpm ci` 或日常应用构建引用
 
 - **定位**：中心化图片仓库 API，与当前「Git 仓库图床客户端」产品定位不一致
 - **官方态度**：不提供 NestJS Server 为一等公民；自建或社区对接见
-  [backlog §三](../docs/backlog.md)
+  [backlog §三](../docs/04-backlog.md)
 - **单独运行**（仅供参考）：
   ```bash
   cd archive/server
@@ -99,7 +102,8 @@ archive/                  ← 本目录，不在 workspace 内
 ├── wasm/
 ├── benchmark/
 ├── server/
-└── apps/mobile/
+├── apps/mobile/
+└── refactor-plan/        ← 已完成 REF Issue 追踪表（非代码）
 ```
 
 主仓 **CI**（`.github/workflows/ci.yml`）：`pnpm ci` = Vitest +
@@ -113,12 +117,12 @@ wasm 构建（REF-405）。
 
 ## 何时查阅本目录
 
-| 场景                               | 建议                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------ |
-| 开发 Web/Desktop/Mobile 主应用     | **忽略** archive，读 [docs/README.md](../docs/README.md)                       |
-| 了解为何移除幻灯片 / WASM / Server | [docs/backlog.md](../docs/backlog.md)、[CHANGELOG Unreleased](../CHANGELOG.md) |
-| 实验高性能原生图片处理             | 参考 `archive/wasm`，或未来 Processor **插件**（非恢复主路径）                 |
-| 自建 HTTP 图床 API                 | 参考 `archive/server` 或实现自定义 `StorageProvider`                           |
+| 场景                                | 建议                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| 查 REF 已交付的设计快照（矩阵/PoC） | [design/README.md](design/README.md)                                                 |
+| 了解为何移除幻灯片 / WASM / Server  | [docs/04-backlog.md](../docs/04-backlog.md)、[CHANGELOG Unreleased](../CHANGELOG.md) |
+| 实验高性能原生图片处理              | 参考 `archive/wasm`，或未来 Processor **插件**（非恢复主路径）                       |
+| 自建 HTTP 图床 API                  | 参考 `archive/server` 或实现自定义 `StorageProvider`                                 |
 
 ---
 
@@ -127,3 +131,4 @@ wasm 构建（REF-405）。
 | 版本 | 日期       | 变更                                                |
 | ---- | ---------- | --------------------------------------------------- |
 | 1.1  | 2026-06-17 | REF-513：新增 `apps/mobile/` 归档说明与 CI 关系更新 |
+| 1.2  | 2026-06-17 | 新增 `refactor-plan/`：REFACTOR_PLAN 已完成项归档   |

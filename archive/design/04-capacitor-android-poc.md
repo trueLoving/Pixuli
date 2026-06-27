@@ -2,8 +2,8 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-509 #118 ✅；PoC 工程约定已并入
-> [06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)。  
-> **当前请读**：[06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md)
+> [06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md)。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md)
 > · 索引 [README.md](./README.md)
 
 > **Issue**：[#118](https://github.com/trueLoving/Pixuli/issues/118) ·

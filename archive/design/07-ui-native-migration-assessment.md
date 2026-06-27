@@ -2,7 +2,7 @@
 
 > **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
 > **归档原因**：REF-508 #119 ✅；RN 已迁入 `archive/apps/mobile/`（REF-513）。  
-> **当前请读**：[06-apps-pixuli-engineering.md](../../02-system-design/06-apps-pixuli-engineering.md) · 索引
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md) · 索引
 > [README.md](./README.md)
 
 > **Issue**：[#119](https://github.com/trueLoving/Pixuli/issues/119) ·

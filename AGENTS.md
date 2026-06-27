@@ -101,10 +101,10 @@ Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
 
 ## 延伸阅读
 
-| 主题       | 文档                                                                                                                                                                    |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 系统架构   | [01-system-design.md](docs/02-system-design/01-system-design.md)                                                                                                        |
-| 三端设计   | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md) · 归档 [02-three-platform-design](docs/archive/design/02-three-platform-design.md) |
-| TS/JS 策略 | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)                                                                          |
-| 版本发布   | [03-release-versioning.md](docs/01-product/03-release-versioning.md)                                                                                                    |
-| Backlog    | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                                |
+| 主题       | 文档                                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 系统架构   | [01-system-design.md](docs/02-system-design/01-system-design.md)                                                                                                   |
+| 三端设计   | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md) · 归档 [02-three-platform-design](archive/design/02-three-platform-design.md) |
+| TS/JS 策略 | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)                                                                     |
+| 版本发布   | [03-release-versioning.md](docs/01-product/03-release-versioning.md)                                                                                               |
+| Backlog    | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                           |

@@ -50,11 +50,11 @@
 
 ### 1.3 范围
 
-| 在范围内                                                      | 不在范围内（M3 P0）                                                                                                                                        |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub / Gitee 仓库图床的 list / upload / delete / 元数据更新 | Pixuli Server、MinIO、S3 等后端模式                                                                                                                        |
-| `StoragePluginRegistry` 注册与 `create(pluginId, ctx)`        | 插件热加载、远程下载第三方 provider                                                                                                                        |
-| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件，见 [archive/design/01 §第二部分](../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)） |
+| 在范围内                                                      | 不在范围内（M3 P0）                                                                                                                                           |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub / Gitee 仓库图床的 list / upload / delete / 元数据更新 | Pixuli Server、MinIO、S3 等后端模式                                                                                                                           |
+| `StoragePluginRegistry` 注册与 `create(pluginId, ctx)`        | 插件热加载、远程下载第三方 provider                                                                                                                           |
+| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件，见 [archive/design/01 §第二部分](../../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)） |
 
 ---
 

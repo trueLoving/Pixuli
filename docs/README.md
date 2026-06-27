@@ -48,8 +48,8 @@
 | [05-local-workspace-sync.md](02-system-design/05-local-workspace-sync.md)                 | 本地工作区 + 同步（REF-607）                   |
 | [06-apps-pixuli-engineering.md](02-system-design/06-apps-pixuli-engineering.md)           | **三端工程 SSOT**：目录、脚本、构建、Capacitor |
 
-历史 REF 快照（9 篇）见 **[archive/design/](archive/design/)**；索引
-[archive/design/README.md](archive/design/README.md)。
+历史 REF 快照（9 篇）见 **[archive/design/](../archive/design/)**；索引
+[archive/design/README.md](../archive/design/README.md)。
 
 ---
 
@@ -59,7 +59,7 @@
 | ------------------------------------------------------------------ | ----------------------------------- |
 | [04-backlog.md](04-backlog.md)                                     | 已移除 / Won't Do / 延后（REF-402） |
 | [03-business-design/01-readme.md](03-business-design/01-readme.md) | 业务设计暂缓                        |
-| [archive/design/](archive/design/)                                 | 系统设计归档（9 篇 + 索引）         |
+| [archive/design/](../archive/design/)                              | 系统设计归档（9 篇 + 索引）         |
 
 ---
 
@@ -88,8 +88,8 @@
 
 ## 修订
 
-| 日期       | 变更                                                    |
-| ---------- | ------------------------------------------------------- |
-| 2026-06-17 | **P2**：删除 stub；全目录统一 `序号-kebab-case.md` 命名 |
-| 2026-06-17 | **P0**：角色路径；归档索引；`00` 过时表述修正           |
-| 2026-06-06 | REF-407：角色索引、架构摘要                             |
+| 日期       | 变更                                                |
+| ---------- | --------------------------------------------------- |
+| 2026-06-17 | **P2**：`docs/archive` 迁入根目录 `archive/design/` |
+| 2026-06-17 | **P0**：角色路径；归档索引；`00` 过时表述修正       |
+| 2026-06-06 | REF-407：角色索引、架构摘要                         |

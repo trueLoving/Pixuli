@@ -283,7 +283,7 @@ graph LR
 | 三端工程与复用    | [06-apps-pixuli-engineering](./06-apps-pixuli-engineering.md) | Capacitor 三端、目录、脚本、构建（**SSOT**） |
 | 性能优化与监控    | [02-performance](./02-performance.md)                         | 虚拟滚动、懒加载、Worker、性能采集与面板     |
 | 存储插件体系      | [03-plugin-system](./03-plugin-system.md)                     | Registry、Provider 开发、M3 回归清单         |
-| 历史选型 / 矩阵   | [archive/design/](../archive/design/README.md)                | REF 交付快照（9 篇，只读）                   |
+| 历史选型 / 矩阵   | [archive/design/](../../archive/design/README.md)             | REF 交付快照（9 篇，只读）                   |
 | AI / Dify（延后） | [backlog §二](../04-backlog.md)                               | 分析/生成待功能开发后再补设计文档            |
 
 ---

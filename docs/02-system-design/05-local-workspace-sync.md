@@ -8,7 +8,7 @@
   - [REFACTOR_PLAN.md §1.8 / §10.7](../../REFACTOR_PLAN.md)
   - [04-three-platform-interaction-spec.md §2.2](../01-product/04-three-platform-interaction-spec.md)
   - [03-plugin-system.md](./03-plugin-system.md)
-  - [archive/design/05-cross-platform-sharing-matrix.md](../archive/design/05-cross-platform-sharing-matrix.md)（已归档）
+  - [archive/design/05-cross-platform-sharing-matrix.md](../../archive/design/05-cross-platform-sharing-matrix.md)（已归档）
 
 本文是 **#144** 的技术设计 SSOT：定义
 `LocalVault`、`SyncEngine`、`StorageProvider`
