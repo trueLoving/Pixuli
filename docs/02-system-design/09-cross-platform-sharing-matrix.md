@@ -1,11 +1,5 @@
 # 三端代码共享矩阵（现状盘点）
 
-> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
-> **归档原因**：REF-506 #116 ✅；2026-05-27 代码级盘点快照。  
-> **当前请读**：[15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md) ·
-> [00-System-Design.md](./00-System-Design.md) · 索引
-> [archive/design/README.md](../archive/design/README.md)
-
 - **文档版本**：1.0
 - **计划编号**：REF-506（M5）
 - **关联 Issue**：[#116](https://github.com/trueLoving/Pixuli/issues/116)
