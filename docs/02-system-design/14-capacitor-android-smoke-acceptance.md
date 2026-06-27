@@ -1,5 +1,11 @@
 # Capacitor Android 功能对齐验收与真机冒烟（REF-516 P6 / #166）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-516 P6 #166 ✅；工程签收见
+> [15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md)。  
+> **当前请读**：[15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md) · 索引
+> [archive/design/README.md](../archive/design/README.md)
+
 > **Issue**：[#166](https://github.com/trueLoving/Pixuli/issues/166) · 父 Issue
 > [#163](https://github.com/trueLoving/Pixuli/issues/163)  
 > **前置**：#165 ✅、#150 ✅、#119/#120/#141 ✅、#118 工程 ✅  

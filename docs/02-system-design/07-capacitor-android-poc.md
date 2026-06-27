@@ -1,5 +1,11 @@
 # Capacitor Android PoC（REF-509）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-509 #118 ✅；PoC 工程约定已并入
+> [15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md)。  
+> **当前请读**：[15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md) · 索引
+> [archive/design/README.md](../archive/design/README.md)
+
 > **Issue**：[#118](https://github.com/trueLoving/Pixuli/issues/118) ·
 > **范围**：仅 **Android**（不含 iOS）  
 > **路线**：方案 A — `apps/pixuli` 的 `build:web` 产物 + Capacitor WebView 壳  

@@ -1,5 +1,10 @@
 # @pixuli/ui L1/L2 与 RN 组件迁入评估（REF-508）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-508 #119 ✅；RN 已迁入 `archive/apps/mobile/`（REF-513）。  
+> **当前请读**：[15-apps-pixuli-engineering.md](./15-apps-pixuli-engineering.md) · 索引
+> [archive/design/README.md](../archive/design/README.md)
+
 > **Issue**：[#119](https://github.com/trueLoving/Pixuli/issues/119) ·
 > **计划编号**：REF-508  
 > **父追踪**：[REF-516 P4](https://github.com/trueLoving/Pixuli/issues/163) ·

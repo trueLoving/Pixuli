@@ -1,5 +1,11 @@
 # Mobile 功能对齐矩阵（RN ↔ pixuli ↔ Capacitor）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-516 P0 #164 ✅；产品交互 SSOT 已收敛至
+> [04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)。  
+> **当前请读**：[04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)
+> · 索引 [archive/design/README.md](../archive/design/README.md)
+
 - **文档版本**：1.0
 - **计划编号**：REF-516 P0
 - **关联 Issue**：[#164](https://github.com/trueLoving/Pixuli/issues/164)
