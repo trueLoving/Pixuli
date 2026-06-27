@@ -20,7 +20,7 @@ alwaysApply: true
 
 ## TypeScript
 
-- 业务代码一律 `.ts`/`.tsx`；例外见 `docs/02-system-design/05-TypeScript-JavaScript-Policy.md`
+- 业务代码一律 `.ts`/`.tsx`；例外见 `docs/02-system-design/04-typescript-javascript-policy.md`
 
 ## 改动原则
 

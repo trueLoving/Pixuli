@@ -3,7 +3,7 @@
 - **文档版本**：1.0
 - **创建日期**：2026-05-27
 - **维护**：REF-402；与
-  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[产品需求规格说明书](01-product/01-Product-Requirements-Specification.md)
+  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[产品需求规格说明书](01-product/01-product-requirements-specification.md)
   配套
 - **读者**：产品、开发、协作者；承接**不在当前主线**的需求，避免 PRD 与系统设计文档混杂历史项
 
@@ -26,7 +26,7 @@
 ## 一、已移除（M1，不恢复）
 
 > 摘要见
-> [01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
+> [01-product-requirements-specification.md](01-product/01-product-requirements-specification.md)
 > §二。
 
 | 能力                               | 说明                                 | 计划/Issue  |
@@ -44,7 +44,7 @@
 
 **历史业务/设计文档**：`docs/03-business-design/`
 早期草稿已移除；幻灯片/时间线等裁剪说明见本节上表与
-[03-business-design/README.md](03-business-design/README.md)。
+[03-business-design/01-readme.md](03-business-design/01-readme.md)。
 
 ---
 
@@ -128,7 +128,7 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 | PWA           | F-PWA-04                     | 更新检测待完善                                           |
 
 完整列表见
-[01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md)
+[01-product-requirements-specification.md](01-product/01-product-requirements-specification.md)
 §4.10～§4.11；新能力优先挂 M5/M6 Issue 再改 PRD。
 
 ---
@@ -137,7 +137,7 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 | 项                                            | 说明                                                                                                                           |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 第三方图床 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [04-Plugin-System §第二部分](02-system-design/04-Plugin-System.md#第二部分-存储插件开发指南) |
+| 第三方图床 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [03-plugin-system §第二部分](02-system-design/03-plugin-system.md#第二部分-存储插件开发指南) |
 | 插件热加载 / 远程安装                         | REFACTOR_PLAN Backlog #102                                                                                                     |
 | 社区 MCP / Server 对接                        | 见 §三                                                                                                                         |
 
@@ -147,8 +147,8 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 | 文档                                                                                                       | 关系                      |
 | ---------------------------------------------------------------------------------------------------------- | ------------------------- |
-| [01-product/01-Product-Requirements-Specification.md](01-product/01-Product-Requirements-Specification.md) | 基线产品需求与范围        |
-| [01-product/02-Product-User-Manual.md](01-product/02-Product-User-Manual.md)                               | 产品使用手册（Wiki 源稿） |
+| [01-product/01-product-requirements-specification.md](01-product/01-product-requirements-specification.md) | 基线产品需求与范围        |
+| [01-product/02-product-user-manual.md](01-product/02-product-user-manual.md)                               | 产品使用手册（Wiki 源稿） |
 | [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                    | 里程碑与 Issue 追踪       |
 | [docs/README.md](README.md)                                                                                | 文档索引                  |
 

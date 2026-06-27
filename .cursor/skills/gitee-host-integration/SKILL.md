@@ -57,7 +57,7 @@ pnpm dev:desktop        # smoke packaged proxy + preload
 
 ## Docs
 
-- `docs/02-system-design/05-TypeScript-JavaScript-Policy.md` §三、§四
-- `docs/02-system-design/04-Plugin-System.md` (REF-313)
-- [06-Plugin-Host-Integration.md](../../docs/02-system-design/06-Plugin-Host-Integration.md)
-  (REF-411 ✅)
+- `docs/02-system-design/04-typescript-javascript-policy.md` §三、§四
+- `docs/02-system-design/03-plugin-system.md` (REF-313)
+- [03-plugin-host-integration.md](../../archive/design/03-plugin-host-integration.md)（已归档）(REF-411
+  ✅)

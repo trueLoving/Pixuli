@@ -1,11 +1,12 @@
 # Pixuli 整体系统设计
 
-> **最后核对**：2026-06-06 · 适用分支 `main` · REF-407  
+> **最后核对**：2026-06-17 · 适用分支 `main` · REF-407 / 文档 P0  
 > **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/ui` +
-> `@pixuli/provider-*`；`packages/common`、主路径WASM、`server/`
-> 已归档。官方不提供 NestJS
+> `@pixuli/provider-*`；`packages/common`、主路径 WASM、`server/`
+> 已归档。Mobile 由 **`apps/pixuli` + Capacitor Android** 交付（非 Expo
+> RN）。官方不提供 NestJS
 > Server。图床主界面为**网格/列表**（幻灯片/时间线已移除，见
-> [backlog](../backlog.md)）。
+> [backlog](../04-backlog.md)）。
 
 ## 目录
 
@@ -68,13 +69,13 @@
 
 ### 2.2 前端与多端术语
 
-| 术语           | 英文              | 说明                                                                      |
-| -------------- | ----------------- | ------------------------------------------------------------------------- |
-| **Web 端**     | Web               | 基于 Vite + React，运行在浏览器中的 Web 应用，支持 PWA                    |
-| **Desktop 端** | Desktop           | 基于 Electron + React 的桌面应用，与 Web 共享同一套前端代码与 Vite 构建   |
-| **Mobile 端**  | Mobile            | 基于 React Native + Expo 的移动应用，使用 RN 组件与原生能力               |
-| **仓库源**     | Repository Source | 用户配置的 GitHub 或 Gitee 仓库，作为当前图片存储的「来源」               |
-| **当前源**     | Current Source    | 用户选中的、用于读写图片的仓库配置（owner、repo、branch、path、token 等） |
+| 术语           | 英文              | 说明                                                                                         |
+| -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
+| **Web 端**     | Web               | 基于 Vite + React，运行在浏览器中的 Web 应用，支持 PWA                                       |
+| **Desktop 端** | Desktop           | 基于 Electron + React 的桌面应用，与 Web 共享同一套前端代码与 Vite 构建                      |
+| **Mobile 端**  | Mobile            | **`apps/pixuli` + Capacitor Android**（与 Web 同一套 UI）；归档 RN 见 `archive/apps/mobile/` |
+| **仓库源**     | Repository Source | 用户配置的 GitHub 或 Gitee 仓库，作为当前图片存储的「来源」                                  |
+| **当前源**     | Current Source    | 用户选中的、用于读写图片的仓库配置（owner、repo、branch、path、token 等）                    |
 
 ### 2.3 图片处理术语
 
@@ -88,11 +89,11 @@
 
 ### 2.4 服务与部署术语
 
-| 术语              | 英文           | 说明                                                                                     |
-| ----------------- | -------------- | ---------------------------------------------------------------------------------------- |
-| **Pixuli Server** | Pixuli Server  | 已归档 NestJS 后端（`archive/server/`），**非官方交付**；见 [backlog §三](../backlog.md) |
-| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                       |
-| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署   |
+| 术语              | 英文           | 说明                                                                                        |
+| ----------------- | -------------- | ------------------------------------------------------------------------------------------- |
+| **Pixuli Server** | Pixuli Server  | 已归档 NestJS 后端（`archive/server/`），**非官方交付**；见 [backlog §三](../04-backlog.md) |
+| **Dify**          | Dify           | 开源 LLM 应用开发平台，通过工作流 API 实现图片分析、图片生成等能力                          |
+| **制品**          | Build Artifact | 构建产物（如 Web 的 dist/、Desktop 的 Electron 包、Mobile 的 APK/IPA），用于发布或部署      |
 
 ---
 
@@ -233,10 +234,10 @@ graph LR
 
 ### 5.1 图片与元数据存储模式
 
-| 模式              | 说明                   | 数据所在                                                                    |
-| ----------------- | ---------------------- | --------------------------------------------------------------------------- |
-| **Git 仓库图床**  | **默认且唯一官方路径** | 图片与元数据存于用户配置的 GitHub/Gitee 仓库；经 `StorageProvider` 读写     |
-| **自建 HTTP API** | 非官方                 | 可实现自定义 Provider 或参考 `archive/server/`；见 [backlog](../backlog.md) |
+| 模式              | 说明                   | 数据所在                                                                       |
+| ----------------- | ---------------------- | ------------------------------------------------------------------------------ |
+| **Git 仓库图床**  | **默认且唯一官方路径** | 图片与元数据存于用户配置的 GitHub/Gitee 仓库；经 `StorageProvider` 读写        |
+| **自建 HTTP API** | 非官方                 | 可实现自定义 Provider 或参考 `archive/server/`；见 [backlog](../04-backlog.md) |
 
 ### 5.2 客户端配置与状态
 
@@ -262,28 +263,28 @@ graph LR
 
 ### 6.1 技术栈总览
 
-| 层级                    | 技术选型                       | 说明                                    |
-| ----------------------- | ------------------------------ | --------------------------------------- |
-| 前端框架                | React 19.x + TypeScript        | 三端统一技术栈                          |
-| 构建工具                | Vite                           | Web/Desktop 构建                        |
-| 桌面运行时              | Electron                       | 跨平台桌面，主进程可调 Node、WASM、HTTP |
-| 移动端                  | React Native + Expo            | 跨平台移动应用                          |
-| 状态管理                | Zustand                        | 轻量、与框架解耦                        |
-| 图片处理（Web/Desktop） | Rust (WASM)                    | 压缩、转换、基础编辑等                  |
-| 图片处理（Mobile）      | expo-image-manipulator         | 裁剪、缩放、格式等                      |
-| 图床默认                | GitHub API / Gitee API         | 仓库即图床                              |
-| 可选后端                | NestJS + Prisma + MySQL        | 图片与元数据、MinIO/本地存储            |
-| 可选 AI                 | Dify 工作流 / Ollama / Qwen 等 | 图片分析、图片生成                      |
+| 层级                    | 技术选型                       | 说明                                |
+| ----------------------- | ------------------------------ | ----------------------------------- |
+| 前端框架                | React 19.x + TypeScript        | 三端统一技术栈                      |
+| 构建工具                | Vite                           | Web/Desktop 构建                    |
+| 桌面运行时              | Electron                       | 跨平台桌面，主进程 Node 与本地能力  |
+| 移动端                  | Capacitor（Android）           | `apps/pixuli` Web 产物 + 原生壳     |
+| 状态管理                | Zustand                        | 轻量、与框架解耦                    |
+| 图片处理（Web/Desktop） | Canvas（`@pixuli/ui`）         | 压缩、转换等；WASM 已归档           |
+| 图片处理（Mobile）      | 同 Web（Capacitor WebView）    | 与 Desktop/Web 共用 UI 处理路径     |
+| 图床默认                | GitHub API / Gitee API         | 仓库即图床；经 StorageProvider 插件 |
+| 可选后端                | 无官方 Server                  | `archive/server/` 仅社区参考        |
+| 可选 AI                 | Dify 工作流 / Ollama / Qwen 等 | 图片分析、图片生成                  |
 
 ### 6.2 关键设计文档与能力对应
 
-| 能力域            | 设计文档                                                                          | 要点                                                       |
-| ----------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 三端能力共享      | [01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md) | 资源共享、图片处理契约、跨端日志（§第一～三部分）          |
-| 三端设计与复用    | [02-Three-Platform-Design](./02-Three-Platform-Design.md)                         | Web/Desktop/Mobile 架构选型与最大化代码复用（Capacitor A） |
-| 性能优化与监控    | [03-Performance](./03-Performance.md)                                             | 虚拟滚动、懒加载、Worker、性能采集与面板                   |
-| 存储插件体系      | [04-Plugin-System](./04-Plugin-System.md)                                         | Registry、Provider 开发、M3 回归清单                       |
-| AI / Dify（延后） | [backlog §二](../backlog.md)                                                      | 分析/生成待功能开发后再补设计文档                          |
+| 能力域            | 设计文档                                                      | 要点                                         |
+| ----------------- | ------------------------------------------------------------- | -------------------------------------------- |
+| 三端工程与复用    | [06-apps-pixuli-engineering](./06-apps-pixuli-engineering.md) | Capacitor 三端、目录、脚本、构建（**SSOT**） |
+| 性能优化与监控    | [02-performance](./02-performance.md)                         | 虚拟滚动、懒加载、Worker、性能采集与面板     |
+| 存储插件体系      | [03-plugin-system](./03-plugin-system.md)                     | Registry、Provider 开发、M3 回归清单         |
+| 历史选型 / 矩阵   | [archive/design/](../../archive/design/README.md)             | REF 交付快照（9 篇，只读）                   |
+| AI / Dify（延后） | [backlog §二](../04-backlog.md)                               | 分析/生成待功能开发后再补设计文档            |
 
 ---
 
@@ -291,17 +292,17 @@ graph LR
 
 ### 7.1 客户端制品形态
 
-| 端      | 构建产物                             | 发布方式                                       |
-| ------- | ------------------------------------ | ---------------------------------------------- |
-| Web     | 静态资源（如 `dist/`）               | 可部署至 Vercel、Nginx、任意静态托管；支持 PWA |
-| Desktop | Electron 安装包（Windows/macOS）     | GitHub Releases 提供 exe、dmg 等               |
-| Mobile  | Android APK、iOS IPA（或 Expo 渠道） | 应用商店或内部分发                             |
+| 端      | 构建产物                              | 发布方式                                       |
+| ------- | ------------------------------------- | ---------------------------------------------- |
+| Web     | 静态资源（如 `dist/`）                | 可部署至 Vercel、Nginx、任意静态托管；支持 PWA |
+| Desktop | Electron 安装包（Windows/macOS）      | GitHub Releases 提供 exe、dmg 等               |
+| Mobile  | Capacitor Android APK（`v*-android`） | GitHub Releases / CI（REF-515 #153）           |
 
-### 7.2 服务端部署（Pixuli Server）
+### 7.2 服务端部署（非官方）
 
-- **技术**：NestJS + Prisma + MySQL；存储为本地磁盘或 MinIO。
-- **部署方式**：与客户端解耦，可 Docker 部署或直接 Node 进程；环境变量配置数据库、存储类型、API
-  Key 等。
+- **官方态度**：不提供 NestJS Server 为一等公民；`archive/server/`
+  仅供社区自建参考。
+- 若需中心化 API，请实现自定义 `StorageProvider` 或 fork 归档 server。
 
 ### 7.3 构建与发布流程（概念）
 
@@ -335,11 +336,11 @@ flowchart LR
 | 文档/目录                        | 用途                                                                      |
 | -------------------------------- | ------------------------------------------------------------------------- |
 | [01-product](../01-product/)     | 产品需求（PRD）、使用教程等                                               |
-| [02-system-design](../README.md) | 架构与方案设计索引；本系统设计为 00-System-Design，与 01～04 专项设计并列 |
+| [02-system-design](../README.md) | 架构与方案设计索引；本系统设计为 01-system-design，与 01～04 专项设计并列 |
 
 ### 8.2 本系统设计与各文档的关系
 
-- **00-System-Design（本文）**：描述系统全貌、模块、数据流、技术栈与部署形态，不替代各专项设计，而是与之互补。
+- **01-system-design（本文）**：描述系统全貌、模块、数据流、技术栈与部署形态，不替代各专项设计，而是与之互补。
 - **01～04 专项设计**：在各自领域内细化（三端能力共享、三端设计、性能、插件体系）；实现时以 PRD 为需求来源、以专项设计为技术方案。
 - **CICD.md**：若 Pixuli 的 Web 静态站或 Pixuli
   Server 需要接入同一套 CI/CD，可按照 CICD 中的「项目契约」（build.sh、artifacts.yml、deploy.sh）与 Workflow 设计进行接入。
@@ -360,17 +361,17 @@ flowchart LR
 
 - **批量元数据编辑**：多选图片后统一改标签、描述等；见 M6 REF-604/605。
 - **布局与性能**：列数/瀑布流/虚拟列表等，见
-  [03-Performance](./03-Performance.md)。
+  [02-performance](./02-performance.md)。
 - **AI 能力**：自动打标、场景识别、OCR、文生图；设计文档待开发后补充，见
-  [backlog](../backlog.md) 与现有 Desktop `aiService`。
-- **官方 Server**：不在路线图；历史能力见 [backlog §三](../backlog.md)。
+  [backlog](../04-backlog.md) 与现有 Desktop `aiService`。
+- **官方 Server**：不在路线图；历史能力见 [backlog §三](../04-backlog.md)。
 
 ### 9.2 架构扩展原则
 
 - **新端或新入口**：优先复用 `@pixuli/core` + `@pixuli/ui`（或 Capacitor 套壳
   `apps/pixuli`）。
 - **新存储后端**：实现 `StorageProvider` 并注册到 `StoragePluginRegistry`（见
-  [04-Plugin-System §第二部分](./04-Plugin-System.md#第二部分-存储插件开发指南)）。
+  [03-plugin-system §第二部分](./03-plugin-system.md#第二部分-存储插件开发指南)）。
 - **新 AI 能力**：优先通过 Dify 工作流扩展；若需本地模型，在 Desktop 主进程或 Server 侧扩展，对前端暴露统一「分析/生成」抽象。
 
 ---
@@ -382,14 +383,13 @@ flowchart LR
 ```
 Pixuli/
 ├── apps/
-│   ├── pixuli/                    # Web + Desktop
-│   └── mobile/                    # Expo + React Native
+│   └── pixuli/                    # Web + Desktop + Mobile（Capacitor）
 ├── packages/
 │   ├── core/                      # @pixuli/core
 │   ├── ui/                        # @pixuli/ui
 │   └── plugin-provider-github|gitee/
 ├── docs/                          # PRD、系统设计、业务设计
-├── archive/                       # wasm、benchmark、server（非 workspace）
+├── archive/                       # wasm、benchmark、server、apps/mobile（非 workspace）
 ├── .github/workflows/
 ├── pnpm-workspace.yaml
 └── package.json
@@ -413,7 +413,7 @@ stateDiagram-v2
 ### 10.3 参考文档
 
 - [Pixuli README](../../README.md) - 项目介绍与快速开始
-- [产品需求规格说明书](../01-product/01-Product-Requirements-Specification.md)
+- [产品需求规格说明书](../01-product/01-product-requirements-specification.md)
 
 ### 10.4 相关文件清单
 

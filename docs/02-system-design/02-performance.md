@@ -38,7 +38,7 @@
 - 优化对象：列表渲染（虚拟滚动、懒加载、无限滚动）、数据处理（Worker/后台线程）、资源与代码分割。
 - 监控对象：渲染（FPS、渲染时间）、加载（首屏、资源）、内存、网络、交互响应。
 - 与
-  [01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md)（§第二、三部分）等配合使用。
+  [archive/design/01-three-platform-capability-sharing.md](../../archive/design/01-three-platform-capability-sharing.md)（§第二、三部分，已归档）等配合使用。
 
 ---
 
@@ -135,7 +135,7 @@ graph TB
 ### 4.5 资源优化
 
 - 图片：压缩、格式、尺寸（与
-  [01-Three-Platform-Capability-Sharing §第二部分](./01-Three-Platform-Capability-Sharing.md#第二部分-跨端图片处理)
+  [archive/design/01-three-platform-capability-sharing.md §第二部分](../../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)
   衔接）。
 - 代码分割与按需加载；关键资源预加载；缓存策略（Electron/Service
   Worker/AsyncStorage 等）。
@@ -215,10 +215,10 @@ graph TB
 
 - 大数据列表：虚拟列表初始节点数 &lt; 50，滚动 FPS &gt; 55。
 - 图片处理：单张 &lt; 200ms，批量吞吐与内存见
-  [01-Three-Platform-Capability-Sharing §第二部分](./01-Three-Platform-Capability-Sharing.md#第二部分-跨端图片处理)。
+  [archive/design/01-three-platform-capability-sharing.md §第二部分](../../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)。
 
 ### 8.2 相关文档
 
-- [00-System-Design - 整体系统设计](./00-System-Design.md)
-- [01-Three-Platform-Capability-Sharing §第二部分 - 跨端图片处理](./01-Three-Platform-Capability-Sharing.md#第二部分-跨端图片处理)
-- [01-Three-Platform-Capability-Sharing §第三部分 - 跨端日志](./01-Three-Platform-Capability-Sharing.md#第三部分-跨端日志)
+- [01-system-design - 整体系统设计](./01-system-design.md)
+- [01-three-platform-capability-sharing §第二部分 - 跨端图片处理](../../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)（已归档）
+- [01-three-platform-capability-sharing §第三部分 - 跨端日志](../../archive/design/01-three-platform-capability-sharing.md#第三部分-跨端日志)（已归档）

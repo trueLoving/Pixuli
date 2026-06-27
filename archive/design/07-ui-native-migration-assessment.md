@@ -1,11 +1,16 @@
 # @pixuli/ui L1/L2 与 RN 组件迁入评估（REF-508）
 
+> **文档状态**：📦 **已归档（只读快照）** · 2026-06-17  
+> **归档原因**：REF-508 #119 ✅；RN 已迁入 `archive/apps/mobile/`（REF-513）。  
+> **当前请读**：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md) · 索引
+> [README.md](./README.md)
+
 > **Issue**：[#119](https://github.com/trueLoving/Pixuli/issues/119) ·
 > **计划编号**：REF-508  
 > **父追踪**：[REF-516 P4](https://github.com/trueLoving/Pixuli/issues/163) ·
 > [里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)  
-> **关联**：[09-cross-platform-sharing-matrix.md](./09-cross-platform-sharing-matrix.md) §三 ·
-> [11-mobile-feature-parity-matrix.md](./11-mobile-feature-parity-matrix.md) §四
+> **关联**：[05-cross-platform-sharing-matrix.md](./05-cross-platform-sharing-matrix.md) §三 ·
+> [06-mobile-feature-parity-matrix.md](./06-mobile-feature-parity-matrix.md) §四
 
 ---
 
@@ -13,7 +18,7 @@
 
 | 项                           | 决议                                                                                                                                                            |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **现阶段工作**               | **仅功能对齐**：在 `apps/pixuli`（Capacitor）补齐与 Web/Desktop 一致的用户能力（见 [11-mobile-feature-parity-matrix.md](./11-mobile-feature-parity-matrix.md)） |
+| **现阶段工作**               | **仅功能对齐**：在 `apps/pixuli`（Capacitor）补齐与 Web/Desktop 一致的用户能力（见 [06-mobile-feature-parity-matrix.md](./06-mobile-feature-parity-matrix.md)） |
 | **Mobile 主路线**            | Capacitor 壳 + `@pixuli/ui` **web**；对齐验收以 pixuli 为准（#166）                                                                                             |
 | **RN `archive/apps/mobile`** | **已归档**；`components/`、stores、屏幕在 `archive/apps/mobile/` 只读参考                                                                                       |
 | `**@pixuli/ui/native`\*\*    | 仅被 RN 引用；Capacitor **零依赖**；随 #151 **与 RN 一并归档/删除**，不在过渡期单独演进                                                                         |
@@ -67,7 +72,7 @@ RN 列仅作归档对照；**不在 RN 侧做任何补齐**。
 ## 四、L3 能力（非 L2 组件，须插件）
 
 摘自
-[11-mobile-feature-parity-matrix.md §四](./11-mobile-feature-parity-matrix.md#四rn-独有能力决策表119-ref-508-输入)：
+[06-mobile-feature-parity-matrix.md §四](./06-mobile-feature-parity-matrix.md#四rn-独有能力决策表119-ref-508-输入)：
 
 | 能力                    | 决策                        | Issue   |
 | ----------------------- | --------------------------- | ------- |
@@ -127,10 +132,10 @@ components/ui/*              → RN 专属；归档后删除
 
 | Issue               | 引用本文                         |
 | ------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
-| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [13-capacitor-native-plugins.md](./13-capacitor-native-plugins.md)                  |
-| **#141** REF-511    | §四；Capacitor 上传链            | ✅ [13-capacitor-native-plugins.md §6](./13-capacitor-native-plugins.md)               |
+| **#120** REF-510    | §四；仅在 pixuli 接插件          | ✅ [08-capacitor-native-plugins.md](./08-capacitor-native-plugins.md)                  |
+| **#141** REF-511    | §四；Capacitor 上传链            | ✅ [08-capacitor-native-plugins.md §6](./08-capacitor-native-plugins.md)               |
 | **#151** REF-513    | §五 RN / `./native` **整体归档** |
-| **#166** REF-516 P6 | 冒烟以 pixuli 为准               | [14-capacitor-android-smoke-acceptance.md](./14-capacitor-android-smoke-acceptance.md) |
+| **#166** REF-516 P6 | 冒烟以 pixuli 为准               | [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md) |
 
 ---
 

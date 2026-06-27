@@ -162,7 +162,8 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 | **压缩** | `/compress` | 调整质量、格式（如 WebP）等 |
 | **转换** | `/convert`  | 图片格式转换                |
 
-> 幻灯片播放、时间线浏览等**已不在**当前产品中；见 [backlog.md](../backlog.md)。
+> 幻灯片播放、时间线浏览等**已不在**当前产品中；见
+> [04-backlog.md](../04-backlog.md)。
 
 ---
 
@@ -216,7 +217,7 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 - [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
 - [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki)（本手册发布副本）
 - [更新日志 / Releases](https://github.com/trueLoving/Pixuli/releases)
-- 产品规格：[01-Product-Requirements-Specification.md](01-Product-Requirements-Specification.md)
+- 产品规格：[01-product-requirements-specification.md](01-product-requirements-specification.md)
 - 协作者文档：[docs/README.md](../README.md)
 
 ---
@@ -228,7 +229,7 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 | 载体                                      | 读者     | 角色                                   |
 | ----------------------------------------- | -------- | -------------------------------------- |
 | **GitHub Wiki**                           | 终端用户 | **发布面**                             |
-| **本文件**（`02-Product-User-Manual.md`） | 同上     | **源稿（SSOT）**：PR 评审后同步至 Wiki |
+| **本文件**（`02-product-user-manual.md`） | 同上     | **源稿（SSOT）**：PR 评审后同步至 Wiki |
 | **`docs/` 技术/业务设计**                 | 开发     | 不整篇迁入 Wiki                        |
 
 **禁止**在 Wiki 单独维护与源稿长期分叉的第三份正文。
@@ -274,7 +275,7 @@ Home（首页）
    [仓库 README](https://github.com/trueLoving/Pixuli)、[Issues](https://github.com/trueLoving/Pixuli/issues)
 
 **不写**：幻灯片、时间线、照片墙、官方 NestJS Server（见
-[backlog.md](../backlog.md)）。
+[04-backlog.md](../04-backlog.md)）。
 
 ### A.5 同步流程
 
@@ -292,7 +293,7 @@ git clone https://github.com/trueLoving/Pixuli.wiki.git
 - [ ] Wiki 首页含三端入口与仓库链接
 - [ ] 非技术用户可按 Wiki 完成：添加源 + 上传至少一张图
 - [ ] 无已移除能力描述
-- [ ] 与 [产品需求规格说明书](01-Product-Requirements-Specification.md) 一致
+- [ ] 与 [产品需求规格说明书](01-product-requirements-specification.md) 一致
 
 ---
 

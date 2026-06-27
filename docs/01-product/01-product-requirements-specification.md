@@ -65,7 +65,7 @@
 ### 2.2 M1 展示裁剪（已从产品移除）
 
 以下能力在 **M1（REF-101～107）** 已从主应用移除，**不再作为需求验收项**。明细见
-[backlog.md](../backlog.md)（REF-402）。
+[04-backlog.md](../04-backlog.md)（REF-402）。
 
 | 已移除能力                       | 说明                                                            |
 | -------------------------------- | --------------------------------------------------------------- |
@@ -266,7 +266,7 @@ Pixuli/
 | F-BROWSE-04 | 全平台提供仓库源设置入口，支持 GitHub / Gitee 仓库的配置、切换、多源管理与设置页访问 | P0     | 全平台 | ✅        |
 
 > 原 F-BROWSE-04（侧栏含工具入口）、F-BROWSE-05（移动端图床）已合并为本条：工具导航归入§5.6；图床列表能力归入 F-BROWSE-01。幻灯片/时间线已移除，见
-> [backlog](../backlog.md)。
+> [backlog](../04-backlog.md)。
 
 ---
 
@@ -372,7 +372,7 @@ Pixuli/
 
 代表需求：F-WEB-DESK-01～17（布局优化、离线队列、自动更新、托盘、AI、性能边界等）。多数为 ⏳；Desktop
 L3 见 M5，体验见 M6。完整 ID 列表见历史 PRD 修订记录或
-[backlog.md](../backlog.md)。
+[04-backlog.md](../04-backlog.md)。
 
 ---
 
@@ -386,7 +386,7 @@ F-CRUD-C02；其余多为 ⏳。
 ### 5.12 官方服务端（已移出产品范围）
 
 Pixuli **官方不提供** NestJS Server。`server/` 已归档。客户端默认路径仅为
-**GitHub / Gitee 仓库插件**。社区/自建见 [backlog.md](../backlog.md)。
+**GitHub / Gitee 仓库插件**。社区/自建见 [04-backlog.md](../04-backlog.md)。
 
 ---
 
@@ -435,11 +435,11 @@ Pixuli **官方不提供** NestJS Server。`server/` 已归档。客户端默认
 
 ### 7.2 非官方扩展
 
-| 扩展方式               | 说明                                     |
-| ---------------------- | ---------------------------------------- |
-| 第三方 StorageProvider | 实现 Registry 契约后注册（REF-308）      |
-| 自建 HTTP API / Server | 非官方；记入 [backlog.md](../backlog.md) |
-| AI 分析                | Desktop 本地模型；产品化见 M6 REF-604    |
+| 扩展方式               | 说明                                           |
+| ---------------------- | ---------------------------------------------- |
+| 第三方 StorageProvider | 实现 Registry 契约后注册（REF-308）            |
+| 自建 HTTP API / Server | 非官方；记入 [04-backlog.md](../04-backlog.md) |
+| AI 分析                | Desktop 本地模型；产品化见 M6 REF-604          |
 
 ---
 
@@ -457,10 +457,10 @@ Pixuli **官方不提供** NestJS Server。`server/` 已归档。客户端默认
 
 | 文档                                                                    | 说明                                |
 | ----------------------------------------------------------------------- | ----------------------------------- |
-| [02-Product-User-Manual.md](02-Product-User-Manual.md)                  | 产品使用手册（Wiki 源稿）           |
-| [backlog.md](../backlog.md)                                             | 已移除/延后需求                     |
+| [02-product-user-manual.md](02-product-user-manual.md)                  | 产品使用手册（Wiki 源稿）           |
+| [04-backlog.md](../04-backlog.md)                                       | 已移除/延后需求                     |
 | [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)                              | 重构计划与 Issue                    |
-| [04-Plugin-System.md](../02-system-design/04-Plugin-System.md)          | 存储插件技术设计（Pixuli 插件体系） |
+| [03-plugin-system.md](../02-system-design/03-plugin-system.md)          | 存储插件技术设计（Pixuli 插件体系） |
 | [项目 README](https://github.com/trueLoving/Pixuli/blob/main/README.md) | 仓库概览                            |
 
 ### 9.2 修订历史

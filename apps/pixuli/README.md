@@ -3,7 +3,7 @@
 三端合一主应用（`pixuli-app`）：**Web（PWA）**、**Desktop（Electron）**、**Mobile（Capacitor
 Android）** 共用 `src/` 与 `@pixuli/ui`。
 
-工程约定与构建矩阵：[15-apps-pixuli-engineering.md](../../docs/02-system-design/15-apps-pixuli-engineering.md)（REF-514）
+工程约定与构建矩阵：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md)（REF-514）
 
 ---
 

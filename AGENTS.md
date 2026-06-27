@@ -45,9 +45,9 @@ APK；真机勿装 unsigned）
 | 注册官方插件 | `registerGitHubProvider` · `registerGiteeProvider`（各包 `/register` 子路径） |
 | 契约定义     | `@pixuli/core/plugins` — `StorageProvider`、`StoragePluginRegistry`           |
 
-详细设计：[docs/02-system-design/04-Plugin-System.md](docs/02-system-design/04-Plugin-System.md)
+详细设计：[docs/02-system-design/03-plugin-system.md](docs/02-system-design/03-plugin-system.md)
 
-三端工程（脚本/构建矩阵）：[15-apps-pixuli-engineering.md](docs/02-system-design/15-apps-pixuli-engineering.md)（REF-514）
+三端工程（脚本/构建矩阵）：[06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)（REF-514）
 
 ### Gitee 存储插件（`@pixuli/provider-gitee`）
 
@@ -60,7 +60,7 @@ Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
 ## 代码约束
 
 - **默认 TypeScript**；登记 JS 例外见
-  [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)
+  [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)
 - **包边界**：`core` ↛ `ui`；`provider-*` ↛ `ui`（REF-209 ESLint）
 - **范围控制**：只改 Issue/PR 相关文件；勿顺手重构无关代码
 
@@ -101,10 +101,10 @@ Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
 
 ## 延伸阅读
 
-| 主题       | 文档                                                                                           |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| 系统架构   | [00-System-Design.md](docs/02-system-design/00-System-Design.md)                               |
-| 三端设计   | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)               |
-| TS/JS 策略 | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md) |
-| 版本发布   | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)                           |
-| Backlog    | [docs/backlog.md](docs/backlog.md)                                                             |
+| 主题       | 文档                                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 系统架构   | [01-system-design.md](docs/02-system-design/01-system-design.md)                                                                                                   |
+| 三端设计   | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md) · 归档 [02-three-platform-design](archive/design/02-three-platform-design.md) |
+| TS/JS 策略 | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)                                                                     |
+| 版本发布   | [03-release-versioning.md](docs/01-product/03-release-versioning.md)                                                                                               |
+| Backlog    | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                           |

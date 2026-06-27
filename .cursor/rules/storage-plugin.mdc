@@ -35,5 +35,5 @@ packages/plugin-provider-{id}/src/
 
 ## 参考
 
-- `docs/02-system-design/04-Plugin-System.md` §第二部分
+- `docs/02-system-design/03-plugin-system.md` §第二部分
 - 单测：`packages/*/src/__tests__/register.test.ts`、`packages/core/src/plugins/__tests__/`
