@@ -278,13 +278,13 @@ graph LR
 
 ### 6.2 关键设计文档与能力对应
 
-| 能力域            | 设计文档                                                                          | 要点                                                       |
-| ----------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 三端能力共享      | [01-Three-Platform-Capability-Sharing](./01-Three-Platform-Capability-Sharing.md) | 资源共享、图片处理契约、跨端日志（§第一～三部分）          |
-| 三端设计与复用    | [02-Three-Platform-Design](./02-Three-Platform-Design.md)                         | Web/Desktop/Mobile 架构选型与最大化代码复用（Capacitor A） |
-| 性能优化与监控    | [03-Performance](./03-Performance.md)                                             | 虚拟滚动、懒加载、Worker、性能采集与面板                   |
-| 存储插件体系      | [04-Plugin-System](./04-Plugin-System.md)                                         | Registry、Provider 开发、M3 回归清单                       |
-| AI / Dify（延后） | [backlog §二](../backlog.md)                                                      | 分析/生成待功能开发后再补设计文档                          |
+| 能力域            | 设计文档                                                      | 要点                                              |
+| ----------------- | ------------------------------------------------------------- | ------------------------------------------------- |
+| 三端工程与复用    | [15-apps-pixuli-engineering](./15-apps-pixuli-engineering.md) | Capacitor 三端、目录、脚本、构建（**SSOT**）      |
+| 性能优化与监控    | [03-Performance](./03-Performance.md)                         | 虚拟滚动、懒加载、Worker、性能采集与面板          |
+| 存储插件体系      | [04-Plugin-System](./04-Plugin-System.md)                     | Registry、Provider 开发、M3 回归清单              |
+| 历史选型 / 矩阵   | [archive/design/](../archive/design/README.md)                | `01`/`02`/`06`～`14` 归档快照；原路径 stub 重定向 |
+| AI / Dify（延后） | [backlog §二](../backlog.md)                                  | 分析/生成待功能开发后再补设计文档                 |
 
 ---
 

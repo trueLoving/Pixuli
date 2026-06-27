@@ -3,7 +3,7 @@
 基于 React 的共享界面层：`exports["."]`
 面向 Web/Desktop/Capacitor。`exports["./native"]`
 仅服务待归档的 RN（#151 整体移除，见
-[12-ui-native-migration-assessment.md](../../docs/02-system-design/12-ui-native-migration-assessment.md)）。
+[12-ui-native-migration-assessment.md](../../docs/archive/design/12-ui-native-migration-assessment.md)（已归档））。
 
 ## 子路径导出（节选）
 

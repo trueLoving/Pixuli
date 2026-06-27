@@ -101,10 +101,10 @@ Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
 
 ## 延伸阅读
 
-| 主题       | 文档                                                                                           |
-| ---------- | ---------------------------------------------------------------------------------------------- |
-| 系统架构   | [00-System-Design.md](docs/02-system-design/00-System-Design.md)                               |
-| 三端设计   | [02-Three-Platform-Design.md](docs/02-system-design/02-Three-Platform-Design.md)               |
-| TS/JS 策略 | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md) |
-| 版本发布   | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)                           |
-| Backlog    | [docs/backlog.md](docs/backlog.md)                                                             |
+| 主题       | 文档                                                                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 系统架构   | [00-System-Design.md](docs/02-system-design/00-System-Design.md)                                                                                                        |
+| 三端设计   | [15-apps-pixuli-engineering.md](docs/02-system-design/15-apps-pixuli-engineering.md) · 归档 [02-Three-Platform-Design](docs/archive/design/02-Three-Platform-Design.md) |
+| TS/JS 策略 | [05-TypeScript-JavaScript-Policy.md](docs/02-system-design/05-TypeScript-JavaScript-Policy.md)                                                                          |
+| 版本发布   | [03-Release-Versioning.md](docs/01-product/03-Release-Versioning.md)                                                                                                    |
+| Backlog    | [docs/backlog.md](docs/backlog.md)                                                                                                                                      |
