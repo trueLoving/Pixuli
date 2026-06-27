@@ -1,10 +1,9 @@
 # Pixuli 整体系统设计
 
-> **最后核对**：2026-06-17 · 适用分支 `main` · REF-407 / 文档 P0  
+> **最后核对**：2026-06-06 · 适用分支 `main` · REF-407  
 > **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/ui` +
-> `@pixuli/provider-*`；`packages/common`、主路径 WASM、`server/`
-> 已归档。Mobile 由 **`apps/pixuli` + Capacitor Android** 交付（非 Expo
-> RN）。官方不提供 NestJS
+> `@pixuli/provider-*`；`packages/common`、主路径WASM、`server/`
+> 已归档。官方不提供 NestJS
 > Server。图床主界面为**网格/列表**（幻灯片/时间线已移除，见
 > [backlog](../backlog.md)）。
 
@@ -69,13 +68,13 @@
 
 ### 2.2 前端与多端术语
 
-| 术语           | 英文              | 说明                                                                                         |
-| -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
-| **Web 端**     | Web               | 基于 Vite + React，运行在浏览器中的 Web 应用，支持 PWA                                       |
-| **Desktop 端** | Desktop           | 基于 Electron + React 的桌面应用，与 Web 共享同一套前端代码与 Vite 构建                      |
-| **Mobile 端**  | Mobile            | **`apps/pixuli` + Capacitor Android**（与 Web 同一套 UI）；归档 RN 见 `archive/apps/mobile/` |
-| **仓库源**     | Repository Source | 用户配置的 GitHub 或 Gitee 仓库，作为当前图片存储的「来源」                                  |
-| **当前源**     | Current Source    | 用户选中的、用于读写图片的仓库配置（owner、repo、branch、path、token 等）                    |
+| 术语           | 英文              | 说明                                                                      |
+| -------------- | ----------------- | ------------------------------------------------------------------------- |
+| **Web 端**     | Web               | 基于 Vite + React，运行在浏览器中的 Web 应用，支持 PWA                    |
+| **Desktop 端** | Desktop           | 基于 Electron + React 的桌面应用，与 Web 共享同一套前端代码与 Vite 构建   |
+| **Mobile 端**  | Mobile            | 基于 React Native + Expo 的移动应用，使用 RN 组件与原生能力               |
+| **仓库源**     | Repository Source | 用户配置的 GitHub 或 Gitee 仓库，作为当前图片存储的「来源」               |
+| **当前源**     | Current Source    | 用户选中的、用于读写图片的仓库配置（owner、repo、branch、path、token 等） |
 
 ### 2.3 图片处理术语
 
@@ -263,18 +262,18 @@ graph LR
 
 ### 6.1 技术栈总览
 
-| 层级                    | 技术选型                       | 说明                                |
-| ----------------------- | ------------------------------ | ----------------------------------- |
-| 前端框架                | React 19.x + TypeScript        | 三端统一技术栈                      |
-| 构建工具                | Vite                           | Web/Desktop 构建                    |
-| 桌面运行时              | Electron                       | 跨平台桌面，主进程 Node 与本地能力  |
-| 移动端                  | Capacitor（Android）           | `apps/pixuli` Web 产物 + 原生壳     |
-| 状态管理                | Zustand                        | 轻量、与框架解耦                    |
-| 图片处理（Web/Desktop） | Canvas（`@pixuli/ui`）         | 压缩、转换等；WASM 已归档           |
-| 图片处理（Mobile）      | 同 Web（Capacitor WebView）    | 与 Desktop/Web 共用 UI 处理路径     |
-| 图床默认                | GitHub API / Gitee API         | 仓库即图床；经 StorageProvider 插件 |
-| 可选后端                | 无官方 Server                  | `archive/server/` 仅社区参考        |
-| 可选 AI                 | Dify 工作流 / Ollama / Qwen 等 | 图片分析、图片生成                  |
+| 层级                    | 技术选型                       | 说明                                    |
+| ----------------------- | ------------------------------ | --------------------------------------- |
+| 前端框架                | React 19.x + TypeScript        | 三端统一技术栈                          |
+| 构建工具                | Vite                           | Web/Desktop 构建                        |
+| 桌面运行时              | Electron                       | 跨平台桌面，主进程可调 Node、WASM、HTTP |
+| 移动端                  | React Native + Expo            | 跨平台移动应用                          |
+| 状态管理                | Zustand                        | 轻量、与框架解耦                        |
+| 图片处理（Web/Desktop） | Rust (WASM)                    | 压缩、转换、基础编辑等                  |
+| 图片处理（Mobile）      | expo-image-manipulator         | 裁剪、缩放、格式等                      |
+| 图床默认                | GitHub API / Gitee API         | 仓库即图床                              |
+| 可选后端                | NestJS + Prisma + MySQL        | 图片与元数据、MinIO/本地存储            |
+| 可选 AI                 | Dify 工作流 / Ollama / Qwen 等 | 图片分析、图片生成                      |
 
 ### 6.2 关键设计文档与能力对应
 
@@ -292,17 +291,17 @@ graph LR
 
 ### 7.1 客户端制品形态
 
-| 端      | 构建产物                              | 发布方式                                       |
-| ------- | ------------------------------------- | ---------------------------------------------- |
-| Web     | 静态资源（如 `dist/`）                | 可部署至 Vercel、Nginx、任意静态托管；支持 PWA |
-| Desktop | Electron 安装包（Windows/macOS）      | GitHub Releases 提供 exe、dmg 等               |
-| Mobile  | Capacitor Android APK（`v*-android`） | GitHub Releases / CI（REF-515 #153）           |
+| 端      | 构建产物                             | 发布方式                                       |
+| ------- | ------------------------------------ | ---------------------------------------------- |
+| Web     | 静态资源（如 `dist/`）               | 可部署至 Vercel、Nginx、任意静态托管；支持 PWA |
+| Desktop | Electron 安装包（Windows/macOS）     | GitHub Releases 提供 exe、dmg 等               |
+| Mobile  | Android APK、iOS IPA（或 Expo 渠道） | 应用商店或内部分发                             |
 
-### 7.2 服务端部署（非官方）
+### 7.2 服务端部署（Pixuli Server）
 
-- **官方态度**：不提供 NestJS Server 为一等公民；`archive/server/`
-  仅供社区自建参考。
-- 若需中心化 API，请实现自定义 `StorageProvider` 或 fork 归档 server。
+- **技术**：NestJS + Prisma + MySQL；存储为本地磁盘或 MinIO。
+- **部署方式**：与客户端解耦，可 Docker 部署或直接 Node 进程；环境变量配置数据库、存储类型、API
+  Key 等。
 
 ### 7.3 构建与发布流程（概念）
 
@@ -383,13 +382,14 @@ flowchart LR
 ```
 Pixuli/
 ├── apps/
-│   └── pixuli/                    # Web + Desktop + Mobile（Capacitor）
+│   ├── pixuli/                    # Web + Desktop
+│   └── mobile/                    # Expo + React Native
 ├── packages/
 │   ├── core/                      # @pixuli/core
 │   ├── ui/                        # @pixuli/ui
 │   └── plugin-provider-github|gitee/
 ├── docs/                          # PRD、系统设计、业务设计
-├── archive/                       # wasm、benchmark、server、apps/mobile（非 workspace）
+├── archive/                       # wasm、benchmark、server（非 workspace）
 ├── .github/workflows/
 ├── pnpm-workspace.yaml
 └── package.json
