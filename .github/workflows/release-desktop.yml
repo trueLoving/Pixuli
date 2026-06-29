@@ -107,6 +107,9 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
+      - name: 构建 workspace 包
+        run: pnpm build:packages
+
       - name: 构建桌面应用 (Windows x64)
         shell: bash
         run: |
@@ -164,6 +167,9 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
+      - name: 构建 workspace 包
+        run: pnpm build:packages
+
       - name: 构建桌面应用 (macOS x64)
         run: |
           cd apps/pixuli
@@ -219,6 +225,9 @@ jobs:
 
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
+
+      - name: 构建 workspace 包
+        run: pnpm build:packages
 
       - name: 构建桌面应用 (macOS ARM64)
         run: |

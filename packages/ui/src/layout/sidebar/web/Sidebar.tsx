@@ -202,20 +202,20 @@ const Sidebar: React.FC<SidebarProps> = ({
       menuKey: 'photos',
       icon: <FileText size={20} />,
       label: translate('sidebar.photos'),
-      menuItem: { type: 'photos' },
+      menuItem: { type: 'photos' as const },
       requiresConfig: true,
     },
     {
       menuKey: 'compress',
       icon: <Zap size={20} />,
       label: translate('sidebar.imageCompress'),
-      menuItem: { type: 'utility', tool: 'compress' },
+      menuItem: { type: 'utility' as const, tool: 'compress' as const },
     },
     {
       menuKey: 'convert',
       icon: <FileImage size={20} />,
       label: translate('sidebar.imageConvert'),
-      menuItem: { type: 'utility', tool: 'convert' },
+      menuItem: { type: 'utility' as const, tool: 'convert' as const },
     },
   ].filter(item => !TEMPORARILY_HIDDEN_MENU_KEYS.has(item.menuKey));
 

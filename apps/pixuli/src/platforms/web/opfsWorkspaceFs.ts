@@ -66,7 +66,7 @@ export async function opfsWriteFile(
   const { dir, name } = await resolveParentDir(workspaceId, relativePath, true);
   const handle = await dir.getFileHandle(name, { create: true });
   const writable = await handle.createWritable();
-  await writable.write(data);
+  await writable.write(data as BufferSource);
   await writable.close();
 }
 
@@ -127,7 +127,12 @@ async function walkDirectory(
     }
     if (handle.kind === 'directory') {
       if (recursive) {
-        await walkDirectory(handle, rel, true, results);
+        await walkDirectory(
+          handle as FileSystemDirectoryHandle,
+          rel,
+          true,
+          results,
+        );
       } else {
         results.push(rel);
       }

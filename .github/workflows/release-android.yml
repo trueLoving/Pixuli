@@ -1,0 +1,142 @@
+name: 发布 Pixuli Android
+
+# 仅 GitHub Actions 手动触发（workflow_dispatch）；不在 PR/push 上自动运行。
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '发布版本 (例如: 2.0.0)'
+        required: true
+        default: '2.0.0'
+      is-publish:
+        description: '是否创建 GitHub Release 并上传 APK（仅 release 构建）'
+        required: false
+        default: true
+        type: boolean
+      build-type:
+        description: '构建类型'
+        required: true
+        type: choice
+        options:
+          - release
+          - debug
+        default: release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: 构建 Android release APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: 提取版本号
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=v$VERSION-android" >> $GITHUB_OUTPUT
+
+      - name: 更新 apps/pixuli 版本号
+        run: |
+          cd apps/pixuli
+          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+            pnpm version "$TARGET_VERSION" --no-git-tag-version
+          fi
+          sed -i "s/versionName \".*\"/versionName \"$TARGET_VERSION\"/" android/app/build.gradle
+
+      - name: 配置 release 签名（可选 secrets）
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/pixuli/android/release.keystore
+          {
+            echo "storeFile=release.keystore"
+            echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+            echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}"
+            echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}"
+          } > apps/pixuli/android/keystore.properties
+
+      - name: 创建 debug keystore（无正式证书时的回退）
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        run: |
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkey -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -alias androiddebugkey -keypass android \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 构建 APK
+        run: |
+          if [ "${{ github.event.inputs.build-type }}" = "debug" ]; then
+            pnpm run build:android:debug
+          else
+            pnpm run build:android
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-android-${{ github.event.inputs.build-type }}-v${{ steps.version.outputs.VERSION }}
+          path: |
+            apps/pixuli/android/app/build/outputs/apk/release/app-release.apk
+            apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: 仅构建（不上传 Release）
+        if: ${{ github.event.inputs.is-publish == false || github.event.inputs.build-type == 'debug' }}
+        run: echo "未发布 Release（debug 构建或 is-publish=false），APK 见 artifacts"
+
+      - name: 创建 GitHub Release
+        if: ${{ github.event.inputs.is-publish == true && github.event.inputs.build-type == 'release' }}
+        run: |
+          TAG="${{ steps.version.outputs.TAG_VERSION }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG 已存在，跳过创建"
+          else
+            gh release create "$TAG" \
+              --title "Pixuli Android v${{ steps.version.outputs.VERSION }}" \
+              --notes "Capacitor Android release built from \`${{ github.ref_name }}\`. See CHANGELOG [Unreleased]."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 上传 APK 到 Release
+        if: ${{ github.event.inputs.is-publish == true && github.event.inputs.build-type == 'release' }}
+        run: |
+          gh release upload "${{ steps.version.outputs.TAG_VERSION }}" \
+            apps/pixuli/android/app/build/outputs/apk/release/app-release.apk \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

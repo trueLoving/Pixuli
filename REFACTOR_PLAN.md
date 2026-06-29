@@ -159,7 +159,7 @@ gh issue list --label refactor --state open --json number,title,state
 | REF-503 | [M5] Desktop 离线浏览与上传队列               | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜    |
 | REF-504 | [M5] Desktop 自动更新 electron-updater        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜    |
 | REF-505 | [M5] Desktop 系统托盘                         | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜    |
-| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK） | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ⬜    |
+| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK） | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ⏳    |
 | REF-516 | [三端融合] Mobile 功能对齐总览                | [#163](https://github.com/trueLoving/Pixuli/issues/163) | ⏳ P7 |
 
 > M5 已完成 9 项 + REF-507 ❌ 见

@@ -9,6 +9,7 @@
     "dev:android": "pnpm run --filter pixuli-app dev:android",
     "run:android": "pnpm run --filter pixuli-app run:android",
     "build:android": "pnpm run --filter pixuli-app build:android:release",
+    "build:android:debug": "pnpm run --filter pixuli-app build:android:debug",
     "build:android:sync": "pnpm run --filter pixuli-app build:android",
     "dev:desktop": "pnpm run --filter pixuli-app dev:desktop",
     "build:desktop": "pnpm run --filter pixuli-app build:desktop",
