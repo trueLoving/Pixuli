@@ -6,7 +6,6 @@ export interface StorageCapabilities {
   upload: boolean;
   delete: boolean;
   updateMetadata: boolean;
-  needsProxy?: boolean;
   maxUploadBytes?: number;
   /** REF-607：支持 syncPull / syncPush */
   sync?: boolean;

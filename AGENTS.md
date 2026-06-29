@@ -22,7 +22,7 @@ apps/pixuli/          Web + Desktop + Mobile/Capacitor（Vite + React + electron
 packages/core/        @pixuli/core — types, StoragePluginRegistry, platform
 packages/ui/          @pixuli/ui — web 入口（./native 已 deprecated，随 RN 归档）
 packages/plugin-provider-github/   @pixuli/provider-github
-packages/plugin-provider-gitee/    @pixuli/provider-gitee（含 proxy 子路径）
+packages/plugin-provider-gitee/    @pixuli/provider-gitee
 archive/              wasm, server, benchmark, apps/mobile（非 workspace，勿接入主构建）
 ```
 
@@ -51,11 +51,9 @@ APK；真机勿装 unsigned）
 
 ### Gitee 存储插件（`@pixuli/provider-gitee`）
 
-`apps/pixuli` **不再挂载**
-Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
-`src/storage/registerGiteeProvider.ts`（`useProxy: false`）。`@pixuli/provider-gitee`
-包内仍保留 `/proxy/*` 子路径供历史参考，**勿**在 Renderer 引入 `/proxy/node` 或
-`/proxy/server`（会拉入 `node:http`）。
+REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
+`src/storage/registerGiteeProvider.ts`；预览仅走本地工作区，复制链接使用
+`publicUrl` / `buildPublicUrl`。
 
 ## 代码约束
 
@@ -85,11 +83,10 @@ Gitee 图片 Host 代理（REF-607 本地工作区路线）；注册见
 
 ### Skills（`.cursor/skills/`）
 
-| Skill                      | 触发场景                                       | 路径                                                                                             |
-| -------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **storage-provider**       | 新增或修改 StorageProvider、register、manifest | [.cursor/skills/storage-provider/SKILL.md](.cursor/skills/storage-provider/SKILL.md)             |
-| **gitee-host-integration** | Gitee 图片代理、Vite/Electron/Vercel Host 集成 | [.cursor/skills/gitee-host-integration/SKILL.md](.cursor/skills/gitee-host-integration/SKILL.md) |
-| **ref-issue-pr**           | 处理 REF-\* Issue、开 PR、同步 REFACTOR_PLAN   | [.cursor/skills/ref-issue-pr/SKILL.md](.cursor/skills/ref-issue-pr/SKILL.md)                     |
+| Skill                | 触发场景                                       | 路径                                                                                 |
+| -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **storage-provider** | 新增或修改 StorageProvider、register、manifest | [.cursor/skills/storage-provider/SKILL.md](.cursor/skills/storage-provider/SKILL.md) |
+| **ref-issue-pr**     | 处理 REF-\* Issue、开 PR、同步 REFACTOR_PLAN   | [.cursor/skills/ref-issue-pr/SKILL.md](.cursor/skills/ref-issue-pr/SKILL.md)         |
 
 ### 何时更新 Agent/Skill
 

@@ -17,13 +17,12 @@ describe('registerGiteeProvider', () => {
     expect(provider.manifest.id).toBe('gitee');
   });
 
-  it('desktop 平台启用 Gitee 图片代理', () => {
+  it('getRawUrl 返回 Gitee 公网 raw 直链', () => {
     const registry = createStoragePluginRegistry();
     registerGiteeProvider(registry);
     const provider = registry.create('gitee', {
       platform: 'desktop',
       platformAdapter: {} as never,
-      giteeProxyBase: 'http://127.0.0.1:39281',
     });
     provider.configure({
       owner: 'o',
@@ -33,7 +32,7 @@ describe('registerGiteeProvider', () => {
       path: 'images',
     });
     expect(provider.getRawUrl('a.png')).toBe(
-      'http://127.0.0.1:39281/api/gitee-proxy/o/r/raw/main/images/a.png',
+      'https://gitee.com/o/r/raw/main/images/a.png',
     );
   });
 

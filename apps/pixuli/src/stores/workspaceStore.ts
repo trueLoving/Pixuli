@@ -235,14 +235,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   initialize: async () => {
-    try {
-      if (localStorage.getItem(WORKSPACE_MODE_KEY) === 'remote-only') {
-        localStorage.removeItem(WORKSPACE_MODE_KEY);
-      }
-    } catch {
-      // ignore
-    }
-
     if (!isWorkspaceAvailable()) {
       set({
         mode: 'unset',

@@ -9,7 +9,6 @@ import {
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import { ImageItem } from '@pixuli/core/types';
-import { getRealGiteeUrl } from '@pixuli/provider-gitee/proxy/url';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {
@@ -100,8 +99,10 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     return translate('image.grid.dimensionsUnknown');
   };
 
+  const publicUrl = image.publicUrl || image.githubUrl || image.url;
+
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
-    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
+    const realUrl = type === 'url' ? publicUrl : url;
     if (onCopyUrl) {
       await onCopyUrl(realUrl, type);
     } else {
@@ -114,7 +115,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   };
 
   const handleOpenUrl = (url: string) => {
-    const realUrl = getRealGiteeUrl(url);
+    const realUrl = publicUrl;
     if (onOpenUrl) {
       onOpenUrl(realUrl);
     } else {

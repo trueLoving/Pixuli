@@ -1,30 +1,20 @@
 ---
-description: Electron 桌面与 Vite Host 集成：main/preload、Gitee 代理、禁止 Renderer 打包 Node
-globs: apps/pixuli/electron/**,apps/pixuli/plugins/**,apps/pixuli/api/**,apps/pixuli/vite.config.ts
+description: Electron 桌面：main/preload 进程边界与 Vite 配置
+globs: apps/pixuli/electron/**,apps/pixuli/vite.config.ts
 alwaysApply: false
 ---
 
-# Electron & Desktop Host
+# Electron & Desktop
 
 ## 进程边界
 
-- **Main**：`electron/main/` — `registerHostIntegrations(..., electronMain)`
-- **Preload**：`electron/preload/` — `registerHostIntegrations(..., electronPreload)` 暴露 `giteeProxyBase`
-- **Renderer**：普通 React；**禁止** `node:http`、`fs`、provider `/proxy/node|server` 静态 import
+- **Main**：`electron/main/` — IPC、工作区、AI 等服务
+- **Preload**：`electron/preload/` — `contextBridge` 暴露 `workspaceAPI` 等
+- **Renderer**：普通 React；**禁止** `node:http`、`fs` 等 Node 内置模块
 
-## Gitee 代理（三宿主）
+## Vite
 
-| 环境 | 集成点 |
-| --- | --- |
-| Web dev | `storageHostVitePlugin()` — manifest `viteDevServer` → `@pixuli/provider-gitee/proxy/vite`（dist） |
-| Web 生产 | `api/gitee-proxy.entry.ts` → `pnpm build:vercel-api` → `api/gitee-proxy.js` |
-| Desktop 打包 | manifest `electronMain` / `electronPreload` → `host/electron` |
-
-`vite.config.ts`：Renderer `resolve.conditions` 含 `development`；SSR 走 `dist`（REF-416）。勿 `ssr.noExternal` workspace 包回退源码。
-
-## 常量
-
-- 代理路径：`@pixuli/provider-gitee/proxy/constants`（登记 `.js`）；包内用相对 `./constants.js`
+`vite.config.ts`：Renderer `resolve.conditions` 含 `development`；SSR 走 `dist`（REF-416）。
 
 ## 桌面开发
 

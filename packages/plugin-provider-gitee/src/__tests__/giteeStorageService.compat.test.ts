@@ -17,16 +17,13 @@ describe('GiteeStorageService（兼容层）', () => {
       ]),
     );
 
-    const service = new GiteeStorageService(
-      {
-        owner: 'o',
-        repo: 'r',
-        branch: 'main',
-        token: 't',
-        path: 'images',
-      },
-      { useProxy: false },
-    );
+    const service = new GiteeStorageService({
+      owner: 'o',
+      repo: 'r',
+      branch: 'main',
+      token: 't',
+      path: 'images',
+    });
 
     const list = await service.getImageList();
     expect(list).toHaveLength(1);

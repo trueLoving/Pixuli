@@ -10,29 +10,7 @@ export const giteeManifest: StoragePluginManifest = {
     upload: true,
     delete: true,
     updateMetadata: true,
-    needsProxy: true,
     sync: true,
+    publicUrl: true,
   },
-  hostIntegrations: [
-    {
-      kind: 'viteDevServer',
-      module: '@pixuli/provider-gitee/proxy/vite',
-      exportName: 'viteGiteeProxyPlugin',
-    },
-    {
-      kind: 'electronMain',
-      module: '@pixuli/provider-gitee/host/electron',
-      exportName: 'setupGiteeElectronMainHost',
-    },
-    {
-      kind: 'electronPreload',
-      module: '@pixuli/provider-gitee/host/electron',
-      exportName: 'exposeGiteeElectronPreload',
-    },
-    {
-      kind: 'serverless',
-      module: '@pixuli/provider-gitee/proxy/server',
-      exportName: 'handleGiteeImageProxy',
-    },
-  ],
 };
