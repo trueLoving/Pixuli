@@ -54,7 +54,18 @@ apps/pixuli/
 | **其他**  | `sync:brand`                       | 品牌图从 archive 同步到 `brand/` 与各端资源    |
 
 根目录快捷方式：`pnpm dev:web`、`pnpm dev:desktop`、`pnpm dev:android`、`pnpm build:web`
-等（见根 `package.json`）。
+、`pnpm build:android` / `pnpm build:android:debug` 等（见根 `package.json`）。
+
+**CI 构建顺序**（与本地 release 一致）：
+
+```text
+build:packages  →  build:web  →  build:desktop / build:android(:debug|:release)
+```
+
+- PR / push：[ci.yml](../../.github/workflows/ci.yml) — `pnpm ci` +
+  `assembleDebug`
+- Android 发版：[release-android.yml](../../.github/workflows/release-android.yml)
+  — `v{semver}-android`
 
 **Workspace 包**：各 `dev:*` / `build:web` 前会执行
 `build:packages`（`@pixuli/core`、`@pixuli/provider-gitee`）。根目录 `pnpm ci` =
@@ -111,8 +122,9 @@ apps/pixuli/
 
 ## 8. 修订记录
 
-| 版本 | 日期       | 说明                                             |
-| ---- | ---------- | ------------------------------------------------ |
-| 1.2  | 2026-06-17 | #152 验收关闭；§7 follow-up                      |
-| 1.1  | 2026-06-17 | CI `build:packages` 门禁；文档清扫 RN 双工程表述 |
-| 1.0  | 2026-06-17 | REF-514 初稿：目录、脚本矩阵、平台检测收敛       |
+| 版本 | 日期       | 说明                                                                  |
+| ---- | ---------- | --------------------------------------------------------------------- |
+| 1.3  | 2026-06-18 | REF-515 #153：CI PR/push、Android debug job、release-android workflow |
+| 1.2  | 2026-06-17 | #152 验收关闭；§7 follow-up                                           |
+| 1.1  | 2026-06-17 | CI `build:packages` 门禁；文档清扫 RN 双工程表述                      |
+| 1.0  | 2026-06-17 | REF-514 初稿：目录、脚本矩阵、平台检测收敛                            |

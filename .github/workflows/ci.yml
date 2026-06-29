@@ -1,15 +1,21 @@
 name: CI
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   ci:
-    name: Vitest + Web/Desktop 构建
+    name: build:packages + lint + test + Web/Desktop
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
@@ -31,3 +37,43 @@ jobs:
 
       - name: 运行 CI（build:packages + Vitest + Web/Desktop 构建）
         run: pnpm run ci
+
+  android-debug:
+    name: Capacitor Android assembleDebug
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: 设置 JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: 设置 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 组装 debug APK（build:packages → build:web → cap sync → Gradle）
+        run: pnpm run build:android:debug
+
+      - name: 上传 debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-android-debug-apk
+          path: apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7

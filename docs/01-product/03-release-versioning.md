@@ -206,12 +206,12 @@ Mobile 同步 bump。
 
 ### 3.5 CI/CD 衔接
 
-| Workflow                                                           | 触发                | 产出                                                     | 与版本关系                                                                                    |
-| ------------------------------------------------------------------ | ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push           | **`build:packages`**、lint、test、build:web、desktop tsc | 不发版                                                                                        |
-| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch` | Win/mac 安装包；`v{input}-desktop` tag + Release         | 输入 version，写回 `apps/pixuli/package.json`                                                 |
-| Capacitor Android（#153）                                          | 待建 workflow       | `build:android:release` → APK；`v{semver}-android`       | 替代已删除的 `release-mobile.yml`（Expo RN）                                                  |
-| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch` | Docker 镜像 push                                         | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
+| Workflow                                                           | 触发                | 产出                                                                 | 与版本关系                                                                                    |
+| ------------------------------------------------------------------ | ------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push / manual  | **`build:packages`**、lint、test、Web/Desktop；**Android debug APK** | 不发版                                                                                        |
+| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch` | Win/mac 安装包；`v{input}-desktop` tag + Release                     | 输入 version，写回 `apps/pixuli/package.json`                                                 |
+| [release-android.yml](../../.github/workflows/release-android.yml) | `workflow_dispatch` | `build:android` → APK；`v{semver}-android` tag + Release             | 可选 secrets 正式签名；无 secrets 时用 debug 证书                                             |
+| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch` | Docker 镜像 push                                                     | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
 
 **Desktop 发版步骤（摘要）**：
 
@@ -225,8 +225,8 @@ Mobile 同步 bump。
 
 1. 确认 `apps/pixuli` 版本与 CHANGELOG；`pnpm build:android:release`
    本地或 CI 通过。
-2. Actions → Capacitor Android 发版 workflow（待 #153）→ 上传 APK。
-3. 确认 `v{version}-android` Release 含 APK。
+2. Actions →「发布 Pixuli Android」→ 填写 `version`、`is-publish=true`。
+3. 确认 `v{version}-android` Release 含 `app-release.apk`。
 
 **历史**：Expo RN 曾用 `release-mobile.yml` + `v*-mobile`；RN 已归档至
 `archive/apps/mobile`。
@@ -246,12 +246,12 @@ Mobile 同步 bump。
 | 相对 1.x 的 MAJOR    | **2.0.0** — M1 产品裁剪 + M3 存储插件等 Breaking        |
 | 三端产品版本号       | **统一 2.0.0**（源码已写入各 app）                      |
 | Desktop tag + 交付物 | `v2.0.0-desktop` — Win `.exe`、macOS x64 / arm64 `.dmg` |
-| Mobile tag + 交付物  | `v2.0.0-mobile` — Android `.apk`（**iOS 后续待定**）    |
+| Mobile tag + 交付物  | `v2.0.0-android` — Android `.apk`（**iOS 后续待定**）   |
 | Web tag + 交付物     | `v2.0.0-web` — 演示站部署 + Docker `pixuli-web:2.0.0`   |
 | 从 1.x 升级          | 1.x 用户须读 CHANGELOG Breaking；**无** 1.4.x 连续版本  |
 
 **后续版本示例**：发 **2.1.0** 时产品版本三端均为 2.1.0，并打齐
-`v2.1.0-desktop`、`v2.1.0-mobile`、`v2.1.0-web`。
+`v2.1.0-desktop`、`v2.1.0-android`、`v2.1.0-web`。
 
 ### 3.7 用户可见入口
 
@@ -289,10 +289,11 @@ Mobile 同步 bump。
 - [ ] Tag `v{semver}-desktop` 与附件命名正确
 - [ ] Release Notes 含 Breaking 与下载说明
 
-### Mobile
+### Mobile（Capacitor Android）
 
-- [ ] `release-mobile.yml`：Android 构建成功（iOS 未纳入前勿误发 ipa）
-- [ ] Tag `v{semver}-mobile` 与 APK 已上传
+- [ ] `release-android.yml`：`version`、`is-publish=true`；正式发版配置
+      `ANDROID_KEYSTORE_*` secrets（见 workflow 注释）
+- [ ] Tag `v{semver}-android` 与 APK 已上传
 
 ### Web
 
