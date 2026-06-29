@@ -24,5 +24,3 @@
 | REF-605 | [M6] 图片批处理：上传、删除、更新、查看                            | [#134](https://github.com/trueLoving/Pixuli/issues/134)                                                                  | ⬜ OPEN           |
 | REF-606 | [M6] 回收站机制：软删除与 30 天自动永久清理                        | [#140](https://github.com/trueLoving/Pixuli/issues/140)                                                                  | ⬜ OPEN           |
 | REF-607 | [M6] 本地工作区 + 远端同步与多形态 URL（Obsidian 式）              | [#144](https://github.com/trueLoving/Pixuli/issues/144)（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)） | ⏳ OPEN · P7 #173 |
-
-> **注**：[#151](https://github.com/trueLoving/Pixuli/issues/151)（REF-513）GitHub 仍 OPEN，未列入上表（计划内主体工作 ✅，关闭待 #153）。

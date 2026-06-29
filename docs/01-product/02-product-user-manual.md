@@ -126,11 +126,32 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 
 主导航：**图床**（`/photos`）· **压缩** · **转换** · **设置**。
 
-### 4.3 移动端（Mobile）
+### 4.3 移动端（Mobile · Capacitor Android）
 
-1. 从 [Releases](https://github.com/trueLoving/Pixuli/releases) 安装 Android APK
-2. 底部 **设置** → **GitHub 配置** / **Gitee 配置**
-3. 填写并保存；在首页或顶部**切换当前源**
+当前 Mobile 由 **`apps/pixuli` + Capacitor**
+构建，与 Web/Desktop 共用同一套界面与能力。历史 Expo
+RN 版（`v*-mobile`）已归档，**请勿**再安装 `Pixuli_1.0.0.apk` 等 1.x RN 包。
+
+**安装 APK**
+
+1. 打开
+   [GitHub Releases](https://github.com/trueLoving/Pixuli/releases)，找到标题含
+   **`v{版本}-android`** 的 Release（例如 `Pixuli Android v2.0.0`）。
+2. 下载附件 **`app-release.apk`**（或 Release 说明中的 `Pixuli_{版本}.apk`）。
+3. 在 Android 设备上允许「安装未知来源应用」（各厂商设置路径略有不同）。
+4. 安装后打开 Pixuli；首次使用进入底部 **设置** → **GitHub 配置** /
+   **Gitee 配置**，填写并保存。
+5. 在 **图床** 页或顶部**切换当前源**，即可浏览与上传。
+
+**系统要求**：Android 5.0（API 21）及以上；iOS 尚未发布。
+
+**从 1.x RN 升级**：1.x
+Mobile 含已移除的幻灯片等能力，与 2.x 产品范围不一致；请卸载旧版后安装
+`v*-android` Release，并重新配置仓库源。详见
+[版本发布策略](./03-release-versioning.md) 与 [CHANGELOG](../../CHANGELOG.md)。
+
+**开发者本地调试**：仓库根目录 `pnpm dev:android`（模拟器/真机 + Live
+Reload）；见 [apps/pixuli/README.md](../../apps/pixuli/README.md)。
 
 ### 4.4 多仓库源
 
@@ -173,7 +194,7 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 | ----------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
 | **Web**     | [pixuli-web.vercel.app](https://pixuli-web.vercel.app/)                        | 支持 PWA 安装；无需安装包                    |
 | **Desktop** | [Releases](https://github.com/trueLoving/Pixuli/releases) 下载 `.exe` / `.dmg` | Windows 10/11、macOS 10.15+；与 Web 共用界面 |
-| **Mobile**  | Releases 下载 Android `.apk`                                                   | iOS 尚未发布                                 |
+| **Mobile**  | Releases 中 `v{版本}-android` 下载 `.apk`（Capacitor）                         | 勿装 1.x `v*-mobile` RN 包；iOS 尚未发布     |
 
 **界面差异**：Web/Desktop 侧栏导航一致；Mobile 为底部 Tab + 设置页。
 

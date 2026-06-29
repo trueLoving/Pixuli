@@ -2,15 +2,15 @@
 
 基于 React 的共享界面层：`exports["."]`
 面向 Web/Desktop/Capacitor。`exports["./native"]`
-仅服务待归档的 RN（#151 整体移除，见
-[07-ui-native-migration-assessment.md](../../archive/design/07-ui-native-migration-assessment.md)（已归档））。
+为历史 RN 子路径（`archive/apps/mobile` 已归档，#151）；Capacitor 不引用。见
+[07-ui-native-migration-assessment.md](../../archive/design/07-ui-native-migration-assessment.md)。
 
 ## 子路径导出（节选）
 
 | 入口                                 | 内容                                                                       |
 | ------------------------------------ | -------------------------------------------------------------------------- |
 | `@pixuli/ui`                         | Web：Image/Layout/Config、primitives、toast、keyboardShortcuts、locales 等 |
-| `@pixuli/ui/native`                  | RN 用（**不维护**；#151 与 `apps/mobile` 一并归档）                        |
+| `@pixuli/ui/native`                  | RN 用（**已归档**，仅 `archive/apps/mobile` 只读参考）                     |
 | `@pixuli/ui/locales`                 | 聚合语言包                                                                 |
 | `@pixuli/ui/services/imageProcessor` | Web Canvas 图片压缩/转换                                                   |
 

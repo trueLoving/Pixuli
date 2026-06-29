@@ -32,6 +32,7 @@ description: >-
 ## Test plan
 
 - [ ] pnpm test
+- [ ] pnpm run ci
 - [ ] …
 
 Fixes #<issue> # only if PR fully closes the issue Related: REF-<id>

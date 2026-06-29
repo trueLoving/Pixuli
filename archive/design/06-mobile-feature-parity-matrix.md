@@ -208,7 +208,7 @@
 
 | Issue            | 范围                   | 来自本文                                                                       | 决策摘要                                                                                                                   |
 | ---------------- | ---------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| **#119** REF-508 | RN 组件不必迁入清单    | [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md) | ✅ 功能对齐在 pixuli；RN 待 #151 整体归档                                                                                  |
+| **#119** REF-508 | RN 组件不必迁入清单    | [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md) | ✅ 功能对齐在 pixuli；RN 已归档（#151）                                                                                    |
 | **#120** REF-510 | Capacitor 原生插件选型 | J4-03, J4-04, J5-05, L3-05                                                     | Camera、Filesystem、Share；`isNativeMobile()` 分支 — ✅ [08-capacitor-native-plugins.md](./08-capacitor-native-plugins.md) |
 | **#141** REF-511 | 拍照元数据             | J4-08                                                                          | ✅ EXIF/GPS/localPath → `captureMetadata` / sidecar `capture`                                                              |
 
@@ -226,17 +226,17 @@
 对照 [Issue #151](https://github.com/trueLoving/Pixuli/issues/151)
 归档前置条件：
 
-| #151 Checklist 项      | 勾选依据（本文）                                                                                                                                          | 当前状态                                 |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| #118 真机冒烟          | [04-capacitor-android-poc.md §六](./04-capacitor-android-poc.md) · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md) | ⏳ **#166 签收中**（待真机填表）         |
-| #120 相机/相册 L3      | §四、§六 #120                                                                                                                                             | ✅ 代码已交付（真机确认 → #166 §2.2）    |
-| #141 拍照元数据        | J4-08                                                                                                                                                     | ✅ **#141 已交付**（列表反序列化待后续） |
-| #119 仅 RN 能力决策    | §四 + [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md)                                                                      | ✅ **#119 已交付**                       |
-| ~~#117~~ store 覆盖 RN | REF-507 取消；pixuli store 为三端 SSOT                                                                                                                    | ✅ **已满足**（#117 已关闭）             |
-| Wiki / APK 发版说明    | REF-515 #153                                                                                                                                              | ⏳                                       |
-| **功能对齐矩阵 SSOT**  | **本文档**                                                                                                                                                | ✅ **#164 交付**                         |
-| P3 业务补齐完成        | §五 #165                                                                                                                                                  | ✅                                       |
-| P6 验收冒烟            | #166 · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md)                                                             | ⏳ 待真机                                |
+| #151 Checklist 项      | 勾选依据（本文）                                                                                                                                               | 当前状态                                 |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| #118 真机冒烟          | [04-capacitor-android-poc.md §六](./04-capacitor-android-poc.md) · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md)      | ⏳ **#166 签收中**（待真机填表）         |
+| #120 相机/相册 L3      | §四、§六 #120                                                                                                                                                  | ✅ 代码已交付（真机确认 → #166 §2.2）    |
+| #141 拍照元数据        | J4-08                                                                                                                                                          | ✅ **#141 已交付**（列表反序列化待后续） |
+| #119 仅 RN 能力决策    | §四 + [07-ui-native-migration-assessment.md](./07-ui-native-migration-assessment.md)                                                                           | ✅ **#119 已交付**                       |
+| ~~#117~~ store 覆盖 RN | REF-507 取消；pixuli store 为三端 SSOT                                                                                                                         | ✅ **已满足**（#117 已关闭）             |
+| Wiki / APK 发版说明    | [02-product-user-manual.md §4.3](../../docs/01-product/02-product-user-manual.md) · [03-release-versioning.md](../../docs/01-product/03-release-versioning.md) | ✅                                       |
+| **功能对齐矩阵 SSOT**  | **本文档**                                                                                                                                                     | ✅ **#164 交付**                         |
+| P3 业务补齐完成        | §五 #165                                                                                                                                                       | ✅                                       |
+| P6 验收冒烟            | #166 · [09-capacitor-android-smoke-acceptance.md](./09-capacitor-android-smoke-acceptance.md)                                                                  | ⏳ 待真机                                |
 
 `REFACTOR_PLAN.md` §1.9.2 归档 Checklist 与上表同步。
 

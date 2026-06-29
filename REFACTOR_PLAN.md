@@ -131,8 +131,7 @@ gh issue list --label refactor --state open --json number,title,state
 ```
 
 **最近同步**：2026-06-17 — 进行中 18 条均为 GitHub `OPEN`；#126 曾因旧 Host 集成
-`CLOSED`，已重开以匹配 Obsidian 重设计范围；#151（REF-513）仍
-`OPEN`（主体已归档，Wiki 待 #153）。
+`CLOSED`，已重开以匹配 Obsidian 重设计范围；#151（REF-513）文档收尾待 PR 合并关单。
 
 ### M4 — 文档与 CI（剩余 5 项）
 
@@ -162,10 +161,9 @@ gh issue list --label refactor --state open --json number,title,state
 | REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK） | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ⏳    |
 | REF-516 | [三端融合] Mobile 功能对齐总览                | [#163](https://github.com/trueLoving/Pixuli/issues/163) | ⏳ P7 |
 
-> M5 已完成 9 项 + REF-507 ❌ 见
-> [M5-completed.md](archive/refactor-plan/M5-completed.md)。GitHub
-> [#151](https://github.com/trueLoving/Pixuli/issues/151)（REF-513）仍
-> **OPEN**（RN 已归档，关闭条件含 #153 Wiki）。
+> M5 已完成 10 项 + REF-507 ❌ 见
+> [M5-completed.md](archive/refactor-plan/M5-completed.md)（含 REF-513 /
+> #151）。
 
 #### REF-516 分阶段（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）
 
