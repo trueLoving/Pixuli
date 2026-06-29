@@ -35,20 +35,13 @@ description: >-
 storageRegistry.create(pluginId, {
   platform: 'web' | 'desktop' | 'mobile',
   platformAdapter: new DefaultPlatformAdapter(),
-  // Gitee Web/Desktop only:
-  ...getGiteeProviderContextFields(__IS_WEB__),
 });
 ```
 
 ## Gitee-specific
 
-- `registerGiteeProvider` passes `proxyBaseUrl: ctx.giteeProxyBase` into
-  provider
-- Proxy URL building: `@pixuli/provider-gitee/proxy/url` in provider
-  implementation
-- Host 集成：在 `manifest.hostIntegrations` 声明；实现见
-  `archive/design/03-plugin-host-integration.md`（已归档）与 skill
-  `gitee-host-integration`
+- REF-607 P7：无 Host 图片代理；`buildPublicUrl` / `getRawUrl` 返回公网 raw 直链
+- 复制链接：`image.publicUrl || image.githubUrl || image.url`
 
 ## Verify
 

@@ -21,54 +21,6 @@
       "development": "./src/manifest.ts",
       "types": "./dist/manifest.d.ts",
       "import": "./dist/manifest.js"
-    },
-    "./host/electron": {
-      "development": "./src/host/electron.ts",
-      "types": "./dist/host/electron.d.ts",
-      "import": "./dist/host/electron.js"
-    },
-    "./proxy": {
-      "development": "./src/proxy/index.ts",
-      "types": "./dist/proxy/index.d.ts",
-      "import": "./dist/proxy/index.js"
-    },
-    "./proxy/client": {
-      "development": "./src/proxy/client.ts",
-      "types": "./dist/proxy/client.d.ts",
-      "import": "./dist/proxy/client.js"
-    },
-    "./proxy/url": {
-      "development": "./src/proxy/url.ts",
-      "types": "./dist/proxy/url.d.ts",
-      "import": "./dist/proxy/url.js"
-    },
-    "./proxy/node": {
-      "development": "./src/proxy/giteeProxyServer.ts",
-      "types": "./dist/proxy/node.d.ts",
-      "import": "./dist/proxy/node.js"
-    },
-    "./proxy/vite": {
-      "development": "./src/proxy/viteGiteeProxyPlugin.ts",
-      "types": "./dist/proxy/vite.d.ts",
-      "import": "./dist/proxy/vite.js"
-    },
-    "./proxy/server": {
-      "development": "./src/proxy/giteeImageProxy.ts",
-      "types": "./dist/proxy/server.d.ts",
-      "import": "./dist/proxy/server.js"
-    },
-    "./proxy/constants": {
-      "development": "./src/proxy/constants.js",
-      "types": "./src/proxy/constants.d.ts",
-      "import": "./dist/proxy/constants.js"
-    }
-  },
-  "peerDependencies": {
-    "vite": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "vite": {
-      "optional": true
     }
   },
   "scripts": {
@@ -85,7 +37,6 @@
     "jsdom": "^25.0.1",
     "tsup": "^8.5.0",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0",
     "vitest": "^2.1.8"
   }
 }

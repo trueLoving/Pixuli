@@ -21,21 +21,15 @@ export class GiteeStorageService {
     options: {
       platform: 'web' | 'desktop' | 'mobile';
       platformAdapter?: PlatformAdapter;
-      useProxy?: boolean;
     } = {
       platform: 'web',
       platformAdapter: new DefaultPlatformAdapter(),
-      useProxy: false,
     },
   ) {
-    this.provider = new GiteeStorageProvider(
-      {
-        platform: options.platform ?? 'web',
-        platformAdapter:
-          options.platformAdapter ?? new DefaultPlatformAdapter(),
-      },
-      { useProxy: options.useProxy ?? false },
-    );
+    this.provider = new GiteeStorageProvider({
+      platform: options.platform ?? 'web',
+      platformAdapter: options.platformAdapter ?? new DefaultPlatformAdapter(),
+    });
     this.provider.configure(config as unknown as StorageProviderConfig);
   }
 

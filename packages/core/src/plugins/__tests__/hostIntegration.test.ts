@@ -15,18 +15,19 @@ const giteeLikeManifest: StoragePluginManifest = {
     upload: true,
     delete: true,
     updateMetadata: true,
-    needsProxy: true,
+    sync: true,
+    publicUrl: true,
   },
   hostIntegrations: [
     {
       kind: 'viteDevServer',
-      module: '@pixuli/provider-gitee/proxy/vite',
-      exportName: 'viteGiteeProxyPlugin',
+      module: 'virtual:gitee-vite-host',
+      exportName: 'viteHostPlugin',
     },
     {
       kind: 'electronMain',
-      module: '@pixuli/provider-gitee/host/electron',
-      exportName: 'setupGiteeElectronMainHost',
+      module: 'virtual:gitee-electron-host',
+      exportName: 'setupElectronMainHost',
     },
   ],
 };

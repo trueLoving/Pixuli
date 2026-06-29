@@ -31,4 +31,4 @@
 | P4   | 应用切换：`imageStore` local 模式与迁移向导           | [#159](https://github.com/trueLoving/Pixuli/issues/159) | ✅   |
 | P5   | Web：OPFS/IDB 虚拟工作区适配器                        | [#160](https://github.com/trueLoving/Pixuli/issues/160) | ✅   |
 | P6   | Mobile：SAF / Capacitor 工作区适配器                  | [#161](https://github.com/trueLoving/Pixuli/issues/161) | ✅   |
-| P7   | Gitee 代理退役 + `remote-only` 移除 + local-only 锁死 | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⬜   |
+| P7   | Gitee 代理退役 + `remote-only` 移除 + local-only 锁死 | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⏳   |

@@ -10,7 +10,7 @@ alwaysApply: false
 
 - `StoragePluginManifest` + `StorageProviderFactory` → `registry.register(manifest, factory)`
 - `registry.create(pluginId, ProviderContext)` 返回 `StorageProvider`
-- `ProviderContext`：`platform`、`platformAdapter`、可选 `giteeProxyBase`（Gitee）
+- `ProviderContext`：`platform`、`platformAdapter`
 
 ## 官方插件结构
 
@@ -31,7 +31,6 @@ packages/plugin-provider-{id}/src/
 
 - Provider 包内引入 React / `@pixuli/ui`
 - core 内写 GitHub/Gitee API 具体实现（应在 provider 包）
-- Renderer import `@pixuli/provider-gitee/proxy` 聚合入口或 `/proxy/node`
 
 ## 参考
 

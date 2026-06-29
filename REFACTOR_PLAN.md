@@ -30,10 +30,8 @@
 - **分层**：L1 业务 · L2 网格/列表 ·
   L3 各端平台能力；**core/provider 禁止依赖 ui**
 - **展示裁剪**：幻灯片、时间线、照片墙、3D 画廊等已移除（M1 ✅）
-- **Gitee 图片**：`apps/pixuli`
-  已移除 Host 代理（`useProxy: false`，本地工作区 + 直连 raw
-  URL）；收官见 REF-607 **P7**
-  [#173](https://github.com/trueLoving/Pixuli/issues/173)
+- **Gitee 图片**：三端本地工作区浏览；公网分享走 `buildPublicUrl` 直链（REF-607
+  P7 ✅）
 
 ### 1.3 里程碑概览
 
@@ -196,7 +194,7 @@ gh issue list --label refactor --state open --json number,title,state
 | 阶段   | 范围                                                    | GitHub #                                                | 状态 |
 | ------ | ------------------------------------------------------- | ------------------------------------------------------- | ---- |
 | P0～P6 | 设计、Core vault、Desktop/Web/Mobile 适配器、local 模式 | #155～#161                                              | ✅   |
-| **P7** | Gitee 代理退役 + remote-only 移除 + local-only 锁死     | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⬜   |
+| **P7** | Gitee 代理退役 + remote-only 移除 + local-only 锁死     | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⏳   |
 
 详情：[completed-phases.md § REF-607](archive/refactor-plan/completed-phases.md)。
 

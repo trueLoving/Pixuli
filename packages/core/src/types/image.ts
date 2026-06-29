@@ -1,7 +1,7 @@
 import type { ImageCaptureMetadata } from './imageCapture';
 
 /** REF-607：与 `StorageProviderPublicUrl.resolveLinkKind` 一致 */
-export type LinkKind = 'local' | 'remote-raw' | 'remote-proxy';
+export type LinkKind = 'local' | 'remote-raw';
 
 export interface ImageItem {
   id: string;

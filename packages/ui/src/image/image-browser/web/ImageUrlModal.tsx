@@ -1,7 +1,6 @@
 import { ExternalLink, X } from 'lucide-react';
 import React from 'react';
 import { ImageItem } from '@pixuli/core/types';
-import { getRealGiteeUrl } from '@pixuli/provider-gitee/proxy/url';
 import './ImageUrlModal.css';
 
 interface ImageUrlModalProps {
@@ -36,9 +35,10 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
     return translate('image.grid.dimensionsUnknown');
   };
 
+  const publicUrl = image.publicUrl || image.githubUrl || image.url;
+
   const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
-    // 对于 URL 类型，如果是 Gitee 代理 URL，转换为真实 URL
-    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
+    const realUrl = type === 'url' ? publicUrl : url;
     if (onCopyUrl) {
       await onCopyUrl(realUrl, type);
     } else {
@@ -51,8 +51,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
   };
 
   const handleOpenUrl = (url: string, type: 'url' | 'githubUrl' = 'url') => {
-    // 对于 URL 类型，如果是 Gitee 代理 URL，转换为真实 URL
-    const realUrl = type === 'url' ? getRealGiteeUrl(url) : url;
+    const realUrl = type === 'url' ? publicUrl : url;
     if (onOpenUrl) {
       onOpenUrl(realUrl);
     } else {
@@ -100,7 +99,7 @@ const ImageUrlModal: React.FC<ImageUrlModalProps> = ({
             <div className="image-url-modal-input-group">
               <input
                 type="text"
-                value={getRealGiteeUrl(image.url)}
+                value={publicUrl}
                 readOnly
                 className="image-url-modal-input"
               />

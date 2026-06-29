@@ -7,6 +7,7 @@ import { buildProviderSidecarPayload } from '@pixuli/core/utils';
 import type {
   ImageListOptions,
   ImageMetadataLoadOptions,
+  LinkKind,
   ProviderContext,
   StorageProviderConfig,
   StorageProviderWithMetadata,
@@ -15,7 +16,6 @@ import type {
   SyncPushItem,
 } from '@pixuli/core/plugins';
 import { giteeManifest } from './manifest';
-import { GITEE_PROXY_PATH } from './proxy/constants.js';
 
 function narrowGiteeConfig(
   config: StorageProviderConfig | GiteeConfig,
@@ -35,12 +35,6 @@ function narrowGiteeConfig(
   return { owner, repo, branch, token, path };
 }
 
-export interface GiteeStorageProviderOptions {
-  useProxy?: boolean;
-  /** 桌面 file:// 下需绝对地址，如 http://127.0.0.1:39281 */
-  proxyBaseUrl?: string;
-}
-
 export class GiteeStorageProvider implements StorageProviderWithMetadata {
   readonly manifest = giteeManifest;
 
@@ -49,19 +43,15 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   private readonly platformAdapter: ProviderContext['platformAdapter'];
   private readonly fetchFn: typeof fetch;
   private readonly logger: Pick<Console, 'log' | 'warn' | 'error'>;
-  private readonly useProxy: boolean;
-  private readonly proxyBaseUrl?: string;
   private syncCursor: string | null = null;
 
-  constructor(ctx: ProviderContext, options: GiteeStorageProviderOptions = {}) {
+  constructor(ctx: ProviderContext) {
     this.platformAdapter = ctx.platformAdapter;
     this.fetchFn =
       ctx.fetch ??
       ((input: RequestInfo | URL, init?: RequestInit) =>
         globalThis.fetch(input, init));
     this.logger = ctx.logger ?? console;
-    this.useProxy = options.useProxy ?? false;
-    this.proxyBaseUrl = options.proxyBaseUrl ?? ctx.giteeProxyBase;
   }
 
   configure(config: StorageProviderConfig): void {
@@ -75,14 +65,25 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   }
 
   getRawUrl(path: string): string {
+    return this.buildPublicUrl(path);
+  }
+
+  buildPublicUrl(remotePath: string): string {
     this.assertConfigured();
-    const filePath = `${this.config.path}/${path}`;
+    const filePath = `${this.config.path}/${remotePath}`;
     return this.buildRawUrl(
       this.config.owner,
       this.config.repo,
       this.config.branch,
       filePath,
     );
+  }
+
+  resolveLinkKind(url: string): LinkKind {
+    if (url.startsWith('blob:') || url.startsWith('file:')) {
+      return 'local';
+    }
+    return 'remote-raw';
   }
 
   /**
@@ -101,14 +102,6 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       .map(segment => encodeURIComponent(segment))
       .join('/');
     const rawPath = `/${owner}/${repo}/raw/${encodeURIComponent(branch)}/${encodedPath}`;
-
-    if (this.useProxy) {
-      const prefix = this.proxyBaseUrl
-        ? `${this.proxyBaseUrl.replace(/\/$/, '')}${GITEE_PROXY_PATH}`
-        : GITEE_PROXY_PATH;
-      return `${prefix}${rawPath}`;
-    }
-
     return `https://gitee.com${rawPath}`;
   }
 

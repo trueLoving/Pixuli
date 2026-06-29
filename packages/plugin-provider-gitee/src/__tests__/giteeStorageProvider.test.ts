@@ -36,13 +36,10 @@ describe('GiteeStorageProvider', () => {
       getMimeType: vi.fn().mockResolvedValue('image/jpeg'),
     };
 
-    provider = new GiteeStorageProvider(
-      {
-        platform: 'web',
-        platformAdapter: mockPlatformAdapter as never,
-      },
-      { useProxy: false },
-    );
+    provider = new GiteeStorageProvider({
+      platform: 'web',
+      platformAdapter: mockPlatformAdapter as never,
+    });
     provider.configure(config);
 
     global.fetch = vi.fn();
@@ -72,15 +69,6 @@ describe('GiteeStorageProvider', () => {
       customProvider.configure(config);
       expect(customProvider).toBeInstanceOf(GiteeStorageProvider);
       expect(customProvider.manifest.id).toBe('gitee');
-    });
-
-    it('应支持 useProxy 构造选项', () => {
-      const proxyProvider = new GiteeStorageProvider(
-        { platform: 'web', platformAdapter: new DefaultPlatformAdapter() },
-        { useProxy: true },
-      );
-      proxyProvider.configure(config);
-      expect(proxyProvider).toBeInstanceOf(GiteeStorageProvider);
     });
   });
 
@@ -539,7 +527,7 @@ describe('GiteeStorageProvider', () => {
   });
 
   describe('私有方法测试（通过公共方法间接测试）', () => {
-    it('应该正确构建 raw URL（不使用代理）', async () => {
+    it('应该正确构建 raw URL', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
       const uploadData: ImageUploadData = {
         file,
@@ -560,42 +548,9 @@ describe('GiteeStorageProvider', () => {
         );
 
       const result = await provider.uploadImage(uploadData);
-      expect(result.url).toContain('gitee.com');
-      expect(result.url).toContain('raw');
-      expect(result.url).not.toContain('api/gitee-proxy');
-    });
-
-    it('应该正确构建 raw URL（使用代理）', async () => {
-      const proxyProvider = new GiteeStorageProvider(
-        {
-          platform: 'web',
-          platformAdapter: mockPlatformAdapter as never,
-        },
-        { useProxy: true },
+      expect(result.url).toBe(
+        'https://gitee.com/test-owner/test-repo/raw/main/images/test.jpg',
       );
-      proxyProvider.configure(config);
-
-      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const uploadData: ImageUploadData = {
-        file,
-        name: 'test.jpg',
-      };
-
-      global.fetch = vi
-        .fn()
-        .mockResolvedValueOnce(createMockResponse(true, null))
-        .mockResolvedValueOnce(
-          createMockResponse(true, {
-            content: {
-              sha: 'test-sha',
-              html_url:
-                'https://gitee.com/test-owner/test-repo/blob/main/images/test.jpg',
-            },
-          }),
-        );
-
-      const result = await proxyProvider.uploadImage(uploadData);
-      expect(result.url).toContain('api/gitee-proxy');
     });
   });
 });

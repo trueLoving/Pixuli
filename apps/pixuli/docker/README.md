@@ -49,7 +49,6 @@ The `nginx.conf` file includes:
 - Gzip compression
 - Security headers
 - Static asset caching
-- Gitee proxy for cross-origin image access
 - SPA routing support
 - Health check endpoint
 
@@ -68,5 +67,3 @@ The `.dockerignore` file excludes:
 
 - The Dockerfile assumes the application is already built locally
 - Environment variables should be configured during the build process
-- The nginx configuration includes a proxy for Gitee images to handle CORS
-  issues
