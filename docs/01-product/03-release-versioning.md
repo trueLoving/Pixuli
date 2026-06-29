@@ -135,7 +135,7 @@ WASM 依赖。
 | 端          | Tag 格式            | Release 标题模板           | 交付物                                                                                                                |
 | ----------- | ------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | **Desktop** | `v{semver}-desktop` | `Pixuli Desktop v{semver}` | Windows `Pixuli_{semver}.exe`；macOS Intel `Pixuli_{semver}_x64.dmg`；macOS Apple Silicon `Pixuli_{semver}_arm64.dmg` |
-| **Mobile**  | `v{semver}-mobile`  | `Pixuli Mobile v{semver}`  | Android `Pixuli_{semver}.apk`；**iOS 后续待定**（首发不含 ipa）                                                       |
+| **Mobile**  | `v{semver}-android` | `Pixuli Android v{semver}` | Android `app-release.apk`（或 `Pixuli_{semver}.apk`）；历史 RN 为 `v*-mobile`；**iOS 后续待定**                       |
 | **Web**     | `v{semver}-web`     | `Pixuli Web v{semver}`     | 演示站部署说明 + Docker `pixuli-web:{semver}`（见 §3.3）                                                              |
 
 同一 semver 发版时，三条 tag 指向**同一产品版本**；允许分 workflow 先后打 tag，但
@@ -303,7 +303,7 @@ Mobile 同步 bump。
 
 ### 发版后
 
-- [ ] 三端 tag `v{semver}-{desktop,mobile,web}` 的 `{semver}` 一致
+- [ ] 三端 tag `v{semver}-{desktop,android,web}` 的 `{semver}` 一致
 
 - [ ] CHANGELOG：`[Unreleased]` → `## [x.y.z]`，更新 footer compare 链接
 - [ ] README / Wiki 稳定版表述（若对外发布）

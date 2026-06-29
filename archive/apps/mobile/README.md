@@ -119,20 +119,21 @@ graph TB
 |                           | Multi-language Support    | Chinese and English interfaces                                        |
 |                           | Language Switching        | Real-time switching without restart                                   |
 
-## 🚀 Quick Start
+## 🚀 Quick Start（归档代码 · 只读参考）
 
-### Download and Install
+> **Do not use this tree for new Mobile builds or APK distribution.**
 
-1. Download the latest APK file from
-   [GitHub Releases](https://github.com/trueLoving/Pixuli/releases)
-2. Enable "Unknown Sources" installation permission on Android device
-3. Install and open the application
-4. First-time use requires configuring GitHub or Gitee storage backend
+Current Mobile users should install **Capacitor Android** builds from
+[`apps/pixuli`](../../apps/pixuli):
 
-### System Requirements
+1. [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) — tag
+   `v{semver}-android`, download `app-release.apk`
+2. Enable install from unknown sources on the device
+3. Configure GitHub or Gitee in **Settings** after first launch
 
-- **Android**: Android 5.0 (API 21) or higher
-- **iOS**: Under development
+See [产品使用手册 §4.3](../../docs/01-product/02-product-user-manual.md) and
+[apps/pixuli/README.md](../../apps/pixuli/README.md) (`pnpm dev:android` for
+local development).
 
 ## 📱 Application Features
 
