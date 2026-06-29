@@ -1,5 +1,7 @@
 name: 发布 Pixuli Android
 
+# 仅 GitHub Actions 手动触发（workflow_dispatch）；不在 PR/push 上自动运行。
+
 on:
   workflow_dispatch:
     inputs:
@@ -8,10 +10,18 @@ on:
         required: true
         default: '2.0.0'
       is-publish:
-        description: '是否创建 GitHub Release 并上传 APK'
+        description: '是否创建 GitHub Release 并上传 APK（仅 release 构建）'
         required: false
         default: true
         type: boolean
+      build-type:
+        description: '构建类型'
+        required: true
+        type: choice
+        options:
+          - release
+          - debug
+        default: release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -88,21 +98,28 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 构建 release APK
-        run: pnpm run build:android
+      - name: 构建 APK
+        run: |
+          if [ "${{ github.event.inputs.build-type }}" = "debug" ]; then
+            pnpm run build:android:debug
+          else
+            pnpm run build:android
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pixuli-android-release-v${{ steps.version.outputs.VERSION }}
-          path: apps/pixuli/android/app/build/outputs/apk/release/app-release.apk
+          name: pixuli-android-${{ github.event.inputs.build-type }}-v${{ steps.version.outputs.VERSION }}
+          path: |
+            apps/pixuli/android/app/build/outputs/apk/release/app-release.apk
+            apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: 仅构建（不上传 Release）
-        if: ${{ github.event.inputs.is-publish == false }}
-        run: echo "is-publish=false，APK 已上传至 artifacts"
+        if: ${{ github.event.inputs.is-publish == false || github.event.inputs.build-type == 'debug' }}
+        run: echo "未发布 Release（debug 构建或 is-publish=false），APK 见 artifacts"
 
       - name: 创建 GitHub Release
-        if: ${{ github.event.inputs.is-publish == true }}
+        if: ${{ github.event.inputs.is-publish == true && github.event.inputs.build-type == 'release' }}
         run: |
           TAG="${{ steps.version.outputs.TAG_VERSION }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -116,7 +133,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 上传 APK 到 Release
-        if: ${{ github.event.inputs.is-publish == true }}
+        if: ${{ github.event.inputs.is-publish == true && github.event.inputs.build-type == 'release' }}
         run: |
           gh release upload "${{ steps.version.outputs.TAG_VERSION }}" \
             apps/pixuli/android/app/build/outputs/apk/release/app-release.apk \

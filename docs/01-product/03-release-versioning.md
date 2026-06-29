@@ -206,12 +206,12 @@ Mobile 同步 bump。
 
 ### 3.5 CI/CD 衔接
 
-| Workflow                                                           | 触发                | 产出                                                                 | 与版本关系                                                                                    |
-| ------------------------------------------------------------------ | ------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push / manual  | **`build:packages`**、lint、test、Web/Desktop；**Android debug APK** | 不发版                                                                                        |
-| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch` | Win/mac 安装包；`v{input}-desktop` tag + Release                     | 输入 version，写回 `apps/pixuli/package.json`                                                 |
-| [release-android.yml](../../.github/workflows/release-android.yml) | `workflow_dispatch` | `build:android` → APK；`v{semver}-android` tag + Release             | 可选 secrets 正式签名；无 secrets 时用 debug 证书                                             |
-| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch` | Docker 镜像 push                                                     | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
+| Workflow                                                           | 触发                | 产出                                                     | 与版本关系                                                                                    |
+| ------------------------------------------------------------------ | ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [ci.yml](../../.github/workflows/ci.yml)                           | PR / push / manual  | **`build:packages`**、lint、test、Web/Desktop            | 不发版；Android 构建见 `release-android.yml`（仅手动）                                        |
+| [release-desktop.yml](../../.github/workflows/release-desktop.yml) | `workflow_dispatch` | Win/mac 安装包；`v{input}-desktop` tag + Release         | 输入 version，写回 `apps/pixuli/package.json`                                                 |
+| [release-android.yml](../../.github/workflows/release-android.yml) | `workflow_dispatch` | `build:android` → APK；`v{semver}-android` tag + Release | 可选 secrets 正式签名；无 secrets 时用 debug 证书                                             |
+| [release-web.yml](../../.github/workflows/release-web.yml)         | `workflow_dispatch` | Docker 镜像 push                                         | 镜像 tag = `{semver}`；配合打 `v{semver}-web` 与 GitHub Release（CI 衔接待 REF-411/#84 强化） |
 
 **Desktop 发版步骤（摘要）**：
 
