@@ -24,7 +24,12 @@
       "@platforms/desktop/*": ["src/platforms/desktop/*"]
     }
   },
-  "include": ["src", "electron", "src/types/service-worker.d.ts"],
+  "include": [
+    "src",
+    "electron",
+    "src/types/service-worker.d.ts",
+    "src/types/file-system-access.d.ts"
+  ],
   "exclude": [
     "src/**/*.test.ts",
     "src/**/*.test.tsx",

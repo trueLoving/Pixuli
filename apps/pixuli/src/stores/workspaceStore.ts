@@ -658,22 +658,21 @@ function resolveSyncBindings(): SyncEngineBinding[] {
         ? config.bindings
         : storedSourcesToWorkspaceBindings(useSourceStore.getState().sources);
 
-    return bindingDefs
-      .map(binding => {
-        try {
-          const provider = createConfiguredStorageProvider(
-            binding.pluginId as StoragePluginId,
-            binding.config as never,
-          );
-          if (!providerSupportsSync(provider)) {
-            return null;
-          }
-          return { bindingId: binding.id, provider };
-        } catch {
-          return null;
+    const bindings: SyncEngineBinding[] = [];
+    for (const binding of bindingDefs) {
+      try {
+        const provider = createConfiguredStorageProvider(
+          binding.pluginId as StoragePluginId,
+          binding.config as never,
+        );
+        if (providerSupportsSync(provider)) {
+          bindings.push({ bindingId: binding.id, provider });
         }
-      })
-      .filter((item): item is SyncEngineBinding => item !== null);
+      } catch {
+        // skip invalid binding
+      }
+    }
+    return bindings;
   }
 
   const source = resolveSelectedSource();
