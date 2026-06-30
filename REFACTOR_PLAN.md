@@ -1,7 +1,8 @@
 # Pixuli 重构计划
 
-> **版本**：3.2  
-> **更新**：2026-06-17（`gh issue view` 与 GitHub 状态同步；#126 已重开）  
+> **版本**：3.3  
+> **更新**：2026-06-29（#163 / #144 父 Issue 收官；REF-516 /
+> REF-607 分阶段 P0～P7 全 ✅）  
 > **状态**：执行中
 
 本文档是仓库级重构的**活跃 Issue 追踪**。M1～M4 已完成项、分阶段历史与 Issue 正文模板已迁入
@@ -13,13 +14,13 @@
 
 ### 1.1 产品底线
 
-| 项           | 约定                                                                                                           |
-| ------------ | -------------------------------------------------------------------------------------------------------------- |
-| **三端**     | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor Android）；**单工程** `apps/pixuli`                      |
-| **RN 工程**  | 已迁入 [`archive/apps/mobile/`](archive/apps/mobile/)（REF-513 ✅）                                            |
-| **存储**     | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**                                             |
-| **本地库**   | 用户指定本地工作目录 + 可选远端同步（REF-607 / [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)） |
-| **对外主张** | AI 分析、自动标签、批处理与图床管理一体                                                                        |
+| 项           | 约定                                                                                                              |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| **三端**     | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor Android）；**单工程** `apps/pixuli`                         |
+| **RN 工程**  | 已迁入 [`archive/apps/mobile/`](archive/apps/mobile/)（REF-513 ✅）                                               |
+| **存储**     | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**                                                |
+| **本地库**   | 用户指定本地工作目录 + 可选远端同步（REF-607 ✅ / [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)） |
+| **对外主张** | AI 分析、自动标签、批处理与图床管理一体                                                                           |
 
 ### 1.2 架构要点
 
@@ -35,14 +36,14 @@
 
 ### 1.3 里程碑概览
 
-| 里程碑 | 名称               | 状态                                                                               |
-| ------ | ------------------ | ---------------------------------------------------------------------------------- |
-| M1     | 减负与归档         | ✅ 完成 → [M1-completed.md](archive/refactor-plan/M1-completed.md)                 |
-| M2     | core / ui 拆分     | ✅ 完成 → [M2-completed.md](archive/refactor-plan/M2-completed.md)                 |
-| M3     | 存储插件 P0        | ✅ 完成 → [M3-completed.md](archive/refactor-plan/M3-completed.md)                 |
-| M4     | 文档与 CI          | ⏳ 11/16 → [M4-completed.md](archive/refactor-plan/M4-completed.md)                |
-| M5     | 平台能力 L3        | ⏳ 9/16（含 REF-507 ❌）→ [M5-completed.md](archive/refactor-plan/M5-completed.md) |
-| M6     | 产品体验与能力边界 | ⏳ 1/7 → [M6-completed.md](archive/refactor-plan/M6-completed.md)                  |
+| 里程碑 | 名称               | 状态                                                                                |
+| ------ | ------------------ | ----------------------------------------------------------------------------------- |
+| M1     | 减负与归档         | ✅ 完成 → [M1-completed.md](archive/refactor-plan/M1-completed.md)                  |
+| M2     | core / ui 拆分     | ✅ 完成 → [M2-completed.md](archive/refactor-plan/M2-completed.md)                  |
+| M3     | 存储插件 P0        | ✅ 完成 → [M3-completed.md](archive/refactor-plan/M3-completed.md)                  |
+| M4     | 文档与 CI          | ⏳ 11/16 → [M4-completed.md](archive/refactor-plan/M4-completed.md)                 |
+| M5     | 平台能力 L3        | ⏳ 10/16（含 REF-507 ❌）→ [M5-completed.md](archive/refactor-plan/M5-completed.md) |
+| M6     | 产品体验与能力边界 | ⏳ 2/7 → [M6-completed.md](archive/refactor-plan/M6-completed.md)                   |
 
 ### 1.4 三端单工程（当前基线）
 
@@ -72,13 +73,15 @@ pnpm build:packages  →  pnpm build:web  →  build:desktop / build:android
 
 | 优先级 | 方向                                                                  | Issue                                                                                                            |
 | ------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **P0** | REF-607 P7：Gitee 代理全仓退役 + local-only 锁死                      | [#173](https://github.com/trueLoving/Pixuli/issues/173)                                                          |
-| **P0** | REF-516 P7 / REF-515：三端 CI + Android APK 发版                      | [#153](https://github.com/trueLoving/Pixuli/issues/153)                                                          |
-| **P1** | REF-416：Workspace 包 exports conditions（dev 免手动 build:packages） | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                          |
 | **P1** | REF-602 / REF-603：M6 UI 与性能边界                                   | [#131](https://github.com/trueLoving/Pixuli/issues/131)、[#132](https://github.com/trueLoving/Pixuli/issues/132) |
+| **P1** | REF-416：Workspace 包 exports conditions（dev 免手动 build:packages） | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                          |
 | **P1** | REF-411：插件体系重设计（Obsidian 参考）                              | [#126](https://github.com/trueLoving/Pixuli/issues/126)                                                          |
 | **P2** | REF-412 / REF-413：集成/冒烟测试                                      | [#127](https://github.com/trueLoving/Pixuli/issues/127) 等                                                       |
 | **P2** | REF-501～505：Desktop L3 与 L3 能力矩阵文档                           | [#86](https://github.com/trueLoving/Pixuli/issues/86)～[#90](https://github.com/trueLoving/Pixuli/issues/90)     |
+
+> **已收官**：REF-516（[#163](https://github.com/trueLoving/Pixuli/issues/163)
+> P0～P7）、REF-607（[#144](https://github.com/trueLoving/Pixuli/issues/144)
+> P0～P7）见 [completed-phases.md](archive/refactor-plan/completed-phases.md)。
 
 ### 1.6 REF-411 — 插件体系重设计（Obsidian 参考）
 
@@ -130,8 +133,9 @@ gh issue list --label refactor --state open --json number,title,state
 # 或按编号：gh issue view 126 --json number,state,title
 ```
 
-**最近同步**：2026-06-17 — 进行中 18 条均为 GitHub `OPEN`；#126 曾因旧 Host 集成
-`CLOSED`，已重开以匹配 Obsidian 重设计范围；#151（REF-513）文档收尾待 PR 合并关单。
+**最近同步**：2026-06-29 — REF-516 / REF-607 父 Issue（#163 /
+#144）P0～P7 子项均已
+`CLOSED`；本 PR 同步追踪后关单。进行中 refactor 约 14 条（#126 等仍为 `OPEN`）。
 
 ### M4 — 文档与 CI（剩余 5 项）
 
@@ -149,57 +153,42 @@ gh issue list --label refactor --state open --json number,title,state
 > [03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)
 > 仅作历史参考）。
 
-### M5 — 平台能力 L3（剩余 6 项 + 总线收尾）
+### M5 — 平台能力 L3（剩余 5 项）
 
-| ID      | 标题                                          | GitHub #                                                | 状态  |
-| ------- | --------------------------------------------- | ------------------------------------------------------- | ----- |
-| REF-501 | [M5] 文档化 L3 能力矩阵                       | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ⬜    |
-| REF-502 | [M5] `platforms/desktop` 目录约定             | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ⬜    |
-| REF-503 | [M5] Desktop 离线浏览与上传队列               | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜    |
-| REF-504 | [M5] Desktop 自动更新 electron-updater        | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜    |
-| REF-505 | [M5] Desktop 系统托盘                         | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ⬜    |
-| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK） | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ⏳    |
-| REF-516 | [三端融合] Mobile 功能对齐总览                | [#163](https://github.com/trueLoving/Pixuli/issues/163) | ⏳ P7 |
+| ID      | 标题                                   | GitHub #                                              | 状态 |
+| ------- | -------------------------------------- | ----------------------------------------------------- | ---- |
+| REF-501 | [M5] 文档化 L3 能力矩阵                | [#86](https://github.com/trueLoving/Pixuli/issues/86) | ⬜   |
+| REF-502 | [M5] `platforms/desktop` 目录约定      | [#87](https://github.com/trueLoving/Pixuli/issues/87) | ⬜   |
+| REF-503 | [M5] Desktop 离线浏览与上传队列        | [#88](https://github.com/trueLoving/Pixuli/issues/88) | ⬜   |
+| REF-504 | [M5] Desktop 自动更新 electron-updater | [#89](https://github.com/trueLoving/Pixuli/issues/89) | ⬜   |
+| REF-505 | [M5] Desktop 系统托盘                  | [#90](https://github.com/trueLoving/Pixuli/issues/90) | ⬜   |
 
 > M5 已完成 10 项 + REF-507 ❌ 见
-> [M5-completed.md](archive/refactor-plan/M5-completed.md)（含 REF-513 /
-> #151）。
+> [M5-completed.md](archive/refactor-plan/M5-completed.md)（含 REF-515 /
+> #153、REF-516 / #163）。
 
-#### REF-516 分阶段（[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8)）
+分阶段总线 REF-516（[#163](https://github.com/trueLoving/Pixuli/issues/163)）P0～P7
+✅，见
+[completed-phases.md § REF-516](archive/refactor-plan/completed-phases.md)。
 
-| 阶段   | 范围                                              | GitHub #                                                           | 状态 |
-| ------ | ------------------------------------------------- | ------------------------------------------------------------------ | ---- |
-| P0～P6 | 对齐矩阵、移动 UI、业务/L3、工作区、验收、RN 归档 | #164～#166 等                                                      | ✅   |
-| **P7** | CI APK 发版 + Wiki                                | [#153](https://github.com/trueLoving/Pixuli/issues/153)（#152 ✅） | ⏳   |
+### M6 — 产品体验与能力边界（5 项进行中）
 
-详情：[completed-phases.md § REF-516](archive/refactor-plan/completed-phases.md)。
+| ID      | 标题                                   | GitHub #                                                | 状态 |
+| ------- | -------------------------------------- | ------------------------------------------------------- | ---- |
+| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ⬜   |
+| REF-603 | [M6] 大数据场景与产品性能边界          | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜   |
+| REF-604 | [M6] 标签与描述管理 + AI 自动分析      | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜   |
+| REF-605 | [M6] 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜   |
+| REF-606 | [M6] 回收站机制                        | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜   |
 
-### M6 — 产品体验与能力边界（6 项进行中）
+分阶段总线 REF-607（[#144](https://github.com/trueLoving/Pixuli/issues/144)）P0～P7
+✅，见
+[completed-phases.md § REF-607](archive/refactor-plan/completed-phases.md) 与
+[05-local-workspace-sync.md §九](docs/02-system-design/05-local-workspace-sync.md#九分阶段交付)。
 
-| ID      | 标题                                   | GitHub #                                                | 状态  |
-| ------- | -------------------------------------- | ------------------------------------------------------- | ----- |
-| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ⬜    |
-| REF-603 | [M6] 大数据场景与产品性能边界          | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜    |
-| REF-604 | [M6] 标签与描述管理 + AI 自动分析      | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜    |
-| REF-605 | [M6] 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜    |
-| REF-606 | [M6] 回收站机制                        | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜    |
-| REF-607 | [M6] 本地工作区 + 远端同步与多形态 URL | [#144](https://github.com/trueLoving/Pixuli/issues/144) | ⏳ P7 |
+**建议顺序**：**#131** ∥ **#132** → **#140** → **#133** → **#134**。
 
-#### REF-607 分阶段（[里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)）
-
-设计 SSOT：[05-local-workspace-sync.md §九](docs/02-system-design/05-local-workspace-sync.md#九分阶段交付)
-
-| 阶段   | 范围                                                    | GitHub #                                                | 状态 |
-| ------ | ------------------------------------------------------- | ------------------------------------------------------- | ---- |
-| P0～P6 | 设计、Core vault、Desktop/Web/Mobile 适配器、local 模式 | #155～#161                                              | ✅   |
-| **P7** | Gitee 代理退役 + remote-only 移除 + local-only 锁死     | [#173](https://github.com/trueLoving/Pixuli/issues/173) | ⏳   |
-
-详情：[completed-phases.md § REF-607](archive/refactor-plan/completed-phases.md)。
-
-**建议顺序**：**#173**（P7 收官）→ **#153**（CI APK）→ **#131** ∥ **#132** →
-**#140** → **#133** → **#134**。
-
-REF-601（交互规范）✅ 见
+REF-601（交互规范）✅、REF-607（本地工作区）✅ 见
 [M6-completed.md](archive/refactor-plan/M6-completed.md)。
 
 ---
@@ -225,12 +214,12 @@ gh issue view 126 --json number,state,title
 
 ## 四、不在范围内（Won't Do）
 
-| 项                                                 | 说明              |
-| -------------------------------------------------- | ----------------- |
-| 恢复 Slideshow / Timeline / PhotoWall / 3D Gallery | 已从产品移除      |
-| 删除 Mobile 或 Desktop **产品能力**                | 三端为底线        |
-| 主仓库恢复 Server / WASM 为必需构建                | 已归档            |
-| 恢复 Gitee Host 图片代理为默认路径                 | REF-607 P7 退役中 |
+| 项                                                 | 说明                         |
+| -------------------------------------------------- | ---------------------------- |
+| 恢复 Slideshow / Timeline / PhotoWall / 3D Gallery | 已从产品移除                 |
+| 删除 Mobile 或 Desktop **产品能力**                | 三端为底线                   |
+| 主仓库恢复 Server / WASM 为必需构建                | 已归档                       |
+| 恢复 Gitee Host 图片代理为默认路径                 | REF-607 P7 已退役（#173 ✅） |
 
 ---
 
@@ -242,11 +231,11 @@ gh issue view 126 --json number,state,title
 | M2       | 10       | 10     | —      | —      | 100%    |
 | M3       | 13       | 13     | —      | —      | 100%    |
 | M4       | 16       | 11     | —      | 5      | 69%     |
-| M5       | 16       | 9      | 1      | 6      | 56%     |
-| M6       | 7        | 1      | —      | 6      | 14%     |
-| **合计** | **74**   | **56** | **1**  | **17** | **76%** |
+| M5       | 16       | 10     | 1      | 5      | 63%     |
+| M6       | 7        | 2      | —      | 5      | 29%     |
+| **合计** | **74**   | **59** | **1**  | **14** | **80%** |
 
-> 分阶段总线（REF-516 P7、REF-607 P7）未计入上表 Issue 数。
+> 分阶段总线 REF-516（#163）、REF-607（#144）已计入 M5/M6 已完成项。
 
 ---
 
