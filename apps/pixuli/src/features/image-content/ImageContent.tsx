@@ -100,8 +100,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
         </div>
       )}
 
-      {/* 图片统计和操作区域（窄屏由 ImageBrowser 工具栏承担，REF-516 #165） */}
-      <div className="image-content-stats mb-4 flex items-center justify-between">
+      {/* 图片统计（窄屏由 ImageBrowser 工具栏承担，REF-602 / #131） */}
+      <div className="image-content-stats mb-4 hidden md:flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">
           {t('app.imageLibrary')} ({images.length} {t('app.images')})
         </h2>

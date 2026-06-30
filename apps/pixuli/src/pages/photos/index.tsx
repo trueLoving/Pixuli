@@ -1,10 +1,9 @@
 import { useSearchContextSafe } from '@/contexts/SearchContext';
-import { ImageContent } from '@/features/image-content/ImageContent';
 import {
   WorkspaceMigrationWizard,
-  WorkspaceSetupPanel,
-  WorkspaceToolbar,
+  WorkspacePhotosEmptyState,
 } from '@/features/workspace';
+import { ImageContent } from '@/features/image-content/ImageContent';
 import { useImageOperations } from '@/hooks/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
@@ -54,8 +53,6 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     };
   }, [searchContext]);
 
-  const showWorkspaceBar = localActive;
-
   if (showMigration) {
     return (
       <div className="photos-page h-full flex flex-col overflow-hidden">
@@ -67,7 +64,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   if (showSetup) {
     return (
       <div className="photos-page h-full flex flex-col overflow-hidden">
-        <WorkspaceSetupPanel />
+        <WorkspacePhotosEmptyState />
       </div>
     );
   }
@@ -75,11 +72,6 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   return (
     <div className="photos-page h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
-        {showWorkspaceBar && (
-          <div className="px-4 pt-4 sm:px-6 lg:px-8">
-            <WorkspaceToolbar />
-          </div>
-        )}
         <ImageContent
           hasConfig={hasConfig}
           error={error}

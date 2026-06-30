@@ -49,20 +49,12 @@ export function useCapacitorBackButton(): void {
           ui.closeConfigModal();
           return;
         }
-        if (ui.showSourceTypeMenu) {
-          ui.closeSourceTypeMenu();
-          return;
-        }
-        if (ui.showKeyboardHelp) {
-          ui.closeKeyboardHelp();
-          return;
-        }
-        if (ui.showVersionInfo) {
-          ui.closeVersionInfo();
-          return;
-        }
         if (ui.showOperationLog) {
           ui.closeOperationLog();
+          return;
+        }
+        if (ui.showSettingsModal) {
+          ui.closeSettingsModal();
           return;
         }
         if (dismissDomOverlay()) return;

@@ -47,21 +47,17 @@ function App() {
   const {
     showConfigModal,
     editingSourceId,
-    showKeyboardHelp,
-    showVersionInfo,
     showOperationLog,
+    showSettingsModal,
     isFullscreenMode,
     setIsFullscreenMode,
     openConfigModal,
     closeConfigModal,
     openKeyboardHelp,
-    closeKeyboardHelp,
-    openVersionInfo,
-    closeVersionInfo,
     openOperationLog,
     closeOperationLog,
-    addSource,
-    closeSourceTypeMenu,
+    closeSettingsModal,
+    openSettingsModalForAddSource,
     openConfigModalForEdit,
   } = useUIStore();
 
@@ -143,35 +139,14 @@ function App() {
   useKeyboardShortcuts(
     t,
     showConfigModal,
-    showKeyboardHelp,
-    showVersionInfo,
     showOperationLog,
+    showSettingsModal,
     closeConfigModal,
-    openKeyboardHelp,
-    openVersionInfo,
-    closeKeyboardHelp,
-    closeVersionInfo,
-    openOperationLog,
     closeOperationLog,
+    closeSettingsModal,
+    openKeyboardHelp,
     handleLoadImages,
     openConfigModal,
-  );
-
-  // 处理源类型选择
-  const handleSelectSourceType = useCallback(
-    (pluginId: string) => {
-      useUIStore.setState({
-        editingSourceId: null,
-        editingSourcePluginId: null,
-        editingSourceRepoConfig: null,
-      });
-      useImageStore.setState({
-        storageType: pluginId as 'github' | 'gitee',
-      });
-      closeSourceTypeMenu();
-      openConfigModal();
-    },
-    [closeSourceTypeMenu, openConfigModal],
   );
 
   return (
@@ -183,10 +158,9 @@ function App() {
         onSourceEdit={handleEditSourceWithId}
         onSourceDelete={handleDeleteSourceWithT}
         hasConfig={hasConfig}
-        onAddSource={addSource}
+        onAddSource={openSettingsModalForAddSource}
         onSaveConfig={handleSaveConfigWithId}
         onClearConfig={handleClearConfigWithId}
-        onSelectSourceType={handleSelectSourceType}
       >
         <AppRoutes
           onOpenConfigModal={openConfigModal}

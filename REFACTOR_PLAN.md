@@ -175,7 +175,7 @@ gh issue list --label refactor --state open --json number,title,state
 
 | ID      | 标题                                   | GitHub #                                                | 状态 |
 | ------- | -------------------------------------- | ------------------------------------------------------- | ---- |
-| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ⬜   |
+| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ⏳   |
 | REF-603 | [M6] 大数据场景与产品性能边界          | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜   |
 | REF-604 | [M6] 标签与描述管理 + AI 自动分析      | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜   |
 | REF-605 | [M6] 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜   |
@@ -252,6 +252,7 @@ gh issue view 126 --json number,state,title
 | 插件体系重设计（REF-411）   | **§1.6** · Obsidian 参考 · [#126](https://github.com/trueLoving/Pixuli/issues/126)             |
 | Host 集成（历史，已非主线） | [03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)                  |
 | 本地工作区                  | [05-local-workspace-sync.md](docs/02-system-design/05-local-workspace-sync.md)                 |
+| REF-602 UI 差距与分期       | [13-ref-602-ui-gap-assessment.md](docs/02-system-design/13-ref-602-ui-gap-assessment.md)       |
 | Capacitor PoC               | [04-capacitor-android-poc.md](archive/design/04-capacitor-android-poc.md)                      |
 | Mobile 对齐矩阵             | [06-mobile-feature-parity-matrix.md](archive/design/06-mobile-feature-parity-matrix.md)        |
 | TS/JS 策略                  | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md) |

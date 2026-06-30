@@ -1,16 +1,14 @@
 import { useState, useCallback } from 'react';
 import type { SidebarView, SidebarUtilityTool } from '@pixuli/ui';
-import { useImageStore } from '../stores/imageStore';
+import { useUIStore } from '../stores/uiStore';
 
 /**
- * UI 状态管理 hooks
+ * UI 状态管理 hooks（遗留；主应用已迁移至 useUIStore）
  */
 export function useUIState() {
   const [showConfigModal, setShowConfigModal] = useState(false);
-  const [showSourceTypeMenu, setShowSourceTypeMenu] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-  const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [showOperationLog, setShowOperationLog] = useState(false);
   const [currentView, setCurrentView] = useState<SidebarView>('photos');
   const [currentUtilityTool, setCurrentUtilityTool] =
     useState<SidebarUtilityTool | null>(null);
@@ -29,46 +27,31 @@ export function useUIState() {
     setEditingSourceId(null);
   }, []);
 
-  const handleOpenKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(true);
+  const handleOpenOperationLog = useCallback(() => {
+    setShowOperationLog(true);
   }, []);
 
-  const handleCloseKeyboardHelp = useCallback(() => {
-    setShowKeyboardHelp(false);
-  }, []);
-
-  const handleOpenVersionInfo = useCallback(() => {
-    setShowVersionInfo(true);
-  }, []);
-
-  const handleCloseVersionInfo = useCallback(() => {
-    setShowVersionInfo(false);
+  const handleCloseOperationLog = useCallback(() => {
+    setShowOperationLog(false);
   }, []);
 
   const handleAddSource = useCallback(() => {
-    setShowSourceTypeMenu(true);
+    useUIStore.getState().openSettingsModalForAddSource();
   }, []);
 
-  const handleSelectSourceType = useCallback((pluginId: string) => {
-    setEditingSourceId(null);
-    useImageStore.setState({
-      storageType: pluginId as 'github' | 'gitee',
-    });
-    setShowSourceTypeMenu(false);
-    setShowConfigModal(true);
+  const handleOpenKeyboardHelp = useCallback(() => {
+    useUIStore.getState().openKeyboardHelp();
   }, []);
 
-  const handleCloseSourceTypeMenu = useCallback(() => {
-    setShowSourceTypeMenu(false);
+  const handleOpenVersionInfo = useCallback(() => {
+    useUIStore.getState().openVersionInfo();
   }, []);
 
   return {
     showConfigModal,
-    showSourceTypeMenu,
     editingSourceId,
     setEditingSourceId,
-    showKeyboardHelp,
-    showVersionInfo,
+    showOperationLog,
     currentView,
     setCurrentView,
     currentUtilityTool,
@@ -85,12 +68,10 @@ export function useUIState() {
     setSidebarCollapsed,
     handleOpenConfigModal,
     handleCloseConfigModal,
-    handleOpenKeyboardHelp,
-    handleCloseKeyboardHelp,
-    handleOpenVersionInfo,
-    handleCloseVersionInfo,
+    handleOpenOperationLog,
+    handleCloseOperationLog,
     handleAddSource,
-    handleSelectSourceType,
-    handleCloseSourceTypeMenu,
+    handleOpenKeyboardHelp,
+    handleOpenVersionInfo,
   };
 }

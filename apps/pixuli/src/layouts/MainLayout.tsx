@@ -7,17 +7,15 @@ import {
   FullScreenLoading,
   GiteeConfigModal,
   GitHubConfigModal,
-  KeyboardHelpModal,
   Toaster,
   useDemoMode,
-  VersionInfoModal,
 } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
-import { OperationLogModal, SourceTypeMenu } from '../features';
-import { useKeyboardCategories } from '../hooks/useKeyboardCategories';
+import { OperationLogModal } from '../features';
+import { SettingsModal } from '../features/settings';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
 import { useImageStore } from '../stores/imageStore';
@@ -25,7 +23,6 @@ import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
-import { listStoragePluginManifests } from '../storage/registry';
 import { exportJsonFile } from '../utils/exportJsonFile';
 import { getPlatform, WebBrowserChrome } from '@/platforms';
 import {
@@ -51,7 +48,6 @@ interface MainLayoutProps {
   // 配置相关 props（用于弹窗）
   onSaveConfig: (config: any) => void;
   onClearConfig: () => void;
-  onSelectSourceType: (pluginId: string) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
@@ -65,7 +61,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onAddSource,
   onSaveConfig,
   onClearConfig,
-  onSelectSourceType,
 }) => {
   const { t } = useI18n();
   const { loading, storageType, githubConfig, giteeConfig } = useImageStore();
@@ -81,21 +76,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const {
     showConfigModal,
-    showSourceTypeMenu,
-    showKeyboardHelp,
-    showVersionInfo,
     showOperationLog,
+    showSettingsModal,
     editingSourceId,
     editingSourcePluginId,
     editingSourceRepoConfig,
     closeConfigModal,
-    closeSourceTypeMenu,
-    closeKeyboardHelp,
-    closeVersionInfo,
     closeOperationLog,
+    closeSettingsModal,
   } = useUIStore();
-
-  const keyboardCategories = useKeyboardCategories(t);
 
   const editingSource = useMemo(
     () =>
@@ -157,14 +146,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       <AppMain>{children}</AppMain>
 
-      <SourceTypeMenu
-        isOpen={showSourceTypeMenu}
-        manifests={listStoragePluginManifests()}
-        onClose={closeSourceTypeMenu}
-        onSelect={onSelectSourceType}
-        t={t}
-      />
-
       <GitHubConfigModal
         key={
           editingSourceId
@@ -197,23 +178,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      <KeyboardHelpModal
-        isOpen={showKeyboardHelp}
-        onClose={closeKeyboardHelp}
-        categories={keyboardCategories}
-        t={t}
-      />
-
-      <VersionInfoModal
-        isOpen={showVersionInfo}
-        onClose={closeVersionInfo}
-        t={t}
-        versionInfo={__VERSION_INFO__}
-      />
-
       <OperationLogModal
         isOpen={showOperationLog}
         onClose={closeOperationLog}
+      />
+
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={closeSettingsModal}
+        t={t}
+        versionInfo={__VERSION_INFO__}
       />
 
       <Toaster />

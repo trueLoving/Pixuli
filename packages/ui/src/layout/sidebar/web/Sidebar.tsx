@@ -11,6 +11,9 @@ import {
   Trash2,
   Zap,
   FileImage,
+  RefreshCw,
+  Settings,
+  FolderOpen,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -22,15 +25,10 @@ export type SidebarView = 'photos' | 'explore' | 'tags' | 'favorites';
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarUtilityTool = 'compress' | 'convert';
 
-/** 暂时隐藏的侧栏菜单项（恢复显示时从此集合移除 key） */
-const TEMPORARILY_HIDDEN_MENU_KEYS = new Set(['compress', 'convert']);
-
-/** 暂时隐藏的侧栏底部项 */
-const TEMPORARILY_HIDDEN_FOOTER_KEYS = new Set(['docs', 'keyboardShortcuts']);
-
 // 统一的菜单项类型（图床 + 工具）
 export type SidebarMenuItem =
   | { type: 'photos' }
+  | { type: 'workspace' }
   | { type: 'utility'; tool: SidebarUtilityTool };
 
 export interface SidebarSource {
@@ -68,6 +66,22 @@ interface SidebarProps {
   footerExtra?: React.ReactNode;
   /** 为 true 时不渲染侧栏内仓库源区块（由主内容区工作区栏承载） */
   hideSources?: boolean;
+  /** 打开存储配置（REF-602 / REF-601 §3.1 设置入口） */
+  onSettingsClick?: () => void;
+  /** 侧栏一键同步（REF-602） */
+  onSyncClick?: () => void;
+  syncBusy?: boolean;
+  syncDisabled?: boolean;
+  syncDisabledTitle?: string;
+  /** 侧栏同步按钮副文案：策略 · 远端仓库 */
+  syncStrategyLabel?: string;
+  syncRemoteLabel?: string;
+  /** 隐藏实用工具导航（压缩/转换等） */
+  hideUtilityTools?: boolean;
+  /** 隐藏底部文档/快捷键/版本信息入口 */
+  hideHelpFooter?: boolean;
+  /** 显示工作区导航（本地工作区平台） */
+  showWorkspaceNav?: boolean;
   t?: (key: string) => string;
 }
 
@@ -142,6 +156,16 @@ const Sidebar: React.FC<SidebarProps> = ({
   onMobileClose,
   footerExtra,
   hideSources = false,
+  onSettingsClick,
+  onSyncClick,
+  syncBusy = false,
+  syncDisabled = false,
+  syncDisabledTitle,
+  syncStrategyLabel,
+  syncRemoteLabel,
+  hideUtilityTools = false,
+  hideHelpFooter = false,
+  showWorkspaceNav = false,
   t,
 }) => {
   const translate = t || defaultTranslate;
@@ -191,33 +215,131 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [collapsed]);
 
-  const mainNavItems: Array<{
+  const renderSyncButton = (collapsedMode: boolean) => {
+    if (!onSyncClick) return null;
+    const label = syncBusy
+      ? translate('sidebar.syncing')
+      : translate('sidebar.syncAction');
+    const meta =
+      !syncDisabled && syncStrategyLabel && syncRemoteLabel
+        ? `${syncStrategyLabel} · ${syncRemoteLabel}`
+        : undefined;
+    const title = syncDisabled
+      ? syncDisabledTitle || translate('sidebar.disabled')
+      : meta
+        ? `${label}\n${meta}`
+        : label;
+
+    if (collapsedMode) {
+      return (
+        <button
+          type="button"
+          className={`sidebar-collapsed-item ${syncBusy ? 'syncing' : ''} ${
+            syncDisabled ? 'disabled' : ''
+          }`}
+          onClick={syncDisabled ? undefined : onSyncClick}
+          disabled={syncDisabled || syncBusy}
+          title={title}
+        >
+          <RefreshCw size={28} className={syncBusy ? 'animate-spin' : ''} />
+          <span className="sidebar-collapsed-tooltip">
+            {meta ? (
+              <>
+                <span className="block">{label}</span>
+                <span className="block text-[11px] opacity-80">{meta}</span>
+              </>
+            ) : (
+              label
+            )}
+          </span>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className={`sidebar-nav-item sidebar-sync-item ${syncBusy ? 'syncing' : ''} ${
+          syncDisabled ? 'disabled' : ''
+        }`}
+        onClick={syncDisabled ? undefined : onSyncClick}
+        disabled={syncDisabled || syncBusy}
+        title={title}
+      >
+        <span className="sidebar-nav-icon">
+          <RefreshCw size={20} className={syncBusy ? 'animate-spin' : ''} />
+        </span>
+        <span className="sidebar-nav-label sidebar-sync-label">
+          <span className="sidebar-sync-primary">{label}</span>
+          {meta ? <span className="sidebar-sync-meta">{meta}</span> : null}
+        </span>
+      </button>
+    );
+  };
+  const galleryNavItem = {
+    menuKey: 'photos',
+    icon: <FileText size={20} />,
+    label: translate('sidebar.photos'),
+    menuItem: { type: 'photos' as const },
+    requiresConfig: true,
+  };
+
+  const workspaceNavItem = {
+    menuKey: 'workspace',
+    icon: <FolderOpen size={20} />,
+    label: translate('sidebar.workspaceNav'),
+    menuItem: { type: 'workspace' as const },
+  };
+
+  const utilityNavItems: Array<{
     menuKey: string;
     icon: React.ReactNode;
     label: string;
     menuItem: SidebarMenuItem;
     requiresConfig?: boolean;
-  }> = [
-    {
-      menuKey: 'photos',
-      icon: <FileText size={20} />,
-      label: translate('sidebar.photos'),
-      menuItem: { type: 'photos' as const },
-      requiresConfig: true,
-    },
-    {
-      menuKey: 'compress',
-      icon: <Zap size={20} />,
-      label: translate('sidebar.imageCompress'),
-      menuItem: { type: 'utility' as const, tool: 'compress' as const },
-    },
-    {
-      menuKey: 'convert',
-      icon: <FileImage size={20} />,
-      label: translate('sidebar.imageConvert'),
-      menuItem: { type: 'utility' as const, tool: 'convert' as const },
-    },
-  ].filter(item => !TEMPORARILY_HIDDEN_MENU_KEYS.has(item.menuKey));
+  }> = hideUtilityTools
+    ? []
+    : [
+        {
+          menuKey: 'compress',
+          icon: <Zap size={20} />,
+          label: translate('sidebar.imageCompress'),
+          menuItem: { type: 'utility' as const, tool: 'compress' as const },
+        },
+        {
+          menuKey: 'convert',
+          icon: <FileImage size={20} />,
+          label: translate('sidebar.imageConvert'),
+          menuItem: { type: 'utility' as const, tool: 'convert' as const },
+        },
+      ];
+
+  const primaryNavItems = [galleryNavItem, ...utilityNavItems];
+
+  const renderExpandedNavItems = (
+    items: typeof primaryNavItems,
+    options?: { requiresConfig?: boolean },
+  ) =>
+    items.map(item => {
+      const disabled =
+        (options?.requiresConfig ?? item.requiresConfig) && !hasConfig;
+      return (
+        <NavItem
+          key={item.menuKey}
+          icon={item.icon}
+          label={item.label}
+          active={activeMenu === item.menuKey}
+          disabled={disabled}
+          onClick={
+            !disabled && onMenuClick
+              ? () => onMenuClick(item.menuItem)
+              : undefined
+          }
+          tooltip={disabled ? translate('sidebar.needSource') : undefined}
+          t={t}
+        />
+      );
+    });
 
   // 处理右键菜单
   const handleContextMenu = (
@@ -367,7 +489,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* 主导航 - 折叠状态 */}
           {onMenuClick && (
             <nav className="sidebar-collapsed-nav">
-              {mainNavItems.map(item => {
+              {primaryNavItems.map(item => {
                 const disabled = item.requiresConfig && !hasConfig;
                 return (
                   <button
@@ -393,10 +515,30 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 );
               })}
+              {showWorkspaceNav && onMenuClick && (
+                <button
+                  key="workspace"
+                  type="button"
+                  className={`sidebar-collapsed-item ${
+                    activeMenu === 'workspace' ? 'active' : ''
+                  }`}
+                  onClick={() => onMenuClick(workspaceNavItem.menuItem)}
+                  title={workspaceNavItem.label}
+                >
+                  {React.cloneElement(
+                    workspaceNavItem.icon as React.ReactElement<{
+                      size?: number;
+                    }>,
+                    { size: 28 },
+                  )}
+                  <span className="sidebar-collapsed-tooltip">
+                    {workspaceNavItem.label}
+                  </span>
+                </button>
+              )}
+              {renderSyncButton(true)}
             </nav>
           )}
-
-          {/* 仓库源 - 折叠状态 */}
           {!hideSources && sources.length > 0 && (
             <div className="sidebar-collapsed-sources">
               {sources.slice(0, 3).map(source => (
@@ -451,49 +593,63 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* 底部操作 - 折叠状态 */}
           <div className="sidebar-collapsed-footer">
-            {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('docs') && (
+            {onSettingsClick && (
               <button
-                className="sidebar-collapsed-item"
-                onClick={() => {
-                  window.open(
-                    'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
-                    '_blank',
-                  );
-                }}
-                title={translate('sidebar.docs')}
+                className={`sidebar-collapsed-item ${
+                  activeMenu === 'settings' ? 'active' : ''
+                }`}
+                onClick={onSettingsClick}
+                title={translate('sidebar.settings')}
               >
-                <HelpCircle size={28} />
+                <Settings size={28} />
                 <span className="sidebar-collapsed-tooltip">
-                  {translate('sidebar.docs')}
+                  {translate('sidebar.settings')}
                 </span>
               </button>
             )}
-            {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('keyboardShortcuts') && (
-              <button
-                className="sidebar-collapsed-item"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-                }}
-                title={translate('sidebar.keyboardShortcuts')}
-              >
-                <Keyboard size={28} />
-                <span className="sidebar-collapsed-tooltip">
-                  {translate('sidebar.keyboardShortcuts')}
-                </span>
-              </button>
+            {!hideHelpFooter && (
+              <>
+                <button
+                  className="sidebar-collapsed-item"
+                  onClick={() => {
+                    window.open(
+                      'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                      '_blank',
+                    );
+                  }}
+                  title={translate('sidebar.docs')}
+                >
+                  <HelpCircle size={28} />
+                  <span className="sidebar-collapsed-tooltip">
+                    {translate('sidebar.docs')}
+                  </span>
+                </button>
+                <button
+                  className="sidebar-collapsed-item"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
+                  }}
+                  title={translate('sidebar.keyboardShortcuts')}
+                >
+                  <Keyboard size={28} />
+                  <span className="sidebar-collapsed-tooltip">
+                    {translate('sidebar.keyboardShortcuts')}
+                  </span>
+                </button>
+                <button
+                  className="sidebar-collapsed-item"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('openVersionInfo'));
+                  }}
+                  title={translate('sidebar.versionInfo')}
+                >
+                  <Info size={28} />
+                  <span className="sidebar-collapsed-tooltip">
+                    {translate('sidebar.versionInfo')}
+                  </span>
+                </button>
+              </>
             )}
-            <button
-              className="sidebar-collapsed-item"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('openVersionInfo'));
-              }}
-              title={translate('sidebar.versionInfo')}
-            >
-              <Info size={28} />
-              <span className="sidebar-collapsed-tooltip">
-                {translate('sidebar.versionInfo')}
-              </span>
-            </button>
           </div>
 
           {/* 右键菜单 - 折叠状态（使用 Portal） */}
@@ -524,35 +680,57 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* 主导航：图床 + 工具 + 设置 */}
+        {/* 主导航：图床 */}
         {onMenuClick && (
           <div className="sidebar-section">
             <div className="sidebar-section-header">
               <span className="sidebar-section-title">
-                {translate('sidebar.mainNav')}
+                {translate('sidebar.galleryNav')}
               </span>
             </div>
             <nav className="sidebar-nav">
-              {mainNavItems.map(item => {
-                const disabled = item.requiresConfig && !hasConfig;
-                return (
-                  <NavItem
-                    key={item.menuKey}
-                    icon={item.icon}
-                    label={item.label}
-                    active={activeMenu === item.menuKey}
-                    disabled={disabled}
-                    onClick={
-                      !disabled ? () => onMenuClick(item.menuItem) : undefined
-                    }
-                    tooltip={
-                      disabled ? translate('sidebar.needSource') : undefined
-                    }
-                    t={t}
-                  />
-                );
-              })}
+              {renderExpandedNavItems([galleryNavItem])}
             </nav>
+          </div>
+        )}
+
+        {/* 工具 */}
+        {onMenuClick && utilityNavItems.length > 0 && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-header">
+              <span className="sidebar-section-title">
+                {translate('sidebar.utilityTools')}
+              </span>
+            </div>
+            <nav className="sidebar-nav">
+              {renderExpandedNavItems(utilityNavItems)}
+            </nav>
+          </div>
+        )}
+
+        {/* 工作区 */}
+        {showWorkspaceNav && onMenuClick && (
+          <div className="sidebar-section">
+            <div className="sidebar-section-header">
+              <span className="sidebar-section-title">
+                {translate('sidebar.workspaceNav')}
+              </span>
+            </div>
+            <nav className="sidebar-nav">
+              {renderExpandedNavItems([workspaceNavItem])}
+            </nav>
+          </div>
+        )}
+
+        {/* 同步 */}
+        {onSyncClick && (
+          <div className="sidebar-section sidebar-sync">
+            <div className="sidebar-section-header">
+              <span className="sidebar-section-title">
+                {translate('sidebar.sync')}
+              </span>
+            </div>
+            <nav className="sidebar-nav">{renderSyncButton(false)}</nav>
           </div>
         )}
 
@@ -637,9 +815,24 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {footerExtra}
 
+        {/* 设置 */}
+        {onSettingsClick && (
+          <div className="sidebar-section sidebar-settings">
+            <nav className="sidebar-nav">
+              <NavItem
+                icon={<Settings size={20} />}
+                label={translate('sidebar.settings')}
+                active={activeMenu === 'settings'}
+                onClick={onSettingsClick}
+                t={t}
+              />
+            </nav>
+          </div>
+        )}
+
         {/* 底部操作 */}
-        <div className="sidebar-footer">
-          {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('docs') && (
+        {!hideHelpFooter && (
+          <div className="sidebar-footer">
             <NavItem
               icon={<HelpCircle size={20} />}
               label={translate('sidebar.docs')}
@@ -650,8 +843,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 );
               }}
             />
-          )}
-          {!TEMPORARILY_HIDDEN_FOOTER_KEYS.has('keyboardShortcuts') && (
             <NavItem
               icon={<Keyboard size={20} />}
               label={translate('sidebar.keyboardShortcuts')}
@@ -659,16 +850,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                 window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
               }}
             />
-          )}
-          <NavItem
-            icon={<Info size={20} />}
-            label={translate('sidebar.versionInfo')}
-            onClick={() => {
-              // 触发版本信息事件
-              window.dispatchEvent(new CustomEvent('openVersionInfo'));
-            }}
-          />
-        </div>
+            <NavItem
+              icon={<Info size={20} />}
+              label={translate('sidebar.versionInfo')}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('openVersionInfo'));
+              }}
+            />
+          </div>
+        )}
 
         {/* 右键菜单（使用 Portal） */}
         {renderContextMenu()}
