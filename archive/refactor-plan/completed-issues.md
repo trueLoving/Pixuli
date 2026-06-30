@@ -58,4 +58,7 @@
 | REF-512 | [M5] apps/pixuli 移动端 Web UI 适配（窄屏/安全区/触控）                                        | [#150](https://github.com/trueLoving/Pixuli/issues/150) | ✅                                                 |
 | REF-513 | [M5] apps/mobile 功能对齐清单与 RN 工程归档                                                    | [#151](https://github.com/trueLoving/Pixuli/issues/151) | ✅ RN 已归档；Capacitor APK 安装说明已写入用户手册 |
 | REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）                                      | [#152](https://github.com/trueLoving/Pixuli/issues/152) | ✅ follow-up: layouts/vite 插件                    |
+| REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）                                             | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ✅                                                 |
+| REF-516 | [三端融合] 以 Web/PC 为 SSOT 的 Mobile 功能对齐（总览）                                        | [#163](https://github.com/trueLoving/Pixuli/issues/163) | ✅ P0～P7                                          |
 | REF-601 | [M6] 三端融合交互设计（统一体验与差异适配）                                                    | [#130](https://github.com/trueLoving/Pixuli/issues/130) | ✅                                                 |
+| REF-607 | [M6] 本地工作区 + 远端同步与多形态 URL（Obsidian 式）                                          | [#144](https://github.com/trueLoving/Pixuli/issues/144) | ✅ P0～P7                                          |
