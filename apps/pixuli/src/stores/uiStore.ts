@@ -9,6 +9,7 @@ import {
 } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import { create } from 'zustand';
+import type { SettingsSection } from '@/features/settings/settingsTypes';
 import { isStoragePluginRegistered } from '../storage/registry';
 import { useImageStore } from './imageStore';
 import { useSourceStore } from './sourceStore';
@@ -21,10 +22,12 @@ export type EditingSourceRepoConfig = Pick<
 interface UIState {
   // 模态框状态
   showConfigModal: boolean;
-  showSourceTypeMenu: boolean;
-  showKeyboardHelp: boolean;
-  showVersionInfo: boolean;
   showOperationLog: boolean;
+  showSettingsModal: boolean;
+  /** 设置弹窗左侧默认选中的分区 */
+  settingsSection: SettingsSection;
+  /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
+  settingsSyncAddOpen: boolean;
 
   // 编辑状态（REF-312：编辑弹窗表单数据以 sourceStore 快照为准）
   editingSourceId: string | null;
@@ -46,10 +49,8 @@ interface UIState {
 
   // Actions - 模态框
   setShowConfigModal: (show: boolean) => void;
-  setShowSourceTypeMenu: (show: boolean) => void;
-  setShowKeyboardHelp: (show: boolean) => void;
-  setShowVersionInfo: (show: boolean) => void;
   setShowOperationLog: (show: boolean) => void;
+  setShowSettingsModal: (show: boolean) => void;
 
   // Actions - 编辑
   setEditingSourceId: (id: string | null) => void;
@@ -75,13 +76,14 @@ interface UIState {
   openConfigModal: () => void;
   closeConfigModal: () => void;
   openKeyboardHelp: () => void;
-  closeKeyboardHelp: () => void;
   openVersionInfo: () => void;
-  closeVersionInfo: () => void;
   openOperationLog: () => void;
   closeOperationLog: () => void;
-  addSource: () => void;
-  closeSourceTypeMenu: () => void;
+  openSettingsModal: (section?: SettingsSection) => void;
+  closeSettingsModal: () => void;
+  openSettingsModalForAddSource: () => void;
+  clearSettingsSyncAddOpen: () => void;
+  beginNewSource: (pluginId: string) => void;
 }
 
 function syncImageStoreForRepoConfig(
@@ -99,10 +101,10 @@ function syncImageStoreForRepoConfig(
 
 export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
-  showSourceTypeMenu: false,
-  showKeyboardHelp: false,
-  showVersionInfo: false,
   showOperationLog: false,
+  showSettingsModal: false,
+  settingsSection: 'sync',
+  settingsSyncAddOpen: false,
   editingSourceId: null,
   editingSourcePluginId: null,
   editingSourceRepoConfig: null,
@@ -114,10 +116,8 @@ export const useUIStore = create<UIState>(set => ({
   currentUtilityTool: null,
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
-  setShowSourceTypeMenu: (show: boolean) => set({ showSourceTypeMenu: show }),
-  setShowKeyboardHelp: (show: boolean) => set({ showKeyboardHelp: show }),
-  setShowVersionInfo: (show: boolean) => set({ showVersionInfo: show }),
   setShowOperationLog: (show: boolean) => set({ showOperationLog: show }),
+  setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
 
   setEditingSourceId: (id: string | null) => set({ editingSourceId: id }),
 
@@ -168,12 +168,47 @@ export const useUIStore = create<UIState>(set => ({
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
     }),
-  openKeyboardHelp: () => set({ showKeyboardHelp: true }),
-  closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
-  openVersionInfo: () => set({ showVersionInfo: true }),
-  closeVersionInfo: () => set({ showVersionInfo: false }),
+  openKeyboardHelp: () =>
+    set({
+      showSettingsModal: true,
+      settingsSection: 'keyboard',
+      settingsSyncAddOpen: false,
+    }),
+  openVersionInfo: () =>
+    set({
+      showSettingsModal: true,
+      settingsSection: 'version',
+      settingsSyncAddOpen: false,
+    }),
   openOperationLog: () => set({ showOperationLog: true }),
   closeOperationLog: () => set({ showOperationLog: false }),
-  addSource: () => set({ showSourceTypeMenu: true }),
-  closeSourceTypeMenu: () => set({ showSourceTypeMenu: false }),
+  openSettingsModal: (section = 'sync') =>
+    set({
+      showSettingsModal: true,
+      settingsSection: section,
+      settingsSyncAddOpen: false,
+    }),
+  closeSettingsModal: () =>
+    set({
+      showSettingsModal: false,
+      settingsSyncAddOpen: false,
+    }),
+  openSettingsModalForAddSource: () =>
+    set({
+      showSettingsModal: true,
+      settingsSection: 'sync',
+      settingsSyncAddOpen: true,
+    }),
+  clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
+  beginNewSource: (pluginId: string) => {
+    useImageStore.setState({
+      storageType: pluginId as 'github' | 'gitee',
+    });
+    set({
+      editingSourceId: null,
+      editingSourcePluginId: null,
+      editingSourceRepoConfig: null,
+      showConfigModal: true,
+    });
+  },
 }));

@@ -118,6 +118,47 @@
     "switchFolder": "Change folder",
     "switchOpfs": "New browser workspace",
     "clearWorkspace": "Disconnect workspace",
-    "clearConfirm": "Disconnect the current workspace? Saved workspace state will be cleared and you will need to pick a folder or create a workspace again. Files on disk will not be deleted."
+    "clearConfirm": "Disconnect the current workspace? Saved workspace state will be cleared and you will need to pick a folder or create a workspace again. Files on disk will not be deleted.",
+    "openWorkspacePage": "Go to workspace"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "navLabel": "Settings sections",
+    "menuSync": "Sync",
+    "syncStrategyTitle": "Sync strategy",
+    "syncStrategyHint": "Sidebar “Sync now” runs with the default direction against the current sync target.",
+    "defaultDirection": "Default sync direction",
+    "directionBoth": "Two-way sync (push pending, then pull remote changes)",
+    "directionPush": "Push only (upload local pending items)",
+    "directionPull": "Pull only (download remote changes)",
+    "directionShort": {
+      "both": "Two-way",
+      "push": "Push",
+      "pull": "Pull"
+    },
+    "sourcesTitle": "Remote repositories",
+    "singleSyncHint": "Only one repository can sync at a time. Pick the active target in the table.",
+    "addRemote": "Add remote",
+    "sourcesEmpty": "No remote repositories yet. Use the button above to add GitHub or Gitee.",
+    "tableName": "Name",
+    "tableRepo": "Repository",
+    "tableSyncTarget": "Sync target",
+    "tableActions": "Actions",
+    "currentSyncTarget": "Active",
+    "setSyncTarget": "Set as target",
+    "noSyncTarget": "No repository",
+    "menuWorkspace": "Workspace",
+    "workspaceCurrentTitle": "Current workspace",
+    "workspaceUnavailable": "Local workspace is not supported on this platform.",
+    "workspaceNoRemoteHint": "No remote repository yet. Add one under Sync and set a sync target.",
+    "workspacePhotosEmptyHint": "Open Workspace in the sidebar to create or connect a local workspace before browsing images.",
+    "openWorkspaceSettings": "Open workspace settings",
+    "menuKeyboard": "Shortcuts",
+    "menuVersion": "Version",
+    "menuDocs": "Docs",
+    "docsTitle": "Documentation",
+    "docsHint": "Read the Pixuli usage tutorial and FAQ on GitHub Wiki.",
+    "docsOpenLink": "Open usage tutorial"
   }
 }

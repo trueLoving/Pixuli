@@ -22,6 +22,12 @@ export const routeConfig: Record<string, RouteMeta> = {
     description: 'Browse photos in file mode',
     menuKey: 'photos',
   },
+  [ROUTES.WORKSPACE]: {
+    path: ROUTES.WORKSPACE,
+    title: 'Workspace',
+    description: 'Manage local workspace',
+    menuKey: 'workspace',
+  },
   [ROUTES.COMPRESS]: {
     path: ROUTES.COMPRESS,
     title: 'Compress',

@@ -118,6 +118,47 @@
     "switchFolder": "更换文件夹",
     "switchOpfs": "新建浏览器工作区",
     "clearWorkspace": "断开工作区",
-    "clearConfirm": "确定断开当前工作区？将清除本机保存的工作区记录，需要重新选择文件夹或创建工作区。磁盘上的图片文件不会被删除。"
+    "clearConfirm": "确定断开当前工作区？将清除本机保存的工作区记录，需要重新选择文件夹或创建工作区。磁盘上的图片文件不会被删除。",
+    "openWorkspacePage": "前往工作区"
+  },
+  "settings": {
+    "title": "设置",
+    "close": "关闭",
+    "navLabel": "设置分类",
+    "menuSync": "同步",
+    "syncStrategyTitle": "同步策略",
+    "syncStrategyHint": "侧栏「立即同步」将按此处选择的默认方向，对当前同步目标仓库执行。",
+    "defaultDirection": "默认同步方向",
+    "directionBoth": "双向同步（先推送待上传，再拉取远端变更）",
+    "directionPush": "仅推送（上传本地待同步项）",
+    "directionPull": "仅拉取（从远端下载变更）",
+    "directionShort": {
+      "both": "双向",
+      "push": "推送",
+      "pull": "拉取"
+    },
+    "sourcesTitle": "远端仓库",
+    "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",
+    "addRemote": "添加远端仓库",
+    "sourcesEmpty": "尚未添加远端仓库，点击上方按钮添加 GitHub 或 Gitee 源。",
+    "tableName": "名称",
+    "tableRepo": "仓库",
+    "tableSyncTarget": "同步目标",
+    "tableActions": "操作",
+    "currentSyncTarget": "当前同步",
+    "setSyncTarget": "设为同步目标",
+    "noSyncTarget": "未选择仓库",
+    "menuWorkspace": "工作区",
+    "workspaceCurrentTitle": "当前工作区",
+    "workspaceUnavailable": "当前平台不支持本地工作区。",
+    "workspaceNoRemoteHint": "尚未配置远端仓库，请在「同步」分区添加并指定同步目标。",
+    "workspacePhotosEmptyHint": "请先在侧栏打开「工作区」创建或连接本地工作区，再浏览与管理图片。",
+    "openWorkspaceSettings": "打开工作区设置",
+    "menuKeyboard": "快捷键",
+    "menuVersion": "版本信息",
+    "menuDocs": "文档",
+    "docsTitle": "使用文档",
+    "docsHint": "查看 Pixuli 使用教程与常见问题（GitHub Wiki）。",
+    "docsOpenLink": "打开使用教程"
   }
 }

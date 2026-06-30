@@ -13,9 +13,15 @@ const CompressPage = lazy(() =>
 const ConvertPage = lazy(() =>
   import('../pages/convert').then(module => ({ default: module.ConvertPage })),
 );
+const WorkspacePage = lazy(() =>
+  import('../pages/workspace').then(module => ({
+    default: module.WorkspacePage,
+  })),
+);
 // 路由路径常量
 export const ROUTES = {
   PHOTOS: '/photos',
+  WORKSPACE: '/workspace',
   COMPRESS: '/compress',
   CONVERT: '/convert',
 } as const;
@@ -61,6 +67,14 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({ onOpenConfigModal }) => {
       <Route
         path="/timeline"
         element={<Navigate to={ROUTES.PHOTOS} replace />}
+      />
+      <Route
+        path={ROUTES.WORKSPACE}
+        element={
+          <RouteSuspense>
+            <WorkspacePage />
+          </RouteSuspense>
+        }
       />
       <Route
         path={ROUTES.COMPRESS}
