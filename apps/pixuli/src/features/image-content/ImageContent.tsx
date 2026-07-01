@@ -1,8 +1,7 @@
 import { EmptyState, ImageBrowser } from '@pixuli/ui';
 import type { ImageBrowserSearchConfig } from '@pixuli/ui';
 import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
-import { RefreshCw } from 'lucide-react';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
 import {
@@ -29,6 +28,20 @@ interface ImageContentProps {
   search?: ImageBrowserSearchConfig;
 }
 
+function resolveImageErrorMessage(
+  error: string,
+  t: (key: string, options?: Record<string, any>) => string,
+): string {
+  if (error.includes('|')) {
+    const [key, provider] = error.split('|');
+    return t(key, { provider });
+  }
+  if (error.startsWith('errors.')) {
+    return t(error);
+  }
+  return error;
+}
+
 export const ImageContent: React.FC<ImageContentProps> = ({
   hasConfig,
   error,
@@ -48,6 +61,7 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   );
   const batchUploadProgress = useImageStore(state => state.batchUploadProgress);
   const imageLoading = useImageStore(state => state.loading);
+  const loadImages = useImageStore(state => state.loadImages);
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
@@ -55,6 +69,16 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const onCopyUrl = useImageCopyUrl();
   const nativePickers = useNativeImagePickers();
   const onShareImage = useNativeShareImage();
+
+  const errorMessage = useMemo(
+    () => (error ? resolveImageErrorMessage(error, t) : null),
+    [error, t],
+  );
+
+  const handleRetry = useCallback(() => {
+    onClearError();
+    void loadImages();
+  }, [loadImages, onClearError]);
 
   if (!hasConfig) {
     return (
@@ -76,50 +100,16 @@ export const ImageContent: React.FC<ImageContentProps> = ({
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-      {/* 错误提示 */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <p className="text-red-800">
-              {error.includes('|')
-                ? (() => {
-                    const [key, provider] = error.split('|');
-                    return t(key, { provider });
-                  })()
-                : error.startsWith('errors.')
-                  ? t(error)
-                  : error}
-            </p>
-            <button
-              onClick={onClearError}
-              className="text-red-600 hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 图片统计（窄屏由 ImageBrowser 工具栏承担，REF-602 / #131） */}
-      <div className="image-content-stats mb-4 hidden md:flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {t('app.imageLibrary')} ({images.length} {t('app.images')})
-        </h2>
-        {loading && (
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <RefreshCw className="w-4 h-4 animate-spin" />
-            <span>{t('app.loadingImages')}</span>
-          </div>
-        )}
-      </div>
-
-      {/* 图片浏览 */}
       <div className="min-h-0">
         <ImageBrowser
           t={t}
           images={images}
           hasConfig={hasConfig}
           search={search}
+          loading={loading}
+          errorMessage={errorMessage}
+          onDismissError={onClearError}
+          onRetry={handleRetry}
           onDeleteImage={onDeleteImage}
           onDeleteMultipleImages={onDeleteMultipleImages}
           onUpdateImage={onUpdateImage}

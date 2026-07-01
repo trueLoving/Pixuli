@@ -1,6 +1,16 @@
 {
   "image": {
     "browse": "浏览图片",
+    "libraryTitle": "图片库",
+    "empty": {
+      "filteredTitle": "没有匹配的图片",
+      "filteredDescription": "尝试调整筛选条件或清除搜索关键词"
+    },
+    "feedback": {
+      "retry": "重试",
+      "dismiss": "关闭",
+      "loading": "正在加载图片..."
+    },
     "filter": {
       "title": "图片筛选",
       "collapse": "收起筛选",

@@ -26,6 +26,7 @@ export * from '../primitives/upload-button/web';
 export * from '../primitives/keyboard-help/web';
 export * from '../primitives/language-switcher/web';
 export * from '../primitives/fullscreen-loading/web';
+export * from '../primitives/content-feedback/web';
 export * from '../primitives/action-button/web';
 
 // 功能

@@ -1,6 +1,16 @@
 {
   "image": {
     "browse": "Browse Images",
+    "libraryTitle": "Image Library",
+    "empty": {
+      "filteredTitle": "No matching images",
+      "filteredDescription": "Try adjusting filters or clearing your search"
+    },
+    "feedback": {
+      "retry": "Retry",
+      "dismiss": "Dismiss",
+      "loading": "Loading images..."
+    },
     "filter": {
       "title": "Image Filter",
       "collapse": "Collapse Filter",

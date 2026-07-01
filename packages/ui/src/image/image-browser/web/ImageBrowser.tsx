@@ -12,6 +12,7 @@ import {
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
+import { ContentFeedback } from '../../../primitives/content-feedback/web';
 import Search, {
   type SearchHistoryItem,
 } from '../../../primitives/search/web/Search';
@@ -32,6 +33,7 @@ import type { NativeImagePickers } from '../../image-upload/common/nativePickers
 import BatchDeleteModal from './ImageBatchDeleteModal';
 import './ImageBrowser.css';
 import ImageGrid from './ImageGrid';
+import ImageLibraryEmpty from './ImageLibraryEmpty';
 import ImageList from './ImageList';
 import ImageSorter from './ImageSorter';
 import ViewToggle from './ImageViewToggle';
@@ -70,6 +72,10 @@ interface ImageBrowserProps {
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   nativePickers?: NativeImagePickers;
   onShareImage?: (image: ImageItem) => Promise<void>;
+  loading?: boolean;
+  errorMessage?: string | null;
+  onDismissError?: () => void;
+  onRetry?: () => void;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
@@ -90,6 +96,10 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onCopyUrl,
   nativePickers,
   onShareImage,
+  loading = false,
+  errorMessage,
+  onDismissError,
+  onRetry,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
@@ -491,8 +501,24 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     [onDeleteMultipleImages],
   );
 
+  const showLibraryEmpty = !loading && sortedImages.length === 0;
+  const emptyVariant =
+    showLibraryEmpty && images.length > 0 ? 'filtered' : 'library';
+
   return (
     <div className={`image-browser ${className}`}>
+      {errorMessage ? (
+        <div className="image-browser-feedback px-4 sm:px-0">
+          <ContentFeedback
+            message={errorMessage}
+            onDismiss={onDismissError}
+            onRetry={onRetry}
+            retryLabel={t('image.feedback.retry')}
+            dismissLabel={t('image.feedback.dismiss')}
+          />
+        </div>
+      ) : null}
+
       {search && (
         <div className="image-browser-filter-section">
           <Search
@@ -519,7 +545,18 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
       {/* 工具栏 */}
       <div className="image-browser-toolbar">
         <div className="image-browser-header">
-          <h2 className="image-browser-title">{t('image.browse')}</h2>
+          <div className="image-browser-title-row">
+            <h2 className="image-browser-title">{t('image.libraryTitle')}</h2>
+            {loading ? (
+              <span className="image-browser-loading-indicator">
+                <span
+                  className="image-browser-loading-spinner-inline"
+                  aria-hidden
+                />
+                <span>{t('image.feedback.loading')}</span>
+              </span>
+            ) : null}
+          </div>
           <span className="image-browser-count">
             {t('image.list.totalImages').replace(
               '{count}',
@@ -580,38 +617,51 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
 
       {/* 内容区域 */}
       <div className="image-browser-content">
-        <div
-          className={`image-browser-view ${currentView === 'grid' ? 'visible' : 'hidden'}`}
-        >
-          <ImageGrid
-            t={t}
-            images={sortedImages}
-            selectedImageIndex={selectedImageIndex}
-            onImageSelect={handleImageSelect}
-            onDeleteImage={onDeleteImage}
-            onUpdateImage={onUpdateImage}
-            getImageDimensionsFromUrl={getImageDimensionsFromUrl}
-            formatFileSize={formatFileSize}
-            onCopyUrl={onCopyUrl}
-            onShareImage={onShareImage}
-          />
-        </div>
-        <div
-          className={`image-browser-view ${currentView === 'list' ? 'visible' : 'hidden'}`}
-        >
-          <ImageList
-            t={t}
-            images={sortedImages}
-            selectedImageIndex={selectedImageIndex}
-            onImageSelect={handleImageSelect}
-            onDeleteImage={onDeleteImage}
-            onUpdateImage={onUpdateImage}
-            getImageDimensionsFromUrl={getImageDimensionsFromUrl}
-            formatFileSize={formatFileSize}
-            onCopyUrl={onCopyUrl}
-            onShareImage={onShareImage}
-          />
-        </div>
+        {loading && sortedImages.length === 0 ? (
+          <div className="image-browser-loading" aria-busy="true">
+            <div className="image-browser-loading-spinner" />
+            <p className="mt-3 text-sm text-gray-500">
+              {t('image.feedback.loading')}
+            </p>
+          </div>
+        ) : showLibraryEmpty ? (
+          <ImageLibraryEmpty variant={emptyVariant} t={t} />
+        ) : (
+          <>
+            <div
+              className={`image-browser-view ${currentView === 'grid' ? 'visible' : 'hidden'}`}
+            >
+              <ImageGrid
+                t={t}
+                images={sortedImages}
+                selectedImageIndex={selectedImageIndex}
+                onImageSelect={handleImageSelect}
+                onDeleteImage={onDeleteImage}
+                onUpdateImage={onUpdateImage}
+                getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+                formatFileSize={formatFileSize}
+                onCopyUrl={onCopyUrl}
+                onShareImage={onShareImage}
+              />
+            </div>
+            <div
+              className={`image-browser-view ${currentView === 'list' ? 'visible' : 'hidden'}`}
+            >
+              <ImageList
+                t={t}
+                images={sortedImages}
+                selectedImageIndex={selectedImageIndex}
+                onImageSelect={handleImageSelect}
+                onDeleteImage={onDeleteImage}
+                onUpdateImage={onUpdateImage}
+                getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+                formatFileSize={formatFileSize}
+                onCopyUrl={onCopyUrl}
+                onShareImage={onShareImage}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* 批量删除模态框 */}
