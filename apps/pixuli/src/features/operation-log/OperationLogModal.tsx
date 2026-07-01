@@ -19,11 +19,14 @@ import { operationLogLocales } from './locales';
 interface OperationLogModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** 嵌入设置弹窗：无全屏遮罩与关闭按钮 */
+  embedded?: boolean;
 }
 
 const OperationLogModal: React.FC<OperationLogModalProps> = ({
   isOpen,
   onClose,
+  embedded = false,
 }) => {
   const { t: i18nT, getCurrentLanguage } = useI18n();
   const currentLang = getCurrentLanguage();
@@ -170,227 +173,250 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
   const iconButtonClass =
     'inline-flex min-h-[2.75rem] min-w-[2.75rem] items-center justify-center rounded-md hover:bg-gray-100';
 
+  const toolbar = (
+    <div
+      className={`flex items-center justify-between border-b ${embedded ? 'pb-3' : 'p-4 pt-[max(1rem,env(safe-area-inset-top))]'}`}
+    >
+      {!embedded ? (
+        <h2 className="text-lg font-semibold md:text-xl">{t('title')}</h2>
+      ) : (
+        <h3 className="text-base font-semibold text-gray-900">{t('title')}</h3>
+      )}
+      <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setShowFilter(!showFilter)}
+          className={iconButtonClass}
+          title={t('filter')}
+          aria-label={t('filter')}
+        >
+          <Filter className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleExport('json')}
+          className={iconButtonClass}
+          title={t('exportJSON')}
+          aria-label={t('exportJSON')}
+        >
+          <Download className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleClearLogs('all')}
+          className={`${iconButtonClass} text-red-600`}
+          title={t('clearAll')}
+          aria-label={t('clearAll')}
+        >
+          <Trash2 className="h-5 w-5" />
+        </button>
+        {!embedded ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className={iconButtonClass}
+            aria-label={t('close')}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  const body = (
+    <>
+      {toolbar}
+
+      {/* Statistics */}
+      {statistics && (
+        <div className="border-b bg-gray-50 p-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">{statistics.total}</div>
+              <div className="text-sm text-gray-600">{t('total')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{statistics.todayCount}</div>
+              <div className="text-sm text-gray-600">{t('today')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">
+                {statistics.successRate.toFixed(1)}%
+              </div>
+              <div className="text-sm text-gray-600">{t('successRate')}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {statistics.byStatus[LogStatus.SUCCESS] || 0}
+              </div>
+              <div className="text-sm text-gray-600">{t('success')}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter Panel */}
+      {showFilter && (
+        <div className="border-b bg-gray-50 p-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('action')}
+              </label>
+              <select
+                value={localFilter.action || ''}
+                onChange={e =>
+                  setLocalFilter({
+                    ...localFilter,
+                    action: e.target.value
+                      ? (e.target.value as LogActionType)
+                      : undefined,
+                  })
+                }
+                className="w-full p-2 border rounded"
+              >
+                <option value="">{t('allActions')}</option>
+                {Object.values(LogActionType).map(action => (
+                  <option key={action} value={action}>
+                    {getActionLabel(action)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('status')}
+              </label>
+              <select
+                value={localFilter.status || ''}
+                onChange={e =>
+                  setLocalFilter({
+                    ...localFilter,
+                    status: e.target.value
+                      ? (e.target.value as LogStatus)
+                      : undefined,
+                  })
+                }
+                className="w-full p-2 border rounded"
+              >
+                <option value="">{t('allStatus')}</option>
+                {Object.values(LogStatus).map(status => (
+                  <option key={status} value={status}>
+                    {status === LogStatus.SUCCESS
+                      ? t('success')
+                      : status === LogStatus.FAILED
+                        ? t('failed')
+                        : t('pending')}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('keyword')}
+              </label>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={localFilter.keyword || ''}
+                  onChange={e =>
+                    setLocalFilter({
+                      ...localFilter,
+                      keyword: e.target.value,
+                    })
+                  }
+                  placeholder={t('keyword')}
+                  className="w-full pl-8 p-2 border rounded"
+                />
+              </div>
+            </div>
+            <div className="flex items-end gap-2">
+              <button
+                onClick={handleResetFilter}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                {t('reset')}
+              </button>
+              <button
+                onClick={handleApplyFilter}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                {t('apply')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logs List */}
+      <div className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-gray-500">Loading...</div>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-gray-500">{t('noLogs')}</div>
+          </div>
+        ) : (
+          <div className="p-4">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-100 sticky top-0">
+                <tr>
+                  <th className="p-2 text-left">{t('time')}</th>
+                  <th className="p-2 text-left">{t('action')}</th>
+                  <th className="p-2 text-left">{t('status')}</th>
+                  <th className="p-2 text-left">{t('imageName')}</th>
+                  <th className="p-2 text-left">{t('duration')}</th>
+                  <th className="p-2 text-left">{t('error')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logs.map(log => (
+                  <tr key={log.id} className="border-b hover:bg-gray-50">
+                    <td className="p-2">{formatTime(log.timestamp)}</td>
+                    <td className="p-2">{getActionLabel(log.action)}</td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-1">
+                        {getStatusIcon(log.status)}
+                        <span>
+                          {log.status === LogStatus.SUCCESS
+                            ? t('success')
+                            : log.status === LogStatus.FAILED
+                              ? t('failed')
+                              : t('pending')}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-2">{log.imageName || '-'}</td>
+                    <td className="p-2">
+                      {log.duration ? `${log.duration}ms` : '-'}
+                    </td>
+                    <td className="p-2 text-red-600">{log.error || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="operation-log-embedded flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
+        {body}
+      </div>
+    );
+  }
+
   return (
     <div className="operation-log-modal-overlay fixed inset-0 z-50 flex bg-black/50 md:items-center md:justify-center md:p-4">
       <div className="operation-log-modal-panel flex h-full w-full flex-col bg-white shadow-xl md:h-[90vh] md:max-h-[90vh] md:w-[90vw] md:rounded-lg">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-          <h2 className="text-lg font-semibold md:text-xl">{t('title')}</h2>
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setShowFilter(!showFilter)}
-              className={iconButtonClass}
-              title={t('filter')}
-              aria-label={t('filter')}
-            >
-              <Filter className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleExport('json')}
-              className={iconButtonClass}
-              title={t('exportJSON')}
-              aria-label={t('exportJSON')}
-            >
-              <Download className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleClearLogs('all')}
-              className={`${iconButtonClass} text-red-600`}
-              title={t('clearAll')}
-              aria-label={t('clearAll')}
-            >
-              <Trash2 className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className={iconButtonClass}
-              aria-label={t('close')}
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Statistics */}
-        {statistics && (
-          <div className="border-b bg-gray-50 p-4">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold">{statistics.total}</div>
-                <div className="text-sm text-gray-600">{t('total')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {statistics.todayCount}
-                </div>
-                <div className="text-sm text-gray-600">{t('today')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold">
-                  {statistics.successRate.toFixed(1)}%
-                </div>
-                <div className="text-sm text-gray-600">{t('successRate')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {statistics.byStatus[LogStatus.SUCCESS] || 0}
-                </div>
-                <div className="text-sm text-gray-600">{t('success')}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Filter Panel */}
-        {showFilter && (
-          <div className="border-b bg-gray-50 p-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('action')}
-                </label>
-                <select
-                  value={localFilter.action || ''}
-                  onChange={e =>
-                    setLocalFilter({
-                      ...localFilter,
-                      action: e.target.value
-                        ? (e.target.value as LogActionType)
-                        : undefined,
-                    })
-                  }
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">{t('allActions')}</option>
-                  {Object.values(LogActionType).map(action => (
-                    <option key={action} value={action}>
-                      {getActionLabel(action)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('status')}
-                </label>
-                <select
-                  value={localFilter.status || ''}
-                  onChange={e =>
-                    setLocalFilter({
-                      ...localFilter,
-                      status: e.target.value
-                        ? (e.target.value as LogStatus)
-                        : undefined,
-                    })
-                  }
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="">{t('allStatus')}</option>
-                  {Object.values(LogStatus).map(status => (
-                    <option key={status} value={status}>
-                      {status === LogStatus.SUCCESS
-                        ? t('success')
-                        : status === LogStatus.FAILED
-                          ? t('failed')
-                          : t('pending')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('keyword')}
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    value={localFilter.keyword || ''}
-                    onChange={e =>
-                      setLocalFilter({
-                        ...localFilter,
-                        keyword: e.target.value,
-                      })
-                    }
-                    placeholder={t('keyword')}
-                    className="w-full pl-8 p-2 border rounded"
-                  />
-                </div>
-              </div>
-              <div className="flex items-end gap-2">
-                <button
-                  onClick={handleResetFilter}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
-                >
-                  {t('reset')}
-                </button>
-                <button
-                  onClick={handleApplyFilter}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  {t('apply')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Logs List */}
-        <div className="flex-1 overflow-auto">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500">Loading...</div>
-            </div>
-          ) : logs.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500">{t('noLogs')}</div>
-            </div>
-          ) : (
-            <div className="p-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-100 sticky top-0">
-                  <tr>
-                    <th className="p-2 text-left">{t('time')}</th>
-                    <th className="p-2 text-left">{t('action')}</th>
-                    <th className="p-2 text-left">{t('status')}</th>
-                    <th className="p-2 text-left">{t('imageName')}</th>
-                    <th className="p-2 text-left">{t('duration')}</th>
-                    <th className="p-2 text-left">{t('error')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map(log => (
-                    <tr key={log.id} className="border-b hover:bg-gray-50">
-                      <td className="p-2">{formatTime(log.timestamp)}</td>
-                      <td className="p-2">{getActionLabel(log.action)}</td>
-                      <td className="p-2">
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(log.status)}
-                          <span>
-                            {log.status === LogStatus.SUCCESS
-                              ? t('success')
-                              : log.status === LogStatus.FAILED
-                                ? t('failed')
-                                : t('pending')}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-2">{log.imageName || '-'}</td>
-                      <td className="p-2">
-                        {log.duration ? `${log.duration}ms` : '-'}
-                      </td>
-                      <td className="p-2 text-red-600">{log.error || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        {body}
       </div>
     </div>
   );

@@ -49,10 +49,6 @@ export function useCapacitorBackButton(): void {
           ui.closeConfigModal();
           return;
         }
-        if (ui.showOperationLog) {
-          ui.closeOperationLog();
-          return;
-        }
         if (ui.showSettingsModal) {
           ui.closeSettingsModal();
           return;

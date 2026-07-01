@@ -1,0 +1,30 @@
+.workspace-shell {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.workspace-shell-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-explorer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.25);
+}
+
+@media (max-width: 767px) {
+  .workspace-shell-main {
+    padding-bottom: 3.25rem;
+  }
+}

@@ -1,29 +1,17 @@
-import React from 'react';
-import { WorkspaceManagePanel } from '@/features/workspace/WorkspaceManagePanel';
-import { WorkspaceMigrationWizard } from '@/features/workspace';
-import { useSourceStore } from '@/stores/sourceStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import React, { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { ROUTES } from '@/router/routes';
+import { useUIStore } from '@/stores/uiStore';
 
+/** 旧 /workspace 路由：管理工作区改由设置弹窗与资源管理器底栏承载 */
 export const WorkspacePage: React.FC = () => {
-  const needsSetup = useWorkspaceStore(state => state.needsWorkspaceSetup());
-  const { sources } = useSourceStore();
-  const showMigration = needsSetup && sources.length > 0;
+  const openSettingsModal = useUIStore(state => state.openSettingsModal);
 
-  if (showMigration) {
-    return (
-      <div className="workspace-page h-full overflow-y-auto">
-        <WorkspaceMigrationWizard />
-      </div>
-    );
-  }
+  useEffect(() => {
+    openSettingsModal('workspace');
+  }, [openSettingsModal]);
 
-  return (
-    <div className="workspace-page h-full overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <WorkspaceManagePanel />
-      </div>
-    </div>
-  );
+  return <Navigate to={ROUTES.PHOTOS} replace />;
 };
 
 export default WorkspacePage;

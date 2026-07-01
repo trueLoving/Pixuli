@@ -119,7 +119,15 @@
     "switchOpfs": "New browser workspace",
     "clearWorkspace": "Disconnect workspace",
     "clearConfirm": "Disconnect the current workspace? Saved workspace state will be cleared and you will need to pick a folder or create a workspace again. Files on disk will not be deleted.",
-    "openWorkspacePage": "Go to workspace"
+    "openWorkspacePage": "Go to workspace",
+    "welcomeTitle": "Welcome to Pixuli",
+    "welcomeSubtitle": "Open or create a local workspace to manage your images.",
+    "welcomeOpenSettings": "Settings & remote sync",
+    "explorer": "Explorer",
+    "activityBar": "Main menu",
+    "allImages": "All images",
+    "manageExplorer": "Manage workspace…",
+    "closeExplorer": "Close folder panel"
   },
   "settings": {
     "title": "Settings",
@@ -154,11 +162,16 @@
     "workspaceNoRemoteHint": "No remote repository yet. Add one under Sync and set a sync target.",
     "workspacePhotosEmptyHint": "Open Workspace in the sidebar to create or connect a local workspace before browsing images.",
     "openWorkspaceSettings": "Open workspace settings",
+    "menuOperationLog": "Operation log",
+    "menuLanguage": "Language",
     "menuKeyboard": "Shortcuts",
     "menuVersion": "Version",
     "menuDocs": "Docs",
     "docsTitle": "Documentation",
     "docsHint": "Read the Pixuli usage tutorial and FAQ on GitHub Wiki.",
     "docsOpenLink": "Open usage tutorial"
+  },
+  "language": {
+    "current": "Choose the interface language"
   }
 }

@@ -13,11 +13,12 @@ import { useI18n } from '@/i18n/useI18n';
 
 interface WorkspaceMigrationWizardProps {
   onComplete?: () => void;
+  embedded?: boolean;
 }
 
 export const WorkspaceMigrationWizard: React.FC<
   WorkspaceMigrationWizardProps
-> = ({ onComplete }) => {
+> = ({ onComplete, embedded = false }) => {
   const { t } = useI18n();
   const sourceCount = useSourceStore(state => state.sources.length);
   const { pickWorkspace, loading, error } = useWorkspaceStore();
@@ -43,8 +44,16 @@ export const WorkspaceMigrationWizard: React.FC<
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-      <div className="max-w-lg mx-auto rounded-xl border border-blue-200 bg-white p-8 shadow-sm">
+    <div
+      className={
+        embedded
+          ? 'workspace-migration-embedded'
+          : 'w-full px-4 sm:px-6 lg:px-8 py-8'
+      }
+    >
+      <div
+        className={`${embedded ? '' : 'max-w-lg mx-auto '}rounded-xl border border-blue-200 bg-white p-8 shadow-sm`.trim()}
+      >
         <h2 className="text-lg font-semibold text-gray-900 mb-2">
           {t('workspace.migrationTitle')}
         </h2>

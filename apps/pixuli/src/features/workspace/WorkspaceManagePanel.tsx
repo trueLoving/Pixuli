@@ -10,6 +10,7 @@ import {
 } from '@/platforms/workspacePlatform';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 function formatSyncTime(
@@ -79,7 +80,10 @@ export const WorkspaceManagePanel: React.FC = () => {
     if (!window.confirm(t('workspace.clearConfirm'))) {
       return;
     }
-    void clearWorkspace().then(() => loadImages());
+    void clearWorkspace().then(() => {
+      useUIStore.getState().setSelectedFolderPath('');
+      return loadImages();
+    });
   };
 
   if (!localActive) {

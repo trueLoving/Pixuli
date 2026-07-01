@@ -47,18 +47,16 @@ function App() {
   const {
     showConfigModal,
     editingSourceId,
-    showOperationLog,
     showSettingsModal,
     isFullscreenMode,
     setIsFullscreenMode,
     openConfigModal,
     closeConfigModal,
     openKeyboardHelp,
-    openOperationLog,
-    closeOperationLog,
     closeSettingsModal,
     openSettingsModalForAddSource,
     openConfigModalForEdit,
+    openOperationLog,
   } = useUIStore();
 
   // 源管理
@@ -139,12 +137,11 @@ function App() {
   useKeyboardShortcuts(
     t,
     showConfigModal,
-    showOperationLog,
     showSettingsModal,
     closeConfigModal,
-    closeOperationLog,
     closeSettingsModal,
     openKeyboardHelp,
+    openOperationLog,
     handleLoadImages,
     openConfigModal,
   );

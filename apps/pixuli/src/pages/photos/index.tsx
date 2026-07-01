@@ -1,15 +1,13 @@
 import { useSearchContextSafe } from '@/contexts/SearchContext';
-import {
-  WorkspaceMigrationWizard,
-  WorkspacePhotosEmptyState,
-} from '@/features/workspace';
 import { ImageContent } from '@/features/image-content/ImageContent';
 import { useImageOperations } from '@/hooks/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { filterImagesByFolder } from '@/utils/workspaceFolderTree';
 import type { ImageBrowserSearchConfig } from '@pixuli/ui';
 import React, { useMemo } from 'react';
 
@@ -26,15 +24,18 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   const error = useImageStore(state => state.error);
   const clearError = useImageStore(state => state.clearError);
   const { sources } = useSourceStore();
-  const needsSetup = useWorkspaceStore(state => state.needsWorkspaceSetup());
   const localActive = useWorkspaceStore(state => state.isLocalActive());
+  const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
   const searchContext = useSearchContextSafe();
 
-  const showMigration = needsSetup && sources.length > 0;
-  const showSetup = needsSetup && sources.length === 0;
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
+
+  const visibleImages = useMemo(
+    () => filterImagesByFolder(images, selectedFolderPath),
+    [images, selectedFolderPath],
+  );
 
   const search = useMemo<ImageBrowserSearchConfig | undefined>(() => {
     if (!searchContext) {
@@ -53,22 +54,6 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     };
   }, [searchContext]);
 
-  if (showMigration) {
-    return (
-      <div className="photos-page h-full flex flex-col overflow-hidden">
-        <WorkspaceMigrationWizard />
-      </div>
-    );
-  }
-
-  if (showSetup) {
-    return (
-      <div className="photos-page h-full flex flex-col overflow-hidden">
-        <WorkspacePhotosEmptyState />
-      </div>
-    );
-  }
-
   return (
     <div className="photos-page h-full flex flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
@@ -76,7 +61,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
           hasConfig={hasConfig}
           error={error}
           onClearError={clearError}
-          images={images}
+          images={visibleImages}
           loading={loading}
           onDeleteImage={handleDeleteImage}
           onDeleteMultipleImages={handleDeleteMultipleImages}

@@ -1,12 +1,26 @@
 import { useEscapeKey } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
-import { BookOpen, Info, Keyboard, RefreshCw, Settings, X } from 'lucide-react';
+import {
+  BookOpen,
+  FolderOpen,
+  Globe,
+  Info,
+  Keyboard,
+  RefreshCw,
+  ScrollText,
+  Settings,
+  X,
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { SettingsDocsPanel } from './SettingsDocsPanel';
 import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
+import { SettingsLanguagePanel } from './SettingsLanguagePanel';
+import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
+import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
 
 interface SettingsModalProps {
@@ -47,6 +61,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       id: 'sync',
       labelKey: 'settings.menuSync',
       icon: <RefreshCw size={18} />,
+    },
+    ...(isWorkspaceAvailable()
+      ? [
+          {
+            id: 'workspace' as const,
+            labelKey: 'settings.menuWorkspace',
+            icon: <FolderOpen size={18} />,
+          },
+        ]
+      : []),
+    {
+      id: 'operationLog',
+      labelKey: 'settings.menuOperationLog',
+      icon: <ScrollText size={18} />,
+    },
+    {
+      id: 'language',
+      labelKey: 'settings.menuLanguage',
+      icon: <Globe size={18} />,
     },
     {
       id: 'keyboard',
@@ -119,8 +152,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             ))}
           </nav>
 
-          <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
+          <div
+            className={`min-w-0 flex-1 px-6 py-5 ${
+              activeSection === 'operationLog'
+                ? 'flex flex-col overflow-hidden'
+                : 'overflow-y-auto'
+            }`}
+          >
             {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
+            {activeSection === 'workspace' && <SettingsWorkspacePanel t={t} />}
+            {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
+            {activeSection === 'language' && <SettingsLanguagePanel t={t} />}
             {activeSection === 'keyboard' && <SettingsKeyboardPanel t={t} />}
             {activeSection === 'version' && (
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />

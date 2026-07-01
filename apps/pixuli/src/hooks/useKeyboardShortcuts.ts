@@ -8,12 +8,11 @@ import { createKeyboardShortcuts } from '../utils/keyboardShortcuts';
 export function useKeyboardShortcuts(
   t: (key: string) => string,
   showConfigModal: boolean,
-  showOperationLog: boolean,
   showSettingsModal: boolean,
   handleCloseConfigModal: () => void,
-  handleCloseOperationLog: () => void,
   handleCloseSettingsModal: () => void,
   handleOpenKeyboardHelp: () => void,
+  handleOpenOperationLog: () => void,
   handleLoadImages: () => Promise<void>,
   handleOpenConfigModal: () => void,
 ) {
@@ -24,15 +23,16 @@ export function useKeyboardShortcuts(
     const handleCloseModals = () => {
       if (showConfigModal) handleCloseConfigModal();
       else if (showSettingsModal) handleCloseSettingsModal();
-      else if (showOperationLog) handleCloseOperationLog();
     };
 
     const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
+    const handleOpenOperationLogEvent = () => handleOpenOperationLog();
     const handleRefreshImages = () => handleLoadImages();
     const handleOpenConfig = () => handleOpenConfigModal();
 
     window.addEventListener('closeModals', handleCloseModals);
     window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent);
+    window.addEventListener('openOperationLog', handleOpenOperationLogEvent);
     window.addEventListener('refreshImages', handleRefreshImages);
     window.addEventListener('openConfig', handleOpenConfig);
 
@@ -43,18 +43,21 @@ export function useKeyboardShortcuts(
         'openKeyboardHelp',
         handleOpenKeyboardHelpEvent,
       );
+      window.removeEventListener(
+        'openOperationLog',
+        handleOpenOperationLogEvent,
+      );
       window.removeEventListener('refreshImages', handleRefreshImages);
       window.removeEventListener('openConfig', handleOpenConfig);
     };
   }, [
     t,
     showConfigModal,
-    showOperationLog,
     showSettingsModal,
     handleCloseConfigModal,
-    handleCloseOperationLog,
     handleCloseSettingsModal,
     handleOpenKeyboardHelp,
+    handleOpenOperationLog,
     handleLoadImages,
     handleOpenConfigModal,
   ]);

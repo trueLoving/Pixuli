@@ -22,7 +22,6 @@ export type EditingSourceRepoConfig = Pick<
 interface UIState {
   // 模态框状态
   showConfigModal: boolean;
-  showOperationLog: boolean;
   showSettingsModal: boolean;
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
@@ -40,16 +39,19 @@ interface UIState {
   mobileSidebarOpen: boolean;
   activeMenu: string;
 
-  // 全屏模式（应用级别，用于隐藏 Sidebar 和 Header）
+  // 全屏模式（应用级别，用于隐藏 Sidebar）
   isFullscreenMode: boolean;
 
   // 视图状态
   currentView: string;
   currentUtilityTool: 'compress' | 'convert' | null;
+  /** 工作区资源管理器当前选中的文件夹（空 = 全部） */
+  selectedFolderPath: string;
+  /** 窄屏是否展开文件夹面板 */
+  workspaceExplorerOpen: boolean;
 
   // Actions - 模态框
   setShowConfigModal: (show: boolean) => void;
-  setShowOperationLog: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
 
   // Actions - 编辑
@@ -69,6 +71,9 @@ interface UIState {
   // Actions - 视图
   setCurrentView: (view: string) => void;
   setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) => void;
+  setSelectedFolderPath: (path: string) => void;
+  setWorkspaceExplorerOpen: (open: boolean) => void;
+  toggleWorkspaceExplorer: () => void;
 
   // Helper actions
   /** 右键/菜单编辑：从 sourceStore 读取 config 并打开对应类型弹窗 */
@@ -78,7 +83,6 @@ interface UIState {
   openKeyboardHelp: () => void;
   openVersionInfo: () => void;
   openOperationLog: () => void;
-  closeOperationLog: () => void;
   openSettingsModal: (section?: SettingsSection) => void;
   closeSettingsModal: () => void;
   openSettingsModalForAddSource: () => void;
@@ -101,7 +105,6 @@ function syncImageStoreForRepoConfig(
 
 export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
-  showOperationLog: false,
   showSettingsModal: false,
   settingsSection: 'sync',
   settingsSyncAddOpen: false,
@@ -114,9 +117,10 @@ export const useUIStore = create<UIState>(set => ({
   isFullscreenMode: false,
   currentView: 'photos',
   currentUtilityTool: null,
+  selectedFolderPath: '',
+  workspaceExplorerOpen: false,
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
-  setShowOperationLog: (show: boolean) => set({ showOperationLog: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
 
   setEditingSourceId: (id: string | null) => set({ editingSourceId: id }),
@@ -137,6 +141,11 @@ export const useUIStore = create<UIState>(set => ({
   setCurrentView: (view: string) => set({ currentView: view }),
   setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) =>
     set({ currentUtilityTool: tool }),
+  setSelectedFolderPath: (path: string) => set({ selectedFolderPath: path }),
+  setWorkspaceExplorerOpen: (open: boolean) =>
+    set({ workspaceExplorerOpen: open }),
+  toggleWorkspaceExplorer: () =>
+    set(state => ({ workspaceExplorerOpen: !state.workspaceExplorerOpen })),
 
   openConfigModalForEdit: (sourceId: string) => {
     const source = useSourceStore.getState().getSourceById(sourceId);
@@ -180,8 +189,12 @@ export const useUIStore = create<UIState>(set => ({
       settingsSection: 'version',
       settingsSyncAddOpen: false,
     }),
-  openOperationLog: () => set({ showOperationLog: true }),
-  closeOperationLog: () => set({ showOperationLog: false }),
+  openOperationLog: () =>
+    set({
+      showSettingsModal: true,
+      settingsSection: 'operationLog',
+      settingsSyncAddOpen: false,
+    }),
   openSettingsModal: (section = 'sync') =>
     set({
       showSettingsModal: true,

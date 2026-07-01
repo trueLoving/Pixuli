@@ -1,0 +1,62 @@
+.workspace-setup-panel-hint {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.workspace-setup-panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.workspace-setup-primary-btn,
+.workspace-setup-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.workspace-setup-primary-btn {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.workspace-setup-primary-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.workspace-setup-secondary-btn {
+  border: 1px solid #93c5fd;
+  background: #fff;
+  color: #1d4ed8;
+}
+
+.workspace-setup-secondary-btn:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.workspace-setup-primary-btn:disabled,
+.workspace-setup-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.workspace-setup-error {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: #dc2626;
+}
+
+.workspace-migration-embedded {
+  width: 100%;
+}

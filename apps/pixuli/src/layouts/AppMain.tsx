@@ -1,75 +1,45 @@
 /**
- * 主内容区域组件
- * 包含 Header 和主内容区域
+ * 主内容区域（无顶栏 Header；日志与语言在设置中）
  */
 
-import { Header, LanguageSwitcher } from '@pixuli/ui';
-import { Menu, ScrollText } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import React from 'react';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { useI18n } from '../i18n/useI18n';
 import { useUIStore } from '../stores/uiStore';
+import './AppMain.css';
 
 interface AppMainProps {
   children: React.ReactNode;
+  /** 旧版侧栏布局：窄屏显示菜单浮动按钮 */
+  legacyMobileMenu?: boolean;
 }
 
-export const AppMain: React.FC<AppMainProps> = ({ children }) => {
-  const { t, changeLanguage, getCurrentLanguage, getAvailableLanguages } =
-    useI18n();
-  const {
-    isFullscreenMode,
-    openOperationLog,
-    toggleMobileSidebar,
-    mobileSidebarOpen,
-  } = useUIStore();
+export const AppMain: React.FC<AppMainProps> = ({
+  children,
+  legacyMobileMenu = false,
+}) => {
+  const { t } = useI18n();
+  const { isFullscreenMode, toggleMobileSidebar, mobileSidebarOpen } =
+    useUIStore();
   const isMobile = useMobileViewport();
 
-  const mobileMenuButton = isMobile ? (
-    <button
-      type="button"
-      className="header-button icon-only mobile-menu-btn"
-      onClick={toggleMobileSidebar}
-      title={t('header.openMenu')}
-      aria-label={t('header.openMenu')}
-      aria-expanded={mobileSidebarOpen}
-    >
-      <Menu size={20} />
-    </button>
-  ) : null;
-
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* 顶部：Header */}
-      {!isFullscreenMode && (
-        <Header
-          leftActions={mobileMenuButton}
-          rightActions={
-            <>
-              <button
-                type="button"
-                onClick={openOperationLog}
-                title={t('header.operationLog')}
-                className="header-button icon-only p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
-                aria-label={t('header.operationLog')}
-              >
-                <ScrollText size={18} />
-              </button>
-              <LanguageSwitcher
-                currentLanguage={getCurrentLanguage()}
-                availableLanguages={getAvailableLanguages()}
-                onLanguageChange={changeLanguage}
-                switchTitle={t('language.switch')}
-                currentTitle={t('language.current')}
-                showBackdrop={true}
-              />
-            </>
-          }
-        />
-      )}
+    <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+      {legacyMobileMenu && isMobile && !isFullscreenMode ? (
+        <button
+          type="button"
+          className="app-main-mobile-menu"
+          onClick={toggleMobileSidebar}
+          title={t('header.openMenu')}
+          aria-label={t('header.openMenu')}
+          aria-expanded={mobileSidebarOpen}
+        >
+          <Menu size={20} aria-hidden />
+        </button>
+      ) : null}
 
-      {/* 主内容区域 */}
-      <main className="flex-1 overflow-hidden bg-white relative">
+      <main className="flex-1 overflow-hidden bg-white relative min-h-0">
         {children}
       </main>
     </div>

@@ -8,7 +8,6 @@ import { useUIStore } from '../stores/uiStore';
 export function useUIState() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
-  const [showOperationLog, setShowOperationLog] = useState(false);
   const [currentView, setCurrentView] = useState<SidebarView>('photos');
   const [currentUtilityTool, setCurrentUtilityTool] =
     useState<SidebarUtilityTool | null>(null);
@@ -28,11 +27,11 @@ export function useUIState() {
   }, []);
 
   const handleOpenOperationLog = useCallback(() => {
-    setShowOperationLog(true);
+    useUIStore.getState().openOperationLog();
   }, []);
 
   const handleCloseOperationLog = useCallback(() => {
-    setShowOperationLog(false);
+    useUIStore.getState().closeSettingsModal();
   }, []);
 
   const handleAddSource = useCallback(() => {
@@ -51,7 +50,6 @@ export function useUIState() {
     showConfigModal,
     editingSourceId,
     setEditingSourceId,
-    showOperationLog,
     currentView,
     setCurrentView,
     currentUtilityTool,

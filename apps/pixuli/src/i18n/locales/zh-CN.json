@@ -119,7 +119,15 @@
     "switchOpfs": "新建浏览器工作区",
     "clearWorkspace": "断开工作区",
     "clearConfirm": "确定断开当前工作区？将清除本机保存的工作区记录，需要重新选择文件夹或创建工作区。磁盘上的图片文件不会被删除。",
-    "openWorkspacePage": "前往工作区"
+    "openWorkspacePage": "前往工作区",
+    "welcomeTitle": "欢迎使用 Pixuli",
+    "welcomeSubtitle": "打开或创建一个本地工作区，开始管理图片。",
+    "welcomeOpenSettings": "设置与远端同步",
+    "explorer": "资源管理器",
+    "activityBar": "主菜单",
+    "allImages": "全部图片",
+    "manageExplorer": "管理工作区…",
+    "closeExplorer": "关闭文件夹面板"
   },
   "settings": {
     "title": "设置",
@@ -154,11 +162,16 @@
     "workspaceNoRemoteHint": "尚未配置远端仓库，请在「同步」分区添加并指定同步目标。",
     "workspacePhotosEmptyHint": "请先在侧栏打开「工作区」创建或连接本地工作区，再浏览与管理图片。",
     "openWorkspaceSettings": "打开工作区设置",
+    "menuOperationLog": "操作日志",
+    "menuLanguage": "语言",
     "menuKeyboard": "快捷键",
     "menuVersion": "版本信息",
     "menuDocs": "文档",
     "docsTitle": "使用文档",
     "docsHint": "查看 Pixuli 使用教程与常见问题（GitHub Wiki）。",
     "docsOpenLink": "打开使用教程"
+  },
+  "language": {
+    "current": "选择界面显示语言"
   }
 }
