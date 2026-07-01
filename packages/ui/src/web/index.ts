@@ -6,6 +6,7 @@ export * from '../hooks';
 // 图片
 export * from '../image/image-preview-modal/web';
 export * from '../image/image-browser/web';
+export * from '../image/image-actions/web';
 export * from '../image/image-upload/web';
 
 // 布局
@@ -26,6 +27,7 @@ export * from '../primitives/upload-button/web';
 export * from '../primitives/keyboard-help/web';
 export * from '../primitives/language-switcher/web';
 export * from '../primitives/fullscreen-loading/web';
+export * from '../primitives/content-feedback/web';
 export * from '../primitives/action-button/web';
 
 // 功能

@@ -1,6 +1,27 @@
 {
   "image": {
     "browse": "Browse Images",
+    "libraryTitle": "Image Library",
+    "empty": {
+      "filteredTitle": "No matching images",
+      "filteredDescription": "Try adjusting filters or clearing your search"
+    },
+    "feedback": {
+      "retry": "Retry",
+      "dismiss": "Dismiss",
+      "loading": "Loading images..."
+    },
+    "actions": {
+      "preview": "Preview",
+      "edit": "Edit",
+      "viewUrl": "View URL",
+      "copyUrl": "Copy link",
+      "openUrl": "Open link",
+      "share": "Share",
+      "delete": "Delete",
+      "more": "More actions",
+      "dismissMenu": "Close menu"
+    },
     "filter": {
       "title": "Image Filter",
       "collapse": "Collapse Filter",

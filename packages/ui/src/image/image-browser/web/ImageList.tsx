@@ -1,14 +1,4 @@
-import {
-  Calendar,
-  Edit,
-  Eye,
-  HardDrive,
-  Link,
-  Loader2,
-  MoreHorizontal,
-  Tag,
-  Trash2,
-} from 'lucide-react';
+import { Calendar, HardDrive, Loader2, Tag } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '@pixuli/ui';
 import { ImageItem } from '@pixuli/core/types';
@@ -20,6 +10,13 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@pixuli/ui/feedback/toast';
+import {
+  ImageActionMenu,
+  LIST_ICON_ACTIONS,
+  LIST_MORE_ACTIONS,
+  type ImageActionHandlers,
+  type ImageActionId,
+} from '../../image-actions/web';
 import { ImagePreviewModal } from '../../image-preview-modal/web';
 import ImageEditModal from './ImageEditModal';
 import './ImageList.css';
@@ -41,6 +38,10 @@ interface ImageListProps {
   onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
+function getPublicUrl(image: ImageItem): string {
+  return image.publicUrl || image.githubUrl || image.url;
+}
+
 const ImageListComponent: React.FC<ImageListProps> = ({
   images,
   selectedImageIndex = -1,
@@ -59,7 +60,7 @@ const ImageListComponent: React.FC<ImageListProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [openMenuImageId, setOpenMenuImageId] = useState<string | null>(null);
 
   // 滚动加载配置
   const pageSize = 20;
@@ -316,26 +317,53 @@ const ImageListComponent: React.FC<ImageListProps> = ({
     [images],
   );
 
-  const toggleRowExpansion = useCallback((imageId: string) => {
-    setExpandedRows(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(imageId)) {
-        newSet.delete(imageId);
-      } else {
-        newSet.add(imageId);
-      }
-      return newSet;
-    });
+  const formatDate = useCallback((dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
   }, []);
 
-  // 获取图片尺寸显示文本
+  const buildActionHandlers = useCallback(
+    (image: ImageItem): ImageActionHandlers => {
+      const publicUrl = getPublicUrl(image);
+      const handlers: ImageActionHandlers = {
+        preview: () => handlePreview(image),
+        edit: () => handleEdit(image),
+        viewUrl: () => handleViewUrl(image),
+        copyUrl: () => void handleCopyUrl(publicUrl, 'url'),
+        openUrl: () => handleOpenUrl(publicUrl),
+        delete: () => handleDelete(image),
+      };
+      if (onShareImageProp) {
+        handlers.share = () => void handleShareImage(image);
+      }
+      return handlers;
+    },
+    [
+      handleCopyUrl,
+      handleDelete,
+      handleEdit,
+      handleOpenUrl,
+      handlePreview,
+      handleShareImage,
+      handleViewUrl,
+      onShareImageProp,
+    ],
+  );
+
+  const buildMoreActions = useCallback(
+    (_image: ImageItem): ImageActionId[] => {
+      if (!onShareImageProp) {
+        return LIST_MORE_ACTIONS.filter(id => id !== 'share');
+      }
+      return LIST_MORE_ACTIONS;
+    },
+    [onShareImageProp],
+  );
+
   const getDimensionsText = useCallback(
     (image: ImageItem): string => {
-      // 直接使用元数据中的尺寸
       if (image.width > 0 && image.height > 0) {
         return `${image.width} × ${image.height}`;
       }
-      // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
       return (
         translate('image.list.dimensionsUnknown') ||
         translate('image.grid.dimensionsUnknown')
@@ -344,17 +372,10 @@ const ImageListComponent: React.FC<ImageListProps> = ({
     [translate],
   );
 
-  const formatDate = useCallback((dateString: string) => {
-    // 使用当前语言环境格式化日期
-    // 对于不同语言，可以使用 translate 来获取语言代码
-    // 这里简化处理，使用浏览器默认语言环境
-    return new Date(dateString).toLocaleDateString();
-  }, []);
-
-  // 渲染单个图片项的函数
   const renderImageItem = useCallback(
     (image: ImageItem, index: number) => {
       const isSelected = selectedImageIndex === index;
+      const actionHandlers = buildActionHandlers(image);
 
       return (
         <div
@@ -445,55 +466,29 @@ const ImageListComponent: React.FC<ImageListProps> = ({
               </div>
 
               {/* 操作按钮 */}
-              <div className="image-list-actions">
-                <button
-                  onClick={() => handlePreview(image)}
-                  className="image-list-action-button"
-                  title={translate('image.list.preview')}
-                >
-                  <Eye className="image-list-action-icon" />
-                </button>
-                <button
-                  onClick={() => handleEdit(image)}
-                  className="image-list-action-button"
-                  title={translate('image.list.edit')}
-                >
-                  <Edit className="image-list-action-icon" />
-                </button>
-                <button
-                  onClick={() => toggleRowExpansion(image.id)}
-                  className="image-list-action-button"
-                  title={translate('image.list.moreActions')}
-                >
-                  <MoreHorizontal className="image-list-action-icon" />
-                </button>
+              <div
+                className="image-list-actions"
+                onClick={event => event.stopPropagation()}
+              >
+                <ImageActionMenu
+                  variant="icon-bar"
+                  actions={LIST_ICON_ACTIONS}
+                  handlers={actionHandlers}
+                  t={translate}
+                />
+                <ImageActionMenu
+                  variant="dropdown"
+                  actions={buildMoreActions(image)}
+                  handlers={actionHandlers}
+                  t={translate}
+                  open={openMenuImageId === image.id}
+                  onOpenChange={open =>
+                    setOpenMenuImageId(open ? image.id : null)
+                  }
+                />
               </div>
             </div>
           </div>
-
-          {/* 展开行 - 更多操作和压缩结果 */}
-          {expandedRows.has(image.id) && (
-            <div className="image-list-expanded">
-              <div className="image-list-expanded-content">
-                <div className="image-list-expanded-actions">
-                  <button
-                    onClick={() => handleViewUrl(image)}
-                    className="image-list-secondary-button"
-                  >
-                    <Link className="image-list-button-icon" />
-                    {translate('image.list.viewUrl')}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(image)}
-                    className="image-list-secondary-button image-list-delete-button"
-                  >
-                    <Trash2 className="image-list-button-icon" />
-                    {translate('image.list.delete')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       );
     },
@@ -504,12 +499,9 @@ const ImageListComponent: React.FC<ImageListProps> = ({
       visibleImages,
       formatDate,
       getDimensionsText,
-      handlePreview,
-      handleEdit,
-      toggleRowExpansion,
-      expandedRows,
-      handleViewUrl,
-      handleDelete,
+      buildActionHandlers,
+      buildMoreActions,
+      openMenuImageId,
       translate,
     ],
   );
@@ -620,6 +612,22 @@ const ImageListComponent: React.FC<ImageListProps> = ({
         onCopyUrl={handleCopyUrl}
         onShareImage={onShareImageProp ? handleShareImage : undefined}
         onOpenUrl={handleOpenUrl}
+        onEdit={
+          onUpdateImage && selectedImage
+            ? () => {
+                setShowPreview(false);
+                handleEdit(selectedImage);
+              }
+            : undefined
+        }
+        onDelete={
+          onDeleteImage && selectedImage
+            ? () => {
+                setShowPreview(false);
+                void handleDelete(selectedImage);
+              }
+            : undefined
+        }
         t={translate}
       />
 
