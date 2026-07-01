@@ -1,7 +1,7 @@
 import type { SidebarSource } from '@pixuli/ui';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { SourceTypePicker } from '@/features/source-type-menu/SourceTypePicker';
+import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';
 import { useSourceManagement } from '@/hooks/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';

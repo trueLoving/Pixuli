@@ -14,9 +14,9 @@
   "scripts": {
     "dev:web": "pnpm build:packages && vite --mode web",
     "dev:desktop": "pnpm build:packages && vite --mode desktop",
-    "dev:android": "node scripts/dev-android.mjs",
+    "dev:android": "node tooling/scripts/dev-android.mjs",
     "dev:android:server": "pnpm build:packages && vite --mode web --host 0.0.0.0 --port 5500",
-    "run:android": "node scripts/run-android.mjs",
+    "run:android": "node tooling/scripts/run-android.mjs",
     "build:packages": "pnpm --filter @pixuli/core --filter @pixuli/provider-gitee build",
     "build:web": "pnpm build:packages && vite build --mode web",
     "build:desktop": "tsc && vite build --mode desktop && electron-builder",
@@ -25,7 +25,7 @@
     "build:android:release": "pnpm run build:android && cd android && ./gradlew assembleRelease",
     "cap:sync": "cap sync android",
     "cap:android": "cap open android",
-    "sync:brand": "node scripts/sync-brand-assets.mjs",
+    "sync:brand": "node tooling/scripts/sync-brand-assets.mjs",
     "test": "vitest"
   },
   "keywords": [

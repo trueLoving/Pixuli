@@ -6,11 +6,9 @@
  */
 import { spawn, execSync } from 'node:child_process';
 import { createConnection } from 'node:net';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { buildCapLiveReloadArgs, listAdbDevices } from './cap-live-reload-args.mjs';
+import { PIXULI_ROOT } from './paths.mjs';
 
-const appRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const port = Number(process.env.CAPACITOR_DEV_PORT || 5500);
 const extraCapArgs = process.argv.slice(2);
 
@@ -60,7 +58,7 @@ function startVite() {
     'pnpm',
     ['exec', 'vite', '--mode', 'web', '--host', '0.0.0.0', '--port', String(port)],
     {
-      cwd: appRoot,
+      cwd: PIXULI_ROOT,
       stdio: 'inherit',
       shell: true,
       env: { ...process.env, CAPACITOR_ANDROID_DEV: '1' },
@@ -70,7 +68,7 @@ function startVite() {
 
 async function main() {
   log('构建 workspace 包…');
-  execSync('pnpm build:packages', { cwd: appRoot, stdio: 'inherit' });
+  execSync('pnpm build:packages', { cwd: PIXULI_ROOT, stdio: 'inherit' });
 
   const devices = listAdbDevices();
   const { capArgs, mode } = buildCapLiveReloadArgs({
@@ -95,7 +93,7 @@ async function main() {
   try {
     await waitForPort(port);
     log('Vite 就绪，cap run android（含 sync + 安装 + Live Reload）…');
-    await run('pnpm', capArgs, { cwd: appRoot });
+    await run('pnpm', capArgs, { cwd: PIXULI_ROOT });
   } finally {
     cleanup('SIGTERM');
   }

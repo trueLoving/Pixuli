@@ -5,7 +5,7 @@ export { ImageContent } from './image-content/ImageContent';
 export { pwaLocales } from './pwa/locales';
 export { OfflineIndicator } from './pwa/OfflineIndicator';
 export { PWAInstallPrompt } from './pwa/PWAInstallPrompt';
-export { SourceTypePicker } from './source-type-menu/SourceTypePicker';
+export { SourceTypePicker } from './source-type/SourceTypePicker';
 export { SettingsModal } from './settings';
 export {
   WorkspaceMigrationWizard,
