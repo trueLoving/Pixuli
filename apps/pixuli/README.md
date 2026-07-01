@@ -40,15 +40,32 @@ pnpm build:android    # 同步 Capacitor；release APK 见 build:android:release
 
 ## 目录摘要
 
-| 路径             | 说明                                 |
-| ---------------- | ------------------------------------ |
-| `src/platforms/` | 平台检测、各端适配器、Web 浏览器壳层 |
-| `src/layouts/`   | MainLayout、侧栏、主内容区           |
-| `src/features/`  | 业务功能                             |
-| `electron/`      | Desktop 主进程 / preload             |
-| `android/`       | Capacitor Android 工程               |
-| `scripts/`       | Android 联调、品牌资源同步           |
-| `vite/`          | Vite mode 分轨辅助                   |
+### 源码与配置（版本库）
+
+| 路径               | 说明                                 |
+| ------------------ | ------------------------------------ |
+| `src/`             | 应用源码（features、layouts、pages） |
+| `src/platforms/`   | 平台检测、各端适配器、Web 浏览器壳层 |
+| `electron/`        | Desktop 主进程 / preload             |
+| `android/`         | Capacitor Android 工程               |
+| `brand/`           | 三端品牌图 SSOT（`pnpm sync:brand`） |
+| `public/`          | 静态资源（部分由 sync:brand 生成）   |
+| `tooling/scripts/` | Android 联调、品牌资源同步           |
+| `tooling/vite/`    | Vite 分轨与插件组装                  |
+
+### 本地产物（勿提交）
+
+构建或开发后可能出现在包根目录，已在 `apps/pixuli/.gitignore` 忽略：
+
+| 路径             | 说明                            |
+| ---------------- | ------------------------------- |
+| `dist/`          | Web / Desktop renderer 构建输出 |
+| `dist-electron/` | Desktop 主进程构建              |
+| `dev-dist/`      | PWA dev service worker 缓存     |
+| `release/`       | electron-builder 安装包         |
+
+日常浏览以 `src/`、`electron/`、`android/`
+为准；若本地已有上述产物目录，可安全删除后重新构建。
 
 ---
 

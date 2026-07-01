@@ -1,10 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PIXULI_ROOT = path.resolve(__dirname, '..');
+import { PIXULI_ROOT } from './paths';
 
 function getRealVersion(
   packageName: string,
@@ -50,6 +47,7 @@ export interface PixuliPackageJson {
   description?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  debug?: { env?: { VITE_DEV_SERVER_URL?: string } };
 }
 
 export function createVersionInfo(pkg: PixuliPackageJson) {

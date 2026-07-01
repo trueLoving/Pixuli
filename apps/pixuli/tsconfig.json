@@ -38,6 +38,5 @@
     "**/*.test.*",
     "**/__tests__/**",
     "src/pages/HomePage/**"
-  ],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  ]
 }

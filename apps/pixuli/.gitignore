@@ -1,0 +1,16 @@
+# 本地产物（勿提交；构建后可能出现于包根目录）
+dist/
+dist-electron/
+dev-dist/
+release/
+build/
+
+# 环境变量（包级 .env 仅本地）
+.env
+.env.*
+
+# tsc 误产出（tooling/vite 仅作 Vite 运行时加载，不经 tsc 下发）
+tooling/vite/**/*.js
+tooling/vite/**/*.d.ts
+vite.config.js
+vite.config.d.ts
