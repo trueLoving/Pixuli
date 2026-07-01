@@ -1,12 +1,4 @@
-import {
-  Calendar,
-  Edit,
-  Eye,
-  HardDrive,
-  Link,
-  Loader2,
-  Trash2,
-} from 'lucide-react';
+import { Calendar, HardDrive, Loader2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEscapeKey, useInfiniteScroll, useLazyLoad } from '@pixuli/ui';
 import { ImageItem } from '@pixuli/core/types';
@@ -18,6 +10,13 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@pixuli/ui/feedback/toast';
+import {
+  GRID_ICON_ACTIONS,
+  ImageActionMenu,
+  ImageContextMenu,
+  type ImageActionHandlers,
+  type ImageContextMenuState,
+} from '../../image-actions/web';
 import { ImagePreviewModal } from '../../image-preview-modal/web';
 import ImageEditModal from './ImageEditModal';
 import './ImageGrid.css';
@@ -39,63 +38,8 @@ interface ImageGridProps {
   onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
-interface ImageGridActionsProps {
-  image: ImageItem;
-  translate: (key: string) => string;
-  onPreview: (image: ImageItem) => void;
-  onViewUrl: (image: ImageItem) => void;
-  onEdit: (image: ImageItem) => void;
-  onDelete: (image: ImageItem) => void;
-}
-
-function ImageGridActions({
-  image,
-  translate,
-  onPreview,
-  onViewUrl,
-  onEdit,
-  onDelete,
-}: ImageGridActionsProps) {
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => onPreview(image)}
-        className="image-action-button"
-        title={translate('image.grid.preview')}
-        aria-label={translate('image.grid.preview')}
-      >
-        <Eye className="image-action-icon" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onViewUrl(image)}
-        className="image-action-button"
-        title={translate('image.grid.viewUrl')}
-        aria-label={translate('image.grid.viewUrl')}
-      >
-        <Link className="image-action-icon" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onEdit(image)}
-        className="image-action-button"
-        title={translate('image.grid.edit')}
-        aria-label={translate('image.grid.edit')}
-      >
-        <Edit className="image-action-icon" />
-      </button>
-      <button
-        type="button"
-        onClick={() => onDelete(image)}
-        className="image-action-button image-action-button--danger"
-        title={translate('image.grid.delete')}
-        aria-label={translate('image.grid.delete')}
-      >
-        <Trash2 className="image-action-icon" />
-      </button>
-    </>
-  );
+function getPublicUrl(image: ImageItem): string {
+  return image.publicUrl || image.githubUrl || image.url;
 }
 
 const ImageGridComponent: React.FC<ImageGridProps> = ({
@@ -120,6 +64,9 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showUrlModal, setShowUrlModal] = useState(false);
+  const [contextMenu, setContextMenu] = useState<ImageContextMenuState | null>(
+    null,
+  );
 
   // 使用无限滚动Hook
   const {
@@ -404,10 +351,55 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
     return new Date(dateString).toLocaleDateString('zh-CN');
   }, []);
 
+  const buildActionHandlers = useCallback(
+    (image: ImageItem): ImageActionHandlers => {
+      const publicUrl = getPublicUrl(image);
+      const handlers: ImageActionHandlers = {
+        preview: () => handlePreview(image),
+        viewUrl: () => handleViewUrl(image),
+        edit: () => handleEdit(image),
+        delete: () => handleDelete(image),
+        copyUrl: () => void handleCopyUrl(publicUrl, 'url'),
+        openUrl: () => handleOpenUrl(publicUrl),
+      };
+      if (onShareImageProp) {
+        handlers.share = () => void handleShareImage(image);
+      }
+      return handlers;
+    },
+    [
+      handleCopyUrl,
+      handleDelete,
+      handleEdit,
+      handleOpenUrl,
+      handlePreview,
+      handleShareImage,
+      handleViewUrl,
+      onShareImageProp,
+    ],
+  );
+
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent, image: ImageItem) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        actions: onShareImageProp
+          ? [...GRID_ICON_ACTIONS, 'share']
+          : GRID_ICON_ACTIONS,
+        handlers: buildActionHandlers(image),
+      });
+    },
+    [buildActionHandlers, onShareImageProp],
+  );
+
   // 渲染单个图片项
   const renderImageItem = useCallback(
     (image: ImageItem, index: number) => {
       const isSelected = selectedImageIndex === index;
+      const actionHandlers = buildActionHandlers(image);
 
       return (
         <div
@@ -419,6 +411,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
           }}
           data-image-index={index}
           onClick={() => onImageSelect?.(index)}
+          onContextMenu={event => handleContextMenu(event, image)}
           className={`image-browser-item ${isSelected ? 'selected' : 'unselected'}`}
         >
           {/* 图片预览 - 懒加载 */}
@@ -444,13 +437,11 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
               onClick={e => e.stopPropagation()}
             >
               <div className="image-grid-actions">
-                <ImageGridActions
-                  image={image}
-                  translate={translate}
-                  onPreview={handlePreview}
-                  onViewUrl={handleViewUrl}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
+                <ImageActionMenu
+                  variant="icon-bar"
+                  actions={GRID_ICON_ACTIONS}
+                  handlers={actionHandlers}
+                  t={translate}
                 />
               </div>
             </div>
@@ -461,13 +452,11 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
             className="image-grid-actions-mobile"
             onClick={e => e.stopPropagation()}
           >
-            <ImageGridActions
-              image={image}
-              translate={translate}
-              onPreview={handlePreview}
-              onViewUrl={handleViewUrl}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+            <ImageActionMenu
+              variant="icon-bar"
+              actions={GRID_ICON_ACTIONS}
+              handlers={actionHandlers}
+              t={translate}
             />
           </div>
 
@@ -530,20 +519,24 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
       );
     },
     [
+      buildActionHandlers,
       getDimensionsText,
-      handlePreview,
-      handleViewUrl,
-      handleEdit,
-      handleDelete,
+      handleContextMenu,
       formatDate,
       observeElement,
       selectedImageIndex,
       onImageSelect,
+      translate,
     ],
   );
 
   return (
     <>
+      <ImageContextMenu
+        menu={contextMenu}
+        onClose={() => setContextMenu(null)}
+        t={translate}
+      />
       {/* 滚动容器 */}
       <div ref={containerRef} className={`image-grid-container ${className}`}>
         {/* 图片网格 */}
@@ -614,6 +607,22 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         onCopyUrl={handleCopyUrl}
         onShareImage={onShareImageProp ? handleShareImage : undefined}
         onOpenUrl={handleOpenUrl}
+        onEdit={
+          onUpdateImage && selectedImage
+            ? () => {
+                setShowPreview(false);
+                handleEdit(selectedImage);
+              }
+            : undefined
+        }
+        onDelete={
+          onDeleteImage && selectedImage
+            ? () => {
+                setShowPreview(false);
+                void handleDelete(selectedImage);
+              }
+            : undefined
+        }
         t={translate}
       />
 

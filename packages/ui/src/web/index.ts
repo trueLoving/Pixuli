@@ -6,6 +6,7 @@ export * from '../hooks';
 // 图片
 export * from '../image/image-preview-modal/web';
 export * from '../image/image-browser/web';
+export * from '../image/image-actions/web';
 export * from '../image/image-upload/web';
 
 // 布局

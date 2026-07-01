@@ -1,14 +1,12 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Link,
-  Share2,
-  X,
-} from 'lucide-react';
-import React, { useCallback, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { defaultTranslate } from '@pixuli/ui/locales';
 import { ImageItem } from '@pixuli/core/types';
+import {
+  ImageActionMenu,
+  PREVIEW_ACTIONS,
+  type ImageActionHandlers,
+} from '../../image-actions/web';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {
@@ -22,6 +20,8 @@ interface ImagePreviewModalProps {
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   onShareImage?: (image: ImageItem) => Promise<void>;
   onOpenUrl?: (url: string) => void;
+  onEdit?: (image: ImageItem) => void;
+  onDelete?: (image: ImageItem) => void;
   t?: (key: string) => string;
 }
 
@@ -36,11 +36,12 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   onCopyUrl,
   onShareImage,
   onOpenUrl,
+  onEdit,
+  onDelete,
   t,
 }) => {
   const translate = t || defaultTranslate;
 
-  // 导航功能
   const handlePrevious = useCallback(() => {
     if (onNavigate && images.length > 1) {
       const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
@@ -55,7 +56,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     }
   }, [onNavigate, currentIndex, images.length]);
 
-  // 键盘快捷键支持
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!isOpen) return;
@@ -82,6 +82,33 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     };
   }, [isOpen, handlePrevious, handleNext, onClose]);
 
+  const publicUrl = image
+    ? image.publicUrl || image.githubUrl || image.url
+    : '';
+
+  const actionHandlers = useMemo<ImageActionHandlers>(() => {
+    if (!image) return {};
+    return {
+      copyUrl: onCopyUrl
+        ? () => {
+            void onCopyUrl(publicUrl, 'url');
+          }
+        : undefined,
+      openUrl: onOpenUrl
+        ? () => {
+            onOpenUrl(publicUrl);
+          }
+        : undefined,
+      share: onShareImage
+        ? () => {
+            void onShareImage(image);
+          }
+        : undefined,
+      edit: onEdit ? () => onEdit(image) : undefined,
+      delete: onDelete ? () => onDelete(image) : undefined,
+    };
+  }, [image, onCopyUrl, onDelete, onEdit, onOpenUrl, onShareImage, publicUrl]);
+
   if (!isOpen || !image) {
     return null;
   }
@@ -91,42 +118,10 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   };
 
   const getImageDimensions = () => {
-    // 直接使用元数据中的尺寸
     if (image.width > 0 && image.height > 0) {
       return `${image.width} × ${image.height}`;
     }
-    // 如果没有尺寸数据或尺寸数据不合法，显示暂无尺寸数据
     return translate('image.grid.dimensionsUnknown');
-  };
-
-  const publicUrl = image.publicUrl || image.githubUrl || image.url;
-
-  const handleCopyUrl = async (url: string, type: 'url' | 'githubUrl') => {
-    const realUrl = type === 'url' ? publicUrl : url;
-    if (onCopyUrl) {
-      await onCopyUrl(realUrl, type);
-    } else {
-      try {
-        await navigator.clipboard.writeText(realUrl);
-      } catch (error) {
-        console.error('Failed to copy URL:', error);
-      }
-    }
-  };
-
-  const handleOpenUrl = (url: string) => {
-    const realUrl = publicUrl;
-    if (onOpenUrl) {
-      onOpenUrl(realUrl);
-    } else {
-      window.open(realUrl, '_blank');
-    }
-  };
-
-  const handleShareImage = async () => {
-    if (onShareImage && image) {
-      await onShareImage(image);
-    }
   };
 
   return (
@@ -141,7 +136,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <X className="w-5 h-5" />
           </button>
 
-          {/* 左箭头 */}
           {images.length > 1 && (
             <button
               onClick={handlePrevious}
@@ -152,7 +146,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             </button>
           )}
 
-          {/* 右箭头 */}
           {images.length > 1 && (
             <button
               onClick={handleNext}
@@ -173,7 +166,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         <div className="image-preview-modal-info">
           <h3 className="image-preview-modal-title">{image.name}</h3>
 
-          {/* 图片计数 */}
           {images.length > 1 && (
             <div className="image-preview-modal-counter">
               {currentIndex + 1} / {images.length}
@@ -200,31 +192,13 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             </div>
           </div>
 
-          {/* 在线地址操作 */}
           <div className="image-preview-modal-actions">
-            <button
-              onClick={() => handleCopyUrl(image.url, 'url')}
-              className="image-preview-modal-action-button image-preview-modal-action-button-primary"
-            >
-              <Link className="w-3 h-3" />
-              <span>{translate('image.grid.copyUrl')}</span>
-            </button>
-            <button
-              onClick={() => handleOpenUrl(image.url)}
-              className="image-preview-modal-action-button image-preview-modal-action-button-secondary"
-            >
-              <ExternalLink className="w-3 h-3" />
-              <span>{translate('image.grid.openUrl')}</span>
-            </button>
-            {onShareImage && (
-              <button
-                onClick={() => void handleShareImage()}
-                className="image-preview-modal-action-button image-preview-modal-action-button-secondary"
-              >
-                <Share2 className="w-3 h-3" />
-                <span>{translate('image.grid.shareImage')}</span>
-              </button>
-            )}
+            <ImageActionMenu
+              variant="labeled-bar"
+              actions={PREVIEW_ACTIONS}
+              handlers={actionHandlers}
+              t={translate}
+            />
           </div>
         </div>
       </div>

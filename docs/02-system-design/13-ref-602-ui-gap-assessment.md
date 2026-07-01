@@ -36,25 +36,25 @@
 
 ## 三、图片操作（§4、§6.3）
 
-| 能力                  | 现状                       | 差距 / 动作                                   |
-| --------------------- | -------------------------- | --------------------------------------------- |
-| 预览 + 元数据 + 删除  | `ImagePreviewModal`        | ✅                                            |
-| 复制链接              | `useImageCopyUrl` / 分享   | ✅ local + remote                             |
-| 批量多选删除          | `BatchDeleteModal`         | ✅                                            |
-| 右键 / 长按菜单项一致 | Web 右键；触控长按部分支持 | ⏳ 收敛为 `@pixuli/ui` 统一 `ImageActionMenu` |
-| 3 次点击内达核心操作  | 预览约 1 击；删除 2～3 击  | ⏳ 预览层操作条布局优化                       |
-| AI 分析               | 仅 Desktop Electron        | ⏳ REF-604                                    |
+| 能力                  | 现状                       | 差距 / 动作                                        |
+| --------------------- | -------------------------- | -------------------------------------------------- |
+| 预览 + 元数据 + 删除  | `ImagePreviewModal`        | ✅                                                 |
+| 复制链接              | `useImageCopyUrl` / 分享   | ✅ local + remote                                  |
+| 批量多选删除          | `BatchDeleteModal`         | ✅                                                 |
+| 右键 / 长按菜单项一致 | Web 右键；触控长按部分支持 | ✅ `ImageContextMenu` + `ImageActionMenu` dropdown |
+| 3 次点击内达核心操作  | 预览约 1 击；删除 2～3 击  | ✅ 预览层含编辑/删除操作条（P2）                   |
+| AI 分析               | 仅 Desktop Electron        | ⏳ REF-604                                         |
 
 ---
 
 ## 四、本 Issue 分阶段建议
 
-| 阶段 | 范围                                               | 状态     |
-| ---- | -------------------------------------------------- | -------- |
-| P0   | 本文差距清单 + 侧栏 IA（图床/工具/设置）+ 窄屏去重 | ✅ #196  |
-| P1   | 主内容工具栏视觉统一、空态/错误态                  | ⏳ 本 PR |
-| P2   | 图片操作收敛 `@pixuli/ui`、预览层操作条            | 待办     |
-| P3   | Before/After 截图、REF-413 冒烟路径                | 待办     |
+| 阶段 | 范围                                               | 状态                                            |
+| ---- | -------------------------------------------------- | ----------------------------------------------- |
+| P0   | 本文差距清单 + 侧栏 IA（图床/工具/设置）+ 窄屏去重 | ✅ #196                                         |
+| P1   | 主内容工具栏视觉统一、空态/错误态                  | ✅ 本分支 P1                                    |
+| P2   | 图片操作收敛 `@pixuli/ui`、预览层操作条            | ✅ 本分支 P2                                    |
+| P3   | Before/After 截图、REF-413 冒烟路径                | ✅ 本分支 P3（文档 + `pnpm smoke:*`；截图占位） |
 
 ---
 
@@ -62,4 +62,6 @@
 
 - [04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)
 - [06-apps-pixuli-engineering.md](./06-apps-pixuli-engineering.md)
+- [13-ref-602-ui-before-after.md](./13-ref-602-ui-before-after.md)
+- [14-ref-413-smoke-matrix.md](./14-ref-413-smoke-matrix.md)
 - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md) — REF-602 / #131
