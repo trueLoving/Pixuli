@@ -81,12 +81,15 @@ const ImageActionMenu: React.FC<ImageActionMenuProps> = ({
             <button
               key={id}
               type="button"
-              className={`image-action-menu__icon-button ${def.danger ? 'image-action-menu__icon-button--danger' : ''}`.trim()}
+              className={`image-action-menu__icon-button image-action-button ${def.danger ? 'image-action-menu__icon-button--danger image-action-button--danger' : ''}`.trim()}
               title={t(def.labelKey)}
               aria-label={t(def.labelKey)}
               onClick={() => runAction(id)}
             >
-              <Icon className="h-4 w-4" aria-hidden />
+              <Icon
+                className="image-action-menu__icon image-action-icon"
+                aria-hidden
+              />
             </button>
           );
         })}
@@ -110,7 +113,10 @@ const ImageActionMenu: React.FC<ImageActionMenuProps> = ({
               className={`image-action-menu__labeled-button image-action-menu__labeled-button--${tone}`.trim()}
               onClick={() => runAction(id)}
             >
-              <Icon className="h-3.5 w-3.5" aria-hidden />
+              <Icon
+                className="image-action-menu__icon image-action-menu__icon--sm"
+                aria-hidden
+              />
               <span>{t(def.labelKey)}</span>
             </button>
           );
@@ -132,7 +138,7 @@ const ImageActionMenu: React.FC<ImageActionMenuProps> = ({
         aria-expanded={open}
         onClick={() => onOpenChange?.(!open)}
       >
-        <MoreHorizontal className="h-4 w-4" aria-hidden />
+        <MoreHorizontal className="image-action-menu__icon" aria-hidden />
       </button>
       {open ? (
         <div className="image-action-menu__panel" role="menu">
@@ -147,7 +153,7 @@ const ImageActionMenu: React.FC<ImageActionMenuProps> = ({
                 className={`image-action-menu__item ${def.danger ? 'image-action-menu__item--danger' : ''}`.trim()}
                 onClick={() => runAction(id)}
               >
-                <Icon className="h-4 w-4" aria-hidden />
+                <Icon className="image-action-menu__icon" aria-hidden />
                 <span>{t(def.labelKey)}</span>
               </button>
             );

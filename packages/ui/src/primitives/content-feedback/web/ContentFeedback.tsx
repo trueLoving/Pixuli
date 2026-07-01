@@ -40,7 +40,10 @@ const ContentFeedback: React.FC<ContentFeedbackProps> = ({
             className="content-feedback-button content-feedback-button--retry"
             onClick={onRetry}
           >
-            <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+            <RefreshCw
+              className="content-feedback-icon content-feedback-icon--sm"
+              aria-hidden
+            />
             {retryLabel}
           </button>
         ) : null}
@@ -51,7 +54,7 @@ const ContentFeedback: React.FC<ContentFeedbackProps> = ({
             onClick={onDismiss}
             aria-label={dismissLabel}
           >
-            <X className="h-4 w-4" aria-hidden />
+            <X className="content-feedback-icon" aria-hidden />
           </button>
         ) : null}
       </div>

@@ -390,7 +390,8 @@
   display: none;
 }
 
-.image-grid-actions-mobile .image-action-button {
+.image-grid-actions-mobile .image-action-button,
+.image-grid-actions-mobile .image-action-menu__icon-button {
   flex: 1;
   min-height: 2.75rem;
   min-width: 2.75rem;
@@ -401,13 +402,15 @@
   backdrop-filter: none;
 }
 
-.image-grid-actions-mobile .image-action-button:hover {
+.image-grid-actions-mobile .image-action-button:hover,
+.image-grid-actions-mobile .image-action-menu__icon-button:hover {
   transform: none;
   background: #f3f4f6;
   box-shadow: none;
 }
 
-.image-grid-actions-mobile .image-action-button--danger {
+.image-grid-actions-mobile .image-action-button--danger,
+.image-grid-actions-mobile .image-action-menu__icon-button--danger {
   border-color: #fecaca;
   background: #fff;
 }

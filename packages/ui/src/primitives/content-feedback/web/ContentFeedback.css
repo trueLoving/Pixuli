@@ -67,3 +67,20 @@
 .content-feedback-button--dismiss:hover {
   opacity: 1;
 }
+
+.content-feedback-icon {
+  width: 1rem;
+  height: 1rem;
+  min-width: 1rem;
+  min-height: 1rem;
+  flex-shrink: 0;
+  display: block;
+  color: inherit;
+}
+
+.content-feedback-icon--sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  min-width: 0.875rem;
+  min-height: 0.875rem;
+}

@@ -32,6 +32,23 @@
   transition: background-color 0.15s ease;
 }
 
+.image-action-menu__icon {
+  width: 1rem;
+  height: 1rem;
+  min-width: 1rem;
+  min-height: 1rem;
+  flex-shrink: 0;
+  display: block;
+  color: inherit;
+}
+
+.image-action-menu__icon--sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  min-width: 0.875rem;
+  min-height: 0.875rem;
+}
+
 .image-action-menu__icon-button:hover {
   background: #f3f4f6;
 }
@@ -158,4 +175,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.image-context-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  cursor: default;
+  border: 0;
+  padding: 0;
+  background: transparent;
 }

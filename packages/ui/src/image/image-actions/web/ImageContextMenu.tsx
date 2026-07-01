@@ -34,7 +34,7 @@ const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
     <>
       <button
         type="button"
-        className="fixed inset-0 z-[59] cursor-default border-0 bg-transparent p-0"
+        className="image-context-menu-backdrop"
         aria-label={t('image.actions.dismissMenu')}
         onClick={onClose}
       />
@@ -57,7 +57,7 @@ const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
                 onClose();
               }}
             >
-              <Icon className="h-4 w-4" aria-hidden />
+              <Icon className="image-action-menu__icon" aria-hidden />
               <span>{t(def.labelKey)}</span>
             </button>
           );
