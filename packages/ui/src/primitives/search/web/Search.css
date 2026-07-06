@@ -29,6 +29,7 @@
 .search-filter-wrapper {
   position: relative;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .search-filter-button {
@@ -73,7 +74,7 @@
 .search-filter-panel {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   background: white;
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 8px;
@@ -82,7 +83,7 @@
   max-width: 400px;
   max-height: 500px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1001;
 }
 
 .search-filter-panel-header {

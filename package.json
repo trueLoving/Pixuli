@@ -5,11 +5,11 @@
   "scripts": {
     "build:packages": "pnpm --filter @pixuli/core --filter @pixuli/provider-gitee build",
     "dev:web": "pnpm -F pixuli-app dev:web",
+    "build:web": "pnpm -F pixuli-app build:web",
     "dev:desktop": "pnpm -F pixuli-app dev:desktop",
+    "build:desktop": "pnpm -F pixuli-app build:desktop",
     "dev:android": "pnpm -F pixuli-app dev:android",
     "run:android": "pnpm -F pixuli-app run:android",
-    "build:web": "pnpm -F pixuli-app build:web",
-    "build:desktop": "pnpm -F pixuli-app build:desktop",
     "build:android": "pnpm -F pixuli-app build:android:release",
     "build:android:debug": "pnpm -F pixuli-app build:android:debug",
     "build:android:sync": "pnpm -F pixuli-app build:android",
