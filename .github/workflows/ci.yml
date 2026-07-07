@@ -1,4 +1,4 @@
-name: CI
+name: Pixuli CI
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   ci:
-    name: build:packages + lint + test + Web/Desktop
+    name: Pixuli CI
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
@@ -35,5 +35,5 @@ jobs:
       - name: 安装依赖
         run: pnpm install --frozen-lockfile
 
-      - name: 运行 CI（build:packages + Vitest + Web/Desktop 构建）
+      - name: 运行 Pixuli CI（build:packages + Vitest + Web/Desktop 构建）
         run: pnpm run ci
