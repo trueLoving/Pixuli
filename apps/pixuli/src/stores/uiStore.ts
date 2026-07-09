@@ -75,6 +75,9 @@ interface UIState {
   setWorkspaceExplorerOpen: (open: boolean) => void;
   toggleWorkspaceExplorer: () => void;
 
+  // Actions - 模态框
+  setShowWorkspaceModal: (show: boolean) => void;
+
   // Helper actions
   /** 右键/菜单编辑：从 sourceStore 读取 config 并打开对应类型弹窗 */
   openConfigModalForEdit: (sourceId: string) => boolean;
@@ -85,6 +88,8 @@ interface UIState {
   openOperationLog: () => void;
   openSettingsModal: (section?: SettingsSection) => void;
   closeSettingsModal: () => void;
+  openWorkspaceModal: () => void;
+  closeWorkspaceModal: () => void;
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string) => void;
@@ -119,9 +124,11 @@ export const useUIStore = create<UIState>(set => ({
   currentUtilityTool: null,
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
+  showWorkspaceModal: false,
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
+  setShowWorkspaceModal: (show: boolean) => set({ showWorkspaceModal: show }),
 
   setEditingSourceId: (id: string | null) => set({ editingSourceId: id }),
 
@@ -206,6 +213,8 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: false,
       settingsSyncAddOpen: false,
     }),
+  openWorkspaceModal: () => set({ showWorkspaceModal: true }),
+  closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
   openSettingsModalForAddSource: () =>
     set({
       showSettingsModal: true,

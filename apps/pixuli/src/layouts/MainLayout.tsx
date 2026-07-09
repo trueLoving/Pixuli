@@ -15,6 +15,7 @@ import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
 import { SettingsModal } from '../features/settings';
+import { WorkspaceModal } from '@/features/workspace';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
 import { useImageStore } from '../stores/imageStore';
@@ -82,11 +83,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const {
     showConfigModal,
     showSettingsModal,
+    showWorkspaceModal,
     editingSourceId,
     editingSourcePluginId,
     editingSourceRepoConfig,
     closeConfigModal,
     closeSettingsModal,
+    closeWorkspaceModal,
   } = useUIStore();
 
   const editingSource = useMemo(
@@ -166,6 +169,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onClose={closeSettingsModal}
         t={t}
         versionInfo={__VERSION_INFO__}
+      />
+
+      <WorkspaceModal
+        isOpen={showWorkspaceModal}
+        onClose={closeWorkspaceModal}
+        t={t}
       />
 
       <Toaster />

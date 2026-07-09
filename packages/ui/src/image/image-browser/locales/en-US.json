@@ -129,6 +129,11 @@
       "grid": "Grid",
       "list": "List"
     },
+    "toolbar": {
+      "moreActions": "More",
+      "sortTitle": "Sort options",
+      "batchDelete": "Batch delete"
+    },
     "edit": {
       "title": "Edit Image Information",
       "updating": "Updating image",

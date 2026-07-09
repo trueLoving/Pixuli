@@ -2,7 +2,6 @@ import { useEscapeKey } from '@pixuli/ui';
 import type { VersionInfo } from '@pixuli/ui';
 import {
   BookOpen,
-  FolderOpen,
   Globe,
   Info,
   Keyboard,
@@ -20,7 +19,6 @@ import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
-import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
 
 interface SettingsModalProps {
@@ -62,15 +60,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       labelKey: 'settings.menuSync',
       icon: <RefreshCw size={18} />,
     },
-    ...(isWorkspaceAvailable()
-      ? [
-          {
-            id: 'workspace' as const,
-            labelKey: 'settings.menuWorkspace',
-            icon: <FolderOpen size={18} />,
-          },
-        ]
-      : []),
     {
       id: 'operationLog',
       labelKey: 'settings.menuOperationLog',

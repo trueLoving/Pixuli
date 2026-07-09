@@ -73,6 +73,91 @@
   gap: 1rem;
 }
 
+.image-browser-toolbar-more {
+  position: relative;
+}
+
+.image-browser-toolbar-more-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.image-browser-toolbar-more-button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.image-browser-toolbar-more-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.image-browser-toolbar-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 30;
+  min-width: 16rem;
+  padding: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.image-browser-toolbar-menu-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.image-browser-toolbar-menu-section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.image-browser-toolbar-menu-sorter {
+  width: 100%;
+}
+
+.image-browser-toolbar-menu-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.625rem;
+  border: none;
+  background: #f8fafc;
+  color: #111827;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.image-browser-toolbar-menu-action:hover {
+  background: #eef2ff;
+}
+
+.image-browser-toolbar-menu-action-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #dc2626;
+}
+
 .image-browser-upload-btn {
   display: inline-flex;
   align-items: center;

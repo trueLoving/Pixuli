@@ -96,7 +96,7 @@ export const WorkspaceFolderTree: React.FC = () => {
   const setSelectedFolderPath = useUIStore(
     state => state.setSelectedFolderPath,
   );
-  const openSettingsModal = useUIStore(state => state.openSettingsModal);
+  const openWorkspaceModal = useUIStore(state => state.openWorkspaceModal);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(
     () => new Set(['__root__', 'images']),
   );
@@ -145,7 +145,7 @@ export const WorkspaceFolderTree: React.FC = () => {
         <button
           type="button"
           className="workspace-explorer-manage-btn"
-          onClick={() => openSettingsModal('workspace')}
+          onClick={() => openWorkspaceModal()}
         >
           {t('workspace.manageExplorer')}
         </button>

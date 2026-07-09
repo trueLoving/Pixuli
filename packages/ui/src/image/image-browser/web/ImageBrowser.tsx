@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -479,6 +479,33 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     setShowBatchDeleteModal(true);
   }, []);
 
+  const [toolbarMenuOpen, setToolbarMenuOpen] = useState(false);
+  const toolbarMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!toolbarMenuOpen) return;
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!toolbarMenuRef.current?.contains(event.target as Node)) {
+        setToolbarMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setToolbarMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [toolbarMenuOpen]);
+
   // 关闭批量删除模态框
   const handleCloseBatchDelete = useCallback(() => {
     setShowBatchDeleteModal(false);
@@ -584,34 +611,43 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             />
           )}
 
-          {/* 批量删除按钮 */}
-          {onDeleteMultipleImages && sortedImages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleOpenBatchDelete}
-              className="image-browser-batch-delete-btn"
-            >
-              <Trash2 className="image-browser-batch-delete-icon" />
-              <span className="image-browser-batch-delete-label">
-                {t('image.batchDelete.button')}
-              </span>
-            </button>
-          )}
-
-          {/* 排序功能 */}
-          <ImageSorter
-            t={t}
-            currentSort={currentSort}
-            currentOrder={currentOrder}
-            onSortChange={handleSortChange}
-          />
-
-          {/* 视图切换 */}
           <ViewToggle
             t={t}
             currentView={currentView}
             onViewChange={handleViewChange}
           />
+
+          <div className="image-browser-toolbar-more" ref={toolbarMenuRef}>
+            <button
+              type="button"
+              className="image-browser-toolbar-more-button"
+              aria-haspopup="menu"
+              aria-expanded={toolbarMenuOpen}
+              onClick={() => setToolbarMenuOpen(prev => !prev)}
+            >
+              <MoreHorizontal className="image-browser-toolbar-more-icon" />
+              <span className="image-browser-toolbar-more-text">
+                {t('image.toolbar.moreActions')}
+              </span>
+            </button>
+
+            {toolbarMenuOpen && (
+              <div className="image-browser-toolbar-menu" role="menu">
+                <div className="image-browser-toolbar-menu-section">
+                  <div className="image-browser-toolbar-menu-section-title">
+                    {t('image.toolbar.sortTitle')}
+                  </div>
+                  <ImageSorter
+                    t={t}
+                    currentSort={currentSort}
+                    currentOrder={currentOrder}
+                    onSortChange={handleSortChange}
+                    className="image-browser-toolbar-menu-sorter"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
