@@ -221,8 +221,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       ? translate('sidebar.syncing')
       : translate('sidebar.syncAction');
     const meta =
-      !syncDisabled && syncStrategyLabel && syncRemoteLabel
-        ? `${syncStrategyLabel} · ${syncRemoteLabel}`
+      !syncDisabled && syncRemoteLabel
+        ? syncStrategyLabel
+          ? `${syncStrategyLabel} · ${syncRemoteLabel}`
+          : syncRemoteLabel
         : undefined;
     const title = syncDisabled
       ? syncDisabledTitle || translate('sidebar.disabled')

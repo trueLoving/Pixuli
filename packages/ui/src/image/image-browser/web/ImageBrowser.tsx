@@ -546,30 +546,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         </div>
       ) : null}
 
-      {search && (
-        <div className="image-browser-filter-section">
-          <Search
-            variant="header"
-            searchQuery={search.searchQuery}
-            onSearchChange={search.onSearchChange}
-            hasConfig={hasConfig}
-            images={images}
-            externalFilters={search.filters}
-            onFiltersChange={search.onFiltersChange}
-            showFilter={true}
-            showHistory={true}
-            history={search.history}
-            onSelectHistory={search.onSelectHistory}
-            onDeleteHistory={search.onDeleteHistory}
-            onClearHistory={search.onClearHistory}
-            onSaveHistory={search.onSaveHistory}
-            t={t}
-            className="image-browser-search"
-          />
-        </div>
-      )}
-
-      {/* 工具栏 */}
+      {/* 工具栏：标题 + 搜索/筛选 + 上传等操作同一行 */}
       <div className="image-browser-toolbar">
         <div className="image-browser-header">
           <div className="image-browser-title-row">
@@ -597,6 +574,27 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             )}
           </span>
         </div>
+
+        {search ? (
+          <Search
+            variant="header"
+            searchQuery={search.searchQuery}
+            onSearchChange={search.onSearchChange}
+            hasConfig={hasConfig}
+            images={images}
+            externalFilters={search.filters}
+            onFiltersChange={search.onFiltersChange}
+            showFilter={true}
+            showHistory={true}
+            history={search.history}
+            onSelectHistory={search.onSelectHistory}
+            onDeleteHistory={search.onDeleteHistory}
+            onClearHistory={search.onClearHistory}
+            onSaveHistory={search.onSaveHistory}
+            t={t}
+            className="image-browser-search"
+          />
+        ) : null}
 
         <div className="image-browser-controls">
           {onUploadImage && onUploadMultipleImages && (

@@ -5,22 +5,10 @@ import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';
 import { useSourceManagement } from '@/hooks/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
-import {
-  useSyncPreferencesStore,
-  type SyncDefaultDirection,
-} from '@/stores/syncPreferencesStore';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;
 }
-
-const DIRECTION_OPTIONS: SyncDefaultDirection[] = ['both', 'push', 'pull'];
-
-const directionLabelKey: Record<SyncDefaultDirection, string> = {
-  both: 'settings.directionBoth',
-  push: 'settings.directionPush',
-  pull: 'settings.directionPull',
-};
 
 function renderSourceTypeIcon(type: SidebarSource['type']) {
   if (type === 'github') {
@@ -35,12 +23,6 @@ function renderSourceTypeIcon(type: SidebarSource['type']) {
 
 export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const [addingSource, setAddingSource] = useState(false);
-  const defaultDirection = useSyncPreferencesStore(
-    state => state.defaultDirection,
-  );
-  const setDefaultDirection = useSyncPreferencesStore(
-    state => state.setDefaultDirection,
-  );
   const beginNewSource = useUIStore(state => state.beginNewSource);
   const settingsSyncAddOpen = useUIStore(state => state.settingsSyncAddOpen);
   const clearSettingsSyncAddOpen = useUIStore(
@@ -82,39 +64,6 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   return (
     <div className="space-y-8">
       <section>
-        <h3 className="text-sm font-semibold text-gray-900">
-          {t('settings.syncStrategyTitle')}
-        </h3>
-        <p className="mt-1 text-xs text-gray-500">
-          {t('settings.syncStrategyHint')}
-        </p>
-        <fieldset className="mt-4 space-y-2">
-          <legend className="sr-only">{t('settings.defaultDirection')}</legend>
-          {DIRECTION_OPTIONS.map(option => (
-            <label
-              key={option}
-              className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 text-sm transition-colors ${
-                defaultDirection === option
-                  ? 'border-blue-400 bg-blue-50'
-                  : 'border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              <input
-                type="radio"
-                name="sync-default-direction"
-                className="mt-0.5"
-                checked={defaultDirection === option}
-                onChange={() => setDefaultDirection(option)}
-              />
-              <span className="text-gray-800">
-                {t(directionLabelKey[option])}
-              </span>
-            </label>
-          ))}
-        </fieldset>
-      </section>
-
-      <section>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
@@ -122,6 +71,9 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             </h3>
             <p className="mt-1 text-xs text-gray-500">
               {t('settings.singleSyncHint')}
+            </p>
+            <p className="mt-1 text-xs text-gray-500">
+              {t('settings.syncOnClickHint')}
             </p>
           </div>
           {!addingSource ? (

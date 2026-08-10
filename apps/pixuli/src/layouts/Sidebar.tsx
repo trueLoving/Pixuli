@@ -12,9 +12,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
-import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
-import { useSyncPreferencesStore } from '../stores/syncPreferencesStore';
 import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
@@ -48,11 +46,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
-  const runSync = useWorkspaceStore(state => state.runSync);
-  const defaultDirection = useSyncPreferencesStore(
-    state => state.defaultDirection,
-  );
-  const loadImages = useImageStore(state => state.loadImages);
   const {
     activeMenu,
     sidebarCollapsed,
@@ -64,6 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setCurrentUtilityTool,
     setActiveMenu,
     openSettingsModal,
+    openSyncDirectionModal,
   } = useUIStore();
 
   const workspaceReady =
@@ -85,7 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return sources[0] ?? null;
   }, [sources, selectedSourceId]);
 
-  const syncStrategyLabel = t(`settings.directionShort.${defaultDirection}`);
   const syncRemoteLabel = useMemo(() => {
     if (!activeSyncSource) {
       return t('settings.noSyncTarget');
@@ -110,11 +103,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [isMobile, mobileSidebarOpen]);
 
-  const closeDrawerIfMobile = () => {
+  const closeDrawerIfMobile = useCallback(() => {
     if (isMobile) {
       closeMobileSidebar();
     }
-  };
+  }, [isMobile, closeMobileSidebar]);
 
   const handleMenuClick = (menuItem: SidebarMenuItem) => {
     if (menuItem.type === 'photos') {
@@ -159,19 +152,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     closeDrawerIfMobile();
   };
 
-  const handleSyncClick = useCallback(async () => {
+  const handleSyncClick = useCallback(() => {
     if (!workspaceReady || syncBusy) return;
-    await runSync(defaultDirection);
-    await loadImages();
+    openSyncDirectionModal();
     closeDrawerIfMobile();
-  }, [
-    workspaceReady,
-    syncBusy,
-    runSync,
-    defaultDirection,
-    loadImages,
-    closeDrawerIfMobile,
-  ]);
+  }, [workspaceReady, syncBusy, openSyncDirectionModal, closeDrawerIfMobile]);
 
   if (isFullscreenMode) {
     return null;
@@ -195,7 +180,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           syncBusy={syncBusy}
           syncDisabled={syncDisabled}
           syncDisabledTitle={syncDisabledTitle}
-          syncStrategyLabel={syncStrategyLabel}
           syncRemoteLabel={syncRemoteLabel}
           hideUtilityTools
           hideHelpFooter

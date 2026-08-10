@@ -23,6 +23,9 @@ interface UIState {
   // 模态框状态
   showConfigModal: boolean;
   showSettingsModal: boolean;
+  /** 同步方向选择（远端→本地 / 本地→远端） */
+  showSyncDirectionModal: boolean;
+  showWorkspaceModal: boolean;
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
@@ -88,6 +91,8 @@ interface UIState {
   openOperationLog: () => void;
   openSettingsModal: (section?: SettingsSection) => void;
   closeSettingsModal: () => void;
+  openSyncDirectionModal: () => void;
+  closeSyncDirectionModal: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
   openSettingsModalForAddSource: () => void;
@@ -111,6 +116,7 @@ function syncImageStoreForRepoConfig(
 export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
   showSettingsModal: false,
+  showSyncDirectionModal: false,
   settingsSection: 'sync',
   settingsSyncAddOpen: false,
   editingSourceId: null,
@@ -213,6 +219,8 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: false,
       settingsSyncAddOpen: false,
     }),
+  openSyncDirectionModal: () => set({ showSyncDirectionModal: true }),
+  closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
   openSettingsModalForAddSource: () =>
