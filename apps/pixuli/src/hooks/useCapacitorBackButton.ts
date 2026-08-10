@@ -49,8 +49,16 @@ export function useCapacitorBackButton(): void {
           ui.closeConfigModal();
           return;
         }
+        if (ui.showSyncDirectionModal) {
+          ui.closeSyncDirectionModal();
+          return;
+        }
         if (ui.showSettingsModal) {
           ui.closeSettingsModal();
+          return;
+        }
+        if (ui.showWorkspaceModal) {
+          ui.closeWorkspaceModal();
           return;
         }
         if (dismissDomOverlay()) return;

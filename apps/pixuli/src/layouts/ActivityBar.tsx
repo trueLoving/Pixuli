@@ -2,11 +2,8 @@ import { FileText, FolderTree, RefreshCw, Settings } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
-import { useI18n } from '@/i18n/useI18n';
 import { ROUTES } from '@/router/routes';
-import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
-import { useSyncPreferencesStore } from '@/stores/syncPreferencesStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import './ActivityBar.css';
@@ -25,6 +22,9 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     state => state.setCurrentUtilityTool,
   );
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
+  const openSyncDirectionModal = useUIStore(
+    state => state.openSyncDirectionModal,
+  );
   const toggleWorkspaceExplorer = useUIStore(
     state => state.toggleWorkspaceExplorer,
   );
@@ -37,11 +37,6 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
-  const runSync = useWorkspaceStore(state => state.runSync);
-  const loadImages = useImageStore(state => state.loadImages);
-  const defaultDirection = useSyncPreferencesStore(
-    state => state.defaultDirection,
-  );
 
   const workspaceReady = localActive && sources.length > 0;
   const syncBusy = pushing || syncing || workspaceLoading;
@@ -63,10 +58,9 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView],
   );
 
-  const handleSync = async () => {
+  const handleSync = () => {
     if (syncDisabled) return;
-    await runSync(defaultDirection);
-    await loadImages();
+    openSyncDirectionModal();
   };
 
   const items = [
@@ -84,19 +78,6 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
       active: workspaceExplorerOpen,
       mobileOnly: true,
     },
-    // 暂时隐藏：压缩 / 转换（路由仍保留，可从 URL 直达）
-    // {
-    //   id: 'compress',
-    //   label: t('sidebar.imageCompress'),
-    //   icon: Zap,
-    //   onClick: () => navigateTo('compress', ROUTES.COMPRESS),
-    // },
-    // {
-    //   id: 'convert',
-    //   label: t('sidebar.imageConvert'),
-    //   icon: FileImage,
-    //   onClick: () => navigateTo('convert', ROUTES.CONVERT),
-    // },
   ];
 
   return (
@@ -138,7 +119,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
           }
           aria-label={t('sidebar.syncAction')}
           disabled={syncDisabled}
-          onClick={() => void handleSync()}
+          onClick={handleSync}
         >
           <RefreshCw
             size={22}
