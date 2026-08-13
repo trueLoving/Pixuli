@@ -44,10 +44,9 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 | 区域                                   | 状态      | 说明                                                               |
 | -------------------------------------- | --------- | ------------------------------------------------------------------ |
 | **Web**（`apps/pixuli`，Vite）         | ✅ 维护中 | PWA；开发地址 `http://localhost:5500`                              |
-| **Desktop**（`apps/pixuli`，Electron） | ✅ 维护中 | 与 Web 共用 `@pixuli/ui`                                           |
+| **Desktop**（`apps/pixuli`，Electron） | ✅ 维护中 | 与 Web 共用 `src/ui`                                               |
 | **Mobile**（`apps/pixuli`，Capacitor） | ✅ 维护中 | Android：`dev:android` / `build:android`；与 Web/Desktop 同一套 UI |
 | **`@pixuli/core`**                     | ✅ 维护中 | 类型、工具、`StoragePluginRegistry`                                |
-| **`@pixuli/ui`**                       | ✅ 维护中 | Web/Desktop/Mobile UI；`./native` 已弃用                           |
 | **`@pixuli/provider-*`**               | ✅ 维护中 | 官方 GitHub/Gitee 存储插件                                         |
 | **`archive/wasm`**                     | 📦 已归档 | 不在 workspace；仅供查阅                                           |
 | **`archive/benchmark`**                | 📦 已归档 | 不在 workspace                                                     |
@@ -72,10 +71,9 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 ```text
 Pixuli/
 ├── apps/
-│   └── pixuli/                          # Web + Desktop + Mobile（Vite + React + Electron + Capacitor）
+│   └── pixuli/                          # Web + Desktop + Mobile（Vite + React + Electron + Capacitor；UI 在 src/ui）
 ├── packages/
 │   ├── core/                            # @pixuli/core — 类型、Registry、工具
-│   ├── ui/                              # @pixuli/ui — 共享 Web UI
 │   ├── plugin-provider-github/          # @pixuli/provider-github
 │   └── plugin-provider-gitee/           # @pixuli/provider-gitee
 ├── archive/                             # wasm、benchmark、server、apps/mobile（不在 workspace）
@@ -128,6 +126,7 @@ pnpm run:android      # 在 dev server 已起时重连
 ```bash
 pnpm build:web
 pnpm build:desktop
+pnpm build:android      # 已签名 release APK
 pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI 门禁）
 ```
 

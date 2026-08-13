@@ -37,6 +37,9 @@
     "src/test/**/*",
     "**/*.test.*",
     "**/__tests__/**",
-    "src/pages/HomePage/**"
+    "src/pages/HomePage/**",
+    "src/ui/**/*.native.tsx",
+    "src/ui/**/native/**",
+    "src/ui/native/**"
   ]
 }

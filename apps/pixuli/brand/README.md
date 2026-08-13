@@ -2,12 +2,12 @@
 
 **来源**：`brand/source/` 为三端 SSOT；首次自
 `archive/apps/mobile/assets/images/` 同步（REF-516）。重新拉取源图可运行
-`pnpm sync:brand`。
+`pnpm -F pixuli-app sync:brand`。
 
-**同步命令**（在 `apps/pixuli` 下）：
+**同步命令**（仓库根目录）：
 
 ```bash
-pnpm sync:brand
+pnpm -F pixuli-app sync:brand
 ```
 
 ## 源文件（`source/`）

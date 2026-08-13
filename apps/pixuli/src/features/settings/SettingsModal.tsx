@@ -1,5 +1,5 @@
-import { useEscapeKey } from '@pixuli/ui';
-import type { VersionInfo } from '@pixuli/ui';
+import { useEscapeKey } from '@/ui';
+import type { VersionInfo } from '@/ui';
 import {
   BookOpen,
   Globe,
@@ -19,6 +19,7 @@ import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
+import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
 
 interface SettingsModalProps {

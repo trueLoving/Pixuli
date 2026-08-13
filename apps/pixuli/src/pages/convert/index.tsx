@@ -3,7 +3,7 @@ import { formatFileSize } from '@pixuli/core/utils';
 import {
   webImageProcessorService,
   type OutputMimeType,
-} from '@pixuli/ui/services/imageProcessor';
+} from '@/ui/services/imageProcessor';
 import { Download, ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';

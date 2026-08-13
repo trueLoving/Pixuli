@@ -1,6 +1,6 @@
 import { CloudDownload, CloudUpload, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { useEscapeKey } from '@pixuli/ui';
+import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useUIStore } from '@/stores/uiStore';

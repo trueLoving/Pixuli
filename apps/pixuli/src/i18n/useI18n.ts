@@ -1,4 +1,4 @@
-import { updateAllToasts } from '@pixuli/ui/feedback/toast';
+import { updateAllToasts } from '@/ui/feedback/toast';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 

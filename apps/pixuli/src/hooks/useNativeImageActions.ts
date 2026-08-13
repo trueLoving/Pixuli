@@ -1,5 +1,5 @@
 import type { ImageItem } from '@pixuli/core/types';
-import type { NativeImagePickers } from '@pixuli/ui/image/image-upload/common/nativePickers';
+import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePickers';
 import { useCallback, useMemo } from 'react';
 import {
   pickImageFromCamera,

@@ -61,8 +61,7 @@ await provider.listImages();
 ## 依赖边界
 
 - **仅依赖** `@pixuli/core`（types、platform、plugins）
-- **禁止**依赖 `@pixuli/ui`、`react-dom`
-  等 UI 层（REF-209，`pnpm lint:boundaries`）
+- **禁止**依赖 `@pixuli/ui`、`react-dom` 等 UI 层（REF-209，`pnpm lint`）
 
 ## 测试（REF-309）
 

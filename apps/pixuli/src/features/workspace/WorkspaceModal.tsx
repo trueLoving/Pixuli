@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { useEscapeKey } from '@pixuli/ui';
+import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
 import { WorkspaceManagePanel } from '@/features/workspace/WorkspaceManagePanel';
 

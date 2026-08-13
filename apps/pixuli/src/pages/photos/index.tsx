@@ -8,7 +8,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { filterImagesByFolder } from '@/utils/workspaceFolderTree';
-import type { ImageBrowserSearchConfig } from '@pixuli/ui';
+import type { ImageBrowserSearchConfig } from '@/ui';
 import React, { useMemo } from 'react';
 
 interface PhotosPageProps {

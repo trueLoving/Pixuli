@@ -16,7 +16,7 @@ apps/pixuli/
 ├── capacitor.config.ts
 ├── docker/                  # Web 容器化（可选）
 ├── electron/                # Desktop L3 主进程 / preload（见 electron/README.md）
-├── public/                  # 静态资源（部分由 `pnpm sync:brand` 生成）
+├── public/                  # 静态资源（部分由 `pnpm -F pixuli-app sync:brand` 生成）
 ├── tooling/                 # 构建脚本与 Vite 配置（scripts/、vite/）
 │   ├── scripts/             # dev-android、run-android、sync-brand-assets
 │   └── vite/                # modes、versionInfo、plugins/、createConfig
@@ -30,6 +30,7 @@ apps/pixuli/
     │   └── mobile/          # Capacitor 工作区适配
     ├── layouts/             # MainLayout、Sidebar、AppMain
     ├── features/            # 业务功能模块（settings、workspace、source-type 等）
+    ├── ui/                  # 原 @pixuli/ui（网格/列表/配置 Modal；`@/ui`）
     └── ...
 ```
 
@@ -52,42 +53,40 @@ Vite 插件（react、PWA、electron）在 `tooling/vite/plugins/` 组装，由�
 
 ---
 
-## 2. 脚本分组（`package.json`）
+## 2. 脚本（只从仓库根目录执行）
 
-在**仓库根目录**执行（`pnpm --filter pixuli-app` 等效）：
+日常入口（根 `package.json`）：
 
-| 分组      | 脚本                               | 说明                                           |
-| --------- | ---------------------------------- | ---------------------------------------------- |
-| **dev**   | `dev:web`                          | Web/PWA，`http://localhost:5500`               |
-|           | `dev:desktop`                      | Electron 联调                                  |
-|           | `dev:android`                      | Capacitor：起 Vite + 模拟器/真机 Live Reload   |
-|           | `run:android`                      | 已有 dev server 时重连 Android                 |
-| **build** | `build:web`                        | Web 静态资源（`dist/`）                        |
-|           | `build:desktop`                    | `tsc` + Vite desktop + electron-builder        |
-|           | `build:android`                    | `CAPACITOR_NATIVE=1` 的 web build + `cap sync` |
-|           | `build:android:debug` / `:release` | Gradle 组装 APK                                |
-| **cap**   | `cap:sync` / `cap:android`         | Capacitor 维护                                 |
-| **其他**  | `sync:brand`                       | 品牌图从 archive 同步到 `brand/` 与各端资源    |
+| 分组      | 脚本                  | 说明                                                       |
+| --------- | --------------------- | ---------------------------------------------------------- |
+| **dev**   | `dev:web`             | Web/PWA，`http://localhost:5500`                           |
+|           | `dev:desktop`         | Electron 联调                                              |
+|           | `dev:android`         | 起 Vite + 装/连 Android（Live Reload）                     |
+|           | `run:android`         | Vite 已在跑时只重连真机/模拟器                             |
+| **build** | `build:web`           | Web 静态资源（`dist/`）                                    |
+|           | `build:desktop`       | `tsc` + Vite desktop + electron-builder                    |
+|           | `build:android`       | **已签名 release APK**                                     |
+|           | `build:android:debug` | 例外：debug APK（本地冒烟）                                |
+| **验证**  | `test`                | 全仓库 vitest                                              |
+|           | `ci`                  | lint + test + web 构建 + desktop `tsc` + desktop vite 构建 |
+|           | `e2e`                 | 可选 Playwright 壳层                                       |
 
-根目录快捷方式：`pnpm dev:web`、`pnpm dev:desktop`、`pnpm dev:android`、`pnpm build:web`
-、`pnpm build:android` / `pnpm build:android:debug` 等（见根 `package.json`）。
+`apps/pixuli/package.json` 只放根脚本转发的实现（以及 `cap:sync` / `cap:android`
+/ `sync:brand`）。品牌图：`pnpm -F pixuli-app sync:brand`。
 
 **CI 构建顺序**（与本地 release 一致）：
 
 ```text
-build:packages  →  build:web  →  build:desktop / build:android(:debug|:release)
+pnpm ci  →  （发版）build:desktop / build:android
 ```
 
 - PR / push：[ci.yml](../../.github/workflows/ci.yml) — `pnpm ci`（Web/Desktop）
 - Android 构建/发版：[release-android.yml](../../.github/workflows/release-android.yml)
   — **仅** `workflow_dispatch`，`v{semver}-android`
 
-**Workspace 包**：现状各 `dev:*` / `build:web` 前仍执行
-`build:packages`（`@pixuli/core`、`@pixuli/provider-gitee`）。根目录 `pnpm ci` =
-**`build:packages`** + lint + test + web/desktop 构建门禁。  
-**目标**：渲染进程 dev/build 不再预编译 packages（Vite `development`
-条件已指向源码）。改造步骤见
-[07-package-layout-decision.md §八](./07-package-layout-decision.md)。
+**Workspace 包**：Vite / vitest 直接编译 `packages/*/src`。根目录 `pnpm ci` =
+lint + test + web/desktop 构建门禁。包布局见
+[07-package-layout-decision.md](./07-package-layout-decision.md)（步骤 1～3 已落地）。
 
 ---
 
@@ -139,11 +138,13 @@ build:packages  →  build:web  →  build:desktop / build:android(:debug|:relea
 
 ## 8. 修订记录
 
-| 版本 | 日期       | 说明                                                           |
-| ---- | ---------- | -------------------------------------------------------------- |
-| 1.5  | 2026-06-16 | 工程卫生：`tooling/` 收敛 scripts/vite；`vite/plugins/` 模块化 |
-| 1.4  | 2026-06-16 | 工程卫生：移除过时 `plugins/` 表述；补充本地产物与 vite 分轨   |
-| 1.3  | 2026-06-18 | REF-515 #153：CI PR/push、release-android 手动发版 workflow    |
-| 1.2  | 2026-06-17 | #152 验收关闭；§7 follow-up                                    |
-| 1.1  | 2026-06-17 | CI `build:packages` 门禁；文档清扫 RN 双工程表述               |
-| 1.0  | 2026-06-17 | REF-514 初稿：目录、脚本矩阵、平台检测收敛                     |
+| 版本 | 日期       | 说明                                                            |
+| ---- | ---------- | --------------------------------------------------------------- |
+| 1.7  | 2026-08-14 | 步骤 3：根脚本收口为日常入口；smoke/check 并入 ci               |
+| 1.6  | 2026-08-14 | 步骤 1：dev/build 不再预编译 packages；CI 去掉 `build:packages` |
+| 1.5  | 2026-06-16 | 工程卫生：`tooling/` 收敛 scripts/vite；`vite/plugins/` 模块化  |
+| 1.4  | 2026-06-16 | 工程卫生：移除过时 `plugins/` 表述；补充本地产物与 vite 分轨    |
+| 1.3  | 2026-06-18 | REF-515 #153：CI PR/push、release-android 手动发版 workflow     |
+| 1.2  | 2026-06-17 | #152 验收关闭；§7 follow-up                                     |
+| 1.1  | 2026-06-17 | CI `build:packages` 门禁；文档清扫 RN 双工程表述                |
+| 1.0  | 2026-06-17 | REF-514 初稿：目录、脚本矩阵、平台检测收敛                      |

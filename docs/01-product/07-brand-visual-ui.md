@@ -175,7 +175,7 @@ Logo 顶面青光 + 向上浮点 = 天然「数据在进出库」。Loading 用
 | V4  | 扫 `@pixuli/ui` 硬编码 `#3b82f6` `#2563eb`，改 token                                           |
 
 插画资源建议放 `apps/pixuli/brand/source/empty-*.svg`（或 png），由
-`pnpm sync:brand` 进 `public/`，三端共用。
+`pnpm -F pixuli-app sync:brand` 进 `public/`，三端共用。
 
 ---
 

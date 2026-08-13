@@ -3,7 +3,7 @@ import {
   DemoSidebarSection,
   type SidebarMenuItem,
   useDemoMode,
-} from '@pixuli/ui';
+} from '@/ui';
 import {
   getRepoConfigFromSource,
   pluginIdToLegacyType,

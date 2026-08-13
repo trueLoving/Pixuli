@@ -1,8 +1,8 @@
 # Pixuli 整体系统设计
 
 > **最后核对**：2026-08-13 · 适用分支 `main` · REF-407 / 文档 P0  
-> **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/ui` +
-> `@pixuli/provider-*`；`packages/common`、主路径 WASM、`server/`
+> **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/provider-*`；UI 在
+> `apps/pixuli/src/ui`。`packages/common`、主路径 WASM、`server/`
 > 已归档。Mobile 由 **`apps/pixuli` + Capacitor Android** 交付（非 Expo
 > RN）。官方不提供 NestJS
 > Server。图床主界面为**网格/列表**（幻灯片/时间线已移除，见
@@ -37,15 +37,16 @@
 ### 1.2 设计原则
 
 - **多端一致**：Web、Desktop、Mobile 在业务能力上对齐；Web/Desktop 共用
-  `apps/pixuli` + `@pixuli/ui`；逻辑与类型在 `@pixuli/core`，存储经
+  `apps/pixuli`（`src/ui`）；逻辑与类型在 `@pixuli/core`，存储经
   `StorageProvider` 插件。
 - **存储插件化**：默认以 **GitHub / Gitee 仓库**为图床；**官方不提供** NestJS
   Server（`archive/server/` 仅归档参考）。
-- **性能与体积**：Web/Desktop 图片处理以 **Canvas**（`@pixuli/ui`
-  imageProcessor）为主；Mobile 使用 expo-image-manipulator 等原生能力。Rust
-  WASM 已归档至 `archive/wasm/`。
+- **性能与体积**：Web/Desktop 图片处理以 **Canvas**（`src/ui`
+  imageProcessor）为主；Mobile 使用 Capacitor 原生能力。Rust WASM 已归档至
+  `archive/wasm/`。
 - **可扩展**：AI 能力（分析、生成）通过 Dify 工作流或本地模型接入，压缩/编辑/转换采用传统实现，便于后续按需扩展新能力。
-- **包布局**：`core` + `provider-*` 保持独立包；`@pixuli/ui` 可迁入 app。决策见
+- **包布局**：`core` + `provider-*` 独立包；UI 已内联
+  `apps/pixuli/src/ui`。决策见
   [07-package-layout-decision.md](./07-package-layout-decision.md)。
 
 ### 1.3 系统定位
@@ -65,7 +66,7 @@
 | 术语           | 英文             | 说明                                                                             |
 | -------------- | ---------------- | -------------------------------------------------------------------------------- |
 | **Monorepo**   | Monorepo         | pnpm workspace：`apps/*`、`packages/*`、`docs`；`archive/` 不参与日常构建        |
-| **共享包**     | Shared Package   | `@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-*`                               |
+| **共享包**     | Shared Package   | `@pixuli/core`、`@pixuli/provider-*`；UI 在 `apps/pixuli/src/ui`                 |
 | **平台适配层** | Platform Adapter | 抽象平台差异的接口与实现，使同一业务逻辑在 Web/Desktop/Mobile 上分别调用对应能力 |
 | **图床**       | Image Hosting    | 以用户配置的 GitHub/Gitee 仓库为后端；非官方自建 Server                          |
 
@@ -117,7 +118,7 @@ graph TB
         end
         subgraph "共享层 packages/"
             Core[@pixuli/core<br/>类型·Registry·工具]
-            UI[@pixuli/ui<br/>Web/Desktop UI]
+            UI[apps/pixuli/src/ui<br/>Web/Desktop UI]
             Prov[@pixuli/provider-*<br/>GitHub/Gitee 插件]
         end
     end
@@ -185,14 +186,13 @@ sequenceDiagram
 
 ### 4.1 仓库目录与模块映射
 
-| 路径                            | 模块名称       | 职责简述                                                                                             |
-| ------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
-| **apps/pixuli**                 | 三端主应用     | Vite + React + Electron + Capacitor Android；图床、上传、工具、设置；各端薄适配见 `src/platforms/`。 |
-| **archive/apps/mobile**         | RN 历史归档    | Expo RN 只读参考（REF-513）；非 workspace。                                                          |
-| **packages/core**               | `@pixuli/core` | 类型、`StoragePluginRegistry`、工具函数。                                                            |
-| **packages/ui**                 | `@pixuli/ui`   | Web/Desktop/Mobile（Capacitor）共享 UI；`./native` 已 deprecated（随 RN 归档）。                     |
-| **packages/plugin-provider-\*** | 存储插件       | 官方 GitHub/Gitee `StorageProvider` 实现。                                                           |
-| **archive/**                    | 历史归档       | wasm、benchmark、server；见 [archive/README](../../archive/README.md)。                              |
+| 路径                            | 模块名称       | 职责简述                                                                           |
+| ------------------------------- | -------------- | ---------------------------------------------------------------------------------- |
+| **apps/pixuli**                 | 三端主应用     | Vite + React + Electron + Capacitor；UI 在 `src/ui`；平台适配见 `src/platforms/`。 |
+| **archive/apps/mobile**         | RN 历史归档    | Expo RN 只读参考（REF-513）；非 workspace。                                        |
+| **packages/core**               | `@pixuli/core` | 类型、`StoragePluginRegistry`、工具函数。                                          |
+| **packages/plugin-provider-\*** | 存储插件       | 官方 GitHub/Gitee `StorageProvider` 实现。                                         |
+| **archive/**                    | 历史归档       | wasm、benchmark、server；见 [archive/README](../../archive/README.md)。            |
 
 ### 4.2 应用层与共享层依赖关系
 
@@ -203,16 +203,13 @@ graph LR
     end
     subgraph packages
         Core[@pixuli/core]
-        UI[@pixuli/ui]
         Prov[@pixuli/provider-*]
     end
 
     P --> Core
-    P --> UI
     P --> Prov
 
     style Core fill:#c8e6c9
-    style UI fill:#bbdefb
     style Prov fill:#a5d6a7
 ```
 
@@ -388,7 +385,6 @@ Pixuli/
 │   └── pixuli/                    # Web + Desktop + Mobile（Capacitor）
 ├── packages/
 │   ├── core/                      # @pixuli/core
-│   ├── ui/                        # @pixuli/ui
 │   └── plugin-provider-github|gitee/
 ├── docs/                          # PRD、系统设计、业务设计
 ├── archive/                       # wasm、benchmark、server、apps/mobile（非 workspace）

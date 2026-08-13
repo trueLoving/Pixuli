@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { SidebarView, SidebarUtilityTool } from '@pixuli/ui';
+import type { SidebarView, SidebarUtilityTool } from '@/ui';
 import { useUIStore } from '../stores/uiStore';
 
 /**

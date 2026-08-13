@@ -1,7 +1,7 @@
 # Pixuli App — Web · Desktop · Android
 
 三端合一主应用（`pixuli-app`）：**Web（PWA）**、**Desktop（Electron）**、**Mobile（Capacitor
-Android）** 共用 `src/` 与 `@pixuli/ui`。
+Android）** 共用 `src/`（含 `src/ui`）。
 
 工程约定与构建矩阵：[06-apps-pixuli-engineering.md](../../docs/02-system-design/06-apps-pixuli-engineering.md)（REF-514）
 
@@ -18,14 +18,13 @@ pnpm install
 pnpm dev:web          # Web → http://localhost:5500
 pnpm dev:desktop      # Electron
 pnpm dev:android      # Android 模拟器/真机 + Live Reload
+pnpm run:android      # Vite 已在跑时重连
 
-# 构建
+# 构建（一律在仓库根目录）
 pnpm build:web
 pnpm build:desktop
-pnpm build:android    # 同步 Capacitor；release APK 见 build:android:release
+pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:debug
 ```
-
-也可在 `apps/pixuli` 下直接 `pnpm dev:web` 等（脚本定义在本包 `package.json`）。
 
 ### Android 安装包（用户）
 
@@ -42,16 +41,16 @@ pnpm build:android    # 同步 Capacitor；release APK 见 build:android:release
 
 ### 源码与配置（版本库）
 
-| 路径               | 说明                                 |
-| ------------------ | ------------------------------------ |
-| `src/`             | 应用源码（features、layouts、pages） |
-| `src/platforms/`   | 平台检测、各端适配器、Web 浏览器壳层 |
-| `electron/`        | Desktop 主进程 / preload             |
-| `android/`         | Capacitor Android 工程               |
-| `brand/`           | 三端品牌图 SSOT（`pnpm sync:brand`） |
-| `public/`          | 静态资源（部分由 sync:brand 生成）   |
-| `tooling/scripts/` | Android 联调、品牌资源同步           |
-| `tooling/vite/`    | Vite 分轨与插件组装                  |
+| 路径               | 说明                                               |
+| ------------------ | -------------------------------------------------- |
+| `src/`             | 应用源码（features、layouts、pages）               |
+| `src/platforms/`   | 平台检测、各端适配器、Web 浏览器壳层               |
+| `electron/`        | Desktop 主进程 / preload                           |
+| `android/`         | Capacitor Android 工程                             |
+| `brand/`           | 三端品牌图 SSOT（`pnpm -F pixuli-app sync:brand`） |
+| `public/`          | 静态资源（部分由 sync:brand 生成）                 |
+| `tooling/scripts/` | Android 联调、品牌资源同步                         |
+| `tooling/vite/`    | Vite 分轨与插件组装                                |
 
 ### 本地产物（勿提交）
 

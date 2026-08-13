@@ -4,28 +4,12 @@
   "description": "Pixuli Gitee storage provider plugin",
   "type": "module",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
-    ".": {
-      "development": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./register": {
-      "development": "./src/register.ts",
-      "types": "./dist/register.d.ts",
-      "import": "./dist/register.js"
-    },
-    "./manifest": {
-      "development": "./src/manifest.ts",
-      "types": "./dist/manifest.d.ts",
-      "import": "./dist/manifest.js"
-    }
+    ".": "./src/index.ts",
+    "./register": "./src/register.ts",
+    "./manifest": "./src/manifest.ts"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -35,7 +19,6 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "jsdom": "^25.0.1",
-    "tsup": "^8.5.0",
     "typescript": "^5.0.0",
     "vitest": "^2.1.8"
   }

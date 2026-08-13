@@ -1,4 +1,4 @@
-import { COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@pixuli/ui';
+import { COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/ui';
 
 // 键盘快捷键配置
 export const createKeyboardShortcuts = (t: (key: string) => string) => [

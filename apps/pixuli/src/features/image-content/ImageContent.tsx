@@ -1,5 +1,5 @@
-import { EmptyState, ImageBrowser } from '@pixuli/ui';
-import type { ImageBrowserSearchConfig } from '@pixuli/ui';
+import { EmptyState, ImageBrowser } from '@/ui';
+import type { ImageBrowserSearchConfig } from '@/ui';
 import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import React, { useCallback, useMemo } from 'react';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
