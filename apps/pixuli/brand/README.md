@@ -21,6 +21,9 @@ pnpm sync:brand
 | `android-icon-background.png` | Android 自适应图标背景                       |
 | `android-icon-monochrome.png` | Android 13+ 单色图标（可选）                 |
 
+视觉 token、empty / loading 建议见
+[07-brand-visual-ui.md](../../../docs/01-product/07-brand-visual-ui.md)。
+
 ## 生成产物
 
 - `public/icon.png`、`public/favicon.png`、`public/favicon.ico`、`public/icon.ico`

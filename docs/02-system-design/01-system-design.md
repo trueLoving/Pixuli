@@ -1,6 +1,6 @@
 # Pixuli 整体系统设计
 
-> **最后核对**：2026-06-17 · 适用分支 `main` · REF-407 / 文档 P0  
+> **最后核对**：2026-08-13 · 适用分支 `main` · REF-407 / 文档 P0  
 > **说明**：M3 后共享层为 `@pixuli/core` + `@pixuli/ui` +
 > `@pixuli/provider-*`；`packages/common`、主路径 WASM、`server/`
 > 已归档。Mobile 由 **`apps/pixuli` + Capacitor Android** 交付（非 Expo
@@ -45,6 +45,8 @@
   imageProcessor）为主；Mobile 使用 expo-image-manipulator 等原生能力。Rust
   WASM 已归档至 `archive/wasm/`。
 - **可扩展**：AI 能力（分析、生成）通过 Dify 工作流或本地模型接入，压缩/编辑/转换采用传统实现，便于后续按需扩展新能力。
+- **包布局**：`core` + `provider-*` 保持独立包；`@pixuli/ui` 可迁入 app。决策见
+  [07-package-layout-decision.md](./07-package-layout-decision.md)。
 
 ### 1.3 系统定位
 

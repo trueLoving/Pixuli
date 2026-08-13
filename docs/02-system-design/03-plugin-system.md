@@ -9,6 +9,8 @@
   - [01-product-requirements-specification §5.1](../01-product/01-product-requirements-specification.md)（仓库源需求；业务设计文档暂缓）
   - [05-local-workspace-sync.md](./05-local-workspace-sync.md)（REF-607：Provider
     `sync` / `buildPublicUrl` 扩展，M6）
+  - [06-asset-library-ui.md](../01-product/06-asset-library-ui.md)（产品向：连接器能力位与发布 UI）
+  - [07-package-layout-decision.md](./07-package-layout-decision.md)（core/provider 保留独立包）
   - [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)
 
 本文合并
