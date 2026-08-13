@@ -162,14 +162,14 @@ flowchart TB
 | `@pixuli/core`            | 契约、`StoragePluginRegistry`、共享类型、`PlatformAdapter` | 无 UI          |
 | `@pixuli/provider-github` | GitHub API + 元数据 sidecar 文件                           | `@pixuli/core` |
 | `@pixuli/provider-gitee`  | Gitee API + 元数据 sidecar 文件                            | `@pixuli/core` |
-| `@pixuli/ui`              | 配置 Modal、添加源 UI（REF-307 读 manifest）               | `@pixuli/core` |
+| `apps/pixuli/src/ui`      | 配置 Modal、添加源 UI（REF-307 读 manifest）               | `@pixuli/core` |
 | `pixuli-common`           | **过渡**：REF-302/303 迁出后删除（REF-311）                | —              |
 
 ### 4.3 ESLint 边界（REF-209）
 
-- `packages/core/`** 不得 import `@pixuli/ui` 或 `packages/ui/**`。
+- `packages/core/` 不得 import `@/ui`、`apps/pixuli/src/ui/**`。
 - `packages/provider-*/**` 同上。
-- 违反时在 CI `pnpm lint:boundaries` 失败。
+- `apps/pixuli/src/ui/**` 不得 import `@pixuli/provider-*`。
 
 ---
 
@@ -732,7 +732,7 @@ Monorepo **物理目录**可与 npm 名不同：`packages/plugin-provider-github
 | `fetch`、`octokit` 等实现所需库                  | `pixuli-common`（REF-311 后删除）  |
 | 经 `ProviderContext.platformAdapter` 读文件      | 直接 `import` 应用 store           |
 
-CI 通过 `pnpm lint:boundaries` 强制执行（REF-209）。
+CI 通过 `pnpm lint` 强制执行（REF-209）。
 
 ---
 
@@ -904,7 +904,7 @@ Provider 文档应说明本插件 `config` 字段含义；工具函数见 `@pixu
 ### 7.4 依赖供应链
 
 第三方包应锁定依赖版本、避免 postinstall 脚本读取环境变量中的用户配置。Monorepo 内置包接受
-`pnpm lint:boundaries` 与 CI 审查。
+`pnpm lint` 与 CI 审查。
 
 ---
 

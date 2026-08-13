@@ -9,8 +9,8 @@ import {
   GitHubConfigModal,
   Toaster,
   useDemoMode,
-} from '@pixuli/ui';
-import type { VersionInfo } from '@pixuli/ui';
+} from '@/ui';
+import type { VersionInfo } from '@/ui';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';

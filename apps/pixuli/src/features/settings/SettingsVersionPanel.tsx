@@ -1,4 +1,4 @@
-import type { VersionInfo } from '@pixuli/ui';
+import type { VersionInfo } from '@/ui';
 import { Calendar, Code, GitBranch, Hash, Info, Package } from 'lucide-react';
 import React, { useState } from 'react';
 

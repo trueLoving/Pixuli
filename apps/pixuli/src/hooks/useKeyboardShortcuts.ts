@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { keyboardManager } from '@pixuli/ui';
+import { keyboardManager } from '@/ui';
 import { createKeyboardShortcuts } from '../utils/keyboardShortcuts';
 
 /**

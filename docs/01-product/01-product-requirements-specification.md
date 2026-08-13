@@ -60,7 +60,7 @@
 | 项              | 说明                                                                                     |
 | --------------- | ---------------------------------------------------------------------------------------- |
 | **交付形态**    | **Web（含 PWA）**、**Desktop（Electron）**、**Mobile（Capacitor Android）** 三端继续维护 |
-| **插件边界**    | 云与 Git 存储经 `StorageProvider` 插件扩展；**core/provider 禁止依赖 `@pixuli/ui`**      |
+| **插件边界**    | 云与 Git 存储经 `StorageProvider` 插件扩展；**core/provider 禁止依赖 UI（`src/ui`）**    |
 | **官方 Server** | **不提供**官方 NestJS / 自建后端为一等公民；`server/` 已归档，仅社区或自建对接           |
 | **对外主张**    | 本地优先的资源工作区；AI 分析 / 自动标签 / 批处理仍为增强能力，不替代资源库主路径        |
 
@@ -117,7 +117,7 @@ Gitee** 同步与公网直链。
 ```text
 apps/pixuli     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron + android/）
 packages/core   类型、工具、StoragePluginRegistry 契约
-packages/ui     三端共享 UI（@pixuli/ui web）；./native 已 deprecated
+apps/pixuli/src/ui  三端共享 UI（`@/ui`）；native 已 deprecated
 packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
 archive/        apps/mobile（RN）、wasm、benchmark、历史 server（不参与日常构建）
 ```
@@ -175,11 +175,9 @@ Pixuli 是一款**本地优先的资源工作区客户端**（三端共用 `apps
 ```
 Pixuli/
 ├── apps/
-│   ├── pixuli/              # Web + Desktop 统一应用（Vite + React + Electron）
-│   └── mobile/              # Mobile（Expo + RN，过渡）
+│   ├── pixuli/              # Web + Desktop + Android（含 src/ui）
 ├── packages/
 │   ├── core/                # @pixuli/core — 类型、工具、插件 Registry 契约
-│   ├── ui/                  # @pixuli/ui — Web/Desktop 共享 UI（./native 供 RN）
 │   ├── plugin-provider-github/
 │   └── plugin-provider-gitee/
 ├── archive/                 # wasm、benchmark、历史 server（非主构建）
@@ -474,10 +472,10 @@ Gitee；阶段二：OneDrive、Google Cloud 等）。社区/自建见
 
 ### 6.4 可用性与可维护性
 
-| ID          | 需求                                                                       |
-| ----------- | -------------------------------------------------------------------------- |
-| NF-USAB-01  | 主流程支持中英双语，关键操作有反馈                                         |
-| NF-MAINT-01 | 共享逻辑在 `@pixuli/core`；UI 在 `@pixuli/ui`；存储在 `@pixuli/provider-*` |
+| ID          | 需求                                                                               |
+| ----------- | ---------------------------------------------------------------------------------- |
+| NF-USAB-01  | 主流程支持中英双语，关键操作有反馈                                                 |
+| NF-MAINT-01 | 共享逻辑在 `@pixuli/core`；UI 在 `apps/pixuli/src/ui`；存储在 `@pixuli/provider-*` |
 
 ---
 

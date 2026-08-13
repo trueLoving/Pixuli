@@ -4,7 +4,7 @@
  * Capacitor 7 使用 `cap run android -l --port --host|--forwardPorts`，
  * 不再支持旧版 `--external`（与 Expo 不同，需自启 Vite）。
  */
-import { spawn, execSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createConnection } from 'node:net';
 import { buildCapLiveReloadArgs, listAdbDevices } from './cap-live-reload-args.mjs';
 import { PIXULI_ROOT } from './paths.mjs';
@@ -67,9 +67,6 @@ function startVite() {
 }
 
 async function main() {
-  log('构建 workspace 包…');
-  execSync('pnpm build:packages', { cwd: PIXULI_ROOT, stdio: 'inherit' });
-
   const devices = listAdbDevices();
   const { capArgs, mode } = buildCapLiveReloadArgs({
     port,

@@ -77,9 +77,6 @@ pnpm dev:web
 
 # 构建
 pnpm build:web
-
-# 预览构建结果
-pnpm preview:web
 ```
 
 ### Mobile
@@ -155,7 +152,8 @@ apps/pixuli/
 
 ### 包边界
 
-- `@pixuli/core` 与 `@pixuli/provider-*` **禁止**依赖 `@pixuli/ui`（REF-209）
+- `@pixuli/core` 与 `@pixuli/provider-*` **禁止**依赖
+  `apps/pixuli/src/ui`（REF-209）
 - 存储仅经 `@pixuli/core/plugins` 契约 + provider 包；应用不直接写 Git API 细节
 
 ## 📤 提交规范

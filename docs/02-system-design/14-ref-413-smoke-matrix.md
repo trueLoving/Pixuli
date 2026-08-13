@@ -20,44 +20,30 @@
 在仓库根目录：
 
 ```bash
-# Web：packages 构建 + vitest + build:web
-pnpm smoke:web
+# PR 门禁（lint + test + web 构建 + desktop tsc/vite）
+pnpm ci
 
-# Desktop：smoke:web + 类型检查 + vite desktop build
-pnpm smoke:desktop
-
-# 同上 Desktop 冒烟的简写
-pnpm smoke
-
-# Playwright 壳层（需本机已 build:packages；dev server 由 playwright 拉起）
-pnpm smoke:e2e
+# 可选：Playwright 壳层（dev server 由 playwright 拉起）
+pnpm e2e
 ```
-
-组合子命令（`smoke:*` / `ci` 内部复用）：
-
-- `pnpm check:types` — `pixuli-app` 的 `tsc`
-- `pnpm check:desktop` — `vite build --mode desktop`（不含 electron-builder）
 
 ---
 
 ## 3. 矩阵
 
-| 项               | 命令                        | 说明                                         |
-| ---------------- | --------------------------- | -------------------------------------------- |
-| Workspace 包构建 | `pnpm build:packages`       | `@pixuli/core`、`@pixuli/provider-gitee`     |
-| 单元测试         | `pnpm test`                 | vitest workspace                             |
-| Web 生产构建     | `pnpm build:web`            | `apps/pixuli/dist/`                          |
-| Desktop TS       | `pnpm check:types`          | Renderer + electron 类型检查                 |
-| Desktop Vite     | `pnpm check:desktop`        | 主进程/preload 编译（不含 electron-builder） |
-| E2E 壳层         | `playwright test e2e/smoke` | `/photos` 标题与布局、设置弹窗               |
+| 项           | 命令                    | 说明                           |
+| ------------ | ----------------------- | ------------------------------ |
+| 单元测试     | `pnpm test`             | vitest workspace               |
+| Web 生产构建 | `pnpm build:web`        | `apps/pixuli/dist/`            |
+| Desktop 门禁 | `pnpm ci` 内 tsc + vite | 不含 electron-builder          |
+| E2E 壳层     | `pnpm e2e`              | `/photos` 标题与布局、设置弹窗 |
 
 ---
 
 ## 4. CI 建议
 
-- **PR**：`pnpm ci`（build:packages + lint:boundaries + test + web +
-  desktop 类型与 vite 构建）
-- **可选加强**：`pnpm smoke:e2e` 作为 nightly 或 release 前手动步骤
+- **PR**：`pnpm ci`
+- **可选加强**：`pnpm e2e` 作为 nightly 或 release 前手动步骤
 - **Android**：见
   [`release-android.yml`](../../.github/workflows/release-android.yml) 手动发版
 
@@ -68,3 +54,4 @@ pnpm smoke:e2e
 | 版本 | 日期       | 说明                                                    |
 | ---- | ---------- | ------------------------------------------------------- |
 | 1.0  | 2026-06-16 | REF-413 初稿；脚本 + Playwright smoke + REF-602 P3 引用 |
+| 1.1  | 2026-08-14 | 与步骤 3 对齐：`smoke:*` / `check:*` 并入 `pnpm ci`     |

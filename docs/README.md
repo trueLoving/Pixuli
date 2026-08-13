@@ -19,7 +19,7 @@
 | **协作者 / Issue** | [REFACTOR_PLAN.md](../REFACTOR_PLAN.md) · [AGENTS.md](../AGENTS.md)                                                                                                                                                                                                                     |
 
 **当前架构（一句话）**：`apps/pixuli`（Web + Desktop + Capacitor Android）·
-`@pixuli/core` · `@pixuli/ui` · `@pixuli/provider-*` ·
+`@pixuli/core` · `@pixuli/provider-*` · `apps/pixuli/src/ui` ·
 `archive/`（RN、wasm、server 等，非 workspace）。
 
 ---

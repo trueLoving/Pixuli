@@ -10,7 +10,7 @@
 | ----------- | ---------------------------------------------------------------------------- |
 | **三端**    | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor，`apps/pixuli`）均维护 |
 | **存储**    | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**           |
-| **UI 共享** | Web + Desktop + Mobile 共用 `apps/pixuli` + `@pixuli/ui` web                 |
+| **UI 共享** | Web + Desktop + Mobile 共用 `apps/pixuli`（含 `src/ui`）                     |
 | **分层**    | L1 业务 · L2 网格/列表 · L3 各端平台能力；**core/provider 禁止依赖 ui**      |
 
 重构追踪：[REFACTOR_PLAN.md](REFACTOR_PLAN.md)（Issue 映射、里程碑、§九 工程基线）。
@@ -20,21 +20,19 @@
 ```text
 apps/pixuli/          Web + Desktop + Mobile/Capacitor（Vite + React + electron/ + android/）
 packages/core/        @pixuli/core — types, StoragePluginRegistry, platform
-packages/ui/          @pixuli/ui — web 入口（./native 已 deprecated，随 RN 归档）
 packages/plugin-provider-github/   @pixuli/provider-github
 packages/plugin-provider-gitee/    @pixuli/provider-gitee
 archive/              wasm, server, benchmark, apps/mobile（非 workspace，勿接入主构建）
 ```
 
-**常用命令**（根目录）：`pnpm test` · `pnpm build:packages` · `pnpm dev:web` ·
+**常用命令**（根目录）：`pnpm test` · `pnpm ci` · `pnpm dev:web` ·
 `pnpm dev:desktop` · `pnpm build:web` · `pnpm build:desktop` ·
 `pnpm dev:android`（模拟器一键联调 + Live Reload）·
-`run:android`（server 已起时重连）· `pnpm build:android`（已签名 release
-APK；真机勿装 unsigned）
+`pnpm run:android`（server 已起时重连）· `pnpm build:android`（已签名 release
+APK；debug 用 `build:android:debug`）
 
-**Workspace 包消费（REF-416）**：`@pixuli/core`、`@pixuli/provider-gitee` 已
-`tsup` 构建；`exports` 双轨 — Renderer dev 走 `development`（源码），SSR/Node走
-`dist`。`dev:web` / `dev:desktop` 会先 `build:packages`。
+**Workspace 包消费（REF-416）**：`@pixuli/core` 与 `provider-*` 的 `exports`
+直指 `src`；Vite / vitest 直接编译源码，**不必**先 `build:packages`。
 
 ## 存储插件（M3 已落地）
 

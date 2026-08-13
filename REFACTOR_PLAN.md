@@ -25,9 +25,8 @@
 
 - **已归档**：`packages/wasm`、`benchmark/`、`server/`、`apps/mobile` → 见
   [archive/README.md](archive/README.md)
-- **包结构**：`@pixuli/core` + `@pixuli/ui` + `@pixuli/provider-*`（M3 已删除
-  `packages/common`）；**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。是否并入 app：见
-  [07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)（建议保留 core/provider；ui 可内联）
+- **包结构**：`@pixuli/core` + `@pixuli/provider-*`；UI 在
+  `apps/pixuli/src/ui`（`@/ui`）。**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。包布局：[07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)
 - **分层**：L1 业务 · L2 网格/列表 ·
   L3 各端平台能力；**core/provider 禁止依赖 ui**
 - **展示裁剪**：幻灯片、时间线、照片墙、3D 画廊等已移除（M1 ✅）
@@ -41,7 +40,7 @@
 | M1     | 减负与归档         | ✅ 完成 → [M1-completed.md](archive/refactor-plan/M1-completed.md)                  |
 | M2     | core / ui 拆分     | ✅ 完成 → [M2-completed.md](archive/refactor-plan/M2-completed.md)                  |
 | M3     | 存储插件 P0        | ✅ 完成 → [M3-completed.md](archive/refactor-plan/M3-completed.md)                  |
-| M4     | 文档与 CI          | ⏳ 11/16 → [M4-completed.md](archive/refactor-plan/M4-completed.md)                 |
+| M4     | 文档与 CI          | ⏳ 12/16 → [M4-completed.md](archive/refactor-plan/M4-completed.md)                 |
 | M5     | 平台能力 L3        | ⏳ 10/16（含 REF-507 ❌）→ [M5-completed.md](archive/refactor-plan/M5-completed.md) |
 | M6     | 产品体验与能力边界 | ⏳ 2/7 → [M6-completed.md](archive/refactor-plan/M6-completed.md)                   |
 
@@ -49,7 +48,7 @@
 
 ```text
 apps/pixuli（Vite + React）
-  ├── @pixuli/ui              Web L1/L2
+  ├── src/ui                  原 @pixuli/ui（内联）
   ├── src/platforms/*         Electron / Capacitor 分支
   └── imageStore / sourceStore  三端共用（本地工作区模式已落地）
 
@@ -66,24 +65,23 @@ Capacitor 为主路线（方案 A）；REF-507（双份 store 抽离）已 ❌ �
 **构建顺序（CI 与 release 一致）**：
 
 ```text
-pnpm build:packages  →  pnpm build:web  →  build:desktop / build:android
+pnpm build:web  →  build:desktop / build:android
 ```
 
-**本地验证**：`pnpm ci`（PR 门禁）· `pnpm smoke`（无 lint 的 Desktop 冒烟）·
-`pnpm smoke:e2e`（Playwright 壳层，可选）
+**本地验证**：`pnpm ci`（PR 门禁）· `pnpm e2e`（Playwright 壳层，可选）
 
 工程细节：[06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)（REF-514
 ✅）。
 
 ### 1.5 当前执行焦点
 
-| 优先级 | 方向                                                                  | Issue                                                                                                            |
-| ------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **P1** | REF-602 / REF-603：M6 UI 与性能边界                                   | [#131](https://github.com/trueLoving/Pixuli/issues/131)、[#132](https://github.com/trueLoving/Pixuli/issues/132) |
-| **P1** | REF-416：Workspace 包 exports conditions（dev 免手动 build:packages） | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                          |
-| **P1** | REF-411：插件体系重设计（Obsidian 参考）                              | [#126](https://github.com/trueLoving/Pixuli/issues/126)                                                          |
-| **P2** | REF-412 / REF-413：集成/冒烟测试                                      | [#127](https://github.com/trueLoving/Pixuli/issues/127) 等                                                       |
-| **P2** | REF-501～505：Desktop L3 与 L3 能力矩阵文档                           | [#86](https://github.com/trueLoving/Pixuli/issues/86)～[#90](https://github.com/trueLoving/Pixuli/issues/90)     |
+| 优先级 | 方向                                                     | Issue                                                                                                            |
+| ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **P1** | REF-602 / REF-603：M6 UI 与性能边界                      | [#131](https://github.com/trueLoving/Pixuli/issues/131)、[#132](https://github.com/trueLoving/Pixuli/issues/132) |
+| **P1** | REF-416：Workspace 包源码 exports（dev/build 免 tsup）✅ | [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                          |
+| **P1** | REF-411：插件体系重设计（Obsidian 参考）                 | [#126](https://github.com/trueLoving/Pixuli/issues/126)                                                          |
+| **P2** | REF-412 / REF-413：集成/冒烟测试                         | [#127](https://github.com/trueLoving/Pixuli/issues/127) 等                                                       |
+| **P2** | REF-501～505：Desktop L3 与 L3 能力矩阵文档              | [#86](https://github.com/trueLoving/Pixuli/issues/86)～[#90](https://github.com/trueLoving/Pixuli/issues/90)     |
 
 > **已收官**：REF-516（[#163](https://github.com/trueLoving/Pixuli/issues/163)
 > P0～P7）、REF-607（[#144](https://github.com/trueLoving/Pixuli/issues/144)
@@ -141,24 +139,24 @@ gh issue list --label refactor --state open --json number,title,state
 
 **最近同步**：2026-06-16 —
 REF-602（#131）P0（#196）、P1～P3 本分支推进中；REF-413（#128）落地本地
-`smoke:*` / `check:*`
+`pnpm ci` / `pnpm e2e`
 与矩阵文档（E2E 未入 CI）。进行中 refactor 约 14 条（#126、#131 等仍为
 `OPEN`）。
 
-### M4 — 文档与 CI（剩余 5 项）
+### M4 — 文档与 CI（剩余 4 项）
 
 | ID      | 标题                                                               | GitHub #                                                | 状态 |
 | ------- | ------------------------------------------------------------------ | ------------------------------------------------------- | ---- |
 | REF-411 | [M4] 插件体系重设计（Obsidian 式 manifest / lifecycle / Core API） | [#126](https://github.com/trueLoving/Pixuli/issues/126) | ⬜   |
-| REF-416 | [M4] Workspace 包构建与 exports conditions                         | [#146](https://github.com/trueLoving/Pixuli/issues/146) | ⬜   |
+| REF-416 | [M4] Workspace 包构建与 exports conditions                         | [#146](https://github.com/trueLoving/Pixuli/issues/146) | ✅   |
 | REF-412 | [M4] 集成测试体系设计与落地                                        | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁                                        | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ⏳   |
 | REF-415 | [M4] 文档国际化（中/英）策略与目录设计                             | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
 > M4 已完成 11 项（REF-401～410、414）见
 > [M4-completed.md](archive/refactor-plan/M4-completed.md)。REF-413 ⏳：
-> [14-ref-413-smoke-matrix.md](docs/02-system-design/14-ref-413-smoke-matrix.md)（`pnpm smoke`
-> / `smoke:e2e`；CI 仍用 `pnpm ci`）。REF-411 范围见 **§1.6**（原 Host 集成文档
+> [14-ref-413-smoke-matrix.md](docs/02-system-design/14-ref-413-smoke-matrix.md)（`pnpm ci`
+> / `pnpm e2e`）。REF-411 范围见 **§1.6**（原 Host 集成文档
 > [03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)
 > 仅作历史参考）。
 

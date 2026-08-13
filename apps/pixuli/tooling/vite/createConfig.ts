@@ -29,11 +29,22 @@ export function createPixuliViteConfig(
       },
       ssr: {
         resolve: {
-          conditions: ['import', 'module', 'node', 'default'],
+          conditions: ['development', 'import', 'module', 'node', 'default'],
         },
-        noExternal: [],
+        noExternal: [
+          '@pixuli/core',
+          '@pixuli/provider-gitee',
+          '@pixuli/provider-github',
+        ],
       },
       plugins: createPixuliPlugins({ flags, pkg, sourcemap }),
+      optimizeDeps: {
+        exclude: [
+          '@pixuli/core',
+          '@pixuli/provider-gitee',
+          '@pixuli/provider-github',
+        ],
+      },
       build: createBuildOptions(flags),
       server: {
         fs: { allow: [MONOREPO_ROOT] },

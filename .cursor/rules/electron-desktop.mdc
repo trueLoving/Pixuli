@@ -14,9 +14,9 @@ alwaysApply: false
 
 ## Vite
 
-`vite.config.ts`：Renderer `resolve.conditions` 含 `development`；SSR 走 `dist`（REF-416）。
+`vite.config.ts`：workspace 包 `exports` 直指 `src`；Vite 直接编译（REF-416）。
 
 ## 桌面开发
 
-- `pnpm dev:desktop` — 会先 `build:packages`；改 main/preload 后需重启
+- `pnpm dev:desktop` — 直接起 Vite + Electron；改 main/preload 后需重启
 - 与 Web 共用 `apps/pixuli/src`；平台分支用 `__IS_WEB__` 或 `getAppPlatform()`

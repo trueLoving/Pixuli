@@ -22,12 +22,13 @@ description: >-
 
 1. Read `docs/02-system-design/03-plugin-system.md` §第二部分
 2. In provider package: `manifest.ts`（含可选 `hostIntegrations`）→
-   `*StorageProvider.ts` → `register.ts` → `package.json` `exports`（REF-416：
-   `development` + `dist`）
+   `*StorageProvider.ts` → `register.ts` → `package.json` `exports`（直指
+   `src`，与 GitHub provider 一致）
 3. Register in both app `registry.ts` bootstrap functions
 4. Extend `createConfiguredStorageProvider` if new `pluginId` / config type
 5. Add Vitest: `register.test.ts` + provider behavior tests
-6. **Do not** add UI or depend on `@pixuli/ui` from provider or core
+6. **Do not** add UI or depend on `apps/pixuli/src/ui` (`@/ui`) from provider or
+   core
 
 ## ProviderContext
 

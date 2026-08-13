@@ -17,11 +17,10 @@
 
 ## 依赖边界
 
-不得依赖：`react-dom`、`lucide-react`、`react-hot-toast`、`@pixuli/ui`
+不得依赖：`react-dom`、`lucide-react`、`react-hot-toast`、`apps/pixuli/src/ui`
 等 UI 库。
 
-根目录 `pnpm lint:boundaries` 通过 ESLint `import/no-restricted-paths` 与
-`no-restricted-imports` 强制执行（REF-209）。
+根目录 `pnpm lint` 通过 ESLint 强制执行（REF-209）。
 
 存储实现见 `@pixuli/provider-github`、`@pixuli/provider-gitee`（REF-311 已删除
 `pixuli-common`）。

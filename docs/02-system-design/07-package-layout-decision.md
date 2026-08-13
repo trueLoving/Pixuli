@@ -1,8 +1,9 @@
 # 包布局决策：是否把 core / ui / provider 并入 `apps/pixuli`
 
-- **文档版本**：1.1
-- **日期**：2026-08-13
-- **状态**：工程决策 + 改造路径（先不改代码；建议采纳 §三 / §八）
+- **文档版本**：1.4
+- **日期**：2026-08-14
+- **状态**：步骤 1～3 已落地；日常只从仓库根打 `dev:*` / `build:*` / `test` /
+  `ci`
 - **读者**：维护者、协作者
 - **相关**：
   - [01-system-design.md](./01-system-design.md)
@@ -27,21 +28,16 @@
 
 ## 一、现状与真实成本
 
-| 包                        | 谁依赖                                                         | 构建                                           | 职责                                                |
-| ------------------------- | -------------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
-| `@pixuli/core`            | app、ui、两个 provider                                         | **tsup → dist**；dev 走 `development` 条件源码 | 类型、Vault、Sync、`StorageProvider` 契约、Registry |
-| `@pixuli/provider-github` | **仅 app** 注册                                                | **无 tsup**，exports 直指 `src`                | GitHub API + sync + `buildPublicUrl`                |
-| `@pixuli/provider-gitee`  | app 注册；**ui 的 package.json 仍声明依赖（源码未引用）**      | **tsup**，与 core 一样双轨                     | Gitee API + sync + 直链                             |
-| `@pixuli/ui`              | **仅 `apps/pixuli`**（`archive/apps/mobile` 已退出 workspace） | **无 build**，Vite 直接编译 `src`              | 网格/列表/上传/设置壳等 L1/L2                       |
+| 包                        | 谁依赖                                    | 构建                              | 职责                                                |
+| ------------------------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------- |
+| `@pixuli/core`            | app、ui、两个 provider                    | **exports 直指 `src`**（无 tsup） | 类型、Vault、Sync、`StorageProvider` 契约、Registry |
+| `@pixuli/provider-github` | **仅 app** 注册                           | **无 tsup**，exports 直指 `src`   | GitHub API + sync + `buildPublicUrl`                |
+| `@pixuli/provider-gitee`  | **仅 app** 注册                           | **无 tsup**，与 github 一致       | Gitee API + sync + 直链                             |
+| 原 `@pixuli/ui`           | **已内联** `apps/pixuli/src/ui`（`@/ui`） | 无独立包                          | 网格/列表/上传/设置壳等 L1/L2                       |
 
-日常摩擦主要来自：
+日常摩擦主要来自（步骤 1–3 已落地后剩余）：
 
-1. 根脚本 `build:packages`（core + gitee）才能稳跑 SSR/Node/CI；GitHub
-   provider 却不用编——**不一致**。
-2. REF-416 双轨 `exports`（`development` vs `dist`）心智负担。
-3. `pnpm lint` 目前几乎只扫 `packages/core`，边界靠约定而非完整 ESLint。
-4. `@pixuli/ui` → `@pixuli/provider-gitee` 的
-   **幽灵依赖**（违反「ui 不依赖具体云」）。
+1. `pnpm lint` 目前几乎只扫 `packages/core`，边界靠约定而非完整 ESLint。
 
 RN 已归档后，**再为「多应用共享 UI 包」付 npm 包税，收益接近零**。
 
@@ -106,14 +102,12 @@ packages/provider-gcs/       将来：同结构
 
 优先做这些，比搬家收益更大、风险更小：
 
-1. **统一 provider 构建**：GitHub 与 Gitee 要么都源码 exports（推荐，跟 ui 一样给 Vite 吃），要么都 tsup——**不要一个编一个不编**。Core 若仅被 Vite/Electron 渲染进程使用，评估是否也可 dev 走源码、CI 只对 Node 入口编 dist。
-2. **缩小
-   `build:packages`**：渲染进程 dev 不再强制先编包（REF-416 未完成部分）。
-3. **ESLint 边界**：`core`/`provider-*` 禁止 `from '@pixuli/ui'` 与
-   `from 'react'`；`ui` 禁止 `from '@pixuli/provider-*'`。`lint:boundaries`
-   扫齐四个目录，而不是只 lint core。
-4. **删幽灵依赖**：`@pixuli/ui` 对 `provider-gitee` 的 dependency。
-5. **清 ui 的 RN peerDeps**（Expo 已归档），减少 `pnpm install` 噪音。
+1. **统一 provider 构建**：✅ GitHub / Gitee / core 均为源码 exports，无 tsup。
+2. **去掉 `build:packages`**：✅ 渲染进程 dev/build 直接吃 `src`（REF-416）。
+3. **ESLint 边界**：`core`/`provider-*` 禁止 UI；`src/ui` 禁止
+   `@pixuli/provider-*`。`pnpm lint` 目前仍主要扫 `packages/core`。
+4. **删幽灵依赖**：✅ 已去掉 ui 对 `provider-gitee` 的 dependency。
+5. **清 ui 的 RN peerDeps**：✅ 随步骤 2 内联删除。
 
 ---
 
@@ -222,7 +216,7 @@ paths，**不要**为了 main 再恢复「全员 tsup」。
 | 测试     | `packages/ui` 的 vitest 并入 app 或根配置 include                                                |
 | ESLint   | `src/ui/**` 禁止 import `src/storage/providers/**` 与 `@pixuli/provider-*`                       |
 
-验收：包数量 4→3；`pnpm-workspace` 少一项；界面与单测与搬家前一致。
+验收：✅ 包数量 4→3；workspace 无 `packages/ui`；导入为 `@/ui`。
 
 不做：把 github/gitee/core 一并搬进 app（阶段二还要新连接器）。
 
@@ -260,6 +254,9 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 
 三端
 **不**再拆成三个 app 工程；mode 已经分轨。维护成本下降靠「一份 UI + 三个入口命令」，不是靠再拆包。
+
+✅ **已落地**：根 `package.json` 仅保留上表 + `build:android:debug` 例外 +
+`e2e`；`cap:*` / `sync:brand` 只在 `apps/pixuli`。
 
 ### 8.3 和「四包 + 三端」的对应关系
 
@@ -315,3 +312,6 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 | ---- | ---------- | ---------------------------------------------------------------------- |
 | 1.0  | 2026-08-13 | 初稿：不整包内联；可收 ui；必留 core + provider；先减 build/exports 税 |
 | 1.1  | 2026-08-13 | §八：启动去 tsup、内联 ui、命令收敛的分步改造（不改代码的分析）        |
+| 1.2  | 2026-08-14 | 步骤 1 落地：core/gitee 源码 exports；去掉 `build:packages`            |
+| 1.3  | 2026-08-14 | 步骤 2 落地：`@pixuli/ui` → `apps/pixuli/src/ui`                       |
+| 1.4  | 2026-08-14 | 步骤 3 落地：根日常命令收口；`smoke:*`/`check:*` 并入 `ci`             |
