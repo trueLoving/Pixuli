@@ -7,6 +7,7 @@
 - **相关文档**：
   - [REFACTOR_PLAN.md §1.8 / §10.7](../../REFACTOR_PLAN.md)
   - [04-three-platform-interaction-spec.md §2.2](../01-product/04-three-platform-interaction-spec.md)
+  - [06-asset-library-ui.md](../01-product/06-asset-library-ui.md)（发布与同步在 UI 上分离）
   - [03-plugin-system.md](./03-plugin-system.md)
   - [archive/design/05-cross-platform-sharing-matrix.md](../../archive/design/05-cross-platform-sharing-matrix.md)（已归档）
 

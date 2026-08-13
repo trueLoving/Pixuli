@@ -116,6 +116,18 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 | 标签/描述 + AI 自动分析     | F-WEB-DESK-08、F-CRUD-U02    | REF-604 #133 |
 | 图片批处理增强              | F-CRUD-U02、batch processing | REF-605 #134 |
 
+### 5.2a 阶段二 — 资源库 / 多云 / 访问控制（现行需求，实现 ⏳）
+
+产品口径：[PRS §2.1a / §5.8a](01-product/01-product-requirements-specification.md)；UI：[06-asset-library-ui.md](01-product/06-asset-library-ui.md)。
+
+| 方向              | 代表需求        | 说明                                           |
+| ----------------- | --------------- | ---------------------------------------------- |
+| 多类型资源        | F-ASSET-01～03  | 图片、PDF、视频等同库                          |
+| 多云连接器        | F-CONN-01～04   | GitHub/Gitee 已有；OneDrive、Google Cloud 规划 |
+| 本地+远程访问控制 | F-ACCESS-01～04 | 云支持则 UI 配置；不支持则禁用并提示           |
+
+尚未单独开 REF Issue 前，实现 PR 须引用上述需求 ID。
+
 ### 5.3 PRD 中仍为 ⏳ 的其它项（未单独开 Issue 时）
 
 | 类别          | 示例 ID                      | 说明                                                     |
@@ -137,7 +149,8 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 | 项                                            | 说明                                                                                                                           |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 第三方图床 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [03-plugin-system §第二部分](02-system-design/03-plugin-system.md#第二部分-存储插件开发指南) |
+| OneDrive / Google Cloud 等阶段二连接器        | 官方规划，见 PRS F-CONN-02；实现后从「延后」改为需求验收                                                                       |
+| 其它第三方 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [03-plugin-system §第二部分](02-system-design/03-plugin-system.md#第二部分-存储插件开发指南) |
 | 插件热加载 / 远程安装                         | REFACTOR_PLAN Backlog #102                                                                                                     |
 | 社区 MCP / Server 对接                        | 见 §三                                                                                                                         |
 

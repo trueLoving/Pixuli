@@ -26,7 +26,8 @@
 - **已归档**：`packages/wasm`、`benchmark/`、`server/`、`apps/mobile` → 见
   [archive/README.md](archive/README.md)
 - **包结构**：`@pixuli/core` + `@pixuli/ui` + `@pixuli/provider-*`（M3 已删除
-  `packages/common`）；**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）
+  `packages/common`）；**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。是否并入 app：见
+  [07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)（建议保留 core/provider；ui 可内联）
 - **分层**：L1 业务 · L2 网格/列表 ·
   L3 各端平台能力；**core/provider 禁止依赖 ui**
 - **展示裁剪**：幻灯片、时间线、照片墙、3D 画廊等已移除（M1 ✅）
@@ -57,7 +58,10 @@ archive/apps/mobile           Expo RN，只读对照
 
 Capacitor 为主路线（方案 A）；REF-507（双份 store 抽离）已 ❌ 取消。交互 SSOT：
 [04-three-platform-interaction-spec.md](docs/01-product/04-three-platform-interaction-spec.md)（REF-601
-✅）。
+✅）。工作区壳层之后的 UI 优化建议：
+[05-three-platform-ui-optimization.md](docs/01-product/05-three-platform-ui-optimization.md)。阶段二需求（多类型资源 / 多云 / 访问控制）：
+[PRS §2.1a](docs/01-product/01-product-requirements-specification.md) ·
+[06-asset-library-ui.md](docs/01-product/06-asset-library-ui.md)。
 
 **构建顺序（CI 与 release 一致）**：
 

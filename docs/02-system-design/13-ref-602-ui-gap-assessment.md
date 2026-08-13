@@ -5,6 +5,9 @@
 > **交互 SSOT**：[04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)（REF-601 ✅）  
 > **最后核对**：2026-06-16
 > · 分支 `feat/ref-602-ui-131-p1`
+>
+> **注意（2026-08）**：此后主壳已改为工作区欢迎页 + 活动栏 + 文件夹树，Header 已移除。现行差距与排期见
+> [05-three-platform-ui-optimization.md](../01-product/05-three-platform-ui-optimization.md)；本文仅作 REF-602 签收快照。
 
 本文对照 REF-601 记录 `apps/pixuli` + `@pixuli/ui`
 **当前实现与目标差距**，供 #131 分 PR 签收。
@@ -61,6 +64,8 @@
 ## 五、相关文档
 
 - [04-three-platform-interaction-spec.md](../01-product/04-three-platform-interaction-spec.md)
+- [05-three-platform-ui-optimization.md](../01-product/05-three-platform-ui-optimization.md)
+  — 工作区壳层后的现行 UI 优化建议
 - [06-apps-pixuli-engineering.md](./06-apps-pixuli-engineering.md)
 - [13-ref-602-ui-before-after.md](./13-ref-602-ui-before-after.md)
 - [14-ref-413-smoke-matrix.md](./14-ref-413-smoke-matrix.md)

@@ -14,6 +14,10 @@
   - [archive/design/02-three-platform-design.md](../../archive/design/02-three-platform-design.md)
     — Capacitor 方案 A 选型背景（已归档）
   - `REFACTOR_PLAN.md` §1.8、§10 — 本地工作区与 M6 专项
+  - [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)
+    — 对照 PRS v2.3 的三端 UI 建议（2026-08）
+  - [06-asset-library-ui.md](./06-asset-library-ui.md)
+    — 目标态：资源库、多存储连接器、发布与访问控制 UI
 
 > **产品主张**：🖼️ Pixuli — AI-based image analysis, automatic tag generation,
 > and batch
@@ -314,6 +318,8 @@ AI 路径（P5，REF-604）：Desktop 已通；Web/Capacitor 在本地模型或�
 | **#144** REF-607 本地库  | §2.2、§四 复制链接、§3.1 工作区                                                                                             |
 | **#164** REF-516 P0      | [archive/design/06-mobile-feature-parity-matrix.md](../../archive/design/06-mobile-feature-parity-matrix.md) 全文（已归档） |
 | **#165** REF-516 P3      | 同上 §五 业务补齐清单                                                                                                       |
+| 工作区壳层后 UI          | [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)（窄屏壳、同步徽章、工具可发现、AI 占位）     |
+| 资源库目标态 UI          | [06-asset-library-ui.md](./06-asset-library-ui.md)（连接器、发布档位、访问控制）                                            |
 
 ---
 
@@ -322,3 +328,4 @@ AI 路径（P5，REF-604）：Desktop 已通；Web/Capacitor 在本地模型或�
 | 版本 | 日期       | 说明                                                   |
 | ---- | ---------- | ------------------------------------------------------ |
 | 1.0  | 2026-05-27 | REF-601 初稿：旅程、IA、差异矩阵、断点、线框、验收路径 |
+| 1.0a | 2026-08-13 | 交叉引用工作区壳层后 UI 优化建议（05）；规范正文未改   |

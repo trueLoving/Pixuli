@@ -37,6 +37,7 @@
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | 做什么、验收标准 | [01-product-requirements-specification.md](../01-product/01-product-requirements-specification.md) |
 | 怎么用           | [02-product-user-manual.md](../01-product/02-product-user-manual.md)                               |
+| 资源库目标态 UI  | [06-asset-library-ui.md](../01-product/06-asset-library-ui.md)                                     |
 | 怎么实现         | [02-system-design/](../02-system-design/)（架构、三端、插件等）                                    |
 | 已移除/延后项    | [04-backlog.md](../04-backlog.md)                                                                  |
 

@@ -82,9 +82,12 @@ build:packages  →  build:web  →  build:desktop / build:android(:debug|:relea
 - Android 构建/发版：[release-android.yml](../../.github/workflows/release-android.yml)
   — **仅** `workflow_dispatch`，`v{semver}-android`
 
-**Workspace 包**：各 `dev:*` / `build:web` 前会执行
+**Workspace 包**：现状各 `dev:*` / `build:web` 前仍执行
 `build:packages`（`@pixuli/core`、`@pixuli/provider-gitee`）。根目录 `pnpm ci` =
-**`build:packages`** + lint + test + web/desktop 构建门禁。
+**`build:packages`** + lint + test + web/desktop 构建门禁。  
+**目标**：渲染进程 dev/build 不再预编译 packages（Vite `development`
+条件已指向源码）。改造步骤见
+[07-package-layout-decision.md §八](./07-package-layout-decision.md)。
 
 ---
 
