@@ -115,9 +115,9 @@ Gitee** 同步与公网直链。
 ### 2.4 当前架构与包（产品视角）
 
 ```text
-apps/pixuli     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron + android/）
+app     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron + android/）
 packages/core   类型、工具、StoragePluginRegistry 契约
-apps/pixuli/src/ui  三端共享 UI（`@/ui`）；native 已 deprecated
+app/src/ui  三端共享 UI（`@/ui`）；native 已 deprecated
 packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
 archive/        apps/mobile（RN）、wasm、benchmark、历史 server（不参与日常构建）
 ```
@@ -146,7 +146,7 @@ Pixuli 源于两类需求：
 
 ### 3.2 产品定位
 
-Pixuli 是一款**本地优先的资源工作区客户端**（三端共用 `apps/pixuli`）：
+Pixuli 是一款**本地优先的资源工作区客户端**（三端共用 `app`）：
 
 - **Web**：Vite + React，支持 PWA
 - **Desktop**：Electron，与 Web 同一套 UI
@@ -174,8 +174,7 @@ Pixuli 是一款**本地优先的资源工作区客户端**（三端共用 `apps
 
 ```
 Pixuli/
-├── apps/
-│   ├── pixuli/              # Web + Desktop + Android（含 src/ui）
+├── app/                     # Web + Desktop + Android（含 src/ui）
 ├── packages/
 │   ├── core/                # @pixuli/core — 类型、工具、插件 Registry 契约
 │   ├── plugin-provider-github/
@@ -472,10 +471,10 @@ Gitee；阶段二：OneDrive、Google Cloud 等）。社区/自建见
 
 ### 6.4 可用性与可维护性
 
-| ID          | 需求                                                                               |
-| ----------- | ---------------------------------------------------------------------------------- |
-| NF-USAB-01  | 主流程支持中英双语，关键操作有反馈                                                 |
-| NF-MAINT-01 | 共享逻辑在 `@pixuli/core`；UI 在 `apps/pixuli/src/ui`；存储在 `@pixuli/provider-*` |
+| ID          | 需求                                                                       |
+| ----------- | -------------------------------------------------------------------------- |
+| NF-USAB-01  | 主流程支持中英双语，关键操作有反馈                                         |
+| NF-MAINT-01 | 共享逻辑在 `@pixuli/core`；UI 在 `app/src/ui`；存储在 `@pixuli/provider-*` |
 
 ---
 

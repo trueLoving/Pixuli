@@ -1,6 +1,6 @@
 ---
 description: Electron 桌面：main/preload 进程边界与 Vite 配置
-globs: apps/pixuli/electron/**,apps/pixuli/vite.config.ts
+globs: app/electron/**,app/vite.config.ts
 alwaysApply: false
 ---
 
@@ -19,4 +19,4 @@ alwaysApply: false
 ## 桌面开发
 
 - `pnpm dev:desktop` — 直接起 Vite + Electron；改 main/preload 后需重启
-- 与 Web 共用 `apps/pixuli/src`；平台分支用 `__IS_WEB__` 或 `getAppPlatform()`
+- 与 Web 共用 `app/src`；平台分支用 `__IS_WEB__` 或 `getAppPlatform()`

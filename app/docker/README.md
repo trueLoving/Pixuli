@@ -20,14 +20,14 @@ Web application.
    pnpm build:web
    ```
 
-2. Ensure the `apps/pixuli/dist` directory exists with the built application.
+2. Ensure the `app/dist` directory exists with the built application.
 
 ### Build Command
 
 From the project root directory:
 
 ```bash
-docker build -f apps/pixuli/docker/Dockerfile -t pixuli-web .
+docker build -f app/docker/Dockerfile -t pixuli-web .
 ```
 
 ### Run Container

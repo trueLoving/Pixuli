@@ -17,7 +17,7 @@
 
 ## 依赖边界
 
-不得依赖：`react-dom`、`lucide-react`、`react-hot-toast`、`apps/pixuli/src/ui`
+不得依赖：`react-dom`、`lucide-react`、`react-hot-toast`、`app/src/ui`
 等 UI 库。
 
 根目录 `pnpm lint` 通过 ESLint 强制执行（REF-209）。

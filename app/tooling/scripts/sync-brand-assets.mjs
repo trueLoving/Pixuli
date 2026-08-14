@@ -1,5 +1,5 @@
 /**
- * 从 archive/apps/mobile/assets/images 同步品牌资源到 apps/pixuli（REF-516）。
+ * 从 archive/apps/mobile/assets/images 同步品牌资源到 app（REF-516）。
  * 生成 Web / PWA / Desktop / Capacitor Android 衍生图标。
  */
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
@@ -10,7 +10,7 @@ import { PIXULI_ROOT } from './paths.mjs';
 
 const MOBILE_IMAGES = path.resolve(
   PIXULI_ROOT,
-  '../../archive/apps/mobile/assets/images',
+  '../archive/apps/mobile/assets/images',
 );
 const BRAND_SOURCE = path.join(PIXULI_ROOT, 'brand/source');
 const PUBLIC_DIR = path.join(PIXULI_ROOT, 'public');
@@ -169,7 +169,7 @@ async function generateSplashScreens() {
 }
 
 async function main() {
-  console.log('Sync brand assets from archive/apps/mobile → apps/pixuli\n');
+  console.log('Sync brand assets from archive/apps/mobile → app\n');
   await copySources();
   await mkdir(PWA_DIR, { recursive: true });
   await generateWebAssets();

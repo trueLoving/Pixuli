@@ -29,11 +29,11 @@
 
 ### 1.1 三端定义
 
-| 端          | 运行时                       | UI 代码库（现状 → 目标）               |
-| ----------- | ---------------------------- | -------------------------------------- |
-| **Web**     | 浏览器 / PWA                 | `apps/pixuli`                          |
-| **Desktop** | Electron 渲染进程            | `apps/pixuli`（与 Web 同一套）         |
-| **Mobile**  | Capacitor WebView（Android） | `apps/pixuli`（与 Web/Desktop 同一套） |
+| 端          | 运行时                       | UI 代码库（现状 → 目标）       |
+| ----------- | ---------------------------- | ------------------------------ |
+| **Web**     | 浏览器 / PWA                 | `app`                          |
+| **Desktop** | Electron 渲染进程            | `app`（与 Web 同一套）         |
+| **Mobile**  | Capacitor WebView（Android） | `app`（与 Web/Desktop 同一套） |
 
 **决策（2026-06）**：Mobile 已由 Capacitor 交付；Expo RN 迁入
 `archive/apps/mobile`（REF-513）。交互规范以 **Web+Desktop 现网行为**
@@ -195,8 +195,7 @@ Electron 窗口可自由缩放，**遵循同一 CSS 断点**，不单独做「�
 
 ### 5.3 Desktop 快捷键（现状 — 保持并扩展）
 
-来源：`apps/pixuli/src/utils/keyboardShortcuts.ts`、`@pixuli/ui`
-`COMMON_SHORTCUTS`。
+来源：`app/src/utils/keyboardShortcuts.ts`、`@pixuli/ui` `COMMON_SHORTCUTS`。
 
 | 快捷键         | 行为           | 窄屏/Capacitor |
 | -------------- | -------------- | -------------- |

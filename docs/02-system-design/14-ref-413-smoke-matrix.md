@@ -34,7 +34,7 @@ pnpm e2e
 | 项           | 命令                    | 说明                           |
 | ------------ | ----------------------- | ------------------------------ |
 | 单元测试     | `pnpm test`             | vitest workspace               |
-| Web 生产构建 | `pnpm build:web`        | `apps/pixuli/dist/`            |
+| Web 生产构建 | `pnpm build:web`        | `app/dist/`                    |
 | Desktop 门禁 | `pnpm ci` 内 tsc + vite | 不含 electron-builder          |
 | E2E 壳层     | `pnpm e2e`              | `/photos` 标题与布局、设置弹窗 |
 

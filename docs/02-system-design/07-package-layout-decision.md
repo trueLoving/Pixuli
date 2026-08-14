@@ -1,4 +1,4 @@
-# 包布局决策：是否把 core / ui / provider 并入 `apps/pixuli`
+# 包布局决策：是否把 core / ui / provider 并入 `app`
 
 - **文档版本**：1.4
 - **日期**：2026-08-14
@@ -14,26 +14,26 @@
   - [AGENTS.md](../../AGENTS.md)（**core/provider 禁止依赖 ui**）
 
 > **问题**：workspace 现有四个包——`@pixuli/core`、`@pixuli/ui`、`@pixuli/provider-github`、`@pixuli/provider-gitee`。是否全部挪进
-> `apps/pixuli`，不再单独维护，以降低成本？
+> `app`，不再单独维护，以降低成本？
 >
 > **结论（短）**：**不要四个一起并进去。**
 >
 > - **保留** `core` + `provider-*` 为独立包（阶段二还要加 OneDrive / Google
 >   Cloud）。
 > - **可以考虑** 把 `@pixuli/ui` **物理迁入**
->   `apps/pixuli`（唯一消费者），用目录边界代替 npm 包。
+>   `app`（唯一消费者），用目录边界代替 npm 包。
 > - 真正该砍的维护税是 **`build:packages` / 双轨 exports**，不是插件边界本身。
 
 ---
 
 ## 一、现状与真实成本
 
-| 包                        | 谁依赖                                    | 构建                              | 职责                                                |
-| ------------------------- | ----------------------------------------- | --------------------------------- | --------------------------------------------------- |
-| `@pixuli/core`            | app、ui、两个 provider                    | **exports 直指 `src`**（无 tsup） | 类型、Vault、Sync、`StorageProvider` 契约、Registry |
-| `@pixuli/provider-github` | **仅 app** 注册                           | **无 tsup**，exports 直指 `src`   | GitHub API + sync + `buildPublicUrl`                |
-| `@pixuli/provider-gitee`  | **仅 app** 注册                           | **无 tsup**，与 github 一致       | Gitee API + sync + 直链                             |
-| 原 `@pixuli/ui`           | **已内联** `apps/pixuli/src/ui`（`@/ui`） | 无独立包                          | 网格/列表/上传/设置壳等 L1/L2                       |
+| 包                        | 谁依赖                            | 构建                              | 职责                                                |
+| ------------------------- | --------------------------------- | --------------------------------- | --------------------------------------------------- |
+| `@pixuli/core`            | app、ui、两个 provider            | **exports 直指 `src`**（无 tsup） | 类型、Vault、Sync、`StorageProvider` 契约、Registry |
+| `@pixuli/provider-github` | **仅 app** 注册                   | **无 tsup**，exports 直指 `src`   | GitHub API + sync + `buildPublicUrl`                |
+| `@pixuli/provider-gitee`  | **仅 app** 注册                   | **无 tsup**，与 github 一致       | Gitee API + sync + 直链                             |
+| 原 `@pixuli/ui`           | **已内联** `app/src/ui`（`@/ui`） | 无独立包                          | 网格/列表/上传/设置壳等 L1/L2                       |
 
 日常摩擦主要来自（步骤 1–3 已落地后剩余）：
 
@@ -61,7 +61,7 @@ RN 已归档后，**再为「多应用共享 UI 包」付 npm 包税，收益接
 ## 三、建议方案（推荐）
 
 ```text
-apps/pixuli/                 唯一应用（Web + Desktop + Capacitor）
+app/                 唯一应用（Web + Desktop + Capacitor）
   src/                       路由、store、platforms、连接注册
   src/ui/                    ← 可选：今日 @pixuli/ui 迁入（见 3.2）
 
@@ -79,7 +79,7 @@ packages/provider-gcs/       将来：同结构
   `registerXxxProvider()`。这是阶段二连接页「能力位来自 manifest」的物理基础。
 - 禁止 provider 依赖 ui / app。
 
-### 3.2 可收：`@pixuli/ui` → `apps/pixuli/src/ui`（或 `src/components`）
+### 3.2 可收：`@pixuli/ui` → `app/src/ui`（或 `src/components`）
 
 **赞成内联 UI 包的理由：**
 
@@ -124,8 +124,7 @@ packages/provider-gcs/       将来：同结构
 | 测试变慢/变杂 | provider 单测与 React 组件测试搅在同一 vitest 项目                                      |
 
 若人力极紧、且明确 **两年内不会有第三个连接器、也不会发 npm 插件**：允许
-**临时** 把 github/gitee 源码放到 `apps/pixuli/src/storage/providers/`，但仍建议
-**留下
+**临时** 把 github/gitee 源码放到 `app/src/storage/providers/`，但仍建议 **留下
 `packages/core`**。这是最低限度的「可测试纯逻辑 + 无 React」。等第三个云出现，再把 providers 拆回包（成本高于一开始就留着）。
 
 ---
@@ -153,9 +152,9 @@ packages/provider-gcs/       将来：同结构
 | 你感觉贵的地方 | 实际来源                                                                                               |
 | -------------- | ------------------------------------------------------------------------------------------------------ |
 | 四个包         | ui 几乎是空包税；core/provider 的税来自 **两套构建策略**                                               |
-| 三个端         | 已是 **一份 `apps/pixuli` + Vite mode**，没有三份业务代码；贵的是脚本别名重复                          |
+| 三个端         | 已是 **一份 `app` + Vite mode**，没有三份业务代码；贵的是脚本别名重复                                  |
 | 启动先编包     | `dev:web` / `dev:desktop` / `dev:android:server` **硬编码** `pnpm build:packages`（只编 core + gitee） |
-| 命令乱         | 根 `package.json` 与 `apps/pixuli/package.json` **两套同名脚本**；android 还有 debug/release/sync/run  |
+| 命令乱         | 根 `package.json` 与 `app/package.json` **两套同名脚本**；android 还有 debug/release/sync/run          |
 
 核对过实现：
 
@@ -171,7 +170,7 @@ packages/provider-gcs/       将来：同结构
 ### 8.1 目标形态（改造完成后）
 
 ```text
-apps/pixuli/                 唯一应用（Web / Desktop / Android）
+app/                 唯一应用（Web / Desktop / Android）
   src/ui/                    今日 @pixuli/ui（迁入后）
   src/storage/               register(github|gitee|…)
 packages/core/               仅契约 + Vault/Sync；exports 直指 src
@@ -209,7 +208,7 @@ paths，**不要**为了 main 再恢复「全员 tsup」。
 
 | 动作     | 说明                                                                                             |
 | -------- | ------------------------------------------------------------------------------------------------ |
-| 物理搬家 | `packages/ui/src` → `apps/pixuli/src/ui`（或 `src/components`）                                  |
+| 物理搬家 | `packages/ui/src` → `app/src/ui`（或 `src/components`）                                          |
 | 导入     | `@pixuli/ui` → `@/ui`（codemod）；删 workspace 依赖                                              |
 | 依赖     | lucide / dropzone / crop / toast 收到 **pixuli-app**；**删除** ui 对 `provider-gitee` 的幽灵依赖 |
 | peerDeps | 丢掉 RN/Expo/AsyncStorage（已归档）                                                              |
@@ -249,14 +248,14 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 | `build:android:debug` / `:release` / `:sync` | 收成 `build:android` + `--debug` 或只留 `build:android:debug` 一个例外 |
 | `cap:sync` / `cap:android`                   | 写进 `dev:android` / Android README，不进根「常用」                    |
 | `check:types` / `check:desktop` / `smoke:*`  | 并进 `pnpm ci` / `pnpm test`；或 `pnpm check` 一条                     |
-| `sync:brand`                                 | 改品牌图时才用，留在 `apps/pixuli` 即可                                |
+| `sync:brand`                                 | 改品牌图时才用，留在 `app` 即可                                        |
 | app 内再导出一遍 `dev:web` 等                | 根转发即可，避免两套文档                                               |
 
 三端
 **不**再拆成三个 app 工程；mode 已经分轨。维护成本下降靠「一份 UI + 三个入口命令」，不是靠再拆包。
 
 ✅ **已落地**：根 `package.json` 仅保留上表 + `build:android:debug` 例外 +
-`e2e`；`cap:*` / `sync:brand` 只在 `apps/pixuli`。
+`e2e`；`cap:*` / `sync:brand` 只在 `app`。
 
 ### 8.3 和「四包 + 三端」的对应关系
 
@@ -265,8 +264,8 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
   packages/core      tsup          →   packages/core      源码（仍独立）
   packages/gitee     tsup          →   packages/gitee     源码（仍独立）
   packages/github    源码          →   不变
-  packages/ui        空包税        →   apps/pixuli/src/ui
-  apps/pixuli ×3 端  一份代码      →   不变，只收脚本名
+  packages/ui        空包税        →   app/src/ui
+  app ×3 端  一份代码      →   不变，只收脚本名
   每次 dev 先 tsup                 →   直接 vite
 ```
 
@@ -276,7 +275,7 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 ### 8.4 明确不要做的
 
 - 不要为了少命令把 Web/Desktop/Android 拆回三个 repo/app。
-- 不要把 provider 塞进 `apps/pixuli/src`
+- 不要把 provider 塞进 `app/src`
   来「再少两个包」（OneDrive/GCS 会把 app 撑爆）。
 - 不要保留「dev 走源码、CI 仍强制 tsup 全员」两套真相，除非 CI 有 **非 Vite**
   的 Node 入口；有的话只编那一个入口。
@@ -297,7 +296,7 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 ## 六、与文档 / Agent 约定
 
 - [AGENTS.md](../../AGENTS.md)、`.cursor/rules/pixuli-monorepo.mdc`：在执行 B 前仍写
-  `@pixuli/ui`；B 合并后改为 `apps/pixuli/src/ui`，并强调
+  `@pixuli/ui`；B 合并后改为 `app/src/ui`，并强调
   **core/provider 仍独立、禁止依赖 ui**。
 - REF-209 边界规则：内联 ui 后改为路径级 ESLint（`src/ui/**` ↛
   `src/storage/providers/**`）。
@@ -313,5 +312,6 @@ app 双份**，android 一条链拆成 5+ 个名字。目标：**只从仓库根
 | 1.0  | 2026-08-13 | 初稿：不整包内联；可收 ui；必留 core + provider；先减 build/exports 税 |
 | 1.1  | 2026-08-13 | §八：启动去 tsup、内联 ui、命令收敛的分步改造（不改代码的分析）        |
 | 1.2  | 2026-08-14 | 步骤 1 落地：core/gitee 源码 exports；去掉 `build:packages`            |
-| 1.3  | 2026-08-14 | 步骤 2 落地：`@pixuli/ui` → `apps/pixuli/src/ui`                       |
+| 1.3  | 2026-08-14 | 步骤 2 落地：`@pixuli/ui` → `app/src/ui`                               |
 | 1.4  | 2026-08-14 | 步骤 3 落地：根日常命令收口；`smoke:*`/`check:*` 并入 `ci`             |
+| 1.5  | 2026-08-14 | `apps/pixuli` 扁平化为仓库根 `app/`                                    |

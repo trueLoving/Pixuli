@@ -9,7 +9,7 @@
 > **注意（2026-08）**：此后主壳已改为工作区欢迎页 + 活动栏 + 文件夹树，Header 已移除。现行差距与排期见
 > [05-three-platform-ui-optimization.md](../01-product/05-three-platform-ui-optimization.md)；本文仅作 REF-602 签收快照。
 
-本文对照 REF-601 记录 `apps/pixuli` + `@pixuli/ui`
+本文对照 REF-601 记录 `app` + `@pixuli/ui`
 **当前实现与目标差距**，供 #131 分 PR 签收。
 
 ---

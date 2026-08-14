@@ -79,7 +79,7 @@
 ### 3.1 M2 之后现状
 
 ```text
-apps/pixuli ──► pixuli-common/services ──► GitHubStorageService / GiteeStorageService
+app ──► pixuli-common/services ──► GitHubStorageService / GiteeStorageService
 apps/mobile ──► pixuli-common/services/native ──► 同上
                       │
                       └──► @pixuli/core（types、PlatformAdapter）
@@ -94,7 +94,7 @@ apps/mobile ──► pixuli-common/services/native ──► 同上
 ### 3.2 目标架构（M3 完成后）
 
 ```text
-apps/pixuli / apps/mobile
+app / apps/mobile
     │
     ├── bootstrapProviders(registry)   // 注册 github、gitee
     │
@@ -121,7 +121,7 @@ apps/pixuli / apps/mobile
 
 ```mermaid
 flowchart TB
-  subgraph apps [应用层 apps/pixuli]
+  subgraph apps [应用层 app]
     Store[imageStore]
     Boot[bootstrapProviders]
   end
@@ -162,14 +162,14 @@ flowchart TB
 | `@pixuli/core`            | 契约、`StoragePluginRegistry`、共享类型、`PlatformAdapter` | 无 UI          |
 | `@pixuli/provider-github` | GitHub API + 元数据 sidecar 文件                           | `@pixuli/core` |
 | `@pixuli/provider-gitee`  | Gitee API + 元数据 sidecar 文件                            | `@pixuli/core` |
-| `apps/pixuli/src/ui`      | 配置 Modal、添加源 UI（REF-307 读 manifest）               | `@pixuli/core` |
+| `app/src/ui`              | 配置 Modal、添加源 UI（REF-307 读 manifest）               | `@pixuli/core` |
 | `pixuli-common`           | **过渡**：REF-302/303 迁出后删除（REF-311）                | —              |
 
 ### 4.3 ESLint 边界（REF-209）
 
-- `packages/core/` 不得 import `@/ui`、`apps/pixuli/src/ui/**`。
+- `packages/core/` 不得 import `@/ui`、`app/src/ui/**`。
 - `packages/provider-*/**` 同上。
-- `apps/pixuli/src/ui/**` 不得 import `@pixuli/provider-*`。
+- `app/src/ui/**` 不得 import `@pixuli/provider-*`。
 
 ---
 
@@ -521,7 +521,7 @@ const githubManifest: StoragePluginManifest = {
 | `packages/core/src/plugins/registry.ts`    | DefaultStoragePluginRegistry                  |
 | `packages/plugin-provider-github`          | GitHub provider + 可选 `GitHubStorageService` |
 | `packages/plugin-provider-gitee`           | Gitee provider + 可选 `GiteeStorageService`   |
-| `apps/pixuli/src/stores/imageStore.ts`     | REF-304 已对接 Registry                       |
+| `app/src/stores/imageStore.ts`             | REF-304 已对接 Registry                       |
 | `archive/apps/mobile/stores/imageStore.ts` | REF-305 已对接 Registry（RN 已归档）          |
 
 ### C. 文档维护
@@ -550,7 +550,7 @@ const githubManifest: StoragePluginManifest = {
 1. 创建一个仅依赖 `@pixuli/core` 的 Provider npm 包。
 2. 实现 `StoragePluginManifest` + `registerXxxProvider(registry)` +
    `StorageProvider`。
-3. 在 `apps/pixuli` 的 `bootstrapStorageProviders()` 中注册（内置模式）。
+3. 在 `app` 的 `bootstrapStorageProviders()` 中注册（内置模式）。
 4. 理解 Token 仅存客户端、不得写入 Manifest 的安全边界。
 5. （可选）为 REF-307 之后的动态表单准备 `configSchema`。
 
@@ -577,7 +577,7 @@ packages/plugin-provider-{id}/
     manifest.ts ──► StoragePluginManifest
     register.ts ──► registerXxxProvider(registry)
     {id}StorageProvider.ts ──► implements StorageProvider
-apps/pixuli|mobile/storage/registry.ts
+app|mobile/storage/registry.ts
     bootstrapStorageProviders()
         registerGitHubProvider(registry)
         registerGiteeProvider(registry)
@@ -655,7 +655,7 @@ packages/plugin-provider-example/
 
 ### 步骤 4：在应用中 Bootstrap
 
-**Web / Desktop**（`apps/pixuli/src/storage/registry.ts`）：
+**Web / Desktop**（`app/src/storage/registry.ts`）：
 
 ```typescript
 import { registerExampleProvider } from '@pixuli/provider-example/register';
@@ -670,7 +670,7 @@ export function bootstrapStorageProviders(): void {
 ```
 
 **RN（归档）**（`archive/apps/mobile/storage/registry.ts`）：历史参考；新 Mobile 仅
-`apps/pixuli` bootstrap。
+`app` bootstrap。
 
 ### 步骤 5：配置 UI（M3 P0 过渡）
 
@@ -685,7 +685,7 @@ REF-307 之后，「添加源」列表来自 `storageRegistry.listManifests()`�
 
 ```bash
 pnpm --filter @pixuli/provider-example test
-cd apps/pixuli && pnpm exec tsc --noEmit
+cd app && pnpm exec tsc --noEmit
 ```
 
 手工：添加源 → 保存 `StoredSourceEntry`（含 `pluginId`）→ 列表 / 上传 / 删除。
@@ -721,7 +721,7 @@ Monorepo **物理目录**可与 npm 名不同：`packages/plugin-provider-github
 | `.`          | `XxxStorageProvider`、`xxxManifest`（可选兼容 Service）      |
 | `./register` | `registerXxxProvider(registry: StoragePluginRegistry): void` |
 
-`register.ts` **仅** 依赖 `@pixuli/core/plugins`，不得 import `apps/*` 或
+`register.ts` **仅** 依赖 `@pixuli/core/plugins`，不得 import `app/` 或
 `@pixuli/ui`。
 
 ### 4.4 依赖边界
@@ -914,7 +914,7 @@ Provider 文档应说明本插件 `config` 字段含义；工具函数见 `@pixu
 
 各应用维护模块级单例（已存在）：
 
-- `apps/pixuli/src/storage/registry.ts`
+- `app/src/storage/registry.ts`
 - `archive/apps/mobile/storage/registry.ts`（只读）
 
 对外辅助：
@@ -1163,7 +1163,7 @@ describe('registerExampleProvider', () => {
 | `packages/core/src/sources/`              | StoredSourceEntry、导入导出     |
 | `packages/plugin-provider-github/`        | 官方参考实现；单测见 §9.1       |
 | `packages/plugin-provider-gitee/`         | 官方参考实现；单测见 §9.1       |
-| `apps/pixuli/src/storage/registry.ts`     | Web/Desktop bootstrap           |
+| `app/src/storage/registry.ts`             | Web/Desktop bootstrap           |
 | `archive/apps/mobile/storage/registry.ts` | RN bootstrap（归档）            |
 
 ---
@@ -1214,14 +1214,14 @@ pnpm test
 | `@pixuli/core`                      | Registry、manifestUi、`sources` 归一化与 import/export                                                                                          |
 | `@pixuli/provider-github` / `gitee` | Provider mock API、register                                                                                                                     |
 | `@pixuli/ui`                        | ConfigModal 打开回显等                                                                                                                          |
-| `apps/pixuli`                       | `uiStore.openConfigModalForEdit`、`resolveModalRepoConfig`、`useConfigManagement` 编辑保存、`useSourceManagement` 切源/删源、`storage/registry` |
+| `app`                               | `uiStore.openConfigModalForEdit`、`resolveModalRepoConfig`、`useConfigManagement` 编辑保存、`useSourceManagement` 切源/删源、`storage/registry` |
 | ~~`pixuli-common`~~                 | REF-311 已删除；存储见 `@pixuli/provider-`\*                                                                                                    |
 
 ### 2.1 单测与手工用例映射（代码路径）
 
 | 手工 #                              | 自动化覆盖                                                                         |
 | ----------------------------------- | ---------------------------------------------------------------------------------- |
-| W3                                  | `apps/pixuli/src/storage/__tests__/registry.test.ts`                               |
+| W3                                  | `app/src/storage/__tests__/registry.test.ts`                                       |
 | W5–W6                               | `uiStore.test.ts`、`resolveModalRepoConfig.test.ts`、`useConfigManagement.test.ts` |
 | W7、W15                             | `useSourceManagement.test.ts`                                                      |
 | W12–W14                             | `@pixuli/core` `sources` import/export 单测                                        |
@@ -1249,7 +1249,7 @@ pnpm test
 
 ## 四、Web / Desktop 手工用例
 
-> Desktop 与 Web 共用 `apps/pixuli`，以下用例 **两端各跑一遍**（标记平台列）。
+> Desktop 与 Web 共用 `app`，以下用例 **两端各跑一遍**（标记平台列）。
 
 ### 4.1 添加源
 

@@ -18,7 +18,7 @@ const noUiFromCoreOrProvider = {
         {
           group: ['@pixuli/ui', '@pixuli/ui/*', '@/ui', '@/ui/*'],
           message:
-            '不得依赖 UI 层：core / provider 禁止引用 apps/pixuli/src/ui（REF-209）',
+            '不得依赖 UI 层：core / provider 禁止引用 app/src/ui（REF-209）',
         },
       ],
     },
@@ -50,7 +50,7 @@ export default tseslint.config(
     rules: noUiFromCoreOrProvider,
   },
   {
-    files: ['apps/pixuli/src/ui/**/*.{ts,tsx}'],
+    files: ['app/src/ui/**/*.{ts,tsx}'],
     languageOptions: tsLanguageOptions,
     plugins: { import: importPlugin },
     rules: {

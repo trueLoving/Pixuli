@@ -54,7 +54,7 @@ pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:deb
 
 ### 本地产物（勿提交）
 
-构建或开发后可能出现在包根目录，已在 `apps/pixuli/.gitignore` 忽略：
+构建或开发后可能出现在包根目录，已在 `app/.gitignore` 忽略：
 
 | 路径             | 说明                            |
 | ---------------- | ------------------------------- |
@@ -71,7 +71,7 @@ pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:deb
 ## 测试
 
 ```bash
-pnpm test    # 在 apps/pixuli 或仓库根 vitest workspace
+pnpm test    # 在 app 或仓库根 vitest workspace
 ```
 
 更多贡献说明见 [CONTRIBUTING.md](../../CONTRIBUTING.md)。

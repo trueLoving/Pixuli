@@ -1,4 +1,4 @@
-# 应用内 UI（`apps/pixuli/src/ui`）
+# 应用内 UI（`app/src/ui`）
 
 原 `@pixuli/ui` 已内联。从 `@/ui`
 导入 Web 组件（网格/列表、配置 Modal、toast、locales、Canvas 图片处理）。

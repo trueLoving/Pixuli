@@ -26,7 +26,7 @@
 - **浏览模式 Tab** — 文件 / 幻灯片 / 时间线切换；改为 `/photos` 图床网格/列表
 - **Web 占位路由** — `analyze`、`edit`、`generate`（重定向至 `/photos`）
 - **Mobile（归档 RN）** — 浏览模式 Tab 与 `SlideShowPlayer`
-  已移除；主线为 Capacitor + `apps/pixuli`
+  已移除；主线为 Capacitor + `app`
 
 **新导航（Web/Desktop）：** 照片 · 压缩 · 转换 · 设置。
 
@@ -46,9 +46,9 @@
 - **图片处理** — Web/Desktop 渲染进程使用
   **Canvas**；主应用构建与运行**不再需要** Rust WASM
 - **Desktop 开发** — **不再需要** Rust 工具链（WASM 已归档）
-- **Gitee 图片** — `apps/pixuli` 已移除 Host 代理，改为本地工作区 + 直连 raw
+- **Gitee 图片** — `app` 已移除 Host 代理，改为本地工作区 + 直连 raw
   URL；全仓收官见 REF-607 P7（#173）
-- **三端工程** — Web / Desktop / Mobile 共用 `apps/pixuli` +
+- **三端工程** — Web / Desktop / Mobile 共用 `app` +
   `@pixuli/ui`（REF-514、REF-516）
 
 ### 迁移说明
@@ -71,7 +71,7 @@
 
 #### 🔧 变更（重构分支）
 
-- Desktop 与 Web 共用 `apps/pixuli` + `@pixuli/ui`
+- Desktop 与 Web 共用 `app` + `@pixuli/ui`
 - 工程整理见 REF-514（#152）
 
 ---
@@ -203,7 +203,7 @@
 
 #### 🔧 变更（重构分支）
 
-- PWA 与网格/列表图床为主 UX；三端单工程 `apps/pixuli`
+- PWA 与网格/列表图床为主 UX；三端单工程 `app`
 
 > **说明：** 下方旧版 Web `[Unreleased]`
 > 草稿（如曾写「新增幻灯片」）描述 M1 之前工作，在下次发版前以本节

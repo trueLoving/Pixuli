@@ -10,13 +10,13 @@ description: >-
 
 ## Quick map
 
-| What               | Where                                                                    |
-| ------------------ | ------------------------------------------------------------------------ |
-| Registry factory   | `createStoragePluginRegistry()` — `@pixuli/core/plugins`                 |
-| App registry       | `apps/pixuli/src/storage/registry.ts`                                    |
-| Create + configure | `createConfiguredStorageProvider()` — `apps/*/storage/createProvider.ts` |
-| GitHub register    | `registerGitHubProvider` — `@pixuli/provider-github/register`            |
-| Gitee register     | `registerGiteeProvider` — `@pixuli/provider-gitee/register`              |
+| What               | Where                                                                     |
+| ------------------ | ------------------------------------------------------------------------- |
+| Registry factory   | `createStoragePluginRegistry()` — `@pixuli/core/plugins`                  |
+| App registry       | `app/src/storage/registry.ts`                                             |
+| Create + configure | `createConfiguredStorageProvider()` — `app/src/storage/createProvider.ts` |
+| GitHub register    | `registerGitHubProvider` — `@pixuli/provider-github/register`             |
+| Gitee register     | `registerGiteeProvider` — `@pixuli/provider-gitee/register`               |
 
 ## Add or change a provider
 
@@ -27,8 +27,7 @@ description: >-
 3. Register in both app `registry.ts` bootstrap functions
 4. Extend `createConfiguredStorageProvider` if new `pluginId` / config type
 5. Add Vitest: `register.test.ts` + provider behavior tests
-6. **Do not** add UI or depend on `apps/pixuli/src/ui` (`@/ui`) from provider or
-   core
+6. **Do not** add UI or depend on `app/src/ui` (`@/ui`) from provider or core
 
 ## ProviderContext
 

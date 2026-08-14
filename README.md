@@ -41,17 +41,17 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 
 ## 维护范围
 
-| 区域                                   | 状态      | 说明                                                               |
-| -------------------------------------- | --------- | ------------------------------------------------------------------ |
-| **Web**（`apps/pixuli`，Vite）         | ✅ 维护中 | PWA；开发地址 `http://localhost:5500`                              |
-| **Desktop**（`apps/pixuli`，Electron） | ✅ 维护中 | 与 Web 共用 `src/ui`                                               |
-| **Mobile**（`apps/pixuli`，Capacitor） | ✅ 维护中 | Android：`dev:android` / `build:android`；与 Web/Desktop 同一套 UI |
-| **`@pixuli/core`**                     | ✅ 维护中 | 类型、工具、`StoragePluginRegistry`                                |
-| **`@pixuli/provider-*`**               | ✅ 维护中 | 官方 GitHub/Gitee 存储插件                                         |
-| **`archive/wasm`**                     | 📦 已归档 | 不在 workspace；仅供查阅                                           |
-| **`archive/benchmark`**                | 📦 已归档 | 不在 workspace                                                     |
-| **`archive/apps/mobile`**              | 📦 已归档 | Expo RN；仅供对照；请使用 `apps/pixuli` Capacitor                  |
-| **`archive/server`**                   | 📦 已归档 | 不在 workspace；非官方交付物                                       |
+| 区域                           | 状态      | 说明                                                               |
+| ------------------------------ | --------- | ------------------------------------------------------------------ |
+| **Web**（`app`，Vite）         | ✅ 维护中 | PWA；开发地址 `http://localhost:5500`                              |
+| **Desktop**（`app`，Electron） | ✅ 维护中 | 与 Web 共用 `src/ui`                                               |
+| **Mobile**（`app`，Capacitor） | ✅ 维护中 | Android：`dev:android` / `build:android`；与 Web/Desktop 同一套 UI |
+| **`@pixuli/core`**             | ✅ 维护中 | 类型、工具、`StoragePluginRegistry`                                |
+| **`@pixuli/provider-*`**       | ✅ 维护中 | 官方 GitHub/Gitee 存储插件                                         |
+| **`archive/wasm`**             | 📦 已归档 | 不在 workspace；仅供查阅                                           |
+| **`archive/benchmark`**        | 📦 已归档 | 不在 workspace                                                     |
+| **`archive/apps/mobile`**      | 📦 已归档 | Expo RN；仅供对照；请使用 `app` Capacitor                          |
+| **`archive/server`**           | 📦 已归档 | 不在 workspace；非官方交付物                                       |
 
 ---
 
@@ -70,8 +70,7 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 
 ```text
 Pixuli/
-├── apps/
-│   └── pixuli/                          # Web + Desktop + Mobile（Vite + React + Electron + Capacitor；UI 在 src/ui）
+├── app/                                 # Web + Desktop + Mobile（Vite + React + Electron + Capacitor；UI 在 src/ui）
 ├── packages/
 │   ├── core/                            # @pixuli/core — 类型、Registry、工具
 │   ├── plugin-provider-github/          # @pixuli/provider-github
@@ -157,7 +156,7 @@ pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI �
 | ------- | --------------------------------------------------------------------------------------------- |
 | Android | [GitHub Releases](https://github.com/trueLoving/Pixuli/releases) — `v{版本}-android` 附件 APK |
 
-> **注意**：2.x 起 Mobile 与 Web/Desktop 同源（`apps/pixuli`）。历史 Expo
+> **注意**：2.x 起 Mobile 与 Web/Desktop 同源（`app`）。历史 Expo
 > RN 包（`v*-mobile`，如 `Pixuli_1.0.0.apk`）已归档，请勿用于新安装。安装步骤见
 > [产品使用手册 §4.3](docs/01-product/02-product-user-manual.md#43-移动端mobile--capacitor-android)。
 
@@ -180,7 +179,7 @@ pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI �
 | **AI 助手**           | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills、Monorepo 上下文（REF-414）        |
 | **重构计划**          | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                            |
 | **变更日志**          | [CHANGELOG.md](./CHANGELOG.md)                                                    |
-| **主应用**            | [apps/pixuli/README.md](./apps/pixuli/README.md)                                  |
+| **主应用**            | [app/README.md](./app/README.md)                                                  |
 | **Mobile（归档 RN）** | [archive/apps/mobile/README.md](./archive/apps/mobile/README.md)                  |
 
 ---

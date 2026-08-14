@@ -45,7 +45,7 @@ export function createResolveAlias(
   const resolveAlias: Record<string, string> = {
     '@': path.join(PIXULI_ROOT, 'src'),
     '@platforms': path.resolve(PIXULI_ROOT, 'src/platforms'),
-    '@packages': path.resolve(PIXULI_ROOT, '../../packages'),
+    '@packages': path.resolve(PIXULI_ROOT, '../packages'),
     '@platforms/web': path.resolve(PIXULI_ROOT, 'src/platforms/web'),
     '@platforms/desktop': path.resolve(PIXULI_ROOT, 'src/platforms/desktop'),
   };

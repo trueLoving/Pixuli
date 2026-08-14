@@ -4,16 +4,16 @@
 # 环境变量：需要在构建时通过 .env 文件配置，环境变量会被注入到构建产物中
 #
 # 构建命令（从项目根目录执行）：
-# docker build -f apps/pixuli/docker/Dockerfile -t pixuli-web .
+# docker build -f app/docker/Dockerfile -t pixuli-web .
 
 # 使用 nginx 提供静态文件服务
 FROM nginx:alpine
 
 # 复制构建产物到 nginx 目录
-COPY apps/pixuli/dist /usr/share/nginx/html
+COPY app/dist /usr/share/nginx/html
 
 # 复制 nginx 配置文件
-COPY apps/pixuli/docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY app/docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # 暴露端口
 EXPOSE 80

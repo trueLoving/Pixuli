@@ -1,7 +1,6 @@
-# apps/pixuli 三端工程约定（REF-514）
+# app 三端工程约定（REF-514）
 
-> **SSOT**：Web + Desktop + Capacitor Android 共用 `apps/pixuli`
-> 一份源码与 UI。  
+> **SSOT**：Web + Desktop + Capacitor Android 共用 `app` 一份源码与 UI。  
 > 计划追踪：[REFACTOR_PLAN.md §1.9.3](../../REFACTOR_PLAN.md) · Issue
 > [#152](https://github.com/trueLoving/Pixuli/issues/152)
 
@@ -10,7 +9,7 @@
 ## 1. 目录结构
 
 ```text
-apps/pixuli/
+app/
 ├── android/                 # Capacitor Android 原生工程
 ├── brand/                   # 三端品牌资源 SSOT（`source/`；见 brand/README.md）
 ├── capacitor.config.ts
@@ -34,7 +33,7 @@ apps/pixuli/
     └── ...
 ```
 
-**本地产物**（构建后出现，已列入 `apps/pixuli/.gitignore` 与仓库根
+**本地产物**（构建后出现，已列入 `app/.gitignore` 与仓库根
 `.gitignore`，勿提交）：
 
 | 路径             | 产生方式                       |
@@ -71,8 +70,8 @@ Vite 插件（react、PWA、electron）在 `tooling/vite/plugins/` 组装，由�
 |           | `ci`                  | lint + test + web 构建 + desktop `tsc` + desktop vite 构建 |
 |           | `e2e`                 | 可选 Playwright 壳层                                       |
 
-`apps/pixuli/package.json` 只放根脚本转发的实现（以及 `cap:sync` / `cap:android`
-/ `sync:brand`）。品牌图：`pnpm -F pixuli-app sync:brand`。
+`app/package.json` 只放根脚本转发的实现（以及 `cap:sync` / `cap:android` /
+`sync:brand`）。品牌图：`pnpm -F pixuli-app sync:brand`。
 
 **CI 构建顺序**（与本地 release 一致）：
 
@@ -124,7 +123,7 @@ lint + test + web/desktop 构建门禁。包布局见
 - **`electron/`**：主进程、preload、托盘（L3）
 - **`src/platforms/desktop/`**：Renderer 侧 `WorkspaceAdapter`
 
-详见 [electron/README.md](../../apps/pixuli/electron/README.md)。
+详见 [electron/README.md](../../app/electron/README.md)。
 
 ---
 
