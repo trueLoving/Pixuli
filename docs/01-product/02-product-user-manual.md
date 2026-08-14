@@ -128,7 +128,7 @@ Mobile）→ 配置 GitHub 或 Gitee 仓库源 → 上传与管理图片。
 
 ### 4.3 移动端（Mobile · Capacitor Android）
 
-当前 Mobile 由 **`apps/pixuli` + Capacitor**
+当前 Mobile 由 **`app` + Capacitor**
 构建，与 Web/Desktop 共用同一套界面与能力。历史 Expo
 RN 版（`v*-mobile`）已归档，**请勿**再安装 `Pixuli_1.0.0.apk` 等 1.x RN 包。
 
@@ -151,7 +151,7 @@ Mobile 含已移除的幻灯片等能力，与 2.x 产品范围不一致；请�
 [版本发布策略](./03-release-versioning.md) 与 [CHANGELOG](../../CHANGELOG.md)。
 
 **开发者本地调试**：仓库根目录 `pnpm dev:android`（模拟器/真机 + Live
-Reload）；见 [apps/pixuli/README.md](../../apps/pixuli/README.md)。
+Reload）；见 [app/README.md](../../app/README.md)。
 
 ### 4.4 多仓库源
 

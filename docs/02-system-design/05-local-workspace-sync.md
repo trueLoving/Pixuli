@@ -92,7 +92,7 @@
 
 ```mermaid
 flowchart TB
-  subgraph UI["apps/pixuli（L1/L2）"]
+  subgraph UI["app（L1/L2）"]
     WS[workspaceStore]
     IS[imageStore]
     SS[sourceStore]
@@ -502,11 +502,11 @@ OneDrive 等不得沿用此模式**）。
 
 ### 10.1 新增
 
-| 模块                     | 路径（建议）                                            |
-| ------------------------ | ------------------------------------------------------- |
-| WorkspaceAdapter Desktop | `apps/pixuli/src/platforms/desktop/workspaceAdapter.ts` |
-| workspaceStore           | `apps/pixuli/src/stores/workspaceStore.ts`              |
-| 首次选目录引导           | `apps/pixuli/src/features/workspace/`（薄 UI）          |
+| 模块                     | 路径（建议）                                    |
+| ------------------------ | ----------------------------------------------- |
+| WorkspaceAdapter Desktop | `app/src/platforms/desktop/workspaceAdapter.ts` |
+| workspaceStore           | `app/src/stores/workspaceStore.ts`              |
+| 首次选目录引导           | `app/src/features/workspace/`（薄 UI）          |
 
 ### 10.2 修改
 
@@ -540,7 +540,7 @@ API**：可用则允许「连接本地文件夹」；不可用则仅 OPFS + 文�
 
 ### 11.1 与历史 RN（`archive/apps/mobile`）边界
 
-| 项           | Capacitor（`apps/pixuli`）                                | RN（`archive/apps/mobile`，已归档）               |
+| 项           | Capacitor（`app`）                                        | RN（`archive/apps/mobile`，已归档）               |
 | ------------ | --------------------------------------------------------- | ------------------------------------------------- |
 | **包名**     | `com.pixuli.app`                                          | `com.pixuli.mobile`                               |
 | **工作区**   | `MobileWorkspaceAdapter` + `@capacitor/filesystem`        | 独立 RN 存储，**不共享** vault 实现               |
@@ -567,7 +567,7 @@ Capacitor 与旧 RN 包可并存安装；本地工作区数据**不**跨应用�
 ## 十三、迁移：仅远端源用户
 
 > **实现状态（#159 ✅）**：Web + Desktop 已落地
-> `WorkspaceMigrationWizard`（`apps/pixuli/src/features/workspace/`）与
+> `WorkspaceMigrationWizard`（`app/src/features/workspace/`）与
 > `WorkspaceSetupPanel`；`sourceStore` 经 `storedSourcesToWorkspaceBindings`
 > 写入 vault `config.bindings`（`syncBindingsFromSources`，源变更时
 > `useWorkspaceBindingSync` 双写）。**`remote-only`
@@ -626,10 +626,10 @@ packages/core/src/vault/
 packages/core/src/plugins/types.ts
   # StorageProviderSync, StorageProviderPublicUrl, capabilities.sync
 
-apps/pixuli/electron/main/
+app/electron/main/
   workspaceIpc.ts    # FS + pickRoot
 
-apps/pixuli/src/stores/
+app/src/stores/
   workspaceStore.ts
 ```
 

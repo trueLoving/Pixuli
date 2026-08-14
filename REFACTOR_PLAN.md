@@ -15,7 +15,7 @@
 
 | 项           | 约定                                                                                                              |
 | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| **三端**     | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor Android）；**单工程** `apps/pixuli`                         |
+| **三端**     | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor Android）；**单工程** `app`                                 |
 | **RN 工程**  | 已迁入 [`archive/apps/mobile/`](archive/apps/mobile/)（REF-513 ✅）                                               |
 | **存储**     | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**                                                |
 | **本地库**   | 用户指定本地工作目录 + 可选远端同步（REF-607 ✅ / [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)） |
@@ -26,7 +26,7 @@
 - **已归档**：`packages/wasm`、`benchmark/`、`server/`、`apps/mobile` → 见
   [archive/README.md](archive/README.md)
 - **包结构**：`@pixuli/core` + `@pixuli/provider-*`；UI 在
-  `apps/pixuli/src/ui`（`@/ui`）。**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。包布局：[07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)
+  `app/src/ui`（`@/ui`）。**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。包布局：[07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)
 - **分层**：L1 业务 · L2 网格/列表 ·
   L3 各端平台能力；**core/provider 禁止依赖 ui**
 - **展示裁剪**：幻灯片、时间线、照片墙、3D 画廊等已移除（M1 ✅）
@@ -47,7 +47,7 @@
 ### 1.4 三端单工程（当前基线）
 
 ```text
-apps/pixuli（Vite + React）
+app（Vite + React）
   ├── src/ui                  原 @pixuli/ui（内联）
   ├── src/platforms/*         Electron / Capacitor 分支
   └── imageStore / sourceStore  三端共用（本地工作区模式已落地）
@@ -259,7 +259,7 @@ gh issue view 126 --json number,state,title
 | 代码归档                    | [archive/README.md](archive/README.md)                                                         |
 | 系统架构                    | [01-system-design.md](docs/02-system-design/01-system-design.md)                               |
 | 三端设计                    | [02-three-platform-design.md](archive/design/02-three-platform-design.md)                      |
-| apps/pixuli 工程            | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)           |
+| app 工程                    | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)           |
 | 插件体系（M3 现状）         | [03-plugin-system.md](docs/02-system-design/03-plugin-system.md)                               |
 | 插件体系重设计（REF-411）   | **§1.6** · Obsidian 参考 · [#126](https://github.com/trueLoving/Pixuli/issues/126)             |
 | Host 集成（历史，已非主线） | [03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)                  |

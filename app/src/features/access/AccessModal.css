@@ -1,0 +1,142 @@
+.access-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.access-modal-overlay--full {
+  padding: 0;
+  align-items: stretch;
+}
+
+.access-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 32rem;
+  max-height: min(90vh, 40rem);
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+}
+
+.access-modal--full {
+  max-width: none;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+}
+
+.access-modal-header,
+.access-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.access-modal-footer {
+  border-bottom: none;
+  border-top: 1px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.access-modal-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.access-modal-heading h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.access-modal-close {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.access-modal-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  overflow: auto;
+}
+
+.access-modal-section h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.access-modal-locked {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.access-modal-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.access-modal-option--disabled {
+  color: #9ca3af;
+}
+
+.access-modal-hint {
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.5rem;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.access-modal-primary,
+.access-modal-secondary {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.access-modal-primary {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.access-modal-secondary {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+}

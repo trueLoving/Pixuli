@@ -3,9 +3,8 @@
 - **文档版本**：1.0
 - **日期**：2026-08-13
 - **读者**：产品、设计、前端（Web / Desktop / Capacitor）
-- **Logo
-  SSOT**：[`apps/pixuli/brand/source/icon.png`](../../apps/pixuli/brand/README.md)
-  → `public/icon.png`
+- **Logo SSOT**：[`app/brand/source/icon.png`](../../app/brand/README.md) →
+  `public/icon.png`
 - **IA
   / 排期**：[05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)
   · [06-asset-library-ui.md](./06-asset-library-ui.md)
@@ -174,7 +173,7 @@ Logo 顶面青光 + 向上浮点 = 天然「数据在进出库」。Loading 用
 | V3  | 同步徽章 / 访问档位 / 选中态用 §三语义色                                                       |
 | V4  | 扫 `@pixuli/ui` 硬编码 `#3b82f6` `#2563eb`，改 token                                           |
 
-插画资源建议放 `apps/pixuli/brand/source/empty-*.svg`（或 png），由
+插画资源建议放 `app/brand/source/empty-*.svg`（或 png），由
 `pnpm -F pixuli-app sync:brand` 进 `public/`，三端共用。
 
 ---

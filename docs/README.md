@@ -18,8 +18,8 @@
 | **插件作者**       | [03-plugin-system](02-system-design/03-plugin-system.md) §第二部分 · Skill：[storage-provider](../.cursor/skills/storage-provider/SKILL.md)                                                                                                                                             |
 | **协作者 / Issue** | [REFACTOR_PLAN.md](../REFACTOR_PLAN.md) · [AGENTS.md](../AGENTS.md)                                                                                                                                                                                                                     |
 
-**当前架构（一句话）**：`apps/pixuli`（Web + Desktop + Capacitor Android）·
-`@pixuli/core` · `@pixuli/provider-*` · `apps/pixuli/src/ui` ·
+**当前架构（一句话）**：`app`（Web + Desktop + Capacitor Android）·
+`@pixuli/core` · `@pixuli/provider-*` · `app/src/ui` ·
 `archive/`（RN、wasm、server 等，非 workspace）。
 
 ---

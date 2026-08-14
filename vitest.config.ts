@@ -16,7 +16,7 @@ export default defineConfig({
       '**/playwright/**',
       '**/e2e/**',
       '**/packages/**',
-      '**/apps/**',
+      '**/app/**',
     ],
     coverage: {
       provider: 'v8',
@@ -42,7 +42,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './'),
       '@packages': path.resolve(__dirname, './packages'),
-      '@apps': path.resolve(__dirname, './apps'),
+      '@app': path.resolve(__dirname, './app'),
     },
   },
 });

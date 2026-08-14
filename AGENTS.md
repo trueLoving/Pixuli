@@ -6,19 +6,19 @@
 
 ## 产品底线（不可破坏）
 
-| 项          | 约定                                                                         |
-| ----------- | ---------------------------------------------------------------------------- |
-| **三端**    | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor，`apps/pixuli`）均维护 |
-| **存储**    | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**           |
-| **UI 共享** | Web + Desktop + Mobile 共用 `apps/pixuli`（含 `src/ui`）                     |
-| **分层**    | L1 业务 · L2 网格/列表 · L3 各端平台能力；**core/provider 禁止依赖 ui**      |
+| 项          | 约定                                                                    |
+| ----------- | ----------------------------------------------------------------------- |
+| **三端**    | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor，`app`）均维护    |
+| **存储**    | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**      |
+| **UI 共享** | Web + Desktop + Mobile 共用 `app`（含 `src/ui`）                        |
+| **分层**    | L1 业务 · L2 网格/列表 · L3 各端平台能力；**core/provider 禁止依赖 ui** |
 
 重构追踪：[REFACTOR_PLAN.md](REFACTOR_PLAN.md)（Issue 映射、里程碑、§九 工程基线）。
 
 ## Monorepo 结构
 
 ```text
-apps/pixuli/          Web + Desktop + Mobile/Capacitor（Vite + React + electron/ + android/）
+app/          Web + Desktop + Mobile/Capacitor（Vite + React + electron/ + android/）
 packages/core/        @pixuli/core — types, StoragePluginRegistry, platform
 packages/plugin-provider-github/   @pixuli/provider-github
 packages/plugin-provider-gitee/    @pixuli/provider-gitee
@@ -38,7 +38,7 @@ APK；debug 用 `build:android:debug`）
 
 | 步骤         | 位置                                                                          |
 | ------------ | ----------------------------------------------------------------------------- |
-| 注册表单例   | `apps/pixuli/src/storage/registry.ts`                                         |
+| 注册表单例   | `app/src/storage/registry.ts`                                                 |
 | 创建实例     | `createConfiguredStorageProvider()` → `storageRegistry.create(pluginId, ctx)` |
 | 注册官方插件 | `registerGitHubProvider` · `registerGiteeProvider`（各包 `/register` 子路径） |
 | 契约定义     | `@pixuli/core/plugins` — `StorageProvider`、`StoragePluginRegistry`           |

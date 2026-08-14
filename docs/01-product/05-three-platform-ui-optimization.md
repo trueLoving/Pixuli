@@ -15,7 +15,7 @@
 > 等；**本地始终可访问**；**远程对外访问**按云能力配置，不支持则
 > **UI 禁用并提示**。
 >
-> **三端底线**：Web / Desktop / Mobile 共用 `apps/pixuli` +
+> **三端底线**：Web / Desktop / Mobile 共用 `app` +
 > `@pixuli/ui`。流程一致，壳层适配；不为 Mobile 另开一套 UI。
 >
 > 本文是 **对照现行需求的 UI 排期与建议**。连接器能力位、发布抽屉线框以
@@ -217,7 +217,7 @@ GitHub/Gitee 先填满能力展示；OneDrive / Google Cloud 未落地时在画�
 
 ## 六、落地批次（按现行需求重排）
 
-实现仍最小 diff；业务在 `apps/pixuli` + `@pixuli/ui`；平台差在 `src/platforms/`
+实现仍最小 diff；业务在 `app` + `@pixuli/ui`；平台差在 `src/platforms/`
 与 CSS；**provider 无 UI**，只提供能力位给界面。
 
 | 批次                | 范围                                                       | 覆盖需求                       | 目的                                     |

@@ -93,10 +93,10 @@ pnpm build:android
 
 ## 📦 项目结构
 
-### 主应用（apps/pixuli）
+### 主应用（app）
 
 ```text
-apps/pixuli/
+app/
 ├── src/                           # 源码
 │   ├── components/                # React 组件
 │   ├── config/                    # 配置
@@ -152,8 +152,7 @@ apps/pixuli/
 
 ### 包边界
 
-- `@pixuli/core` 与 `@pixuli/provider-*` **禁止**依赖
-  `apps/pixuli/src/ui`（REF-209）
+- `@pixuli/core` 与 `@pixuli/provider-*` **禁止**依赖 `app/src/ui`（REF-209）
 - 存储仅经 `@pixuli/core/plugins` 契约 + provider 包；应用不直接写 Git API 细节
 
 ## 📤 提交规范

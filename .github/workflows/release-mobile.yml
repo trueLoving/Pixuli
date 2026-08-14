@@ -60,9 +60,9 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION-android" >> $GITHUB_OUTPUT
 
-      - name: 更新 apps/pixuli 版本号
+      - name: 更新 app 版本号
         run: |
-          cd apps/pixuli
+          cd app
           TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
@@ -73,13 +73,13 @@ jobs:
       - name: 配置 release 签名（可选 secrets）
         if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > apps/pixuli/android/release.keystore
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/android/release.keystore
           {
             echo "storeFile=release.keystore"
             echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
             echo "keyAlias=$ANDROID_KEY_ALIAS"
             echo "keyPassword=$ANDROID_KEY_PASSWORD"
-          } > apps/pixuli/android/keystore.properties
+          } > app/android/keystore.properties
 
       - name: 创建 debug keystore（无正式证书时的回退）
         if: ${{ env.ANDROID_KEYSTORE_BASE64 == '' }}
@@ -115,8 +115,8 @@ jobs:
         with:
           name: pixuli-android-${{ github.event.inputs.build-type }}-v${{ steps.version.outputs.VERSION }}
           path: |
-            apps/pixuli/android/app/build/outputs/apk/release/app-release.apk
-            apps/pixuli/android/app/build/outputs/apk/debug/app-debug.apk
+            app/android/app/build/outputs/apk/release/app-release.apk
+            app/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
       - name: 仅构建（不上传 Release）
@@ -141,7 +141,7 @@ jobs:
         if: ${{ github.event.inputs.is-publish == true && github.event.inputs.build-type == 'release' }}
         run: |
           gh release upload "${{ steps.version.outputs.TAG_VERSION }}" \
-            apps/pixuli/android/app/build/outputs/apk/release/app-release.apk \
+            app/android/app/build/outputs/apk/release/app-release.apk \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

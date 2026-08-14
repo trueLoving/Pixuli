@@ -1,5 +1,5 @@
 packages:
-  - apps/*
+  - app
   - packages/*
   - docs
 

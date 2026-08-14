@@ -1,6 +1,6 @@
 ---
 description: StorageProvider 插件开发：Registry、register、manifest、createProvider
-globs: packages/plugin-provider-*/**,packages/core/src/plugins/**,apps/**/storage/**
+globs: packages/plugin-provider-*/**,packages/core/src/plugins/**,app/src/storage/**
 alwaysApply: false
 ---
 
@@ -24,7 +24,7 @@ packages/plugin-provider-{id}/src/
 
 ## 应用侧
 
-- Bootstrap：`apps/pixuli/src/storage/registry.ts` · `apps/mobile/storage/registry.ts`
+- Bootstrap：`app/src/storage/registry.ts`
 - 配置后创建：`createConfiguredStorageProvider(pluginId, config)` → `provider.configure(config)`
 
 ## 禁止

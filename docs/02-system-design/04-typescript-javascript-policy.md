@@ -13,12 +13,12 @@
 `.tsx`）。仓库内业务代码、Provider、UI、Electron、测试**一律 TypeScript**；仅保留经登记的
 **JavaScript 例外**（含 Vercel `api/*.js` 与工具链配置）。
 
-| 维度     | 选择                         | 说明                                                          |
-| -------- | ---------------------------- | ------------------------------------------------------------- |
-| 应用源码 | **TypeScript**               | `apps/pixuli`、`packages/*`；`archive/apps/mobile` 为只读归档 |
-| 类型检查 | `strict: true`               | 各包 `tsconfig` 保持严格模式                                  |
-| 构建     | Vite / Vitest / `tsc`        | 无「运行时裸 JS 业务模块」                                    |
-| 新代码   | **禁止** 新增 `.js` 业务实现 | Code Review + 本文登记例外                                    |
+| 维度     | 选择                         | 说明                                                  |
+| -------- | ---------------------------- | ----------------------------------------------------- |
+| 应用源码 | **TypeScript**               | `app`、`packages/*`；`archive/apps/mobile` 为只读归档 |
+| 类型检查 | `strict: true`               | 各包 `tsconfig` 保持严格模式                          |
+| 构建     | Vite / Vitest / `tsc`        | 无「运行时裸 JS 业务模块」                            |
+| 新代码   | **禁止** 新增 `.js` 业务实现 | Code Review + 本文登记例外                            |
 
 ---
 
@@ -32,20 +32,20 @@
 
 ### 2.2 登记的 JavaScript 例外（保留）
 
-| 文件                             | 原因                                      |
-| -------------------------------- | ----------------------------------------- |
-| `eslint.config.mjs`              | ESLint 9 flat config 官方推荐 `.mjs` 入口 |
-| `apps/pixuli/postcss.config.cjs` | PostCSS 常用 CJS 配置格式                 |
-| `apps/pixuli/tailwind.config.js` | Tailwind 配置；可被 Vite/PostCSS 直接加载 |
-| `archive/**`                     | 已归档，非 workspace，不参与主构建        |
+| 文件                     | 原因                                      |
+| ------------------------ | ----------------------------------------- |
+| `eslint.config.mjs`      | ESLint 9 flat config 官方推荐 `.mjs` 入口 |
+| `app/postcss.config.cjs` | PostCSS 常用 CJS 配置格式                 |
+| `app/tailwind.config.js` | Tailwind 配置；可被 Vite/PostCSS 直接加载 |
+| `archive/**`             | 已归档，非 workspace，不参与主构建        |
 
 ### 2.3 已删除的冗余
 
-| 路径                                | 原因                                           |
-| ----------------------------------- | ---------------------------------------------- |
-| `apps/pixuli/vercel/gitee-proxy.js` | 仅 re-export `api/gitee-proxy`，无独立路由引用 |
-| `apps/pixuli/api/gitee-proxy.*`     | REF-607 P7 退役 Gitee Host 代理                |
-| Gitee `proxy/*` 子路径              | REF-607 P7 从 `@pixuli/provider-gitee` 移除    |
+| 路径                        | 原因                                           |
+| --------------------------- | ---------------------------------------------- |
+| `app/vercel/gitee-proxy.js` | 仅 re-export `api/gitee-proxy`，无独立路由引用 |
+| `app/api/gitee-proxy.*`     | REF-607 P7 退役 Gitee Host 代理                |
+| Gitee `proxy/*` 子路径      | REF-607 P7 从 `@pixuli/provider-gitee` 移除    |
 
 ---
 

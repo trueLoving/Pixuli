@@ -94,10 +94,10 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
 
-      - name: 更新 apps/pixuli 版本号
+      - name: 更新 app 版本号
         shell: bash
         run: |
-          cd apps/pixuli
+          cd app
           TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
@@ -110,7 +110,7 @@ jobs:
       - name: 构建桌面应用 (Windows x64)
         shell: bash
         run: |
-          cd apps/pixuli
+          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
           npx electron-builder --win --x64
@@ -121,9 +121,9 @@ jobs:
         with:
           name: pixuli-desktop-win-v${{ steps.version.outputs.VERSION }}
           path: |
-            apps/pixuli/release/*.exe
-            !apps/pixuli/release/*.blockmap
-            !apps/pixuli/release/*.yml
+            app/release/*.exe
+            !app/release/*.blockmap
+            !app/release/*.yml
           retention-days: 30
 
   build-mac-x64:
@@ -152,9 +152,9 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
 
-      - name: 更新 apps/pixuli 版本号
+      - name: 更新 app 版本号
         run: |
-          cd apps/pixuli
+          cd app
           TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
@@ -166,7 +166,7 @@ jobs:
 
       - name: 构建桌面应用 (macOS x64)
         run: |
-          cd apps/pixuli
+          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
           npx electron-builder --mac --x64
@@ -177,9 +177,9 @@ jobs:
         with:
           name: pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }}
           path: |
-            apps/pixuli/release/*.dmg
-            !apps/pixuli/release/*.blockmap
-            !apps/pixuli/release/*.yml
+            app/release/*.dmg
+            !app/release/*.blockmap
+            !app/release/*.yml
           retention-days: 30
 
   build-mac-arm64:
@@ -208,9 +208,9 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
 
-      - name: 更新 apps/pixuli 版本号
+      - name: 更新 app 版本号
         run: |
-          cd apps/pixuli
+          cd app
           TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
@@ -222,7 +222,7 @@ jobs:
 
       - name: 构建桌面应用 (macOS ARM64)
         run: |
-          cd apps/pixuli
+          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
           npx electron-builder --mac --arm64
@@ -233,9 +233,9 @@ jobs:
         with:
           name: pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }}
           path: |
-            apps/pixuli/release/*.dmg
-            !apps/pixuli/release/*.blockmap
-            !apps/pixuli/release/*.yml
+            app/release/*.dmg
+            !app/release/*.blockmap
+            !app/release/*.yml
           retention-days: 30
 
   skip-release:
