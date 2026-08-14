@@ -1,23 +1,22 @@
 import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from '@/ui';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
 import {
   BookOpen,
+  FolderOpen,
   Globe,
   Info,
   Keyboard,
-  RefreshCw,
   ScrollText,
   Settings,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { SettingsDocsPanel } from './SettingsDocsPanel';
 import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
 import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
-import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
 import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
@@ -36,6 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   versionInfo,
 }) => {
   const settingsSection = useUIStore(state => state.settingsSection);
+  const isMobile = useMobileViewport();
   const [activeSection, setActiveSection] =
     useState<SettingsSection>(settingsSection);
 
@@ -57,9 +57,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     icon: React.ReactNode;
   }> = [
     {
-      id: 'sync',
-      labelKey: 'settings.menuSync',
-      icon: <RefreshCw size={18} />,
+      id: 'workspace',
+      labelKey: 'settings.menuWorkspace',
+      icon: <FolderOpen size={18} />,
     },
     {
       id: 'operationLog',
@@ -90,14 +90,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+      className={`fixed inset-0 z-[60] flex bg-black/40 ${
+        isMobile ? 'items-stretch p-0' : 'items-center justify-center p-4'
+      }`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-modal-title"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[min(90vh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className={`flex w-full flex-col overflow-hidden bg-white shadow-xl ${
+          isMobile
+            ? 'h-full max-h-full max-w-none rounded-none'
+            : 'max-h-[min(90vh,720px)] max-w-4xl rounded-xl'
+        }`}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
@@ -120,9 +126,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
-        <div className="flex min-h-0 flex-1">
+        <div className={`flex min-h-0 flex-1 ${isMobile ? 'flex-col' : ''}`}>
           <nav
-            className="w-44 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3"
+            className={
+              isMobile
+                ? 'flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 py-2'
+                : 'w-44 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3'
+            }
             aria-label={t('settings.navLabel')}
           >
             {menuItems.map(item => (
@@ -130,11 +140,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => setActiveSection(item.id)}
-                className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
-                  activeSection === item.id
-                    ? 'border-r-2 border-blue-600 bg-white font-medium text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className={
+                  isMobile
+                    ? `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm ${
+                        activeSection === item.id
+                          ? 'bg-white font-medium text-blue-700 shadow-sm'
+                          : 'text-gray-700'
+                      }`
+                    : `flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
+                        activeSection === item.id
+                          ? 'border-r-2 border-blue-600 bg-white font-medium text-blue-700'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`
+                }
               >
                 {item.icon}
                 {t(item.labelKey)}
@@ -149,7 +167,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'overflow-y-auto'
             }`}
           >
-            {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
             {activeSection === 'workspace' && <SettingsWorkspacePanel t={t} />}
             {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
             {activeSection === 'language' && <SettingsLanguagePanel t={t} />}

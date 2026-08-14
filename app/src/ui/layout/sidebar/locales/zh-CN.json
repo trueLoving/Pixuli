@@ -1,6 +1,9 @@
 {
   "sidebar": {
-    "photos": "照片",
+    "photos": "资源库",
+    "library": "资源库",
+    "connections": "连接",
+    "access": "访问",
     "explore": "探索",
     "tags": "标签",
     "favorites": "收藏",

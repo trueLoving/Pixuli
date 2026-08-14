@@ -26,6 +26,10 @@ interface UIState {
   /** 同步方向选择（远端→本地 / 本地→远端） */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
+  /** 访问控制面板（本地 / 远程分列） */
+  showAccessModal: boolean;
+  /** 连接（远端源 / 同步目标） */
+  showConnectionsModal: boolean;
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
@@ -95,6 +99,10 @@ interface UIState {
   closeSyncDirectionModal: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
+  openAccessModal: () => void;
+  closeAccessModal: () => void;
+  openConnectionsModal: (options?: { addSource?: boolean }) => void;
+  closeConnectionsModal: () => void;
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string) => void;
@@ -117,7 +125,7 @@ export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
   showSettingsModal: false,
   showSyncDirectionModal: false,
-  settingsSection: 'sync',
+  settingsSection: 'workspace',
   settingsSyncAddOpen: false,
   editingSourceId: null,
   editingSourcePluginId: null,
@@ -131,6 +139,8 @@ export const useUIStore = create<UIState>(set => ({
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
   showWorkspaceModal: false,
+  showAccessModal: false,
+  showConnectionsModal: false,
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
@@ -193,26 +203,38 @@ export const useUIStore = create<UIState>(set => ({
   openKeyboardHelp: () =>
     set({
       showSettingsModal: true,
+      showConnectionsModal: false,
+      showAccessModal: false,
       settingsSection: 'keyboard',
       settingsSyncAddOpen: false,
+      activeMenu: 'settings',
     }),
   openVersionInfo: () =>
     set({
       showSettingsModal: true,
+      showConnectionsModal: false,
+      showAccessModal: false,
       settingsSection: 'version',
       settingsSyncAddOpen: false,
+      activeMenu: 'settings',
     }),
   openOperationLog: () =>
     set({
       showSettingsModal: true,
+      showConnectionsModal: false,
+      showAccessModal: false,
       settingsSection: 'operationLog',
       settingsSyncAddOpen: false,
+      activeMenu: 'settings',
     }),
-  openSettingsModal: (section = 'sync') =>
+  openSettingsModal: (section = 'workspace') =>
     set({
       showSettingsModal: true,
+      showConnectionsModal: false,
+      showAccessModal: false,
       settingsSection: section,
       settingsSyncAddOpen: false,
+      activeMenu: 'settings',
     }),
   closeSettingsModal: () =>
     set({
@@ -223,11 +245,35 @@ export const useUIStore = create<UIState>(set => ({
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
+  openAccessModal: () =>
+    set({
+      showAccessModal: true,
+      showSettingsModal: false,
+      showConnectionsModal: false,
+      activeMenu: 'access',
+    }),
+  closeAccessModal: () => set({ showAccessModal: false, activeMenu: 'photos' }),
+  openConnectionsModal: (options = {}) =>
+    set({
+      showConnectionsModal: true,
+      showSettingsModal: false,
+      showAccessModal: false,
+      settingsSyncAddOpen: Boolean(options.addSource),
+      activeMenu: 'connections',
+    }),
+  closeConnectionsModal: () =>
+    set({
+      showConnectionsModal: false,
+      settingsSyncAddOpen: false,
+      activeMenu: 'photos',
+    }),
   openSettingsModalForAddSource: () =>
     set({
-      showSettingsModal: true,
-      settingsSection: 'sync',
+      showConnectionsModal: true,
+      showSettingsModal: false,
+      showAccessModal: false,
       settingsSyncAddOpen: true,
+      activeMenu: 'connections',
     }),
   clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
   beginNewSource: (pluginId: string) => {

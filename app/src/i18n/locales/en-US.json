@@ -129,11 +129,30 @@
     "welcomeTitle": "Welcome to Pixuli",
     "welcomeSubtitle": "Open or create a local workspace to manage your images.",
     "welcomeOpenSettings": "Settings & remote sync",
+    "welcomeOpenConnections": "Connect a remote repository",
     "explorer": "Explorer",
     "activityBar": "Main menu",
     "allImages": "All images",
     "manageExplorer": "Manage workspace…",
     "closeExplorer": "Close folder panel"
+  },
+  "access": {
+    "title": "Access",
+    "close": "Close",
+    "localTitle": "Local",
+    "localAlways": "Always browsable in this workspace",
+    "localPrivate": "Do not publish",
+    "remoteTitle": "Remote",
+    "remoteNone": "Not public on this cloud",
+    "remoteShare": "Link-only",
+    "remotePublic": "Public URL / hotlink",
+    "hintNeedConnection": "No connection yet. Remote access requires adding one. You can keep files local-only, or add GitHub/Gitee under Connections.",
+    "hintShareUnsupported": "This connection does not support link-only sharing. You can keep files local-only, use a public GitHub/Gitee raw URL, or share from the cloud vendor if available.",
+    "addConnection": "Add connection"
+  },
+  "connections": {
+    "title": "Connections",
+    "close": "Close"
   },
   "settings": {
     "title": "Settings",

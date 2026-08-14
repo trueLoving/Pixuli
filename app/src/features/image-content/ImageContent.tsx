@@ -2,6 +2,7 @@ import { EmptyState, ImageBrowser } from '@/ui';
 import type { ImageBrowserSearchConfig } from '@/ui';
 import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import React, { useCallback, useMemo } from 'react';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
 import {
@@ -9,6 +10,8 @@ import {
   useNativeShareImage,
 } from '../../hooks/useNativeImageActions';
 import { useImageStore } from '../../stores/imageStore';
+import { useSourceStore } from '../../stores/sourceStore';
+import { useUIStore } from '../../stores/uiStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 
 interface ImageContentProps {
@@ -69,6 +72,20 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const onCopyUrl = useImageCopyUrl();
   const nativePickers = useNativeImagePickers();
   const onShareImage = useNativeShareImage();
+  const isMobile = useMobileViewport();
+  const sources = useSourceStore(state => state.sources);
+  const pushing = useWorkspaceStore(state => state.pushing);
+  const syncing = useWorkspaceStore(state => state.syncing);
+  const openSyncDirectionModal = useUIStore(
+    state => state.openSyncDirectionModal,
+  );
+  const openAccessModal = useUIStore(state => state.openAccessModal);
+  const setWorkspaceExplorerOpen = useUIStore(
+    state => state.setWorkspaceExplorerOpen,
+  );
+  const workspaceReady = localActive && sources.length > 0;
+  const syncBusy = pushing || syncing || workspaceLoading;
+  const syncDisabled = !workspaceReady || syncBusy;
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -122,6 +139,13 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           onCopyUrl={onCopyUrl}
           nativePickers={nativePickers}
           onShareImage={onShareImage}
+          onSync={() => openSyncDirectionModal()}
+          syncBusy={syncBusy}
+          syncDisabled={syncDisabled}
+          onAccess={() => openAccessModal()}
+          onOpenFolders={
+            isMobile ? () => setWorkspaceExplorerOpen(true) : undefined
+          }
         />
       </div>
     </div>

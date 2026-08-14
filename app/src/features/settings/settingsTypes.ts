@@ -1,5 +1,4 @@
 export type SettingsSection =
-  | 'sync'
   | 'workspace'
   | 'operationLog'
   | 'language'

@@ -1,6 +1,9 @@
 {
   "sidebar": {
-    "photos": "Photos",
+    "photos": "Library",
+    "library": "Library",
+    "connections": "Connections",
+    "access": "Access",
     "explore": "Explore",
     "tags": "Tags",
     "favorites": "Favorites",

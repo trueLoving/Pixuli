@@ -15,6 +15,8 @@ import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
 import { SettingsModal } from '../features/settings';
+import { AccessModal } from '../features/access/AccessModal';
+import { ConnectionsModal } from '../features/connections/ConnectionsModal';
 import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
@@ -83,12 +85,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const {
     showConfigModal,
     showSettingsModal,
+    showAccessModal,
+    showConnectionsModal,
     showWorkspaceModal,
     editingSourceId,
     editingSourcePluginId,
     editingSourceRepoConfig,
     closeConfigModal,
     closeSettingsModal,
+    closeAccessModal,
+    closeConnectionsModal,
     closeWorkspaceModal,
   } = useUIStore();
 
@@ -169,6 +175,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onClose={closeSettingsModal}
         t={t}
         versionInfo={__VERSION_INFO__}
+      />
+
+      <AccessModal isOpen={showAccessModal} onClose={closeAccessModal} t={t} />
+
+      <ConnectionsModal
+        isOpen={showConnectionsModal}
+        onClose={closeConnectionsModal}
+        t={t}
       />
 
       <WorkspaceModal

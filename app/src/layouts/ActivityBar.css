@@ -15,7 +15,8 @@
   z-index: 30;
   flex-direction: row;
   width: 100%;
-  height: 3.25rem;
+  height: 3.75rem;
+  padding-bottom: env(safe-area-inset-bottom, 0);
   border-right: none;
   border-top: 1px solid #e5e7eb;
 }
@@ -49,10 +50,11 @@
 
 .activity-bar-item {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   border: none;
   border-radius: 0.5rem;
@@ -66,6 +68,29 @@
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
+}
+
+.activity-bar-item-label {
+  display: none;
+  margin-top: 0.125rem;
+  max-width: 4.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.625rem;
+  line-height: 1;
+}
+
+.activity-bar--mobile .activity-bar-item {
+  width: auto;
+  min-width: 2.75rem;
+  height: auto;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.activity-bar--mobile .activity-bar-item-label {
+  display: block;
 }
 
 .activity-bar-item svg,

@@ -1,4 +1,10 @@
-import { MoreHorizontal, Trash2 } from 'lucide-react';
+import {
+  Folder,
+  MoreHorizontal,
+  RefreshCw,
+  Shield,
+  Trash2,
+} from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -23,6 +29,7 @@ import {
   SHORTCUT_CATEGORIES,
 } from '@/ui/utils/keyboardShortcuts';
 import { filterImages, getSortedImages } from '@pixuli/core/utils';
+import { filterAssetsByKind, type AssetKindFilter } from '@/utils/assetKind';
 import type {
   FilterOptions,
   SortField,
@@ -76,6 +83,11 @@ interface ImageBrowserProps {
   errorMessage?: string | null;
   onDismissError?: () => void;
   onRetry?: () => void;
+  onSync?: () => void;
+  syncBusy?: boolean;
+  syncDisabled?: boolean;
+  onAccess?: () => void;
+  onOpenFolders?: () => void;
 }
 
 const ImageBrowser: React.FC<ImageBrowserProps> = ({
@@ -100,8 +112,14 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   errorMessage,
   onDismissError,
   onRetry,
+  onSync,
+  syncBusy = false,
+  syncDisabled = false,
+  onAccess,
+  onOpenFolders,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
+  const [assetKind, setAssetKind] = useState<AssetKindFilter>('image');
   const [currentSort, setCurrentSort] = useState<SortField>('createdAt');
   const [currentOrder, setCurrentOrder] = useState<SortOrder>('desc');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(-1);
@@ -126,6 +144,11 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     }
     return filterImages(images, search.filters);
   }, [images, search?.filters]);
+
+  const kindFilteredImages = useMemo(
+    () => filterAssetsByKind(filteredImages, assetKind),
+    [filteredImages, assetKind],
+  );
 
   const handleViewChange = useCallback((view: ViewMode) => {
     setCurrentView(view);
@@ -169,25 +192,28 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   // 排序图片，并确保没有重复ID
   const sortedImages = useMemo(() => {
     // 生成依赖项的字符串表示，用于比较
-    const imagesIds = filteredImages
+    const imagesIds = kindFilteredImages
       .map(img => `${img.id}:${img.updatedAt}`)
       .join(',');
     const sortKey = `${currentSort}:${currentOrder}`;
 
     // 去重：确保没有重复的图片ID
-    const uniqueImages = filteredImages.reduce((acc: ImageItem[], current) => {
-      const existingIndex = acc.findIndex(img => img.id === current.id);
-      if (existingIndex === -1) {
-        acc.push(current);
-      } else {
-        // 如果存在重复ID，保留最新的（基于updatedAt）
-        const existing = acc[existingIndex];
-        if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
-          acc[existingIndex] = current;
+    const uniqueImages = kindFilteredImages.reduce(
+      (acc: ImageItem[], current) => {
+        const existingIndex = acc.findIndex(img => img.id === current.id);
+        if (existingIndex === -1) {
+          acc.push(current);
+        } else {
+          // 如果存在重复ID，保留最新的（基于updatedAt）
+          const existing = acc[existingIndex];
+          if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
+            acc[existingIndex] = current;
+          }
         }
-      }
-      return acc;
-    }, []);
+        return acc;
+      },
+      [],
+    );
 
     const result = getSortedImages(uniqueImages, currentSort, currentOrder);
 
@@ -212,7 +238,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     // 如果结果不同，检查依赖项是否变化
     if (
       prevDeps &&
-      prevDeps.imagesLength === filteredImages.length &&
+      prevDeps.imagesLength === kindFilteredImages.length &&
       prevDeps.imagesIds === imagesIds &&
       prevDeps.sort === sortKey &&
       prevResultRef.current.length > 0
@@ -223,7 +249,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
 
     // 更新缓存
     prevDepsRef.current = {
-      imagesLength: filteredImages.length,
+      imagesLength: kindFilteredImages.length,
       imagesIds,
       sort: sortKey,
       resultIds,
@@ -231,7 +257,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
     prevResultRef.current = result;
 
     return result;
-  }, [filteredImages, currentSort, currentOrder]);
+  }, [kindFilteredImages, currentSort, currentOrder]);
 
   // 预览选中的图片
   const handlePreviewSelectedImage = useCallback(() => {
@@ -575,6 +601,32 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
           </span>
         </div>
 
+        <div
+          className="image-browser-kind-chips"
+          role="tablist"
+          aria-label={t('image.kind.label')}
+        >
+          {(
+            [
+              ['image', 'image.kind.image'],
+              ['video', 'image.kind.video'],
+              ['pdf', 'image.kind.pdf'],
+              ['all', 'image.kind.all'],
+            ] as const
+          ).map(([kind, labelKey]) => (
+            <button
+              key={kind}
+              type="button"
+              role="tab"
+              aria-selected={assetKind === kind}
+              className={`image-browser-kind-chip ${assetKind === kind ? 'image-browser-kind-chip--active' : ''}`}
+              onClick={() => setAssetKind(kind)}
+            >
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
+
         {search ? (
           <Search
             variant="header"
@@ -597,6 +649,19 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
         ) : null}
 
         <div className="image-browser-controls">
+          {onOpenFolders ? (
+            <button
+              type="button"
+              className="image-browser-chrome-btn image-browser-folders-btn"
+              onClick={onOpenFolders}
+              aria-label={t('workspace.explorer')}
+              title={t('workspace.explorer')}
+            >
+              <Folder size={16} aria-hidden />
+              <span>{t('workspace.explorer')}</span>
+            </button>
+          ) : null}
+
           {onUploadImage && onUploadMultipleImages && (
             <UploadButton
               onUploadImage={onUploadImage}
@@ -614,6 +679,36 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
             currentView={currentView}
             onViewChange={handleViewChange}
           />
+
+          {onSync ? (
+            <button
+              type="button"
+              className={`image-browser-chrome-btn ${syncBusy ? 'image-browser-chrome-btn--busy' : ''}`}
+              disabled={syncDisabled}
+              onClick={onSync}
+              aria-label={t('image.toolbar.sync')}
+              title={
+                syncDisabled
+                  ? t('workspace.syncNeedsRemote')
+                  : t('image.toolbar.sync')
+              }
+            >
+              <RefreshCw size={16} aria-hidden />
+              <span>{t('image.toolbar.sync')}</span>
+            </button>
+          ) : null}
+
+          {onAccess ? (
+            <button
+              type="button"
+              className="image-browser-chrome-btn"
+              onClick={onAccess}
+              aria-label={t('image.toolbar.access')}
+            >
+              <Shield size={16} aria-hidden />
+              <span>{t('image.toolbar.access')}</span>
+            </button>
+          ) : null}
 
           <div className="image-browser-toolbar-more" ref={toolbarMenuRef}>
             <button

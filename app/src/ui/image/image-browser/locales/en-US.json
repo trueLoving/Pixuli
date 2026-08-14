@@ -1,7 +1,7 @@
 {
   "image": {
     "browse": "Browse Images",
-    "libraryTitle": "Image Library",
+    "libraryTitle": "Library",
     "empty": {
       "filteredTitle": "No matching images",
       "filteredDescription": "Try adjusting filters or clearing your search"
@@ -132,7 +132,16 @@
     "toolbar": {
       "moreActions": "More",
       "sortTitle": "Sort options",
-      "batchDelete": "Batch delete"
+      "batchDelete": "Batch delete",
+      "sync": "Sync",
+      "access": "Access"
+    },
+    "kind": {
+      "label": "Asset type",
+      "image": "Images",
+      "video": "Videos",
+      "pdf": "PDF",
+      "all": "All"
     },
     "edit": {
       "title": "Edit Image Information",

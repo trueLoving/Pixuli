@@ -1,7 +1,7 @@
 {
   "image": {
     "browse": "浏览图片",
-    "libraryTitle": "图片库",
+    "libraryTitle": "资源库",
     "empty": {
       "filteredTitle": "没有匹配的图片",
       "filteredDescription": "尝试调整筛选条件或清除搜索关键词"
@@ -132,7 +132,16 @@
     "toolbar": {
       "moreActions": "更多",
       "sortTitle": "排序选项",
-      "batchDelete": "批量删除"
+      "batchDelete": "批量删除",
+      "sync": "同步",
+      "access": "访问"
+    },
+    "kind": {
+      "label": "资源类型",
+      "image": "图片",
+      "video": "视频",
+      "pdf": "PDF",
+      "all": "全部"
     },
     "edit": {
       "title": "编辑图片信息",

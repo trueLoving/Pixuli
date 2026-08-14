@@ -1,6 +1,7 @@
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { useImageStore } from '@/stores/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -90,11 +91,15 @@ const TreeRow: React.FC<TreeRowProps> = ({
 
 export const WorkspaceFolderTree: React.FC = () => {
   const { t } = useI18n();
+  const isMobile = useMobileViewport();
   const images = useImageStore(state => state.images);
   const displayName = useWorkspaceStore(state => state.displayName);
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const setSelectedFolderPath = useUIStore(
     state => state.setSelectedFolderPath,
+  );
+  const setWorkspaceExplorerOpen = useUIStore(
+    state => state.setWorkspaceExplorerOpen,
   );
   const openWorkspaceModal = useUIStore(state => state.openWorkspaceModal);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(
@@ -120,13 +125,34 @@ export const WorkspaceFolderTree: React.FC = () => {
     });
   };
 
+  const handleSelect = (path: string) => {
+    setSelectedFolderPath(path);
+    if (isMobile) {
+      setWorkspaceExplorerOpen(false);
+    }
+  };
+
   return (
-    <aside className="workspace-explorer">
+    <aside className="workspace-explorer" aria-modal={isMobile || undefined}>
       <div className="workspace-explorer-header">
-        <h2 className="workspace-explorer-title">
-          {displayName || t('workspace.unnamed')}
-        </h2>
-        <p className="workspace-explorer-subtitle">{t('workspace.explorer')}</p>
+        <div>
+          <h2 className="workspace-explorer-title">
+            {displayName || t('workspace.unnamed')}
+          </h2>
+          <p className="workspace-explorer-subtitle">
+            {t('workspace.explorer')}
+          </p>
+        </div>
+        {isMobile ? (
+          <button
+            type="button"
+            className="workspace-explorer-close"
+            aria-label={t('workspace.closeExplorer')}
+            onClick={() => setWorkspaceExplorerOpen(false)}
+          >
+            <X size={20} />
+          </button>
+        ) : null}
       </div>
 
       <div className="workspace-explorer-tree" role="tree">
@@ -136,7 +162,7 @@ export const WorkspaceFolderTree: React.FC = () => {
           selectedPath={selectedFolderPath}
           expandedPaths={expandedPaths}
           onToggle={toggleExpanded}
-          onSelect={setSelectedFolderPath}
+          onSelect={handleSelect}
           allLabel={t('workspace.allImages')}
         />
       </div>

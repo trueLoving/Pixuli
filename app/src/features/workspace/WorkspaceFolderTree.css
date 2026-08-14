@@ -10,8 +10,25 @@
 }
 
 .workspace-explorer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.75rem 0.875rem;
   border-bottom: 1px solid #f3f4f6;
+}
+
+.workspace-explorer-close {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
 }
 
 .workspace-explorer-title {
@@ -120,11 +137,9 @@
 @media (max-width: 767px) {
   .workspace-explorer {
     position: fixed;
-    top: 0;
-    left: 3rem;
-    bottom: 3.25rem;
+    inset: 0 0 calc(3.75rem + env(safe-area-inset-bottom, 0px));
     z-index: 25;
-    width: min(16rem, 72vw);
-    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
+    width: 100%;
+    box-shadow: none;
   }
 }

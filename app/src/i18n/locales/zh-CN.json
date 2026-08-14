@@ -129,11 +129,30 @@
     "welcomeTitle": "欢迎使用 Pixuli",
     "welcomeSubtitle": "打开或创建一个本地工作区，开始管理图片。",
     "welcomeOpenSettings": "设置与远端同步",
+    "welcomeOpenConnections": "连接远端仓库",
     "explorer": "资源管理器",
     "activityBar": "主菜单",
     "allImages": "全部图片",
     "manageExplorer": "管理工作区…",
     "closeExplorer": "关闭文件夹面板"
+  },
+  "access": {
+    "title": "访问",
+    "close": "关闭",
+    "localTitle": "本地",
+    "localAlways": "本机工作区可浏览（始终开启）",
+    "localPrivate": "不对外发布",
+    "remoteTitle": "远程",
+    "remoteNone": "不在该云公开",
+    "remoteShare": "仅链接可见",
+    "remotePublic": "公开 URL / 可热链",
+    "hintNeedConnection": "当前没有连接。远程档位需先添加连接。可：保持仅本地 / 在「连接」中添加 GitHub 或 Gitee。",
+    "hintShareUnsupported": "当前连接不支持「仅链接可见」。可：保持仅本地 / 使用公开 GitHub 或 Gitee 仓库的公开 URL / 使用该云官网分享（若有）。",
+    "addConnection": "添加连接"
+  },
+  "connections": {
+    "title": "连接",
+    "close": "关闭"
   },
   "settings": {
     "title": "设置",

@@ -25,6 +25,6 @@
 
 @media (max-width: 767px) {
   .workspace-shell-main {
-    padding-bottom: 3.25rem;
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
