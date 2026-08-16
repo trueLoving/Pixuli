@@ -216,3 +216,14 @@
   background: #fff;
   color: #374151;
 }
+
+.settings-access-panel .access-modal-section {
+  margin-bottom: 1.25rem;
+}
+
+.settings-access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

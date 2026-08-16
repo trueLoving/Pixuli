@@ -175,16 +175,16 @@
     "revoked": "Remote access revoked. The file remains in the local workspace",
     "overviewTitle": "Published"
   },
-  "connections": {
-    "title": "Connections",
-    "close": "Close"
-  },
   "settings": {
     "title": "Settings",
     "close": "Close",
     "navLabel": "Settings sections",
-    "menuSync": "Sync",
-    "syncOnClickHint": "When you click Sync in the sidebar or activity bar, choose Remote → local or Local → remote.",
+    "groupGeneral": "General",
+    "groupSync": "Sync",
+    "groupAccess": "Access",
+    "menuSync": "Remotes & sync",
+    "menuAccess": "Access control",
+    "syncOnClickHint": "Sync: if no remote is configured, this page opens so you can add one; otherwise you choose a sync direction.",
     "sourcesTitle": "Remote repositories",
     "singleSyncHint": "Only one repository can sync at a time. Pick the active target in the table.",
     "addRemote": "Add remote",

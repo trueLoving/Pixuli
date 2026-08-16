@@ -1,4 +1,4 @@
-import { FolderTree, Plug } from 'lucide-react';
+import { FolderTree, RefreshCw } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceMigrationWizard } from '@/features/workspace/WorkspaceMigrationWizard';
@@ -13,7 +13,7 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const sourceCount = useSourceStore(state => state.sources.length);
-  const openConnectionsModal = useUIStore(state => state.openConnectionsModal);
+  const openSettingsModal = useUIStore(state => state.openSettingsModal);
   const showMigration = sourceCount > 0;
 
   const handleOpened = () => {
@@ -43,9 +43,9 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
           <button
             type="button"
             className="workspace-welcome-settings-btn"
-            onClick={() => openConnectionsModal()}
+            onClick={() => openSettingsModal('sync')}
           >
-            <Plug size={16} aria-hidden />
+            <RefreshCw size={16} aria-hidden />
             {t('workspace.welcomeOpenConnections')}
           </button>
         </div>
