@@ -28,6 +28,8 @@ interface UIState {
   showWorkspaceModal: boolean;
   /** 访问控制面板（本地 / 远程分列） */
   showAccessModal: boolean;
+  /** 访问面板当前针对的资源；空则只改通道策略提示 */
+  accessTargetImageId: string | null;
   /** 连接（远端源 / 同步目标） */
   showConnectionsModal: boolean;
   /** 设置弹窗左侧默认选中的分区 */
@@ -99,7 +101,7 @@ interface UIState {
   closeSyncDirectionModal: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
-  openAccessModal: () => void;
+  openAccessModal: (imageId?: string) => void;
   closeAccessModal: () => void;
   openConnectionsModal: (options?: { addSource?: boolean }) => void;
   closeConnectionsModal: () => void;
@@ -140,6 +142,7 @@ export const useUIStore = create<UIState>(set => ({
   workspaceExplorerOpen: false,
   showWorkspaceModal: false,
   showAccessModal: false,
+  accessTargetImageId: null,
   showConnectionsModal: false,
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
@@ -245,14 +248,20 @@ export const useUIStore = create<UIState>(set => ({
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
-  openAccessModal: () =>
+  openAccessModal: (imageId?: string) =>
     set({
       showAccessModal: true,
+      accessTargetImageId: imageId ?? null,
       showSettingsModal: false,
       showConnectionsModal: false,
       activeMenu: 'access',
     }),
-  closeAccessModal: () => set({ showAccessModal: false, activeMenu: 'photos' }),
+  closeAccessModal: () =>
+    set({
+      showAccessModal: false,
+      accessTargetImageId: null,
+      activeMenu: 'photos',
+    }),
   openConnectionsModal: (options = {}) =>
     set({
       showConnectionsModal: true,
