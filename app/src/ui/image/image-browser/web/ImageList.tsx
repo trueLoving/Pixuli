@@ -35,6 +35,7 @@ interface ImageListProps {
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onCopyRemoteAccess?: (image: ImageItem) => boolean;
   onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
@@ -52,6 +53,7 @@ const ImageListComponent: React.FC<ImageListProps> = ({
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   t,
   onCopyUrl: onCopyUrlProp,
+  onCopyRemoteAccess,
   onShareImage: onShareImageProp,
 }) => {
   const translate = t;
@@ -328,7 +330,12 @@ const ImageListComponent: React.FC<ImageListProps> = ({
         preview: () => handlePreview(image),
         edit: () => handleEdit(image),
         viewUrl: () => handleViewUrl(image),
-        copyUrl: () => void handleCopyUrl(publicUrl, 'url'),
+        copyUrl: () => {
+          if (onCopyRemoteAccess && onCopyRemoteAccess(image) === false) {
+            return;
+          }
+          void handleCopyUrl(publicUrl, 'url');
+        },
         openUrl: () => handleOpenUrl(publicUrl),
         delete: () => handleDelete(image),
       };
@@ -345,6 +352,7 @@ const ImageListComponent: React.FC<ImageListProps> = ({
       handlePreview,
       handleShareImage,
       handleViewUrl,
+      onCopyRemoteAccess,
       onShareImageProp,
     ],
   );
@@ -609,7 +617,16 @@ const ImageListComponent: React.FC<ImageListProps> = ({
         onClose={() => setShowPreview(false)}
         onNavigate={handlePreviewNavigate}
         formatFileSize={formatFileSize}
-        onCopyUrl={handleCopyUrl}
+        onCopyUrl={async (url, type) => {
+          if (
+            selectedImage &&
+            onCopyRemoteAccess &&
+            onCopyRemoteAccess(selectedImage) === false
+          ) {
+            return;
+          }
+          await handleCopyUrl(url, type);
+        }}
         onShareImage={onShareImageProp ? handleShareImage : undefined}
         onOpenUrl={handleOpenUrl}
         onEdit={
@@ -636,7 +653,16 @@ const ImageListComponent: React.FC<ImageListProps> = ({
         image={selectedImage}
         isOpen={showUrlModal}
         onClose={() => setShowUrlModal(false)}
-        onCopyUrl={handleCopyUrl}
+        onCopyUrl={async (url, type) => {
+          if (
+            selectedImage &&
+            onCopyRemoteAccess &&
+            onCopyRemoteAccess(selectedImage) === false
+          ) {
+            return;
+          }
+          await handleCopyUrl(url, type);
+        }}
         onOpenUrl={handleOpenUrl}
         t={translate}
       />

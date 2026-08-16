@@ -11,6 +11,10 @@ export interface StorageCapabilities {
   sync?: boolean;
   /** REF-607：支持 buildPublicUrl / resolveLinkKind */
   publicUrl?: boolean;
+  /** 可生成「仅链接可见」分享（Drive share / signed URL 等） */
+  shareLink?: boolean;
+  /** 可设置过期或口令 */
+  timedAccess?: boolean;
 }
 
 /** 插件需在宿主环境挂载的集成点（REF-411） */

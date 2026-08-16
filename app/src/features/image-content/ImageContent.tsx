@@ -1,7 +1,10 @@
 import { EmptyState, ImageBrowser } from '@/ui';
 import type { ImageBrowserSearchConfig } from '@/ui';
 import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
+import type { ImageItem } from '@pixuli/core/types';
 import React, { useCallback, useMemo } from 'react';
+import { hasPublishableRemoteUrl } from '../access/accessCapabilities';
+import { isAssetPublished } from '../access/accessPolicyStore';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
@@ -74,6 +77,7 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const onShareImage = useNativeShareImage();
   const isMobile = useMobileViewport();
   const sources = useSourceStore(state => state.sources);
+  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const openSyncDirectionModal = useUIStore(
@@ -96,6 +100,22 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     onClearError();
     void loadImages();
   }, [loadImages, onClearError]);
+
+  const handleCopyRemoteAccess = useCallback(
+    (image: ImageItem) => {
+      const sourceId = selectedSourceId ?? sources[0]?.id;
+      if (
+        sourceId &&
+        isAssetPublished(image.id, sourceId) &&
+        hasPublishableRemoteUrl(image)
+      ) {
+        return true;
+      }
+      openAccessModal(image.id);
+      return false;
+    },
+    [openAccessModal, selectedSourceId, sources],
+  );
 
   if (!hasConfig) {
     return (
@@ -137,6 +157,7 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           formatFileSize={formatFileSize}
           onCopyUrl={onCopyUrl}
+          onCopyRemoteAccess={handleCopyRemoteAccess}
           nativePickers={nativePickers}
           onShareImage={onShareImage}
           onSync={() => openSyncDirectionModal()}

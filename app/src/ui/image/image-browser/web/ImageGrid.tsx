@@ -35,6 +35,7 @@ interface ImageGridProps {
   formatFileSize?: (size: number) => string;
   t: (key: string) => string;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  onCopyRemoteAccess?: (image: ImageItem) => boolean;
   onShareImage?: (image: ImageItem) => Promise<void>;
 }
 
@@ -53,6 +54,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
   t,
   onCopyUrl: onCopyUrlProp,
+  onCopyRemoteAccess,
   onShareImage: onShareImageProp,
 }) => {
   const translate = t;
@@ -359,7 +361,12 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         viewUrl: () => handleViewUrl(image),
         edit: () => handleEdit(image),
         delete: () => handleDelete(image),
-        copyUrl: () => void handleCopyUrl(publicUrl, 'url'),
+        copyUrl: () => {
+          if (onCopyRemoteAccess && onCopyRemoteAccess(image) === false) {
+            return;
+          }
+          void handleCopyUrl(publicUrl, 'url');
+        },
         openUrl: () => handleOpenUrl(publicUrl),
       };
       if (onShareImageProp) {
@@ -375,6 +382,7 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
       handlePreview,
       handleShareImage,
       handleViewUrl,
+      onCopyRemoteAccess,
       onShareImageProp,
     ],
   );
@@ -604,7 +612,16 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         onClose={() => setShowPreview(false)}
         onNavigate={handlePreviewNavigate}
         formatFileSize={formatFileSize}
-        onCopyUrl={handleCopyUrl}
+        onCopyUrl={async (url, type) => {
+          if (
+            selectedImage &&
+            onCopyRemoteAccess &&
+            onCopyRemoteAccess(selectedImage) === false
+          ) {
+            return;
+          }
+          await handleCopyUrl(url, type);
+        }}
         onShareImage={onShareImageProp ? handleShareImage : undefined}
         onOpenUrl={handleOpenUrl}
         onEdit={
@@ -631,7 +648,16 @@ const ImageGridComponent: React.FC<ImageGridProps> = ({
         image={selectedImage}
         isOpen={showUrlModal}
         onClose={() => setShowUrlModal(false)}
-        onCopyUrl={handleCopyUrl}
+        onCopyUrl={async (url, type) => {
+          if (
+            selectedImage &&
+            onCopyRemoteAccess &&
+            onCopyRemoteAccess(selectedImage) === false
+          ) {
+            return;
+          }
+          await handleCopyUrl(url, type);
+        }}
         onOpenUrl={handleOpenUrl}
         t={translate}
       />

@@ -11,5 +11,6 @@ export const githubManifest: StoragePluginManifest = {
     delete: true,
     updateMetadata: true,
     sync: true,
+    publicUrl: true,
   },
 };

@@ -2,7 +2,6 @@ import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from '@/ui';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import {
-  BookOpen,
   FolderOpen,
   Globe,
   Info,
@@ -13,7 +12,6 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { SettingsDocsPanel } from './SettingsDocsPanel';
 import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
 import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
@@ -81,11 +79,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       labelKey: 'settings.menuVersion',
       icon: <Info size={18} />,
     },
-    {
-      id: 'docs',
-      labelKey: 'settings.menuDocs',
-      icon: <BookOpen size={18} />,
-    },
   ];
 
   return (
@@ -102,7 +95,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         className={`flex w-full flex-col overflow-hidden bg-white shadow-xl ${
           isMobile
             ? 'h-full max-h-full max-w-none rounded-none'
-            : 'max-h-[min(90vh,720px)] max-w-4xl rounded-xl'
+            : 'h-[min(90vh,720px)] max-h-[min(90vh,720px)] max-w-4xl rounded-xl'
         }`}
         onClick={e => e.stopPropagation()}
       >
@@ -174,7 +167,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeSection === 'version' && (
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />
             )}
-            {activeSection === 'docs' && <SettingsDocsPanel t={t} />}
           </div>
         </div>
 

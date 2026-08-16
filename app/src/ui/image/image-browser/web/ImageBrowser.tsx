@@ -77,6 +77,8 @@ interface ImageBrowserProps {
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
+  /** 返回 false 时不要静默复制公开链接，改由访问面板处理 */
+  onCopyRemoteAccess?: (image: ImageItem) => boolean;
   nativePickers?: NativeImagePickers;
   onShareImage?: (image: ImageItem) => Promise<void>;
   loading?: boolean;
@@ -108,6 +110,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onCopyUrl,
   nativePickers,
   onShareImage,
+  onCopyRemoteAccess,
   loading = false,
   errorMessage,
   onDismissError,
@@ -770,6 +773,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
                 getImageDimensionsFromUrl={getImageDimensionsFromUrl}
                 formatFileSize={formatFileSize}
                 onCopyUrl={onCopyUrl}
+                onCopyRemoteAccess={onCopyRemoteAccess}
                 onShareImage={onShareImage}
               />
             </div>
@@ -786,6 +790,7 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
                 getImageDimensionsFromUrl={getImageDimensionsFromUrl}
                 formatFileSize={formatFileSize}
                 onCopyUrl={onCopyUrl}
+                onCopyRemoteAccess={onCopyRemoteAccess}
                 onShareImage={onShareImage}
               />
             </div>
