@@ -80,16 +80,13 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
-  const openSyncDirectionModal = useUIStore(
-    state => state.openSyncDirectionModal,
-  );
+  const requestSync = useUIStore(state => state.requestSync);
   const openAccessModal = useUIStore(state => state.openAccessModal);
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
-  const workspaceReady = localActive && sources.length > 0;
   const syncBusy = pushing || syncing || workspaceLoading;
-  const syncDisabled = !workspaceReady || syncBusy;
+  const syncDisabled = syncBusy;
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -160,10 +157,9 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           onCopyRemoteAccess={handleCopyRemoteAccess}
           nativePickers={nativePickers}
           onShareImage={onShareImage}
-          onSync={() => openSyncDirectionModal()}
+          onSync={() => requestSync()}
           syncBusy={syncBusy}
           syncDisabled={syncDisabled}
-          onAccess={() => openAccessModal()}
           onOpenFolders={
             isMobile ? () => setWorkspaceExplorerOpen(true) : undefined
           }

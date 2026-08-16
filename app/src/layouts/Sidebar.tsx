@@ -42,7 +42,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isMobile = useMobileViewport();
   const { isDemoMode } = useDemoMode();
   const sources = useSourceStore(state => state.sources);
-  const localActive = useWorkspaceStore(state => state.isLocalActive());
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
@@ -57,20 +56,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setCurrentUtilityTool,
     setActiveMenu,
     openSettingsModal,
-    openSyncDirectionModal,
+    requestSync,
   } = useUIStore();
 
-  const workspaceReady =
-    isWorkspaceAvailable() && localActive && sources.length > 0;
   const syncBusy = pushing || syncing || workspaceLoading;
-  const syncDisabled = !workspaceReady;
-  const syncDisabledTitle = !isWorkspaceAvailable()
-    ? t('workspace.setupTitle')
-    : !localActive
-      ? t('workspace.setupTitle')
-      : sources.length === 0
-        ? t('workspace.syncNeedsRemote')
-        : undefined;
 
   const activeSyncSource = useMemo(() => {
     if (selectedSourceId) {
@@ -153,10 +142,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleSyncClick = useCallback(() => {
-    if (!workspaceReady || syncBusy) return;
-    openSyncDirectionModal();
+    if (syncBusy) return;
+    requestSync();
     closeDrawerIfMobile();
-  }, [workspaceReady, syncBusy, openSyncDirectionModal, closeDrawerIfMobile]);
+  }, [syncBusy, requestSync, closeDrawerIfMobile]);
 
   if (isFullscreenMode) {
     return null;
@@ -176,10 +165,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           hasConfig={hasConfig}
           onAddSource={handleAddSource}
           onSettingsClick={handleSettingsClick}
-          onSyncClick={isWorkspaceAvailable() ? handleSyncClick : undefined}
+          onSyncClick={handleSyncClick}
           syncBusy={syncBusy}
-          syncDisabled={syncDisabled}
-          syncDisabledTitle={syncDisabledTitle}
+          syncDisabled={syncBusy}
           syncRemoteLabel={syncRemoteLabel}
           hideUtilityTools
           hideHelpFooter

@@ -175,16 +175,16 @@
     "revoked": "已撤销远程访问，文件仍保留在本地工作区",
     "overviewTitle": "已发布"
   },
-  "connections": {
-    "title": "连接",
-    "close": "关闭"
-  },
   "settings": {
     "title": "设置",
     "close": "关闭",
     "navLabel": "设置分类",
-    "menuSync": "同步",
-    "syncOnClickHint": "点击侧栏或活动栏「同步」时，将选择「远程→本地」或「本地→远程」。",
+    "groupGeneral": "通用",
+    "groupSync": "同步",
+    "groupAccess": "访问",
+    "menuSync": "远端与同步",
+    "menuAccess": "访问控制",
+    "syncOnClickHint": "点击「同步」时：尚未配置远端则打开本页添加仓库；已配置则选择同步方向。",
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",
     "addRemote": "添加远端仓库",

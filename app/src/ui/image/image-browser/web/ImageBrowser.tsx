@@ -1,10 +1,4 @@
-import {
-  Folder,
-  MoreHorizontal,
-  RefreshCw,
-  Shield,
-  Trash2,
-} from 'lucide-react';
+import { Folder, MoreHorizontal, RefreshCw, Trash2 } from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -88,7 +82,6 @@ interface ImageBrowserProps {
   onSync?: () => void;
   syncBusy?: boolean;
   syncDisabled?: boolean;
-  onAccess?: () => void;
   onOpenFolders?: () => void;
 }
 
@@ -118,7 +111,6 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
   onSync,
   syncBusy = false,
   syncDisabled = false,
-  onAccess,
   onOpenFolders,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>('grid');
@@ -690,26 +682,10 @@ const ImageBrowser: React.FC<ImageBrowserProps> = ({
               disabled={syncDisabled}
               onClick={onSync}
               aria-label={t('image.toolbar.sync')}
-              title={
-                syncDisabled
-                  ? t('workspace.syncNeedsRemote')
-                  : t('image.toolbar.sync')
-              }
+              title={t('image.toolbar.sync')}
             >
               <RefreshCw size={16} aria-hidden />
               <span>{t('image.toolbar.sync')}</span>
-            </button>
-          ) : null}
-
-          {onAccess ? (
-            <button
-              type="button"
-              className="image-browser-chrome-btn"
-              onClick={onAccess}
-              aria-label={t('image.toolbar.access')}
-            >
-              <Shield size={16} aria-hidden />
-              <span>{t('image.toolbar.access')}</span>
             </button>
           ) : null}
 

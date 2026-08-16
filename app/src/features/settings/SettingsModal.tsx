@@ -1,13 +1,16 @@
 import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from '@/ui';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { SettingsAccessPanel } from '@/features/access/SettingsAccessPanel';
 import {
   FolderOpen,
   Globe,
   Info,
   Keyboard,
+  RefreshCw,
   ScrollText,
   Settings,
+  Shield,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +18,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
 import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
+import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
 import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
@@ -25,6 +29,38 @@ interface SettingsModalProps {
   t: (key: string) => string;
   versionInfo: VersionInfo;
 }
+
+const GENERAL_ITEMS: Array<{
+  id: SettingsSection;
+  labelKey: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    id: 'workspace',
+    labelKey: 'settings.menuWorkspace',
+    icon: <FolderOpen size={18} />,
+  },
+  {
+    id: 'language',
+    labelKey: 'settings.menuLanguage',
+    icon: <Globe size={18} />,
+  },
+  {
+    id: 'keyboard',
+    labelKey: 'settings.menuKeyboard',
+    icon: <Keyboard size={18} />,
+  },
+  {
+    id: 'operationLog',
+    labelKey: 'settings.menuOperationLog',
+    icon: <ScrollText size={18} />,
+  },
+  {
+    id: 'version',
+    labelKey: 'settings.menuVersion',
+    icon: <Info size={18} />,
+  },
+];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -49,37 +85,60 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const menuItems: Array<{
-    id: SettingsSection;
+  const groups: Array<{
     labelKey: string;
-    icon: React.ReactNode;
+    items: Array<{
+      id: SettingsSection;
+      labelKey: string;
+      icon: React.ReactNode;
+    }>;
   }> = [
+    { labelKey: 'settings.groupGeneral', items: GENERAL_ITEMS },
     {
-      id: 'workspace',
-      labelKey: 'settings.menuWorkspace',
-      icon: <FolderOpen size={18} />,
+      labelKey: 'settings.groupSync',
+      items: [
+        {
+          id: 'sync',
+          labelKey: 'settings.menuSync',
+          icon: <RefreshCw size={18} />,
+        },
+      ],
     },
     {
-      id: 'operationLog',
-      labelKey: 'settings.menuOperationLog',
-      icon: <ScrollText size={18} />,
-    },
-    {
-      id: 'language',
-      labelKey: 'settings.menuLanguage',
-      icon: <Globe size={18} />,
-    },
-    {
-      id: 'keyboard',
-      labelKey: 'settings.menuKeyboard',
-      icon: <Keyboard size={18} />,
-    },
-    {
-      id: 'version',
-      labelKey: 'settings.menuVersion',
-      icon: <Info size={18} />,
+      labelKey: 'settings.groupAccess',
+      items: [
+        {
+          id: 'access',
+          labelKey: 'settings.menuAccess',
+          icon: <Shield size={18} />,
+        },
+      ],
     },
   ];
+
+  const renderItem = (item: (typeof GENERAL_ITEMS)[number]) => (
+    <button
+      key={item.id}
+      type="button"
+      onClick={() => setActiveSection(item.id)}
+      className={
+        isMobile
+          ? `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm ${
+              activeSection === item.id
+                ? 'bg-white font-medium text-blue-700 shadow-sm'
+                : 'text-gray-700'
+            }`
+          : `flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
+              activeSection === item.id
+                ? 'border-r-2 border-blue-600 bg-white font-medium text-blue-700'
+                : 'text-gray-700 hover:bg-gray-100'
+            }`
+      }
+    >
+      {item.icon}
+      {t(item.labelKey)}
+    </button>
+  );
 
   return (
     <div
@@ -124,32 +183,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={
               isMobile
                 ? 'flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-2 py-2'
-                : 'w-44 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3'
+                : 'w-48 shrink-0 overflow-y-auto border-r border-gray-200 bg-gray-50 py-3'
             }
             aria-label={t('settings.navLabel')}
           >
-            {menuItems.map(item => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveSection(item.id)}
-                className={
-                  isMobile
-                    ? `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm ${
-                        activeSection === item.id
-                          ? 'bg-white font-medium text-blue-700 shadow-sm'
-                          : 'text-gray-700'
-                      }`
-                    : `flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
-                        activeSection === item.id
-                          ? 'border-r-2 border-blue-600 bg-white font-medium text-blue-700'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`
-                }
+            {groups.map(group => (
+              <div
+                key={group.labelKey}
+                className={isMobile ? 'flex shrink-0 items-center gap-1' : ''}
               >
-                {item.icon}
-                {t(item.labelKey)}
-              </button>
+                {isMobile ? null : (
+                  <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400 first:pt-0">
+                    {t(group.labelKey)}
+                  </p>
+                )}
+                {isMobile ? (
+                  group.items.map(renderItem)
+                ) : (
+                  <div>{group.items.map(renderItem)}</div>
+                )}
+              </div>
             ))}
           </nav>
 
@@ -167,6 +220,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeSection === 'version' && (
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />
             )}
+            {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
+            {activeSection === 'access' && <SettingsAccessPanel t={t} />}
           </div>
         </div>
 

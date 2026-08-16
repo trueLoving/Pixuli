@@ -1,4 +1,4 @@
-import { LayoutGrid, Plug, Settings, Shield } from 'lucide-react';
+import { LayoutGrid, RefreshCw, Settings } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
@@ -20,8 +20,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     state => state.setCurrentUtilityTool,
   );
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
-  const openConnectionsModal = useUIStore(state => state.openConnectionsModal);
-  const openAccessModal = useUIStore(state => state.openAccessModal);
+  const requestSync = useUIStore(state => state.requestSync);
 
   const navigateToLibrary = useCallback(() => {
     setActiveMenu('photos');
@@ -38,18 +37,10 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
       onClick: navigateToLibrary,
     },
     {
-      id: 'connections',
-      label: t('sidebar.connections'),
-      icon: Plug,
-      onClick: () => {
-        openConnectionsModal();
-      },
-    },
-    {
-      id: 'access',
-      label: t('sidebar.access'),
-      icon: Shield,
-      onClick: () => openAccessModal(),
+      id: 'sync',
+      label: t('sidebar.sync'),
+      icon: RefreshCw,
+      onClick: () => requestSync(),
     },
   ];
 
