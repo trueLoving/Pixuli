@@ -1,11 +1,13 @@
-import { EmptyState, ImageBrowser } from '@/ui';
-import type { ImageBrowserSearchConfig } from '@/ui';
-import { formatFileSize, getImageDimensionsFromUrl } from '@pixuli/core/utils';
-import type { ImageItem } from '@pixuli/core/types';
-import React, { useCallback, useMemo } from 'react';
+import { EmptyState } from '@/ui';
+import type { LibrarySearchConfig } from '@/ui';
+import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
+import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import React, { useCallback, useMemo, useState } from 'react';
 import { hasPublishableRemoteUrl } from '../access/accessCapabilities';
 import { isAssetPublished } from '../access/accessPolicyStore';
-import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { AssetInspector } from '../inspector/AssetInspector';
+import { AssetLibrary } from '../library/AssetLibrary';
+import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
 import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
 import {
@@ -16,22 +18,19 @@ import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
+import './ImageContent.css';
 
 interface ImageContentProps {
   hasConfig: boolean;
   error: string | null;
   onClearError: () => void;
-  images: any[];
+  images: ImageItem[];
   loading: boolean;
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
-  onDeleteMultipleImages: (
-    imageIds: string[],
-    fileNames: string[],
-  ) => Promise<void>;
-  onUpdateImage: (data: any) => Promise<void>;
+  onUpdateImage: (data: ImageEditData) => Promise<void>;
   onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, any>) => string;
-  search?: ImageBrowserSearchConfig;
+  search?: LibrarySearchConfig;
 }
 
 function resolveImageErrorMessage(
@@ -55,7 +54,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   images,
   loading,
   onDeleteImage,
-  onDeleteMultipleImages,
   onUpdateImage,
   onOpenConfigModal,
   t,
@@ -76,17 +74,24 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const nativePickers = useNativeImagePickers();
   const onShareImage = useNativeShareImage();
   const isMobile = useMobileViewport();
+  const isWide = useWideViewport();
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
-  const pushing = useWorkspaceStore(state => state.pushing);
-  const syncing = useWorkspaceStore(state => state.syncing);
-  const requestSync = useUIStore(state => state.requestSync);
   const openAccessModal = useUIStore(state => state.openAccessModal);
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
-  const syncBusy = pushing || syncing || workspaceLoading;
-  const syncDisabled = syncBusy;
+
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const selectedImage = useMemo(
+    () => images.find(item => item.id === selectedImageId) ?? null,
+    [images, selectedImageId],
+  );
+
+  const showDockedInspector = isWide || (!isMobile && Boolean(selectedImage));
+  const showSheetInspector = isMobile && sheetOpen && Boolean(selectedImage);
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -114,6 +119,16 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     [openAccessModal, selectedSourceId, sources],
   );
 
+  const handleSelectedFileChange = useCallback((image: ImageItem | null) => {
+    setSelectedImageId(image?.id ?? null);
+    setSheetOpen(Boolean(image));
+  }, []);
+
+  const handleCloseInspector = useCallback(() => {
+    setSheetOpen(false);
+    setSelectedImageId(null);
+  }, []);
+
   if (!hasConfig) {
     return (
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
@@ -132,10 +147,26 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     );
   }
 
+  const inspector = (
+    <AssetInspector
+      image={selectedImage}
+      images={images}
+      onClose={handleCloseInspector}
+      onDeleteImage={onDeleteImage}
+      onUpdateImage={onUpdateImage}
+      onCopyUrl={onCopyUrl}
+      onCopyRemoteAccess={handleCopyRemoteAccess}
+      onShareImage={onShareImage}
+      getImageDimensionsFromUrl={getImageDimensionsFromUrl}
+      t={t}
+      variant={showSheetInspector ? 'sheet' : 'dock'}
+    />
+  );
+
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-      <div className="min-h-0">
-        <ImageBrowser
+    <div className="image-content-workbench">
+      <div className="image-content-library">
+        <AssetLibrary
           t={t}
           images={images}
           hasConfig={hasConfig}
@@ -144,27 +175,20 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           errorMessage={errorMessage}
           onDismissError={onClearError}
           onRetry={handleRetry}
-          onDeleteImage={onDeleteImage}
-          onDeleteMultipleImages={onDeleteMultipleImages}
-          onUpdateImage={onUpdateImage}
           onUploadImage={uploadImage}
           onUploadMultipleImages={uploadMultipleImages}
           uploadLoading={uploadLoading}
           batchUploadProgress={batchUploadProgress}
-          getImageDimensionsFromUrl={getImageDimensionsFromUrl}
-          formatFileSize={formatFileSize}
-          onCopyUrl={onCopyUrl}
-          onCopyRemoteAccess={handleCopyRemoteAccess}
           nativePickers={nativePickers}
-          onShareImage={onShareImage}
-          onSync={() => requestSync()}
-          syncBusy={syncBusy}
-          syncDisabled={syncDisabled}
           onOpenFolders={
             isMobile ? () => setWorkspaceExplorerOpen(true) : undefined
           }
+          selectedFileId={selectedImageId}
+          onSelectedFileChange={handleSelectedFileChange}
         />
       </div>
+      {showDockedInspector ? inspector : null}
+      {showSheetInspector ? inspector : null}
     </div>
   );
 };

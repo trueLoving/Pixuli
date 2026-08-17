@@ -8,7 +8,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { filterImagesByFolder } from '@/utils/workspaceFolderTree';
-import type { ImageBrowserSearchConfig } from '@/ui';
+import type { LibrarySearchConfig } from '@/ui';
 import React, { useMemo } from 'react';
 
 interface PhotosPageProps {
@@ -26,8 +26,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
-    useImageOperations();
+  const { handleDeleteImage, handleUpdateImage } = useImageOperations();
   const searchContext = useSearchContextSafe();
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
@@ -37,7 +36,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     [images, selectedFolderPath],
   );
 
-  const search = useMemo<ImageBrowserSearchConfig | undefined>(() => {
+  const search = useMemo<LibrarySearchConfig | undefined>(() => {
     if (!searchContext) {
       return undefined;
     }
@@ -55,8 +54,8 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   }, [searchContext]);
 
   return (
-    <div className="photos-page h-full flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+    <div className="photos-page h-full min-h-0 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <ImageContent
           hasConfig={hasConfig}
           error={error}
@@ -64,7 +63,6 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
           images={visibleImages}
           loading={loading}
           onDeleteImage={handleDeleteImage}
-          onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
           onOpenConfigModal={onOpenConfigModal}
           search={search}

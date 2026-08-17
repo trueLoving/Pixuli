@@ -22,6 +22,32 @@
       "more": "更多操作",
       "dismissMenu": "关闭菜单"
     },
+    "inspector": {
+      "title": "文件",
+      "empty": "在中间点选一个文件",
+      "close": "关闭详情",
+      "previewHint": "点击预览",
+      "sectionContent": "内容",
+      "sectionInfo": "情况",
+      "sectionActions": "操作",
+      "openExternal": "在新窗口打开",
+      "name": "名称",
+      "dimensions": "尺寸",
+      "size": "大小",
+      "date": "日期",
+      "folder": "文件夹",
+      "sync": "同步",
+      "access": "访问",
+      "tags": "标签",
+      "description": "描述",
+      "syncLocal": "仅本地",
+      "syncRemote": "已有远端链接",
+      "accessLocalOnly": "不对外发布",
+      "accessPublic": "公开 URL",
+      "openAccess": "去设置发布",
+      "sendCompress": "送入压缩",
+      "sendConvert": "送入转换"
+    },
     "filter": {
       "title": "图片筛选",
       "collapse": "收起筛选",
@@ -135,6 +161,18 @@
       "batchDelete": "批量删除",
       "sync": "同步",
       "access": "访问"
+    },
+    "library": {
+      "fileCount": "共 {count} 个文件",
+      "loading": "正在加载文件...",
+      "emptyTitle": "还没有文件",
+      "emptyDescription": "上传图片、PDF 或视频到当前文件夹",
+      "filteredTitle": "没有匹配的文件",
+      "filteredDescription": "尝试调整筛选条件或清除搜索",
+      "colName": "名称",
+      "colType": "类型",
+      "colSize": "大小",
+      "colDate": "日期"
     },
     "kind": {
       "label": "资源类型",

@@ -22,6 +22,32 @@
       "more": "More actions",
       "dismissMenu": "Close menu"
     },
+    "inspector": {
+      "title": "File",
+      "empty": "Select a file in the library",
+      "close": "Close details",
+      "previewHint": "Click to preview",
+      "sectionContent": "Content",
+      "sectionInfo": "Details",
+      "sectionActions": "Actions",
+      "openExternal": "Open in new window",
+      "name": "Name",
+      "dimensions": "Dimensions",
+      "size": "Size",
+      "date": "Date",
+      "folder": "Folder",
+      "sync": "Sync",
+      "access": "Access",
+      "tags": "Tags",
+      "description": "Description",
+      "syncLocal": "Local only",
+      "syncRemote": "Has a remote URL",
+      "accessLocalOnly": "Not published",
+      "accessPublic": "Public URL",
+      "openAccess": "Publish in Settings",
+      "sendCompress": "Send to compress",
+      "sendConvert": "Send to convert"
+    },
     "filter": {
       "title": "Image Filter",
       "collapse": "Collapse Filter",
@@ -135,6 +161,18 @@
       "batchDelete": "Batch delete",
       "sync": "Sync",
       "access": "Access"
+    },
+    "library": {
+      "fileCount": "{count} files",
+      "loading": "Loading files...",
+      "emptyTitle": "No files yet",
+      "emptyDescription": "Upload images, PDFs, or videos to this folder",
+      "filteredTitle": "No matching files",
+      "filteredDescription": "Try adjusting filters or clearing your search",
+      "colName": "Name",
+      "colType": "Type",
+      "colSize": "Size",
+      "colDate": "Date"
     },
     "kind": {
       "label": "Asset type",

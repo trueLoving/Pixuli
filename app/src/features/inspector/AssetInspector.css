@@ -1,0 +1,201 @@
+.asset-inspector-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.asset-inspector-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.28);
+  cursor: pointer;
+}
+
+.asset-inspector {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+}
+
+.asset-inspector--dock {
+  flex-shrink: 0;
+  width: 20rem;
+  max-width: 22.5rem;
+  height: 100%;
+  border-left: 1px solid #e5e7eb;
+}
+
+.asset-inspector--sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-height: min(72vh, 36rem);
+  border-radius: 0.75rem 0.75rem 0 0;
+  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.asset-inspector-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.asset-inspector-header h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.asset-inspector-close {
+  display: inline-flex;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.asset-inspector-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.asset-inspector-empty {
+  margin: 2.5rem 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.asset-inspector-preview {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.asset-inspector-preview img,
+.asset-inspector-preview video {
+  display: block;
+  width: 100%;
+  max-height: 18rem;
+  object-fit: contain;
+}
+
+.asset-inspector-preview iframe {
+  display: block;
+  width: 100%;
+  height: 18rem;
+  border: 0;
+  background: #fff;
+}
+
+.asset-inspector-preview--media {
+  cursor: default;
+}
+
+.asset-inspector-open-external {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #1d4ed8;
+}
+
+.asset-inspector-section {
+  margin-bottom: 1.25rem;
+}
+
+.asset-inspector-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.asset-inspector-dl {
+  margin: 0;
+}
+
+.asset-inspector-dl div {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.8125rem;
+}
+
+.asset-inspector-dl dt {
+  color: #6b7280;
+}
+
+.asset-inspector-dl dd {
+  margin: 0;
+  color: #111827;
+  word-break: break-word;
+}
+
+.asset-inspector-actions {
+  justify-content: flex-start;
+}
+
+.asset-inspector-actions .image-action-menu__labeled-button {
+  min-width: 0;
+  min-height: 2.75rem;
+}
+
+.asset-inspector-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.asset-inspector-extra-btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #374151;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.asset-inspector-extra-btn:hover {
+  background: #f9fafb;
+}
+
+@media (max-width: 1023px) {
+  .asset-inspector--dock {
+    width: 17.5rem;
+  }
+}
