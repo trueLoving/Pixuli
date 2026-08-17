@@ -56,16 +56,6 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     category: SHORTCUT_CATEGORIES.SEARCH,
   },
   {
-    key: COMMON_SHORTCUTS.V,
-    ctrlKey: true,
-    description: t('keyboard.shortcuts.toggleView'),
-    action: () => {
-      const event = new CustomEvent('toggleViewMode');
-      window.dispatchEvent(event);
-    },
-    category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
-  },
-  {
     key: COMMON_SHORTCUTS.L,
     ctrlKey: true,
     shiftKey: true,

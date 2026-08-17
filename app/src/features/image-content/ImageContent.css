@@ -1,0 +1,26 @@
+.image-content-workbench {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.image-content-library {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1rem 1rem 1rem 1.5rem;
+}
+
+.image-content-library .asset-library {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .image-content-library {
+    padding: 0.75rem 1rem 1rem;
+  }
+}
