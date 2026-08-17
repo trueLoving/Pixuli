@@ -8,7 +8,10 @@ import React, {
 } from 'react';
 import { defaultTranslate } from '@/ui/locales';
 import type { ImageItem } from '@pixuli/core/types';
-import type { FilterOptions } from '../../../image/image-browser/common/types';
+import type {
+  AssetKind,
+  FilterOptions,
+} from '../../../image/image-browser/common/types';
 import SearchBar from './SearchBar';
 import './SearchBar.css';
 import './Search.css';
@@ -114,6 +117,24 @@ const Search: React.FC<SearchProps> = ({
     return Array.from(tags).sort();
   }, [images]);
 
+  // 处理资源类型筛选
+  const handleKindChange = useCallback(
+    (kind: AssetKind, isSelected: boolean) => {
+      if (!onFiltersChange) return;
+      onFiltersChange((prev: FilterOptions) => {
+        const current = prev.selectedKinds ?? [];
+        const selectedKinds = isSelected
+          ? [...current, kind]
+          : current.filter(item => item !== kind);
+        return {
+          ...prev,
+          selectedKinds,
+        };
+      });
+    },
+    [onFiltersChange],
+  );
+
   // 处理类型筛选变化
   const handleTypeChange = useCallback(
     (type: string, isSelected: boolean) => {
@@ -155,6 +176,7 @@ const Search: React.FC<SearchProps> = ({
       ...externalFilters,
       selectedTypes: [],
       selectedTags: [],
+      selectedKinds: [],
     });
   }, [onFiltersChange, externalFilters]);
 
@@ -215,10 +237,12 @@ const Search: React.FC<SearchProps> = ({
   }, [showFilterPanel]);
 
   // 检查是否有活动的筛选条件
+  const selectedKinds = externalFilters?.selectedKinds ?? [];
   const hasActiveFilters =
     externalFilters &&
     (externalFilters.selectedTypes.length > 0 ||
-      externalFilters.selectedTags.length > 0);
+      externalFilters.selectedTags.length > 0 ||
+      selectedKinds.length > 0);
 
   // 获取占位符文本
   const getPlaceholder = () => {
@@ -299,6 +323,31 @@ const Search: React.FC<SearchProps> = ({
                         {translate('search.header.clearFilters') || '清除'}
                       </button>
                     )}
+                  </div>
+                  <div className="search-filter-section">
+                    <label className="search-filter-label">
+                      {translate('image.kind.label')}
+                    </label>
+                    <div className="search-filter-options">
+                      {(
+                        [
+                          ['image', 'image.kind.image'],
+                          ['video', 'image.kind.video'],
+                          ['pdf', 'image.kind.pdf'],
+                        ] as const
+                      ).map(([kind, labelKey]) => (
+                        <label key={kind} className="search-filter-option">
+                          <input
+                            type="checkbox"
+                            checked={selectedKinds.includes(kind)}
+                            onChange={e =>
+                              handleKindChange(kind, e.target.checked)
+                            }
+                          />
+                          <span>{translate(labelKey)}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                   {availableTypes.length > 0 && (
                     <div className="search-filter-section">

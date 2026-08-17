@@ -8,11 +8,7 @@ import {
 } from '@/ui';
 import type { LibrarySearchConfig } from '@/ui';
 import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePickers';
-import {
-  filterAssetsByKind,
-  getAssetKind,
-  type AssetKindFilter,
-} from '@/utils/assetKind';
+import { filterAssetsByKinds, getAssetKind } from '@/utils/assetKind';
 import type {
   BatchUploadProgress,
   ImageItem,
@@ -54,13 +50,6 @@ interface AssetLibraryProps {
   selectedFileId?: string | null;
   onSelectedFileChange?: (file: ImageItem | null) => void;
 }
-
-const KIND_CHIPS: Array<[AssetKindFilter, string]> = [
-  ['image', 'image.kind.image'],
-  ['video', 'image.kind.video'],
-  ['pdf', 'image.kind.pdf'],
-  ['all', 'image.kind.all'],
-];
 
 function kindLabel(item: ImageItem, t: (key: string) => string): string {
   const kind = getAssetKind(item);
@@ -105,7 +94,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   selectedFileId = null,
   onSelectedFileChange,
 }) => {
-  const [assetKind, setAssetKind] = useState<AssetKindFilter>('image');
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
@@ -123,7 +111,10 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [images, search?.filters]);
 
   const files = useMemo(() => {
-    const byKind = filterAssetsByKind(filteredImages, assetKind);
+    const byKind = filterAssetsByKinds(
+      filteredImages,
+      search?.filters.selectedKinds ?? [],
+    );
     const unique = new Map<string, ImageItem>();
     for (const item of byKind) {
       const existing = unique.get(item.id);
@@ -136,7 +127,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       }
     }
     return getSortedImages([...unique.values()], sortField, sortOrder);
-  }, [filteredImages, assetKind, sortField, sortOrder]);
+  }, [filteredImages, search?.filters.selectedKinds, sortField, sortOrder]);
 
   const selectedIndex = useMemo(
     () =>
@@ -233,49 +224,28 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
 
       <div className="asset-library-toolbar">
         <div className="asset-library-header">
-          <div className="asset-library-title-row">
-            <h2 className="asset-library-title">{t('image.libraryTitle')}</h2>
-            {loading ? (
-              <span className="asset-library-loading-indicator">
-                <span
-                  className="asset-library-loading-spinner-inline"
-                  aria-hidden
-                />
-                <span>{t('image.library.loading')}</span>
-              </span>
-            ) : null}
-          </div>
-          <span className="asset-library-count">
-            {t('image.library.fileCount').replace(
-              '{count}',
-              String(files.length),
-            )}
-            {search && files.length !== images.length ? (
-              <span className="asset-library-filter-count">
-                {' '}
-                / {images.length}
-              </span>
-            ) : null}
-          </span>
-        </div>
-
-        <div
-          className="asset-library-kind-chips"
-          role="tablist"
-          aria-label={t('image.kind.label')}
-        >
-          {KIND_CHIPS.map(([kind, labelKey]) => (
-            <button
-              key={kind}
-              type="button"
-              role="tab"
-              aria-selected={assetKind === kind}
-              className={`asset-library-kind-chip ${assetKind === kind ? 'asset-library-kind-chip--active' : ''}`}
-              onClick={() => setAssetKind(kind)}
-            >
-              {t(labelKey)}
-            </button>
-          ))}
+          {loading ? (
+            <span className="asset-library-loading-indicator">
+              <span
+                className="asset-library-loading-spinner-inline"
+                aria-hidden
+              />
+              <span>{t('image.library.loading')}</span>
+            </span>
+          ) : (
+            <span className="asset-library-count">
+              {t('image.library.fileCount').replace(
+                '{count}',
+                String(files.length),
+              )}
+              {search && files.length !== images.length ? (
+                <span className="asset-library-filter-count">
+                  {' '}
+                  / {images.length}
+                </span>
+              ) : null}
+            </span>
+          )}
         </div>
 
         {search ? (

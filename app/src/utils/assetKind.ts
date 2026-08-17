@@ -35,3 +35,12 @@ export function filterAssetsByKind<T extends Pick<ImageItem, 'name' | 'type'>>(
   if (kind === 'all') return items;
   return items.filter(item => getAssetKind(item) === kind);
 }
+
+export function filterAssetsByKinds<T extends Pick<ImageItem, 'name' | 'type'>>(
+  items: T[],
+  kinds: AssetKind[],
+): T[] {
+  if (kinds.length === 0) return items;
+  const allowed = new Set(kinds);
+  return items.filter(item => allowed.has(getAssetKind(item)));
+}
