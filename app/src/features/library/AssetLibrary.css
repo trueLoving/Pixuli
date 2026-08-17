@@ -25,13 +25,6 @@
   flex-shrink: 0;
 }
 
-.asset-library-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
 .asset-library-loading-indicator {
   display: inline-flex;
   align-items: center;
@@ -51,12 +44,6 @@
   flex-shrink: 0;
 }
 
-.asset-library-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-}
-
 .asset-library-count {
   font-size: 0.875rem;
   color: #6b7280;
@@ -65,30 +52,6 @@
 .asset-library-filter-count {
   margin-left: 0.5rem;
   color: #3b82f6;
-}
-
-.asset-library-kind-chips {
-  display: flex;
-  flex-shrink: 0;
-  gap: 0.375rem;
-}
-
-.asset-library-kind-chip {
-  min-height: 2.25rem;
-  padding: 0.25rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  background: #fff;
-  color: #4b5563;
-  font-size: 0.8125rem;
-  cursor: pointer;
-}
-
-.asset-library-kind-chip--active {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 600;
 }
 
 .asset-library-chrome-btn {
@@ -335,11 +298,6 @@
     border-bottom: 1px solid #f3f4f6;
   }
 
-  .asset-library-kind-chips {
-    order: 1;
-    flex: 1 1 auto;
-  }
-
   .asset-library-folders-btn {
     display: inline-flex;
   }
@@ -348,17 +306,13 @@
     display: none;
   }
 
-  .asset-library-title {
-    font-size: 1rem;
-  }
-
   .asset-library-count {
     font-size: 0.8125rem;
     white-space: nowrap;
   }
 
   .asset-library-search {
-    order: 2;
+    order: 1;
     flex: 1 1 auto;
     min-width: 0;
     max-width: none;
@@ -369,7 +323,7 @@
   }
 
   .asset-library-controls {
-    order: 3;
+    order: 2;
     margin-left: 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;

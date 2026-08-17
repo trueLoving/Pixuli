@@ -19,6 +19,10 @@ vi.mock('@/ui/locales', () => ({
       'search.image.clearFilters': '清除筛选',
       'image.filter.imageType': '图片类型',
       'image.filter.tags': '标签',
+      'image.kind.label': '资源类型',
+      'image.kind.image': '图片',
+      'image.kind.video': '视频',
+      'image.kind.pdf': 'PDF',
     };
     return translations[key] || key;
   },
@@ -171,6 +175,10 @@ describe('Search', () => {
       ) as HTMLButtonElement;
       fireEvent.click(filterButton);
 
+      expect(screen.getByText('资源类型')).toBeInTheDocument();
+      expect(screen.getByText('图片')).toBeInTheDocument();
+      expect(screen.getByText('视频')).toBeInTheDocument();
+      expect(screen.getByText('PDF')).toBeInTheDocument();
       expect(screen.getByText('image/jpeg')).toBeInTheDocument();
       expect(screen.getByText('image/png')).toBeInTheDocument();
     });
@@ -210,10 +218,8 @@ describe('Search', () => {
       ) as HTMLButtonElement;
       fireEvent.click(filterButton);
 
-      const jpegCheckbox = screen.getByLabelText(
-        'image/jpeg',
-      ) as HTMLInputElement;
-      fireEvent.click(jpegCheckbox);
+      const imageKind = screen.getByLabelText('图片') as HTMLInputElement;
+      fireEvent.click(imageKind);
 
       expect(onFiltersChange).toHaveBeenCalled();
     });
@@ -293,6 +299,7 @@ describe('Search', () => {
         expect.objectContaining({
           selectedTypes: [],
           selectedTags: [],
+          selectedKinds: [],
         }),
       );
     });

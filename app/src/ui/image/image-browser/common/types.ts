@@ -1,4 +1,5 @@
 export type {
+  AssetKind,
   FilterOptions,
   SortField,
   SortOrder,

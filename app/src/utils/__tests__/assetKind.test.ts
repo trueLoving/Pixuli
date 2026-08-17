@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { filterAssetsByKind, getAssetKind } from '../assetKind';
+import {
+  filterAssetsByKind,
+  filterAssetsByKinds,
+  getAssetKind,
+} from '../assetKind';
 
 describe('getAssetKind', () => {
   it('classifies pdf by mime or extension', () => {
@@ -32,12 +36,13 @@ describe('filterAssetsByKind', () => {
     expect(filterAssetsByKind(items, 'all')).toHaveLength(3);
   });
 
-  it('filters by kind', () => {
-    expect(filterAssetsByKind(items, 'pdf').map(i => i.name)).toEqual([
-      'b.pdf',
-    ]);
-    expect(filterAssetsByKind(items, 'video').map(i => i.name)).toEqual([
-      'c.mp4',
-    ]);
+  it('filters by multiple kinds when list is non-empty', () => {
+    expect(
+      filterAssetsByKinds(items, ['pdf', 'video']).map(i => i.name),
+    ).toEqual(['b.pdf', 'c.mp4']);
+  });
+
+  it('returns all when kinds is empty', () => {
+    expect(filterAssetsByKinds(items, [])).toHaveLength(3);
   });
 });

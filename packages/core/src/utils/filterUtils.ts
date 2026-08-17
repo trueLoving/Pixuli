@@ -52,5 +52,6 @@ export function createDefaultFilters(): FilterOptions {
     searchTerm: '',
     selectedTypes: [],
     selectedTags: [],
+    selectedKinds: [],
   };
 }

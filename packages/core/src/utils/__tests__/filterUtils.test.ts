@@ -72,6 +72,7 @@ describe('filterUtils', () => {
       expect(filters.searchTerm).toBe('');
       expect(filters.selectedTypes).toEqual([]);
       expect(filters.selectedTags).toEqual([]);
+      expect(filters.selectedKinds).toEqual([]);
     });
   });
 });
