@@ -134,12 +134,24 @@
   background: #f9fafb;
 }
 
-@media (max-width: 767px) {
-  .workspace-explorer {
+@media (max-width: 1023px) {
+  .workspace-explorer--overlay {
     position: fixed;
-    inset: 0 0 calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    inset: 0 auto 0 3rem;
     z-index: 25;
+    width: 16rem;
+    max-width: calc(100vw - 3rem);
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
+  }
+}
+
+@media (max-width: 767px) {
+  .workspace-explorer--overlay {
+    inset: 0 0 calc(3.75rem + env(safe-area-inset-bottom, 0px));
     width: 100%;
+    max-width: none;
     box-shadow: none;
   }
 }

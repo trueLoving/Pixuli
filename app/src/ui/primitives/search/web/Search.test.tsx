@@ -15,6 +15,8 @@ vi.mock('@/ui/locales', () => ({
       'search.placeholder': '搜索...',
       'search.header.filter': '筛选',
       'search.header.clearFilters': '清除筛选',
+      'search.header.expandSearch': '展开搜索',
+      'search.header.collapseSearch': '收起搜索',
       'search.image.filterByTags': '按标签筛选',
       'search.image.clearFilters': '清除筛选',
       'image.filter.imageType': '图片类型',
@@ -159,6 +161,34 @@ describe('Search', () => {
 
       const filterPanel = container.querySelector('.search-filter-panel');
       expect(filterPanel).toBeInTheDocument();
+    });
+
+    it('打开筛选面板时派发 pixuli:openFilterPanel', () => {
+      const onOpen = vi.fn();
+      window.addEventListener('pixuli:openFilterPanel', onOpen);
+      const { container } = render(
+        <Search
+          {...defaultProps}
+          variant="header"
+          showFilter={true}
+          hasConfig={true}
+        />,
+      );
+      const filterButton = container.querySelector(
+        '.search-filter-button',
+      ) as HTMLButtonElement;
+      fireEvent.click(filterButton);
+      expect(onOpen).toHaveBeenCalledTimes(1);
+      window.removeEventListener('pixuli:openFilterPanel', onOpen);
+    });
+
+    it('header 变体包含中屏搜索展开按钮', () => {
+      const { container } = render(
+        <Search {...defaultProps} variant="header" />,
+      );
+      expect(
+        container.querySelector('.search-compact-toggle'),
+      ).toBeInTheDocument();
     });
 
     it('应该显示可用的图片类型', () => {

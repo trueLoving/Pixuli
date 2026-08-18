@@ -46,7 +46,8 @@
       "accessPublic": "Public URL",
       "openAccess": "Publish in Settings",
       "sendCompress": "Send to compress",
-      "sendConvert": "Send to convert"
+      "sendConvert": "Send to convert",
+      "toolImageOnly": "Compress and convert are available for images only"
     },
     "filter": {
       "title": "Image Filter",
@@ -172,7 +173,14 @@
       "colName": "Name",
       "colType": "Type",
       "colSize": "Size",
-      "colDate": "Date"
+      "colDate": "Date",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Cancel",
+      "confirmDeleteN": "Delete {count} selected files?",
+      "deleteSelected": "Delete",
+      "batchAccessDisabled": "Publishing multiple files at once is not available yet. Open Access for one file at a time.",
+      "batchScope": "Scope",
+      "badgeLocal": "Available locally"
     },
     "kind": {
       "label": "Asset type",

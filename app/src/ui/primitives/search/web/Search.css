@@ -270,6 +270,36 @@
   display: none;
 }
 
+.search-compact-toggle {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 6px;
+  background: var(--button-bg, #ffffff);
+  color: var(--text-secondary, #6b7280);
+  cursor: pointer;
+}
+
+.search-compact-toggle:hover {
+  background: var(--hover-bg, #f3f4f6);
+  color: var(--text-primary, #111827);
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .search-compact-toggle {
+    display: inline-flex;
+  }
+
+  .search-wrapper--header:not(.search-wrapper--expanded) .search-bar-wrapper {
+    display: none;
+  }
+}
+
 /* 窄屏：筛选面板底部 sheet（REF-512 #150） */
 @media (max-width: 767px) {
   .search-filter-backdrop {
@@ -309,13 +339,13 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
     top: auto;
     min-width: 0;
     max-width: none;
     max-height: min(72vh, 32rem);
     border-radius: 1rem 1rem 0 0;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: 0.75rem;
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
     animation: search-filter-sheet-up 0.22s ease-out;
     z-index: 1000;

@@ -26,7 +26,8 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  const { handleDeleteImage, handleUpdateImage } = useImageOperations();
+  const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
+    useImageOperations();
   const searchContext = useSearchContextSafe();
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
@@ -63,6 +64,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
           images={visibleImages}
           loading={loading}
           onDeleteImage={handleDeleteImage}
+          onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
           onOpenConfigModal={onOpenConfigModal}
           search={search}

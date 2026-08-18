@@ -1,4 +1,4 @@
-import { Filter } from 'lucide-react';
+import { Filter, Search as SearchIcon } from 'lucide-react';
 import React, {
   useCallback,
   useMemo,
@@ -93,7 +93,14 @@ const Search: React.FC<SearchProps> = ({
 }) => {
   const translate = t || defaultTranslate;
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(
+    () => searchQuery.trim().length > 0,
+  );
   const filterPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (searchQuery.trim()) setSearchExpanded(true);
+  }, [searchQuery]);
 
   // 获取所有可用的图片类型
   const availableTypes = useMemo(() => {
@@ -279,7 +286,27 @@ const Search: React.FC<SearchProps> = ({
   // Header variant：搜索框 + 筛选面板
   if (variant === 'header') {
     return (
-      <div className={`search-wrapper search-wrapper--header ${className}`}>
+      <div
+        className={`search-wrapper search-wrapper--header ${searchExpanded ? 'search-wrapper--expanded' : ''} ${className}`.trim()}
+      >
+        <button
+          type="button"
+          className="search-compact-toggle"
+          aria-expanded={searchExpanded}
+          aria-label={
+            searchExpanded
+              ? translate('search.header.collapseSearch')
+              : translate('search.header.expandSearch')
+          }
+          title={
+            searchExpanded
+              ? translate('search.header.collapseSearch')
+              : translate('search.header.expandSearch')
+          }
+          onClick={() => setSearchExpanded(open => !open)}
+        >
+          <SearchIcon size={18} aria-hidden />
+        </button>
         <SearchBar
           value={searchQuery}
           onChange={onSearchChange}
@@ -295,7 +322,18 @@ const Search: React.FC<SearchProps> = ({
         {showFilter && hasConfig && onFiltersChange && (
           <div className="search-filter-wrapper" ref={filterPanelRef}>
             <button
-              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              type="button"
+              onClick={() =>
+                setShowFilterPanel(open => {
+                  const next = !open;
+                  if (next) {
+                    window.dispatchEvent(
+                      new CustomEvent('pixuli:openFilterPanel'),
+                    );
+                  }
+                  return next;
+                })
+              }
               className={`search-filter-button ${hasActiveFilters ? 'active' : ''}`}
               title={translate('search.header.filter') || '筛选'}
             >

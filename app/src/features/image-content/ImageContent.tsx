@@ -2,7 +2,7 @@ import { EmptyState } from '@/ui';
 import type { LibrarySearchConfig } from '@/ui';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { hasPublishableRemoteUrl } from '../access/accessCapabilities';
 import { isAssetPublished } from '../access/accessPolicyStore';
 import { AssetInspector } from '../inspector/AssetInspector';
@@ -14,6 +14,8 @@ import {
   useNativeImagePickers,
   useNativeShareImage,
 } from '../../hooks/useNativeImageActions';
+import { ROUTES } from '@/router/routes';
+import { useNavigate } from 'react-router-dom';
 import { useImageStore } from '../../stores/imageStore';
 import { useSourceStore } from '../../stores/sourceStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -27,6 +29,10 @@ interface ImageContentProps {
   images: ImageItem[];
   loading: boolean;
   onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
+  onDeleteMultipleImages?: (
+    imageIds: string[],
+    fileNames: string[],
+  ) => Promise<void>;
   onUpdateImage: (data: ImageEditData) => Promise<void>;
   onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, any>) => string;
@@ -54,11 +60,13 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   images,
   loading,
   onDeleteImage,
+  onDeleteMultipleImages,
   onUpdateImage,
   onOpenConfigModal,
   t,
   search,
 }) => {
+  const navigate = useNavigate();
   const uploadImage = useImageStore(state => state.uploadImage);
   const uploadMultipleImages = useImageStore(
     state => state.uploadMultipleImages,
@@ -78,20 +86,37 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const openAccessModal = useUIStore(state => state.openAccessModal);
+  const requestSync = useUIStore(state => state.requestSync);
+  const workspaceExplorerOpen = useUIStore(
+    state => state.workspaceExplorerOpen,
+  );
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
+  const setCurrentUtilityTool = useUIStore(
+    state => state.setCurrentUtilityTool,
+  );
+  const setCurrentView = useUIStore(state => state.setCurrentView);
+  const setActiveMenu = useUIStore(state => state.setActiveMenu);
 
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const selectedImage = useMemo(
-    () => images.find(item => item.id === selectedImageId) ?? null,
-    [images, selectedImageId],
+  const selectedImages = useMemo(
+    () =>
+      selectedIds
+        .map(id => images.find(item => item.id === id))
+        .filter((item): item is ImageItem => Boolean(item)),
+    [images, selectedIds],
   );
 
-  const showDockedInspector = isWide || (!isMobile && Boolean(selectedImage));
-  const showSheetInspector = isMobile && sheetOpen && Boolean(selectedImage);
+  const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
+
+  const showDockedInspector =
+    isWide ||
+    (!isMobile && selectedImages.length > 0 && !workspaceExplorerOpen);
+  const showSheetInspector =
+    isMobile && sheetOpen && selectedImages.length === 1;
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -119,15 +144,70 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     [openAccessModal, selectedSourceId, sources],
   );
 
-  const handleSelectedFileChange = useCallback((image: ImageItem | null) => {
-    setSelectedImageId(image?.id ?? null);
-    setSheetOpen(Boolean(image));
-  }, []);
+  const handleSelectedIdsChange = useCallback(
+    (ids: string[]) => {
+      setSelectedIds(ids);
+      setSheetOpen(ids.length > 0);
+      if (ids.length > 0 && !isWide) {
+        window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
+        useUIStore.getState().setWorkspaceExplorerOpen(false);
+      }
+    },
+    [isWide],
+  );
 
   const handleCloseInspector = useCallback(() => {
     setSheetOpen(false);
-    setSelectedImageId(null);
+    setSelectedIds([]);
   }, []);
+
+  useEffect(() => {
+    if (!workspaceExplorerOpen) return;
+    setSheetOpen(false);
+    window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
+  }, [workspaceExplorerOpen]);
+
+  useEffect(() => {
+    const onOpenFilter = () => {
+      setSheetOpen(false);
+      useUIStore.getState().setWorkspaceExplorerOpen(false);
+    };
+    const onCloseInspector = () => {
+      setSheetOpen(false);
+    };
+    const onClearSelection = () => {
+      setSheetOpen(false);
+      setSelectedIds([]);
+    };
+    window.addEventListener('pixuli:openFilterPanel', onOpenFilter);
+    window.addEventListener('pixuli:closeInspectorSheet', onCloseInspector);
+    window.addEventListener('pixuli:clearLibrarySelection', onClearSelection);
+    return () => {
+      window.removeEventListener('pixuli:openFilterPanel', onOpenFilter);
+      window.removeEventListener(
+        'pixuli:closeInspectorSheet',
+        onCloseInspector,
+      );
+      window.removeEventListener(
+        'pixuli:clearLibrarySelection',
+        onClearSelection,
+      );
+    };
+  }, []);
+
+  const handleSendCompress = useCallback(() => {
+    setCurrentUtilityTool('compress');
+    setCurrentView('photos');
+    setActiveMenu('compress');
+    navigate(ROUTES.COMPRESS);
+  }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
+
+  const handleSendConvert = useCallback(() => {
+    setCurrentUtilityTool('convert');
+    setCurrentView('photos');
+    setActiveMenu('convert');
+    navigate(ROUTES.CONVERT);
+  }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
 
   if (!hasConfig) {
     return (
@@ -150,13 +230,16 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const inspector = (
     <AssetInspector
       image={selectedImage}
+      selectedImages={selectedImages}
       images={images}
       onClose={handleCloseInspector}
       onDeleteImage={onDeleteImage}
+      onDeleteMultipleImages={onDeleteMultipleImages}
       onUpdateImage={onUpdateImage}
       onCopyUrl={onCopyUrl}
       onCopyRemoteAccess={handleCopyRemoteAccess}
       onShareImage={onShareImage}
+      onSync={() => requestSync()}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
@@ -181,10 +264,16 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           batchUploadProgress={batchUploadProgress}
           nativePickers={nativePickers}
           onOpenFolders={
-            isMobile ? () => setWorkspaceExplorerOpen(true) : undefined
+            isWide ? undefined : () => setWorkspaceExplorerOpen(true)
           }
-          selectedFileId={selectedImageId}
-          onSelectedFileChange={handleSelectedFileChange}
+          selectedIds={selectedIds}
+          onSelectedIdsChange={handleSelectedIdsChange}
+          onDeleteImage={onDeleteImage}
+          onDeleteMultipleImages={onDeleteMultipleImages}
+          onSync={() => requestSync()}
+          onOpenAccess={openAccessModal}
+          onSendCompress={handleSendCompress}
+          onSendConvert={handleSendConvert}
         />
       </div>
       {showDockedInspector ? inspector : null}

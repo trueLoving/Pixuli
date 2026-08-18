@@ -46,7 +46,8 @@
       "accessPublic": "公开 URL",
       "openAccess": "去设置发布",
       "sendCompress": "送入压缩",
-      "sendConvert": "送入转换"
+      "sendConvert": "送入转换",
+      "toolImageOnly": "压缩和转换仅适用于图片"
     },
     "filter": {
       "title": "图片筛选",
@@ -172,7 +173,14 @@
       "colName": "名称",
       "colType": "类型",
       "colSize": "大小",
-      "colDate": "日期"
+      "colDate": "日期",
+      "selectedCount": "已选 {count} 项",
+      "clearSelection": "取消",
+      "confirmDeleteN": "确定删除选中的 {count} 个文件？",
+      "deleteSelected": "删除",
+      "batchAccessDisabled": "暂不支持对多个文件同时发布，请逐个在设置中访问",
+      "batchScope": "范围",
+      "badgeLocal": "本地可浏览"
     },
     "kind": {
       "label": "资源类型",

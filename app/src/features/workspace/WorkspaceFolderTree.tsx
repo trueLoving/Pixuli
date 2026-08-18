@@ -1,7 +1,6 @@
 import { ChevronDown, ChevronRight, Folder, FolderOpen, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
-import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { useImageStore } from '@/stores/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -89,9 +88,10 @@ const TreeRow: React.FC<TreeRowProps> = ({
   );
 };
 
-export const WorkspaceFolderTree: React.FC = () => {
+export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
+  overlay = false,
+}) => {
   const { t } = useI18n();
-  const isMobile = useMobileViewport();
   const images = useImageStore(state => state.images);
   const displayName = useWorkspaceStore(state => state.displayName);
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
@@ -127,13 +127,16 @@ export const WorkspaceFolderTree: React.FC = () => {
 
   const handleSelect = (path: string) => {
     setSelectedFolderPath(path);
-    if (isMobile) {
+    if (overlay) {
       setWorkspaceExplorerOpen(false);
     }
   };
 
   return (
-    <aside className="workspace-explorer" aria-modal={isMobile || undefined}>
+    <aside
+      className={`workspace-explorer ${overlay ? 'workspace-explorer--overlay' : ''}`}
+      aria-modal={overlay || undefined}
+    >
       <div className="workspace-explorer-header">
         <div>
           <h2 className="workspace-explorer-title">
@@ -143,7 +146,7 @@ export const WorkspaceFolderTree: React.FC = () => {
             {t('workspace.explorer')}
           </p>
         </div>
-        {isMobile ? (
+        {overlay ? (
           <button
             type="button"
             className="workspace-explorer-close"
