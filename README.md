@@ -25,7 +25,7 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 | 原则           | 说明                                                                                                |
 | -------------- | --------------------------------------------------------------------------------------------------- |
 | **存储**       | 经 `StorageProvider` 插件接入 GitHub / Gitee（`@pixuli/provider-github`、`@pixuli/provider-gitee`） |
-| **官方服务端** | **无** — `server/`（NestJS）已归档；如需自建 API 请用社区插件或自定义 Provider                      |
+| **官方服务端** | **无** — 历史 NestJS `server/` 已移除；如需自建 API 请用社区插件或自定义 Provider                   |
 | **图片处理**   | Web/Desktop 渲染进程使用浏览器 **Canvas**（主构建路径已移除 Rust WASM）                             |
 | **产品聚焦**   | 网格/列表图床（L2）+ 压缩/转换工具 + 设置                                                           |
 
@@ -48,10 +48,6 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 | **Mobile**（`app`，Capacitor） | ✅ 维护中 | Android：`dev:android` / `build:android`；与 Web/Desktop 同一套 UI |
 | **`@pixuli/core`**             | ✅ 维护中 | 类型、工具、`StoragePluginRegistry`                                |
 | **`@pixuli/provider-*`**       | ✅ 维护中 | 官方 GitHub/Gitee 存储插件                                         |
-| **`archive/wasm`**             | 📦 已归档 | 不在 workspace；仅供查阅                                           |
-| **`archive/benchmark`**        | 📦 已归档 | 不在 workspace                                                     |
-| **`archive/apps/mobile`**      | 📦 已归档 | Expo RN；仅供对照；请使用 `app` Capacitor                          |
-| **`archive/server`**           | 📦 已归档 | 不在 workspace；非官方交付物                                       |
 
 ---
 
@@ -75,7 +71,6 @@ Pixuli/
 │   ├── core/                            # @pixuli/core — 类型、Registry、工具
 │   ├── plugin-provider-github/          # @pixuli/provider-github
 │   └── plugin-provider-gitee/           # @pixuli/provider-gitee
-├── archive/                             # wasm、benchmark、server、apps/mobile（不在 workspace）
 ├── docs/                                # PRD、系统设计、backlog
 ├── REFACTOR_PLAN.md                     # 里程碑与 GitHub Issue 映射
 └── pnpm-workspace.yaml
@@ -93,7 +88,8 @@ Pixuli/
 | **pnpm**    | >= 8.0.0（**必需**；仓库使用 pnpm workspace） |
 | **Git**     | >= 2.0.0                                      |
 
-> 主应用**不需要** Rust 工具链。WASM 模块仅存在于 `archive/wasm/`。
+> 主应用**不需要** Rust 工具链。历史 WASM / NestJS Server / Expo
+> RN 已从仓库移除（快照见 tag `backup`）。
 
 ### 按平台（可选）
 
@@ -169,18 +165,17 @@ pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI �
 
 ## 文档
 
-| 读者                  | 文档                                                                              |
-| --------------------- | --------------------------------------------------------------------------------- |
-| **用户**              | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — 安装、配置源、日常使用 |
-| **产品**              | [docs/01-product/](docs/01-product/) — PRD、范围与裁剪、使用教程                  |
-| **已移除 / 延后**     | [docs/04-backlog.md](docs/04-backlog.md)                                          |
-| **开发者**            | [docs/README.md](docs/README.md) — 文档索引                                       |
-| **贡献**              | [CONTRIBUTING.md](./CONTRIBUTING.md)                                              |
-| **AI 助手**           | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills、Monorepo 上下文（REF-414）        |
-| **重构计划**          | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                            |
-| **变更日志**          | [CHANGELOG.md](./CHANGELOG.md)                                                    |
-| **主应用**            | [app/README.md](./app/README.md)                                                  |
-| **Mobile（归档 RN）** | [archive/apps/mobile/README.md](./archive/apps/mobile/README.md)                  |
+| 读者              | 文档                                                                              |
+| ----------------- | --------------------------------------------------------------------------------- |
+| **用户**          | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — 安装、配置源、日常使用 |
+| **产品**          | [docs/01-product/](docs/01-product/) — PRD、范围与裁剪、使用教程                  |
+| **已移除 / 延后** | [docs/04-backlog.md](docs/04-backlog.md)                                          |
+| **开发者**        | [docs/README.md](docs/README.md) — 文档索引                                       |
+| **贡献**          | [CONTRIBUTING.md](./CONTRIBUTING.md)                                              |
+| **AI 助手**       | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills、Monorepo 上下文（REF-414）        |
+| **重构计划**      | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                            |
+| **变更日志**      | [CHANGELOG.md](./CHANGELOG.md)                                                    |
+| **主应用**        | [app/README.md](./app/README.md)                                                  |
 
 ---
 

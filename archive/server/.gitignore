@@ -1,9 +1,0 @@
-node_modules
-# Keep environment variables out of version control
-.env
-
-/generated/prisma
-
-# TypeScript compilation artifacts (ts-node should not generate these, but just in case)
-scripts/**/*.js
-scripts/**/*.js.map

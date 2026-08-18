@@ -32,11 +32,13 @@
 
 #### 架构 — 移除或归档
 
-- **`packages/wasm`** — 迁至 `archive/wasm/`；移出 `pnpm` workspace
-- **`benchmark/`** — 迁至 `archive/benchmark/`
-- **`server/`**（NestJS）— 迁至 `archive/server/`；**非**官方交付物
-- **`apps/mobile`**（Expo RN）— 迁至
-  `archive/apps/mobile/`（REF-513）；Mobile 由 Capacitor 交付
+- **`packages/wasm`** — 已从仓库移除（曾迁至 `archive/wasm/`；`archive/`
+  已删除，快照见 tag `backup`）
+- **`benchmark/`** — 已从仓库移除
+- **`server/`**（NestJS）— 已从仓库移除；**非**官方交付物
+- **`apps/mobile`**（Expo
+  RN）— 已从仓库移除（REF-513）；Mobile 由 Capacitor 交付
+- **`archive/`** — 历史归档目录已删除，降低维护成本；查阅请检出 tag `backup`
 - **Electron WASM IPC** 与 **`pixuli-wasm`** 依赖 — 已从 Desktop 构建移除
 - **`performance` / `devtools`** — 未接入 UI 模块已删
 - **`pptxgenjs`** 及幻灯片相关依赖 — 已移除
@@ -56,9 +58,9 @@
 | 若你曾使用…                                | 现在…                                                           |
 | ------------------------------------------ | --------------------------------------------------------------- |
 | 幻灯片 / 时间线 / 照片墙                   | 使用 `/photos` 网格/列表；见 [backlog](docs/04-backlog.md)      |
-| Desktop WASM / Rust AI                     | Canvas 处理；WASM 见 `archive/wasm/`                            |
-| 官方 NestJS Server                         | 自建见 `archive/server/` 或自定义 `StorageProvider`             |
-| Expo RN `apps/mobile`                      | 使用 Capacitor Android APK；归档代码见 `archive/apps/mobile/`   |
+| Desktop WASM / Rust AI                     | Canvas 处理；历史 WASM 已从仓库移除                             |
+| 官方 NestJS Server                         | 自定义 `StorageProvider` 或社区自建                             |
+| Expo RN `apps/mobile`                      | 使用 Capacitor Android APK                                      |
 | Release `v1.3.0-desktop` / `v1.0.0-mobile` | 1.x 线；升级目标为 **2.0.0**（非 1.4.x）；请先读 `[Unreleased]` |
 
 ---

@@ -33,7 +33,6 @@ export default tseslint.config(
       '**/dist-electron/**',
       '**/build/**',
       '**/.expo/**',
-      'archive/**',
       '**/coverage/**',
     ],
   },

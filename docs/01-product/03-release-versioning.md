@@ -34,11 +34,11 @@
 **产品 semver 三端一致**；**每端各打一条 git tag**（`{semver}`
 相同，后缀区分渠道）：
 
-| 端            | Git tag                           | 当前交付物                                                                                                                | 平台 / 渠道说明                                                              |
-| ------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Desktop**   | `v{semver}-desktop`               | Windows `.exe`；macOS Intel `.dmg`（x64）；macOS Apple Silicon `.dmg`（arm64）                                            | 经 GitHub Releases 附件分发；`app` **2.0.0**                                 |
-| **Mobile**    | `v{semver}-android`（目标，#153） | Android `.apk`（Capacitor）                                                                                               | `app` + `android/` **2.0.0**；历史 RN 见 `v*-mobile` / `archive/apps/mobile` |
-| **Web / PWA** | `v{semver}-web`                   | ① **网站部署实例**（如 [pixuli-web.vercel.app](https://pixuli-web.vercel.app/)）；② **Docker 镜像** `pixuli-web:{semver}` | 构建元数据来自 `app`；应用内 `__VERSION_INFO__` 与 Desktop 同源              |
+| 端            | Git tag                           | 当前交付物                                                                                                                | 平台 / 渠道说明                                                 |
+| ------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **Desktop**   | `v{semver}-desktop`               | Windows `.exe`；macOS Intel `.dmg`（x64）；macOS Apple Silicon `.dmg`（arm64）                                            | 经 GitHub Releases 附件分发；`app` **2.0.0**                    |
+| **Mobile**    | `v{semver}-android`（目标，#153） | Android `.apk`（Capacitor）                                                                                               | `app` + `android/` **2.0.0**；历史 RN 见 `v*-mobile`            |
+| **Web / PWA** | `v{semver}-web`                   | ① **网站部署实例**（如 [pixuli-web.vercel.app](https://pixuli-web.vercel.app/)）；② **Docker 镜像** `pixuli-web:{semver}` | 构建元数据来自 `app`；应用内 `__VERSION_INFO__` 与 Desktop 同源 |
 
 > **1.x 与 2.x 差异**：1.x 仅 Desktop / Mobile 有 tag，Web 无
 > `v*-web`。**2.0.0 起 Web 与 Desktop、Mobile 一样打
@@ -227,8 +227,7 @@ Mobile 同步 bump。
 2. Actions →「发布 Pixuli Android」→ 填写 `version`、`is-publish=true`。
 3. 确认 `v{version}-android` Release 含 `app-release.apk`。
 
-**历史**：Expo RN 曾用 `release-mobile.yml` + `v*-mobile`；RN 已归档至
-`archive/apps/mobile`。
+**历史**：Expo RN 曾用 `release-mobile.yml` + `v*-mobile`；RN 已退役。
 
 **Web 发版步骤（摘要）**：
 

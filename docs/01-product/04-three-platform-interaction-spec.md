@@ -7,12 +7,8 @@
 - **相关文档**：
   - [01-product-requirements-specification.md](./01-product-requirements-specification.md)
     — 产品底线与功能需求
-  - [archive/design/05-cross-platform-sharing-matrix.md](../../archive/design/05-cross-platform-sharing-matrix.md)
-    — 代码共享现状（REF-506 / #116，已归档）
   - [06-apps-pixuli-engineering.md](../02-system-design/06-apps-pixuli-engineering.md)
     — 三端工程 SSOT
-  - [archive/design/02-three-platform-design.md](../../archive/design/02-three-platform-design.md)
-    — Capacitor 方案 A 选型背景（已归档）
   - `REFACTOR_PLAN.md` §1.8、§10 — 本地工作区与 M6 专项
   - [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)
     — 对照 PRS v2.3 的三端 UI 建议（2026-08）
@@ -35,8 +31,8 @@
 | **Desktop** | Electron 渲染进程            | `app`（与 Web 同一套）         |
 | **Mobile**  | Capacitor WebView（Android） | `app`（与 Web/Desktop 同一套） |
 
-**决策（2026-06）**：Mobile 已由 Capacitor 交付；Expo RN 迁入
-`archive/apps/mobile`（REF-513）。交互规范以 **Web+Desktop 现网行为**
+**决策（2026-06）**：Mobile 已由 Capacitor 交付；Expo
+RN 已退役（REF-513）。交互规范以 **Web+Desktop 现网行为**
 为 SSOT，窄屏做响应式适配。
 
 ### 1.2 设计原则
@@ -51,13 +47,13 @@
 
 ### 1.3 与 REF-506 / REF-509 的联动
 
-| 文档 / Issue                                                                                                   | 关系                                                                                                                                                                   |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [archive/design/05-cross-platform-sharing-matrix.md](../../archive/design/05-cross-platform-sharing-matrix.md) | **代码**重复处（归档快照）；本文规定 **交互**应一致处                                                                                                                  |
-| REF-509 Capacitor PoC                                                                                          | 验收「Web 交互 + 原生壳」是否成立；PoC 通过则 Mobile 不再单独定侧栏/底栏                                                                                               |
-| REF-602                                                                                                        | UI 实现本规范的侧栏、主内容、图片操作                                                                                                                                  |
-| REF-607                                                                                                        | 首次选目录、同步状态、复制链接分项；技术设计见 [05-local-workspace-sync.md](../02-system-design/05-local-workspace-sync.md)                                            |
-| REF-516                                                                                                        | Mobile 以本文 + Web/PC 行为为准对齐至 Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163) |
+| 文档 / Issue          | 关系                                                                                                                                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| REF-506 代码共享矩阵  | 历史快照已随 `archive/` 删除；本文规定 **交互**应一致处                                                                                                                |
+| REF-509 Capacitor PoC | 验收「Web 交互 + 原生壳」是否成立；PoC 通过则 Mobile 不再单独定侧栏/底栏                                                                                               |
+| REF-602               | UI 实现本规范的侧栏、主内容、图片操作                                                                                                                                  |
+| REF-607               | 首次选目录、同步状态、复制链接分项；技术设计见 [05-local-workspace-sync.md](../02-system-design/05-local-workspace-sync.md)                                            |
+| REF-516               | Mobile 以本文 + Web/PC 行为为准对齐至 Capacitor；[里程碑 #8](https://github.com/trueLoving/Pixuli/milestone/8) [#163](https://github.com/trueLoving/Pixuli/issues/163) |
 
 ---
 
@@ -307,18 +303,18 @@ AI 路径（P5，REF-604）：Desktop 已通；Web/Capacitor 在本地模型或�
 
 ## 九、后续 Issue 映射
 
-| Issue                    | 本文档章节                                                                                                                  |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| **#131** REF-602 UI 实现 | §三 IA、§六 线框、§四 矩阵                                                                                                  |
-| **#132** REF-603 性能    | §3.2 虚拟滚动、分页                                                                                                         |
-| **#133** REF-604 AI      | §2.1 F 阶段、§四 AI 行                                                                                                      |
-| **#134** REF-605 批处理  | §2.1 E、§四 批量行                                                                                                          |
-| **#140** REF-606 回收站  | §3.1 回收站项                                                                                                               |
-| **#144** REF-607 本地库  | §2.2、§四 复制链接、§3.1 工作区                                                                                             |
-| **#164** REF-516 P0      | [archive/design/06-mobile-feature-parity-matrix.md](../../archive/design/06-mobile-feature-parity-matrix.md) 全文（已归档） |
-| **#165** REF-516 P3      | 同上 §五 业务补齐清单                                                                                                       |
-| 工作区壳层后 UI          | [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)（窄屏壳、同步徽章、工具可发现、AI 占位）     |
-| 资源库目标态 UI          | [06-asset-library-ui.md](./06-asset-library-ui.md)（连接器、发布档位、访问控制）                                            |
+| Issue                    | 本文档章节                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| **#131** REF-602 UI 实现 | §三 IA、§六 线框、§四 矩阵                                                                                              |
+| **#132** REF-603 性能    | §3.2 虚拟滚动、分页                                                                                                     |
+| **#133** REF-604 AI      | §2.1 F 阶段、§四 AI 行                                                                                                  |
+| **#134** REF-605 批处理  | §2.1 E、§四 批量行                                                                                                      |
+| **#140** REF-606 回收站  | §3.1 回收站项                                                                                                           |
+| **#144** REF-607 本地库  | §2.2、§四 复制链接、§3.1 工作区                                                                                         |
+| **#164** REF-516 P0      | Mobile 对齐矩阵（历史文档已随 `archive/` 删除）                                                                         |
+| **#165** REF-516 P3      | 同上 §五 业务补齐清单                                                                                                   |
+| 工作区壳层后 UI          | [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)（窄屏壳、同步徽章、工具可发现、AI 占位） |
+| 资源库目标态 UI          | [06-asset-library-ui.md](./06-asset-library-ui.md)（连接器、发布档位、访问控制）                                        |
 
 ---
 

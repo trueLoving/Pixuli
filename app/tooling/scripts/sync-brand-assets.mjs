@@ -1,6 +1,5 @@
 /**
- * 从 archive/apps/mobile/assets/images 同步品牌资源到 app（REF-516）。
- * 生成 Web / PWA / Desktop / Capacitor Android 衍生图标。
+ * 从 app/brand/source 生成 Web / PWA / Desktop / Capacitor Android 衍生图标。
  */
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -8,23 +7,10 @@ import sharp from 'sharp';
 import pngToIco from 'png-to-ico';
 import { PIXULI_ROOT } from './paths.mjs';
 
-const MOBILE_IMAGES = path.resolve(
-  PIXULI_ROOT,
-  '../archive/apps/mobile/assets/images',
-);
 const BRAND_SOURCE = path.join(PIXULI_ROOT, 'brand/source');
 const PUBLIC_DIR = path.join(PIXULI_ROOT, 'public');
 const PWA_DIR = path.join(PUBLIC_DIR, 'pwa');
 const ANDROID_RES = path.join(PIXULI_ROOT, 'android/app/src/main/res');
-
-const SOURCE_FILES = [
-  'icon.png',
-  'favicon.png',
-  'splash-icon.png',
-  'android-icon-foreground.png',
-  'android-icon-background.png',
-  'android-icon-monochrome.png',
-];
 
 const LAUNCHER_SIZES = {
   mdpi: { launcher: 48, foreground: 108 },
@@ -56,16 +42,6 @@ async function resizePng(input, output, width, height, fit = 'cover') {
     .resize(width, height, { fit, background: SPLASH_BG })
     .png()
     .toFile(output);
-}
-
-async function copySources() {
-  await mkdir(BRAND_SOURCE, { recursive: true });
-  for (const name of SOURCE_FILES) {
-    const from = path.join(MOBILE_IMAGES, name);
-    const to = path.join(BRAND_SOURCE, name);
-    await copyFile(from, to);
-    console.log(`  source: ${name}`);
-  }
 }
 
 async function generateWebAssets() {
@@ -169,8 +145,7 @@ async function generateSplashScreens() {
 }
 
 async function main() {
-  console.log('Sync brand assets from archive/apps/mobile → app\n');
-  await copySources();
+  console.log('Sync brand assets from app/brand/source → Web / PWA / Android\n');
   await mkdir(PWA_DIR, { recursive: true });
   await generateWebAssets();
   await generateAndroidLaunchers();

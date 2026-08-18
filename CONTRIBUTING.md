@@ -22,7 +22,8 @@
 - **pnpm** >= 8.0.0（必需，项目仅支持 pnpm）
 - **Git** >= 2.0.0
 
-> 主应用**不需要** Rust 工具链。历史 WASM 见 `archive/wasm/`。
+> 主应用**不需要** Rust 工具链。历史 WASM / NestJS Server / Expo
+> RN 已从仓库移除（快照见 tag `backup`）。
 
 ### Desktop 开发
 
@@ -116,10 +117,10 @@ app/
 └── release/                       # 分发产物
 ```
 
-### Mobile（已归档 Expo RN）
+### Mobile
 
-历史 RN 工程已迁入 `archive/apps/mobile/`（REF-513）。Mobile 开发与构建见上文
-**Android（Capacitor）**；归档代码仅供只读参考。
+Mobile 开发与构建见上文 **Android（Capacitor）**。Expo
+RN 已退役，不再作为交付路径。
 
 ## 📝 代码规范
 

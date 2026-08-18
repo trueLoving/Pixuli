@@ -19,8 +19,7 @@
 | **协作者 / Issue** | [REFACTOR_PLAN.md](../REFACTOR_PLAN.md) · [AGENTS.md](../AGENTS.md)                                                                                                                                                                                                                     |
 
 **当前架构（一句话）**：`app`（Web + Desktop + Capacitor Android）·
-`@pixuli/core` · `@pixuli/provider-*` · `app/src/ui` ·
-`archive/`（RN、wasm、server 等，非 workspace）。
+`@pixuli/core` · `@pixuli/provider-*` · `app/src/ui`。
 
 ---
 
@@ -62,9 +61,6 @@
 **品牌色与 empty/loading**见
 [07-brand-visual-ui.md](01-product/07-brand-visual-ui.md)。不以 13 号快照为现行差距 SSOT。
 
-历史 REF 快照（9 篇）见 **[archive/design/](../archive/design/)**；索引
-[archive/design/README.md](../archive/design/README.md)。
-
 ---
 
 ## 其他
@@ -73,7 +69,6 @@
 | ------------------------------------------------------------------ | ----------------------------------- |
 | [04-backlog.md](04-backlog.md)                                     | 已移除 / Won't Do / 延后（REF-402） |
 | [03-business-design/01-readme.md](03-business-design/01-readme.md) | 业务设计暂缓                        |
-| [archive/design/](../archive/design/)                              | 系统设计归档（9 篇 + 索引）         |
 
 ---
 
@@ -108,6 +103,6 @@
 | 2026-08-13 | 增补 [07-brand-visual-ui.md](01-product/07-brand-visual-ui.md)（Logo 色系 / empty / loading）                         |
 | 2026-08-13 | 增补 [06-asset-library-ui.md](01-product/06-asset-library-ui.md)（资源库 / 连接器 / 发布）                            |
 | 2026-08-13 | 增补 [05-three-platform-ui-optimization.md](01-product/05-three-platform-ui-optimization.md)；索引补 13/14 号技术快照 |
-| 2026-06-17 | **P2**：`docs/archive` 迁入根目录 `archive/design/`                                                                   |
+| 2026-08-18 | 删除根目录 `archive/`；历史快照见 git tag `backup`                                                                    |
 | 2026-06-17 | **P0**：角色路径；归档索引；`00` 过时表述修正                                                                         |
 | 2026-06-06 | REF-407：角色索引、架构摘要                                                                                           |

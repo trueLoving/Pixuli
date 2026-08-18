@@ -52,11 +52,11 @@
 
 ### 1.3 范围
 
-| 在范围内                                                      | 不在范围内（M3 P0）                                                                                                                                           |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub / Gitee 仓库图床的 list / upload / delete / 元数据更新 | Pixuli Server、MinIO、S3 等后端模式                                                                                                                           |
-| `StoragePluginRegistry` 注册与 `create(pluginId, ctx)`        | 插件热加载、远程下载第三方 provider                                                                                                                           |
-| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件，见 [archive/design/01 §第二部分](../../archive/design/01-three-platform-capability-sharing.md#第二部分-跨端图片处理)） |
+| 在范围内                                                      | 不在范围内（M3 P0）                     |
+| ------------------------------------------------------------- | --------------------------------------- |
+| GitHub / Gitee 仓库图床的 list / upload / delete / 元数据更新 | Pixuli Server、MinIO、S3 等后端模式     |
+| `StoragePluginRegistry` 注册与 `create(pluginId, ctx)`        | 插件热加载、远程下载第三方 provider     |
+| 三端 `imageStore` 改用 Registry                               | 非存储类插件（图片处理 Processor 插件） |
 
 ---
 
@@ -515,14 +515,13 @@ const githubManifest: StoragePluginManifest = {
 
 ### B. 相关源码索引（M2 基线）
 
-| 路径                                       | 说明                                          |
-| ------------------------------------------ | --------------------------------------------- |
-| `packages/core/src/plugins/types.ts`       | 契约定义                                      |
-| `packages/core/src/plugins/registry.ts`    | DefaultStoragePluginRegistry                  |
-| `packages/plugin-provider-github`          | GitHub provider + 可选 `GitHubStorageService` |
-| `packages/plugin-provider-gitee`           | Gitee provider + 可选 `GiteeStorageService`   |
-| `app/src/stores/imageStore.ts`             | REF-304 已对接 Registry                       |
-| `archive/apps/mobile/stores/imageStore.ts` | REF-305 已对接 Registry（RN 已归档）          |
+| 路径                                    | 说明                                          |
+| --------------------------------------- | --------------------------------------------- |
+| `packages/core/src/plugins/types.ts`    | 契约定义                                      |
+| `packages/core/src/plugins/registry.ts` | DefaultStoragePluginRegistry                  |
+| `packages/plugin-provider-github`       | GitHub provider + 可选 `GitHubStorageService` |
+| `packages/plugin-provider-gitee`        | Gitee provider + 可选 `GiteeStorageService`   |
+| `app/src/stores/imageStore.ts`          | REF-304 已对接 Registry                       |
 
 ### C. 文档维护
 
@@ -669,8 +668,7 @@ export function bootstrapStorageProviders(): void {
 }
 ```
 
-**RN（归档）**（`archive/apps/mobile/storage/registry.ts`）：历史参考；新 Mobile 仅
-`app` bootstrap。
+新 Mobile 仅 `app` bootstrap。
 
 ### 步骤 5：配置 UI（M3 P0 过渡）
 
@@ -915,7 +913,6 @@ Provider 文档应说明本插件 `config` 字段含义；工具函数见 `@pixu
 各应用维护模块级单例（已存在）：
 
 - `app/src/storage/registry.ts`
-- `archive/apps/mobile/storage/registry.ts`（只读）
 
 对外辅助：
 
@@ -1164,7 +1161,6 @@ describe('registerExampleProvider', () => {
 | `packages/plugin-provider-github/`        | 官方参考实现；单测见 §9.1       |
 | `packages/plugin-provider-gitee/`         | 官方参考实现；单测见 §9.1       |
 | `app/src/storage/registry.ts`             | Web/Desktop bootstrap           |
-| `archive/apps/mobile/storage/registry.ts` | RN bootstrap（归档）            |
 
 ---
 

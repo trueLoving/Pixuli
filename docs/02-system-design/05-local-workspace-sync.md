@@ -9,7 +9,6 @@
   - [04-three-platform-interaction-spec.md §2.2](../01-product/04-three-platform-interaction-spec.md)
   - [06-asset-library-ui.md](../01-product/06-asset-library-ui.md)（发布与同步在 UI 上分离）
   - [03-plugin-system.md](./03-plugin-system.md)
-  - [archive/design/05-cross-platform-sharing-matrix.md](../../archive/design/05-cross-platform-sharing-matrix.md)（已归档）
 
 本文是 **#144** 的技术设计 SSOT：定义
 `LocalVault`、`SyncEngine`、`StorageProvider`
@@ -538,13 +537,13 @@ Web **File System Access
 API**：可用则允许「连接本地文件夹」；不可用则仅 OPFS + 文案说明（REF-601
 §2.2）。
 
-### 11.1 与历史 RN（`archive/apps/mobile`）边界
+### 11.1 与历史 RN 边界
 
-| 项           | Capacitor（`app`）                                        | RN（`archive/apps/mobile`，已归档）               |
+| 项           | Capacitor（`app`）                                        | RN（已退役）                                      |
 | ------------ | --------------------------------------------------------- | ------------------------------------------------- |
-| **包名**     | `com.pixuli.app`                                          | `com.pixuli.mobile`                               |
+| **包名**     | `com.pixuli.app`                                          | 曾为 `com.pixuli.mobile`                          |
 | **工作区**   | `MobileWorkspaceAdapter` + `@capacitor/filesystem`        | 独立 RN 存储，**不共享** vault 实现               |
-| **产品路线** | **Mobile 唯一交付路径**（REF-509 / REF-607 P6）           | REF-513 已归档，只读参考                          |
+| **产品路线** | **Mobile 唯一交付路径**（REF-509 / REF-607 P6）           | REF-513 已退役                                    |
 | **代码复用** | `@pixuli/core` vault 契约、`workspaceStore`、`SyncEngine` | 仅 core / provider 层；无 `WorkspaceAdapter` 复用 |
 
 Capacitor 与旧 RN 包可并存安装；本地工作区数据**不**跨应用迁移（各自沙箱）。

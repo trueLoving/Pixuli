@@ -1,11 +1,11 @@
 # Pixuli 重构计划
 
-> **版本**：3.5  
-> **更新**：2026-08-18（关闭 #86/#87/#90/#128/#131；#102 移出 M3；#88 收窄范围）  
+> **版本**：3.6  
+> **更新**：2026-08-18（删除 `archive/`；历史快照见 tag `backup`）  
 > **状态**：执行中
 
-本文档是仓库级重构的**活跃 Issue 追踪**。M1～M4 已完成项、分阶段历史与 Issue 正文模板已迁入
-[archive/refactor-plan/](archive/refactor-plan/)。
+本文档是仓库级重构的**活跃 Issue 追踪**。M1～M4 已完成项的历史正文已从仓库移除；需要查阅时检出 tag
+`backup`。
 
 ---
 
@@ -16,15 +16,15 @@
 | 项           | 约定                                                                                                              |
 | ------------ | ----------------------------------------------------------------------------------------------------------------- |
 | **三端**     | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor Android）；**单工程** `app`                                 |
-| **RN 工程**  | 已迁入 [`archive/apps/mobile/`](archive/apps/mobile/)（REF-513 ✅）                                               |
+| **RN 工程**  | 已退役（REF-513 ✅）；当前 Mobile 仅为 Capacitor Android                                                          |
 | **存储**     | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**                                                |
 | **本地库**   | 用户指定本地工作目录 + 可选远端同步（REF-607 ✅ / [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7)） |
 | **对外主张** | AI 分析、自动标签、批处理与图床管理一体                                                                           |
 
 ### 1.2 架构要点
 
-- **已归档**：`packages/wasm`、`benchmark/`、`server/`、`apps/mobile` → 见
-  [archive/README.md](archive/README.md)
+- **已移除**：`packages/wasm`、`benchmark/`、`server/`、`apps/mobile`（Expo
+  RN）；不再保留仓库内归档目录（快照见 tag `backup`）
 - **包结构**：`@pixuli/core` + `@pixuli/provider-*`；UI 在
   `app/src/ui`（`@/ui`）。**插件体系**待 REF-411 按 Obsidian 模型重设计（见 §1.6）。包布局：[07-package-layout-decision.md](docs/02-system-design/07-package-layout-decision.md)
 - **分层**：L1 业务 · L2 网格/列表 ·
@@ -35,14 +35,14 @@
 
 ### 1.3 里程碑概览
 
-| 里程碑 | 名称               | 状态                                                                                |
-| ------ | ------------------ | ----------------------------------------------------------------------------------- |
-| M1     | 减负与归档         | ✅ 完成 → [M1-completed.md](archive/refactor-plan/M1-completed.md)                  |
-| M2     | core / ui 拆分     | ✅ 完成 → [M2-completed.md](archive/refactor-plan/M2-completed.md)                  |
-| M3     | 存储插件 P0        | ✅ 完成 → [M3-completed.md](archive/refactor-plan/M3-completed.md)                  |
-| M4     | 文档与 CI          | ⏳ 13/16 → [M4-completed.md](archive/refactor-plan/M4-completed.md)                 |
-| M5     | 平台能力 L3        | ⏳ 13/16（含 REF-507 ❌）→ [M5-completed.md](archive/refactor-plan/M5-completed.md) |
-| M6     | 产品体验与能力边界 | ⏳ 3/7 → [M6-completed.md](archive/refactor-plan/M6-completed.md)                   |
+| 里程碑 | 名称               | 状态                      |
+| ------ | ------------------ | ------------------------- |
+| M1     | 减负与归档         | ✅ 完成                   |
+| M2     | core / ui 拆分     | ✅ 完成                   |
+| M3     | 存储插件 P0        | ✅ 完成                   |
+| M4     | 文档与 CI          | ⏳ 13/16                  |
+| M5     | 平台能力 L3        | ⏳ 13/16（含 REF-507 ❌） |
+| M6     | 产品体验与能力边界 | ⏳ 3/7                    |
 
 ### 1.4 三端单工程（当前基线）
 
@@ -51,8 +51,6 @@ app（Vite + React）
   ├── src/ui                  原 @pixuli/ui（内联）
   ├── src/platforms/*         Electron / Capacitor 分支
   └── imageStore / sourceStore  三端共用（本地工作区模式已落地）
-
-archive/apps/mobile           Expo RN，只读对照
 ```
 
 Capacitor 为主路线（方案 A）；REF-507（双份 store 抽离）已 ❌ 取消。交互 SSOT：
@@ -92,8 +90,7 @@ pnpm build:web  →  build:desktop / build:android
 ### 1.6 REF-411 — 插件体系重设计（Obsidian 参考）
 
 **背景**：M3 已落地 `StorageProvider` +
-`StoragePluginRegistry`，官方 GitHub/Gitee 以 monorepo 包编译期注册；原 REF-411「Host 运行时集成」（Vite/Electron/Serverless 胶水，见
-[03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)）随 Gitee 代理退役（#173）**不再作为主线**。下一版插件体系应对齐
+`StoragePluginRegistry`，官方 GitHub/Gitee 以 monorepo 包编译期注册；原 REF-411「Host 运行时集成」（Vite/Electron/Serverless 胶水）随 Gitee 代理退役（#173）**不再作为主线**。下一版插件体系应对齐
 **Obsidian 式可扩展模型**，而非仅扩展 Host 钩子。
 
 **参考 Obsidian 的核心要素**（Pixuli 需做三端与本地工作区适配，非逐字照搬）：
@@ -153,8 +150,7 @@ Backlog #102。
 | REF-413 | [M4] 冒烟测试矩阵与 CI 门禁                                        | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ✅   |
 | REF-415 | [M4] 文档国际化（中/英）策略与目录设计                             | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
-> M4 已完成 13 项（REF-401～410、413、414、416）见
-> [M4-completed.md](archive/refactor-plan/M4-completed.md)。REF-413：
+> M4 已完成 13 项（REF-401～410、413、414、416）。REF-413：
 > [14-ref-413-smoke-matrix.md](docs/02-system-design/14-ref-413-smoke-matrix.md)（`pnpm ci`；E2E 可选）。REF-411 范围见
 > **§1.6**。
 
@@ -168,13 +164,10 @@ Backlog #102。
 | REF-504 | [M5] Desktop 自动更新 electron-updater | [#89](https://github.com/trueLoving/Pixuli/issues/89) | ⬜   |
 | REF-505 | [M5] Desktop 系统托盘                  | [#90](https://github.com/trueLoving/Pixuli/issues/90) | ✅   |
 
-> M5 已完成 10 项 + REF-507 ❌ 见
-> [M5-completed.md](archive/refactor-plan/M5-completed.md)（含 REF-515 /
-> #153、REF-516 / #163）。
+> M5 已完成 10 项 + REF-507 ❌（含 REF-515 / #153、REF-516 / #163）。
 
 分阶段总线 REF-516（[#163](https://github.com/trueLoving/Pixuli/issues/163)）P0～P7
-✅，见
-[completed-phases.md § REF-516](archive/refactor-plan/completed-phases.md)。
+✅。
 
 ### M6 — 产品体验与能力边界（4 项进行中）
 
@@ -188,7 +181,6 @@ Backlog #102。
 
 分阶段总线 REF-607（[#144](https://github.com/trueLoving/Pixuli/issues/144)）P0～P7
 ✅，见
-[completed-phases.md § REF-607](archive/refactor-plan/completed-phases.md) 与
 [05-local-workspace-sync.md §九](docs/02-system-design/05-local-workspace-sync.md#九分阶段交付)。
 
 **建议顺序**：**#132** → **#140** → **#133** → **#134**。
@@ -196,18 +188,16 @@ Backlog #102。
 **REF-602**（[#131](https://github.com/trueLoving/Pixuli/issues/131)）✅：P0～P3 与后续工作区三栏 /
 Inspector / 多选（#196、#204～#207）。AI 归 REF-604；虚拟列表归 REF-603。
 
-REF-601（交互规范）✅、REF-607（本地工作区）✅ 见
-[M6-completed.md](archive/refactor-plan/M6-completed.md)。
+REF-601（交互规范）✅、REF-607（本地工作区）✅。
 
 ---
 
 ## 三、GitHub Issue 操作（摘要）
 
-完整步骤见 [archive/refactor-plan/](archive/refactor-plan/)
-附带的 v2.0 原文 §二；日常只需：
+完整步骤见 [AGENTS.md](AGENTS.md)；日常只需：
 
 1. **开 PR**：标题或分支含 `REF-xxx`；完整关闭 Issue 时用 `Fixes #n`
-2. **更新本表**：合并后改对应行状态；大段已完成表移入 `archive/refactor-plan/`
+2. **更新本表**：合并后改对应行状态
 3. **Label**：`refactor`、`m4`～`m6`、`priority:P0`～`P2`、`area:*`
 4. **里程碑**：M4～M6 + GitHub
    [里程碑 #7](https://github.com/trueLoving/Pixuli/milestone/7) /
@@ -249,25 +239,19 @@ gh issue view 126 --json number,state,title
 
 ## 六、相关文档
 
-| 主题                        | 文档                                                                                           |
-| --------------------------- | ---------------------------------------------------------------------------------------------- |
-| 已完成 Issue 归档           | [archive/refactor-plan/](archive/refactor-plan/)                                               |
-| 代码归档                    | [archive/README.md](archive/README.md)                                                         |
-| 系统架构                    | [01-system-design.md](docs/02-system-design/01-system-design.md)                               |
-| 三端设计                    | [02-three-platform-design.md](archive/design/02-three-platform-design.md)                      |
-| app 工程                    | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)           |
-| 插件体系（M3 现状）         | [03-plugin-system.md](docs/02-system-design/03-plugin-system.md)                               |
-| 插件体系重设计（REF-411）   | **§1.6** · Obsidian 参考 · [#126](https://github.com/trueLoving/Pixuli/issues/126)             |
-| Host 集成（历史，已非主线） | [03-plugin-host-integration.md](archive/design/03-plugin-host-integration.md)                  |
-| 本地工作区                  | [05-local-workspace-sync.md](docs/02-system-design/05-local-workspace-sync.md)                 |
-| REF-602 UI 差距与分期       | [13-ref-602-ui-gap-assessment.md](docs/02-system-design/13-ref-602-ui-gap-assessment.md)       |
-| REF-602 Before/After        | [13-ref-602-ui-before-after.md](docs/02-system-design/13-ref-602-ui-before-after.md)           |
-| REF-413 冒烟矩阵            | [14-ref-413-smoke-matrix.md](docs/02-system-design/14-ref-413-smoke-matrix.md)                 |
-| Capacitor PoC               | [04-capacitor-android-poc.md](archive/design/04-capacitor-android-poc.md)                      |
-| Mobile 对齐矩阵             | [06-mobile-feature-parity-matrix.md](archive/design/06-mobile-feature-parity-matrix.md)        |
-| TS/JS 策略                  | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md) |
-| Agent / Skill               | [AGENTS.md](AGENTS.md)                                                                         |
-| Backlog                     | [docs/04-backlog.md](docs/04-backlog.md)                                                       |
+| 主题                      | 文档                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| 系统架构                  | [01-system-design.md](docs/02-system-design/01-system-design.md)                               |
+| 三端设计                  | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)           |
+| 插件体系（M3 现状）       | [03-plugin-system.md](docs/02-system-design/03-plugin-system.md)                               |
+| 插件体系重设计（REF-411） | **§1.6** · Obsidian 参考 · [#126](https://github.com/trueLoving/Pixuli/issues/126)             |
+| 本地工作区                | [05-local-workspace-sync.md](docs/02-system-design/05-local-workspace-sync.md)                 |
+| REF-602 UI 差距与分期     | [13-ref-602-ui-gap-assessment.md](docs/02-system-design/13-ref-602-ui-gap-assessment.md)       |
+| REF-602 Before/After      | [13-ref-602-ui-before-after.md](docs/02-system-design/13-ref-602-ui-before-after.md)           |
+| REF-413 冒烟矩阵          | [14-ref-413-smoke-matrix.md](docs/02-system-design/14-ref-413-smoke-matrix.md)                 |
+| TS/JS 策略                | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md) |
+| Agent / Skill             | [AGENTS.md](AGENTS.md)                                                                         |
+| Backlog                   | [docs/04-backlog.md](docs/04-backlog.md)                                                       |
 
 ---
 

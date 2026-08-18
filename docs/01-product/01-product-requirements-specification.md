@@ -106,7 +106,7 @@ Gitee** 同步与公网直链。
 
 | 项                                  | 处理方式                                                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------- |
-| `packages/wasm`、WASM IPC           | 已归档至 `archive/`；Web/桌面图片处理以 Canvas 等为主                           |
+| `packages/wasm`、WASM IPC           | 已从仓库移除；Web/桌面图片处理以 Canvas 等为主                                  |
 | `benchmark/`                        | 已归档，非主构建路径                                                            |
 | `server/`（NestJS）                 | 已移出 workspace；**非官方交付物**                                              |
 | `packages/common`（pixuli-common）  | M3 REF-311 已删除；由 `@pixuli/core` + `@pixuli/ui` + `@pixuli/provider-*` 替代 |
@@ -119,7 +119,6 @@ app     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron +
 packages/core   类型、工具、StoragePluginRegistry 契约
 app/src/ui  三端共享 UI（`@/ui`）；native 已 deprecated
 packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
-archive/        apps/mobile（RN）、wasm、benchmark、历史 server（不参与日常构建）
 ```
 
 ### 2.5 规划中能力（里程碑）
@@ -179,7 +178,6 @@ Pixuli/
 │   ├── core/                # @pixuli/core — 类型、工具、插件 Registry 契约
 │   ├── plugin-provider-github/
 │   └── plugin-provider-gitee/
-├── archive/                 # wasm、benchmark、历史 server（非主构建）
 ├── docs/                    # 产品 / 系统设计 / 业务设计文档
 └── REFACTOR_PLAN.md         # 重构与 Issue 追踪
 ```
