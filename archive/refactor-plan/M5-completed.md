@@ -14,3 +14,6 @@
 | REF-514 | [M5] apps/pixuli 三端融合工程整理（目录/脚本/多目标构建）  | [#152](https://github.com/trueLoving/Pixuli/issues/152) | ✅ follow-up: layouts/vite 插件                         |
 | REF-515 | [M5] CI/CD 三端单工程流水线（含 Android APK 发版）         | [#153](https://github.com/trueLoving/Pixuli/issues/153) | ✅ `release-android.yml` + `pnpm ci`                    |
 | REF-516 | [三端融合] 以 Web/PC 为 SSOT 的 Mobile 功能对齐（总览）    | [#163](https://github.com/trueLoving/Pixuli/issues/163) | ✅ P0～P7 见 [completed-phases.md](completed-phases.md) |
+| REF-501 | [M5] 文档化 L3 能力矩阵                                    | [#86](https://github.com/trueLoving/Pixuli/issues/86)   | ✅                                                      |
+| REF-502 | [M5] `platforms/desktop` 目录约定                          | [#87](https://github.com/trueLoving/Pixuli/issues/87)   | ✅ 现为 `app/src/platforms/desktop/`                    |
+| REF-505 | [M5] Desktop 系统托盘                                      | [#90](https://github.com/trueLoving/Pixuli/issues/90)   | ✅ `app/electron/main/tray.ts`                          |

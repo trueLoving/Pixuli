@@ -15,3 +15,5 @@
 | REF-409 | [M4] 历史发布版本梳理与后续版本发布策略                 | [#113](https://github.com/trueLoving/Pixuli/issues/113) | ✅   |
 | REF-410 | [M4] 技术栈梳理：TypeScript / JavaScript 统一策略       | [#125](https://github.com/trueLoving/Pixuli/issues/125) | ✅   |
 | REF-414 | [M4] AI 编程辅助：Agent 规则与 Skill 文件体系           | [#129](https://github.com/trueLoving/Pixuli/issues/129) | ✅   |
+| REF-416 | [M4] Workspace 包构建与 exports conditions              | [#146](https://github.com/trueLoving/Pixuli/issues/146) | ✅   |
+| REF-413 | [M4] 冒烟测试矩阵与 CI 门禁                             | [#128](https://github.com/trueLoving/Pixuli/issues/128) | ✅   |
