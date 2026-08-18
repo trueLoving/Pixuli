@@ -190,8 +190,38 @@
   text-align: left;
 }
 
-.asset-inspector-extra-btn:hover {
+.asset-inspector-extra-btn:hover:not(:disabled) {
   background: #f9fafb;
+}
+
+.asset-inspector-extra-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.asset-inspector-batch-lead {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.asset-inspector-batch-scope {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.asset-inspector-batch-list {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  font-size: 0.8125rem;
+  color: #374151;
+}
+
+@media (max-width: 767px) {
+  .asset-inspector-overlay {
+    bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 1023px) {

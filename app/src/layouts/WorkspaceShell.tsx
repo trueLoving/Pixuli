@@ -1,6 +1,6 @@
 import React from 'react';
 import { WorkspaceFolderTree } from '@/features/workspace/WorkspaceFolderTree';
-import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { useWideViewport } from '@/hooks/useMobileViewport';
 import { ActivityBar } from '@/layouts/ActivityBar';
 import { useUIStore } from '@/stores/uiStore';
 import { AppMain } from './AppMain';
@@ -15,7 +15,7 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   children,
   t,
 }) => {
-  const isMobile = useMobileViewport();
+  const isWide = useWideViewport();
   const workspaceExplorerOpen = useUIStore(
     state => state.workspaceExplorerOpen,
   );
@@ -23,13 +23,14 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
     state => state.setWorkspaceExplorerOpen,
   );
 
-  const showExplorer = !isMobile || workspaceExplorerOpen;
+  const overlayExplorer = !isWide;
+  const showExplorer = isWide || workspaceExplorerOpen;
 
   return (
     <div className="workspace-shell">
       <ActivityBar t={t} />
-      {showExplorer ? <WorkspaceFolderTree /> : null}
-      {isMobile && workspaceExplorerOpen ? (
+      {showExplorer ? <WorkspaceFolderTree overlay={overlayExplorer} /> : null}
+      {overlayExplorer && workspaceExplorerOpen ? (
         <button
           type="button"
           className="workspace-explorer-backdrop"

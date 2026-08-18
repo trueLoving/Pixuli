@@ -23,6 +23,12 @@
   background: rgba(15, 23, 42, 0.25);
 }
 
+@media (max-width: 1023px) {
+  .workspace-shell-main {
+    min-width: 0;
+  }
+}
+
 @media (max-width: 767px) {
   .workspace-shell-main {
     padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));

@@ -63,6 +63,18 @@ export function useCapacitorBackButton(): void {
         }
         if (dismissDomOverlay()) return;
         if (dismissFilterPanel()) return;
+        if (document.querySelector('.asset-inspector--sheet')) {
+          window.dispatchEvent(new CustomEvent('pixuli:closeInspectorSheet'));
+          return;
+        }
+        if (document.querySelector('.asset-library-batch')) {
+          window.dispatchEvent(new CustomEvent('pixuli:clearLibrarySelection'));
+          return;
+        }
+        if (ui.workspaceExplorerOpen) {
+          ui.setWorkspaceExplorerOpen(false);
+          return;
+        }
         if (ui.mobileSidebarOpen) {
           ui.closeMobileSidebar();
           return;
