@@ -1,8 +1,8 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetKind, ImageItem } from '@pixuli/core/types';
 
-export type AssetKindFilter = 'all' | 'image' | 'video' | 'pdf';
+export type AssetKindFilter = 'all' | AssetKind;
 
-export type AssetKind = Exclude<AssetKindFilter, 'all'>;
+export type { AssetKind };
 
 function extensionOf(name: string): string {
   const dot = name.lastIndexOf('.');
@@ -25,7 +25,13 @@ export function getAssetKind(
   ) {
     return 'video';
   }
-  return 'image';
+  if (
+    mime.startsWith('image/') ||
+    ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
+  ) {
+    return 'image';
+  }
+  return 'other';
 }
 
 export function filterAssetsByKind<T extends Pick<ImageItem, 'name' | 'type'>>(

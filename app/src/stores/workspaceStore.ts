@@ -8,6 +8,7 @@ import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import {
   createLocalVault,
   createSyncEngine,
+  guessMimeType,
   providerSupportsSync,
   storedSourcesToWorkspaceBindings,
   type LocalVault,
@@ -35,6 +36,10 @@ import {
   deleteFsaDirectoryHandle,
   parseFsaRootPath,
 } from '../platforms/web/fsaWorkspaceFs';
+import {
+  hydrateAccessPolicy,
+  resetAccessPolicy,
+} from '../features/access/accessPolicyStore';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
 const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
@@ -211,6 +216,7 @@ async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   }
   const vault = getVault();
   await vault.open();
+  await hydrateAccessPolicy(vault.adapter);
   return vault;
 }
 
@@ -406,6 +412,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     await cleanupFsaWorkspaceRoot(rootPath);
     clearPersistedWorkspace();
     resetWorkspaceRuntime();
+    resetAccessPolicy();
     set({
       mode: 'unset',
       rootPath: null,
@@ -488,16 +495,29 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         getUploadFileName(uploadData.file, uploadData.name),
       );
       const targetPath = `images/${Date.now()}-${fileName}`;
-      const platform = new DefaultPlatformAdapter();
-      const dimensions = await platform.getImageDimensions(uploadData.file);
-
       const vault = getVault();
+      const mimeType = uploadData.file.type || guessMimeType(fileName);
+      let width = 0;
+      let height = 0;
+      if (mimeType.startsWith('image/')) {
+        try {
+          const platform = new DefaultPlatformAdapter();
+          const dimensions = await platform.getImageDimensions(uploadData.file);
+          width = dimensions.width;
+          height = dimensions.height;
+        } catch {
+          width = 0;
+          height = 0;
+        }
+      }
+
       await vault.importFile(uploadData.file, targetPath, {
         name: uploadData.name ?? fileName,
         tags: uploadData.tags ?? [],
         description: uploadData.description,
-        width: dimensions.width,
-        height: dimensions.height,
+        mimeType,
+        width,
+        height,
         syncState: 'local-only',
         createdAt: uploadData.captureMetadata?.takenAt,
         captureMetadata: uploadData.captureMetadata,

@@ -20,6 +20,8 @@
     "selectSourceType": "Select Repository Type",
     "githubDescription": "Store images in GitHub repository",
     "giteeDescription": "Store images in Gitee repository",
+    "onedriveDescription": "Connect an OneDrive folder (coming soon)",
+    "gcsDescription": "Connect Google Cloud Storage (coming soon)",
     "noStoragePlugins": "No storage plugins available",
     "pluginUnavailable": "Plugin not installed or unavailable",
     "galleryNav": "Gallery",

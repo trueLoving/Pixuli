@@ -20,5 +20,12 @@ export function pickRepoConfig(
   if (typeof raw.path === 'string') {
     config.path = raw.path;
   }
+  if (
+    raw.connectionPurpose === 'backup' ||
+    raw.connectionPurpose === 'defaultSync' ||
+    raw.connectionPurpose === 'publishChannel'
+  ) {
+    config.connectionPurpose = raw.connectionPurpose;
+  }
   return config;
 }

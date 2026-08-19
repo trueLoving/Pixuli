@@ -23,8 +23,15 @@ import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/utils/assetKind';
-import { Shield, SlidersHorizontal, Wand2, X } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { isDesktop } from '@/platforms';
+import { Shield, SlidersHorizontal, Sparkles, Wand2, X } from 'lucide-react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AssetInspector.css';
 
@@ -93,6 +100,20 @@ function FileContent({
     );
   }
 
+  if (kind === 'other') {
+    return (
+      <div className="asset-inspector-preview asset-inspector-preview--file">
+        <a
+          className="asset-inspector-open-external"
+          href={image.url}
+          download={image.name}
+        >
+          {t('image.inspector.openExternal')}
+        </a>
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -147,6 +168,44 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   }, [image]);
 
   const isSheet = variant === 'sheet';
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const sheetDragRef = useRef<{ y: number; moved: boolean } | null>(null);
+
+  useEffect(() => {
+    if (!isSheet) setSheetExpanded(false);
+  }, [isSheet]);
+
+  const onSheetHandlePointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    sheetDragRef.current = { y: event.clientY, moved: false };
+  };
+  const onSheetHandlePointerMove = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    const start = sheetDragRef.current;
+    if (!start) return;
+    if (Math.abs(event.clientY - start.y) > 8) start.moved = true;
+  };
+  const onSheetHandlePointerUp = (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ) => {
+    const start = sheetDragRef.current;
+    sheetDragRef.current = null;
+    if (!start) return;
+    const delta = event.clientY - start.y;
+    if (delta < -48) {
+      setSheetExpanded(true);
+      return;
+    }
+    if (delta > 48) {
+      if (sheetExpanded) setSheetExpanded(false);
+      else onClose();
+      return;
+    }
+    if (!start.moved) setSheetExpanded(value => !value);
+  };
 
   useEscapeKey(
     () => {
@@ -351,8 +410,12 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             <button
               type="button"
               className="asset-inspector-extra-btn"
-              disabled
-              title={t('image.library.batchAccessDisabled')}
+              onClick={() =>
+                openAccessModal(
+                  selectedImages[0]?.id,
+                  selectedImages.map(item => item.id),
+                )
+              }
             >
               {t('image.inspector.openAccess')}
             </button>
@@ -516,6 +579,26 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
               <Wand2 size={16} aria-hidden />
               {t('image.inspector.sendConvert')}
             </button>
+            <button
+              type="button"
+              className="asset-inspector-extra-btn"
+              disabled={!isDesktop() || kind !== 'image'}
+              title={
+                !isDesktop()
+                  ? t('image.inspector.aiDesktopOnly')
+                  : kind !== 'image'
+                    ? t('image.inspector.toolImageOnly')
+                    : undefined
+              }
+              onClick={() => {
+                if (!isDesktop() || kind !== 'image') return;
+                showInfo(t('image.inspector.aiReadyHint'));
+                if (onUpdateImage) setShowEdit(true);
+              }}
+            >
+              <Sparkles size={16} aria-hidden />
+              {t('image.inspector.sendAi')}
+            </button>
           </div>
         </section>
       </>
@@ -525,30 +608,49 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const panel = (
     <aside
-      className={`asset-inspector ${isSheet ? 'asset-inspector--sheet' : 'asset-inspector--dock'}`}
+      className={`asset-inspector ${isSheet ? 'asset-inspector--sheet' : 'asset-inspector--dock'}${isSheet && sheetExpanded ? ' is-expanded' : ''}`}
       aria-label={t('image.inspector.title')}
     >
       <header className="asset-inspector-header">
-        <h2>
-          {selectedImages.length >= 2
-            ? t('image.library.selectedCount').replace(
-                '{count}',
-                String(selectedImages.length),
-              )
-            : t('image.inspector.title')}
-        </h2>
-        {isSheet || image || selectedImages.length > 0 ? (
+        {isSheet ? (
           <button
             type="button"
-            className="asset-inspector-close"
-            onClick={onClose}
-            aria-label={t('image.inspector.close')}
+            className="asset-inspector-handle"
+            aria-label={
+              sheetExpanded
+                ? t('image.inspector.collapseSheet')
+                : t('image.inspector.expandSheet')
+            }
+            aria-expanded={sheetExpanded}
+            onPointerDown={onSheetHandlePointerDown}
+            onPointerMove={onSheetHandlePointerMove}
+            onPointerUp={onSheetHandlePointerUp}
           >
-            <X size={18} />
+            <span className="asset-inspector-handle-bar" />
           </button>
-        ) : (
-          <span />
-        )}
+        ) : null}
+        <div className="asset-inspector-header-row">
+          <h2>
+            {selectedImages.length >= 2
+              ? t('image.library.selectedCount').replace(
+                  '{count}',
+                  String(selectedImages.length),
+                )
+              : t('image.inspector.title')}
+          </h2>
+          {isSheet || image || selectedImages.length > 0 ? (
+            <button
+              type="button"
+              className="asset-inspector-close"
+              onClick={onClose}
+              aria-label={t('image.inspector.close')}
+            >
+              <X size={18} />
+            </button>
+          ) : (
+            <span />
+          )}
+        </div>
       </header>
       <div className="asset-inspector-body">{body}</div>
     </aside>

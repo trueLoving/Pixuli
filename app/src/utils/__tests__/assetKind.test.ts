@@ -18,7 +18,13 @@ describe('getAssetKind', () => {
     expect(getAssetKind({ name: 'clip', type: 'video/webm' })).toBe('video');
   });
 
-  it('defaults to image', () => {
+  it('defaults unknown files to other', () => {
+    expect(getAssetKind({ name: 'notes.txt', type: 'text/plain' })).toBe(
+      'other',
+    );
+  });
+
+  it('classifies images by mime or extension', () => {
     expect(getAssetKind({ name: 'photo.jpg', type: 'image/jpeg' })).toBe(
       'image',
     );

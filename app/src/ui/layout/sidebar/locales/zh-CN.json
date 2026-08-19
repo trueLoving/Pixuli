@@ -20,6 +20,8 @@
     "selectSourceType": "选择仓库类型",
     "githubDescription": "使用 GitHub 仓库存储图片",
     "giteeDescription": "使用 Gitee 仓库存储图片",
+    "onedriveDescription": "连接 OneDrive 文件夹（即将支持）",
+    "gcsDescription": "连接 Google Cloud Storage（即将支持）",
     "noStoragePlugins": "当前没有可用的存储插件",
     "pluginUnavailable": "插件未安装或不可用",
     "galleryNav": "图床",

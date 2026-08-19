@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
+import { useUIStore } from '../stores/uiStore';
 
 /**
  * 配置管理相关的 hooks
@@ -49,12 +50,20 @@ export function useConfigManagement() {
           config: repoConfig,
         });
       } else {
+        const purpose =
+          useUIStore.getState().pendingConnectionPurpose ?? 'defaultSync';
         const newSource = addSource({
           pluginId: storageType!,
           label,
-          config: repoConfig,
+          config: { ...repoConfig, connectionPurpose: purpose },
         });
-        setSelectedSourceId(newSource.id);
+        const shouldSelect =
+          purpose === 'defaultSync' ||
+          useSourceStore.getState().selectedSourceId == null;
+        if (shouldSelect) {
+          setSelectedSourceId(newSource.id);
+        }
+        useUIStore.setState({ pendingConnectionPurpose: null });
       }
 
       if (activePluginId === 'github') {

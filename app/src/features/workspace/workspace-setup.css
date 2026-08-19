@@ -27,22 +27,22 @@
 
 .workspace-setup-primary-btn {
   border: none;
-  background: #2563eb;
+  background: var(--pix-violet, #7c6cf0);
   color: #fff;
 }
 
 .workspace-setup-primary-btn:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: var(--pix-violet-deep, #5b4fe0);
 }
 
 .workspace-setup-secondary-btn {
-  border: 1px solid #93c5fd;
+  border: 1px solid var(--pix-lilac, #c4b5fd);
   background: #fff;
-  color: #1d4ed8;
+  color: var(--pix-violet-deep, #5b4fe0);
 }
 
 .workspace-setup-secondary-btn:hover:not(:disabled) {
-  background: #eff6ff;
+  background: var(--pix-violet-soft, #ede9fe);
 }
 
 .workspace-setup-primary-btn:disabled,

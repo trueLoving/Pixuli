@@ -5,6 +5,8 @@ export {
   getStoragePluginDisplayName,
   isKnownBuiltinPluginId,
   isStoragePluginRegistered,
+  listCapabilityFlags,
+  type ManifestCapabilityFlag,
 } from './manifestUi';
 export {
   createStoragePluginRegistry,

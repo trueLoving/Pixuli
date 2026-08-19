@@ -1,8 +1,9 @@
 import { CloudDownload, CloudUpload, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
@@ -17,7 +18,18 @@ export const SyncDirectionModal: React.FC = () => {
   const close = useUIStore(state => state.closeSyncDirectionModal);
   const runSync = useWorkspaceStore(state => state.runSync);
   const loadImages = useImageStore(state => state.loadImages);
+  const sources = useSourceStore(state => state.sources);
+  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
+  const setSelectedSourceId = useSourceStore(
+    state => state.setSelectedSourceId,
+  );
   const [running, setRunning] = useState(false);
+  const [targetId, setTargetId] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setTargetId(selectedSourceId ?? sources[0]?.id ?? '');
+  }, [isOpen, selectedSourceId, sources]);
 
   useEscapeKey(() => {
     if (isOpen && !running) close();
@@ -29,6 +41,9 @@ export const SyncDirectionModal: React.FC = () => {
     if (running) return;
     setRunning(true);
     try {
+      if (targetId && targetId !== selectedSourceId) {
+        setSelectedSourceId(targetId);
+      }
       await runSync(direction);
       await loadImages();
       close();
@@ -73,6 +88,24 @@ export const SyncDirectionModal: React.FC = () => {
           <p className="text-sm text-gray-500">
             {t('workspace.syncChooseHint')}
           </p>
+
+          {sources.length > 1 ? (
+            <label className="block text-sm text-gray-700">
+              {t('workspace.syncTargetLabel')}
+              <select
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                value={targetId}
+                disabled={running}
+                onChange={event => setTargetId(event.target.value)}
+              >
+                {sources.map(source => (
+                  <option key={source.id} value={source.id}>
+                    {source.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
 
           <button
             type="button"

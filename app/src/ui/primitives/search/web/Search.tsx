@@ -372,6 +372,7 @@ const Search: React.FC<SearchProps> = ({
                           ['image', 'image.kind.image'],
                           ['video', 'image.kind.video'],
                           ['pdf', 'image.kind.pdf'],
+                          ['other', 'image.kind.other'],
                         ] as const
                       ).map(([kind, labelKey]) => (
                         <label key={kind} className="search-filter-option">

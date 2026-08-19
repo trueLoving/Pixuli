@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import './ActivityBar.css';
 
 interface ActivityBarProps {
@@ -21,6 +22,10 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   );
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
   const requestSync = useUIStore(state => state.requestSync);
+  const pushing = useWorkspaceStore(state => state.pushing);
+  const syncing = useWorkspaceStore(state => state.syncing);
+  const workspaceLoading = useWorkspaceStore(state => state.loading);
+  const syncBusy = pushing || syncing || workspaceLoading;
 
   const navigateToLibrary = useCallback(() => {
     setActiveMenu('photos');
@@ -56,17 +61,23 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   ) => {
     const Icon = item.icon;
     const isActive = activeMenu === item.id;
+    const isBusy = item.id === 'sync' && syncBusy;
     return (
       <button
         key={item.id}
         type="button"
-        className={`activity-bar-item ${isActive ? 'activity-bar-item--active' : ''}`.trim()}
+        className={`activity-bar-item ${isActive ? 'activity-bar-item--active' : ''} ${isBusy ? 'activity-bar-item--busy' : ''}`.trim()}
         title={item.label}
         aria-label={item.label}
         aria-pressed={isActive}
+        aria-busy={isBusy || undefined}
         onClick={item.onClick}
       >
-        <Icon size={22} className="activity-bar-icon" aria-hidden />
+        <Icon
+          size={22}
+          className={`activity-bar-icon ${isBusy ? 'activity-bar-spin' : ''}`.trim()}
+          aria-hidden
+        />
         {isMobile ? (
           <span className="activity-bar-item-label">{item.label}</span>
         ) : null}

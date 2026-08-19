@@ -23,7 +23,17 @@ export function guessMimeType(name: string): string {
   if (lower.endsWith('.webp')) return 'image/webp';
   if (lower.endsWith('.gif')) return 'image/gif';
   if (lower.endsWith('.svg')) return 'image/svg+xml';
-  return 'image/jpeg';
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+  if (lower.endsWith('.pdf')) return 'application/pdf';
+  if (lower.endsWith('.mp4')) return 'video/mp4';
+  if (lower.endsWith('.webm')) return 'video/webm';
+  if (lower.endsWith('.mov')) return 'video/quicktime';
+  if (lower.endsWith('.mkv')) return 'video/x-matroska';
+  if (lower.endsWith('.avi')) return 'video/x-msvideo';
+  if (lower.endsWith('.txt')) return 'text/plain';
+  if (lower.endsWith('.md')) return 'text/markdown';
+  if (lower.endsWith('.json')) return 'application/json';
+  return 'application/octet-stream';
 }
 
 export function nowIso(): string {
@@ -67,4 +77,13 @@ export function createIndexEntry(
 
 export function isImageFilePath(relativePath: string): boolean {
   return /\.(jpe?g|png|gif|webp|svg)$/i.test(relativePath);
+}
+
+/** 工作区可入库的文件（图 / PDF / 视频 / 其它），忽略点文件。 */
+export function isIngestibleFilePath(relativePath: string): boolean {
+  const name = basename(relativePath);
+  if (!name || name.startsWith('.')) {
+    return false;
+  }
+  return true;
 }

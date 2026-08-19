@@ -2,6 +2,7 @@
 export const WORKSPACE_PATHS = {
   config: '.pixuli/config.json',
   index: '.pixuli/index.json',
+  access: '.pixuli/access.json',
   syncState: '.pixuli/sync/state.json',
   syncQueue: '.pixuli/sync/queue.jsonl',
   syncConflicts: '.pixuli/sync/conflicts.json',

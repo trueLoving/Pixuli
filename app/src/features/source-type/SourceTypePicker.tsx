@@ -1,14 +1,16 @@
 import {
   getManifestDescription,
-  isKnownBuiltinPluginId,
   type StoragePluginManifest,
 } from '@pixuli/core/plugins';
 import { Github, X } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import { CapabilityChips } from './CapabilityChips';
+import type { ConnectionPurpose } from './connectionPurpose';
+import { UPCOMING_CONNECTORS } from './upcomingConnectors';
 
 interface SourceTypePickerProps {
   manifests: StoragePluginManifest[];
-  onSelect: (pluginId: string) => void;
+  onSelect: (pluginId: string, purpose: ConnectionPurpose) => void;
   onCancel?: () => void;
   t: (key: string) => string;
 }
@@ -43,12 +45,27 @@ function PluginTypeIcon({
   );
 }
 
-function hoverClassForPlugin(pluginId: string): string {
-  if (pluginId === 'gitee') {
-    return 'hover:border-red-400 hover:bg-red-50';
-  }
-  return 'hover:border-blue-400 hover:bg-blue-50';
-}
+const PURPOSE_OPTIONS: Array<{
+  value: ConnectionPurpose;
+  titleKey: string;
+  hintKey: string;
+}> = [
+  {
+    value: 'backup',
+    titleKey: 'settings.purposeBackup',
+    hintKey: 'settings.purposeBackupHint',
+  },
+  {
+    value: 'defaultSync',
+    titleKey: 'settings.purposeDefaultSync',
+    hintKey: 'settings.purposeDefaultSyncHint',
+  },
+  {
+    value: 'publishChannel',
+    titleKey: 'settings.purposePublishChannel',
+    hintKey: 'settings.purposePublishChannelHint',
+  },
+];
 
 export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
   manifests,
@@ -56,11 +73,17 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
   onCancel,
   t,
 }) => {
+  const [pluginId, setPluginId] = useState<string | null>(null);
+  const [purpose, setPurpose] = useState<ConnectionPurpose>('defaultSync');
+  const selected = manifests.find(item => item.id === pluginId);
+
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-900">
-          {t('sidebar.selectSourceType')}
+          {pluginId
+            ? t('settings.wizardPurposeTitle')
+            : t('sidebar.selectSourceType')}
         </p>
         {onCancel ? (
           <button
@@ -73,33 +96,100 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
           </button>
         ) : null}
       </div>
-      {manifests.length === 0 ? (
-        <p className="text-sm text-gray-500">{t('sidebar.noStoragePlugins')}</p>
+
+      {pluginId && selected ? (
+        <div className="space-y-3">
+          <p className="text-xs text-gray-500">{selected.name}</p>
+          <div className="space-y-2">
+            {PURPOSE_OPTIONS.map(option => (
+              <label
+                key={option.value}
+                className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2"
+              >
+                <input
+                  type="radio"
+                  name="connection-purpose"
+                  className="mt-1"
+                  checked={purpose === option.value}
+                  onChange={() => setPurpose(option.value)}
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-900">
+                    {t(option.titleKey)}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-gray-500">
+                    {t(option.hintKey)}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-white"
+              onClick={() => setPluginId(null)}
+            >
+              {t('settings.wizardBack')}
+            </button>
+            <button
+              type="button"
+              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+              onClick={() => onSelect(pluginId, purpose)}
+            >
+              {t('settings.wizardContinue')}
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-2">
-          {manifests.map(manifest => (
-            <button
-              key={manifest.id}
-              type="button"
-              onClick={() => {
-                if (!isKnownBuiltinPluginId(manifest.id)) {
-                  return;
-                }
-                onSelect(manifest.id);
-              }}
-              disabled={!isKnownBuiltinPluginId(manifest.id)}
-              className={`flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${hoverClassForPlugin(manifest.id)}`}
+          {manifests.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              {t('sidebar.noStoragePlugins')}
+            </p>
+          ) : (
+            manifests.map(manifest => (
+              <button
+                key={manifest.id}
+                type="button"
+                onClick={() => setPluginId(manifest.id)}
+                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors hover:border-blue-400 hover:bg-blue-50"
+              >
+                <PluginTypeIcon pluginId={manifest.id} name={manifest.name} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {manifest.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {getManifestDescription(manifest, t)}
+                  </div>
+                  <CapabilityChips manifest={manifest} t={t} />
+                </div>
+              </button>
+            ))
+          )}
+          <p className="pt-2 text-xs font-medium text-gray-500">
+            {t('settings.upcomingTitle')}
+          </p>
+          {UPCOMING_CONNECTORS.map(item => (
+            <div
+              key={item.id}
+              className="flex w-full items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 opacity-70"
             >
-              <PluginTypeIcon pluginId={manifest.id} name={manifest.name} />
+              <PluginTypeIcon pluginId={item.id} name={item.name} />
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-gray-900">
-                  {manifest.name}
+                <div className="text-sm font-semibold text-gray-700">
+                  {item.name}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {getManifestDescription(manifest, t)}
+                  {t(`sidebar.${item.id}Description`)}
                 </div>
+                <CapabilityChips capabilities={item.capabilities} t={t} muted />
               </div>
-            </button>
+              <span className="shrink-0 rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+                {t('settings.comingSoon')}
+              </span>
+            </div>
           ))}
         </div>
       )}

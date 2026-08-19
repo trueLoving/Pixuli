@@ -1,6 +1,7 @@
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { resolveRemoteCopyUrl } from '@/hooks/useImageCopyUrl';
+import { isPublishChannel } from '@/features/source-type/connectionPurpose';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
@@ -21,6 +22,8 @@ import {
   markAssetPublished,
   revokeAssetPublish,
 } from './accessPolicyStore';
+import { CapabilityChips } from '@/features/source-type/CapabilityChips';
+import { UPCOMING_CONNECTORS } from '@/features/source-type/upcomingConnectors';
 import './AccessModal.css';
 
 interface SettingsAccessPanelProps {
@@ -34,6 +37,7 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const images = useImageStore(state => state.images);
   const accessTargetImageId = useUIStore(state => state.accessTargetImageId);
+  const accessTargetImageIds = useUIStore(state => state.accessTargetImageIds);
   const openSettingsModalForAddSource = useUIStore(
     state => state.openSettingsModalForAddSource,
   );
@@ -41,7 +45,6 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
   const openSyncDirectionModal = useUIStore(
     state => state.openSyncDirectionModal,
   );
-  const openAccessModal = useUIStore(state => state.openAccessModal);
 
   const [channelId, setChannelId] = useState<string>('');
   const [remoteTier, setRemoteTier] = useState<RemoteAccessTier>('none');
@@ -51,8 +54,23 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
     () => images.find(item => item.id === accessTargetImageId) ?? null,
     [images, accessTargetImageId],
   );
-  const channel = sources.find(source => source.id === channelId);
-  const hasConnection = sources.length > 0;
+  const batchImages = useMemo(() => {
+    const ids =
+      accessTargetImageIds.length > 0
+        ? accessTargetImageIds
+        : accessTargetImageId
+          ? [accessTargetImageId]
+          : [];
+    return ids
+      .map(id => images.find(item => item.id === id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+  }, [accessTargetImageId, accessTargetImageIds, images]);
+  const publishSources = useMemo(() => {
+    const allowed = sources.filter(isPublishChannel);
+    return allowed.length > 0 ? allowed : sources;
+  }, [sources]);
+  const channel = publishSources.find(source => source.id === channelId);
+  const hasConnection = publishSources.length > 0;
   const manifests = listStoragePluginManifests();
   const manifest = manifests.find(item => item.id === channel?.pluginId);
   const flags = getAccessCapabilities(manifest);
@@ -74,9 +92,9 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
   );
 
   useEffect(() => {
-    const initialChannel = selectedSourceId ?? sources[0]?.id ?? '';
+    const initialChannel = selectedSourceId ?? publishSources[0]?.id ?? '';
     setChannelId(initialChannel);
-  }, [selectedSourceId, sources]);
+  }, [selectedSourceId, publishSources]);
 
   useEffect(() => {
     if (!image || !channelId) {
@@ -87,9 +105,12 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
     setRemoteTier(record?.sourceId === channelId ? 'public' : 'none');
   }, [image, channelId]);
 
-  const title = image
-    ? t('access.titleWithName').replace('{name}', image.name)
-    : t('access.title');
+  const title =
+    batchImages.length > 1
+      ? t('access.titleBatch').replace('{count}', String(batchImages.length))
+      : image
+        ? t('access.titleWithName').replace('{name}', image.name)
+        : t('access.title');
 
   const selectTier = (tier: RemoteAccessTier) => {
     if (!isRemoteTierEnabled(tier, flags, hasConnection)) {
@@ -107,7 +128,7 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
       showError(t('access.cannotCopyUnsupported'));
       return;
     }
-    if (!image) {
+    if (!image && batchImages.length === 0) {
       showError(t('access.needSelectAsset'));
       return;
     }
@@ -115,7 +136,9 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
       showError(t('access.hintNeedConnectionReason'));
       return;
     }
-    if (!hasPublishableRemoteUrl(image)) {
+    const targets = batchImages.length > 0 ? batchImages : image ? [image] : [];
+    const unpublished = targets.filter(item => !hasPublishableRemoteUrl(item));
+    if (unpublished.length > 0) {
       const confirmed = window.confirm(t('access.confirmSyncThenPublish'));
       if (confirmed) {
         closeSettingsModal();
@@ -123,9 +146,11 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
       }
       return;
     }
-    markAssetPublished(image.id, channel.id);
+    for (const item of targets) {
+      markAssetPublished(item.id, channel.id);
+    }
     setPolicyTick(value => value + 1);
-    await copyTextToClipboard(resolveRemoteCopyUrl(image));
+    await copyTextToClipboard(resolveRemoteCopyUrl(targets[0]));
     showSuccess(t('access.copiedPublicUrl'));
   };
 
@@ -168,7 +193,7 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
                 value={channelId}
                 onChange={event => setChannelId(event.target.value)}
               >
-                {sources.map(source => (
+                {publishSources.map(source => (
                   <option key={source.id} value={source.id}>
                     {source.pluginId} · {formatConnectionLocation(source)}
                   </option>
@@ -233,6 +258,24 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
         <p>{t(hint.reasonKey)}</p>
         <p>{t(hint.alternativeKey)}</p>
       </aside>
+
+      <section className="access-modal-section">
+        <h3>{t('access.upcomingPublishTitle')}</h3>
+        <p className="access-modal-locked">{t('access.upcomingPublishHint')}</p>
+        <ul className="access-upcoming-list">
+          {UPCOMING_CONNECTORS.map(item => (
+            <li key={item.id} className="access-upcoming-item">
+              <div className="access-upcoming-item-head">
+                <span>{item.name}</span>
+                <span className="access-upcoming-badge">
+                  {t('settings.comingSoon')}
+                </span>
+              </div>
+              <CapabilityChips capabilities={item.capabilities} t={t} muted />
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="settings-access-actions">
         {!hasConnection ? (

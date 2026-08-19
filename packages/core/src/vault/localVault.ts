@@ -13,7 +13,7 @@ import {
   createIndexEntry,
   decodeJson,
   encodeJson,
-  isImageFilePath,
+  isIngestibleFilePath,
   nowIso,
 } from './utils';
 
@@ -178,7 +178,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       });
       let count = 0;
       for (const relativePath of files) {
-        if (!isImageFilePath(relativePath)) {
+        if (!isIngestibleFilePath(relativePath)) {
           continue;
         }
         const existsInIndex = index.some(

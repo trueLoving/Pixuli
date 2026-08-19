@@ -47,7 +47,12 @@
       "openAccess": "Publish in Settings",
       "sendCompress": "Send to compress",
       "sendConvert": "Send to convert",
-      "toolImageOnly": "Compress and convert are available for images only"
+      "toolImageOnly": "Compress and convert are available for images only",
+      "sendAi": "AI analysis",
+      "aiDesktopOnly": "Desktop only",
+      "aiReadyHint": "Edit opens so you can add tags and description. Local models are Desktop-only and must be configured first.",
+      "expandSheet": "Expand to full screen",
+      "collapseSheet": "Collapse details"
     },
     "filter": {
       "title": "Image Filter",
@@ -180,13 +185,15 @@
       "deleteSelected": "Delete",
       "batchAccessDisabled": "Publishing multiple files at once is not available yet. Open Access for one file at a time.",
       "batchScope": "Scope",
-      "badgeLocal": "Available locally"
+      "badgeLocal": "Available locally",
+      "batchDownload": "Download"
     },
     "kind": {
       "label": "Asset type",
       "image": "Images",
       "video": "Videos",
       "pdf": "PDF",
+      "other": "Other",
       "all": "All"
     },
     "edit": {
