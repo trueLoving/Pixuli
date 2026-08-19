@@ -110,8 +110,12 @@
 }
 
 .activity-bar-item--active {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--pix-violet-soft, #ede9fe);
+  color: var(--pix-violet-deep, #5b4fe0);
+}
+
+.activity-bar-item--busy {
+  color: var(--pix-cyan-deep, #22d3ee);
 }
 
 .activity-bar-item:disabled {

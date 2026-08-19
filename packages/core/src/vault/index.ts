@@ -8,6 +8,10 @@ export type { CreateSyncEngineOptions, SyncEngineBinding } from './syncEngine';
 export {
   basename,
   createIndexEntry,
+  decodeJson,
+  encodeJson,
   stablePathId,
   guessMimeType,
+  isIngestibleFilePath,
+  isImageFilePath,
 } from './utils';

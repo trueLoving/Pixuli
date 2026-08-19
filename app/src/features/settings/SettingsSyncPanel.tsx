@@ -2,9 +2,12 @@ import type { SidebarSource } from '@/ui';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';
+import { CapabilityChips } from '@/features/source-type/CapabilityChips';
+import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import { useSourceManagement } from '@/hooks/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;
@@ -41,6 +44,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
 
   const manifests = listStoragePluginManifests();
   const activeSyncSourceId = selectedSource?.id ?? null;
+  const syncStatus = useWorkspaceStore(state => state.syncStatus);
 
   useEffect(() => {
     if (settingsSyncAddOpen) {
@@ -56,9 +60,12 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
     }
   };
 
-  const handleSelectSourceType = (pluginId: string) => {
+  const handleSelectSourceType = (
+    pluginId: string,
+    purpose: ConnectionPurpose,
+  ) => {
     setAddingSource(false);
-    beginNewSource(pluginId);
+    beginNewSource(pluginId, purpose);
   };
 
   return (
@@ -124,6 +131,18 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                     scope="col"
                     className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
                   >
+                    {t('settings.tableCapabilities')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                  >
+                    {t('settings.tableHealth')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-gray-500"
+                  >
                     {t('settings.tableSyncTarget')}
                   </th>
                   <th
@@ -166,6 +185,33 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                             {source.path}
                           </span>
                         ) : null}
+                      </td>
+                      <td className="px-4 py-3">
+                        <CapabilityChips
+                          manifest={manifests.find(
+                            item => item.id === source.type,
+                          )}
+                          t={t}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-600">
+                        {(() => {
+                          const health = syncStatus?.bindings[source.id];
+                          const lastSync = health?.lastSyncAt
+                            ? new Date(health.lastSyncAt).toLocaleString()
+                            : t('settings.healthNever');
+                          const pending = health?.pendingPush ?? 0;
+                          return (
+                            <>
+                              <span className="block">
+                                {t('settings.healthLastSync')}: {lastSync}
+                              </span>
+                              <span className="mt-0.5 block text-gray-500">
+                                {t('settings.healthPending')}: {pending}
+                              </span>
+                            </>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         {isSyncTarget ? (

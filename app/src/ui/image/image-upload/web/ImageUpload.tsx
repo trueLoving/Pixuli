@@ -402,6 +402,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     onDrop,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg'],
+      'application/pdf': ['.pdf'],
+      'video/*': ['.mp4', '.webm', '.mov', '.mkv', '.avi'],
+      'text/plain': ['.txt', '.md'],
+      'application/json': ['.json'],
+      'application/zip': ['.zip'],
     },
     multiple: true, // 始终允许多选，根据文件数量决定处理方式
     onDragEnter: () => {},
@@ -937,409 +942,454 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           </div>
 
           {/* 压缩和裁剪选项 */}
-          {(enableCompression || enableCrop) && (
-            <div className="image-upload-form-group">
-              <label className="image-upload-form-label">处理选项</label>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.5rem',
-                }}
-              >
-                {enableCrop && (
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      cursor: 'pointer',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={userWantsCrop}
-                      onChange={e => setUserWantsCrop(e.target.checked)}
-                      style={{
-                        width: '1rem',
-                        height: '1rem',
-                        cursor: 'pointer',
-                      }}
-                    />
-                    <span>裁剪图片</span>
-                  </label>
-                )}
-                {enableCompression && (
-                  <>
-                    <div
+          {(enableCompression || enableCrop) &&
+            files.every(file => file.type.startsWith('image/')) && (
+              <div className="image-upload-form-group">
+                <label className="image-upload-form-label">处理选项</label>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  {enableCrop && (
+                    <label
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
                       }}
                     >
-                      <label
+                      <input
+                        type="checkbox"
+                        checked={userWantsCrop}
+                        onChange={e => setUserWantsCrop(e.target.checked)}
+                        style={{
+                          width: '1rem',
+                          height: '1rem',
+                          cursor: 'pointer',
+                        }}
+                      />
+                      <span>裁剪图片</span>
+                    </label>
+                  )}
+                  {enableCompression && (
+                    <>
+                      <div
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.5rem',
-                          cursor: 'pointer',
-                          fontSize: '0.875rem',
-                          flex: 1,
+                          justifyContent: 'space-between',
                         }}
                       >
-                        <input
-                          type="checkbox"
-                          checked={userWantsCompress}
-                          onChange={e =>
-                            handleCompressionToggle(e.target.checked)
-                          }
-                          style={{
-                            width: '1rem',
-                            height: '1rem',
-                            cursor: 'pointer',
-                          }}
-                        />
-                        <span>压缩图片</span>
-                        {calculatingCompression && (
-                          <Loader2
-                            style={{
-                              width: '0.875rem',
-                              height: '0.875rem',
-                              animation: 'spin 1s linear infinite',
-                            }}
-                          />
-                        )}
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowCompressionConfig(!showCompressionConfig)
-                        }
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
-                          color: '#0369a1',
-                          backgroundColor: 'transparent',
-                          border: '1px solid #bae6fd',
-                          borderRadius: '0.25rem',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {showCompressionConfig ? '收起配置' : '配置'}
-                      </button>
-                    </div>
-                    {/* 压缩配置面板 */}
-                    {showCompressionConfig && (
-                      <div
-                        style={{
-                          marginTop: '0.75rem',
-                          padding: '0.75rem',
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '0.375rem',
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        <div
+                        <label
                           style={{
                             display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.75rem',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            flex: 1,
                           }}
                         >
-                          {/* 质量设置 */}
-                          <div>
-                            <label
-                              style={{
-                                display: 'block',
-                                marginBottom: '0.25rem',
-                                fontWeight: 500,
-                                color: '#374151',
-                              }}
-                            >
-                              压缩质量:{' '}
-                              {Math.round(
-                                (userCompressionConfig.quality || 0.8) * 100,
-                              )}
-                              %
-                            </label>
-                            <input
-                              type="range"
-                              min="0.1"
-                              max="1"
-                              step="0.05"
-                              value={userCompressionConfig.quality || 0.8}
-                              onChange={e => {
-                                const newConfig = {
-                                  ...userCompressionConfig,
-                                  quality: parseFloat(e.target.value),
-                                };
-                                setUserCompressionConfig(newConfig);
-                                // 如果已选择压缩，重新计算预览
-                                if (userWantsCompress) {
-                                  const files = uploadData
-                                    ? [uploadData.file]
-                                    : multiUploadData
-                                      ? multiUploadData.files
-                                      : [];
-                                  if (files.length > 0) {
-                                    calculateCompressionPreview(files);
-                                  }
-                                }
-                              }}
-                              style={{ width: '100%' }}
-                            />
-                            <div
-                              style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                fontSize: '0.625rem',
-                                color: '#6b7280',
-                                marginTop: '0.125rem',
-                              }}
-                            >
-                              <span>低质量 (10%)</span>
-                              <span>高质量 (100%)</span>
-                            </div>
-                          </div>
-
-                          {/* 最大尺寸设置 */}
-                          <div
+                          <input
+                            type="checkbox"
+                            checked={userWantsCompress}
+                            onChange={e =>
+                              handleCompressionToggle(e.target.checked)
+                            }
                             style={{
-                              display: 'grid',
-                              gridTemplateColumns: '1fr 1fr',
-                              gap: '0.5rem',
+                              width: '1rem',
+                              height: '1rem',
+                              cursor: 'pointer',
                             }}
-                          >
-                            <div>
-                              <label
-                                style={{
-                                  display: 'block',
-                                  marginBottom: '0.25rem',
-                                  fontWeight: 500,
-                                  color: '#374151',
-                                }}
-                              >
-                                最大宽度 (px)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="100"
-                                value={userCompressionConfig.maxWidth || ''}
-                                onChange={e => {
-                                  const newConfig = {
-                                    ...userCompressionConfig,
-                                    maxWidth: e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : undefined,
-                                  };
-                                  setUserCompressionConfig(newConfig);
-                                  if (userWantsCompress) {
-                                    const files = uploadData
-                                      ? [uploadData.file]
-                                      : multiUploadData
-                                        ? multiUploadData.files
-                                        : [];
-                                    if (files.length > 0) {
-                                      calculateCompressionPreview(files);
-                                    }
-                                  }
-                                }}
-                                placeholder="不限制"
-                                style={{
-                                  width: '100%',
-                                  padding: '0.375rem',
-                                  border: '1px solid #d1d5db',
-                                  borderRadius: '0.25rem',
-                                  fontSize: '0.75rem',
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label
-                                style={{
-                                  display: 'block',
-                                  marginBottom: '0.25rem',
-                                  fontWeight: 500,
-                                  color: '#374151',
-                                }}
-                              >
-                                最大高度 (px)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="100"
-                                value={userCompressionConfig.maxHeight || ''}
-                                onChange={e => {
-                                  const newConfig = {
-                                    ...userCompressionConfig,
-                                    maxHeight: e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : undefined,
-                                  };
-                                  setUserCompressionConfig(newConfig);
-                                  if (userWantsCompress) {
-                                    const files = uploadData
-                                      ? [uploadData.file]
-                                      : multiUploadData
-                                        ? multiUploadData.files
-                                        : [];
-                                    if (files.length > 0) {
-                                      calculateCompressionPreview(files);
-                                    }
-                                  }
-                                }}
-                                placeholder="不限制"
-                                style={{
-                                  width: '100%',
-                                  padding: '0.375rem',
-                                  border: '1px solid #d1d5db',
-                                  borderRadius: '0.25rem',
-                                  fontSize: '0.75rem',
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* 输出格式 */}
-                          <div>
-                            <label
+                          />
+                          <span>压缩图片</span>
+                          {calculatingCompression && (
+                            <Loader2
                               style={{
-                                display: 'block',
-                                marginBottom: '0.25rem',
-                                fontWeight: 500,
-                                color: '#374151',
+                                width: '0.875rem',
+                                height: '0.875rem',
+                                animation: 'spin 1s linear infinite',
                               }}
-                            >
-                              输出格式
-                            </label>
-                            <select
-                              value={
-                                userCompressionConfig.outputFormat ||
-                                'image/jpeg'
-                              }
-                              onChange={e => {
-                                const newConfig = {
-                                  ...userCompressionConfig,
-                                  outputFormat: e.target.value as
-                                    | 'image/jpeg'
-                                    | 'image/png'
-                                    | 'image/webp',
-                                };
-                                setUserCompressionConfig(newConfig);
-                                if (userWantsCompress) {
-                                  const files = uploadData
-                                    ? [uploadData.file]
-                                    : multiUploadData
-                                      ? multiUploadData.files
-                                      : [];
-                                  if (files.length > 0) {
-                                    calculateCompressionPreview(files);
-                                  }
-                                }
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '0.375rem',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '0.25rem',
-                                fontSize: '0.75rem',
-                              }}
-                            >
-                              <option value="image/jpeg">JPEG</option>
-                              <option value="image/png">PNG</option>
-                              <option value="image/webp">WebP</option>
-                            </select>
-                          </div>
-                        </div>
+                            />
+                          )}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowCompressionConfig(!showCompressionConfig)
+                          }
+                          style={{
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.75rem',
+                            color: '#0369a1',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #bae6fd',
+                            borderRadius: '0.25rem',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {showCompressionConfig ? '收起配置' : '配置'}
+                        </button>
                       </div>
-                    )}
-                    {/* 压缩预览信息 */}
-                    {userWantsCompress &&
-                      !calculatingCompression &&
-                      Object.keys(compressionPreview).length > 0 && (
+                      {/* 压缩配置面板 */}
+                      {showCompressionConfig && (
                         <div
                           style={{
-                            marginTop: '0.5rem',
+                            marginTop: '0.75rem',
                             padding: '0.75rem',
-                            backgroundColor: '#f0f9ff',
-                            border: '1px solid #bae6fd',
+                            backgroundColor: '#f8fafc',
+                            border: '1px solid #e5e7eb',
                             borderRadius: '0.375rem',
                             fontSize: '0.75rem',
                           }}
                         >
                           <div
                             style={{
-                              fontWeight: 500,
-                              marginBottom: '0.5rem',
-                              color: '#0369a1',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.75rem',
                             }}
                           >
-                            压缩预览
-                          </div>
-                          {files.map((file, index) => {
-                            const preview = compressionPreview[file.name];
-                            if (!preview) return null;
-
-                            const formatSize = (bytes: number) => {
-                              if (bytes < 1024) return bytes + ' B';
-                              if (bytes < 1024 * 1024)
-                                return (bytes / 1024).toFixed(2) + ' KB';
-                              return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-                            };
-
-                            const sizeChanged =
-                              preview.originalSize !== preview.compressedSize;
-                            const dimensionsChanged =
-                              preview.originalDimensions.width !==
-                                preview.compressedDimensions.width ||
-                              preview.originalDimensions.height !==
-                                preview.compressedDimensions.height;
-
-                            return (
-                              <div
-                                key={index}
+                            {/* 质量设置 */}
+                            <div>
+                              <label
                                 style={{
-                                  marginBottom:
-                                    index < files.length - 1 ? '0.5rem' : 0,
-                                  paddingBottom:
-                                    index < files.length - 1 ? '0.5rem' : 0,
-                                  borderBottom:
-                                    index < files.length - 1
-                                      ? '1px solid #bae6fd'
-                                      : 'none',
+                                  display: 'block',
+                                  marginBottom: '0.25rem',
+                                  fontWeight: 500,
+                                  color: '#374151',
                                 }}
                               >
-                                <div
+                                压缩质量:{' '}
+                                {Math.round(
+                                  (userCompressionConfig.quality || 0.8) * 100,
+                                )}
+                                %
+                              </label>
+                              <input
+                                type="range"
+                                min="0.1"
+                                max="1"
+                                step="0.05"
+                                value={userCompressionConfig.quality || 0.8}
+                                onChange={e => {
+                                  const newConfig = {
+                                    ...userCompressionConfig,
+                                    quality: parseFloat(e.target.value),
+                                  };
+                                  setUserCompressionConfig(newConfig);
+                                  // 如果已选择压缩，重新计算预览
+                                  if (userWantsCompress) {
+                                    const files = uploadData
+                                      ? [uploadData.file]
+                                      : multiUploadData
+                                        ? multiUploadData.files
+                                        : [];
+                                    if (files.length > 0) {
+                                      calculateCompressionPreview(files);
+                                    }
+                                  }
+                                }}
+                                style={{ width: '100%' }}
+                              />
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  fontSize: '0.625rem',
+                                  color: '#6b7280',
+                                  marginTop: '0.125rem',
+                                }}
+                              >
+                                <span>低质量 (10%)</span>
+                                <span>高质量 (100%)</span>
+                              </div>
+                            </div>
+
+                            {/* 最大尺寸设置 */}
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '0.5rem',
+                              }}
+                            >
+                              <div>
+                                <label
                                   style={{
-                                    fontWeight: 500,
+                                    display: 'block',
                                     marginBottom: '0.25rem',
-                                    color: '#0c4a6e',
+                                    fontWeight: 500,
+                                    color: '#374151',
                                   }}
                                 >
-                                  {file.name}
-                                </div>
-                                <div style={{ color: '#075985' }}>
-                                  <div>
-                                    文件大小:{' '}
-                                    <span
-                                      style={{
-                                        textDecoration: sizeChanged
-                                          ? 'line-through'
-                                          : 'none',
-                                        color: sizeChanged
-                                          ? '#64748b'
-                                          : 'inherit',
-                                      }}
-                                    >
-                                      {formatSize(preview.originalSize)}
-                                    </span>
-                                    {sizeChanged && (
-                                      <>
+                                  最大宽度 (px)
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="100"
+                                  value={userCompressionConfig.maxWidth || ''}
+                                  onChange={e => {
+                                    const newConfig = {
+                                      ...userCompressionConfig,
+                                      maxWidth: e.target.value
+                                        ? parseInt(e.target.value, 10)
+                                        : undefined,
+                                    };
+                                    setUserCompressionConfig(newConfig);
+                                    if (userWantsCompress) {
+                                      const files = uploadData
+                                        ? [uploadData.file]
+                                        : multiUploadData
+                                          ? multiUploadData.files
+                                          : [];
+                                      if (files.length > 0) {
+                                        calculateCompressionPreview(files);
+                                      }
+                                    }
+                                  }}
+                                  placeholder="不限制"
+                                  style={{
+                                    width: '100%',
+                                    padding: '0.375rem',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.25rem',
+                                    fontSize: '0.75rem',
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  style={{
+                                    display: 'block',
+                                    marginBottom: '0.25rem',
+                                    fontWeight: 500,
+                                    color: '#374151',
+                                  }}
+                                >
+                                  最大高度 (px)
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="100"
+                                  value={userCompressionConfig.maxHeight || ''}
+                                  onChange={e => {
+                                    const newConfig = {
+                                      ...userCompressionConfig,
+                                      maxHeight: e.target.value
+                                        ? parseInt(e.target.value, 10)
+                                        : undefined,
+                                    };
+                                    setUserCompressionConfig(newConfig);
+                                    if (userWantsCompress) {
+                                      const files = uploadData
+                                        ? [uploadData.file]
+                                        : multiUploadData
+                                          ? multiUploadData.files
+                                          : [];
+                                      if (files.length > 0) {
+                                        calculateCompressionPreview(files);
+                                      }
+                                    }
+                                  }}
+                                  placeholder="不限制"
+                                  style={{
+                                    width: '100%',
+                                    padding: '0.375rem',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.25rem',
+                                    fontSize: '0.75rem',
+                                  }}
+                                />
+                              </div>
+                            </div>
+
+                            {/* 输出格式 */}
+                            <div>
+                              <label
+                                style={{
+                                  display: 'block',
+                                  marginBottom: '0.25rem',
+                                  fontWeight: 500,
+                                  color: '#374151',
+                                }}
+                              >
+                                输出格式
+                              </label>
+                              <select
+                                value={
+                                  userCompressionConfig.outputFormat ||
+                                  'image/jpeg'
+                                }
+                                onChange={e => {
+                                  const newConfig = {
+                                    ...userCompressionConfig,
+                                    outputFormat: e.target.value as
+                                      | 'image/jpeg'
+                                      | 'image/png'
+                                      | 'image/webp',
+                                  };
+                                  setUserCompressionConfig(newConfig);
+                                  if (userWantsCompress) {
+                                    const files = uploadData
+                                      ? [uploadData.file]
+                                      : multiUploadData
+                                        ? multiUploadData.files
+                                        : [];
+                                    if (files.length > 0) {
+                                      calculateCompressionPreview(files);
+                                    }
+                                  }
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.375rem',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '0.25rem',
+                                  fontSize: '0.75rem',
+                                }}
+                              >
+                                <option value="image/jpeg">JPEG</option>
+                                <option value="image/png">PNG</option>
+                                <option value="image/webp">WebP</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {/* 压缩预览信息 */}
+                      {userWantsCompress &&
+                        !calculatingCompression &&
+                        Object.keys(compressionPreview).length > 0 && (
+                          <div
+                            style={{
+                              marginTop: '0.5rem',
+                              padding: '0.75rem',
+                              backgroundColor: '#f0f9ff',
+                              border: '1px solid #bae6fd',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.75rem',
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontWeight: 500,
+                                marginBottom: '0.5rem',
+                                color: '#0369a1',
+                              }}
+                            >
+                              压缩预览
+                            </div>
+                            {files.map((file, index) => {
+                              const preview = compressionPreview[file.name];
+                              if (!preview) return null;
+
+                              const formatSize = (bytes: number) => {
+                                if (bytes < 1024) return bytes + ' B';
+                                if (bytes < 1024 * 1024)
+                                  return (bytes / 1024).toFixed(2) + ' KB';
+                                return (
+                                  (bytes / (1024 * 1024)).toFixed(2) + ' MB'
+                                );
+                              };
+
+                              const sizeChanged =
+                                preview.originalSize !== preview.compressedSize;
+                              const dimensionsChanged =
+                                preview.originalDimensions.width !==
+                                  preview.compressedDimensions.width ||
+                                preview.originalDimensions.height !==
+                                  preview.compressedDimensions.height;
+
+                              return (
+                                <div
+                                  key={index}
+                                  style={{
+                                    marginBottom:
+                                      index < files.length - 1 ? '0.5rem' : 0,
+                                    paddingBottom:
+                                      index < files.length - 1 ? '0.5rem' : 0,
+                                    borderBottom:
+                                      index < files.length - 1
+                                        ? '1px solid #bae6fd'
+                                        : 'none',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontWeight: 500,
+                                      marginBottom: '0.25rem',
+                                      color: '#0c4a6e',
+                                    }}
+                                  >
+                                    {file.name}
+                                  </div>
+                                  <div style={{ color: '#075985' }}>
+                                    <div>
+                                      文件大小:{' '}
+                                      <span
+                                        style={{
+                                          textDecoration: sizeChanged
+                                            ? 'line-through'
+                                            : 'none',
+                                          color: sizeChanged
+                                            ? '#64748b'
+                                            : 'inherit',
+                                        }}
+                                      >
+                                        {formatSize(preview.originalSize)}
+                                      </span>
+                                      {sizeChanged && (
+                                        <>
+                                          {' → '}
+                                          <span
+                                            style={{
+                                              color: '#059669',
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {formatSize(preview.compressedSize)}
+                                          </span>{' '}
+                                          <span
+                                            style={{
+                                              color:
+                                                preview.compressionRatio > 30
+                                                  ? '#059669'
+                                                  : preview.compressionRatio >
+                                                      10
+                                                    ? '#d97706'
+                                                    : '#64748b',
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            (节省{' '}
+                                            {preview.compressionRatio.toFixed(
+                                              1,
+                                            )}
+                                            %)
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+                                    {dimensionsChanged && (
+                                      <div style={{ marginTop: '0.25rem' }}>
+                                        尺寸:{' '}
+                                        <span
+                                          style={{
+                                            textDecoration: 'line-through',
+                                            color: '#64748b',
+                                          }}
+                                        >
+                                          {preview.originalDimensions.width} ×{' '}
+                                          {preview.originalDimensions.height}
+                                        </span>
                                         {' → '}
                                         <span
                                           style={{
@@ -1347,156 +1397,117 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                                             fontWeight: 500,
                                           }}
                                         >
-                                          {formatSize(preview.compressedSize)}
-                                        </span>{' '}
-                                        <span
-                                          style={{
-                                            color:
-                                              preview.compressionRatio > 30
-                                                ? '#059669'
-                                                : preview.compressionRatio > 10
-                                                  ? '#d97706'
-                                                  : '#64748b',
-                                            fontWeight: 500,
-                                          }}
-                                        >
-                                          (节省{' '}
-                                          {preview.compressionRatio.toFixed(1)}
-                                          %)
+                                          {preview.compressedDimensions.width} ×{' '}
+                                          {preview.compressedDimensions.height}
                                         </span>
-                                      </>
+                                      </div>
+                                    )}
+                                    {!sizeChanged && !dimensionsChanged && (
+                                      <div
+                                        style={{
+                                          color: '#64748b',
+                                          fontStyle: 'italic',
+                                        }}
+                                      >
+                                        文件较小，无需压缩
+                                      </div>
                                     )}
                                   </div>
-                                  {dimensionsChanged && (
-                                    <div style={{ marginTop: '0.25rem' }}>
-                                      尺寸:{' '}
-                                      <span
-                                        style={{
-                                          textDecoration: 'line-through',
-                                          color: '#64748b',
-                                        }}
-                                      >
-                                        {preview.originalDimensions.width} ×{' '}
-                                        {preview.originalDimensions.height}
-                                      </span>
-                                      {' → '}
-                                      <span
-                                        style={{
-                                          color: '#059669',
-                                          fontWeight: 500,
-                                        }}
-                                      >
-                                        {preview.compressedDimensions.width} ×{' '}
-                                        {preview.compressedDimensions.height}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {!sizeChanged && !dimensionsChanged && (
+                                  {/* 图片预览对比 */}
+                                  {(preview.originalPreviewUrl ||
+                                    preview.compressedPreviewUrl) && (
                                     <div
                                       style={{
-                                        color: '#64748b',
-                                        fontStyle: 'italic',
+                                        marginTop: '0.75rem',
+                                        display: 'grid',
+                                        gridTemplateColumns:
+                                          preview.originalPreviewUrl &&
+                                          preview.compressedPreviewUrl
+                                            ? '1fr 1fr'
+                                            : '1fr',
+                                        gap: '0.5rem',
                                       }}
                                     >
-                                      文件较小，无需压缩
+                                      {preview.originalPreviewUrl && (
+                                        <div>
+                                          <div
+                                            style={{
+                                              fontSize: '0.625rem',
+                                              color: '#64748b',
+                                              marginBottom: '0.25rem',
+                                            }}
+                                          >
+                                            原图
+                                          </div>
+                                          <div
+                                            style={{
+                                              position: 'relative',
+                                              width: '100%',
+                                              aspectRatio: '16/9',
+                                              border: '1px solid #e5e7eb',
+                                              borderRadius: '0.25rem',
+                                              overflow: 'hidden',
+                                              backgroundColor: '#f9fafb',
+                                            }}
+                                          >
+                                            <img
+                                              src={preview.originalPreviewUrl}
+                                              alt="原图预览"
+                                              style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'contain',
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+                                      {preview.compressedPreviewUrl && (
+                                        <div>
+                                          <div
+                                            style={{
+                                              fontSize: '0.625rem',
+                                              color: '#64748b',
+                                              marginBottom: '0.25rem',
+                                            }}
+                                          >
+                                            压缩后
+                                          </div>
+                                          <div
+                                            style={{
+                                              position: 'relative',
+                                              width: '100%',
+                                              aspectRatio: '16/9',
+                                              border: '1px solid #10b981',
+                                              borderRadius: '0.25rem',
+                                              overflow: 'hidden',
+                                              backgroundColor: '#f9fafb',
+                                            }}
+                                          >
+                                            <img
+                                              src={preview.compressedPreviewUrl}
+                                              alt="压缩后预览"
+                                              style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'contain',
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
-                                {/* 图片预览对比 */}
-                                {(preview.originalPreviewUrl ||
-                                  preview.compressedPreviewUrl) && (
-                                  <div
-                                    style={{
-                                      marginTop: '0.75rem',
-                                      display: 'grid',
-                                      gridTemplateColumns:
-                                        preview.originalPreviewUrl &&
-                                        preview.compressedPreviewUrl
-                                          ? '1fr 1fr'
-                                          : '1fr',
-                                      gap: '0.5rem',
-                                    }}
-                                  >
-                                    {preview.originalPreviewUrl && (
-                                      <div>
-                                        <div
-                                          style={{
-                                            fontSize: '0.625rem',
-                                            color: '#64748b',
-                                            marginBottom: '0.25rem',
-                                          }}
-                                        >
-                                          原图
-                                        </div>
-                                        <div
-                                          style={{
-                                            position: 'relative',
-                                            width: '100%',
-                                            aspectRatio: '16/9',
-                                            border: '1px solid #e5e7eb',
-                                            borderRadius: '0.25rem',
-                                            overflow: 'hidden',
-                                            backgroundColor: '#f9fafb',
-                                          }}
-                                        >
-                                          <img
-                                            src={preview.originalPreviewUrl}
-                                            alt="原图预览"
-                                            style={{
-                                              width: '100%',
-                                              height: '100%',
-                                              objectFit: 'contain',
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
-                                    )}
-                                    {preview.compressedPreviewUrl && (
-                                      <div>
-                                        <div
-                                          style={{
-                                            fontSize: '0.625rem',
-                                            color: '#64748b',
-                                            marginBottom: '0.25rem',
-                                          }}
-                                        >
-                                          压缩后
-                                        </div>
-                                        <div
-                                          style={{
-                                            position: 'relative',
-                                            width: '100%',
-                                            aspectRatio: '16/9',
-                                            border: '1px solid #10b981',
-                                            borderRadius: '0.25rem',
-                                            overflow: 'hidden',
-                                            backgroundColor: '#f9fafb',
-                                          }}
-                                        >
-                                          <img
-                                            src={preview.compressedPreviewUrl}
-                                            alt="压缩后预览"
-                                            style={{
-                                              width: '100%',
-                                              height: '100%',
-                                              objectFit: 'contain',
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                  </>
-                )}
+                              );
+                            })}
+                          </div>
+                        )}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="image-upload-form-group">
             <label className="image-upload-form-label">

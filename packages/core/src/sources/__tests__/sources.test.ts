@@ -118,6 +118,23 @@ describe('plugin config import/export', () => {
   });
 });
 
+describe('normalizeStoredSourceEntry purpose', () => {
+  it('preserves connectionPurpose on config', () => {
+    const entry = normalizeStoredSourceEntry({
+      id: 'c3',
+      label: 'o/r',
+      pluginId: 'github',
+      config: {
+        owner: 'o',
+        repo: 'r',
+        token: 't',
+        connectionPurpose: 'publishChannel',
+      },
+    });
+    expect(entry?.config.connectionPurpose).toBe('publishChannel');
+  });
+});
+
 describe('createStoredSourceEntry', () => {
   it('creates entry with timestamps', () => {
     const entry = createStoredSourceEntry({

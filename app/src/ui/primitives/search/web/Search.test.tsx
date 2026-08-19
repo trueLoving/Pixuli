@@ -25,6 +25,7 @@ vi.mock('@/ui/locales', () => ({
       'image.kind.image': '图片',
       'image.kind.video': '视频',
       'image.kind.pdf': 'PDF',
+      'image.kind.other': '其他',
     };
     return translations[key] || key;
   },

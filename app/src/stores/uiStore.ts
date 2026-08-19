@@ -9,6 +9,7 @@ import {
 } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import { create } from 'zustand';
+import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import type { SettingsSection } from '@/features/settings/settingsTypes';
 import { isStoragePluginRegistered } from '../storage/registry';
 import { useImageStore } from './imageStore';
@@ -28,10 +29,14 @@ interface UIState {
   showWorkspaceModal: boolean;
   /** 访问面板当前针对的资源；空则只改通道策略提示 */
   accessTargetImageId: string | null;
+  /** 多选发布时带入的资源 id */
+  accessTargetImageIds: string[];
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
   settingsSyncAddOpen: boolean;
+  /** 新建连接时暂存向导用途 */
+  pendingConnectionPurpose: ConnectionPurpose | null;
 
   // 编辑状态（REF-312：编辑弹窗表单数据以 sourceStore 快照为准）
   editingSourceId: string | null;
@@ -99,10 +104,10 @@ interface UIState {
   requestSync: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
-  openAccessModal: (imageId?: string) => void;
+  openAccessModal: (imageId?: string, imageIds?: string[]) => void;
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
-  beginNewSource: (pluginId: string) => void;
+  beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
 }
 
 function syncImageStoreForRepoConfig(
@@ -124,6 +129,7 @@ export const useUIStore = create<UIState>(set => ({
   showSyncDirectionModal: false,
   settingsSection: 'workspace',
   settingsSyncAddOpen: false,
+  pendingConnectionPurpose: null,
   editingSourceId: null,
   editingSourcePluginId: null,
   editingSourceRepoConfig: null,
@@ -137,6 +143,7 @@ export const useUIStore = create<UIState>(set => ({
   workspaceExplorerOpen: false,
   showWorkspaceModal: false,
   accessTargetImageId: null,
+  accessTargetImageIds: [],
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
@@ -229,6 +236,7 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: false,
       settingsSyncAddOpen: false,
       accessTargetImageId: null,
+      accessTargetImageIds: [],
     }),
   openSyncDirectionModal: () => set({ showSyncDirectionModal: true }),
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
@@ -247,11 +255,16 @@ export const useUIStore = create<UIState>(set => ({
   },
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
-  openAccessModal: (imageId?: string) =>
+  openAccessModal: (imageId?: string, imageIds?: string[]) =>
     set({
       showSettingsModal: true,
       settingsSection: 'access',
-      accessTargetImageId: imageId ?? null,
+      accessTargetImageId: imageId ?? imageIds?.[0] ?? null,
+      accessTargetImageIds: imageIds?.length
+        ? imageIds
+        : imageId
+          ? [imageId]
+          : [],
       activeMenu: 'settings',
     }),
   openSettingsModalForAddSource: () =>
@@ -262,7 +275,7 @@ export const useUIStore = create<UIState>(set => ({
       activeMenu: 'settings',
     }),
   clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
-  beginNewSource: (pluginId: string) => {
+  beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
     useImageStore.setState({
       storageType: pluginId as 'github' | 'gitee',
     });
@@ -271,6 +284,7 @@ export const useUIStore = create<UIState>(set => ({
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
       showConfigModal: true,
+      pendingConnectionPurpose: purpose ?? 'defaultSync',
     });
   },
 }));

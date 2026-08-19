@@ -1,4 +1,4 @@
-import { FolderTree, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceMigrationWizard } from '@/features/workspace/WorkspaceMigrationWizard';
@@ -24,7 +24,13 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
     <div className="workspace-welcome">
       <div className="workspace-welcome-card">
         <div className="workspace-welcome-brand">
-          <FolderTree size={40} strokeWidth={1.5} aria-hidden />
+          <img
+            src="/icon.png"
+            alt=""
+            className="workspace-welcome-logo"
+            width={72}
+            height={72}
+          />
           <h1 className="workspace-welcome-title">
             {t('workspace.welcomeTitle')}
           </h1>

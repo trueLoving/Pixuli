@@ -13,6 +13,8 @@ import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
 import { filterAssetsByKinds, getAssetKind } from '@/utils/assetKind';
 import { nextSelectedIds, pruneSelectedIds } from '@/utils/librarySelection';
+import { BrandEmptyMark } from '@/ui/brand/BrandEmptyMark';
+import { getVirtualWindow, LIBRARY_ROW_HEIGHT } from '@/utils/virtualWindow';
 import type {
   AssetKind,
   BatchUploadProgress,
@@ -29,15 +31,14 @@ import {
   getSortedImages,
 } from '@pixuli/core/utils';
 import {
+  File,
   FileText,
   FileVideo,
   Folder,
   Cloud,
   Globe,
   HardDrive,
-  Image as ImageIcon,
   RefreshCw,
-  SearchX,
   Trash2,
   Wand2,
   X,
@@ -73,7 +74,7 @@ interface AssetLibraryProps {
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onSync?: () => void;
-  onOpenAccess?: (imageId: string) => void;
+  onOpenAccess?: (imageId: string, imageIds?: string[]) => void;
   onSendCompress?: () => void;
   onSendConvert?: () => void;
 }
@@ -82,6 +83,7 @@ function kindLabel(item: ImageItem, t: (key: string) => string): string {
   const kind = getAssetKind(item);
   if (kind === 'video') return t('image.kind.video');
   if (kind === 'pdf') return t('image.kind.pdf');
+  if (kind === 'other') return t('image.kind.other');
   return t('image.kind.image');
 }
 
@@ -90,7 +92,8 @@ function FileGlyph({ item }: { item: ImageItem }) {
   if (kind === 'image') {
     return <img className="asset-library-thumb" src={item.url} alt="" />;
   }
-  const Icon = kind === 'video' ? FileVideo : FileText;
+  const Icon =
+    kind === 'video' ? FileVideo : kind === 'other' ? File : FileText;
   return (
     <span className="asset-library-thumb-icon" aria-hidden>
       <Icon size={16} />
@@ -106,6 +109,7 @@ function sortIndicator(active: boolean, order: SortOrder): string {
 function kindChipLabel(kind: AssetKind, t: (key: string) => string): string {
   if (kind === 'video') return t('image.kind.video');
   if (kind === 'pdf') return t('image.kind.pdf');
+  if (kind === 'other') return t('image.kind.other');
   return t('image.kind.image');
 }
 
@@ -147,6 +151,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const anchorIdRef = useRef<string | null>(null);
   const longPressRef = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(480);
 
   useEffect(() => {
     if (!search) return;
@@ -318,6 +325,19 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     t,
   ]);
 
+  const handleBatchDownload = useCallback(() => {
+    const selected = files.filter(file => selectedIds.includes(file.id));
+    for (const file of selected) {
+      const link = document.createElement('a');
+      link.href = file.url;
+      link.download = file.name;
+      link.rel = 'noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+  }, [files, selectedIds]);
+
   const clearLongPress = () => {
     if (longPressRef.current != null) {
       window.clearTimeout(longPressRef.current);
@@ -336,6 +356,28 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
 
   const showEmpty = !loading && files.length === 0;
   const isFilteredEmpty = showEmpty && images.length > 0;
+  const tableWindow = useMemo(
+    () =>
+      getVirtualWindow({
+        total: files.length,
+        scrollTop,
+        viewportHeight,
+        rowHeight: LIBRARY_ROW_HEIGHT,
+      }),
+    [files.length, scrollTop, viewportHeight],
+  );
+  const visibleFiles = files.slice(tableWindow.start, tableWindow.end);
+
+  useEffect(() => {
+    const el = tableWrapRef.current;
+    if (!el) return;
+    const update = () => setViewportHeight(el.clientHeight || 480);
+    update();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showEmpty, loading, files.length]);
   const filters = search?.filters;
   const filterChips = useMemo(() => {
     const chips: Array<{ key: string; label: string; clear: () => void }> = [];
@@ -531,11 +573,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         ) : showEmpty ? (
           <div className="asset-library-empty">
             <div className="asset-library-empty-icon" aria-hidden>
-              {isFilteredEmpty ? (
-                <SearchX className="h-16 w-16 opacity-50" />
-              ) : (
-                <ImageIcon className="h-16 w-16 opacity-50" />
-              )}
+              <BrandEmptyMark size={isFilteredEmpty ? 88 : 96} />
             </div>
             <h3 className="asset-library-empty-title">
               {t(
@@ -553,7 +591,11 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             </p>
           </div>
         ) : (
-          <div className="asset-library-table-wrap">
+          <div
+            className="asset-library-table-wrap"
+            ref={tableWrapRef}
+            onScroll={event => setScrollTop(event.currentTarget.scrollTop)}
+          >
             <table className="asset-library-table">
               <thead>
                 <tr>
@@ -584,7 +626,19 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {files.map(file => {
+                {tableWindow.offsetTop > 0 ? (
+                  <tr aria-hidden className="asset-library-spacer">
+                    <td
+                      colSpan={4}
+                      style={{
+                        height: tableWindow.offsetTop,
+                        padding: 0,
+                        border: 0,
+                      }}
+                    />
+                  </tr>
+                ) : null}
+                {visibleFiles.map(file => {
                   const selected = selectedIds.includes(file.id);
                   const published = Boolean(
                     sourceId && isAssetPublished(file.id, sourceId),
@@ -681,6 +735,18 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
                     </tr>
                   );
                 })}
+                {tableWindow.offsetBottom > 0 ? (
+                  <tr aria-hidden className="asset-library-spacer">
+                    <td
+                      colSpan={4}
+                      style={{
+                        height: tableWindow.offsetBottom,
+                        padding: 0,
+                        border: 0,
+                      }}
+                    />
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
@@ -698,6 +764,13 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           <button
             type="button"
             className="asset-library-chrome-btn"
+            onClick={handleBatchDownload}
+          >
+            {t('image.library.batchDownload')}
+          </button>
+          <button
+            type="button"
+            className="asset-library-chrome-btn"
             onClick={onSync}
             disabled={!onSync}
           >
@@ -707,8 +780,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           <button
             type="button"
             className="asset-library-chrome-btn"
-            disabled
-            title={t('image.library.batchAccessDisabled')}
+            onClick={() => onOpenAccess?.(selectedIds[0], selectedIds)}
+            disabled={!onOpenAccess}
           >
             {t('image.toolbar.access')}
           </button>

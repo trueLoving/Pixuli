@@ -196,9 +196,16 @@ describe('createLocalVault', () => {
     await vault.open();
 
     adapter.seedFile('images/new/shot.webp', new Uint8Array(4));
+    adapter.seedFile('images/doc.pdf', new Uint8Array(8));
     const added = await vault.scan();
-    expect(added).toBe(1);
-    expect(await vault.list()).toHaveLength(1);
-    expect((await vault.list())[0].mimeType).toBe('image/webp');
+    expect(added).toBe(2);
+    const listed = await vault.list();
+    expect(listed).toHaveLength(2);
+    expect(listed.find(item => item.name === 'shot.webp')?.mimeType).toBe(
+      'image/webp',
+    );
+    expect(listed.find(item => item.name === 'doc.pdf')?.mimeType).toBe(
+      'application/pdf',
+    );
   });
 });

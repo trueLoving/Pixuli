@@ -38,7 +38,7 @@
   width: 1rem;
   height: 1rem;
   border: 2px solid #e5e7eb;
-  border-top: 2px solid #3b82f6;
+  border-top: 2px solid var(--pix-cyan-deep, #22d3ee);
   border-radius: 50%;
   animation: asset-library-spin 1s linear infinite;
   flex-shrink: 0;
@@ -51,7 +51,7 @@
 
 .asset-library-filter-count {
   margin-left: 0.5rem;
-  color: #3b82f6;
+  color: var(--pix-violet, #7c6cf0);
 }
 
 .asset-library-chrome-btn {
@@ -186,6 +186,7 @@
 }
 
 .asset-library-row {
+  height: 2.75rem;
   cursor: pointer;
 }
 
@@ -194,11 +195,11 @@
 }
 
 .asset-library-row--selected {
-  background: #eff6ff;
+  background: var(--pix-violet-soft, #ede9fe);
 }
 
 .asset-library-row--selected:hover {
-  background: #dbeafe;
+  background: #ddd6fe;
 }
 
 .asset-library-name-cell {
@@ -257,14 +258,13 @@
   width: 2rem;
   height: 2rem;
   border: 2px solid #e5e7eb;
-  border-top: 2px solid #3b82f6;
+  border-top: 2px solid var(--pix-cyan-deep, #22d3ee);
   border-radius: 50%;
   animation: asset-library-spin 1s linear infinite;
 }
 
 .asset-library-empty-icon {
   margin-bottom: 1rem;
-  opacity: 0.5;
 }
 
 .asset-library-empty-title {
@@ -308,8 +308,8 @@
 }
 
 .asset-library-badge--synced {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #cffafe;
+  color: var(--pix-cyan-deep, #22d3ee);
 }
 
 .asset-library-badge--local-only {

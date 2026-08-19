@@ -49,7 +49,7 @@ body.fullscreen-loading-active {
 .fullscreen-loading-spinner {
   width: 48px;
   height: 48px;
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-cyan-deep, #22d3ee);
   animation: spin 1s linear infinite;
 }
 

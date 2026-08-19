@@ -6,6 +6,7 @@ import {
   getStoragePluginDisplayName,
   isKnownBuiltinPluginId,
   isStoragePluginRegistered,
+  listCapabilityFlags,
 } from '../manifestUi';
 
 const testManifest: StoragePluginManifest = {
@@ -40,5 +41,32 @@ describe('manifestUi', () => {
   it('isKnownBuiltinPluginId', () => {
     expect(isKnownBuiltinPluginId('github')).toBe(true);
     expect(isKnownBuiltinPluginId('custom')).toBe(false);
+  });
+
+  it('listCapabilityFlags reads capabilities only', () => {
+    expect(listCapabilityFlags(testManifest)).toEqual([]);
+    expect(
+      listCapabilityFlags({
+        ...testManifest,
+        id: 'custom-cloud',
+        capabilities: {
+          ...testManifest.capabilities,
+          sync: true,
+          publicUrl: true,
+          shareLink: true,
+          timedAccess: true,
+          maxUploadBytes: 1024,
+        },
+      }),
+    ).toEqual(['sync', 'publicUrl', 'shareLink', 'timedAccess', 'largeFile']);
+    expect(
+      listCapabilityFlags({
+        list: true,
+        upload: true,
+        delete: true,
+        updateMetadata: true,
+        shareLink: true,
+      }),
+    ).toEqual(['shareLink']);
   });
 });

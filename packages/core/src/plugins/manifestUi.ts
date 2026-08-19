@@ -1,4 +1,29 @@
-import type { StoragePluginManifest, StoragePluginRegistry } from './types';
+import type {
+  StorageCapabilities,
+  StoragePluginManifest,
+  StoragePluginRegistry,
+} from './types';
+
+/** 给 UI 展示的能力芯片；只读 manifest.capabilities，禁止按 pluginId 写死。 */
+export type ManifestCapabilityFlag =
+  | 'sync'
+  | 'publicUrl'
+  | 'shareLink'
+  | 'timedAccess'
+  | 'largeFile';
+
+export function listCapabilityFlags(
+  source: StoragePluginManifest | StorageCapabilities,
+): ManifestCapabilityFlag[] {
+  const caps = 'capabilities' in source ? source.capabilities : source;
+  const flags: ManifestCapabilityFlag[] = [];
+  if (caps.sync) flags.push('sync');
+  if (caps.publicUrl) flags.push('publicUrl');
+  if (caps.shareLink) flags.push('shareLink');
+  if (caps.timedAccess) flags.push('timedAccess');
+  if (typeof caps.maxUploadBytes === 'number') flags.push('largeFile');
+  return flags;
+}
 
 export function isStoragePluginRegistered(
   registry: StoragePluginRegistry,
