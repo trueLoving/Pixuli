@@ -85,6 +85,8 @@ export interface LocalVault {
     patch: Partial<Pick<LocalImageIndexEntry, 'name' | 'tags' | 'description'>>,
   ): Promise<LocalImageIndexEntry>;
   softDelete(relativePath: string): Promise<void>;
+  /** 从索引移除并删除磁盘文件（同步路径归并等内部用途） */
+  removeEntry(relativePath: string): Promise<void>;
   scan(): Promise<number>;
   updateSyncMeta(
     relativePath: string,

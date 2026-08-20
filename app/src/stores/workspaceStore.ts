@@ -40,6 +40,10 @@ import {
   hydrateAccessPolicy,
   resetAccessPolicy,
 } from '../features/access/accessPolicyStore';
+import {
+  buildSyncResultOutcome,
+  type SyncRunOutcome,
+} from '../features/workspace/syncOutcome';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
 const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
@@ -61,6 +65,7 @@ interface WorkspaceState {
   syncStatus: SyncStatusSummary | null;
   error: string | null;
   syncMessage: string | null;
+  syncOutcome: SyncRunOutcome | null;
   isLocalActive: () => boolean;
   needsWorkspaceSetup: () => boolean;
   initialize: () => Promise<void>;
@@ -79,9 +84,9 @@ interface WorkspaceState {
     relativePath: string,
     patch: { name?: string; tags?: string[]; description?: string },
   ) => Promise<void>;
-  pushPendingToRemote: () => Promise<void>;
-  pullFromRemote: () => Promise<void>;
-  runSync: (direction?: 'push' | 'pull' | 'both') => Promise<void>;
+  pushPendingToRemote: () => Promise<SyncRunOutcome>;
+  pullFromRemote: () => Promise<SyncRunOutcome>;
+  runSync: (direction?: 'push' | 'pull' | 'both') => Promise<SyncRunOutcome>;
   softDeleteLocal: (relativePath: string) => Promise<void>;
   clearError: () => void;
 }
@@ -231,6 +236,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   syncStatus: null,
   error: null,
   syncMessage: null,
+  syncOutcome: null,
 
   isLocalActive: () => {
     return isWorkspaceAvailable() && get().mode === 'local';
@@ -313,6 +319,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         displayName: folderLabel ?? config.displayName,
         loading: false,
         syncMessage: null,
+        syncOutcome: null,
       });
       await get().syncBindingsFromSources();
       await get().refreshLocalImages();
@@ -390,6 +397,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         displayName: folderLabel ?? config.displayName,
         loading: false,
         syncMessage: null,
+        syncOutcome: null,
       });
       await get().syncBindingsFromSources();
       await get().refreshLocalImages();
@@ -424,6 +432,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       syncStatus: null,
       error: null,
       syncMessage: null,
+      syncOutcome: null,
     });
     const { useImageStore } = await import('./imageStore');
     useImageStore.setState({ images: [], loading: false, error: null });
@@ -563,36 +572,49 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   },
 
   pushPendingToRemote: async () => {
-    await get().runSync('push');
+    return get().runSync('push');
   },
 
   pullFromRemote: async () => {
-    await get().runSync('pull');
+    return get().runSync('pull');
   },
 
-  runSync: async (direction = 'both') => {
+  runSync: async (direction = 'both'): Promise<SyncRunOutcome> => {
     if (get().mode !== 'local') {
-      set({ error: '请先选择本地工作区' });
-      return;
+      const outcome: SyncRunOutcome = {
+        kind: 'error',
+        parts: [{ key: 'workspace.syncNeedsLocal' }],
+      };
+      set({ error: null, syncOutcome: outcome, syncMessage: null });
+      return outcome;
     }
 
     if (resolveSelectedProvider() === null) {
-      set({ error: '请先添加并选择 GitHub/Gitee 远端源' });
-      return;
+      const outcome: SyncRunOutcome = {
+        kind: 'error',
+        parts: [{ key: 'workspace.syncNeedsRemote' }],
+      };
+      set({ error: null, syncOutcome: outcome, syncMessage: null });
+      return outcome;
     }
 
     if (direction === 'push') {
-      const entries = await getVault().list();
-      const hasPending = entries.some(
-        entry =>
-          !entry.deletedAt &&
-          (entry.syncState === 'local-only' ||
-            entry.syncState === 'pending-push'),
-      );
+      const entries = await getVault().list({ includeDeleted: true });
+      const hasPushable =
+        entries.some(entry => !entry.deletedAt) ||
+        entries.some(
+          entry =>
+            entry.deletedAt &&
+            (entry.remotePath || entry.syncState === 'pending-push'),
+        );
       const status = await getSyncEngine().getStatus();
-      if (!hasPending && status.pendingPush === 0) {
-        set({ syncMessage: '没有待推送的本地图片' });
-        return;
+      if (!hasPushable && status.pendingPush === 0) {
+        const outcome: SyncRunOutcome = {
+          kind: 'info',
+          parts: [{ key: 'workspace.syncNothingToPush' }],
+        };
+        set({ syncOutcome: outcome, syncMessage: null, error: null });
+        return outcome;
       }
     }
 
@@ -601,6 +623,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       pushing: direction === 'push' || direction === 'both',
       error: null,
       syncMessage: null,
+      syncOutcome: null,
     });
 
     try {
@@ -609,39 +632,42 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       await get().refreshSyncStatus();
 
       if (result.errors.length > 0) {
+        const outcome: SyncRunOutcome = {
+          kind: 'error',
+          parts: [{ key: 'workspace.syncFailed' }],
+          rawMessage: result.errors.map(item => item.message).join('；'),
+        };
         set({
           syncing: false,
           pushing: false,
-          error: result.errors.map(item => item.message).join('；'),
+          error: outcome.rawMessage ?? null,
+          syncOutcome: outcome,
         });
-        return;
+        return outcome;
       }
 
-      const messages: string[] = [];
-      if (result.pushed > 0) {
-        messages.push(`已推送 ${result.pushed} 项`);
-      }
-      if (result.pulled > 0) {
-        messages.push(`已拉取 ${result.pulled} 项`);
-      }
-      if (result.conflicts.length > 0) {
-        messages.push(`${result.conflicts.length} 项冲突需手动处理`);
-      }
-      if (messages.length === 0) {
-        messages.push('同步完成，无变更');
-      }
-
+      const outcome = buildSyncResultOutcome(result);
       set({
         syncing: false,
         pushing: false,
-        syncMessage: messages.join('；'),
+        syncOutcome: outcome,
+        error: null,
       });
+      return outcome;
     } catch (error) {
+      const rawMessage = error instanceof Error ? error.message : undefined;
+      const outcome: SyncRunOutcome = {
+        kind: 'error',
+        parts: [{ key: 'workspace.syncFailed' }],
+        rawMessage,
+      };
       set({
         syncing: false,
         pushing: false,
-        error: error instanceof Error ? error.message : '同步失败',
+        error: rawMessage ?? null,
+        syncOutcome: outcome,
       });
+      return outcome;
     }
   },
 
@@ -667,7 +693,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
   },
 
-  clearError: () => set({ error: null }),
+  clearError: () => set({ error: null, syncOutcome: null }),
 }));
 
 function resolveSyncBindings(): SyncEngineBinding[] {

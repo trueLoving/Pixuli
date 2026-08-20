@@ -172,6 +172,18 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       await persistIndex();
     },
 
+    async removeEntry(relativePath) {
+      const idx = index.findIndex(item => item.relativePath === relativePath);
+      if (idx < 0) {
+        return;
+      }
+      index.splice(idx, 1);
+      if (await adapter.exists(relativePath)) {
+        await adapter.deleteFile(relativePath);
+      }
+      await persistIndex();
+    },
+
     async scan() {
       const files = await adapter.listFiles(WORKSPACE_PATHS.imagesDir, {
         recursive: true,

@@ -1,4 +1,4 @@
-import { CloudDownload, CloudUpload, X } from 'lucide-react';
+import { CloudDownload, CloudUpload, Loader2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
@@ -6,6 +6,7 @@ import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { runSyncWithFeedback } from './syncFeedback';
 
 export type SyncDirectionChoice = 'pull' | 'push';
 
@@ -16,7 +17,7 @@ export const SyncDirectionModal: React.FC = () => {
   const { t } = useI18n();
   const isOpen = useUIStore(state => state.showSyncDirectionModal);
   const close = useUIStore(state => state.closeSyncDirectionModal);
-  const runSync = useWorkspaceStore(state => state.runSync);
+  const syncing = useWorkspaceStore(state => state.syncing);
   const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
@@ -24,31 +25,44 @@ export const SyncDirectionModal: React.FC = () => {
     state => state.setSelectedSourceId,
   );
   const [running, setRunning] = useState(false);
+  const [activeDirection, setActiveDirection] =
+    useState<SyncDirectionChoice | null>(null);
   const [targetId, setTargetId] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
     setTargetId(selectedSourceId ?? sources[0]?.id ?? '');
+    setActiveDirection(null);
   }, [isOpen, selectedSourceId, sources]);
 
   useEscapeKey(() => {
-    if (isOpen && !running) close();
+    if (isOpen && !running && !syncing) close();
   }, isOpen);
 
   if (!isOpen) return null;
 
+  const busy = running || syncing;
+  const loadingLabel =
+    activeDirection === 'pull'
+      ? t('workspace.pulling')
+      : activeDirection === 'push'
+        ? t('workspace.pushing')
+        : t('workspace.syncing');
+
   const handleChoose = async (direction: SyncDirectionChoice) => {
-    if (running) return;
+    if (busy) return;
     setRunning(true);
+    setActiveDirection(direction);
     try {
       if (targetId && targetId !== selectedSourceId) {
         setSelectedSourceId(targetId);
       }
-      await runSync(direction);
+      await runSyncWithFeedback(direction, t);
       await loadImages();
       close();
     } finally {
       setRunning(false);
+      setActiveDirection(null);
     }
   };
 
@@ -59,13 +73,31 @@ export const SyncDirectionModal: React.FC = () => {
       aria-modal="true"
       aria-labelledby="sync-direction-title"
       onClick={() => {
-        if (!running) close();
+        if (!busy) close();
       }}
     >
       <div
-        className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl"
+        className="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl"
         onClick={e => e.stopPropagation()}
       >
+        {busy ? (
+          <div
+            className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/85 backdrop-blur-[2px]"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <Loader2
+              size={32}
+              className="animate-spin pix-icon-accent"
+              aria-hidden
+            />
+            <p className="mt-3 text-sm font-medium text-gray-800">
+              {loadingLabel}
+            </p>
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
           <h2
             id="sync-direction-title"
@@ -76,7 +108,7 @@ export const SyncDirectionModal: React.FC = () => {
           <button
             type="button"
             onClick={close}
-            disabled={running}
+            disabled={busy}
             className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 disabled:opacity-40"
             aria-label={t('settings.close')}
           >
@@ -95,7 +127,7 @@ export const SyncDirectionModal: React.FC = () => {
               <select
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
                 value={targetId}
-                disabled={running}
+                disabled={busy}
                 onChange={event => setTargetId(event.target.value)}
               >
                 {sources.map(source => (
@@ -109,7 +141,7 @@ export const SyncDirectionModal: React.FC = () => {
 
           <button
             type="button"
-            disabled={running}
+            disabled={busy}
             onClick={() => void handleChoose('pull')}
             className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
           >
@@ -130,7 +162,7 @@ export const SyncDirectionModal: React.FC = () => {
 
           <button
             type="button"
-            disabled={running}
+            disabled={busy}
             onClick={() => void handleChoose('push')}
             className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
           >

@@ -10,6 +10,7 @@ import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
+import { runSyncWithFeedback } from './syncFeedback';
 
 interface WorkspaceMigrationWizardProps {
   onComplete?: () => void;
@@ -35,10 +36,11 @@ export const WorkspaceMigrationWizard: React.FC<
   };
 
   const handlePickLocal = async (backend?: 'opfs' | 'fsa') => {
-    const ok = await pickWorkspace(
-      backend ? { pullAfter, backend } : { pullAfter },
-    );
+    const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
+      if (pullAfter) {
+        await runSyncWithFeedback('pull', t);
+      }
       await finish();
     }
   };

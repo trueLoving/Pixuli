@@ -8,6 +8,9 @@ import type {
 } from '@pixuli/core/types';
 import { createMockResponse } from './helpers';
 
+const mockRemoteFileMissing = () =>
+  createMockResponse(false, { message: 'Not Found' }, 404);
+
 describe('GitHubStorageProvider', () => {
   let provider: GitHubStorageProvider;
   let config: GitHubConfig;
@@ -100,18 +103,21 @@ describe('GitHubStorageProvider', () => {
         tags: ['test'],
       };
 
-      // Mock uploadImageFile
-      global.fetch = vi.fn().mockResolvedValueOnce(
-        createMockResponse(true, {
-          content: {
-            sha: 'test-sha',
-            download_url:
-              'https://raw.githubusercontent.com/test-owner/test-repo/main/images/test.jpg',
-            html_url:
-              'https://github.com/test-owner/test-repo/blob/main/images/test.jpg',
-          },
-        }),
-      );
+      // Mock getContentFileSha (404) + uploadImageFile PUT
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(mockRemoteFileMissing())
+        .mockResolvedValueOnce(
+          createMockResponse(true, {
+            content: {
+              sha: 'test-sha',
+              download_url:
+                'https://raw.githubusercontent.com/test-owner/test-repo/main/images/test.jpg',
+              html_url:
+                'https://github.com/test-owner/test-repo/blob/main/images/test.jpg',
+            },
+          }),
+        );
 
       const result = await provider.uploadImage(uploadData);
 
@@ -135,19 +141,22 @@ describe('GitHubStorageProvider', () => {
         description: 'Test image',
       };
 
-      // Mock uploadImageFile
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          content: {
-            sha: 'test-sha',
-            download_url:
-              'https://raw.githubusercontent.com/test-owner/test-repo/main/images/image.jpg',
-            html_url:
-              'https://github.com/test-owner/test-repo/blob/main/images/image.jpg',
-          },
-        }),
-      } as any);
+      // Mock getContentFileSha (404) + uploadImageFile PUT
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(mockRemoteFileMissing())
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            content: {
+              sha: 'test-sha',
+              download_url:
+                'https://raw.githubusercontent.com/test-owner/test-repo/main/images/image.jpg',
+              html_url:
+                'https://github.com/test-owner/test-repo/blob/main/images/image.jpg',
+            },
+          }),
+        } as any);
 
       const result = await provider.uploadImage(uploadData);
 
@@ -166,6 +175,7 @@ describe('GitHubStorageProvider', () => {
 
       global.fetch = vi
         .fn()
+        .mockResolvedValueOnce(mockRemoteFileMissing())
         .mockResolvedValueOnce(
           createMockResponse(false, { message: 'Bad Request' }, 400),
         );
@@ -187,6 +197,7 @@ describe('GitHubStorageProvider', () => {
       // Mock getFileSha for metadata - 文件不存在
       global.fetch = vi
         .fn()
+        .mockResolvedValueOnce(mockRemoteFileMissing())
         .mockResolvedValueOnce(
           createMockResponse(true, {
             content: {
@@ -622,18 +633,21 @@ describe('GitHubStorageProvider', () => {
         name: 'test.jpg',
       };
 
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          content: {
-            sha: 'test-sha',
-            download_url:
-              'https://raw.githubusercontent.com/test-owner/test-repo/main/images/test.jpg',
-            html_url:
-              'https://github.com/test-owner/test-repo/blob/main/images/test.jpg',
-          },
-        }),
-      } as any);
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce(mockRemoteFileMissing())
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            content: {
+              sha: 'test-sha',
+              download_url:
+                'https://raw.githubusercontent.com/test-owner/test-repo/main/images/test.jpg',
+              html_url:
+                'https://github.com/test-owner/test-repo/blob/main/images/test.jpg',
+            },
+          }),
+        } as any);
 
       await provider.uploadImage(uploadData);
 
