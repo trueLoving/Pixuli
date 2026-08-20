@@ -125,12 +125,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         isMobile
           ? `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 py-2 text-sm ${
               activeSection === item.id
-                ? 'bg-white font-medium text-blue-700 shadow-sm'
+                ? 'bg-white font-medium pix-text-brand shadow-sm'
                 : 'text-gray-700'
             }`
           : `flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
               activeSection === item.id
-                ? 'border-r-2 border-blue-600 bg-white font-medium text-blue-700'
+                ? 'border-r-2 border-[color:var(--pix-violet)] bg-white font-medium pix-text-brand'
                 : 'text-gray-700 hover:bg-gray-100'
             }`
       }
@@ -229,7 +229,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-md pix-btn-primary px-4 py-2 text-sm"
           >
             {t('settings.close')}
           </button>

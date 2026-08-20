@@ -92,7 +92,7 @@ export function OfflineIndicator() {
       className={`fixed top-16 left-0 right-0 z-50 px-4 py-3 transition-all duration-300 ${
         isOnline
           ? pendingSyncCount > 0
-            ? 'bg-blue-50 border-b border-blue-200'
+            ? 'pix-sync-banner'
             : 'bg-green-50 border-b border-green-200'
           : 'bg-yellow-50 border-b border-yellow-200'
       }`}
@@ -102,8 +102,8 @@ export function OfflineIndicator() {
           <>
             {pendingSyncCount > 0 ? (
               <>
-                <Database className="w-5 h-5 text-blue-600" />
-                <p className="text-sm text-blue-800">
+                <Database className="w-5 h-5 pix-icon-accent" />
+                <p className="text-sm pix-sync-banner-text">
                   {t('pwa.sync.pending', { count: pendingSyncCount }) ||
                     `有 ${pendingSyncCount} 个操作待同步`}
                 </p>

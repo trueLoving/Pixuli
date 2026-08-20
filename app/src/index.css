@@ -2,8 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './ui/brand/pix-ui.css';
+
 :root {
   --pix-violet: #7c6cf0;
+  --pix-violet-rgb: 124, 108, 240;
   --pix-violet-deep: #5b4fe0;
   --pix-violet-soft: #ede9fe;
   --pix-cyan: #5ee1f7;
@@ -14,7 +17,10 @@
   --pix-surface: #faf8ff;
   --pix-danger: #e11d48;
   --primary-color: var(--pix-violet);
+  --primary-color-dark: var(--pix-violet-deep);
+  --primary-color-light: var(--pix-violet-soft);
   --accent-color: var(--pix-cyan);
+  --accent-color-deep: var(--pix-cyan-deep);
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;

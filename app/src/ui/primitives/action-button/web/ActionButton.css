@@ -78,7 +78,7 @@
 }
 
 .action-button:focus-visible {
-  outline: 2px solid var(--primary-color, #3b82f6);
+  outline: 2px solid var(--pix-violet);
   outline-offset: 2px;
 }
 

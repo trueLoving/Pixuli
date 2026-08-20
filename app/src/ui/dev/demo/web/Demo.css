@@ -39,7 +39,7 @@
   left: -32px;
   width: 96px;
   height: 96px;
-  background: rgba(191, 219, 254, 0.6); /* blue-200 */
+  background: color-mix(in srgb, var(--pix-violet-soft) 60%, transparent);
 }
 
 .demo-banner-header {

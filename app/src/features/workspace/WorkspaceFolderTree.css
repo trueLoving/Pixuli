@@ -77,8 +77,8 @@
 }
 
 .workspace-tree-row--active {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--pix-violet-soft);
+  color: var(--pix-violet-deep);
 }
 
 .workspace-tree-toggle {

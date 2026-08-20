@@ -227,7 +227,7 @@ export const ConvertPage: React.FC = () => {
             type="button"
             onClick={handleConvert}
             disabled={!files.length || processing}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg pix-btn-primary px-4 py-2 disabled:opacity-50"
           >
             {processing ? (
               <>

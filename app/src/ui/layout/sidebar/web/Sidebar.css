@@ -146,13 +146,13 @@
 }
 
 .sidebar-collapsed-item.active {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--pix-violet-rgb), 0.3);
 }
 
 .sidebar-collapsed-item.active:hover {
-  background: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
   transform: scale(1.1);
 }
 
@@ -259,13 +259,13 @@
 }
 
 .sidebar-collapsed-source-item.active {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--pix-violet-rgb), 0.3);
 }
 
 .sidebar-collapsed-source-item.active:hover {
-  background: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
 }
 
 .gitee-icon-small {
@@ -297,7 +297,7 @@
 .sidebar-collapsed-add-btn {
   width: 56px;
   height: 56px;
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   border: none;
   border-radius: 12px;
   color: white;
@@ -311,16 +311,16 @@
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 4px rgba(var(--pix-violet-rgb), 0.2);
   will-change: transform, background-color, box-shadow;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 .sidebar-collapsed-add-btn:hover {
-  background: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(var(--pix-violet-rgb), 0.4);
 }
 
 /* 折叠状态 - 筛选选项 */
@@ -465,7 +465,7 @@
 .sidebar-nav-item.active {
   background: var(--active-bg, #e5e7eb);
   color: var(--text-primary, #111827);
-  border-left: 3px solid var(--primary-color, #3b82f6);
+  border-left: 3px solid var(--pix-violet);
 }
 
 .sidebar-nav-item.disabled {
@@ -625,7 +625,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.5rem;
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
   border: none;
   border-radius: 6px;
@@ -636,7 +636,7 @@
 }
 
 .sidebar-add-button:hover {
-  background: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
 }
 
 /* 仓库源列表 */
@@ -754,7 +754,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   flex-shrink: 0;
 }
 

@@ -107,7 +107,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick()}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
             >
               <FolderOpen size={16} />
               {loading
@@ -120,7 +120,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick('fsa')}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
             >
               <FolderSync size={16} />
               {loading ? t('workspace.picking') : t('workspace.connectFolder')}
@@ -131,10 +131,8 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick('opfs')}
               disabled={loading}
-              className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 ${
-                canPickFolder
-                  ? 'border border-blue-300 bg-white text-blue-800 hover:bg-blue-50'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm disabled:opacity-60 ${
+                canPickFolder ? 'pix-btn-secondary' : 'pix-btn-primary'
               }`}
             >
               <FolderOpen size={16} />
@@ -148,7 +146,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick()}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
             >
               <FolderOpen size={16} />
               {loading ? t('workspace.picking') : t('workspace.pickFolder')}

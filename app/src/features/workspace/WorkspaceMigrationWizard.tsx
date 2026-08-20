@@ -52,7 +52,7 @@ export const WorkspaceMigrationWizard: React.FC<
       }
     >
       <div
-        className={`${embedded ? '' : 'max-w-lg mx-auto '}rounded-xl border border-blue-200 bg-white p-8 shadow-sm`.trim()}
+        className={`${embedded ? '' : 'max-w-lg mx-auto '}rounded-xl border pix-border-soft bg-white p-8 shadow-sm`.trim()}
       >
         <h2 className="text-lg font-semibold text-gray-900 mb-2">
           {t('workspace.migrationTitle')}
@@ -67,7 +67,7 @@ export const WorkspaceMigrationWizard: React.FC<
 
         <div className="rounded-lg border border-gray-200 p-4">
           <div className="flex items-start gap-3">
-            <FolderOpen className="mt-0.5 shrink-0 text-blue-600" size={22} />
+            <FolderOpen className="mt-0.5 shrink-0 pix-icon-brand" size={22} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-gray-900">
                 {isMobileWorkspace
@@ -98,7 +98,7 @@ export const WorkspaceMigrationWizard: React.FC<
                     type="button"
                     onClick={() => void handlePickLocal()}
                     disabled={loading}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2.5 text-sm disabled:opacity-60"
                   >
                     <FolderOpen size={16} />
                     {loading
@@ -111,7 +111,7 @@ export const WorkspaceMigrationWizard: React.FC<
                     type="button"
                     onClick={() => void handlePickLocal('fsa')}
                     disabled={loading}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2.5 text-sm disabled:opacity-60"
                   >
                     <FolderSync size={16} />
                     {loading
@@ -124,10 +124,8 @@ export const WorkspaceMigrationWizard: React.FC<
                     type="button"
                     onClick={() => void handlePickLocal('opfs')}
                     disabled={loading}
-                    className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium disabled:opacity-60 ${
-                      canPickFolder
-                        ? 'border border-blue-300 bg-white text-blue-800 hover:bg-blue-50'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    className={`inline-flex w-full items-center justify-center gap-2 disabled:opacity-60 ${
+                      canPickFolder ? 'pix-btn-secondary' : 'pix-btn-primary'
                     }`}
                   >
                     <FolderOpen size={16} />
@@ -141,7 +139,7 @@ export const WorkspaceMigrationWizard: React.FC<
                     type="button"
                     onClick={() => void handlePickLocal()}
                     disabled={loading}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                    className="inline-flex w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2.5 text-sm disabled:opacity-60"
                   >
                     <FolderOpen size={16} />
                     {loading

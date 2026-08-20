@@ -55,7 +55,7 @@ export const SettingsVersionPanel: React.FC<SettingsVersionPanelProps> = ({
           onClick={() => setActiveTab('basic')}
           className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
             activeTab === 'basic'
-              ? 'bg-blue-100 text-blue-800'
+              ? 'pix-badge-brand'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
@@ -67,7 +67,7 @@ export const SettingsVersionPanel: React.FC<SettingsVersionPanelProps> = ({
           onClick={() => setActiveTab('frameworks')}
           className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
             activeTab === 'frameworks'
-              ? 'bg-blue-100 text-blue-800'
+              ? 'pix-badge-brand'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
@@ -79,7 +79,7 @@ export const SettingsVersionPanel: React.FC<SettingsVersionPanelProps> = ({
           onClick={() => setActiveTab('dependencies')}
           className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
             activeTab === 'dependencies'
-              ? 'bg-blue-100 text-blue-800'
+              ? 'pix-badge-brand'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >

@@ -43,7 +43,7 @@
 .keyboard-help-modal-icon-container {
   width: 2.5rem;
   height: 2.5rem;
-  background-color: #dbeafe;
+  background-color: var(--pix-violet-soft);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
 .keyboard-help-modal-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: #2563eb;
+  color: var(--pix-violet-deep);
 }
 
 .keyboard-help-modal-title-text {
@@ -180,7 +180,7 @@
 .keyboard-help-tips {
   margin-top: 2rem;
   padding: 1rem;
-  background-color: #eff6ff;
+  background-color: var(--pix-violet-soft);
   border-radius: 0.5rem;
   border: 1px solid #bfdbfe;
 }

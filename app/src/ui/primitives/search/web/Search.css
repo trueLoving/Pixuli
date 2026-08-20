@@ -51,13 +51,13 @@
 .search-filter-button:hover {
   background: var(--hover-bg, #f3f4f6);
   color: var(--text-primary, #111827);
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .search-filter-button.active {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .search-filter-badge {
@@ -102,7 +102,7 @@
 
 .search-filter-clear {
   font-size: 0.75rem;
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   background: none;
   border: none;
   cursor: pointer;
@@ -156,7 +156,7 @@
 
 .search-filter-option:hover {
   background: var(--hover-bg, #f3f4f6);
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .search-filter-option input[type='checkbox'] {
@@ -165,13 +165,13 @@
 }
 
 .search-filter-option input[type='checkbox']:checked + span {
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   font-weight: 500;
 }
 
 .search-filter-option:has(input[type='checkbox']:checked) {
-  background: var(--primary-color-light, #dbeafe);
-  border-color: var(--primary-color, #3b82f6);
+  background: var(--pix-violet-soft);
+  border-color: var(--pix-violet);
 }
 
 /* 标签筛选样式（Image variant） */
@@ -240,11 +240,11 @@
 }
 
 .search-tag-button:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .search-tag-button.selected {
-  background-color: #2563eb;
+  background-color: var(--pix-violet-deep);
   color: white;
 }
 

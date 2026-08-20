@@ -155,13 +155,21 @@ body {
 
 /* 拖拽状态 */
 .drag-over {
-  border-color: #3b82f6;
-  background-color: #eff6ff;
+  border-color: var(--pix-violet);
+  background-color: var(--pix-violet-soft);
 }
 
 /* 按钮状态 */
 .btn-primary {
-  @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors;
+  background-color: var(--pix-violet);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--pix-violet-deep);
 }
 
 .btn-secondary {
@@ -174,7 +182,8 @@ body {
 
 /* 表单样式 */
 .form-input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2;
+  --tw-ring-color: var(--pix-violet);
 }
 
 .form-label {
@@ -205,7 +214,8 @@ body {
 }
 
 .tag-primary {
-  @apply bg-blue-100 text-blue-800;
+  background-color: var(--pix-violet-soft);
+  color: var(--pix-violet-deep);
 }
 
 .tag-secondary {

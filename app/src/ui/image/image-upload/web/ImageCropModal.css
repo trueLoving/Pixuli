@@ -128,7 +128,7 @@
 
 .image-crop-control-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .image-crop-control-icon {
@@ -191,7 +191,7 @@
 }
 
 .image-crop-button-secondary:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .image-crop-button-skip {
@@ -210,18 +210,18 @@
 }
 
 .image-crop-button-primary {
-  background-color: #3b82f6;
+  background-color: var(--pix-violet);
   color: #ffffff;
-  border-color: #3b82f6;
+  border-color: var(--pix-violet);
 }
 
 .image-crop-button-primary:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: var(--pix-violet-deep);
+  border-color: var(--pix-violet-deep);
 }
 
 .image-crop-button-primary:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .image-crop-button-primary:disabled {
@@ -289,22 +289,22 @@
 }
 
 .ReactCrop__crop-selection {
-  border: 2px solid #3b82f6;
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+  border: 2px solid var(--pix-violet);
+  box-shadow: 0 0 0 1px rgba(var(--pix-violet-rgb), 0.3);
 }
 
 .ReactCrop__drag-handle {
-  background-color: #3b82f6;
+  background-color: var(--pix-violet);
   border: 2px solid #ffffff;
   width: 12px;
   height: 12px;
 }
 
 .ReactCrop__drag-handle:hover {
-  background-color: #2563eb;
+  background-color: var(--pix-violet-deep);
 }
 
 .ReactCrop__crop-selection:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.5);
 }
