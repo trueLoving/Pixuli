@@ -73,12 +73,12 @@
 }
 
 .image-action-menu__labeled-button--primary {
-  background: #2563eb;
+  background: var(--pix-violet-deep);
   color: #fff;
 }
 
 .image-action-menu__labeled-button--primary:hover {
-  background: #1d4ed8;
+  background: var(--pix-violet-deep);
 }
 
 .image-action-menu__labeled-button--secondary {

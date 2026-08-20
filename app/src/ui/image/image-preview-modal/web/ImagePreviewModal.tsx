@@ -1,12 +1,7 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@/ui/locales';
 import { ImageItem } from '@pixuli/core/types';
-import {
-  ImageActionMenu,
-  PREVIEW_ACTIONS,
-  type ImageActionHandlers,
-} from '../../image-actions/web';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {
@@ -17,11 +12,6 @@ interface ImagePreviewModalProps {
   onClose: () => void;
   onNavigate?: (index: number) => void;
   formatFileSize?: (size: number) => string;
-  onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
-  onShareImage?: (image: ImageItem) => Promise<void>;
-  onOpenUrl?: (url: string) => void;
-  onEdit?: (image: ImageItem) => void;
-  onDelete?: (image: ImageItem) => void;
   t?: (key: string) => string;
 }
 
@@ -33,11 +23,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   onClose,
   onNavigate,
   formatFileSize = (size: number) => `${(size / 1024 / 1024).toFixed(2)} MB`,
-  onCopyUrl,
-  onShareImage,
-  onOpenUrl,
-  onEdit,
-  onDelete,
   t,
 }) => {
   const translate = t || defaultTranslate;
@@ -81,33 +66,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, handlePrevious, handleNext, onClose]);
-
-  const publicUrl = image
-    ? image.publicUrl || image.githubUrl || image.url
-    : '';
-
-  const actionHandlers = useMemo<ImageActionHandlers>(() => {
-    if (!image) return {};
-    return {
-      copyUrl: onCopyUrl
-        ? () => {
-            void onCopyUrl(publicUrl, 'url');
-          }
-        : undefined,
-      openUrl: onOpenUrl
-        ? () => {
-            onOpenUrl(publicUrl);
-          }
-        : undefined,
-      share: onShareImage
-        ? () => {
-            void onShareImage(image);
-          }
-        : undefined,
-      edit: onEdit ? () => onEdit(image) : undefined,
-      delete: onDelete ? () => onDelete(image) : undefined,
-    };
-  }, [image, onCopyUrl, onDelete, onEdit, onOpenUrl, onShareImage, publicUrl]);
 
   if (!isOpen || !image) {
     return null;
@@ -190,15 +148,6 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <div className="image-preview-modal-detail-item">
               <span>{formatDate(image.createdAt)}</span>
             </div>
-          </div>
-
-          <div className="image-preview-modal-actions">
-            <ImageActionMenu
-              variant="labeled-bar"
-              actions={PREVIEW_ACTIONS}
-              handlers={actionHandlers}
-              t={translate}
-            />
           </div>
         </div>
       </div>

@@ -132,7 +132,7 @@ const VersionInfoModal: React.FC<VersionInfoModalProps> = ({
                     <div className="version-info-modal-card-header">
                       <Package
                         className="version-info-modal-card-icon"
-                        style={{ color: '#2563eb' }}
+                        style={{ color: 'var(--pix-violet-deep)' }}
                       />
                       <span className="version-info-modal-card-label">
                         {t('version.basic.name')}
@@ -206,10 +206,7 @@ const VersionInfoModal: React.FC<VersionInfoModalProps> = ({
 
                 <div className="version-info-modal-card">
                   <div className="version-info-modal-card-header">
-                    <Info
-                      className="version-info-modal-card-icon"
-                      style={{ color: '#2563eb' }}
-                    />
+                    <Info className="version-info-modal-card-icon pix-icon-brand" />
                     <span className="version-info-modal-card-label">
                       {t('version.basic.description')}
                     </span>

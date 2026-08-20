@@ -86,7 +86,7 @@
 
 .image-preview-modal-image {
   max-width: 85vw;
-  max-height: 65vh;
+  max-height: 75vh;
   object-fit: contain;
   border-radius: 0.75rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -136,7 +136,6 @@
   gap: 1rem;
   font-size: 0.85rem;
   color: #d1d5db;
-  margin-bottom: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -145,48 +144,6 @@
   align-items: center;
   gap: 0.25rem;
   white-space: nowrap;
-}
-
-.image-preview-modal-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-
-.image-preview-modal-action-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease-in-out;
-  min-width: 100px;
-  justify-content: center;
-}
-
-.image-preview-modal-action-button-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.image-preview-modal-action-button-primary:hover {
-  background-color: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-}
-
-.image-preview-modal-action-button-secondary {
-  background-color: #059669;
-  color: white;
-}
-
-.image-preview-modal-action-button-secondary:hover {
-  background-color: #047857;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
 }
 
 /* 响应式设计 */
@@ -199,7 +156,7 @@
 
   .image-preview-modal-image {
     max-width: 90vw;
-    max-height: 55vh;
+    max-height: 65vh;
   }
 
   .image-preview-modal-close {
@@ -234,17 +191,6 @@
     flex-direction: column;
     gap: 0.5rem;
   }
-
-  .image-preview-modal-actions {
-    flex-direction: column;
-    gap: 0.75rem;
-    width: 100%;
-  }
-
-  .image-preview-modal-action-button {
-    width: 100%;
-    max-width: 200px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -256,7 +202,7 @@
 
   .image-preview-modal-image {
     max-width: 90vw;
-    max-height: 45vh;
+    max-height: 58vh;
   }
 
   .image-preview-modal-close {

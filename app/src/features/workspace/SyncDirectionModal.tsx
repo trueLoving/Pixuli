@@ -111,11 +111,11 @@ export const SyncDirectionModal: React.FC = () => {
             type="button"
             disabled={running}
             onClick={() => void handleChoose('pull')}
-            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"
+            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
           >
             <CloudDownload
               size={22}
-              className="mt-0.5 shrink-0 text-blue-600"
+              className="mt-0.5 shrink-0 pix-icon-accent"
               aria-hidden
             />
             <span>
@@ -132,11 +132,11 @@ export const SyncDirectionModal: React.FC = () => {
             type="button"
             disabled={running}
             onClick={() => void handleChoose('push')}
-            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"
+            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
           >
             <CloudUpload
               size={22}
-              className="mt-0.5 shrink-0 text-blue-600"
+              className="mt-0.5 shrink-0 pix-icon-accent"
               aria-hidden
             />
             <span>

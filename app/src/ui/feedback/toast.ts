@@ -8,6 +8,15 @@ interface ToastInfo {
   getMessage?: () => string;
 }
 
+const TOAST_INFO_STYLE = {
+  background: 'var(--pix-violet)',
+  color: '#fff',
+  fontSize: '14px',
+  padding: '12px 16px',
+  borderRadius: '8px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+} as const;
+
 const activeToasts = new Map<string, ToastInfo>();
 
 // 成功消息提示
@@ -126,14 +135,7 @@ export const showInfo = (
     duration: 3000,
     position: 'top-right',
     icon: 'ℹ️',
-    style: {
-      background: '#3b82f6',
-      color: '#fff',
-      fontSize: '14px',
-      padding: '12px 16px',
-      borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-    },
+    style: TOAST_INFO_STYLE,
   });
 
   if (options?.messageKey || options?.getMessage) {
@@ -339,14 +341,7 @@ export const updateAllToasts = (translate: (key: string) => string) => {
           id: toastId,
           duration: 3000,
           icon: 'ℹ️',
-          style: {
-            background: '#3b82f6',
-            color: '#fff',
-            fontSize: '14px',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          },
+          style: TOAST_INFO_STYLE,
         });
         // 在 duration 后自动清理记录
         setTimeout(() => {

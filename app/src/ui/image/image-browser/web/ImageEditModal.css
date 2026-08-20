@@ -117,8 +117,8 @@
 
 .image-edit-form-input:focus {
   ring: 2px;
-  ring-color: #3b82f6;
-  border-color: #3b82f6;
+  ring-color: var(--pix-violet);
+  border-color: var(--pix-violet);
 }
 
 .image-edit-form-textarea {
@@ -133,8 +133,8 @@
 
 .image-edit-form-textarea:focus {
   ring: 2px;
-  ring-color: #3b82f6;
-  border-color: #3b82f6;
+  ring-color: var(--pix-violet);
+  border-color: var(--pix-violet);
 }
 
 .image-edit-form-description {
@@ -161,7 +161,7 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background-color: #3b82f6;
+  background-color: var(--pix-violet);
   color: white;
   border-radius: 0.25rem;
   font-size: 0.875rem;
@@ -224,12 +224,12 @@
 }
 
 .image-edit-button-primary {
-  background-color: #2563eb;
+  background-color: var(--pix-violet-deep);
   color: white;
 }
 
 .image-edit-button-primary:hover {
-  background-color: #1d4ed8;
+  background-color: var(--pix-violet-deep);
 }
 
 .image-edit-button-primary:disabled {

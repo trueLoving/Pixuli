@@ -118,7 +118,7 @@ describe('toast工具函数', () => {
         position: 'top-right',
         icon: 'ℹ️',
         style: expect.objectContaining({
-          background: '#3b82f6',
+          background: 'var(--pix-violet)',
           color: '#fff',
         }),
       });

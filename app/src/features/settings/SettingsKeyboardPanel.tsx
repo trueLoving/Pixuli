@@ -29,12 +29,12 @@ export const SettingsKeyboardPanel: React.FC<SettingsKeyboardPanelProps> = ({
 
   const getCategoryIcon = (name: string) => {
     if (name === t('keyboard.categories.general')) {
-      return <Command size={16} className="text-blue-600" />;
+      return <Command size={16} className="pix-icon-brand" />;
     }
     if (name === t('keyboard.categories.browsing')) {
-      return <RefreshCw size={16} className="text-blue-600" />;
+      return <RefreshCw size={16} className="pix-icon-accent" />;
     }
-    return <Zap size={16} className="text-blue-600" />;
+    return <Zap size={16} className="pix-icon-brand" />;
   };
 
   return (
@@ -70,7 +70,7 @@ export const SettingsKeyboardPanel: React.FC<SettingsKeyboardPanelProps> = ({
         </section>
       ))}
 
-      <section className="rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3">
+      <section className="rounded-lg border pix-border-soft pix-panel-soft px-4 py-3">
         <h4 className="text-sm font-medium text-gray-900">
           {t('keyboard.usageTips.title')}
         </h4>

@@ -89,11 +89,11 @@ export function PWAInstallPrompt() {
   if (showUpdate) {
     return (
       <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
-        <div className="bg-white rounded-lg shadow-lg border border-blue-200 p-4 flex items-center justify-between gap-4">
+        <div className="bg-white rounded-lg shadow-lg border pix-border-soft p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="pix-icon-box">
               <RefreshCw
-                className={`w-5 h-5 text-blue-600 ${isUpdating ? 'animate-spin' : ''}`}
+                className={`w-5 h-5 pix-icon-accent ${isUpdating ? 'animate-spin' : ''}`}
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ export function PWAInstallPrompt() {
             <button
               onClick={handleUpdate}
               disabled={isUpdating}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="px-4 py-2 pix-btn-primary text-sm pix-focus-ring disabled:opacity-50"
             >
               {t('pwa.update.button') || '更新'}
             </button>
@@ -134,8 +134,8 @@ export function PWAInstallPrompt() {
     <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50">
       <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Download className="w-5 h-5 text-blue-600" />
+          <div className="pix-icon-box">
+            <Download className="w-5 h-5 pix-icon-brand" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900">
@@ -153,7 +153,7 @@ export function PWAInstallPrompt() {
           {canPrompt && (
             <button
               onClick={handleInstall}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="px-4 py-2 pix-btn-primary text-sm pix-focus-ring"
             >
               {t('pwa.install.button') || '安装'}
             </button>

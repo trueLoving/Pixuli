@@ -14,8 +14,8 @@
 
 .search-bar.focused {
   background: var(--search-bg-focused, #ffffff);
-  border-color: var(--primary-color, #3b82f6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--pix-violet);
+  box-shadow: 0 0 0 3px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .search-bar.disabled {
@@ -125,7 +125,7 @@
 
 .search-history-clear-all {
   font-size: 0.75rem;
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   background: none;
   border: none;
   cursor: pointer;

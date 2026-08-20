@@ -697,34 +697,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             if (next) setPreviewImage(next);
           }}
           formatFileSize={formatFileSize}
-          onCopyUrl={async (url, type) => {
-            if (
-              previewImage &&
-              onCopyRemoteAccess &&
-              onCopyRemoteAccess(previewImage) === false
-            ) {
-              return;
-            }
-            if (onCopyUrl) await onCopyUrl(url, type);
-          }}
-          onShareImage={onShareImage}
-          onOpenUrl={url => window.open(url, '_blank')}
-          onEdit={
-            onUpdateImage
-              ? () => {
-                  setShowPreview(false);
-                  setShowEdit(true);
-                }
-              : undefined
-          }
-          onDelete={
-            onDeleteImage
-              ? () => {
-                  setShowPreview(false);
-                  void handleDelete();
-                }
-              : undefined
-          }
           t={t}
         />
       ) : null}

@@ -161,7 +161,7 @@
   display: block;
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
-  color: #1d4ed8;
+  color: var(--pix-violet-deep);
 }
 
 .asset-inspector-section {

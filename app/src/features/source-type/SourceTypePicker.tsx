@@ -78,7 +78,7 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
   const selected = manifests.find(item => item.id === pluginId);
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50/40 p-4">
+    <div className="pix-panel-soft rounded-lg p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-900">
           {pluginId
@@ -134,7 +134,7 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
             </button>
             <button
               type="button"
-              className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-md pix-btn-primary px-3 py-1.5 text-sm"
               onClick={() => onSelect(pluginId, purpose)}
             >
               {t('settings.wizardContinue')}
@@ -153,7 +153,7 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
                 key={manifest.id}
                 type="button"
                 onClick={() => setPluginId(manifest.id)}
-                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors hover:border-blue-400 hover:bg-blue-50"
+                className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors pix-hover-card"
               >
                 <PluginTypeIcon pluginId={manifest.id} name={manifest.name} />
                 <div className="min-w-0 flex-1">

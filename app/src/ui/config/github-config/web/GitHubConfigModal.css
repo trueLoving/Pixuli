@@ -181,8 +181,8 @@
 
 .github-config-form-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  border-color: var(--pix-violet);
+  box-shadow: 0 0 0 2px rgba(var(--pix-violet-rgb), 0.1);
 }
 
 .github-config-form-description {
@@ -226,7 +226,7 @@
 
 .github-config-help-item-list li:before {
   content: '•';
-  color: #3b82f6;
+  color: var(--pix-violet);
   font-weight: bold;
   margin-right: 0.5rem;
 }
@@ -257,14 +257,14 @@
 }
 
 .github-config-button-primary {
-  background-color: #2563eb;
+  background-color: var(--pix-violet-deep);
   color: white;
-  border-color: #2563eb;
+  border-color: var(--pix-violet-deep);
 }
 
 .github-config-button-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
+  background-color: var(--pix-violet-deep);
+  border-color: var(--pix-violet-deep);
 }
 
 .github-config-button-primary:focus {
@@ -301,12 +301,12 @@
 
 .github-config-button-info {
   background-color: white;
-  color: #2563eb;
-  border-color: #93c5fd;
+  color: var(--pix-violet-deep);
+  border-color: var(--pix-lilac);
 }
 
 .github-config-button-info:hover {
-  background-color: #eff6ff;
+  background-color: var(--pix-violet-soft);
 }
 
 .github-config-button-info:focus {
@@ -354,7 +354,7 @@
 }
 
 .github-config-help-card-blue {
-  background-color: #eff6ff;
+  background-color: var(--pix-violet-soft);
 }
 
 .github-config-help-card-green {
@@ -383,7 +383,7 @@
 }
 
 .github-config-help-list-blue {
-  color: #1d4ed8;
+  color: var(--pix-violet-deep);
 }
 
 .github-config-help-list-green {
@@ -443,7 +443,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background-color: #3b82f6;
+  background-color: var(--pix-violet);
   border: none;
   border-radius: 0.375rem;
   color: white;
@@ -454,7 +454,7 @@
 }
 
 .github-config-form-save-button:hover {
-  background-color: #2563eb;
+  background-color: var(--pix-violet-deep);
 }
 
 /* 响应式设计 */

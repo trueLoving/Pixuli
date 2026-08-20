@@ -161,7 +161,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                   return (
                     <tr
                       key={source.id}
-                      className={isSyncTarget ? 'bg-blue-50/60' : undefined}
+                      className={isSyncTarget ? 'pix-row-target' : undefined}
                     >
                       <td className="px-4 py-3">
                         <div className="flex min-w-0 items-center gap-2">
@@ -215,7 +215,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                       </td>
                       <td className="px-4 py-3">
                         {isSyncTarget ? (
-                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                          <span className="inline-flex items-center rounded-full pix-badge-brand px-2 py-0.5 text-xs font-medium">
                             {t('settings.currentSyncTarget')}
                           </span>
                         ) : (
@@ -223,7 +223,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                             type="button"
                             disabled={unavailable}
                             onClick={() => handleSourceSelect(source.id)}
-                            className="text-xs text-blue-700 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                            className="pix-link text-xs disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
                           >
                             {t('settings.setSyncTarget')}
                           </button>

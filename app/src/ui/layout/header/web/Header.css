@@ -91,14 +91,14 @@
 }
 
 .header-button.primary {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .header-button.primary:hover:not(:disabled) {
-  background: var(--primary-color-dark, #2563eb);
-  border-color: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
+  border-color: var(--pix-violet-deep);
 }
 
 .header-button.icon-only {
@@ -145,7 +145,7 @@
 }
 
 .header-view-button.active {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
 }
 
@@ -174,13 +174,13 @@
 .header-filter-button:hover {
   background: var(--hover-bg, #f3f4f6);
   color: var(--text-primary, #111827);
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .header-filter-button.active {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .header-filter-badge {
@@ -225,7 +225,7 @@
 
 .header-filter-clear {
   font-size: 0.75rem;
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   background: none;
   border: none;
   cursor: pointer;
@@ -279,7 +279,7 @@
 
 .header-filter-option:hover {
   background: var(--hover-bg, #f3f4f6);
-  border-color: var(--primary-color, #3b82f6);
+  border-color: var(--pix-violet);
 }
 
 .header-filter-option input[type='checkbox'] {
@@ -288,13 +288,13 @@
 }
 
 .header-filter-option input[type='checkbox']:checked + span {
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   font-weight: 500;
 }
 
 .header-filter-option:has(input[type='checkbox']:checked) {
-  background: var(--primary-color-light, #dbeafe);
-  border-color: var(--primary-color, #3b82f6);
+  background: var(--pix-violet-soft);
+  border-color: var(--pix-violet);
 }
 
 .mobile-menu-btn {

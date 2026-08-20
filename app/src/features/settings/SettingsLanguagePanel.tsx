@@ -31,7 +31,7 @@ export const SettingsLanguagePanel: React.FC<SettingsLanguagePanelProps> = ({
                 type="button"
                 className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors ${
                   active
-                    ? 'bg-blue-50 font-medium text-blue-700'
+                    ? 'pix-nav-active font-medium'
                     : 'text-gray-800 hover:bg-gray-50'
                 }`}
                 onClick={() => changeLanguage(lang.code)}
@@ -43,7 +43,7 @@ export const SettingsLanguagePanel: React.FC<SettingsLanguagePanelProps> = ({
                   <span>{lang.name}</span>
                 </span>
                 {active ? (
-                  <Check size={18} className="shrink-0 text-blue-600" />
+                  <Check size={18} className="shrink-0 pix-icon-brand" />
                 ) : null}
               </button>
             </li>

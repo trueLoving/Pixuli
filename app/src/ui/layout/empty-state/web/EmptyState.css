@@ -61,14 +61,14 @@
 }
 
 .empty-state-button.primary {
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
 }
 
 .empty-state-button.primary:hover {
-  background: var(--primary-color-dark, #2563eb);
+  background: var(--pix-violet-deep);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(var(--pix-violet-rgb), 0.3);
 }
 
 .empty-state-button.secondary {
@@ -116,7 +116,7 @@
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: var(--primary-color, #3b82f6);
+  background: var(--pix-violet);
   color: white;
   display: flex;
   align-items: center;
@@ -149,14 +149,14 @@
 }
 
 .help-link {
-  color: var(--primary-color, #3b82f6);
+  color: var(--pix-violet);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .help-link:hover {
-  color: var(--primary-color-dark, #2563eb);
+  color: var(--pix-violet-deep);
   text-decoration: underline;
 }
 

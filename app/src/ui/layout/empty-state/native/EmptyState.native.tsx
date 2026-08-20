@@ -40,7 +40,7 @@ const EmptyStateNative: React.FC<EmptyStateProps> = ({
       background: '#FFFFFF',
       backgroundSecondary: '#F2F2F7',
       border: '#e5e7eb',
-      primary: '#3b82f6',
+      primary: '#7c6cf0',
       primaryText: '#ffffff',
       secondaryBackground: '#f3f4f6',
       secondaryText: '#111827',

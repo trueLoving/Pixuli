@@ -25,7 +25,7 @@
 }
 
 .language-switcher__trigger:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--pix-violet);
   outline-offset: 2px;
 }
 
@@ -100,13 +100,13 @@
 }
 
 .language-switcher__option:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--pix-violet);
   outline-offset: 2px;
 }
 
 .language-switcher__option--active {
-  background-color: #eff6ff;
-  color: #1d4ed8;
+  background-color: var(--pix-violet-soft);
+  color: var(--pix-violet-deep);
 }
 
 .language-switcher__option-content {
@@ -128,7 +128,7 @@
 .language-switcher__check-icon {
   width: 16px;
   height: 16px;
-  color: #2563eb;
+  color: var(--pix-violet-deep);
   flex-shrink: 0;
 }
 
