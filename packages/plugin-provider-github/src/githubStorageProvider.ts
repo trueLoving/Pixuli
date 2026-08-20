@@ -117,6 +117,31 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
    * @param description 图片描述
    * @returns Promise<{ sha: string; download_url: string; html_url: string }> GitHub API 响应
    */
+  private async getContentFileSha(
+    filePath: string,
+  ): Promise<string | undefined> {
+    try {
+      const existingFile = await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`,
+      );
+      if (Array.isArray(existingFile)) {
+        return undefined;
+      }
+      return existingFile.sha;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const isNotFound =
+        errorMessage.includes('404') ||
+        errorMessage.includes('Not Found') ||
+        errorMessage.includes('does not exist');
+      if (isNotFound) {
+        return undefined;
+      }
+      throw error;
+    }
+  }
+
   private async uploadImageFile(
     file: File | string,
     fileName: string,
@@ -127,17 +152,25 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
 
     // 构建文件路径
     const filePath = `${this.config.path}/${fileName}`;
+    const existingSha = await this.getContentFileSha(filePath);
+
+    const requestBody: Record<string, string> = {
+      message: existingSha
+        ? `Update image: ${fileName}${description ? ` - ${description}` : ''}`
+        : `Upload image: ${fileName}${description ? ` - ${description}` : ''}`,
+      content: base64Content,
+      branch: this.config.branch,
+    };
+    if (existingSha) {
+      requestBody.sha = existingSha;
+    }
 
     // 调用 GitHub API 上传文件
     const response = await this.makeGitHubRequest(
       `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}`,
       {
         method: 'PUT',
-        body: JSON.stringify({
-          message: `Upload image: ${fileName}${description ? ` - ${description}` : ''}`,
-          content: base64Content,
-          branch: this.config.branch,
-        }),
+        body: JSON.stringify(requestBody),
       },
     );
 

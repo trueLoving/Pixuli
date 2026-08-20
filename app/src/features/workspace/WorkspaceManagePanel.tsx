@@ -12,6 +12,7 @@ import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { formatSyncOutcome } from './syncOutcome';
 
 function formatSyncTime(
   iso: string | null | undefined,
@@ -36,6 +37,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     syncing,
     syncStatus,
     syncMessage,
+    syncOutcome,
     error,
     loading,
     scanWorkspace,
@@ -230,12 +232,23 @@ export const WorkspaceManagePanel: React.FC = () => {
             {t('workspace.scan')}
           </button>
         </div>
+        {syncOutcome &&
+          (syncOutcome.kind === 'success' || syncOutcome.kind === 'info') && (
+            <p className="mt-2 text-xs text-green-700">
+              {formatSyncOutcome(t, syncOutcome)}
+            </p>
+          )}
         {syncMessage && (
           <p className="mt-2 text-xs text-green-700">{syncMessage}</p>
         )}
-        {error && (
+        {(error || (syncOutcome?.kind === 'error' && !error)) && (
           <div className="mt-2 flex items-center justify-between gap-2">
-            <p className="text-xs text-red-600">{error}</p>
+            <p className="text-xs text-red-600">
+              {error ??
+                (syncOutcome
+                  ? formatSyncOutcome(t, syncOutcome)
+                  : t('workspace.syncFailed'))}
+            </p>
             <button
               type="button"
               className="text-xs text-red-700 hover:underline"

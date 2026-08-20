@@ -83,6 +83,19 @@ describe('createSyncEngine', () => {
     expect(entry?.syncState).toBe('synced');
   });
 
+  it('run push overwrites remote for already synced local entries', async () => {
+    const { engine, vault, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'a.jpg',
+      bindingId: 'binding-1',
+    });
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.pushed).toBe(1);
+    expect(syncPush).toHaveBeenCalledOnce();
+  });
+
   it('run pull applies remote items and updates cursor', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();

@@ -38,7 +38,8 @@ export interface CreateSyncEngineOptions {
 }
 
 /**
- * SyncEngine MVP（REF-607 P3）：持久化 push 队列、单向 pull、游标与冲突登记。
+ * SyncEngine MVP（REF-607 P3）：持久化 push 队列、单向 pull、游标。
+ * 方向策略：push 以本地为准覆盖远端；pull 以远端为准覆盖本地。
  */
 export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
   const {
@@ -141,6 +142,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             provider,
             readFileBytes,
             memoryQueue,
+            { overwriteRemote: true },
           );
         } catch (error) {
           result.errors.push({
@@ -156,8 +158,9 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             vault.adapter,
             binding.bindingId,
           );
+          const fullPull = direction === 'pull' || direction === 'both';
           const pullResult = await provider.syncPull({
-            since: bindingState.cursor ?? undefined,
+            since: fullPull ? undefined : (bindingState.cursor ?? undefined),
           });
           const applied = await applySyncPull(
             vault,
@@ -198,18 +201,25 @@ async function flushPushQueue(
   provider: StorageProvider & StorageProviderSync,
   readFileBytes: (relativePath: string) => Promise<Uint8Array>,
   memoryQueue: SyncPushOperation[],
+  options?: { overwriteRemote?: boolean },
 ): Promise<number> {
   const persisted = await readPushQueue(vault.adapter);
   const queue = [...persisted, ...toQueued(memoryQueue, binding.bindingId)];
 
-  const entries = await vault.list();
+  const entries = await vault.list({ includeDeleted: true });
   const pendingPaths = new Set<string>();
-  for (const entry of entries) {
-    if (
-      !entry.deletedAt &&
-      (entry.syncState === 'local-only' || entry.syncState === 'pending-push')
-    ) {
+  if (options?.overwriteRemote) {
+    for (const entry of entries) {
       pendingPaths.add(entry.relativePath);
+    }
+  } else {
+    for (const entry of entries) {
+      if (
+        !entry.deletedAt &&
+        (entry.syncState === 'local-only' || entry.syncState === 'pending-push')
+      ) {
+        pendingPaths.add(entry.relativePath);
+      }
     }
   }
   for (const op of queue) {
