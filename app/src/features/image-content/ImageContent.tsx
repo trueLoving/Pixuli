@@ -2,7 +2,13 @@ import { EmptyState } from '@/ui';
 import type { LibrarySearchConfig } from '@/ui';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { hasPublishableRemoteUrl } from '../access/accessCapabilities';
 import { isAssetPublished } from '../access/accessPolicyStore';
 import { AssetInspector } from '../inspector/AssetInspector';
@@ -100,23 +106,27 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const setActiveMenu = useUIStore(state => state.setActiveMenu);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  /** 与 selectedIds 同步的实体，避免仅靠 id 反查失败导致 Inspector 空白 */
+  const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const selectedImages = useMemo(
     () =>
       selectedIds
-        .map(id => images.find(item => item.id === id))
+        .map(
+          id =>
+            selectedItems.find(item => item.id === id) ??
+            images.find(item => item.id === id),
+        )
         .filter((item): item is ImageItem => Boolean(item)),
-    [images, selectedIds],
+    [images, selectedIds, selectedItems],
   );
 
   const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
 
-  const showDockedInspector =
-    isWide ||
-    (!isMobile && selectedImages.length > 0 && !workspaceExplorerOpen);
-  const showSheetInspector =
-    isMobile && sheetOpen && selectedImages.length === 1;
+  // 宽屏常驻右栏（空态提示点选）；有选中时中/窄屏也打开 dock；手机用 sheet
+  const showDockedInspector = !isMobile && (isWide || selectedIds.length > 0);
+  const showSheetInspector = isMobile && selectedIds.length > 0;
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -144,9 +154,23 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     [openAccessModal, selectedSourceId, sources],
   );
 
+  const imagesRef = useRef(images);
+  imagesRef.current = images;
+
   const handleSelectedIdsChange = useCallback(
-    (ids: string[]) => {
+    (ids: string[], items?: ImageItem[]) => {
       setSelectedIds(ids);
+      if (items !== undefined) {
+        setSelectedItems(items);
+      } else if (ids.length === 0) {
+        setSelectedItems([]);
+      } else {
+        setSelectedItems(
+          ids
+            .map(id => imagesRef.current.find(item => item.id === id))
+            .filter((item): item is ImageItem => Boolean(item)),
+        );
+      }
       setSheetOpen(ids.length > 0);
       if (ids.length > 0 && !isWide) {
         window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
@@ -159,38 +183,32 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const handleCloseInspector = useCallback(() => {
     setSheetOpen(false);
     setSelectedIds([]);
+    setSelectedItems([]);
   }, []);
 
   useEffect(() => {
     if (!workspaceExplorerOpen) return;
-    setSheetOpen(false);
     window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
   }, [workspaceExplorerOpen]);
 
   useEffect(() => {
     const onOpenFilter = () => {
-      setSheetOpen(false);
       useUIStore.getState().setWorkspaceExplorerOpen(false);
     };
-    const onCloseInspector = () => {
-      setSheetOpen(false);
-    };
-    const onClearSelection = () => {
+    const clearSelection = () => {
       setSheetOpen(false);
       setSelectedIds([]);
+      setSelectedItems([]);
     };
     window.addEventListener('pixuli:openFilterPanel', onOpenFilter);
-    window.addEventListener('pixuli:closeInspectorSheet', onCloseInspector);
-    window.addEventListener('pixuli:clearLibrarySelection', onClearSelection);
+    window.addEventListener('pixuli:closeInspectorSheet', clearSelection);
+    window.addEventListener('pixuli:clearLibrarySelection', clearSelection);
     return () => {
       window.removeEventListener('pixuli:openFilterPanel', onOpenFilter);
-      window.removeEventListener(
-        'pixuli:closeInspectorSheet',
-        onCloseInspector,
-      );
+      window.removeEventListener('pixuli:closeInspectorSheet', clearSelection);
       window.removeEventListener(
         'pixuli:clearLibrarySelection',
-        onClearSelection,
+        clearSelection,
       );
     };
   }, []);
@@ -229,6 +247,11 @@ export const ImageContent: React.FC<ImageContentProps> = ({
 
   const inspector = (
     <AssetInspector
+      key={
+        selectedImages.length >= 2
+          ? `batch:${selectedImages.map(item => item.id).join(',')}`
+          : (selectedImage?.id ?? 'empty')
+      }
       image={selectedImage}
       selectedImages={selectedImages}
       images={images}

@@ -1,6 +1,11 @@
 import { ChevronDown, ChevronRight, Folder, FolderOpen, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
+import {
+  EXPLORER_WIDTH_MAX,
+  EXPLORER_WIDTH_MIN,
+  usePanelResize,
+} from '@/hooks/usePanelResize';
 import { useImageStore } from '@/stores/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -101,10 +106,22 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
+  const explorerWidth = useUIStore(state => state.workspaceExplorerWidth);
+  const setWorkspaceExplorerWidth = useUIStore(
+    state => state.setWorkspaceExplorerWidth,
+  );
   const openWorkspaceModal = useUIStore(state => state.openWorkspaceModal);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(
     () => new Set(['__root__', 'images']),
   );
+
+  const resizeHandlers = usePanelResize({
+    width: explorerWidth,
+    min: EXPLORER_WIDTH_MIN,
+    max: EXPLORER_WIDTH_MAX,
+    edge: 'right',
+    onWidthChange: setWorkspaceExplorerWidth,
+  });
 
   const tree = useMemo(() => {
     const paths = images
@@ -135,6 +152,7 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   return (
     <aside
       className={`workspace-explorer ${overlay ? 'workspace-explorer--overlay' : ''}`}
+      style={overlay ? undefined : { width: explorerWidth }}
       aria-modal={overlay || undefined}
     >
       <div className="workspace-explorer-header">
@@ -179,6 +197,17 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
           {t('workspace.manageExplorer')}
         </button>
       </div>
+
+      {!overlay ? (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('workspace.resizeExplorer')}
+          tabIndex={0}
+          className="workspace-explorer-resize"
+          onPointerDown={resizeHandlers.onPointerDown}
+        />
+      ) : null}
     </aside>
   );
 };

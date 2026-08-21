@@ -70,7 +70,7 @@ interface AssetLibraryProps {
   onRetry?: () => void;
   onOpenFolders?: () => void;
   selectedIds: string[];
-  onSelectedIdsChange: (ids: string[]) => void;
+  onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onSync?: () => void;
@@ -192,10 +192,13 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   useEffect(() => {
     const next = pruneSelectedIds(selectedIds, visibleIds);
     if (next !== selectedIds) {
-      onSelectedIdsChange(next);
+      const selectedItems = next
+        .map(id => files.find(file => file.id === id))
+        .filter((item): item is ImageItem => Boolean(item));
+      onSelectedIdsChange(next, selectedItems);
       if (next.length <= 1) setMultiMode(false);
     }
-  }, [onSelectedIdsChange, selectedIds, visibleIds]);
+  }, [files, onSelectedIdsChange, selectedIds, visibleIds]);
 
   const applySelection = useCallback(
     (
@@ -215,7 +218,10 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         multiMode: enterMulti || multiMode,
       });
       anchorIdRef.current = next.anchorId;
-      onSelectedIdsChange(next.selectedIds);
+      const selectedItems = next.selectedIds
+        .map(id => files.find(file => file.id === id))
+        .filter((item): item is ImageItem => Boolean(item));
+      onSelectedIdsChange(next.selectedIds, selectedItems);
       if (next.selectedIds.length <= 1 && !enterMulti && !additive && !range) {
         setMultiMode(false);
       }
@@ -225,7 +231,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           ?.scrollIntoView({ block: 'nearest' });
       });
     },
-    [multiMode, onSelectedIdsChange, selectedIds, visibleIds],
+    [files, multiMode, onSelectedIdsChange, selectedIds, visibleIds],
   );
 
   const selectedIndex = useMemo(() => {
