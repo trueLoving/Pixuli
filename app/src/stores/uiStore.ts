@@ -11,6 +11,15 @@ import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import { create } from 'zustand';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import type { SettingsSection } from '@/features/settings/settingsTypes';
+import {
+  EXPLORER_WIDTH_DEFAULT,
+  EXPLORER_WIDTH_MAX,
+  EXPLORER_WIDTH_MIN,
+  INSPECTOR_WIDTH_DEFAULT,
+  INSPECTOR_WIDTH_MAX,
+  INSPECTOR_WIDTH_MIN,
+  clampPanelWidth,
+} from '../constants/panelWidth';
 import { isStoragePluginRegistered } from '../storage/registry';
 import { useImageStore } from './imageStore';
 import { useSourceStore } from './sourceStore';
@@ -59,6 +68,12 @@ interface UIState {
   selectedFolderPath: string;
   /** 窄屏是否展开文件夹面板 */
   workspaceExplorerOpen: boolean;
+  /** 宽屏资源浏览器宽度（px） */
+  workspaceExplorerWidth: number;
+  /** 宽屏 Inspector 宽度（px） */
+  inspectorWidth: number;
+  /** 宽屏/中屏 dock Inspector 是否折叠 */
+  inspectorCollapsed: boolean;
 
   // Actions - 模态框
   setShowConfigModal: (show: boolean) => void;
@@ -84,6 +99,9 @@ interface UIState {
   setSelectedFolderPath: (path: string) => void;
   setWorkspaceExplorerOpen: (open: boolean) => void;
   toggleWorkspaceExplorer: () => void;
+  setWorkspaceExplorerWidth: (width: number) => void;
+  setInspectorWidth: (width: number) => void;
+  setInspectorCollapsed: (collapsed: boolean) => void;
 
   // Actions - 模态框
   setShowWorkspaceModal: (show: boolean) => void;
@@ -141,6 +159,9 @@ export const useUIStore = create<UIState>(set => ({
   currentUtilityTool: null,
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
+  workspaceExplorerWidth: EXPLORER_WIDTH_DEFAULT,
+  inspectorWidth: INSPECTOR_WIDTH_DEFAULT,
+  inspectorCollapsed: false,
   showWorkspaceModal: false,
   accessTargetImageId: null,
   accessTargetImageIds: [],
@@ -172,6 +193,24 @@ export const useUIStore = create<UIState>(set => ({
     set({ workspaceExplorerOpen: open }),
   toggleWorkspaceExplorer: () =>
     set(state => ({ workspaceExplorerOpen: !state.workspaceExplorerOpen })),
+  setWorkspaceExplorerWidth: (width: number) =>
+    set({
+      workspaceExplorerWidth: clampPanelWidth(
+        width,
+        EXPLORER_WIDTH_MIN,
+        EXPLORER_WIDTH_MAX,
+      ),
+    }),
+  setInspectorWidth: (width: number) =>
+    set({
+      inspectorWidth: clampPanelWidth(
+        width,
+        INSPECTOR_WIDTH_MIN,
+        INSPECTOR_WIDTH_MAX,
+      ),
+    }),
+  setInspectorCollapsed: (collapsed: boolean) =>
+    set({ inspectorCollapsed: collapsed }),
 
   openConfigModalForEdit: (sourceId: string) => {
     const source = useSourceStore.getState().getSourceById(sourceId);

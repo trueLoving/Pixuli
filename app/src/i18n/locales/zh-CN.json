@@ -143,7 +143,8 @@
     "activityBar": "主菜单",
     "allImages": "全部图片",
     "manageExplorer": "管理工作区…",
-    "closeExplorer": "关闭文件夹面板"
+    "closeExplorer": "关闭文件夹面板",
+    "resizeExplorer": "拖拽调整资源浏览器宽度"
   },
   "access": {
     "title": "访问",

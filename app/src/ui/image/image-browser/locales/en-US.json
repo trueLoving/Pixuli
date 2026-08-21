@@ -52,7 +52,8 @@
       "aiDesktopOnly": "Desktop only",
       "aiReadyHint": "Edit opens so you can add tags and description. Local models are Desktop-only and must be configured first.",
       "expandSheet": "Expand to full screen",
-      "collapseSheet": "Collapse details"
+      "collapseSheet": "Collapse details",
+      "resize": "Drag to resize details panel"
     },
     "filter": {
       "title": "Image Filter",

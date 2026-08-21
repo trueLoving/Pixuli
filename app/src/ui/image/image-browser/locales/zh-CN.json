@@ -52,7 +52,8 @@
       "aiDesktopOnly": "仅桌面可用",
       "aiReadyHint": "将打开编辑，便于写入标签与描述。本地模型仅 Desktop 可用，需自行配置。",
       "expandSheet": "上拉全屏",
-      "collapseSheet": "收起详情"
+      "collapseSheet": "收起详情",
+      "resize": "拖拽调整详情栏宽度"
     },
     "filter": {
       "title": "图片筛选",

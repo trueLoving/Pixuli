@@ -1,12 +1,52 @@
 .workspace-explorer {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   width: 14rem;
   min-width: 12rem;
-  max-width: 18rem;
+  max-width: 30rem;
   border-right: 1px solid #e5e7eb;
   background: #fff;
+}
+
+.workspace-explorer-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  width: 10px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+  transform: translateX(50%);
+}
+
+.workspace-explorer-resize::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.workspace-explorer-resize:hover::after,
+.workspace-explorer-resize:focus-visible::after,
+.workspace-explorer-resize:active::after {
+  background: var(--pix-violet);
+}
+
+.workspace-explorer-resize:focus-visible {
+  outline: none;
 }
 
 .workspace-explorer-header {

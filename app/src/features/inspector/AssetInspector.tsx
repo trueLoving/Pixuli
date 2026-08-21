@@ -33,6 +33,11 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  INSPECTOR_WIDTH_MAX,
+  INSPECTOR_WIDTH_MIN,
+  usePanelResize,
+} from '@/hooks/usePanelResize';
 import './AssetInspector.css';
 
 const INSPECTOR_ACTIONS: ImageActionId[] = [
@@ -164,12 +169,24 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const [previewImage, setPreviewImage] = useState<ImageItem | null>(image);
 
   useEffect(() => {
-    setPreviewImage(image);
-  }, [image]);
+    setPreviewImage(
+      image ?? (selectedImages.length === 1 ? selectedImages[0] : null),
+    );
+  }, [image, selectedImages]);
 
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const sheetDragRef = useRef<{ y: number; moved: boolean } | null>(null);
+  const inspectorWidth = useUIStore(state => state.inspectorWidth);
+  const setInspectorWidth = useUIStore(state => state.setInspectorWidth);
+
+  const resizeHandlers = usePanelResize({
+    width: inspectorWidth,
+    min: INSPECTOR_WIDTH_MIN,
+    max: INSPECTOR_WIDTH_MAX,
+    edge: 'left',
+    onWidthChange: setInspectorWidth,
+  });
 
   useEffect(() => {
     if (!isSheet) setSheetExpanded(false);
@@ -227,26 +244,31 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const sourceId = selectedSourceId ?? sources[0]?.id;
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
+  /** 单选时以 props.image 为准，缺省则回退 selectedImages[0] */
+  const activeImage =
+    image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
   const published = Boolean(
-    image && sourceId && getPublishedAccess(image.id)?.sourceId === sourceId,
+    activeImage &&
+      sourceId &&
+      getPublishedAccess(activeImage.id)?.sourceId === sourceId,
   );
   const previewIndex = previewImage
     ? images.findIndex(item => item.id === previewImage.id)
     : -1;
 
-  const kind = image ? getAssetKind(image) : 'image';
+  const kind = activeImage ? getAssetKind(activeImage) : 'image';
   const dimensions =
-    image && image.width > 0 && image.height > 0
-      ? `${image.width} × ${image.height}`
+    activeImage && activeImage.width > 0 && activeImage.height > 0
+      ? `${activeImage.width} × ${activeImage.height}`
       : t('image.grid.dimensionsUnknown');
 
   const handleCopy = useCallback(async () => {
-    if (!image) return;
-    if (onCopyRemoteAccess && onCopyRemoteAccess(image) === false) {
+    if (!activeImage) return;
+    if (onCopyRemoteAccess && onCopyRemoteAccess(activeImage) === false) {
       return;
     }
     try {
-      const url = resolveRemoteCopyUrl(image);
+      const url = resolveRemoteCopyUrl(activeImage);
       if (onCopyUrl) {
         await onCopyUrl(url, 'url');
       }
@@ -256,45 +278,45 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     } catch {
       showError(t('image.grid.copyFailed'));
     }
-  }, [image, onCopyRemoteAccess, onCopyUrl, t]);
+  }, [activeImage, onCopyRemoteAccess, onCopyUrl, t]);
 
   const handleDelete = useCallback(async () => {
-    if (!image || !onDeleteImage) return;
+    if (!activeImage || !onDeleteImage) return;
     if (
       !confirm(
-        `${t('image.grid.confirmDelete')} "${image.name}" ${t('common.confirm')}？`,
+        `${t('image.grid.confirmDelete')} "${activeImage.name}" ${t('common.confirm')}？`,
       )
     ) {
       return;
     }
     const loadingToast = showLoading(
-      `${t('image.grid.deleting')} "${image.name}"...`,
+      `${t('image.grid.deleting')} "${activeImage.name}"...`,
     );
     try {
-      await onDeleteImage(image.id, image.name);
+      await onDeleteImage(activeImage.id, activeImage.name);
       updateLoadingToSuccess(
         String(loadingToast),
-        `${t('image.grid.deleteSuccess')} "${image.name}" ${t('image.grid.deleted')}`,
+        `${t('image.grid.deleteSuccess')} "${activeImage.name}" ${t('image.grid.deleted')}`,
       );
       onClose();
     } catch (error) {
       updateLoadingToError(
         String(loadingToast),
-        `${t('image.grid.deleteFailed')} "${image.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
+        `${t('image.grid.deleteFailed')} "${activeImage.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
       );
     }
-  }, [image, onClose, onDeleteImage, t]);
+  }, [activeImage, onClose, onDeleteImage, t]);
 
   const handleShare = useCallback(async () => {
-    if (!image || !onShareImage) return;
+    if (!activeImage || !onShareImage) return;
     try {
-      await onShareImage(image);
+      await onShareImage(activeImage);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       if (/cancel|abort|dismiss|user/i.test(message)) return;
       showError(`${t('image.grid.shareFailed')}: ${message}`);
     }
-  }, [image, onShareImage, t]);
+  }, [activeImage, onShareImage, t]);
 
   const openTool = useCallback(
     (tool: 'compress' | 'convert') => {
@@ -307,21 +329,21 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   );
 
   const handlers = useMemo<ImageActionHandlers>(() => {
-    if (!image) return {};
-    const url = resolveRemoteCopyUrl(image);
+    if (!activeImage) return {};
+    const url = resolveRemoteCopyUrl(activeImage);
     const next: ImageActionHandlers = {
       preview: kind === 'image' ? () => setShowPreview(true) : undefined,
       edit: onUpdateImage
         ? () => {
             setShowEdit(true);
-            showInfo(`${t('image.grid.editing')} "${image.name}"`);
+            showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
           }
         : undefined,
       copyUrl: () => {
         void handleCopy();
       },
       openUrl: () => {
-        window.open(url, '_blank');
+        window.open(url || activeImage.url, '_blank');
       },
       delete: onDeleteImage
         ? () => {
@@ -336,10 +358,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     }
     return next;
   }, [
+    activeImage,
     handleCopy,
     handleDelete,
     handleShare,
-    image,
     kind,
     onDeleteImage,
     onShareImage,
@@ -461,12 +483,12 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const body =
     batchBody ??
-    (image ? (
+    (activeImage ? (
       <>
         <section className="asset-inspector-section">
           <h3>{t('image.inspector.sectionContent')}</h3>
           <FileContent
-            image={image}
+            image={activeImage}
             onPreview={() => setShowPreview(true)}
             t={t}
           />
@@ -477,7 +499,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           <dl className="asset-inspector-dl">
             <div>
               <dt>{t('image.inspector.name')}</dt>
-              <dd title={image.name}>{image.name}</dd>
+              <dd title={activeImage.name}>{activeImage.name}</dd>
             </div>
             {kind === 'image' ? (
               <div>
@@ -487,25 +509,27 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             ) : null}
             <div>
               <dt>{t('image.inspector.size')}</dt>
-              <dd>{image.size > 0 ? formatFileSize(image.size) : '—'}</dd>
+              <dd>
+                {activeImage.size > 0 ? formatFileSize(activeImage.size) : '—'}
+              </dd>
             </div>
             <div>
               <dt>{t('image.inspector.date')}</dt>
               <dd>
-                {image.createdAt
-                  ? new Date(image.createdAt).toLocaleString()
+                {activeImage.createdAt
+                  ? new Date(activeImage.createdAt).toLocaleString()
                   : '—'}
               </dd>
             </div>
             <div>
               <dt>{t('image.inspector.folder')}</dt>
-              <dd>{folderLabel(image.localPath)}</dd>
+              <dd>{folderLabel(activeImage.localPath)}</dd>
             </div>
             <div>
               <dt>{t('image.inspector.sync')}</dt>
               <dd>
-                {image.linkKind === 'remote-raw' ||
-                hasPublishableRemoteUrl(image)
+                {activeImage.linkKind === 'remote-raw' ||
+                hasPublishableRemoteUrl(activeImage)
                   ? t('image.inspector.syncRemote')
                   : t('image.inspector.syncLocal')}
               </dd>
@@ -518,16 +542,16 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
                   : t('image.inspector.accessLocalOnly')}
               </dd>
             </div>
-            {image.tags.length > 0 ? (
+            {(activeImage.tags?.length ?? 0) > 0 ? (
               <div>
                 <dt>{t('image.inspector.tags')}</dt>
-                <dd>{image.tags.join('、')}</dd>
+                <dd>{(activeImage.tags ?? []).join('、')}</dd>
               </div>
             ) : null}
-            {image.description ? (
+            {activeImage.description ? (
               <div>
                 <dt>{t('image.inspector.description')}</dt>
-                <dd>{image.description}</dd>
+                <dd>{activeImage.description}</dd>
               </div>
             ) : null}
           </dl>
@@ -546,7 +570,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             <button
               type="button"
               className="asset-inspector-extra-btn"
-              onClick={() => openAccessModal(image.id)}
+              onClick={() => openAccessModal(activeImage.id)}
             >
               <Shield size={16} aria-hidden />
               {t('image.inspector.openAccess')}
@@ -609,8 +633,19 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const panel = (
     <aside
       className={`asset-inspector ${isSheet ? 'asset-inspector--sheet' : 'asset-inspector--dock'}${isSheet && sheetExpanded ? ' is-expanded' : ''}`}
+      style={isSheet ? undefined : { width: inspectorWidth }}
       aria-label={t('image.inspector.title')}
     >
+      {!isSheet ? (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('image.inspector.resize')}
+          tabIndex={0}
+          className="asset-inspector-resize"
+          onPointerDown={resizeHandlers.onPointerDown}
+        />
+      ) : null}
       <header className="asset-inspector-header">
         {isSheet ? (
           <button
@@ -638,18 +673,14 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
                 )
               : t('image.inspector.title')}
           </h2>
-          {isSheet || image || selectedImages.length > 0 ? (
-            <button
-              type="button"
-              className="asset-inspector-close"
-              onClick={onClose}
-              aria-label={t('image.inspector.close')}
-            >
-              <X size={18} />
-            </button>
-          ) : (
-            <span />
-          )}
+          <button
+            type="button"
+            className="asset-inspector-close"
+            onClick={onClose}
+            aria-label={t('image.inspector.close')}
+          >
+            <X size={18} />
+          </button>
         </div>
       </header>
       <div className="asset-inspector-body">{body}</div>
@@ -658,7 +689,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   return (
     <>
-      {isSheet && (image || selectedImages.length > 0) ? (
+      {isSheet ? (
         <div className="asset-inspector-overlay">
           <button
             type="button"
@@ -668,13 +699,13 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           />
           {panel}
         </div>
-      ) : isSheet ? null : (
+      ) : (
         panel
       )}
 
-      {image && onUpdateImage ? (
+      {activeImage && onUpdateImage ? (
         <ImageEditModal
-          image={image}
+          image={activeImage}
           isOpen={showEdit}
           onClose={() => setShowEdit(false)}
           onUpdateImage={onUpdateImage}

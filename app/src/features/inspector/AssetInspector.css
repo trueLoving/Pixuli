@@ -24,11 +24,53 @@
 }
 
 .asset-inspector--dock {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   width: 20rem;
-  max-width: 22.5rem;
+  min-width: 17.5rem;
+  max-width: 30rem;
   height: 100%;
   border-left: 1px solid #e5e7eb;
+}
+
+.asset-inspector-resize {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  width: 10px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+  transform: translateX(-50%);
+}
+
+.asset-inspector-resize::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.asset-inspector-resize:hover::after,
+.asset-inspector-resize:focus-visible::after,
+.asset-inspector-resize:active::after {
+  background: var(--pix-violet);
+}
+
+.asset-inspector-resize:focus-visible {
+  outline: none;
 }
 
 .asset-inspector--sheet {
@@ -267,11 +309,5 @@
 @media (max-width: 767px) {
   .asset-inspector-overlay {
     bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
-  }
-}
-
-@media (max-width: 1023px) {
-  .asset-inspector--dock {
-    width: 17.5rem;
   }
 }
