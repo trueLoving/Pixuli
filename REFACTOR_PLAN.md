@@ -171,13 +171,13 @@ Backlog #102。
 
 ### M6 — 产品体验与能力边界（4 项进行中）
 
-| ID      | 标题                                   | GitHub #                                                | 状态 |
-| ------- | -------------------------------------- | ------------------------------------------------------- | ---- |
-| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ✅   |
-| REF-603 | [M6] 大数据场景与产品性能边界          | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜   |
-| REF-604 | [M6] 标签与描述管理 + AI 自动分析      | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜   |
-| REF-605 | [M6] 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜   |
-| REF-606 | [M6] 回收站机制                        | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜   |
+| ID      | 标题                                   | GitHub #                                                | 状态                                                                              |
+| ------- | -------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| REF-602 | [M6] UI 优化：侧栏、主内容区与图片操作 | [#131](https://github.com/trueLoving/Pixuli/issues/131) | ✅                                                                                |
+| REF-603 | [M6] 大数据场景与产品性能边界          | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⬜ 部分：虚拟窗口+缩略见 [12](docs/02-system-design/12-performance-boundaries.md) |
+| REF-604 | [M6] 标签与描述管理 + AI 自动分析      | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜                                                                                |
+| REF-605 | [M6] 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜                                                                                |
+| REF-606 | [M6] 回收站机制                        | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜                                                                                |
 
 分阶段总线 REF-607（[#144](https://github.com/trueLoving/Pixuli/issues/144)）P0～P7
 ✅，见

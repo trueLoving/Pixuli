@@ -52,6 +52,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.556.0",
     "octokit": "3.1.2",
+    "pdfjs-dist": "^4.10.38",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.2.3",

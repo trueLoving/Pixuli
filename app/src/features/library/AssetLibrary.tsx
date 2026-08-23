@@ -31,9 +31,6 @@ import {
   getSortedImages,
 } from '@pixuli/core/utils';
 import {
-  File,
-  FileText,
-  FileVideo,
   Folder,
   Cloud,
   Globe,
@@ -51,6 +48,7 @@ import React, {
   useState,
 } from 'react';
 import './AssetLibrary.css';
+import { AssetThumb } from './AssetThumb';
 
 const LONG_PRESS_MS = 480;
 
@@ -85,20 +83,6 @@ function kindLabel(item: ImageItem, t: (key: string) => string): string {
   if (kind === 'pdf') return t('image.kind.pdf');
   if (kind === 'other') return t('image.kind.other');
   return t('image.kind.image');
-}
-
-function FileGlyph({ item }: { item: ImageItem }) {
-  const kind = getAssetKind(item);
-  if (kind === 'image') {
-    return <img className="asset-library-thumb" src={item.url} alt="" />;
-  }
-  const Icon =
-    kind === 'video' ? FileVideo : kind === 'other' ? File : FileText;
-  return (
-    <span className="asset-library-thumb-icon" aria-hidden>
-      <Icon size={16} />
-    </span>
-  );
 }
 
 function sortIndicator(active: boolean, order: SortOrder): string {
@@ -695,7 +679,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
                     >
                       <td>
                         <div className="asset-library-name-cell">
-                          <FileGlyph item={file} />
+                          <AssetThumb item={file} />
                           <span
                             className="asset-library-name-text"
                             title={file.name}

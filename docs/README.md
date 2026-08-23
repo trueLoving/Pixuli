@@ -44,7 +44,8 @@
 | 文档                                                                                      | 职责                                           |
 | ----------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | [01-system-design.md](02-system-design/01-system-design.md)                               | 整体架构、模块、数据流                         |
-| [02-performance.md](02-system-design/02-performance.md)                                   | 性能与虚拟化（REF-603 规划）                   |
+| [02-performance.md](02-system-design/02-performance.md)                                   | 性能与虚拟化（通用方案）                       |
+| [12-performance-boundaries.md](02-system-design/12-performance-boundaries.md)             | REF-603 性能边界与已落地策略                   |
 | [03-plugin-system.md](02-system-design/03-plugin-system.md)                               | 存储插件契约、开发指南                         |
 | [04-typescript-javascript-policy.md](02-system-design/04-typescript-javascript-policy.md) | TS/JS 策略（REF-410）                          |
 | [05-local-workspace-sync.md](02-system-design/05-local-workspace-sync.md)                 | 本地工作区 + 同步（REF-607）                   |

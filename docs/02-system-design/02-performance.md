@@ -215,3 +215,5 @@ graph TB
 ### 8.2 相关文档
 
 - [01-system-design - 整体系统设计](./01-system-design.md)
+- [12-performance-boundaries.md](./12-performance-boundaries.md) — REF-603
+  **产品层阈值与已落地策略**（虚拟窗口、PDF/视频缩略）
