@@ -179,6 +179,10 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
             checked={remoteTier === 'none'}
             onChange={() => setRemoteTier('none')}
           />
+          <span
+            className="access-modal-option-mark access-modal-option-mark--local"
+            aria-hidden
+          />
           <span>{t('access.localPrivate')}</span>
         </label>
       </section>
@@ -223,6 +227,10 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
                 checked={remoteTier === tier}
                 disabled={!enabled}
                 onChange={() => selectTier(tier)}
+              />
+              <span
+                className={`access-modal-option-mark access-modal-option-mark--${tier}`}
+                aria-hidden
               />
               <span>{label}</span>
             </label>

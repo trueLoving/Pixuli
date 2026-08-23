@@ -20,11 +20,6 @@
   justify-content: center;
 }
 
-.empty-state-icon-svg {
-  color: var(--text-secondary, #9ca3af);
-  opacity: 0.6;
-}
-
 .empty-state-title {
   font-size: 2rem;
   font-weight: 700;

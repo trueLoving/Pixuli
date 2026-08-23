@@ -1,5 +1,5 @@
-import { Loader2 } from 'lucide-react';
 import React, { useEffect } from 'react';
+import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import './FullScreenLoading.css';
 
 export interface FullScreenLoadingProps {
@@ -13,7 +13,6 @@ export const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({
   visible,
   text,
 }) => {
-  // 当 loading 显示时，禁用 body 滚动
   useEffect(() => {
     if (visible) {
       document.body.classList.add('fullscreen-loading-active');
@@ -35,8 +34,14 @@ export const FullScreenLoading: React.FC<FullScreenLoadingProps> = ({
       onTouchStart={e => e.stopPropagation()}
     >
       <div className="fullscreen-loading-content">
-        <Loader2 className="fullscreen-loading-spinner" />
-        {text && <p className="fullscreen-loading-text">{text}</p>}
+        <div
+          className="fullscreen-loading-spinner"
+          role="status"
+          aria-label={text || 'Loading'}
+        >
+          <BrandPixelMark variant="loading" size={112} />
+        </div>
+        {text ? <p className="fullscreen-loading-text">{text}</p> : null}
       </div>
     </div>
   );

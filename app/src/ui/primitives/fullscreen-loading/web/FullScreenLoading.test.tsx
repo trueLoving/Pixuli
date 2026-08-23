@@ -49,13 +49,13 @@ describe('FullScreenLoading', () => {
       ).toBeInTheDocument();
     });
 
-    it('应该显示加载图标', () => {
+    it('应该显示品牌像素加载插画', () => {
       const { container } = render(<FullScreenLoading {...defaultProps} />);
 
       const spinner = container.querySelector('.fullscreen-loading-spinner');
       expect(spinner).toBeInTheDocument();
-      // Loader2 图标应该是一个 SVG
-      expect(spinner?.tagName).toBe('svg');
+      expect(spinner?.querySelector('.brand-pixel-mark--loading')).toBeTruthy();
+      expect(spinner?.querySelector('svg')).toBeInTheDocument();
     });
   });
 

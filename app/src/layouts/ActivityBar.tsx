@@ -60,15 +60,25 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
         },
   ) => {
     const Icon = item.icon;
-    const isActive = activeMenu === item.id;
+    const isSettings = item.id === 'settings';
+    /** 设置保持中性；同步用 busy，不用导航选中紫 */
+    const isActive =
+      !isSettings && item.id !== 'sync' && activeMenu === item.id;
     const isBusy = item.id === 'sync' && syncBusy;
     return (
       <button
         key={item.id}
         type="button"
-        className={`activity-bar-item ${isActive ? 'activity-bar-item--active' : ''} ${isBusy ? 'activity-bar-item--busy' : ''}`.trim()}
-        title={item.label}
-        aria-label={item.label}
+        className={[
+          'activity-bar-item',
+          isActive ? 'activity-bar-item--active' : '',
+          isBusy ? 'activity-bar-item--busy' : '',
+          isSettings ? 'activity-bar-item--settings' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        title={isBusy ? t('workspace.syncing') : item.label}
+        aria-label={isBusy ? t('workspace.syncing') : item.label}
         aria-pressed={isActive}
         aria-busy={isBusy || undefined}
         onClick={item.onClick}
@@ -78,6 +88,11 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
           className={`activity-bar-icon ${isBusy ? 'activity-bar-spin' : ''}`.trim()}
           aria-hidden
         />
+        {isBusy ? (
+          <span className="activity-bar-badge">
+            {t('workspace.syncingShort')}
+          </span>
+        ) : null}
         {isMobile ? (
           <span className="activity-bar-item-label">{item.label}</span>
         ) : null}

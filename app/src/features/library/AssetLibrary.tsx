@@ -13,7 +13,7 @@ import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
 import { filterAssetsByKinds, getAssetKind } from '@/utils/assetKind';
 import { nextSelectedIds, pruneSelectedIds } from '@/utils/librarySelection';
-import { BrandEmptyMark } from '@/ui/brand/BrandEmptyMark';
+import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { getVirtualWindow, LIBRARY_ROW_HEIGHT } from '@/utils/virtualWindow';
 import type {
   AssetKind,
@@ -571,7 +571,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       <div className="asset-library-content">
         {loading && files.length === 0 ? (
           <div className="asset-library-loading" aria-busy="true">
-            <div className="asset-library-loading-spinner" />
+            <BrandPixelMark variant="loading" size={72} />
             <p className="mt-3 text-sm text-gray-500">
               {t('image.library.loading')}
             </p>
@@ -579,7 +579,10 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         ) : showEmpty ? (
           <div className="asset-library-empty">
             <div className="asset-library-empty-icon" aria-hidden>
-              <BrandEmptyMark size={isFilteredEmpty ? 88 : 96} />
+              <BrandPixelMark
+                variant={isFilteredEmpty ? 'filter' : 'empty'}
+                size={isFilteredEmpty ? 88 : 96}
+              />
             </div>
             <h3 className="asset-library-empty-title">
               {t(

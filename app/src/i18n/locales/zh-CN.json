@@ -105,6 +105,7 @@
     "pulling": "拉取中…",
     "syncBoth": "双向同步",
     "syncing": "同步中…",
+    "syncingShort": "同步中",
     "syncNeedsLocal": "请先选择本地工作区",
     "syncFailed": "同步失败",
     "syncNoChanges": "同步完成，无变更",
