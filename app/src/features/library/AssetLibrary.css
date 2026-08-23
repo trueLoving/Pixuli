@@ -209,6 +209,17 @@
   min-width: 0;
 }
 
+.asset-library-thumb-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
 .asset-library-thumb,
 .asset-library-thumb-icon {
   width: 2rem;
@@ -219,6 +230,12 @@
   color: #6b7280;
 }
 
+.asset-library-thumb-wrap .asset-library-thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
 .asset-library-thumb {
   object-fit: cover;
 }
@@ -227,6 +244,35 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.asset-library-thumb-icon--video {
+  color: var(--pix-cyan-deep, #22d3ee);
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 18%, #fff);
+}
+
+.asset-library-thumb-icon--pdf {
+  color: var(--pix-violet-deep, #5b4fe0);
+  background: var(--pix-violet-soft, #ede9fe);
+}
+
+.asset-library-thumb-badge {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  padding: 0 2px;
+  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.asset-library-thumb-badge--pdf {
+  background: color-mix(in srgb, var(--pix-violet-deep, #5b4fe0) 88%, #000);
+  letter-spacing: -0.02em;
 }
 
 .asset-library-name-text {
