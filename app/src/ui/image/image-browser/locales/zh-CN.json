@@ -53,7 +53,17 @@
       "aiReadyHint": "将打开编辑，便于写入标签与描述。本地模型仅 Desktop 可用，需自行配置。",
       "expandSheet": "上拉全屏",
       "collapseSheet": "收起详情",
-      "resize": "拖拽调整详情栏宽度"
+      "resize": "拖拽调整详情栏宽度",
+      "actionEdit": "编辑",
+      "actionCopy": "复制",
+      "actionOpen": "打开",
+      "actionShare": "分享",
+      "actionAccess": "访问",
+      "actionCompress": "压缩",
+      "actionConvert": "转换",
+      "actionAi": "AI",
+      "actionDelete": "删除",
+      "actionSync": "同步"
     },
     "filter": {
       "title": "图片筛选",
