@@ -1,6 +1,6 @@
-import { FolderOpen } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { useI18n } from '@/i18n/useI18n';
 import { ROUTES } from '@/router/routes';
 
@@ -10,8 +10,10 @@ export const WorkspacePhotosEmptyState: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col items-center justify-center px-4 py-12">
-      <div className="max-w-md rounded-xl border border-dashed border-gray-300 bg-gray-50 px-8 py-10 text-center">
-        <FolderOpen className="mx-auto mb-4 text-gray-400" size={40} />
+      <div className="max-w-md rounded-xl border border-dashed border-[var(--pix-lilac,#c4b5fd)] bg-[var(--pix-surface,#faf8ff)] px-8 py-10 text-center">
+        <div className="mb-4 flex justify-center">
+          <BrandPixelMark variant="welcome" size={96} />
+        </div>
         <h2 className="text-lg font-semibold text-gray-900">
           {t('workspace.setupTitle')}
         </h2>

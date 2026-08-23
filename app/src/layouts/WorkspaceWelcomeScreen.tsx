@@ -24,13 +24,16 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
     <div className="workspace-welcome">
       <div className="workspace-welcome-card">
         <div className="workspace-welcome-brand">
-          <img
-            src="/icon.png"
-            alt=""
-            className="workspace-welcome-logo"
-            width={72}
-            height={72}
-          />
+          <div className="workspace-welcome-mark">
+            <img
+              src="/icon.png"
+              alt=""
+              className="workspace-welcome-logo"
+              width={72}
+              height={72}
+            />
+            <span className="workspace-welcome-pedestal" aria-hidden />
+          </div>
           <h1 className="workspace-welcome-title">
             {t('workspace.welcomeTitle')}
           </h1>

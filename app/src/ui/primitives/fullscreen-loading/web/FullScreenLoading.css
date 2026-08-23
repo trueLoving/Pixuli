@@ -1,4 +1,4 @@
-/* 全屏 Loading 样式 */
+/* 全屏 Loading：白 90% + blur；品牌青像素立方（非蓝 spinner） */
 .fullscreen-loading {
   position: fixed;
   top: 0;
@@ -7,22 +7,20 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(4px);
   z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: auto;
-  animation: fadeIn 0.2s ease-in;
-  /* 阻止所有用户交互 */
+  animation: fullscreen-loading-fade-in 0.2s ease-in;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
 }
 
-/* 当全屏 Loading 显示时，禁用 body 滚动 */
 body.fullscreen-loading-active {
   overflow: hidden !important;
   position: fixed;
@@ -30,7 +28,7 @@ body.fullscreen-loading-active {
   height: 100%;
 }
 
-@keyframes fadeIn {
+@keyframes fullscreen-loading-fade-in {
   from {
     opacity: 0;
   }
@@ -43,23 +41,15 @@ body.fullscreen-loading-active {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .fullscreen-loading-spinner {
-  width: 48px;
-  height: 48px;
-  color: var(--pix-cyan-deep, #22d3ee);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 7rem;
+  height: 7rem;
 }
 
 .fullscreen-loading-text {
@@ -68,4 +58,14 @@ body.fullscreen-loading-active {
   color: var(--text-secondary, #6b7280);
   margin: 0;
   text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fullscreen-loading {
+    background: color-mix(in srgb, var(--pix-ink, #1e1b4b) 90%, transparent);
+  }
+
+  .fullscreen-loading-text {
+    color: #c4b5fd;
+  }
 }

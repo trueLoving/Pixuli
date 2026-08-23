@@ -1,11 +1,6 @@
-import {
-  Github,
-  GitBranch,
-  HelpCircle,
-  Image as ImageIcon,
-  Play,
-} from 'lucide-react';
+import { Github, GitBranch, HelpCircle, Play } from 'lucide-react';
 import React from 'react';
+import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { defaultTranslate } from '@/ui/locales';
 import type { EmptyStateProps } from '../common/types';
 import './EmptyState.css';
@@ -21,9 +16,8 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className="empty-state-container">
       <div className="empty-state-content">
-        {/* 图标 */}
         <div className="empty-state-icon">
-          <ImageIcon size={80} className="empty-state-icon-svg" />
+          <BrandPixelMark variant="offline" size={112} />
         </div>
 
         {/* 标题 */}

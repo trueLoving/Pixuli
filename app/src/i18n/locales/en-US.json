@@ -105,6 +105,7 @@
     "pulling": "Pulling…",
     "syncBoth": "Sync both ways",
     "syncing": "Syncing…",
+    "syncingShort": "Sync",
     "syncNeedsLocal": "Choose a local workspace first",
     "syncFailed": "Sync failed",
     "syncNoChanges": "Sync complete — no changes",

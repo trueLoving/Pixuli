@@ -303,12 +303,12 @@
 }
 
 .asset-library-badge--local {
-  background: #d1fae5;
-  color: #047857;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .asset-library-badge--synced {
-  background: #cffafe;
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 28%, #fff);
   color: var(--pix-cyan-deep, #22d3ee);
 }
 
@@ -318,8 +318,10 @@
 }
 
 .asset-library-badge--public {
-  background: #ede9fe;
-  color: #6d28d9;
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 22%, #fff);
+  color: var(--pix-cyan-deep, #22d3ee);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--pix-cyan-deep, #22d3ee) 35%, transparent);
 }
 
 .asset-library-chips {

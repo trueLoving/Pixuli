@@ -4,7 +4,7 @@
   flex-shrink: 0;
   width: 3rem;
   border-right: 1px solid #e5e7eb;
-  background: #f8fafc;
+  background: var(--pix-surface, #faf8ff);
 }
 
 .activity-bar--mobile {
@@ -19,6 +19,7 @@
   padding-bottom: env(safe-area-inset-bottom, 0);
   border-right: none;
   border-top: 1px solid #e5e7eb;
+  background: #fff;
 }
 
 .activity-bar-main,
@@ -49,6 +50,7 @@
 }
 
 .activity-bar-item {
+  position: relative;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -68,6 +70,11 @@
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
+}
+
+.activity-bar-item:focus-visible {
+  outline: 2px solid var(--pix-violet, #7c6cf0);
+  outline-offset: 2px;
 }
 
 .activity-bar-item-label {
@@ -105,17 +112,91 @@
 }
 
 .activity-bar-item:hover:not(:disabled) {
-  background: #e5e7eb;
-  color: #111827;
+  background: #f3f4f6;
+  color: #374151;
 }
 
+/* 选中：紫底 + 指示条（紫=导航；勿用青） */
 .activity-bar-item--active {
   background: var(--pix-violet-soft, #ede9fe);
   color: var(--pix-violet-deep, #5b4fe0);
 }
 
+.activity-bar-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--pix-violet, #7c6cf0);
+}
+
+.activity-bar--mobile .activity-bar-item--active::before {
+  left: 0.55rem;
+  right: 0.55rem;
+  top: 0;
+  bottom: auto;
+  width: auto;
+  height: 3px;
+  border-radius: 0 0 2px 2px;
+}
+
+/* 设置：保持中性，即使可点按也不抢同步青/选中紫 */
+.activity-bar-item--settings {
+  color: #6b7280;
+}
+
+.activity-bar-item--settings:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* 同步中：青图标 + 青徽章（系统在动） */
 .activity-bar-item--busy {
   color: var(--pix-cyan-deep, #22d3ee);
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+}
+
+.activity-bar-item--busy:hover:not(:disabled) {
+  color: var(--pix-cyan-deep, #22d3ee);
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 24%, #fff);
+}
+
+.activity-bar-item--busy.activity-bar-item--active {
+  color: var(--pix-cyan-deep, #22d3ee);
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+}
+
+.activity-bar-item--busy.activity-bar-item--active::before {
+  background: var(--pix-cyan-deep, #22d3ee);
+}
+
+.activity-bar-badge {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.05rem;
+  max-width: 2.75rem;
+  padding: 0.05rem 0.25rem;
+  border-radius: 999px;
+  background: var(--pix-cyan-deep, #22d3ee);
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.activity-bar--mobile .activity-bar-badge {
+  top: 0.05rem;
+  right: 0.15rem;
+  max-width: 3.25rem;
+  font-size: 0.5625rem;
 }
 
 .activity-bar-item:disabled {
@@ -124,7 +205,7 @@
 }
 
 .activity-bar-spin {
-  animation: activity-bar-spin 1s linear infinite;
+  animation: activity-bar-spin 1.2s ease-in-out infinite;
 }
 
 @keyframes activity-bar-spin {
@@ -133,5 +214,11 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-bar-spin {
+    animation: none;
   }
 }

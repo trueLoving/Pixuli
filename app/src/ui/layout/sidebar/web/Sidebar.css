@@ -463,9 +463,15 @@
 }
 
 .sidebar-nav-item.active {
-  background: var(--active-bg, #e5e7eb);
-  color: var(--text-primary, #111827);
+  background: var(--pix-violet-soft, #ede9fe);
+  color: var(--pix-violet-deep, #5b4fe0);
   border-left: 3px solid var(--pix-violet);
+}
+
+.sidebar-nav-item.syncing,
+.sidebar-collapsed-item.syncing {
+  color: var(--pix-cyan-deep, #22d3ee);
+  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
 }
 
 .sidebar-nav-item.disabled {
