@@ -7,11 +7,6 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
-import {
-  ImageActionMenu,
-  type ImageActionHandlers,
-  type ImageActionId,
-} from '@/ui/image/image-actions/web';
 import ImageEditModal from '@/ui/image/image-browser/web/ImageEditModal';
 import { ImagePreviewModal } from '@/ui/image/image-preview-modal/web';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
@@ -24,7 +19,20 @@ import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/utils/assetKind';
 import { isDesktop } from '@/platforms';
-import { Shield, SlidersHorizontal, Sparkles, Wand2, X } from 'lucide-react';
+import {
+  Edit,
+  ExternalLink,
+  Link,
+  type LucideIcon,
+  RefreshCw,
+  Share2,
+  Shield,
+  SlidersHorizontal,
+  Sparkles,
+  Trash2,
+  Wand2,
+  X,
+} from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -40,14 +48,60 @@ import {
 } from '@/hooks/usePanelResize';
 import './AssetInspector.css';
 
-const INSPECTOR_ACTIONS: ImageActionId[] = [
-  'preview',
-  'edit',
-  'copyUrl',
-  'openUrl',
-  'share',
-  'delete',
-];
+interface CompactAction {
+  id: string;
+  label: string;
+  title?: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+function InspectorActionGrid({
+  actions,
+  danger,
+}: {
+  actions: CompactAction[];
+  danger?: CompactAction | null;
+}) {
+  const DangerIcon = danger?.icon;
+  return (
+    <div className="asset-inspector-actions-block">
+      <div className="asset-inspector-action-grid" role="group">
+        {actions.map(action => {
+          const Icon = action.icon;
+          return (
+            <button
+              key={action.id}
+              type="button"
+              className="asset-inspector-action-btn"
+              title={action.title ?? action.label}
+              aria-label={action.title ?? action.label}
+              disabled={action.disabled}
+              onClick={action.onClick}
+            >
+              <Icon size={18} aria-hidden />
+              <span>{action.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {danger && DangerIcon ? (
+        <button
+          type="button"
+          className="asset-inspector-action-danger"
+          title={danger.title ?? danger.label}
+          aria-label={danger.title ?? danger.label}
+          disabled={danger.disabled}
+          onClick={danger.onClick}
+        >
+          <DangerIcon size={16} aria-hidden />
+          <span>{danger.label}</span>
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 interface AssetInspectorProps {
   image: ImageItem | null;
@@ -328,47 +382,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView],
   );
 
-  const handlers = useMemo<ImageActionHandlers>(() => {
-    if (!activeImage) return {};
-    const url = resolveRemoteCopyUrl(activeImage);
-    const next: ImageActionHandlers = {
-      preview: kind === 'image' ? () => setShowPreview(true) : undefined,
-      edit: onUpdateImage
-        ? () => {
-            setShowEdit(true);
-            showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
-          }
-        : undefined,
-      copyUrl: () => {
-        void handleCopy();
-      },
-      openUrl: () => {
-        window.open(url || activeImage.url, '_blank');
-      },
-      delete: onDeleteImage
-        ? () => {
-            void handleDelete();
-          }
-        : undefined,
-    };
-    if (onShareImage) {
-      next.share = () => {
-        void handleShare();
-      };
-    }
-    return next;
-  }, [
-    activeImage,
-    handleCopy,
-    handleDelete,
-    handleShare,
-    kind,
-    onDeleteImage,
-    onShareImage,
-    onUpdateImage,
-    t,
-  ]);
-
   const handleBatchDelete = useCallback(async () => {
     if (selectedImages.length === 0) return;
     if (
@@ -396,6 +409,196 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     item => getAssetKind(item) === 'image',
   );
 
+  const singleActions = useMemo((): {
+    grid: CompactAction[];
+    danger: CompactAction | null;
+  } => {
+    if (!activeImage) return { grid: [], danger: null };
+    const url = resolveRemoteCopyUrl(activeImage);
+    const grid: CompactAction[] = [];
+
+    if (onUpdateImage) {
+      grid.push({
+        id: 'edit',
+        label: t('image.inspector.actionEdit'),
+        title: t('image.actions.edit'),
+        icon: Edit,
+        onClick: () => {
+          setShowEdit(true);
+          showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
+        },
+      });
+    }
+    grid.push({
+      id: 'copy',
+      label: t('image.inspector.actionCopy'),
+      title: t('image.actions.copyUrl'),
+      icon: Link,
+      onClick: () => {
+        void handleCopy();
+      },
+    });
+    grid.push({
+      id: 'open',
+      label: t('image.inspector.actionOpen'),
+      title: t('image.actions.openUrl'),
+      icon: ExternalLink,
+      onClick: () => {
+        window.open(url || activeImage.url, '_blank');
+      },
+    });
+    if (onShareImage) {
+      grid.push({
+        id: 'share',
+        label: t('image.inspector.actionShare'),
+        title: t('image.actions.share'),
+        icon: Share2,
+        onClick: () => {
+          void handleShare();
+        },
+      });
+    }
+    grid.push({
+      id: 'access',
+      label: t('image.inspector.actionAccess'),
+      title: t('image.inspector.openAccess'),
+      icon: Shield,
+      onClick: () => openAccessModal(activeImage.id),
+    });
+    grid.push({
+      id: 'compress',
+      label: t('image.inspector.actionCompress'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendCompress')
+          : t('image.inspector.toolImageOnly'),
+      icon: SlidersHorizontal,
+      disabled: kind !== 'image',
+      onClick: () => openTool('compress'),
+    });
+    grid.push({
+      id: 'convert',
+      label: t('image.inspector.actionConvert'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendConvert')
+          : t('image.inspector.toolImageOnly'),
+      icon: Wand2,
+      disabled: kind !== 'image',
+      onClick: () => openTool('convert'),
+    });
+    grid.push({
+      id: 'ai',
+      label: t('image.inspector.actionAi'),
+      title: !isDesktop()
+        ? t('image.inspector.aiDesktopOnly')
+        : kind !== 'image'
+          ? t('image.inspector.toolImageOnly')
+          : t('image.inspector.sendAi'),
+      icon: Sparkles,
+      disabled: !isDesktop() || kind !== 'image',
+      onClick: () => {
+        if (!isDesktop() || kind !== 'image') return;
+        showInfo(t('image.inspector.aiReadyHint'));
+        if (onUpdateImage) setShowEdit(true);
+      },
+    });
+
+    const danger: CompactAction | null = onDeleteImage
+      ? {
+          id: 'delete',
+          label: t('image.inspector.actionDelete'),
+          title: t('image.actions.delete'),
+          icon: Trash2,
+          onClick: () => {
+            void handleDelete();
+          },
+        }
+      : null;
+
+    return { grid, danger };
+  }, [
+    activeImage,
+    handleCopy,
+    handleDelete,
+    handleShare,
+    kind,
+    onDeleteImage,
+    onShareImage,
+    onUpdateImage,
+    openAccessModal,
+    openTool,
+    t,
+  ]);
+
+  const batchActions = useMemo((): {
+    grid: CompactAction[];
+    danger: CompactAction | null;
+  } => {
+    if (selectedImages.length < 2) return { grid: [], danger: null };
+    const grid: CompactAction[] = [
+      {
+        id: 'sync',
+        label: t('image.inspector.actionSync'),
+        title: t('image.toolbar.sync'),
+        icon: RefreshCw,
+        disabled: !onSync,
+        onClick: () => onSync?.(),
+      },
+      {
+        id: 'access',
+        label: t('image.inspector.actionAccess'),
+        title: t('image.inspector.openAccess'),
+        icon: Shield,
+        onClick: () =>
+          openAccessModal(
+            selectedImages[0]?.id,
+            selectedImages.map(item => item.id),
+          ),
+      },
+      {
+        id: 'compress',
+        label: t('image.inspector.actionCompress'),
+        title: allSelectedImages
+          ? t('image.inspector.sendCompress')
+          : t('image.inspector.toolImageOnly'),
+        icon: SlidersHorizontal,
+        disabled: !allSelectedImages,
+        onClick: () => openTool('compress'),
+      },
+      {
+        id: 'convert',
+        label: t('image.inspector.actionConvert'),
+        title: allSelectedImages
+          ? t('image.inspector.sendConvert')
+          : t('image.inspector.toolImageOnly'),
+        icon: Wand2,
+        disabled: !allSelectedImages,
+        onClick: () => openTool('convert'),
+      },
+    ];
+    return {
+      grid,
+      danger: {
+        id: 'delete',
+        label: t('image.inspector.actionDelete'),
+        title: t('image.library.deleteSelected'),
+        icon: Trash2,
+        onClick: () => {
+          void handleBatchDelete();
+        },
+      },
+    };
+  }, [
+    allSelectedImages,
+    handleBatchDelete,
+    onSync,
+    openAccessModal,
+    openTool,
+    selectedImages,
+    t,
+  ]);
+
   const batchBody =
     selectedImages.length >= 2 ? (
       <>
@@ -418,217 +621,94 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           ))}
           {selectedImages.length > 8 ? <li>…</li> : null}
         </ul>
-        <section className="asset-inspector-section">
-          <h3>{t('image.inspector.sectionActions')}</h3>
-          <div className="asset-inspector-extra">
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              onClick={onSync}
-              disabled={!onSync}
-            >
-              {t('image.toolbar.sync')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              onClick={() =>
-                openAccessModal(
-                  selectedImages[0]?.id,
-                  selectedImages.map(item => item.id),
-                )
-              }
-            >
-              {t('image.inspector.openAccess')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              disabled={!allSelectedImages}
-              title={
-                allSelectedImages
-                  ? undefined
-                  : t('image.inspector.toolImageOnly')
-              }
-              onClick={() => openTool('compress')}
-            >
-              {t('image.inspector.sendCompress')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              disabled={!allSelectedImages}
-              title={
-                allSelectedImages
-                  ? undefined
-                  : t('image.inspector.toolImageOnly')
-              }
-              onClick={() => openTool('convert')}
-            >
-              {t('image.inspector.sendConvert')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              onClick={() => {
-                void handleBatchDelete();
-              }}
-            >
-              {t('image.library.deleteSelected')}
-            </button>
-          </div>
-        </section>
       </>
     ) : null;
 
-  const body =
-    batchBody ??
-    (activeImage ? (
-      <>
-        <section className="asset-inspector-section">
-          <h3>{t('image.inspector.sectionContent')}</h3>
-          <FileContent
-            image={activeImage}
-            onPreview={() => setShowPreview(true)}
-            t={t}
-          />
-        </section>
+  const singleBody = activeImage ? (
+    <>
+      <section className="asset-inspector-section">
+        <h3>{t('image.inspector.sectionContent')}</h3>
+        <FileContent
+          image={activeImage}
+          onPreview={() => setShowPreview(true)}
+          t={t}
+        />
+      </section>
 
-        <section className="asset-inspector-section">
-          <h3>{t('image.inspector.sectionInfo')}</h3>
-          <dl className="asset-inspector-dl">
-            <div>
-              <dt>{t('image.inspector.name')}</dt>
-              <dd title={activeImage.name}>{activeImage.name}</dd>
-            </div>
-            {kind === 'image' ? (
-              <div>
-                <dt>{t('image.inspector.dimensions')}</dt>
-                <dd>{dimensions}</dd>
-              </div>
-            ) : null}
-            <div>
-              <dt>{t('image.inspector.size')}</dt>
-              <dd>
-                {activeImage.size > 0 ? formatFileSize(activeImage.size) : '—'}
-              </dd>
-            </div>
-            <div>
-              <dt>{t('image.inspector.date')}</dt>
-              <dd>
-                {activeImage.createdAt
-                  ? new Date(activeImage.createdAt).toLocaleString()
-                  : '—'}
-              </dd>
-            </div>
-            <div>
-              <dt>{t('image.inspector.folder')}</dt>
-              <dd>{folderLabel(activeImage.localPath)}</dd>
-            </div>
-            <div>
-              <dt>{t('image.inspector.sync')}</dt>
-              <dd>
-                {activeImage.linkKind === 'remote-raw' ||
-                hasPublishableRemoteUrl(activeImage)
-                  ? t('image.inspector.syncRemote')
-                  : t('image.inspector.syncLocal')}
-              </dd>
-            </div>
-            <div>
-              <dt>{t('image.inspector.access')}</dt>
-              <dd>
-                {published
-                  ? t('image.inspector.accessPublic')
-                  : t('image.inspector.accessLocalOnly')}
-              </dd>
-            </div>
-            {(activeImage.tags?.length ?? 0) > 0 ? (
-              <div>
-                <dt>{t('image.inspector.tags')}</dt>
-                <dd>{(activeImage.tags ?? []).join('、')}</dd>
-              </div>
-            ) : null}
-            {activeImage.description ? (
-              <div>
-                <dt>{t('image.inspector.description')}</dt>
-                <dd>{activeImage.description}</dd>
-              </div>
-            ) : null}
-          </dl>
-        </section>
-
-        <section className="asset-inspector-section">
-          <h3>{t('image.inspector.sectionActions')}</h3>
-          <ImageActionMenu
-            variant="labeled-bar"
-            actions={INSPECTOR_ACTIONS}
-            handlers={handlers}
-            t={t}
-            className="asset-inspector-actions"
-          />
-          <div className="asset-inspector-extra">
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              onClick={() => openAccessModal(activeImage.id)}
-            >
-              <Shield size={16} aria-hidden />
-              {t('image.inspector.openAccess')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              disabled={kind !== 'image'}
-              title={
-                kind === 'image'
-                  ? undefined
-                  : t('image.inspector.toolImageOnly')
-              }
-              onClick={() => openTool('compress')}
-            >
-              <SlidersHorizontal size={16} aria-hidden />
-              {t('image.inspector.sendCompress')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              disabled={kind !== 'image'}
-              title={
-                kind === 'image'
-                  ? undefined
-                  : t('image.inspector.toolImageOnly')
-              }
-              onClick={() => openTool('convert')}
-            >
-              <Wand2 size={16} aria-hidden />
-              {t('image.inspector.sendConvert')}
-            </button>
-            <button
-              type="button"
-              className="asset-inspector-extra-btn"
-              disabled={!isDesktop() || kind !== 'image'}
-              title={
-                !isDesktop()
-                  ? t('image.inspector.aiDesktopOnly')
-                  : kind !== 'image'
-                    ? t('image.inspector.toolImageOnly')
-                    : undefined
-              }
-              onClick={() => {
-                if (!isDesktop() || kind !== 'image') return;
-                showInfo(t('image.inspector.aiReadyHint'));
-                if (onUpdateImage) setShowEdit(true);
-              }}
-            >
-              <Sparkles size={16} aria-hidden />
-              {t('image.inspector.sendAi')}
-            </button>
+      <section className="asset-inspector-section">
+        <h3>{t('image.inspector.sectionInfo')}</h3>
+        <dl className="asset-inspector-dl">
+          <div>
+            <dt>{t('image.inspector.name')}</dt>
+            <dd title={activeImage.name}>{activeImage.name}</dd>
           </div>
-        </section>
-      </>
-    ) : (
-      <p className="asset-inspector-empty">{t('image.inspector.empty')}</p>
-    ));
+          {kind === 'image' ? (
+            <div>
+              <dt>{t('image.inspector.dimensions')}</dt>
+              <dd>{dimensions}</dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>{t('image.inspector.size')}</dt>
+            <dd>
+              {activeImage.size > 0 ? formatFileSize(activeImage.size) : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt>{t('image.inspector.date')}</dt>
+            <dd>
+              {activeImage.createdAt
+                ? new Date(activeImage.createdAt).toLocaleString()
+                : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt>{t('image.inspector.folder')}</dt>
+            <dd>{folderLabel(activeImage.localPath)}</dd>
+          </div>
+          <div>
+            <dt>{t('image.inspector.sync')}</dt>
+            <dd>
+              {activeImage.linkKind === 'remote-raw' ||
+              hasPublishableRemoteUrl(activeImage)
+                ? t('image.inspector.syncRemote')
+                : t('image.inspector.syncLocal')}
+            </dd>
+          </div>
+          <div>
+            <dt>{t('image.inspector.access')}</dt>
+            <dd>
+              {published
+                ? t('image.inspector.accessPublic')
+                : t('image.inspector.accessLocalOnly')}
+            </dd>
+          </div>
+          {(activeImage.tags?.length ?? 0) > 0 ? (
+            <div>
+              <dt>{t('image.inspector.tags')}</dt>
+              <dd>{(activeImage.tags ?? []).join('、')}</dd>
+            </div>
+          ) : null}
+          {activeImage.description ? (
+            <div>
+              <dt>{t('image.inspector.description')}</dt>
+              <dd>{activeImage.description}</dd>
+            </div>
+          ) : null}
+        </dl>
+      </section>
+    </>
+  ) : (
+    <p className="asset-inspector-empty">{t('image.inspector.empty')}</p>
+  );
+
+  const body = batchBody ?? singleBody;
+  const actions =
+    selectedImages.length >= 2
+      ? batchActions
+      : activeImage
+        ? singleActions
+        : null;
 
   const panel = (
     <aside
@@ -684,6 +764,14 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         </div>
       </header>
       <div className="asset-inspector-body">{body}</div>
+      {actions && (actions.grid.length > 0 || actions.danger) ? (
+        <footer className="asset-inspector-actions-footer">
+          <h3 className="asset-inspector-actions-title">
+            {t('image.inspector.sectionActions')}
+          </h3>
+          <InspectorActionGrid actions={actions.grid} danger={actions.danger} />
+        </footer>
+      ) : null}
     </aside>
   );
 

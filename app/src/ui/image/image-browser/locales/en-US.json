@@ -53,7 +53,17 @@
       "aiReadyHint": "Edit opens so you can add tags and description. Local models are Desktop-only and must be configured first.",
       "expandSheet": "Expand to full screen",
       "collapseSheet": "Collapse details",
-      "resize": "Drag to resize details panel"
+      "resize": "Drag to resize details panel",
+      "actionEdit": "Edit",
+      "actionCopy": "Copy",
+      "actionOpen": "Open",
+      "actionShare": "Share",
+      "actionAccess": "Access",
+      "actionCompress": "Compress",
+      "actionConvert": "Convert",
+      "actionAi": "AI",
+      "actionDelete": "Delete",
+      "actionSync": "Sync"
     },
     "filter": {
       "title": "Image Filter",
