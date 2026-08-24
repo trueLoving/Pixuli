@@ -12,7 +12,6 @@ import { ImagePreviewModal } from '@/ui/image/image-preview-modal/web';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { getPublishedAccess } from '@/features/access/accessPolicyStore';
 import { resolveRemoteCopyUrl } from '@/hooks/useImageCopyUrl';
-import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
@@ -21,12 +20,10 @@ import { getAssetKind } from '@/utils/assetKind';
 import { isDesktop } from '@/platforms';
 import {
   Edit,
-  ExternalLink,
   Link,
   type LucideIcon,
   RefreshCw,
   Share2,
-  Shield,
   SlidersHorizontal,
   Sparkles,
   Trash2,
@@ -40,7 +37,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   INSPECTOR_WIDTH_MAX,
   INSPECTOR_WIDTH_MIN,
@@ -112,7 +108,6 @@ interface AssetInspectorProps {
   onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
   onUpdateImage?: (data: ImageEditData) => Promise<void>;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
-  onCopyRemoteAccess?: (image: ImageItem) => boolean;
   onShareImage?: (image: ImageItem) => Promise<void>;
   onSync?: () => void;
   getImageDimensionsFromUrl?: (
@@ -201,22 +196,14 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onDeleteMultipleImages,
   onUpdateImage,
   onCopyUrl,
-  onCopyRemoteAccess,
   onShareImage,
   onSync,
   getImageDimensionsFromUrl,
   t,
   variant = 'dock',
 }) => {
-  const navigate = useNavigate();
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const sources = useSourceStore(state => state.sources);
-  const openAccessModal = useUIStore(state => state.openAccessModal);
-  const setCurrentUtilityTool = useUIStore(
-    state => state.setCurrentUtilityTool,
-  );
-  const setCurrentView = useUIStore(state => state.setCurrentView);
-  const setActiveMenu = useUIStore(state => state.setActiveMenu);
 
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -318,9 +305,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const handleCopy = useCallback(async () => {
     if (!activeImage) return;
-    if (onCopyRemoteAccess && onCopyRemoteAccess(activeImage) === false) {
-      return;
-    }
     try {
       const url = resolveRemoteCopyUrl(activeImage);
       if (onCopyUrl) {
@@ -332,7 +316,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     } catch {
       showError(t('image.grid.copyFailed'));
     }
-  }, [activeImage, onCopyRemoteAccess, onCopyUrl, t]);
+  }, [activeImage, onCopyUrl, t]);
 
   const handleDelete = useCallback(async () => {
     if (!activeImage || !onDeleteImage) return;
@@ -372,16 +356,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     }
   }, [activeImage, onShareImage, t]);
 
-  const openTool = useCallback(
-    (tool: 'compress' | 'convert') => {
-      setCurrentUtilityTool(tool);
-      setCurrentView('photos');
-      setActiveMenu(tool);
-      navigate(tool === 'compress' ? ROUTES.COMPRESS : ROUTES.CONVERT);
-    },
-    [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView],
-  );
-
   const handleBatchDelete = useCallback(async () => {
     if (selectedImages.length === 0) return;
     if (
@@ -405,16 +379,11 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     onClose();
   }, [onClose, onDeleteImage, onDeleteMultipleImages, selectedImages, t]);
 
-  const allSelectedImages = selectedImages.every(
-    item => getAssetKind(item) === 'image',
-  );
-
   const singleActions = useMemo((): {
     grid: CompactAction[];
     danger: CompactAction | null;
   } => {
     if (!activeImage) return { grid: [], danger: null };
-    const url = resolveRemoteCopyUrl(activeImage);
     const grid: CompactAction[] = [];
 
     if (onUpdateImage) {
@@ -438,15 +407,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         void handleCopy();
       },
     });
-    grid.push({
-      id: 'open',
-      label: t('image.inspector.actionOpen'),
-      title: t('image.actions.openUrl'),
-      icon: ExternalLink,
-      onClick: () => {
-        window.open(url || activeImage.url, '_blank');
-      },
-    });
     if (onShareImage) {
       grid.push({
         id: 'share',
@@ -459,33 +419,20 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       });
     }
     grid.push({
-      id: 'access',
-      label: t('image.inspector.actionAccess'),
-      title: t('image.inspector.openAccess'),
-      icon: Shield,
-      onClick: () => openAccessModal(activeImage.id),
-    });
-    grid.push({
       id: 'compress',
       label: t('image.inspector.actionCompress'),
-      title:
-        kind === 'image'
-          ? t('image.inspector.sendCompress')
-          : t('image.inspector.toolImageOnly'),
+      title: t('image.inspector.toolDisabled'),
       icon: SlidersHorizontal,
-      disabled: kind !== 'image',
-      onClick: () => openTool('compress'),
+      disabled: true,
+      onClick: () => undefined,
     });
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
-      title:
-        kind === 'image'
-          ? t('image.inspector.sendConvert')
-          : t('image.inspector.toolImageOnly'),
+      title: t('image.inspector.toolDisabled'),
       icon: Wand2,
-      disabled: kind !== 'image',
-      onClick: () => openTool('convert'),
+      disabled: true,
+      onClick: () => undefined,
     });
     grid.push({
       id: 'ai',
@@ -526,8 +473,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     onDeleteImage,
     onShareImage,
     onUpdateImage,
-    openAccessModal,
-    openTool,
     t,
   ]);
 
@@ -546,35 +491,20 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         onClick: () => onSync?.(),
       },
       {
-        id: 'access',
-        label: t('image.inspector.actionAccess'),
-        title: t('image.inspector.openAccess'),
-        icon: Shield,
-        onClick: () =>
-          openAccessModal(
-            selectedImages[0]?.id,
-            selectedImages.map(item => item.id),
-          ),
-      },
-      {
         id: 'compress',
         label: t('image.inspector.actionCompress'),
-        title: allSelectedImages
-          ? t('image.inspector.sendCompress')
-          : t('image.inspector.toolImageOnly'),
+        title: t('image.inspector.toolDisabled'),
         icon: SlidersHorizontal,
-        disabled: !allSelectedImages,
-        onClick: () => openTool('compress'),
+        disabled: true,
+        onClick: () => undefined,
       },
       {
         id: 'convert',
         label: t('image.inspector.actionConvert'),
-        title: allSelectedImages
-          ? t('image.inspector.sendConvert')
-          : t('image.inspector.toolImageOnly'),
+        title: t('image.inspector.toolDisabled'),
         icon: Wand2,
-        disabled: !allSelectedImages,
-        onClick: () => openTool('convert'),
+        disabled: true,
+        onClick: () => undefined,
       },
     ];
     return {
@@ -589,15 +519,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         },
       },
     };
-  }, [
-    allSelectedImages,
-    handleBatchDelete,
-    onSync,
-    openAccessModal,
-    openTool,
-    selectedImages,
-    t,
-  ]);
+  }, [handleBatchDelete, onSync, selectedImages.length, t]);
 
   const batchBody =
     selectedImages.length >= 2 ? (

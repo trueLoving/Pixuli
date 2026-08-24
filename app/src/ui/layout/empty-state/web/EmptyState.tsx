@@ -1,4 +1,4 @@
-import { Github, GitBranch, HelpCircle, Play } from 'lucide-react';
+import { Github, GitBranch, HelpCircle } from 'lucide-react';
 import React from 'react';
 import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { defaultTranslate } from '@/ui/locales';
@@ -8,7 +8,6 @@ import './EmptyState.css';
 const EmptyState: React.FC<EmptyStateProps> = ({
   onAddGitHub,
   onAddGitee,
-  onTryDemo,
   t,
 }) => {
   const translate = t || defaultTranslate;
@@ -38,15 +37,6 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             <GitBranch className="w-5 h-5" />
             {translate('emptyState.addGitee')}
           </button>
-          {onTryDemo && (
-            <button
-              onClick={onTryDemo}
-              className="empty-state-button secondary"
-            >
-              <Play className="w-5 h-5" />
-              {translate('emptyState.tryDemo')}
-            </button>
-          )}
         </div>
 
         {/* 快速开始指南 */}

@@ -12,7 +12,6 @@ import searchLocales from '../primitives/search/locales';
 import keyboardHelpLocales from '../primitives/keyboard-help/locales';
 import languageSwitcherLocales from '../primitives/language-switcher/locales';
 import versionInfoLocales from '../features/version-info/locales';
-import demoLocales from '../dev/demo/locales';
 
 export { deepMerge, appOnlyLocales };
 
@@ -32,7 +31,6 @@ export const appLocales = {
     headerLocales['zh-CN'],
     searchLocales['zh-CN'],
     emptyStateLocales['zh-CN'],
-    demoLocales['zh-CN'],
   ),
   'en-US': deepMerge(
     {},
@@ -49,7 +47,6 @@ export const appLocales = {
     headerLocales['en-US'],
     searchLocales['en-US'],
     emptyStateLocales['en-US'],
-    demoLocales['en-US'],
   ),
 };
 

@@ -33,9 +33,6 @@ export * from '../primitives/action-button/web';
 // 功能
 export * from '../features/version-info/web';
 
-// 开发
-export * from '../dev/demo/web';
-
 // Web 图片处理（Canvas）
 export * from '../services/imageProcessor';
 

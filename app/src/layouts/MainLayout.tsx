@@ -8,7 +8,6 @@ import {
   GiteeConfigModal,
   GitHubConfigModal,
   Toaster,
-  useDemoMode,
 } from '@/ui';
 import type { VersionInfo } from '@/ui';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
@@ -75,7 +74,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const workspacePlatform = isWorkspaceAvailable();
   const showGlobalLoading = localActive ? workspaceLoading : loading;
   const sources = useSourceStore(state => state.sources);
-  const { isDemoMode } = useDemoMode();
   const platform = getPlatform();
 
   useRouteSync();
@@ -108,7 +106,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         : storageType;
 
   const modalResolveOptions = {
-    isDemoMode,
     editingSourceId,
     editingSourcePluginId,
     editingSourceRepoConfig,

@@ -15,7 +15,6 @@ import type { EmptyStateProps } from '../common/types';
 const EmptyStateNative: React.FC<EmptyStateProps> = ({
   onAddGitHub,
   onAddGitee,
-  onTryDemo,
   t,
   colorScheme: colorSchemeProp,
 }) => {
@@ -111,29 +110,6 @@ const EmptyStateNative: React.FC<EmptyStateProps> = ({
               {translate('emptyState.addGitee')}
             </Text>
           </TouchableOpacity>
-          {onTryDemo && (
-            <TouchableOpacity
-              style={[
-                styles.button,
-                {
-                  backgroundColor: themeColors.secondaryBackground,
-                  borderWidth: 1,
-                  borderColor: themeColors.border,
-                },
-              ]}
-              onPress={onTryDemo}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  { color: themeColors.secondaryText },
-                ]}
-              >
-                {translate('emptyState.tryDemo')}
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* 快速开始指南 */}

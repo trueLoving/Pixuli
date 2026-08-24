@@ -4,7 +4,6 @@
     "description": "开始管理您的图片库，首先需要添加一个仓库源",
     "addGitHub": "配置 GitHub",
     "addGitee": "配置 Gitee",
-    "tryDemo": "体验 Demo 模式",
     "quickStart": "快速开始",
     "step1": {
       "title": "选择存储平台",

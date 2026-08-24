@@ -3,7 +3,6 @@
 export interface EmptyStateProps {
   onAddGitHub: () => void;
   onAddGitee: () => void;
-  onTryDemo?: () => void;
   t?: (key: string) => string;
   colorScheme?: 'light' | 'dark';
 }

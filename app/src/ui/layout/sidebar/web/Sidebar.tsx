@@ -62,7 +62,7 @@ interface SidebarProps {
   mobileOpen?: boolean;
   /** 点击遮罩或完成导航后关闭抽屉 */
   onMobileClose?: () => void;
-  /** 侧栏底部区域上方插槽（如演示模式区块） */
+  /** 侧栏底部区域上方插槽 */
   footerExtra?: React.ReactNode;
   /** 为 true 时不渲染侧栏内仓库源区块（由主内容区工作区栏承载） */
   hideSources?: boolean;

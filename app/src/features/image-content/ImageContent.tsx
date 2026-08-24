@@ -9,8 +9,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { hasPublishableRemoteUrl } from '../access/accessCapabilities';
-import { isAssetPublished } from '../access/accessPolicyStore';
 import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from '../library/AssetLibrary';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
@@ -23,7 +21,6 @@ import {
 import { ROUTES } from '@/router/routes';
 import { useNavigate } from 'react-router-dom';
 import { useImageStore } from '../../stores/imageStore';
-import { useSourceStore } from '../../stores/sourceStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useWorkspaceStore } from '../../stores/workspaceStore';
 import './ImageContent.css';
@@ -89,8 +86,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   const onShareImage = useNativeShareImage();
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
-  const sources = useSourceStore(state => state.sources);
-  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const openAccessModal = useUIStore(state => state.openAccessModal);
   const requestSync = useUIStore(state => state.requestSync);
   const workspaceExplorerOpen = useUIStore(
@@ -137,22 +132,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     onClearError();
     void loadImages();
   }, [loadImages, onClearError]);
-
-  const handleCopyRemoteAccess = useCallback(
-    (image: ImageItem) => {
-      const sourceId = selectedSourceId ?? sources[0]?.id;
-      if (
-        sourceId &&
-        isAssetPublished(image.id, sourceId) &&
-        hasPublishableRemoteUrl(image)
-      ) {
-        return true;
-      }
-      openAccessModal(image.id);
-      return false;
-    },
-    [openAccessModal, selectedSourceId, sources],
-  );
 
   const imagesRef = useRef(images);
   imagesRef.current = images;
@@ -260,7 +239,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       onDeleteMultipleImages={onDeleteMultipleImages}
       onUpdateImage={onUpdateImage}
       onCopyUrl={onCopyUrl}
-      onCopyRemoteAccess={handleCopyRemoteAccess}
       onShareImage={onShareImage}
       onSync={() => requestSync()}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}

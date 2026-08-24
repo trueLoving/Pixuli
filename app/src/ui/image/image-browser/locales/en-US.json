@@ -48,6 +48,7 @@
       "sendCompress": "Send to compress",
       "sendConvert": "Send to convert",
       "toolImageOnly": "Compress and convert are available for images only",
+      "toolDisabled": "Temporarily unavailable",
       "sendAi": "AI analysis",
       "aiDesktopOnly": "Desktop only",
       "aiReadyHint": "Edit opens so you can add tags and description. Local models are Desktop-only and must be configured first.",

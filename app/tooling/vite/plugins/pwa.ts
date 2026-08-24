@@ -14,7 +14,7 @@ export function createPwaPlugin(isServe: boolean) {
       name: 'Pixuli - 智能图片管理',
       short_name: 'Pixuli',
       description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
-      theme_color: '#2563eb',
+      theme_color: '#7c6cf0',
       background_color: '#ffffff',
       display: 'standalone',
       orientation: 'any',

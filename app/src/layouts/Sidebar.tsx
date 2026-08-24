@@ -1,9 +1,4 @@
-import {
-  Sidebar as CommonSidebar,
-  DemoSidebarSection,
-  type SidebarMenuItem,
-  useDemoMode,
-} from '@/ui';
+import { Sidebar as CommonSidebar, type SidebarMenuItem } from '@/ui';
 import {
   getRepoConfigFromSource,
   pluginIdToLegacyType,
@@ -40,7 +35,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useMobileViewport();
-  const { isDemoMode } = useDemoMode();
   const sources = useSourceStore(state => state.sources);
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
@@ -177,7 +171,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onToggleCollapse={isMobile ? undefined : toggleSidebar}
           mobileOpen={isMobile && mobileSidebarOpen}
           onMobileClose={closeMobileSidebar}
-          footerExtra={isDemoMode ? <DemoSidebarSection t={t} /> : undefined}
           t={t}
         />
       </div>

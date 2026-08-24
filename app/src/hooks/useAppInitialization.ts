@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { getDemoGitHubConfig, getDemoGiteeConfig } from '@/ui';
 import { useImageStore } from '../stores/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 
@@ -7,7 +6,6 @@ import { useSourceStore } from '../stores/sourceStore';
  * 应用初始化相关的 hooks
  */
 export function useAppInitialization(
-  isDemoMode: boolean,
   hasConfig: boolean,
   handleLoadImages: () => Promise<void>,
 ) {
@@ -21,52 +19,9 @@ export function useAppInitialization(
     }
   }, [selectedSourceId, sources, setSelectedSourceId]);
 
-  // Demo 模式：自动加载 Demo 配置（不保存到 localStorage）
-  useEffect(() => {
-    if (isDemoMode && !hasConfig && !githubConfig && !giteeConfig) {
-      // 优先使用 GitHub Demo 配置
-      const demoGitHubConfig = getDemoGitHubConfig();
-      if (
-        demoGitHubConfig.config.owner &&
-        demoGitHubConfig.config.repo &&
-        demoGitHubConfig.config.token
-      ) {
-        // Demo 模式下直接设置到 store，不保存到 localStorage
-        useImageStore.setState({
-          githubConfig: demoGitHubConfig.config,
-          giteeConfig: null,
-          storageType: 'github',
-        });
-        useImageStore.getState().initializeStorage();
-        return;
-      }
-
-      // 如果没有 GitHub 配置，尝试使用 Gitee Demo 配置
-      const demoGiteeConfig = getDemoGiteeConfig();
-      if (
-        demoGiteeConfig.config.owner &&
-        demoGiteeConfig.config.repo &&
-        demoGiteeConfig.config.token
-      ) {
-        // Demo 模式下直接设置到 store，不保存到 localStorage
-        useImageStore.setState({
-          giteeConfig: demoGiteeConfig.config,
-          githubConfig: null,
-          storageType: 'gitee',
-        });
-        useImageStore.getState().initializeStorage();
-      }
-    }
-  }, [isDemoMode, hasConfig, githubConfig, giteeConfig]);
-
-  // 初始化存储服务并加载图片（Demo 模式下不自动加载）
+  // 初始化存储服务并加载图片
   // 注意：如果使用仓库源模式，图片加载由 useSelectedSourceSync 的回调触发
   useEffect(() => {
-    // Demo 模式下不自动加载图片
-    if (isDemoMode) {
-      return;
-    }
-
     // local 工作区由 workspace 初始化触发加载
     if (hasConfig) {
       return;
@@ -89,7 +44,6 @@ export function useAppInitialization(
     githubConfig,
     giteeConfig,
     handleLoadImages,
-    isDemoMode,
     hasConfig,
     sources,
   ]);
