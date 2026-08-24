@@ -104,8 +104,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
             setShowHistoryPanel(false);
             setSelectedHistoryIndex(-1);
           }
-        } else if (value && value.trim().length > 0) {
-          // 没有选中项，保存当前输入的历史记录
+        } else {
+          // 确认当前输入为查询
           e.preventDefault();
           if (onSaveHistory) {
             onSaveHistory(value.trim());
@@ -226,16 +226,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     [onClearHistory],
   );
 
-  // 处理 Enter 键：当历史记录面板未打开时保存历史记录
+  // 处理 Enter 键：确认查询（历史面板未打开时）
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // 按下 Enter 键时，如果历史记录面板未打开，保存历史记录
-      if (
-        e.key === 'Enter' &&
-        !showHistoryPanel &&
-        value &&
-        value.trim().length > 0
-      ) {
+      if (e.key === 'Enter' && !showHistoryPanel) {
+        e.preventDefault();
         if (onSaveHistory) {
           onSaveHistory(value.trim());
         }

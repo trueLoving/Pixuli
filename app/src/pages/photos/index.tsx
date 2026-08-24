@@ -43,6 +43,9 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     }
     return {
       searchQuery: searchContext.searchQuery,
+      draftQuery: searchContext.draftQuery,
+      onDraftChange: searchContext.setDraftQuery,
+      onCommitSearch: searchContext.commitSearch,
       onSearchChange: searchContext.setSearchQuery,
       filters: searchContext.filters,
       onFiltersChange: searchContext.setFilters,
@@ -50,7 +53,6 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
       onSelectHistory: searchContext.handleSelectHistory,
       onDeleteHistory: searchContext.handleDeleteHistory,
       onClearHistory: searchContext.handleClearHistory,
-      onSaveHistory: searchContext.handleSaveHistory,
     };
   }, [searchContext]);
 
