@@ -4,7 +4,6 @@
     "description": "Start managing your image library by adding a repository source",
     "addGitHub": "Configure GitHub",
     "addGitee": "Configure Gitee",
-    "tryDemo": "Try Demo Mode",
     "quickStart": "Quick Start",
     "step1": {
       "title": "Choose Storage Platform",

@@ -16,7 +16,6 @@ type RepoConfigFields = Pick<
 export function resolveModalRepoConfig(
   plugin: 'github' | 'gitee',
   options: {
-    isDemoMode: boolean;
     editingSourceId: string | null;
     editingSourcePluginId: string | null;
     editingSourceRepoConfig: RepoConfigFields | null;
@@ -26,7 +25,6 @@ export function resolveModalRepoConfig(
   },
 ): GitHubConfig | GiteeConfig | null {
   const {
-    isDemoMode,
     editingSourceId,
     editingSourcePluginId,
     editingSourceRepoConfig,
@@ -34,11 +32,6 @@ export function resolveModalRepoConfig(
     fallbackGithub,
     fallbackGitee,
   } = options;
-
-  // Demo 模式仅屏蔽「设置/新增」入口；编辑已保存源必须回显 pixuli.sources.v3
-  if (isDemoMode && !editingSourceId) {
-    return null;
-  }
 
   if (editingSourceId && editingSourceRepoConfig && editingSourcePluginId) {
     if (pluginIdToLegacyType(editingSourcePluginId) === plugin) {

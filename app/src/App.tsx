@@ -1,4 +1,3 @@
-import { useDemoMode } from '@/ui';
 import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
 import { SearchProvider } from './contexts/SearchContext';
@@ -39,9 +38,6 @@ function App() {
   }, [initializeWorkspace, loadImages]);
 
   const { sources, selectedSourceId } = useSourceStore();
-
-  // Demo 模式管理
-  const { isDemoMode } = useDemoMode();
 
   // UI 状态管理（应用级别，使用 zustand）
   const {
@@ -128,7 +124,7 @@ function App() {
   useWorkspaceBindingSync();
 
   // 应用初始化
-  useAppInitialization(isDemoMode, hasConfig, handleLoadImages);
+  useAppInitialization(hasConfig, handleLoadImages);
 
   // Capacitor Android 返回键（REF-512 #150）
   useCapacitorBackButton();

@@ -22,7 +22,6 @@ const userGiteeEntry = {
 describe('resolveModalRepoConfig (REF-312)', () => {
   it('编辑 Gitee 源时应从 StoredSourceEntry 回显用户 localStorage 配置', () => {
     const config = resolveModalRepoConfig('gitee', {
-      isDemoMode: false,
       editingSourceId: 'u7whl61m',
       editingSourcePluginId: 'gitee',
       editingSourceRepoConfig: userGiteeEntry.config,
@@ -42,7 +41,6 @@ describe('resolveModalRepoConfig (REF-312)', () => {
 
   it('编辑 GitHub 源时不应返回 Gitee 配置', () => {
     const config = resolveModalRepoConfig('gitee', {
-      isDemoMode: false,
       editingSourceId: 'ya8juivd',
       editingSourcePluginId: 'github',
       editingSourceRepoConfig: {
@@ -71,20 +69,6 @@ describe('resolveModalRepoConfig (REF-312)', () => {
     });
 
     expect(config).toBeNull();
-  });
-
-  it('Demo 模式下编辑已有源仍应回显', () => {
-    const config = resolveModalRepoConfig('gitee', {
-      isDemoMode: true,
-      editingSourceId: 'u7whl61m',
-      editingSourcePluginId: 'gitee',
-      editingSourceRepoConfig: userGiteeEntry.config,
-      editingSource: userGiteeEntry,
-      fallbackGithub: null,
-      fallbackGitee: null,
-    });
-
-    expect(config).toMatchObject({ owner: 'sakura0922', repo: 'Media' });
   });
 
   it('configFieldsKey 在配置变化时应变化', () => {

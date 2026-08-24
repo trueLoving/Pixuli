@@ -48,6 +48,7 @@
       "sendCompress": "送入压缩",
       "sendConvert": "送入转换",
       "toolImageOnly": "压缩和转换仅适用于图片",
+      "toolDisabled": "暂不可用",
       "sendAi": "AI 分析",
       "aiDesktopOnly": "仅桌面可用",
       "aiReadyHint": "将打开编辑，便于写入标签与描述。本地模型仅 Desktop 可用，需自行配置。",
