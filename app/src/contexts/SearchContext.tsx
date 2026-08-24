@@ -1,6 +1,6 @@
 /**
  * 搜索上下文
- * 用于资源库中的搜索与筛选
+ * 输入框为草稿；回车后才提交为生效查询并过滤资源库。
  */
 
 import React, {
@@ -22,8 +22,15 @@ import {
 } from '../utils/searchHistory';
 
 interface SearchContextValue {
+  /** 输入框草稿（未回车） */
+  draftQuery: string;
+  setDraftQuery: (query: string) => void;
+  /** 已确认、用于过滤的查询 */
   searchQuery: string;
+  /** 同时更新草稿与已确认查询（清空 / 选历史等） */
   setSearchQuery: (query: string) => void;
+  /** 回车确认：以当前草稿（或传入值）生效并写入历史 */
+  commitSearch: (query?: string) => void;
   filters: FilterOptions;
   setFilters: (
     filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
@@ -32,6 +39,7 @@ interface SearchContextValue {
   handleSelectHistory: (query: string) => void;
   handleDeleteHistory: (query: string) => void;
   handleClearHistory: () => void;
+  /** @deprecated 使用 commitSearch；保留别名供旧调用 */
   handleSaveHistory: (query: string) => void;
 }
 
@@ -45,9 +53,6 @@ export const useSearchContext = () => {
   return context;
 };
 
-/**
- * 安全地使用搜索上下文，如果不存在则返回 null
- */
 export const useSearchContextSafe = () => {
   return useContext(SearchContext);
 };
@@ -57,44 +62,45 @@ interface SearchProviderProps {
 }
 
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [draftQuery, setDraftQuery] = useState('');
+  const [searchQuery, setSearchQueryState] = useState('');
   const [filters, setFilters] = useState<FilterOptions>(createDefaultFilters());
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
-  // 加载历史记录
   useEffect(() => {
     setHistory(getSearchHistory());
   }, []);
 
-  // 处理搜索查询变化
-  const handleSearchQueryChange = useCallback((query: string) => {
-    setSearchQuery(query);
+  const setSearchQuery = useCallback((query: string) => {
+    setDraftQuery(query);
+    setSearchQueryState(query);
   }, []);
 
-  // 手动保存搜索历史记录（在用户按下 Enter 或执行搜索时调用）
-  const handleSaveHistory = useCallback((query: string) => {
-    if (!query || query.trim().length === 0) {
-      return;
-    }
-    addSearchHistory(query.trim());
-    setHistory(getSearchHistory());
-  }, []);
+  const commitSearch = useCallback(
+    (query?: string) => {
+      const q = (query ?? draftQuery).trim();
+      setDraftQuery(q);
+      setSearchQueryState(q);
+      if (q.length > 0) {
+        addSearchHistory(q);
+        setHistory(getSearchHistory());
+      }
+    },
+    [draftQuery],
+  );
 
-  // 选择历史记录
   const handleSelectHistory = useCallback((query: string) => {
-    setSearchQuery(query);
-    // 选择历史记录时也保存（更新到最新）
+    setDraftQuery(query);
+    setSearchQueryState(query);
     addSearchHistory(query);
     setHistory(getSearchHistory());
   }, []);
 
-  // 删除单条历史记录
   const handleDeleteHistory = useCallback((query: string) => {
     removeSearchHistory(query);
     setHistory(getSearchHistory());
   }, []);
 
-  // 清空所有历史记录
   const handleClearHistory = useCallback(() => {
     clearSearchHistory();
     setHistory([]);
@@ -103,15 +109,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   return (
     <SearchContext.Provider
       value={{
+        draftQuery,
+        setDraftQuery,
         searchQuery,
-        setSearchQuery: handleSearchQueryChange,
+        setSearchQuery,
+        commitSearch,
         filters,
         setFilters,
         history,
         handleSelectHistory,
         handleDeleteHistory,
         handleClearHistory,
-        handleSaveHistory,
+        handleSaveHistory: commitSearch,
       }}
     >
       {children}

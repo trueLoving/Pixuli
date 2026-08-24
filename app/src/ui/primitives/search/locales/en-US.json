@@ -2,15 +2,27 @@
   "search": {
     "placeholder": "Search...",
     "header": {
-      "placeholder": "Search images...",
-      "placeholderDisabled": "Add a source to search images",
-      "filter": "Filter",
-      "clearFilters": "Clear Filters",
+      "placeholder": "Type a query, then press Enter…",
+      "placeholderDisabled": "Add a repository source to search",
       "expandSearch": "Expand search",
       "collapseSearch": "Collapse search"
     },
+    "help": {
+      "title": "Query syntax help",
+      "intro": "Filter files with a simple query. Press Enter to apply. Space-separated terms are AND.",
+      "exBare": "cover",
+      "descBare": "Filename contains “cover”",
+      "exName": "name:logo",
+      "descName": "Match filename only",
+      "exKind": "kind:pdf",
+      "descKind": "Kind: image / video / pdf / other (alias: type:)",
+      "exSize": "size:>1mb",
+      "descSize": "Size ops: > >= < <= = ; units: b / kb / mb / gb",
+      "exCombo": "kind:image size:<500kb trip",
+      "descCombo": "Combine: images under 500KB whose name contains “trip”"
+    },
     "image": {
-      "placeholder": "Search image names, descriptions or tags...",
+      "placeholder": "Search by name, description, or tags...",
       "filterByTags": "Filter by tags",
       "clearFilters": "Clear filters"
     }

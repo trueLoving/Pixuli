@@ -1,17 +1,8 @@
-import { Filter, Search as SearchIcon } from 'lucide-react';
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-  useRef,
-  useEffect,
-} from 'react';
+import { CircleHelp, Search as SearchIcon } from 'lucide-react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '@/ui/locales';
 import type { ImageItem } from '@pixuli/core/types';
-import type {
-  AssetKind,
-  FilterOptions,
-} from '../../../image/image-browser/common/types';
+import type { FilterOptions } from '../../../image/image-browser/common/types';
 import SearchBar from './SearchBar';
 import './SearchBar.css';
 import './Search.css';
@@ -24,59 +15,48 @@ export interface SearchHistoryItem {
 }
 
 export interface SearchProps {
-  /** 搜索关键词 */
   searchQuery: string;
-  /** 搜索关键词变化回调 */
   onSearchChange: (query: string) => void;
-  /** 组件变体：header（Header中使用）、image（图片搜索）、basic（仅搜索框） */
+  /** 输入草稿；未传则与 searchQuery 同步（兼容旧用法） */
+  draftQuery?: string;
+  onDraftChange?: (query: string) => void;
+  /** 回车确认查询 */
+  onCommitSearch?: (query?: string) => void;
   variant?: SearchVariant;
-  /** 是否有配置（用于控制搜索框是否禁用） */
   hasConfig?: boolean;
-  /** 图片列表（用于筛选功能） */
+  /** @deprecated 查询语法已取代面板筛选；保留以免破坏调用方类型 */
   images?: ImageItem[];
-  /** 外部筛选条件（用于与Header筛选同步） */
+  /** @deprecated */
   externalFilters?: FilterOptions;
-  /** 筛选条件变化回调 */
+  /** @deprecated */
   onFiltersChange?: (
     filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
   ) => void;
-  /** 是否显示筛选功能 */
+  /** @deprecated 已忽略 */
   showFilter?: boolean;
-  /** 标签相关（仅 image variant 使用） */
   selectedTags?: string[];
   onTagsChange?: (tags: string[]) => void;
   allTags?: string[];
-  /** 占位符文本 */
   placeholder?: string;
-  /** 是否禁用 */
   disabled?: boolean;
-  /** 翻译函数 */
   t?: (key: string) => string;
-  /** 自定义 CSS 类名 */
   className?: string;
-  /** 是否显示历史记录 */
   showHistory?: boolean;
-  /** 历史记录数据 */
   history?: SearchHistoryItem[];
-  /** 选择历史记录回调 */
   onSelectHistory?: (query: string) => void;
-  /** 删除历史记录回调 */
   onDeleteHistory?: (query: string) => void;
-  /** 清空历史记录回调 */
   onClearHistory?: () => void;
-  /** 保存历史记录回调（按下 Enter 时调用） */
   onSaveHistory?: (query: string) => void;
 }
 
 const Search: React.FC<SearchProps> = ({
   searchQuery,
   onSearchChange,
+  draftQuery,
+  onDraftChange,
+  onCommitSearch,
   variant = 'basic',
   hasConfig = true,
-  images = [],
-  externalFilters,
-  onFiltersChange,
-  showFilter = false,
   selectedTags = [],
   onTagsChange,
   allTags = [],
@@ -92,166 +72,81 @@ const Search: React.FC<SearchProps> = ({
   onSaveHistory,
 }) => {
   const translate = t || defaultTranslate;
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const inputValue = draftQuery ?? searchQuery;
+  const handleInputChange = (value: string) => {
+    if (onDraftChange) {
+      onDraftChange(value);
+      // 清空输入时立即取消已确认查询
+      if (value === '') onSearchChange('');
+      return;
+    }
+    onSearchChange(value);
+  };
+  const handleCommit = (query?: string) => {
+    const q = (query ?? inputValue).trim();
+    if (onCommitSearch) {
+      onCommitSearch(q);
+      return;
+    }
+    onSaveHistory?.(q);
+    onSearchChange(q);
+  };
   const [searchExpanded, setSearchExpanded] = useState(
-    () => searchQuery.trim().length > 0,
+    () => inputValue.trim().length > 0,
   );
-  const filterPanelRef = useRef<HTMLDivElement>(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [helpStyle, setHelpStyle] = useState<React.CSSProperties | undefined>();
+  const helpRef = useRef<HTMLDivElement>(null);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (searchQuery.trim()) setSearchExpanded(true);
-  }, [searchQuery]);
+    if (inputValue.trim()) setSearchExpanded(true);
+  }, [inputValue]);
 
-  // 获取所有可用的图片类型
-  const availableTypes = useMemo(() => {
-    const types = new Set<string>();
-    images.forEach(image => {
-      if (image.type) {
-        types.add(image.type);
+  useLayoutEffect(() => {
+    if (!showHelp) {
+      setHelpStyle(undefined);
+      return;
+    }
+    const update = () => {
+      const button = helpButtonRef.current;
+      if (!button) return;
+      const narrow =
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(max-width: 767px)').matches;
+      if (narrow) {
+        setHelpStyle(undefined);
+        return;
       }
-    });
-    return Array.from(types).sort();
-  }, [images]);
-
-  // 获取所有可用的标签
-  const availableTags = useMemo(() => {
-    const tags = new Set<string>();
-    images.forEach(image => {
-      if (image.tags && image.tags.length > 0) {
-        image.tags.forEach(tag => tags.add(tag));
-      }
-    });
-    return Array.from(tags).sort();
-  }, [images]);
-
-  // 处理资源类型筛选
-  const handleKindChange = useCallback(
-    (kind: AssetKind, isSelected: boolean) => {
-      if (!onFiltersChange) return;
-      onFiltersChange((prev: FilterOptions) => {
-        const current = prev.selectedKinds ?? [];
-        const selectedKinds = isSelected
-          ? [...current, kind]
-          : current.filter(item => item !== kind);
-        return {
-          ...prev,
-          selectedKinds,
-        };
+      const rect = button.getBoundingClientRect();
+      setHelpStyle({
+        position: 'fixed',
+        top: rect.bottom + 8,
+        right: Math.max(8, window.innerWidth - rect.right),
+        left: 'auto',
+        zIndex: 1100,
       });
-    },
-    [onFiltersChange],
-  );
-
-  // 处理类型筛选变化
-  const handleTypeChange = useCallback(
-    (type: string, isSelected: boolean) => {
-      if (!onFiltersChange || !externalFilters) return;
-      onFiltersChange((prev: FilterOptions) => {
-        const newSelectedTypes = isSelected
-          ? [...prev.selectedTypes, type]
-          : prev.selectedTypes.filter((t: string) => t !== type);
-        return {
-          ...prev,
-          selectedTypes: newSelectedTypes,
-        };
-      });
-    },
-    [onFiltersChange, externalFilters],
-  );
-
-  // 处理标签筛选变化
-  const handleTagChange = useCallback(
-    (tag: string, isSelected: boolean) => {
-      if (!onFiltersChange || !externalFilters) return;
-      onFiltersChange((prev: FilterOptions) => {
-        const newSelectedTags = isSelected
-          ? [...prev.selectedTags, tag]
-          : prev.selectedTags.filter((t: string) => t !== tag);
-        return {
-          ...prev,
-          selectedTags: newSelectedTags,
-        };
-      });
-    },
-    [onFiltersChange, externalFilters],
-  );
-
-  // 清除所有筛选条件（保留搜索词）
-  const handleClearAll = useCallback(() => {
-    if (!onFiltersChange || !externalFilters) return;
-    onFiltersChange({
-      ...externalFilters,
-      selectedTypes: [],
-      selectedTags: [],
-      selectedKinds: [],
-    });
-  }, [onFiltersChange, externalFilters]);
-
-  // 处理标签切换（image variant 使用）
-  const handleTagToggle = useCallback(
-    (tag: string) => {
-      if (!onTagsChange) return;
-      onTagsChange(
-        selectedTags.includes(tag)
-          ? selectedTags.filter(t => t !== tag)
-          : [...selectedTags, tag],
-      );
-    },
-    [selectedTags, onTagsChange],
-  );
-
-  const handleClearTags = useCallback(() => {
-    if (!onTagsChange) return;
-    onTagsChange([]);
-  }, [onTagsChange]);
-
-  // 点击外部关闭筛选面板
-  useEffect(() => {
-    if (!showFilterPanel) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterPanelRef.current &&
-        !filterPanelRef.current.contains(event.target as Node)
-      ) {
-        setShowFilterPanel(false);
-      }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFilterPanel]);
-
-  // Capacitor 硬件返回键关闭筛选（REF-512 #150）
-  useEffect(() => {
-    const onCloseFilter = () => setShowFilterPanel(false);
-    window.addEventListener('pixuli:closeFilterPanel', onCloseFilter);
-    return () =>
-      window.removeEventListener('pixuli:closeFilterPanel', onCloseFilter);
-  }, []);
-
-  // 窄屏筛选 sheet：锁定背景滚动（REF-512 #150）
-  useEffect(() => {
-    if (!showFilterPanel) return;
-    if (typeof window.matchMedia !== 'function') return;
-    const mq = window.matchMedia('(max-width: 767px)');
-    if (!mq.matches) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
     return () => {
-      document.body.style.overflow = prev;
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
     };
-  }, [showFilterPanel]);
+  }, [showHelp]);
 
-  // 检查是否有活动的筛选条件
-  const selectedKinds = externalFilters?.selectedKinds ?? [];
-  const hasActiveFilters =
-    externalFilters &&
-    (externalFilters.selectedTypes.length > 0 ||
-      externalFilters.selectedTags.length > 0 ||
-      selectedKinds.length > 0);
+  useEffect(() => {
+    if (!showHelp) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
+        setShowHelp(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    return () => document.removeEventListener('mousedown', onPointerDown);
+  }, [showHelp]);
 
-  // 获取占位符文本
   const getPlaceholder = () => {
     if (placeholder) return placeholder;
     if (variant === 'header') {
@@ -265,12 +160,46 @@ const Search: React.FC<SearchProps> = ({
     return translate('search.placeholder') || 'Search...';
   };
 
-  // 基础搜索框（basic variant）
+  const helpPanel = showHelp ? (
+    <div
+      className="search-help-panel"
+      style={helpStyle}
+      role="dialog"
+      aria-label={translate('search.help.title')}
+    >
+      {' '}
+      <div className="search-help-title">{translate('search.help.title')}</div>
+      <p className="search-help-intro">{translate('search.help.intro')}</p>
+      <ul className="search-help-list">
+        <li>
+          <code>{translate('search.help.exBare')}</code>
+          <span>{translate('search.help.descBare')}</span>
+        </li>
+        <li>
+          <code>{translate('search.help.exName')}</code>
+          <span>{translate('search.help.descName')}</span>
+        </li>
+        <li>
+          <code>{translate('search.help.exKind')}</code>
+          <span>{translate('search.help.descKind')}</span>
+        </li>
+        <li>
+          <code>{translate('search.help.exSize')}</code>
+          <span>{translate('search.help.descSize')}</span>
+        </li>
+        <li>
+          <code>{translate('search.help.exCombo')}</code>
+          <span>{translate('search.help.descCombo')}</span>
+        </li>
+      </ul>
+    </div>
+  ) : null;
+
   if (variant === 'basic') {
     return (
       <SearchBar
-        value={searchQuery}
-        onChange={onSearchChange}
+        value={inputValue}
+        onChange={handleInputChange}
         placeholder={getPlaceholder()}
         disabled={disabled || !hasConfig}
         showHistory={showHistory}
@@ -278,12 +207,11 @@ const Search: React.FC<SearchProps> = ({
         onSelectHistory={onSelectHistory}
         onDeleteHistory={onDeleteHistory}
         onClearHistory={onClearHistory}
-        onSaveHistory={onSaveHistory}
+        onSaveHistory={handleCommit}
       />
     );
   }
 
-  // Header variant：搜索框 + 筛选面板
   if (variant === 'header') {
     return (
       <div
@@ -308,8 +236,8 @@ const Search: React.FC<SearchProps> = ({
           <SearchIcon size={18} aria-hidden />
         </button>
         <SearchBar
-          value={searchQuery}
-          onChange={onSearchChange}
+          value={inputValue}
+          onChange={handleInputChange}
           placeholder={getPlaceholder()}
           disabled={!hasConfig}
           showHistory={showHistory}
@@ -317,193 +245,84 @@ const Search: React.FC<SearchProps> = ({
           onSelectHistory={onSelectHistory}
           onDeleteHistory={onDeleteHistory}
           onClearHistory={onClearHistory}
-          onSaveHistory={onSaveHistory}
+          onSaveHistory={handleCommit}
         />
-        {showFilter && hasConfig && onFiltersChange && (
-          <div className="search-filter-wrapper" ref={filterPanelRef}>
+        {hasConfig ? (
+          <div className="search-help-wrapper" ref={helpRef}>
             <button
               type="button"
-              onClick={() =>
-                setShowFilterPanel(open => {
-                  const next = !open;
-                  if (next) {
-                    window.dispatchEvent(
-                      new CustomEvent('pixuli:openFilterPanel'),
-                    );
-                  }
-                  return next;
-                })
-              }
-              className={`search-filter-button ${hasActiveFilters ? 'active' : ''}`}
-              title={translate('search.header.filter') || '筛选'}
+              ref={helpButtonRef}
+              className={`search-help-button${showHelp ? ' is-open' : ''}`}
+              title={translate('search.help.title')}
+              aria-label={translate('search.help.title')}
+              aria-expanded={showHelp}
+              onClick={() => setShowHelp(open => !open)}
             >
-              <Filter size={18} />
-              {hasActiveFilters && <span className="search-filter-badge" />}
+              <CircleHelp size={18} aria-hidden />
             </button>
-            {showFilterPanel && (
-              <>
-                <button
-                  type="button"
-                  className="search-filter-backdrop"
-                  aria-label={translate('common.cancel') || '关闭'}
-                  onClick={() => setShowFilterPanel(false)}
-                />
-                <div className="search-filter-panel">
-                  <div className="search-filter-panel-header">
-                    <span className="search-filter-panel-title">
-                      {translate('search.header.filter') || '筛选'}
-                    </span>
-                    {hasActiveFilters && (
-                      <button
-                        onClick={handleClearAll}
-                        className="search-filter-clear"
-                      >
-                        {translate('search.header.clearFilters') || '清除'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="search-filter-section">
-                    <label className="search-filter-label">
-                      {translate('image.kind.label')}
-                    </label>
-                    <div className="search-filter-options">
-                      {(
-                        [
-                          ['image', 'image.kind.image'],
-                          ['video', 'image.kind.video'],
-                          ['pdf', 'image.kind.pdf'],
-                          ['other', 'image.kind.other'],
-                        ] as const
-                      ).map(([kind, labelKey]) => (
-                        <label key={kind} className="search-filter-option">
-                          <input
-                            type="checkbox"
-                            checked={selectedKinds.includes(kind)}
-                            onChange={e =>
-                              handleKindChange(kind, e.target.checked)
-                            }
-                          />
-                          <span>{translate(labelKey)}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  {availableTypes.length > 0 && (
-                    <div className="search-filter-section">
-                      <label className="search-filter-label">
-                        {translate('image.filter.imageType') || '图片类型'}
-                      </label>
-                      <div className="search-filter-options">
-                        {availableTypes.map(type => (
-                          <label key={type} className="search-filter-option">
-                            <input
-                              type="checkbox"
-                              checked={
-                                externalFilters?.selectedTypes.includes(type) ||
-                                false
-                              }
-                              onChange={e =>
-                                handleTypeChange(type, e.target.checked)
-                              }
-                            />
-                            <span>{type}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {availableTags.length > 0 && (
-                    <div className="search-filter-section">
-                      <label className="search-filter-label">
-                        {translate('image.filter.tags') || '标签'}
-                      </label>
-                      <div className="search-filter-options">
-                        {availableTags.map(tag => (
-                          <label key={tag} className="search-filter-option">
-                            <input
-                              type="checkbox"
-                              checked={
-                                externalFilters?.selectedTags.includes(tag) ||
-                                false
-                              }
-                              onChange={e =>
-                                handleTagChange(tag, e.target.checked)
-                              }
-                            />
-                            <span>{tag}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+            {helpPanel}
           </div>
-        )}
+        ) : null}
       </div>
     );
   }
 
-  // Image variant：搜索框 + 标签筛选（内联显示）
-  if (variant === 'image') {
-    const displayTags = allTags.length > 0 ? allTags : availableTags;
-    return (
-      <div className={`search-wrapper search-wrapper--image ${className}`}>
-        {/* 搜索框 */}
-        <div className="search-input-container">
-          <SearchBar
-            value={searchQuery}
-            onChange={onSearchChange}
-            placeholder={getPlaceholder()}
-            disabled={disabled}
-            showHistory={showHistory}
-            history={history}
-            onSelectHistory={onSelectHistory}
-            onDeleteHistory={onDeleteHistory}
-            onClearHistory={onClearHistory}
-            onSaveHistory={onSaveHistory}
-          />
-        </div>
-
-        {/* 标签过滤 */}
-        {displayTags.length > 0 && onTagsChange && (
-          <div className="search-tags-container">
-            <div className="search-tags-label">
-              <Filter className="search-tags-icon" />
-              <span className="search-tags-text">
-                {translate('search.image.filterByTags')}:
-              </span>
-            </div>
-            <div className="search-tags">
-              {selectedTags.length > 0 && (
+  // image variant：保留简易标签筛选（工具页等）
+  return (
+    <div className={`search-wrapper search-wrapper--image ${className}`.trim()}>
+      <SearchBar
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder={getPlaceholder()}
+        disabled={disabled}
+        showHistory={showHistory}
+        history={history}
+        onSelectHistory={onSelectHistory}
+        onDeleteHistory={onDeleteHistory}
+        onClearHistory={onClearHistory}
+        onSaveHistory={handleCommit}
+      />
+      {onTagsChange && allTags.length > 0 ? (
+        <div className="search-tags">
+          <div className="search-tags-header">
+            <span className="search-tags-label">
+              {translate('search.image.filterByTags') || '按标签筛选'}
+            </span>
+            {selectedTags.length > 0 ? (
+              <button
+                type="button"
+                className="search-tags-clear"
+                onClick={() => onTagsChange([])}
+              >
+                {translate('search.image.clearFilters') || '清除筛选'}
+              </button>
+            ) : null}
+          </div>
+          <div className="search-tags-list">
+            {allTags.map(tag => {
+              const selected = selectedTags.includes(tag);
+              return (
                 <button
-                  onClick={handleClearTags}
-                  className="search-tags-clear-button"
-                >
-                  {translate('search.image.clearFilters')} (
-                  {selectedTags.length})
-                </button>
-              )}
-              {displayTags.map((tag, index) => (
-                <button
-                  key={`search-tag-${index}`}
-                  onClick={() => handleTagToggle(tag)}
-                  className={`search-tag-button ${
-                    selectedTags.includes(tag) ? 'selected' : 'unselected'
-                  }`}
+                  key={tag}
+                  type="button"
+                  className={`search-tag-button ${selected ? 'selected' : 'unselected'}`}
+                  onClick={() =>
+                    onTagsChange(
+                      selected
+                        ? selectedTags.filter(item => item !== tag)
+                        : [...selectedTags, tag],
+                    )
+                  }
                 >
                   {tag}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
-      </div>
-    );
-  }
-
-  return null;
+        </div>
+      ) : null}
+    </div>
+  );
 };
 
 export default Search;

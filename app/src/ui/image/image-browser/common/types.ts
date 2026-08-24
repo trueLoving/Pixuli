@@ -9,7 +9,14 @@ export type {
 import type { FilterOptions } from '@pixuli/core/types';
 
 export interface LibrarySearchConfig {
+  /** 已确认查询（用于过滤结果） */
   searchQuery: string;
+  /** 输入框草稿 */
+  draftQuery: string;
+  onDraftChange: (query: string) => void;
+  /** 回车确认查询 */
+  onCommitSearch: (query?: string) => void;
+  /** 同时清空草稿与已确认查询等 */
   onSearchChange: (query: string) => void;
   filters: FilterOptions;
   onFiltersChange: (
@@ -19,5 +26,4 @@ export interface LibrarySearchConfig {
   onSelectHistory?: (query: string) => void;
   onDeleteHistory?: (query: string) => void;
   onClearHistory?: () => void;
-  onSaveHistory?: (query: string) => void;
 }

@@ -11,25 +11,20 @@ import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePi
 import { isAssetPublished } from '@/features/access/accessPolicyStore';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
-import { filterAssetsByKinds, getAssetKind } from '@/utils/assetKind';
+import { getAssetKind } from '@/utils/assetKind';
+import { filterByLibraryQuery } from '@/utils/libraryQuery';
 import { nextSelectedIds, pruneSelectedIds } from '@/utils/librarySelection';
 import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { getVirtualWindow, LIBRARY_ROW_HEIGHT } from '@/utils/virtualWindow';
 import type {
-  AssetKind,
   BatchUploadProgress,
-  FilterOptions,
   ImageItem,
   ImageUploadData,
   MultiImageUploadData,
   SortField,
   SortOrder,
 } from '@pixuli/core/types';
-import {
-  filterImages,
-  formatFileSize,
-  getSortedImages,
-} from '@pixuli/core/utils';
+import { formatFileSize, getSortedImages } from '@pixuli/core/utils';
 import {
   Folder,
   Cloud,
@@ -38,7 +33,6 @@ import {
   RefreshCw,
   Trash2,
   Wand2,
-  X,
 } from 'lucide-react';
 import React, {
   useCallback,
@@ -90,13 +84,6 @@ function sortIndicator(active: boolean, order: SortOrder): string {
   return order === 'asc' ? ' ↑' : ' ↓';
 }
 
-function kindChipLabel(kind: AssetKind, t: (key: string) => string): string {
-  if (kind === 'video') return t('image.kind.video');
-  if (kind === 'pdf') return t('image.kind.pdf');
-  if (kind === 'other') return t('image.kind.other');
-  return t('image.kind.image');
-}
-
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   images,
   hasConfig = true,
@@ -141,24 +128,23 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
 
   useEffect(() => {
     if (!search) return;
+    // 保持 filters.searchTerm 与查询框同步（历史兼容）；实际过滤走 libraryQuery
     search.onFiltersChange(prev => {
       if (prev.searchTerm === search.searchQuery) return prev;
-      return { ...prev, searchTerm: search.searchQuery };
+      return {
+        ...prev,
+        searchTerm: search.searchQuery,
+        selectedTypes: [],
+        selectedTags: [],
+        selectedKinds: [],
+      };
     });
   }, [search?.searchQuery, search?.onFiltersChange]);
 
-  const filteredImages = useMemo(() => {
-    if (!search?.filters) return images;
-    return filterImages(images, search.filters);
-  }, [images, search?.filters]);
-
   const files = useMemo(() => {
-    const byKind = filterAssetsByKinds(
-      filteredImages,
-      search?.filters.selectedKinds ?? [],
-    );
+    const filtered = filterByLibraryQuery(images, search?.searchQuery ?? '');
     const unique = new Map<string, ImageItem>();
-    for (const item of byKind) {
+    for (const item of filtered) {
       const existing = unique.get(item.id);
       if (
         !existing ||
@@ -169,7 +155,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       }
     }
     return getSortedImages([...unique.values()], sortField, sortOrder);
-  }, [filteredImages, search?.filters.selectedKinds, sortField, sortOrder]);
+  }, [images, search?.searchQuery, sortField, sortOrder]);
 
   const visibleIds = useMemo(() => files.map(file => file.id), [files]);
 
@@ -276,13 +262,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     [sortField],
   );
 
-  const patchFilters = useCallback(
-    (patch: (prev: FilterOptions) => FilterOptions) => {
-      search?.onFiltersChange(patch);
-    },
-    [search],
-  );
-
   const handleBatchDelete = useCallback(async () => {
     const selected = files.filter(file => selectedIds.includes(file.id));
     if (selected.length === 0) return;
@@ -368,58 +347,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     observer.observe(el);
     return () => observer.disconnect();
   }, [showEmpty, loading, files.length]);
-  const filters = search?.filters;
-  const filterChips = useMemo(() => {
-    const chips: Array<{ key: string; label: string; clear: () => void }> = [];
-    if (!filters) return chips;
-    const searchTerm = (search?.searchQuery || filters.searchTerm || '').trim();
-    if (searchTerm) {
-      chips.push({
-        key: 'search',
-        label: searchTerm,
-        clear: () => {
-          search?.onSearchChange('');
-          patchFilters(prev => ({ ...prev, searchTerm: '' }));
-        },
-      });
-    }
-    for (const kind of filters.selectedKinds ?? []) {
-      chips.push({
-        key: `kind:${kind}`,
-        label: kindChipLabel(kind, t),
-        clear: () =>
-          patchFilters(prev => ({
-            ...prev,
-            selectedKinds: (prev.selectedKinds ?? []).filter(
-              item => item !== kind,
-            ),
-          })),
-      });
-    }
-    for (const type of filters.selectedTypes) {
-      chips.push({
-        key: `type:${type}`,
-        label: type,
-        clear: () =>
-          patchFilters(prev => ({
-            ...prev,
-            selectedTypes: prev.selectedTypes.filter(item => item !== type),
-          })),
-      });
-    }
-    for (const tag of filters.selectedTags) {
-      chips.push({
-        key: `tag:${tag}`,
-        label: tag,
-        clear: () =>
-          patchFilters(prev => ({
-            ...prev,
-            selectedTags: prev.selectedTags.filter(item => item !== tag),
-          })),
-      });
-    }
-    return chips;
-  }, [filters, patchFilters, search, t]);
 
   const showBatchBar = selectedIds.length >= 2;
   const allImagesSelected =
@@ -472,18 +399,17 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           <Search
             variant="header"
             searchQuery={search.searchQuery}
+            draftQuery={search.draftQuery}
+            onDraftChange={search.onDraftChange}
+            onCommitSearch={search.onCommitSearch}
             onSearchChange={search.onSearchChange}
             hasConfig={hasConfig}
             images={images}
-            externalFilters={search.filters}
-            onFiltersChange={search.onFiltersChange}
-            showFilter={true}
             showHistory={true}
             history={search.history}
             onSelectHistory={search.onSelectHistory}
             onDeleteHistory={search.onDeleteHistory}
             onClearHistory={search.onClearHistory}
-            onSaveHistory={search.onSaveHistory}
             t={t}
             className="asset-library-search"
           />
@@ -516,41 +442,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           ) : null}
         </div>
       </div>
-
-      {filterChips.length > 0 ? (
-        <div
-          className="asset-library-chips"
-          aria-label={t('image.filter.title')}
-        >
-          {filterChips.map(chip => (
-            <button
-              key={chip.key}
-              type="button"
-              className="asset-library-chip"
-              onClick={chip.clear}
-            >
-              {chip.label}
-              <X size={12} aria-hidden />
-            </button>
-          ))}
-          <button
-            type="button"
-            className="asset-library-chip asset-library-chip--clear"
-            onClick={() => {
-              search?.onSearchChange('');
-              patchFilters(prev => ({
-                ...prev,
-                searchTerm: '',
-                selectedTypes: [],
-                selectedTags: [],
-                selectedKinds: [],
-              }));
-            }}
-          >
-            {t('image.filter.clearFilter')}
-          </button>
-        </div>
-      ) : null}
 
       <div className="asset-library-content">
         {loading && files.length === 0 ? (

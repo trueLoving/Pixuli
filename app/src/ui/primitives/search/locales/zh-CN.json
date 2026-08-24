@@ -2,12 +2,24 @@
   "search": {
     "placeholder": "搜索...",
     "header": {
-      "placeholder": "搜索图片...",
-      "placeholderDisabled": "添加仓库源后即可搜索图片",
-      "filter": "筛选",
-      "clearFilters": "清除筛选",
+      "placeholder": "输入查询后按回车…",
+      "placeholderDisabled": "添加仓库源后即可搜索",
       "expandSearch": "展开搜索",
       "collapseSearch": "收起搜索"
+    },
+    "help": {
+      "title": "查询语法帮助",
+      "intro": "在输入框用简单语法过滤文件，输入完成后按 Enter 确认。多个条件之间为空格，表示同时满足（AND）。",
+      "exBare": "封面",
+      "descBare": "文件名包含「封面」",
+      "exName": "name:logo",
+      "descName": "仅按文件名匹配",
+      "exKind": "kind:pdf",
+      "descKind": "类型：image / video / pdf / other（也可用 type:）",
+      "exSize": "size:>1mb",
+      "descSize": "大小：> >= < <= =，单位 b / kb / mb / gb",
+      "exCombo": "kind:image size:<500kb 旅行",
+      "descCombo": "组合：图片且小于 500KB 且文件名含「旅行」"
     },
     "image": {
       "placeholder": "搜索图片名称、描述或标签...",
