@@ -13,7 +13,8 @@
 | **UI 共享** | Web + Desktop + Mobile 共用 `app`（含 `src/ui`）                        |
 | **分层**    | L1 业务 · L2 网格/列表 · L3 各端平台能力；**core/provider 禁止依赖 ui** |
 
-重构追踪：[REFACTOR_PLAN.md](REFACTOR_PLAN.md)（Issue 映射、里程碑、§九 工程基线）。
+进度追踪：[PLANS.md](PLANS.md)（与 GitHub Issues 对齐）；2.0 见
+[2.0.md](2.0.md)；决策见 [DECISIONS.md](DECISIONS.md)。
 
 ## Monorepo 结构
 
@@ -44,7 +45,8 @@ APK；debug 用 `build:android:debug`）
 
 详细设计：[docs/02-system-design/03-plugin-system.md](docs/02-system-design/03-plugin-system.md)
 
-三端工程（脚本/构建矩阵）：[06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md)（REF-514）
+三端工程脚本：见 [app/README.md](app/README.md) 与根
+`package.json`（`pnpm dev:*` / `build:*` / `ci`）。
 
 ### Gitee 存储插件（`@pixuli/provider-gitee`）
 
@@ -54,8 +56,7 @@ REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
 
 ## 代码约束
 
-- **默认 TypeScript**；登记 JS 例外见
-  [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)
+- **默认 TypeScript**（`.ts` / `.tsx`）；见 [DECISIONS.md](DECISIONS.md) D2.6
 - **包边界**：`core` ↛ `ui`；`provider-*` ↛ `ui`（REF-209 ESLint）
 - **范围控制**：只改 Issue/PR 相关文件；勿顺手重构无关代码
 
@@ -63,8 +64,8 @@ REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
 
 1. 分支名或 PR 标题含计划编号，如 `REF-414` 或 `Fixes #129`
 2. 合并意图用 `Fixes #n` / `Closes #n`（仅当本 PR 完整关闭 Issue）
-3. Issue 关闭或部分完成时，更新 [REFACTOR_PLAN.md](REFACTOR_PLAN.md) 对应行
-   **GitHub #** / **状态**
+3. Issue 关闭或部分完成时，更新 [PLANS.md](PLANS.md)
+   对应行（须与远程 Issue 状态一致） **GitHub #** / **状态**
 4. 文档变更：用户向 → `docs/01-product` / Wiki 源稿；技术向 →
    `docs/02-system-design`；Agent 向 → 本文 + `.cursor/`
 
@@ -83,7 +84,7 @@ REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
 | Skill                | 触发场景                                       | 路径                                                                                 |
 | -------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
 | **storage-provider** | 新增或修改 StorageProvider、register、manifest | [.cursor/skills/storage-provider/SKILL.md](.cursor/skills/storage-provider/SKILL.md) |
-| **ref-issue-pr**     | 处理 REF-\* Issue、开 PR、同步 REFACTOR_PLAN   | [.cursor/skills/ref-issue-pr/SKILL.md](.cursor/skills/ref-issue-pr/SKILL.md)         |
+| **ref-issue-pr**     | 处理 REF-\* Issue、开 PR、同步 PLANS.md        | [.cursor/skills/ref-issue-pr/SKILL.md](.cursor/skills/ref-issue-pr/SKILL.md)         |
 
 ### 何时更新 Agent/Skill
 
@@ -95,10 +96,10 @@ REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
 
 ## 延伸阅读
 
-| 主题       | 文档                                                                                                                                                                                                                                                                                               |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 系统架构   | [01-system-design.md](docs/02-system-design/01-system-design.md) · [包布局决策](docs/02-system-design/07-package-layout-decision.md)                                                                                                                                                               |
-| 三端设计   | [06-apps-pixuli-engineering.md](docs/02-system-design/06-apps-pixuli-engineering.md) · [三端交互规范](docs/01-product/04-three-platform-interaction-spec.md) · [三端 UI 优化建议](docs/01-product/05-three-platform-ui-optimization.md) · [资源库 UI 方案](docs/01-product/06-asset-library-ui.md) |
-| TS/JS 策略 | [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)                                                                                                                                                                                                     |
-| 版本发布   | [03-release-versioning.md](docs/01-product/03-release-versioning.md)                                                                                                                                                                                                                               |
-| Backlog    | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                                                                                                                                                           |
+| 主题              | 文档                                                                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 进度 / 2.0 / 决策 | [PLANS.md](PLANS.md) · [2.0.md](2.0.md) · [DECISIONS.md](DECISIONS.md)                                                                                                          |
+| 系统架构          | [01-system-design.md](docs/02-system-design/01-system-design.md) · [app/README](app/README.md)                                                                                  |
+| 三端设计          | [三端交互规范](docs/01-product/03-three-platform-interaction-spec.md) · [资源库 UI](docs/01-product/04-asset-library-ui.md) · [品牌视觉](docs/01-product/05-brand-visual-ui.md) |
+| 版本发布          | [07-release-versioning.md](docs/02-system-design/07-release-versioning.md)                                                                                                      |
+| Backlog           | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                                        |

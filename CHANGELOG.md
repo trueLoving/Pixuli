@@ -9,12 +9,12 @@
 
 ## [Unreleased]
 
-> **M1 减负与归档**（REF-101～REF-112，2025–2026）。详细 backlog：[docs/04-backlog.md](docs/04-backlog.md)。重构追踪：[REFACTOR_PLAN.md](REFACTOR_PLAN.md)。
+> **M1 减负与归档**（REF-101～REF-112，2025–2026）。详细 backlog：[docs/04-backlog.md](docs/04-backlog.md)。重构追踪：[PLANS.md](PLANS.md)。
 
 适用于重构分支 `main` 上的
 **Web**、**Desktop**、**Mobile**。**基线产品版本：2.0.0**（三端统一 semver，相对 1.x 为 MAJOR）。下次打 tag 预计为
 `v2.0.0-desktop`、`v2.0.0-android`、`v2.0.0-web`。见
-[03-release-versioning.md](docs/01-product/03-release-versioning.md)（REF-409）。
+[07-release-versioning.md](docs/02-system-design/07-release-versioning.md)（REF-409）。
 
 ### ⚠️ 破坏性变更
 
@@ -177,7 +177,7 @@
 
 > **发布说明：** Git tag `v1.0.0-desktop` 对应本条目；GitHub
 > Release 页面于 2025-11-12 发布但**无**安装包。见
-> [03-release-versioning.md](docs/01-product/03-release-versioning.md)。
+> [07-release-versioning.md](docs/02-system-design/07-release-versioning.md)。
 
 #### ✨ 新增
 

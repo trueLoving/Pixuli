@@ -21,7 +21,7 @@ pnpm -F pixuli-app sync:brand
 | `android-icon-monochrome.png` | Android 13+ 单色图标（可选）                 |
 
 视觉 token、empty / loading 建议见
-[07-brand-visual-ui.md](../../../docs/01-product/07-brand-visual-ui.md)。
+[05-brand-visual-ui.md](../../../docs/01-product/05-brand-visual-ui.md)。
 
 ## 生成产物
 

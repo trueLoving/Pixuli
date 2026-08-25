@@ -16,7 +16,7 @@ export interface BrandPixelMarkProps {
 
 /**
  * Logo 同透视像素立方：空态 / 筛选 / 加载 / 欢迎底座 / 未连接。
- * @see docs/01-product/07-brand-visual-ui.md §四 §五
+ * @see docs/01-product/05-brand-visual-ui.md §四 §五
  */
 export const BrandPixelMark: React.FC<BrandPixelMarkProps> = ({
   variant = 'empty',
