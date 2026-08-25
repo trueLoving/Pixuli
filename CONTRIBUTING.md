@@ -129,8 +129,7 @@ RN 已退役，不再作为交付路径。
 - 业务代码使用 TypeScript（`.ts` / `.tsx`）
 - 避免使用 `any`，优先具体类型
 - 用 interface 定义对象类型
-- JS 例外见
-  [04-typescript-javascript-policy.md](docs/02-system-design/04-typescript-javascript-policy.md)
+- JS 例外另议；默认见 [DECISIONS.md](DECISIONS.md) D2.6
 
 ### 组件
 
@@ -249,7 +248,7 @@ git push origin feat/your-feature-name
 - 先读 [AGENTS.md](AGENTS.md) — Monorepo 结构、存储插件、PR 约定
 - Cursor **Rules** 在 `.cursor/rules/`；**Skills** 在
   `.cursor/skills/`（见 AGENTS.md 表格）
-- 重构 Issue 使用 `REF-xxx`，追踪表见 [REFACTOR_PLAN.md](REFACTOR_PLAN.md)
+- 重构 Issue 使用 `REF-xxx`，追踪表见 [PLANS.md](PLANS.md)
 - **架构边界**变更（新 provider、插件体系、TS/JS 例外）时再更新 Agent/Skill
   — 非每个功能 PR 都改
 - 用户向文档在 `docs/` 与 [Wiki](https://github.com/trueLoving/Pixuli/wiki)；见

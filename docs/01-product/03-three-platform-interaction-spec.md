@@ -7,17 +7,15 @@
 - **相关文档**：
   - [01-product-requirements-specification.md](./01-product-requirements-specification.md)
     — 产品底线与功能需求
-  - [06-apps-pixuli-engineering.md](../02-system-design/06-apps-pixuli-engineering.md)
-    — 三端工程 SSOT
-  - `REFACTOR_PLAN.md` §1.8、§10 — 本地工作区与 M6 专项
-  - [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)
-    — 对照 PRS v2.3 的三端 UI 建议（2026-08）
-  - [06-asset-library-ui.md](./06-asset-library-ui.md)
-    — 目标态：资源库、多存储连接器、发布与访问控制 UI
+  - [app/README.md](../../app/README.md) — 三端工程与脚本— 三端工程 SSOT
+  - `PLANS.md` §1.8、§10 — 本地工作区与 M6 专项
+  - [04-asset-library-ui.md](./04-asset-library-ui.md)
+    — 资源库 UI：连接 / 发布 / 本地文件夹与文件操作
+  - [05-brand-visual-ui.md](./05-brand-visual-ui.md) — 品牌色与状态
 
-> **产品主张**：🖼️ Pixuli — AI-based image analysis, automatic tag generation,
-> and batch
-> processing。交互以**图床管理**为主路径，AI 与批处理为**同等可发现**的增强能力，而非独立产品。
+> **产品主张**：本地优先的**资源工作区**（图片 / PDF
+> / 视频等）；连接多云可选同步与发布；AI 与批处理为可发现增强，而非独立产品。壳层与手势以本文为准；资源库细交互见
+> [04](./04-asset-library-ui.md)。
 
 ---
 
@@ -303,18 +301,18 @@ AI 路径（P5，REF-604）：Desktop 已通；Web/Capacitor 在本地模型或�
 
 ## 九、后续 Issue 映射
 
-| Issue                    | 本文档章节                                                                                                              |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| **#131** REF-602 UI 实现 | §三 IA、§六 线框、§四 矩阵                                                                                              |
-| **#132** REF-603 性能    | §3.2 虚拟滚动、分页                                                                                                     |
-| **#133** REF-604 AI      | §2.1 F 阶段、§四 AI 行                                                                                                  |
-| **#134** REF-605 批处理  | §2.1 E、§四 批量行                                                                                                      |
-| **#140** REF-606 回收站  | §3.1 回收站项                                                                                                           |
-| **#144** REF-607 本地库  | §2.2、§四 复制链接、§3.1 工作区                                                                                         |
-| **#164** REF-516 P0      | Mobile 对齐矩阵（历史文档已随 `archive/` 删除）                                                                         |
-| **#165** REF-516 P3      | 同上 §五 业务补齐清单                                                                                                   |
-| 工作区壳层后 UI          | [05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)（窄屏壳、同步徽章、工具可发现、AI 占位） |
-| 资源库目标态 UI          | [06-asset-library-ui.md](./06-asset-library-ui.md)（连接器、发布档位、访问控制）                                        |
+| Issue                    | 本文档章节                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| **#131** REF-602 UI 实现 | §三 IA、§六 线框、§四 矩阵                                                             |
+| **#132** REF-603 性能    | §3.2 虚拟滚动、分页                                                                    |
+| **#133** REF-604 AI      | §2.1 F 阶段、§四 AI 行                                                                 |
+| **#134** REF-605 批处理  | §2.1 E、§四 批量行                                                                     |
+| **#140** REF-606 回收站  | §3.1 回收站项                                                                          |
+| **#144** REF-607 本地库  | §2.2、§四 复制链接、§3.1 工作区                                                        |
+| **#164** REF-516 P0      | Mobile 对齐矩阵（历史文档已随 `archive/` 删除）                                        |
+| **#165** REF-516 P3      | 同上 §五 业务补齐清单                                                                  |
+| 工作区壳层后 UI / 资源库 | [04-asset-library-ui.md](./04-asset-library-ui.md)（连接、发布、本地文件夹与文件操作） |
+| 品牌与状态色             | [05-brand-visual-ui.md](./05-brand-visual-ui.md)                                       |
 
 ---
 

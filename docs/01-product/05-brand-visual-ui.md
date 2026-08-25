@@ -5,10 +5,9 @@
 - **读者**：产品、设计、前端（Web / Desktop / Capacitor）
 - **Logo SSOT**：[`app/brand/source/icon.png`](../../app/brand/README.md) →
   `public/icon.png`
-- **IA
-  / 排期**：[05-three-platform-ui-optimization.md](./05-three-platform-ui-optimization.md)
-  · [06-asset-library-ui.md](./06-asset-library-ui.md)
-- **可访问性底线**：[04-three-platform-interaction-spec.md §7.1](./04-three-platform-interaction-spec.md)
+- **IA**：[04-asset-library-ui.md](./04-asset-library-ui.md) ·
+  [03-three-platform-interaction-spec.md](./03-three-platform-interaction-spec.md)
+- **可访问性底线**：[03-three-platform-interaction-spec.md §7.1](./03-three-platform-interaction-spec.md)
 
 > Logo 是等距像素立方：紫/堇主身、顶面
 > **青辉**（同步/连通）、右面缩略图（媒体）、左面目录线（结构化数据）。  

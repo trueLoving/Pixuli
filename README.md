@@ -10,7 +10,7 @@
 [![Documentation](https://img.shields.io/badge/Documentation-Wiki-blue.svg)](https://github.com/trueLoving/Pixuli/wiki)
 
 > ⚠️ **开发状态**：本项目**正在重构中**（M1～M6，见
-> [REFACTOR_PLAN.md](REFACTOR_PLAN.md)）。`main`
+> [PLANS.md](PLANS.md)）。`main`
 > 分支的 API、目录与功能边界可能频繁变动，**尚不稳定**，暂不建议用于生产环境。升级或集成前请先阅读
 > [CHANGELOG.md](CHANGELOG.md) 的 `[Unreleased]`。
 
@@ -30,12 +30,11 @@ Pixuli 是一个 **Monorepo** 图片管理客户端。图片存放在你配置�
 | **产品聚焦**   | 网格/列表图床（L2）+ 压缩/转换工具 + 设置                                                           |
 
 已移除或延后的功能（幻灯片、时间线、照片墙等）见
-[docs/04-backlog.md](docs/04-backlog.md)。重构追踪见
-[REFACTOR_PLAN.md](REFACTOR_PLAN.md)。
+[docs/04-backlog.md](docs/04-backlog.md)。重构追踪见 [PLANS.md](PLANS.md)。
 
 > **文档语言**：仓库根目录 README / CHANGELOG /
 > CONTRIBUTING 暂以**中文**为主；`docs/` 与 Wiki 策略见
-> [REFACTOR_PLAN.md](REFACTOR_PLAN.md)（REF-415）。
+> [PLANS.md](PLANS.md)（REF-415）。
 
 ---
 
@@ -72,7 +71,9 @@ Pixuli/
 │   ├── plugin-provider-github/          # @pixuli/provider-github
 │   └── plugin-provider-gitee/           # @pixuli/provider-gitee
 ├── docs/                                # PRD、系统设计、backlog
-├── REFACTOR_PLAN.md                     # 里程碑与 GitHub Issue 映射
+├── PLANS.md                     # 任务与进度（对齐 GitHub Issues）
+├── 2.0.md                          # 2.0 定位与相对 1.x 差异
+├── DECISIONS.md                    # 产品/架构决策（为什么）
 └── pnpm-workspace.yaml
 ```
 
@@ -159,23 +160,23 @@ pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI �
 > **升级说明**：M1 重构前的 Release（如
 > `v1.3.0-desktop`）可能仍含幻灯片与 WASM 等已移除能力。升级前请阅读
 > [CHANGELOG.md](./CHANGELOG.md) 的 `[Unreleased]` 与
-> [版本发布策略](docs/01-product/03-release-versioning.md)。
+> [版本发布策略](docs/02-system-design/07-release-versioning.md)。
 
 ---
 
 ## 文档
 
-| 读者              | 文档                                                                              |
-| ----------------- | --------------------------------------------------------------------------------- |
-| **用户**          | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — 安装、配置源、日常使用 |
-| **产品**          | [docs/01-product/](docs/01-product/) — PRD、范围与裁剪、使用教程                  |
-| **已移除 / 延后** | [docs/04-backlog.md](docs/04-backlog.md)                                          |
-| **开发者**        | [docs/README.md](docs/README.md) — 文档索引                                       |
-| **贡献**          | [CONTRIBUTING.md](./CONTRIBUTING.md)                                              |
-| **AI 助手**       | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills、Monorepo 上下文（REF-414）        |
-| **重构计划**      | [REFACTOR_PLAN.md](./REFACTOR_PLAN.md)                                            |
-| **变更日志**      | [CHANGELOG.md](./CHANGELOG.md)                                                    |
-| **主应用**        | [app/README.md](./app/README.md)                                                  |
+| 读者                  | 文档                                                                              |
+| --------------------- | --------------------------------------------------------------------------------- |
+| **用户**              | [GitHub Wiki](https://github.com/trueLoving/Pixuli/wiki) — 安装、配置源、日常使用 |
+| **产品**              | [docs/01-product/](docs/01-product/) — PRD、范围与裁剪、使用教程                  |
+| **已移除 / 延后**     | [docs/04-backlog.md](docs/04-backlog.md)                                          |
+| **开发者**            | [docs/README.md](docs/README.md) — 文档索引                                       |
+| **贡献**              | [CONTRIBUTING.md](./CONTRIBUTING.md)                                              |
+| **AI 助手**           | [AGENTS.md](./AGENTS.md) — Cursor Rules/Skills、Monorepo 上下文（REF-414）        |
+| **进度 / 2.0 / 决策** | [PLANS.md](./PLANS.md) · [2.0.md](./2.0.md) · [DECISIONS.md](./DECISIONS.md)      |
+| **变更日志**          | [CHANGELOG.md](./CHANGELOG.md)                                                    |
+| **主应用**            | [app/README.md](./app/README.md)                                                  |
 
 ---
 

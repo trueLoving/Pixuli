@@ -21,10 +21,10 @@ alwaysApply: true
 
 ## TypeScript
 
-- 业务代码一律 `.ts`/`.tsx`；例外见 `docs/02-system-design/04-typescript-javascript-policy.md`
+- 业务代码一律 `.ts`/`.tsx`（默认 TypeScript；工具链配置等例外另议）
 
 ## 改动原则
 
 - 最小 diff；匹配现有命名与目录约定
 - 完成功能后：`pnpm test`；涉及 Web 构建时考虑 `pnpm build:web`
-- REF Issue PR：标题含 `REF-xxx`；关闭 Issue 用 `Fixes #n`；同步 `REFACTOR_PLAN.md`
+- REF Issue PR：标题含 `REF-xxx`；关闭 Issue 用 `Fixes #n`；同步 `PLANS.md`

@@ -77,7 +77,7 @@ Gitee** 同步与公网直链。
 | **存储连接**     | 通过连接器对接不同云/Git 服务，官方规划：**GitHub、Gitee、OneDrive、Google Cloud**（Drive / GCS 等，以插件 manifest 为准）；更多服务走同一 Provider 契约                                                 |
 | **本地 + 远程**  | **本地工作区为 SSOT**（浏览、搜索、预览默认读本地）；远程为可选副本与发布通道，支持同步（push / pull）                                                                                                   |
 | **对外访问控制** | 用户可按资源设置对外访问（私有 / 可外链等）。**远程侧若该云支持** ACL、分享链接或公开 URL，则在 UI 内配置；**若不支持**，对应选项禁用，并给出**明确提示**（原因 + 可替代做法），禁止静默失败或假装已授权 |
-| **UI**           | 三端共用；信息架构见 [06-asset-library-ui.md](./06-asset-library-ui.md)                                                                                                                                  |
+| **UI**           | 三端共用；信息架构见 [04-asset-library-ui.md](./04-asset-library-ui.md)                                                                                                                                  |
 
 阶段一能力不回退：GitHub/Gitee 图床路径在阶段二落地前仍须可用。
 
@@ -100,7 +100,7 @@ Gitee** 同步与公网直链。
 - **阶段一（已实现）**：**图床浏览**（`/photos`）网格/列表与预览；**图片工具**（`/compress`、`/convert`）；**设置 /
   GitHub·Gitee 源**。
 - **阶段二（目标 IA）**：**资源库 / 连接 / 发布 / 工具 / 设置**，见
-  [06-asset-library-ui.md](./06-asset-library-ui.md)。
+  [04-asset-library-ui.md](./04-asset-library-ui.md)。
 
 ### 2.3 不在官方范围内的能力
 
@@ -127,10 +127,10 @@ packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
 | ---------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **M4**     | PRD/README/Wiki/CHANGELOG 与现架构一致       | REF-401～415                                                                                                                                  |
 | **M5**     | PWA 深化、Desktop L3；Capacitor 三端共享 PoC | REF-501～510                                                                                                                                  |
-| **M6**     | 三端交互规范、UI、性能边界、标签/AI、批处理  | REF-601～605；[04](./04-three-platform-interaction-spec.md) · [05](./05-three-platform-ui-optimization.md) v2.0                               |
-| **阶段二** | 多类型资源、多云连接器、本地+远程访问控制    | 需求 §2.1a / §5.8；UI [06-asset-library-ui.md](./06-asset-library-ui.md)；插件 [03-plugin-system.md](../02-system-design/03-plugin-system.md) |
+| **M6**     | 三端交互规范、UI、性能边界、标签/AI、批处理  | REF-601～605；[03](./03-three-platform-interaction-spec.md) · [04](./04-asset-library-ui.md)                                                  |
+| **阶段二** | 多类型资源、多云连接器、本地+远程访问控制    | 需求 §2.1a / §5.8；UI [04-asset-library-ui.md](./04-asset-library-ui.md)；插件 [03-plugin-system.md](../02-system-design/03-plugin-system.md) |
 
-详见 [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)。
+详见 [PLANS.md](../../PLANS.md)。
 
 ---
 
@@ -179,7 +179,7 @@ Pixuli/
 │   ├── plugin-provider-github/
 │   └── plugin-provider-gitee/
 ├── docs/                    # 产品 / 系统设计 / 业务设计文档
-└── REFACTOR_PLAN.md         # 重构与 Issue 追踪
+└── PLANS.md         # 重构与 Issue 追踪
 ```
 
 ### 4.2 技术栈概览
@@ -378,7 +378,7 @@ Pixuli/
 ### 5.8a 资源库、多云连接与访问控制（阶段二 · 现行需求）
 
 UI 与验收故事见
-[06-asset-library-ui.md](./06-asset-library-ui.md)。阶段一图床需求（§5.1～§5.4）不删除。
+[04-asset-library-ui.md](./04-asset-library-ui.md)。阶段一图床需求（§5.1～§5.4）不删除。
 
 #### 资源类型
 
@@ -511,14 +511,17 @@ Gitee；阶段二：OneDrive、Google Cloud 等）。社区/自建见
 
 ### 9.1 相关文档
 
-| 文档                                                                    | 说明                                |
-| ----------------------------------------------------------------------- | ----------------------------------- |
-| [02-product-user-manual.md](02-product-user-manual.md)                  | 产品使用手册（Wiki 源稿）           |
-| [04-backlog.md](../04-backlog.md)                                       | 已移除/延后需求                     |
-| [06-asset-library-ui.md](./06-asset-library-ui.md)                      | 阶段二 UI：资源库 / 连接 / 发布     |
-| [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)                              | 重构计划与 Issue                    |
-| [03-plugin-system.md](../02-system-design/03-plugin-system.md)          | 存储插件技术设计（Pixuli 插件体系） |
-| [项目 README](https://github.com/trueLoving/Pixuli/blob/main/README.md) | 仓库概览                            |
+| 文档                                                                             | 说明                                       |
+| -------------------------------------------------------------------------------- | ------------------------------------------ |
+| [02-product-user-manual.md](02-product-user-manual.md)                           | 产品使用手册（Wiki 源稿）                  |
+| [03-three-platform-interaction-spec.md](./03-three-platform-interaction-spec.md) | 三端壳层与手势（REF-601）                  |
+| [04-asset-library-ui.md](./04-asset-library-ui.md)                               | 阶段二 UI：资源库 / 连接 / 发布 / 本地操作 |
+| [05-brand-visual-ui.md](./05-brand-visual-ui.md)                                 | 品牌色与状态 UI                            |
+| [04-backlog.md](../04-backlog.md)                                                | 已移除/延后需求                            |
+| [07-release-versioning.md](../02-system-design/07-release-versioning.md)         | 版本与发版制度（REF-409）                  |
+| [PLANS.md](../../PLANS.md)                                                       | 重构计划与 Issue                           |
+| [03-plugin-system.md](../02-system-design/03-plugin-system.md)                   | 存储插件技术设计（Pixuli 插件体系）        |
+| [项目 README](https://github.com/trueLoving/Pixuli/blob/main/README.md)          | 仓库概览                                   |
 
 ### 9.2 修订历史
 
@@ -532,5 +535,4 @@ Gitee；阶段二：OneDrive、Google Cloud 等）。社区/自建见
 
 ---
 
-_本文档随项目迭代更新；与 [REFACTOR_PLAN.md](../../REFACTOR_PLAN.md)
-冲突时以重构计划为准。_
+_本文档随项目迭代更新；与 [PLANS.md](../../PLANS.md) 冲突时以重构计划为准。_

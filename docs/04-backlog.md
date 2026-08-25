@@ -3,7 +3,7 @@
 - **文档版本**：1.0
 - **创建日期**：2026-05-27
 - **维护**：REF-402；与
-  [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)、[产品需求规格说明书](01-product/01-product-requirements-specification.md)
+  [PLANS.md](../PLANS.md)、[产品需求规格说明书](01-product/01-product-requirements-specification.md)
   配套
 - **读者**：产品、开发、协作者；承接**不在当前主线**的需求，避免 PRD 与系统设计文档混杂历史项
 
@@ -13,7 +13,7 @@
 
 | 状态标签      | 含义                                                                 |
 | ------------- | -------------------------------------------------------------------- |
-| **已移除**    | M1 等已从代码删除，**不计划恢复**（见 REFACTOR_PLAN §五）            |
+| **已移除**    | M1 等已从代码删除，**不计划恢复**（见 Plans §五）                    |
 | **不做**      | 产品/架构明确排除，非排期遗漏                                        |
 | **已归档**    | 历史路径已从仓库移除（wasm / server / Expo RN）；快照见 tag `backup` |
 | **延后**      | 仍可能做，已有里程碑或 Issue；细节以 PRD §4.10/§4.11 与 M5/M6 为准   |
@@ -44,13 +44,13 @@
 
 **历史业务/设计文档**：`docs/03-business-design/`
 早期草稿已移除；幻灯片/时间线等裁剪说明见本节上表与
-[03-business-design/01-readme.md](03-business-design/01-readme.md)。
+[03-business-design/README.md](03-business-design/README.md)。
 
 ---
 
 ## 二、明确不做（Won't Do）
 
-与 [REFACTOR_PLAN.md §五](../REFACTOR_PLAN.md) 一致。
+与 [PLANS.md §五](../PLANS.md)（Won't Do）一致。
 
 | 项                                                 | 说明                           |
 | -------------------------------------------------- | ------------------------------ |
@@ -118,7 +118,7 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 ### 5.2a 阶段二 — 资源库 / 多云 / 访问控制（现行需求，实现 ⏳）
 
-产品口径：[PRS §2.1a / §5.8a](01-product/01-product-requirements-specification.md)；UI：[06-asset-library-ui.md](01-product/06-asset-library-ui.md)。
+产品口径：[PRS §2.1a / §5.8a](01-product/01-product-requirements-specification.md)；UI：[04-asset-library-ui.md](01-product/04-asset-library-ui.md)。
 
 | 方向              | 代表需求        | 说明                                           |
 | ----------------- | --------------- | ---------------------------------------------- |
@@ -147,23 +147,24 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 
 ## 六、存储与集成扩展（非官方 P0）
 
-| 项                                            | 说明                                                                                                                           |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| OneDrive / Google Cloud 等阶段二连接器        | 官方规划，见 PRS F-CONN-02；实现后从「延后」改为需求验收                                                                       |
-| 其它第三方 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [03-plugin-system §第二部分](02-system-design/03-plugin-system.md#第二部分-存储插件开发指南) |
-| 插件热加载 / 远程安装                         | Backlog [#102](https://github.com/trueLoving/Pixuli/issues/102)（无里程碑，排在 REF-411 #126 之后）                            |
-| 社区 MCP / Server 对接                        | 见 §三                                                                                                                         |
+| 项                                            | 说明                                                                                                |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| OneDrive / Google Cloud 等阶段二连接器        | 官方规划，见 PRS F-CONN-02；实现后从「延后」改为需求验收                                            |
+| 其它第三方 Provider（Upyun、S3、自建 API 等） | 实现 `StorageProvider` 后注册；见 [03-plugin-system](02-system-design/03-plugin-system.md)          |
+| 插件热加载 / 远程安装                         | Backlog [#102](https://github.com/trueLoving/Pixuli/issues/102)（无里程碑，排在 REF-411 #126 之后） |
+| 社区 MCP / Server 对接                        | 见 §三                                                                                              |
 
 ---
 
 ## 七、相关文档
 
-| 文档                                                                                                       | 关系                      |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------- |
-| [01-product/01-product-requirements-specification.md](01-product/01-product-requirements-specification.md) | 基线产品需求与范围        |
-| [01-product/02-product-user-manual.md](01-product/02-product-user-manual.md)                               | 产品使用手册（Wiki 源稿） |
-| [REFACTOR_PLAN.md](../REFACTOR_PLAN.md)                                                                    | 里程碑与 Issue 追踪       |
-| [docs/README.md](README.md)                                                                                | 文档索引                  |
+| 文档                                                                                                       | 关系                             |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [01-product/01-product-requirements-specification.md](01-product/01-product-requirements-specification.md) | 基线产品需求与范围               |
+| [01-product/02-product-user-manual.md](01-product/02-product-user-manual.md)                               | 产品使用手册（Wiki 源稿）        |
+| [PLANS.md](../PLANS.md)                                                                                    | 任务与进度（对齐 GitHub Issues） |
+| [2.0.md](../2.0.md)                                                                                        | 2.0 定位与相对 1.x 差异          |
+| [docs/README.md](README.md)                                                                                | 文档索引                         |
 
 ---
 
