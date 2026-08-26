@@ -151,5 +151,5 @@ Skill：[ref-issue-pr](.cursor/skills/ref-issue-pr/SKILL.md)。
 | 架构      | [docs/02-system-design/01-system-design.md](docs/02-system-design/01-system-design.md)                               |
 | 工程      | [app/README.md](app/README.md)                                                                                       |
 | 插件      | [docs/02-system-design/03-plugin-system.md](docs/02-system-design/03-plugin-system.md)                               |
-| 同步      | [docs/02-system-design/05-local-workspace-sync.md](docs/02-system-design/05-local-workspace-sync.md)                 |
+| 同步      | [docs/02-system-design/04-local-workspace-sync.md](docs/02-system-design/04-local-workspace-sync.md)                 |
 | Agent     | [AGENTS.md](AGENTS.md)                                                                                               |

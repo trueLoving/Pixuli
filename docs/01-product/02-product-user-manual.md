@@ -148,7 +148,7 @@ RN 版（`v*-mobile`）已归档，**请勿**再安装 `Pixuli_1.0.0.apk` 等 1.
 **从 1.x RN 升级**：1.x
 Mobile 含已移除的幻灯片等能力，与 2.x 产品范围不一致；请卸载旧版后安装
 `v*-android` Release，并重新配置仓库源。详见
-[版本发布策略](../02-system-design/07-release-versioning.md) 与
+[版本发布策略](../02-system-design/05-release-versioning.md) 与
 [CHANGELOG](../../CHANGELOG.md)。
 
 **开发者本地调试**：仓库根目录 `pnpm dev:android`（模拟器/真机 + Live

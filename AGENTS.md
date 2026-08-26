@@ -101,5 +101,5 @@ REF-607 P7 已退役 Gitee 图片 Host 代理。应用注册见
 | 进度 / 2.0 / 决策 | [PLANS.md](PLANS.md) · [2.0.md](2.0.md) · [DECISIONS.md](DECISIONS.md)                                                                                                          |
 | 系统架构          | [01-system-design.md](docs/02-system-design/01-system-design.md) · [app/README](app/README.md)                                                                                  |
 | 三端设计          | [三端交互规范](docs/01-product/03-three-platform-interaction-spec.md) · [资源库 UI](docs/01-product/04-asset-library-ui.md) · [品牌视觉](docs/01-product/05-brand-visual-ui.md) |
-| 版本发布          | [07-release-versioning.md](docs/02-system-design/07-release-versioning.md)                                                                                                      |
+| 版本发布          | [05-release-versioning.md](docs/02-system-design/05-release-versioning.md)                                                                                                      |
 | Backlog           | [docs/04-backlog.md](docs/04-backlog.md)                                                                                                                                        |
