@@ -55,9 +55,11 @@ StorageProvider（github / gitee …）
   .pixuli/
     config.json    # 工作区与连接引用
     index…         # 资源索引
+    folders.json   # 显式空文件夹（树 CRUD；仅本地）
 ```
 
-Web 可能落在 OPFS / IDB；Desktop 为真实路径；Mobile 为沙箱 / SAF。
+空文件夹靠 `.pixuli/folders.json` 登记；有文件的目录仍由 index 内 `relativePath`
+派生。文件夹新建 / 重命名 / 删除**只改本机**，不自动同步远端。
 
 ---
 

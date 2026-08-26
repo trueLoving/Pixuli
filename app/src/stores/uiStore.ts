@@ -36,6 +36,8 @@ interface UIState {
   /** 同步方向选择（远端→本地 / 本地→远端） */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
+  /** 独立发布抽屉（与同步入口分离） */
+  showPublishDrawer: boolean;
   /** 访问面板当前针对的资源；空则只改通道策略提示 */
   accessTargetImageId: string | null;
   /** 多选发布时带入的资源 id */
@@ -123,6 +125,7 @@ interface UIState {
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
   openAccessModal: (imageId?: string, imageIds?: string[]) => void;
+  closePublishDrawer: () => void;
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
@@ -163,6 +166,7 @@ export const useUIStore = create<UIState>(set => ({
   inspectorWidth: INSPECTOR_WIDTH_DEFAULT,
   inspectorCollapsed: false,
   showWorkspaceModal: false,
+  showPublishDrawer: false,
   accessTargetImageId: null,
   accessTargetImageIds: [],
 
@@ -296,15 +300,19 @@ export const useUIStore = create<UIState>(set => ({
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
   openAccessModal: (imageId?: string, imageIds?: string[]) =>
     set({
-      showSettingsModal: true,
-      settingsSection: 'access',
+      showPublishDrawer: true,
       accessTargetImageId: imageId ?? imageIds?.[0] ?? null,
       accessTargetImageIds: imageIds?.length
         ? imageIds
         : imageId
           ? [imageId]
           : [],
-      activeMenu: 'settings',
+    }),
+  closePublishDrawer: () =>
+    set({
+      showPublishDrawer: false,
+      accessTargetImageId: null,
+      accessTargetImageIds: [],
     }),
   openSettingsModalForAddSource: () =>
     set({

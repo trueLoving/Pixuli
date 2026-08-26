@@ -20,7 +20,7 @@ describe('workspaceFolderTree', () => {
     expect(tree.children[0]?.children[0]?.imageCount).toBe(1);
   });
 
-  it('filters images by selected folder', () => {
+  it('filters images by selected folder (shallow by default)', () => {
     const images = [
       { id: '1', localPath: 'images/a.jpg' },
       { id: '2', localPath: 'images/trip/b.jpg' },
@@ -32,9 +32,22 @@ describe('workspaceFolderTree', () => {
       '2',
       '3',
     ]);
+    expect(filterImagesByFolder(images, 'images').map(i => i.id)).toEqual([
+      '1',
+    ]);
     expect(filterImagesByFolder(images, 'images/trip').map(i => i.id)).toEqual([
       '2',
       '3',
     ]);
+    expect(
+      filterImagesByFolder(images, 'images', { shallow: false }).map(i => i.id),
+    ).toEqual(['1', '2', '3']);
+  });
+
+  it('includes empty folders in the tree', () => {
+    const tree = buildWorkspaceFolderTree(['images/a.jpg'], ['images/empty']);
+    expect(tree.children[0]?.children.map(c => c.path)).toContain(
+      'images/empty',
+    );
   });
 });

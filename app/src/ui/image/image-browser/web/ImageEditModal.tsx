@@ -8,6 +8,12 @@ import {
 } from '@/ui/feedback/toast';
 import './ImageEditModal.css';
 
+function folderFromPath(path?: string): string {
+  if (!path) return 'images';
+  const slash = path.lastIndexOf('/');
+  return slash === -1 ? 'images' : path.slice(0, slash) || 'images';
+}
+
 interface ImageEditModalProps {
   image: ImageItem;
   isOpen: boolean;
@@ -39,6 +45,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     name: image.name,
     description: image.description || '',
     tags: image.tags || [],
+    targetFolder: folderFromPath(image.localPath),
   });
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
@@ -72,7 +79,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
       await onUpdateImage(formData);
       updateLoadingToSuccess(
         loadingToast,
-        `${translate('image.edit.updateSuccess')} "${image.name}" ${translate('common.info')}${translate('messages.configSaved')}`,
+        translate('image.edit.savedLocalOnly'),
       );
       if (onSuccess) {
         // 构建更新后的图片数据
@@ -120,6 +127,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
         name: image.name,
         description: image.description || '',
         tags: image.tags || [],
+        targetFolder: folderFromPath(image.localPath),
       });
       // 清空标签输入框
       if (tagInputRef.current) {
@@ -190,11 +198,31 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
               {translate('image.edit.imageName')}{' '}
             </label>
             <input
-              disabled={true}
               type="text"
               value={formData.name || ''}
               onChange={e => handleInputChange('name', e.target.value)}
               placeholder={translate('image.edit.namePlaceholder')}
+              className="image-edit-form-input"
+            />
+          </div>
+
+          <div className="image-edit-form-group">
+            <label className="image-edit-form-label">
+              {translate('image.edit.folder')}{' '}
+              <span className="image-edit-form-optional">
+                {translate('image.edit.optional')}
+              </span>
+            </label>
+            <input
+              type="text"
+              value={formData.targetFolder ?? folderFromPath(image.localPath)}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  targetFolder: e.target.value,
+                }))
+              }
+              placeholder="images"
               className="image-edit-form-input"
             />
           </div>

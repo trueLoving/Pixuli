@@ -17,7 +17,6 @@ import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/utils/assetKind';
-import { isDesktop } from '@/platforms';
 import {
   Edit,
   Link,
@@ -110,6 +109,8 @@ interface AssetInspectorProps {
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   onShareImage?: (image: ImageItem) => Promise<void>;
   onSync?: () => void;
+  onSendCompress?: () => void;
+  onSendConvert?: () => void;
   getImageDimensionsFromUrl?: (
     url: string,
   ) => Promise<{ width: number; height: number }>;
@@ -198,6 +199,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onCopyUrl,
   onShareImage,
   onSync,
+  onSendCompress,
+  onSendConvert,
   getImageDimensionsFromUrl,
   t,
   variant = 'dock',
@@ -322,7 +325,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     if (!activeImage || !onDeleteImage) return;
     if (
       !confirm(
-        `${t('image.grid.confirmDelete')} "${activeImage.name}" ${t('common.confirm')}？`,
+        `${t('image.grid.confirmDelete')} "${activeImage.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
       )
     ) {
       return;
@@ -421,34 +424,41 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     grid.push({
       id: 'compress',
       label: t('image.inspector.actionCompress'),
-      title: t('image.inspector.toolDisabled'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendCompress')
+          : t('image.inspector.toolImageOnly'),
       icon: SlidersHorizontal,
-      disabled: true,
-      onClick: () => undefined,
+      disabled: kind !== 'image' || !onSendCompress,
+      onClick: () => {
+        if (kind !== 'image') return;
+        onSendCompress?.();
+      },
     });
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
-      title: t('image.inspector.toolDisabled'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendConvert')
+          : t('image.inspector.toolImageOnly'),
       icon: Wand2,
-      disabled: true,
-      onClick: () => undefined,
+      disabled: kind !== 'image' || !onSendConvert,
+      onClick: () => {
+        if (kind !== 'image') return;
+        onSendConvert?.();
+      },
     });
     grid.push({
       id: 'ai',
       label: t('image.inspector.actionAi'),
-      title: !isDesktop()
-        ? t('image.inspector.aiDesktopOnly')
-        : kind !== 'image'
+      title:
+        kind !== 'image'
           ? t('image.inspector.toolImageOnly')
-          : t('image.inspector.sendAi'),
+          : t('image.inspector.aiNotConnected'),
       icon: Sparkles,
-      disabled: !isDesktop() || kind !== 'image',
-      onClick: () => {
-        if (!isDesktop() || kind !== 'image') return;
-        showInfo(t('image.inspector.aiReadyHint'));
-        if (onUpdateImage) setShowEdit(true);
-      },
+      disabled: true,
+      onClick: () => undefined,
     });
 
     const danger: CompactAction | null = onDeleteImage
@@ -471,6 +481,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     handleShare,
     kind,
     onDeleteImage,
+    onSendCompress,
+    onSendConvert,
     onShareImage,
     onUpdateImage,
     t,
@@ -481,6 +493,15 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     danger: CompactAction | null;
   } => {
     if (selectedImages.length < 2) return { grid: [], danger: null };
+    const imageCount = selectedImages.filter(
+      item => getAssetKind(item) === 'image',
+    ).length;
+    const compressTitle =
+      imageCount === 0
+        ? t('image.inspector.toolImageOnly')
+        : imageCount < selectedImages.length
+          ? `${t('image.inspector.sendCompress')} (${imageCount}/${selectedImages.length})`
+          : t('image.inspector.sendCompress');
     const grid: CompactAction[] = [
       {
         id: 'sync',
@@ -493,18 +514,21 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       {
         id: 'compress',
         label: t('image.inspector.actionCompress'),
-        title: t('image.inspector.toolDisabled'),
+        title: compressTitle,
         icon: SlidersHorizontal,
-        disabled: true,
-        onClick: () => undefined,
+        disabled: imageCount === 0 || !onSendCompress,
+        onClick: () => onSendCompress?.(),
       },
       {
         id: 'convert',
         label: t('image.inspector.actionConvert'),
-        title: t('image.inspector.toolDisabled'),
+        title:
+          imageCount === 0
+            ? t('image.inspector.toolImageOnly')
+            : t('image.inspector.sendConvert'),
         icon: Wand2,
-        disabled: true,
-        onClick: () => undefined,
+        disabled: imageCount === 0 || !onSendConvert,
+        onClick: () => onSendConvert?.(),
       },
     ];
     return {
@@ -519,7 +543,14 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         },
       },
     };
-  }, [handleBatchDelete, onSync, selectedImages.length, t]);
+  }, [
+    handleBatchDelete,
+    onSendCompress,
+    onSendConvert,
+    onSync,
+    selectedImages,
+    t,
+  ]);
 
   const batchBody =
     selectedImages.length >= 2 ? (
@@ -620,6 +651,34 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         </dl>
       </section>
     </>
+  ) : selectedFolderPath ? (
+    <section className="asset-inspector-section">
+      <h3>{t('image.inspector.folderSummaryTitle')}</h3>
+      <dl className="asset-inspector-dl">
+        <div>
+          <dt>{t('image.inspector.folderPath')}</dt>
+          <dd>{selectedFolderPath}</dd>
+        </div>
+        <div>
+          <dt>{t('image.inspector.folder')}</dt>
+          <dd>
+            {t('image.inspector.folderFileCount').replace(
+              '{count}',
+              String(
+                images.filter(item => {
+                  const path = item.localPath;
+                  if (!path) return false;
+                  const prefix = `${selectedFolderPath}/`;
+                  if (!path.startsWith(prefix)) return false;
+                  const rest = path.slice(prefix.length);
+                  return rest.length > 0 && !rest.includes('/');
+                }).length,
+              ),
+            )}
+          </dd>
+        </div>
+      </dl>
+    </section>
   ) : (
     <p className="asset-inspector-empty">{t('image.inspector.empty')}</p>
   );

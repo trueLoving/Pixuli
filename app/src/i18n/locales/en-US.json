@@ -142,10 +142,16 @@
     "welcomeOpenConnections": "Connect a remote repository",
     "explorer": "Explorer",
     "activityBar": "Main menu",
-    "allImages": "All images",
+    "allImages": "All",
     "manageExplorer": "Manage workspace…",
     "closeExplorer": "Close folder panel",
-    "resizeExplorer": "Drag to resize explorer"
+    "resizeExplorer": "Drag to resize explorer",
+    "newFolder": "New folder",
+    "newSubfolder": "New subfolder",
+    "renameFolder": "Rename folder",
+    "deleteFolder": "Delete folder",
+    "newFolderPrompt": "New folder name (local only)",
+    "renameFolderPrompt": "Rename folder (local only)"
   },
   "access": {
     "title": "Access",
@@ -184,10 +190,12 @@
     "titleBatch": "Access settings — {count} selected",
     "confirmSyncThenPublish": "This file is not synced to the selected channel yet. Sync first, then publish?",
     "copiedPublicUrl": "Public link copied",
-    "revoked": "Remote access revoked. The file remains in the local workspace",
+    "revoked": "Remote access revoked. CDN/cache may remain reachable briefly. Files stay in the local workspace.",
     "overviewTitle": "Published",
     "upcomingPublishTitle": "Upcoming publish capabilities",
-    "upcomingPublishHint": "These services are not connected yet. Chips show planned capabilities, not features you can use today."
+    "upcomingPublishHint": "These services are not connected yet. Chips show planned capabilities, not features you can use today.",
+    "publishDrawerTitle": "Publish",
+    "publishDrawerHint": "Publish is separate from sync: this only controls how others can open the file"
   },
   "settings": {
     "title": "Settings",
@@ -197,7 +205,7 @@
     "groupSync": "Sync",
     "groupAccess": "Access",
     "menuSync": "Remotes & sync",
-    "menuAccess": "Access control",
+    "menuAccess": "Publish & access",
     "syncOnClickHint": "Sync: if no remote is configured, this page opens so you can add one; otherwise you choose a sync direction.",
     "sourcesTitle": "Remote repositories",
     "singleSyncHint": "Only one repository can sync at a time. Pick the active target in the table.",

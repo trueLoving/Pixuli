@@ -88,6 +88,12 @@ interface WorkspaceState {
   pullFromRemote: () => Promise<SyncRunOutcome>;
   runSync: (direction?: 'push' | 'pull' | 'both') => Promise<SyncRunOutcome>;
   softDeleteLocal: (relativePath: string) => Promise<void>;
+  localFolders: string[];
+  refreshLocalFolders: () => Promise<void>;
+  createLocalFolder: (relativeDir: string) => Promise<void>;
+  renameLocalFolder: (fromDir: string, toDir: string) => Promise<void>;
+  deleteLocalFolder: (relativeDir: string) => Promise<number>;
+  moveLocalFile: (relativePath: string, targetDir: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -230,6 +236,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   rootPath: null,
   displayName: null,
   localImages: [],
+  localFolders: [],
   loading: false,
   pushing: false,
   syncing: false,
@@ -426,6 +433,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       rootPath: null,
       displayName: null,
       localImages: [],
+      localFolders: [],
       loading: false,
       pushing: false,
       syncing: false,
@@ -449,11 +457,132 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const entries = await vault.list();
       const provider = resolveSelectedProvider();
       const images = await mapEntriesToImageItems(entries, provider);
-      set({ localImages: images, loading: false });
+      const localFolders = await vault.listFolders();
+      set({ localImages: images, localFolders, loading: false });
     } catch (error) {
       set({
         loading: false,
         error: error instanceof Error ? error.message : '加载本地图片失败',
+      });
+    }
+  },
+
+  refreshLocalFolders: async () => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    try {
+      const localFolders = await getVault().listFolders();
+      set({ localFolders });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : '加载文件夹失败',
+      });
+    }
+  },
+
+  createLocalFolder: async relativeDir => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      await getVault().createFolder(relativeDir);
+      await get().refreshLocalFolders();
+      set({ loading: false, syncMessage: '已新建文件夹（仅本机）' });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '新建文件夹失败',
+      });
+    }
+  },
+
+  renameLocalFolder: async (fromDir, toDir) => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      const moved = await getVault().renameFolder(fromDir, toDir);
+      for (let i = 0; i < moved; i += 1) {
+        // enqueue is per-file; refresh will show pending. Queue metadata/uploads for moved paths via scan of pending-push
+      }
+      const entries = await getVault().list();
+      for (const entry of entries) {
+        if (
+          entry.syncState === 'pending-push' &&
+          (entry.relativePath === toDir ||
+            entry.relativePath.startsWith(`${toDir}/`))
+        ) {
+          await getSyncEngine().enqueuePush({
+            type: 'upload',
+            relativePath: entry.relativePath,
+          });
+        }
+      }
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      set({ loading: false, syncMessage: '已重命名文件夹（仅本机）' });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '重命名文件夹失败',
+      });
+    }
+  },
+
+  deleteLocalFolder: async relativeDir => {
+    if (get().mode !== 'local') {
+      return 0;
+    }
+    set({ loading: true, error: null });
+    try {
+      const count = await getVault().deleteFolder(relativeDir);
+      const deleted = await getVault().list({ includeDeleted: true });
+      for (const entry of deleted) {
+        if (
+          entry.deletedAt &&
+          (entry.relativePath === relativeDir ||
+            entry.relativePath.startsWith(`${relativeDir}/`))
+        ) {
+          await getSyncEngine().enqueuePush({
+            type: 'delete',
+            relativePath: entry.relativePath,
+          });
+        }
+      }
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      set({ loading: false, syncMessage: '已删除文件夹（仅本机）' });
+      return count;
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '删除文件夹失败',
+      });
+      return 0;
+    }
+  },
+
+  moveLocalFile: async (relativePath, targetDir) => {
+    if (get().mode !== 'local') {
+      return;
+    }
+    set({ loading: true, error: null });
+    try {
+      const entry = await getVault().moveFile(relativePath, targetDir);
+      await getSyncEngine().enqueuePush({
+        type: 'upload',
+        relativePath: entry.relativePath,
+      });
+      await get().refreshLocalImages();
+      await get().refreshSyncStatus();
+      set({ loading: false, syncMessage: '已移动文件（仅本机）' });
+    } catch (error) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : '移动文件失败',
       });
     }
   },
@@ -503,9 +632,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const fileName = sanitizeFileName(
         getUploadFileName(uploadData.file, uploadData.name),
       );
-      const targetPath = `images/${Date.now()}-${fileName}`;
+      const { useUIStore } = await import('@/stores/uiStore');
+      const selectedFolderPath = useUIStore.getState().selectedFolderPath;
+      const targetDir =
+        selectedFolderPath && selectedFolderPath !== '__root__'
+          ? selectedFolderPath
+          : 'images';
+      const targetPath = `${targetDir.replace(/\/+$/, '')}/${Date.now()}-${fileName}`;
       const vault = getVault();
-      const mimeType = uploadData.file.type || guessMimeType(fileName);
+      const mimeType =
+        typeof uploadData.file === 'string'
+          ? guessMimeType(fileName)
+          : uploadData.file.type || guessMimeType(fileName);
       let width = 0;
       let height = 0;
       if (mimeType.startsWith('image/')) {

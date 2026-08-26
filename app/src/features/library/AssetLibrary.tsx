@@ -11,6 +11,7 @@ import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePi
 import { isAssetPublished } from '@/features/access/accessPolicyStore';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
 import { getAssetKind } from '@/utils/assetKind';
 import { filterByLibraryQuery } from '@/utils/libraryQuery';
 import { nextSelectedIds, pruneSelectedIds } from '@/utils/librarySelection';
@@ -323,8 +324,11 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [contextMenu]);
 
+  const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const showEmpty = !loading && files.length === 0;
-  const isFilteredEmpty = showEmpty && images.length > 0;
+  const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
+  const isFolderEmpty =
+    showEmpty && !isFilteredEmpty && Boolean(selectedFolderPath);
   const tableWindow = useMemo(
     () =>
       getVirtualWindow({
@@ -463,14 +467,18 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
               {t(
                 isFilteredEmpty
                   ? 'image.library.filteredTitle'
-                  : 'image.library.emptyTitle',
+                  : isFolderEmpty
+                    ? 'image.library.emptyFolderTitle'
+                    : 'image.library.emptyTitle',
               )}
             </h3>
             <p className="asset-library-empty-description">
               {t(
                 isFilteredEmpty
                   ? 'image.library.filteredDescription'
-                  : 'image.library.emptyDescription',
+                  : isFolderEmpty
+                    ? 'image.library.emptyFolderDescription'
+                    : 'image.library.emptyDescription',
               )}
             </p>
           </div>
@@ -766,7 +774,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
                 if (
                   onDeleteImage &&
                   confirm(
-                    `${t('image.grid.confirmDelete')} "${file.name}" ${t('common.confirm')}？`,
+                    `${t('image.grid.confirmDelete')} "${file.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
                   )
                 ) {
                   void onDeleteImage(file.id, file.name);

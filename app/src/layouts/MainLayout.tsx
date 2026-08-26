@@ -14,6 +14,7 @@ import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
 import { SettingsModal } from '../features/settings';
+import { PublishDrawer } from '../features/access/PublishDrawer';
 import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
 import { useRouteSync } from '../hooks/useRouteSync';
 import { useI18n } from '../i18n/useI18n';
@@ -167,6 +168,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
         versionInfo={__VERSION_INFO__}
       />
+
+      <PublishDrawer />
 
       <WorkspaceModal
         isOpen={showWorkspaceModal}

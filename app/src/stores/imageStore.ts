@@ -749,13 +749,26 @@ export const useImageStore = create<ImageState>((set, get) => {
         set({ loading: true, error: null });
         const startTime = Date.now();
         try {
-          await useWorkspaceStore
-            .getState()
-            .updateLocalMetadata(image.localPath, {
-              name: editData.name || image.name,
-              description: editData.description ?? image.description,
-              tags: editData.tags ?? image.tags,
-            });
+          const workspace = useWorkspaceStore.getState();
+          let relativePath = image.localPath;
+          if (editData.targetFolder !== undefined && relativePath) {
+            const slash = relativePath.lastIndexOf('/');
+            const currentFolder =
+              slash === -1 ? '' : relativePath.slice(0, slash);
+            const nextFolder = editData.targetFolder || 'images';
+            if (nextFolder !== currentFolder) {
+              await workspace.moveLocalFile(relativePath, nextFolder);
+              const fileName = relativePath.slice(slash + 1);
+              relativePath = nextFolder
+                ? `${nextFolder}/${fileName}`
+                : fileName;
+            }
+          }
+          await workspace.updateLocalMetadata(relativePath, {
+            name: editData.name || image.name,
+            description: editData.description ?? image.description,
+            tags: editData.tags ?? image.tags,
+          });
           await refreshLocalIntoImageStore(set);
           useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
             imageId: editData.id,

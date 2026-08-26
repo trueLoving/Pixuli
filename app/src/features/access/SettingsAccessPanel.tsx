@@ -42,6 +42,8 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
     state => state.openSettingsModalForAddSource,
   );
   const closeSettingsModal = useUIStore(state => state.closeSettingsModal);
+  const closePublishDrawer = useUIStore(state => state.closePublishDrawer);
+  const openAccessModal = useUIStore(state => state.openAccessModal);
   const openSyncDirectionModal = useUIStore(
     state => state.openSyncDirectionModal,
   );
@@ -142,6 +144,7 @@ export const SettingsAccessPanel: React.FC<SettingsAccessPanelProps> = ({
       const confirmed = window.confirm(t('access.confirmSyncThenPublish'));
       if (confirmed) {
         closeSettingsModal();
+        closePublishDrawer();
         openSyncDirectionModal();
       }
       return;

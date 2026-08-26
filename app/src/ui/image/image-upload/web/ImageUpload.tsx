@@ -467,7 +467,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
           loadingToast,
-          `${translate('image.upload.uploadSuccessSingle')} "${fileName}" 上传成功${dimensionsText}！`,
+          translate('image.upload.successToastSingle')
+            .replace('{name}', fileName)
+            .replace('{dims}', dimensionsText),
         );
         setUploadData(null);
         setShowForm(false);
@@ -549,7 +551,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         await onUploadMultipleImages(completeMultiUploadData);
         updateLoadingToSuccess(
           loadingToast,
-          `${translate('image.upload.uploadSuccessMultiple')} ${processedFiles.length} 张图片！`,
+          translate('image.upload.successToastMultiple').replace(
+            '{count}',
+            String(processedFiles.length),
+          ),
         );
         setMultiUploadData(null);
         setShowForm(false);
@@ -631,7 +636,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
           loadingToast,
-          `${translate('image.upload.uploadSuccessSingle')} "${fileName}" 上传成功${dimensionsText}！`,
+          translate('image.upload.successToastSingle')
+            .replace('{name}', fileName)
+            .replace('{dims}', dimensionsText),
         );
         setUploadData(null);
         setShowForm(false);
@@ -714,7 +721,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           await onUploadMultipleImages(completeMultiUploadData);
           updateLoadingToSuccess(
             loadingToast,
-            `${translate('image.upload.uploadSuccessMultiple')} ${processedFiles.length} 张图片！`,
+            translate('image.upload.successToastMultiple').replace(
+              '{count}',
+              String(processedFiles.length),
+            ),
           );
           setMultiUploadData(null);
           setShowForm(false);
@@ -775,7 +785,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         await onUploadImage(completeUploadData);
         updateLoadingToSuccess(
           loadingToast,
-          `${translate('image.upload.uploadSuccessSingle')} "${fileName}" 上传成功${dimensionsText}！`,
+          translate('image.upload.successToastSingle')
+            .replace('{name}', fileName)
+            .replace('{dims}', dimensionsText),
         );
         setUploadData(null);
         setShowForm(false);
@@ -855,7 +867,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           await onUploadMultipleImages(completeMultiUploadData);
           updateLoadingToSuccess(
             loadingToast,
-            `${translate('image.upload.uploadSuccessMultiple')} ${processedFiles.length} 张图片！`,
+            translate('image.upload.successToastMultiple').replace(
+              '{count}',
+              String(processedFiles.length),
+            ),
           );
           setMultiUploadData(null);
           setShowForm(false);

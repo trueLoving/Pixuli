@@ -87,6 +87,19 @@ export interface LocalVault {
   softDelete(relativePath: string): Promise<void>;
   /** 从索引移除并删除磁盘文件（同步路径归并等内部用途） */
   removeEntry(relativePath: string): Promise<void>;
+  /** 列出已登记的空文件夹（及有文件的祖先由 index 派生） */
+  listFolders(): Promise<string[]>;
+  /** 新建空文件夹（仅本地） */
+  createFolder(relativeDir: string): Promise<void>;
+  /** 重命名/移动文件夹：更新空文件夹登记与 index 内相对路径（仅本地） */
+  renameFolder(fromDir: string, toDir: string): Promise<number>;
+  /** 删除文件夹：软删其下文件并移除空文件夹登记（仅本地） */
+  deleteFolder(relativeDir: string): Promise<number>;
+  /** 移动单个文件到目标目录（更新 relativePath，仅本地） */
+  moveFile(
+    relativePath: string,
+    targetDir: string,
+  ): Promise<LocalImageIndexEntry>;
   scan(): Promise<number>;
   updateSyncMeta(
     relativePath: string,
