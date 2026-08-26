@@ -8,6 +8,8 @@ export const WORKSPACE_PATHS = {
   syncConflicts: '.pixuli/sync/conflicts.json',
   trashDir: '.pixuli/trash',
   imagesDir: 'images',
+  /** 显式空文件夹列表（相对路径），用于树中显示无文件目录 */
+  folders: '.pixuli/folders.json',
 } as const;
 
 export const WORKSPACE_SCHEMA_VERSION = 1;

@@ -241,6 +241,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       onCopyUrl={onCopyUrl}
       onShareImage={onShareImage}
       onSync={() => requestSync()}
+      onSendCompress={handleSendCompress}
+      onSendConvert={handleSendConvert}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}

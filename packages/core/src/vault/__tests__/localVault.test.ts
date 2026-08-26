@@ -208,4 +208,29 @@ describe('createLocalVault', () => {
       'application/pdf',
     );
   });
+
+  it('createFolder / renameFolder / deleteFolder / moveFile are local-only', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.createFolder('images/album');
+    expect(await vault.listFolders()).toContain('images/album');
+
+    const file = new File([new Uint8Array([1, 2])], 'a.jpg', {
+      type: 'image/jpeg',
+    });
+    await vault.importFile(file, 'images/album/a.jpg');
+    await vault.moveFile('images/album/a.jpg', 'images');
+    expect((await vault.getByPath('images/a.jpg'))?.relativePath).toBe(
+      'images/a.jpg',
+    );
+
+    await vault.renameFolder('images/album', 'images/renamed');
+    expect(await vault.listFolders()).toContain('images/renamed');
+
+    const deleted = await vault.deleteFolder('images');
+    expect(deleted).toBeGreaterThanOrEqual(1);
+    expect(await vault.list()).toHaveLength(0);
+  });
 });

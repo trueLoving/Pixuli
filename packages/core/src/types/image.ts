@@ -62,6 +62,8 @@ export interface ImageEditData {
   name?: string;
   description?: string;
   tags?: string[];
+  /** 目标文件夹相对路径（仅本地工作区移动） */
+  targetFolder?: string;
 }
 
 export interface UploadProgress {

@@ -22,9 +22,24 @@ type IndexFile = {
   entries: LocalImageIndexEntry[];
 };
 
+type FoldersFile = {
+  schemaVersion: number;
+  folders: string[];
+};
+
+function normalizeDir(path: string): string {
+  return path.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+}
+
+function joinPath(dir: string, name: string): string {
+  const base = normalizeDir(dir);
+  return base ? `${base}/${name}` : name;
+}
+
 export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
   let config: WorkspaceConfig | null = null;
   let index: LocalImageIndexEntry[] = [];
+  let folders: string[] = [];
 
   const persistConfig = async () => {
     if (!config) {
@@ -39,6 +54,28 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       entries: index,
     };
     await adapter.writeFile(WORKSPACE_PATHS.index, encodeJson(payload));
+  };
+
+  const persistFolders = async () => {
+    const payload: FoldersFile = {
+      schemaVersion: WORKSPACE_SCHEMA_VERSION,
+      folders: [...folders].sort(),
+    };
+    await adapter.writeFile(WORKSPACE_PATHS.folders, encodeJson(payload));
+  };
+
+  const loadOrInitFolders = async (): Promise<string[]> => {
+    if (await adapter.exists(WORKSPACE_PATHS.folders)) {
+      const raw = await adapter.readFile(WORKSPACE_PATHS.folders);
+      const parsed = decodeJson<FoldersFile>(raw);
+      return (parsed.folders ?? []).map(normalizeDir).filter(Boolean);
+    }
+    const empty: FoldersFile = {
+      schemaVersion: WORKSPACE_SCHEMA_VERSION,
+      folders: [],
+    };
+    await adapter.writeFile(WORKSPACE_PATHS.folders, encodeJson(empty));
+    return [];
   };
 
   const loadOrInitConfig = async (): Promise<WorkspaceConfig> => {
@@ -88,6 +125,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       }
       config = await loadOrInitConfig();
       index = await loadOrInitIndex();
+      folders = await loadOrInitFolders();
     },
 
     getConfig() {
@@ -182,6 +220,124 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
         await adapter.deleteFile(relativePath);
       }
       await persistIndex();
+    },
+
+    async listFolders() {
+      return [...folders];
+    },
+
+    async createFolder(relativeDir) {
+      const dir = normalizeDir(relativeDir);
+      if (!dir) {
+        throw new Error('Folder path is required');
+      }
+      if (!folders.includes(dir)) {
+        folders.push(dir);
+        await persistFolders();
+      }
+      // 占位文件，确保部分 adapter 能列出空目录
+      const keep = `${dir}/.pixuli-keep`;
+      if (!(await adapter.exists(keep))) {
+        await adapter.writeFile(keep, new Uint8Array(0));
+      }
+    },
+
+    async renameFolder(fromDir, toDir) {
+      const from = normalizeDir(fromDir);
+      const to = normalizeDir(toDir);
+      if (!from || !to || from === to) {
+        throw new Error('Invalid folder rename');
+      }
+      const fromPrefix = `${from}/`;
+      let moved = 0;
+      for (const entry of index) {
+        if (entry.deletedAt) continue;
+        if (
+          entry.relativePath === from ||
+          entry.relativePath.startsWith(fromPrefix)
+        ) {
+          const nextPath =
+            entry.relativePath === from
+              ? to
+              : `${to}/${entry.relativePath.slice(fromPrefix.length)}`;
+          if (await adapter.exists(entry.relativePath)) {
+            const data = await adapter.readFile(entry.relativePath);
+            await adapter.writeFile(nextPath, data);
+            await adapter.deleteFile(entry.relativePath);
+          }
+          entry.relativePath = nextPath;
+          entry.name = basename(nextPath);
+          entry.updatedAt = nowIso();
+          entry.syncState = 'pending-push';
+          moved += 1;
+        }
+      }
+      folders = folders.map(folder => {
+        if (folder === from) return to;
+        if (folder.startsWith(fromPrefix)) {
+          return `${to}/${folder.slice(fromPrefix.length)}`;
+        }
+        return folder;
+      });
+      // 去重
+      folders = Array.from(new Set(folders.map(normalizeDir).filter(Boolean)));
+      if (!folders.includes(to)) {
+        folders.push(to);
+      }
+      await persistIndex();
+      await persistFolders();
+      return moved;
+    },
+
+    async deleteFolder(relativeDir) {
+      const dir = normalizeDir(relativeDir);
+      if (!dir) {
+        throw new Error('Folder path is required');
+      }
+      const prefix = `${dir}/`;
+      let count = 0;
+      for (const entry of index) {
+        if (entry.deletedAt) continue;
+        if (
+          entry.relativePath === dir ||
+          entry.relativePath.startsWith(prefix)
+        ) {
+          entry.deletedAt = nowIso();
+          entry.updatedAt = entry.deletedAt;
+          entry.syncState = 'pending-push';
+          count += 1;
+        }
+      }
+      folders = folders.filter(
+        folder => folder !== dir && !folder.startsWith(prefix),
+      );
+      await persistIndex();
+      await persistFolders();
+      return count;
+    },
+
+    async moveFile(relativePath, targetDir) {
+      const entry = index.find(item => item.relativePath === relativePath);
+      if (!entry || entry.deletedAt) {
+        throw new Error(`Image not found: ${relativePath}`);
+      }
+      const dir = normalizeDir(targetDir);
+      const fileName = basename(entry.relativePath);
+      const nextPath = joinPath(dir, fileName);
+      if (nextPath === entry.relativePath) {
+        return { ...entry };
+      }
+      if (await adapter.exists(entry.relativePath)) {
+        const data = await adapter.readFile(entry.relativePath);
+        await adapter.writeFile(nextPath, data);
+        await adapter.deleteFile(entry.relativePath);
+      }
+      entry.relativePath = nextPath;
+      entry.name = fileName;
+      entry.updatedAt = nowIso();
+      entry.syncState = 'pending-push';
+      await persistIndex();
+      return { ...entry };
     },
 
     async scan() {

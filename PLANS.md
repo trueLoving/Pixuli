@@ -1,7 +1,8 @@
 # PLANS
 
 > **工作进度 SSOT** · 与 GitHub Issues **对齐**  
-> **最近同步**：2026-08-25（`gh issue list --state open`）  
+> **最近同步**：2026-08-26（含 [#218](https://github.com/trueLoving/Pixuli/issues/218)
+> REF-608）  
 > **状态**：执行中
 
 本文件是仓库**唯一的任务与进度汇总表**。新增任务、更新进度、关闭项，都在这里维护，并与远程 Issue 保持一致。
@@ -34,18 +35,19 @@ closed 查阅。
 
 ## 二、当前焦点（建议顺序）
 
-| 优先级      | 方向                          | Issue                                                                     |
-| ----------- | ----------------------------- | ------------------------------------------------------------------------- |
-| **P1**      | 插件体系重设计（Obsidian 式） | [#126](https://github.com/trueLoving/Pixuli/issues/126)                   |
-| **P1**      | 大数据 / 性能边界             | [#132](https://github.com/trueLoving/Pixuli/issues/132)                   |
-| **P1**      | 标签与描述 + AI               | [#133](https://github.com/trueLoving/Pixuli/issues/133)                   |
-| **P1**      | 图片批处理                    | [#134](https://github.com/trueLoving/Pixuli/issues/134)                   |
-| **P1**      | 回收站                        | [#140](https://github.com/trueLoving/Pixuli/issues/140)                   |
-| **P2**      | Desktop 离线同步/上传队列     | [#88](https://github.com/trueLoving/Pixuli/issues/88)                     |
-| **P2**      | Desktop 自动更新              | [#89](https://github.com/trueLoving/Pixuli/issues/89)                     |
-| **P2**      | 集成测试体系                  | [#127](https://github.com/trueLoving/Pixuli/issues/127)                   |
-| **P2**      | 文档中/英策略                 | [#138](https://github.com/trueLoving/Pixuli/issues/138)                   |
-| **Backlog** | 存储插件热加载                | [#102](https://github.com/trueLoving/Pixuli/issues/102)（排在 #126 之后） |
+| 优先级      | 方向                              | Issue                                                                     |
+| ----------- | --------------------------------- | ------------------------------------------------------------------------- |
+| **P0**      | 资源库 UI：仅本机 / 文件夹 / 发布 | [#218](https://github.com/trueLoving/Pixuli/issues/218)（REF-608）        |
+| **P1**      | 插件体系重设计（Obsidian 式）     | [#126](https://github.com/trueLoving/Pixuli/issues/126)                   |
+| **P1**      | 大数据 / 性能边界                 | [#132](https://github.com/trueLoving/Pixuli/issues/132)                   |
+| **P1**      | 标签与描述 + AI                   | [#133](https://github.com/trueLoving/Pixuli/issues/133)                   |
+| **P1**      | 图片批处理                        | [#134](https://github.com/trueLoving/Pixuli/issues/134)                   |
+| **P1**      | 回收站                            | [#140](https://github.com/trueLoving/Pixuli/issues/140)                   |
+| **P2**      | Desktop 离线同步/上传队列         | [#88](https://github.com/trueLoving/Pixuli/issues/88)                     |
+| **P2**      | Desktop 自动更新                  | [#89](https://github.com/trueLoving/Pixuli/issues/89)                     |
+| **P2**      | 集成测试体系                      | [#127](https://github.com/trueLoving/Pixuli/issues/127)                   |
+| **P2**      | 文档中/英策略                     | [#138](https://github.com/trueLoving/Pixuli/issues/138)                   |
+| **Backlog** | 存储插件热加载                    | [#102](https://github.com/trueLoving/Pixuli/issues/102)（排在 #126 之后） |
 
 ---
 
@@ -71,12 +73,13 @@ closed 查阅。
 
 ### M6 — 产品体验与能力边界
 
-| ID      | 标题                               | GitHub                                                  | 状态                                                                                           |
-| ------- | ---------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| REF-603 | 大数据场景与产品性能边界           | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⏳ 部分（虚拟窗口 + 缩略已落地，见 [02-performance](docs/02-system-design/02-performance.md)） |
-| REF-604 | 标签与描述管理 + AI 自动分析       | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜                                                                                             |
-| REF-605 | 图片批处理：上传、删除、更新、查看 | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜                                                                                             |
-| REF-606 | 回收站机制：软删除与 30 天自动清理 | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜                                                                                             |
+| ID      | 标题                                         | GitHub                                                  | 状态                                                                                           |
+| ------- | -------------------------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| REF-603 | 大数据场景与产品性能边界                     | [#132](https://github.com/trueLoving/Pixuli/issues/132) | ⏳ 部分（虚拟窗口 + 缩略已落地，见 [02-performance](docs/02-system-design/02-performance.md)） |
+| REF-608 | 资源库 UI：仅本机口径、文件夹 CRUD、发布抽屉 | [#218](https://github.com/trueLoving/Pixuli/issues/218) | ⏳ 实现中（对照 [04-asset-library-ui](docs/01-product/04-asset-library-ui.md)）                |
+| REF-604 | 标签与描述管理 + AI 自动分析                 | [#133](https://github.com/trueLoving/Pixuli/issues/133) | ⬜                                                                                             |
+| REF-605 | 图片批处理：上传、删除、更新、查看           | [#134](https://github.com/trueLoving/Pixuli/issues/134) | ⬜                                                                                             |
+| REF-606 | 回收站机制：软删除与 30 天自动清理           | [#140](https://github.com/trueLoving/Pixuli/issues/140) | ⬜                                                                                             |
 
 ### Backlog（无里程碑）
 
@@ -84,7 +87,7 @@ closed 查阅。
 | -------------------------- | ------------------------------------------------------- | ---- |
 | 存储插件热加载与第三方安装 | [#102](https://github.com/trueLoving/Pixuli/issues/102) | ⬜   |
 
-**OPEN 合计**：**10** 条（与 2026-08-25 远程一致）。
+**OPEN 合计**：**11** 条（2026-08-26，含 #218）。
 
 ---
 

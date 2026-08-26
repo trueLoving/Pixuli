@@ -142,10 +142,16 @@
     "welcomeOpenConnections": "连接远端仓库",
     "explorer": "资源管理器",
     "activityBar": "主菜单",
-    "allImages": "全部图片",
+    "allImages": "全部",
     "manageExplorer": "管理工作区…",
     "closeExplorer": "关闭文件夹面板",
-    "resizeExplorer": "拖拽调整资源浏览器宽度"
+    "resizeExplorer": "拖拽调整资源浏览器宽度",
+    "newFolder": "新建文件夹",
+    "newSubfolder": "新建子文件夹",
+    "renameFolder": "重命名文件夹",
+    "deleteFolder": "删除文件夹",
+    "newFolderPrompt": "输入新文件夹名称（仅本机）",
+    "renameFolderPrompt": "输入新名称（仅本机）"
   },
   "access": {
     "title": "访问",
@@ -184,10 +190,12 @@
     "titleBatch": "访问设置 — 已选 {count} 项",
     "confirmSyncThenPublish": "该文件尚未同步到所选通道。是否先同步再发布？",
     "copiedPublicUrl": "已复制公开链接",
-    "revoked": "已撤销远程访问，文件仍保留在本地工作区",
+    "revoked": "已撤销远程访问；CDN/缓存可能仍短暂可开，文件仍保留在本地工作区",
     "overviewTitle": "已发布",
     "upcomingPublishTitle": "即将支持的发布能力",
-    "upcomingPublishHint": "下列服务尚未接入。芯片表示规划中的能力，不是已经开通。"
+    "upcomingPublishHint": "下列服务尚未接入。芯片表示规划中的能力，不是已经开通。",
+    "publishDrawerTitle": "发布",
+    "publishDrawerHint": "发布与同步分离：此处只控制外界如何打开"
   },
   "settings": {
     "title": "设置",
@@ -197,7 +205,7 @@
     "groupSync": "同步",
     "groupAccess": "访问",
     "menuSync": "远端与同步",
-    "menuAccess": "访问控制",
+    "menuAccess": "发布与访问",
     "syncOnClickHint": "点击「同步」时：尚未配置远端则打开本页添加仓库；已配置则选择同步方向。",
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",

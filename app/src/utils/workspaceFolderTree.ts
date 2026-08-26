@@ -32,10 +32,11 @@ function ensureChild(
 }
 
 /**
- * 根据图片 relativePath 构建文件夹树（如 images/foo/bar.jpg → images/foo）。
+ * 根据图片 relativePath 与显式空文件夹构建树。
  */
 export function buildWorkspaceFolderTree(
   relativePaths: string[],
+  emptyFolders: string[] = [],
 ): WorkspaceFolderNode {
   const root: WorkspaceFolderNode = {
     path: '',
@@ -62,6 +63,17 @@ export function buildWorkspaceFolderTree(
     }
   }
 
+  for (const folderPath of emptyFolders) {
+    if (!folderPath) continue;
+    const segments = folderPath.replace(/\\/g, '/').split('/').filter(Boolean);
+    let current = root;
+    let accumulated = '';
+    for (const segment of segments) {
+      accumulated = accumulated ? `${accumulated}/${segment}` : segment;
+      current = ensureChild(current, accumulated, segment);
+    }
+  }
+
   const sortNodes = (nodes: WorkspaceFolderNode[]) => {
     nodes.sort((a, b) => a.name.localeCompare(b.name));
     for (const node of nodes) {
@@ -73,18 +85,27 @@ export function buildWorkspaceFolderTree(
   return root;
 }
 
+/**
+ * 按文件夹范围过滤。默认仅本层文件（不含子文件夹内文件）；
+ * folderPath 为空表示「全部」。
+ */
 export function filterImagesByFolder<T extends { localPath?: string }>(
   images: T[],
   folderPath: string,
+  options?: { shallow?: boolean },
 ): T[] {
   if (!folderPath) {
     return images;
   }
+  const shallow = options?.shallow !== false;
   const prefix = `${folderPath}/`;
   return images.filter(image => {
     const path = image.localPath;
     if (!path) return false;
-    return path.startsWith(prefix);
+    if (!path.startsWith(prefix)) return false;
+    if (!shallow) return true;
+    const rest = path.slice(prefix.length);
+    return rest.length > 0 && !rest.includes('/');
   });
 }
 
