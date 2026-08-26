@@ -35,6 +35,8 @@ export interface UploadButtonProps {
   className?: string;
   /** Capacitor 原生选图 */
   nativePickers?: NativeImagePickers;
+  /** 默认目标文件夹（当前资源库范围） */
+  defaultFolder?: string;
 }
 
 const UploadButton: React.FC<UploadButtonProps> = ({
@@ -49,6 +51,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   compressionOptions,
   className = '',
   nativePickers,
+  defaultFolder,
 }) => {
   const translate = t || defaultTranslate;
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,14 +64,12 @@ const UploadButton: React.FC<UploadButtonProps> = ({
     setIsModalOpen(false);
   };
 
-  // 包装上传回调，上传成功后关闭弹窗
+  // 包装上传回调，成功后关闭弹窗
   const handleUploadImage = async (data: ImageUploadData) => {
     try {
       await onUploadImage(data);
-      // 上传成功后关闭弹窗
       setIsModalOpen(false);
     } catch (error) {
-      // 上传失败时不关闭弹窗，让用户看到错误信息
       throw error;
     }
   };
@@ -76,15 +77,13 @@ const UploadButton: React.FC<UploadButtonProps> = ({
   const handleUploadMultipleImages = async (data: MultiImageUploadData) => {
     try {
       await onUploadMultipleImages(data);
-      // 上传成功后关闭弹窗
       setIsModalOpen(false);
     } catch (error) {
-      // 上传失败时不关闭弹窗，让用户看到错误信息
       throw error;
     }
   };
 
-  const title = translate('header.upload') || '上传';
+  const title = translate('header.upload') || '添加';
 
   return (
     <>
@@ -113,6 +112,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({
           enableCompression={enableCompression}
           compressionOptions={compressionOptions}
           nativePickers={nativePickers}
+          defaultFolder={defaultFolder}
         />
       )}
     </>

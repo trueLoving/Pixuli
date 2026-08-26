@@ -33,7 +33,7 @@
 | [04-asset-library-ui.md](01-product/04-asset-library-ui.md)                                     | 资源库 UI：连接 / 发布 / 本地文件夹与文件操作 |
 | [05-brand-visual-ui.md](01-product/05-brand-visual-ui.md)                                       | Logo 色板；empty / loading / 状态色           |
 
-发版制度：[07-release-versioning.md](02-system-design/07-release-versioning.md)。
+发版制度：[05-release-versioning.md](02-system-design/05-release-versioning.md)。
 
 ---
 
@@ -47,8 +47,8 @@
 | [01-system-design.md](02-system-design/01-system-design.md)               | 整体架构总览                 |
 | [02-performance.md](02-system-design/02-performance.md)                   | 列表/缩略性能边界（REF-603） |
 | [03-plugin-system.md](02-system-design/03-plugin-system.md)               | 存储插件契约与开发           |
-| [05-local-workspace-sync.md](02-system-design/05-local-workspace-sync.md) | 本地工作区 + 同步            |
-| [07-release-versioning.md](02-system-design/07-release-versioning.md)     | SemVer / tag / 发版清单      |
+| [04-local-workspace-sync.md](02-system-design/04-local-workspace-sync.md) | 本地工作区 + 同步            |
+| [05-release-versioning.md](02-system-design/05-release-versioning.md)     | SemVer / tag / 发版清单      |
 
 产品 UI SSOT：壳层 [03](01-product/03-three-platform-interaction-spec.md)
 · 资源库 [04](01-product/04-asset-library-ui.md) · 品牌

@@ -634,10 +634,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       );
       const { useUIStore } = await import('@/stores/uiStore');
       const selectedFolderPath = useUIStore.getState().selectedFolderPath;
-      const targetDir =
+      const fromForm = uploadData.targetFolder?.replace(/\/+$/, '');
+      const fromTree =
         selectedFolderPath && selectedFolderPath !== '__root__'
           ? selectedFolderPath
-          : 'images';
+          : '';
+      const targetDir = fromForm || fromTree || 'images';
       const targetPath = `${targetDir.replace(/\/+$/, '')}/${Date.now()}-${fileName}`;
       const vault = getVault();
       const mimeType =

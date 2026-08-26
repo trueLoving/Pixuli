@@ -518,7 +518,7 @@ Gitee；阶段二：OneDrive、Google Cloud 等）。社区/自建见
 | [04-asset-library-ui.md](./04-asset-library-ui.md)                               | 阶段二 UI：资源库 / 连接 / 发布 / 本地操作 |
 | [05-brand-visual-ui.md](./05-brand-visual-ui.md)                                 | 品牌色与状态 UI                            |
 | [04-backlog.md](../04-backlog.md)                                                | 已移除/延后需求                            |
-| [07-release-versioning.md](../02-system-design/07-release-versioning.md)         | 版本与发版制度（REF-409）                  |
+| [05-release-versioning.md](../02-system-design/05-release-versioning.md)         | 版本与发版制度（REF-409）                  |
 | [PLANS.md](../../PLANS.md)                                                       | 重构计划与 Issue                           |
 | [03-plugin-system.md](../02-system-design/03-plugin-system.md)                   | 存储插件技术设计（Pixuli 插件体系）        |
 | [项目 README](https://github.com/trueLoving/Pixuli/blob/main/README.md)          | 仓库概览                                   |

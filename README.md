@@ -160,7 +160,7 @@ pnpm ci                 # lint + test + web/desktop 类型检查与构建（CI �
 > **升级说明**：M1 重构前的 Release（如
 > `v1.3.0-desktop`）可能仍含幻灯片与 WASM 等已移除能力。升级前请阅读
 > [CHANGELOG.md](./CHANGELOG.md) 的 `[Unreleased]` 与
-> [版本发布策略](docs/02-system-design/07-release-versioning.md)。
+> [版本发布策略](docs/02-system-design/05-release-versioning.md)。
 
 ---
 

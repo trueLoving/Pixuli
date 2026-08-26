@@ -79,7 +79,7 @@
 | Desktop | exe / dmg              | `v{semver}-desktop` |
 | Android | APK                    | `v{semver}-android` |
 
-门禁：`pnpm ci`。发版制度：[07-release-versioning](./07-release-versioning.md)。
+门禁：`pnpm ci`。发版制度：[05-release-versioning](./05-release-versioning.md)。
 
 ---
 
@@ -87,10 +87,10 @@
 
 | 文档                                                    | 内容                                                            |
 | ------------------------------------------------------- | --------------------------------------------------------------- |
-| [03-plugin-system](./03-plugin-system.md)               | Provider 契约与开发                                             |
-| [05-local-workspace-sync](./05-local-workspace-sync.md) | Vault + SyncEngine                                              |
 | [02-performance](./02-performance.md)                   | 列表/缩略性能边界                                               |
-| [07 发版](./07-release-versioning.md)                   | SemVer / tag / 检查清单                                         |
+| [03-plugin-system](./03-plugin-system.md)               | Provider 契约与开发                                             |
+| [04-local-workspace-sync](./04-local-workspace-sync.md) | Vault + SyncEngine                                              |
+| [05 发版](./05-release-versioning.md)                   | SemVer / tag / 检查清单                                         |
 | 三端工程入口                                            | [app/README.md](../../app/README.md)                            |
 | 决策 / 进度                                             | [DECISIONS.md](../../DECISIONS.md) · [PLANS.md](../../PLANS.md) |
 

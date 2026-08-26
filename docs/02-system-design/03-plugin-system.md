@@ -3,7 +3,7 @@
 - **文档版本**：2.0
 - **最后核对**：2026-08-25
 - **相关**：[01-system-design](./01-system-design.md) ·
-  [05-local-workspace-sync](./05-local-workspace-sync.md) ·
+  [04-local-workspace-sync](./04-local-workspace-sync.md) ·
   [04-asset-library-ui](../01-product/04-asset-library-ui.md) ·
   Skill：[storage-provider](../../.cursor/skills/storage-provider/SKILL.md)
 
@@ -48,7 +48,7 @@ StoragePluginRegistry.create(pluginId, ctx)
 - `configure(config)`
 - `listImages` / `uploadImage` / `deleteImage`
 - 可选 `updateImageMetadata`
-- `getRawUrl`；同步扩展见 [05](./05-local-workspace-sync.md)（`sync` /
+- `getRawUrl`；同步扩展见 [04](./04-local-workspace-sync.md)（`sync` /
   `buildPublicUrl`）
 
 **ProviderContext**：`platform`、`platformAdapter`、可选 `fetch` / `logger`。
