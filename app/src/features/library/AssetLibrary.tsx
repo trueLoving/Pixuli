@@ -442,6 +442,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
               t={t}
               className="asset-library-upload-btn"
               nativePickers={nativePickers}
+              defaultFolder={selectedFolderPath || 'images'}
             />
           ) : null}
         </div>

@@ -44,6 +44,23 @@ interface ImageUploadProps {
   compressionOptions?: ImageCompressionOptions;
   /** Capacitor 等原生壳注入的相机/相册选图（REF-510 #120） */
   nativePickers?: NativeImagePickers;
+  /** 默认目标文件夹（当前资源库范围） */
+  defaultFolder?: string;
+}
+
+function resolveDefaultFolder(folder?: string): string {
+  if (!folder || folder === '__root__') return 'images';
+  return folder.replace(/\/+$/, '');
+}
+
+function isPreviewableMedia(file: File): boolean {
+  return file.type.startsWith('image/') || file.type.startsWith('video/');
+}
+
+function needsRichConfirm(files: File[]): boolean {
+  return files.some(
+    file => file.type.startsWith('image/') || file.type.startsWith('video/'),
+  );
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -57,6 +74,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   enableCompression = false,
   compressionOptions,
   nativePickers,
+  defaultFolder,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
@@ -343,34 +361,39 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         );
 
         if (acceptedFiles.length === 1) {
-          // 单张图片上传
+          // 单文件短确认
           const file = acceptedFiles[0];
           setUploadData({
             file,
             name: file.name,
             description: '',
             tags: [],
+            targetFolder: resolveDefaultFolder(defaultFolder),
           });
           setIsMultiple(false);
           setShowForm(true);
           showInfo(`${translate('image.upload.selectedSingle')}: ${file.name}`);
         } else {
-          // 多张图片上传
+          // 多文件短确认
           setMultiUploadData({
             files: acceptedFiles,
             name: '',
             description: '',
             tags: [],
+            targetFolder: resolveDefaultFolder(defaultFolder),
           });
           setIsMultiple(true);
           setShowForm(true);
           showInfo(
-            `${translate('image.upload.selectedMultiple')} ${acceptedFiles.length} 张图片`,
+            translate('image.upload.selectedCount').replace(
+              '{count}',
+              String(acceptedFiles.length),
+            ),
           );
         }
       }
     },
-    [translate, getImageDimensions],
+    [translate, getImageDimensions, defaultFolder, cleanupPreviewUrls, compressionOptions],
   );
 
   const handleNativePick = useCallback(
@@ -462,6 +485,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData.name || finalFile.name,
           description: uploadData.description || '',
           tags: uploadData.tags || [],
+          targetFolder:
+            uploadData.targetFolder || resolveDefaultFolder(defaultFolder),
           captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
@@ -546,6 +571,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: multiUploadData.name || '',
           description: multiUploadData.description || '',
           tags: multiUploadData.tags || [],
+          targetFolder:
+            multiUploadData.targetFolder ||
+            resolveDefaultFolder(defaultFolder),
           captureMetadataList: buildCaptureMetadataList(processedFiles),
         };
         await onUploadMultipleImages(completeMultiUploadData);
@@ -631,6 +659,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData?.name || finalFile.name,
           description: uploadData?.description || '',
           tags: uploadData?.tags || [],
+          targetFolder:
+            uploadData?.targetFolder || resolveDefaultFolder(defaultFolder),
           captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
@@ -716,6 +746,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             name: multiUploadData.name || '',
             description: multiUploadData.description || '',
             tags: multiUploadData.tags || [],
+            targetFolder:
+              multiUploadData.targetFolder ||
+              resolveDefaultFolder(defaultFolder),
             captureMetadataList: buildCaptureMetadataList(processedFiles),
           };
           await onUploadMultipleImages(completeMultiUploadData);
@@ -780,6 +813,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           name: uploadData?.name || finalFile.name,
           description: uploadData?.description || '',
           tags: uploadData?.tags || [],
+          targetFolder:
+            uploadData?.targetFolder || resolveDefaultFolder(defaultFolder),
           captureMetadata: getCaptureMetadata(finalFile),
         };
         await onUploadImage(completeUploadData);
@@ -862,6 +897,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             name: multiUploadData.name || '',
             description: multiUploadData.description || '',
             tags: multiUploadData.tags || [],
+            targetFolder:
+              multiUploadData.targetFolder ||
+              resolveDefaultFolder(defaultFolder),
             captureMetadataList: buildCaptureMetadataList(processedFiles),
           };
           await onUploadMultipleImages(completeMultiUploadData);
@@ -918,6 +956,32 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       ? multiUploadData
       : uploadData
     : null;
+  const richConfirm = files.length > 0 && needsRichConfirm(files);
+  const folderValue =
+    currentData?.targetFolder || resolveDefaultFolder(defaultFolder);
+  const previewUrls = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const file of files) {
+      if (isPreviewableMedia(file)) {
+        map.set(file.name + file.size, URL.createObjectURL(file));
+      }
+    }
+    return map;
+  }, [files]);
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  const setTargetFolder = (value: string) => {
+    if (isMultipleUpload) {
+      handleMultiInputChange('targetFolder', value);
+    } else if (uploadData) {
+      setUploadData({ ...uploadData, targetFolder: value });
+    }
+  };
 
   // 如果显示表单，直接返回表单内容（不显示拖拽区域）
   if (showFormContent && currentData) {
@@ -927,7 +991,19 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           onSubmit={isMultipleUpload ? handleMultiSubmit : handleSubmit}
           className="image-upload-form"
         >
-          {/* 文件列表 */}
+          <div className="image-upload-confirm-header">
+            <p className="image-upload-confirm-title">
+              {translate('image.upload.confirmTitle')}
+            </p>
+            <p className="image-upload-confirm-hint">
+              <span className="image-upload-local-badge">
+                {translate('image.upload.localOnlyBadge')}
+              </span>
+              {translate('image.upload.confirmHint')}
+            </p>
+          </div>
+
+          {/* 文件列表（短确认：图/视频带预览） */}
           <div className="image-upload-file-list">
             {files.map((file, index) => {
               const dimensions = fileDimensions[file.name];
@@ -935,9 +1011,27 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 dimensions && dimensions.width > 0 && dimensions.height > 0
                   ? `${dimensions.width} × ${dimensions.height}`
                   : null;
+              const previewable = isPreviewableMedia(file);
+              const previewUrl = previewUrls.get(file.name + file.size) ?? null;
               return (
                 <div key={index} className="image-upload-file-item">
-                  <ImageIcon className="image-upload-file-icon" />
+                  {previewUrl && file.type.startsWith('image/') ? (
+                    <img
+                      src={previewUrl}
+                      alt=""
+                      className="image-upload-file-thumb"
+                    />
+                  ) : previewUrl && file.type.startsWith('video/') ? (
+                    <video
+                      src={previewUrl}
+                      className="image-upload-file-thumb"
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    <ImageIcon className="image-upload-file-icon" />
+                  )}
                   <div className="image-upload-file-info">
                     <p className="image-upload-file-name">{file.name}</p>
                     <div className="image-upload-file-meta">
@@ -949,6 +1043,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                           {dimensionsText}
                         </p>
                       )}
+                      {!previewable ? (
+                        <p className="image-upload-file-dimensions">
+                          {translate('image.upload.previewUnavailable')}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -1526,9 +1625,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
           <div className="image-upload-form-group">
             <label className="image-upload-form-label">
+              {translate('image.upload.folder')}
+            </label>
+            <input
+              type="text"
+              value={folderValue}
+              onChange={e => setTargetFolder(e.target.value)}
+              placeholder={translate('image.upload.folderPlaceholder')}
+              className="image-upload-form-input"
+            />
+          </div>
+
+          <div className="image-upload-form-group">
+            <label className="image-upload-form-label">
               {isMultipleUpload
                 ? translate('image.upload.namePrefix')
-                : translate('image.upload.imageName')}{' '}
+                : translate('image.upload.fileName')}{' '}
               <span className="image-upload-form-optional">
                 {translate('image.upload.optional')}
               </span>
@@ -1544,7 +1656,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               placeholder={
                 isMultipleUpload
                   ? translate('image.upload.namePrefixPlaceholder')
-                  : translate('image.upload.imageNamePlaceholder')
+                  : translate('image.upload.fileNamePlaceholder')
               }
               className="image-upload-form-input"
             />
@@ -1552,7 +1664,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
           <div className="image-upload-form-group">
             <label className="image-upload-form-label">
-              图片描述{' '}
+              {translate('image.upload.description')}{' '}
               <span className="image-upload-form-optional">
                 {translate('image.upload.optional')}
               </span>
@@ -1569,14 +1681,14 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   ? translate('image.upload.descriptionPlaceholderMultiple')
                   : translate('image.upload.descriptionPlaceholder')
               }
-              rows={3}
+              rows={richConfirm ? 3 : 2}
               className="image-upload-form-textarea"
             />
           </div>
 
           <div className="image-upload-form-group">
             <label className="image-upload-form-label">
-              标签{' '}
+              {translate('image.upload.tags')}{' '}
               <span className="image-upload-form-optional">
                 {translate('image.upload.optional')}
               </span>
@@ -1599,7 +1711,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                             : handleInputChange('tags', newTags);
                         }}
                         className="image-upload-tag-remove"
-                        aria-label={`删除标签 ${tag}`}
                       >
                         <X className="image-upload-tag-remove-icon" />
                       </button>
@@ -1613,7 +1724,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               type="text"
               onChange={e => {
                 const value = e.target.value;
-                // 如果输入包含逗号，自动添加标签
                 if (value.includes(',')) {
                   const newTags = value
                     .split(',')
@@ -1654,7 +1764,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   e.key === 'Backspace' &&
                   e.currentTarget.value === ''
                 ) {
-                  // 如果输入框为空且按了退格键，删除最后一个标签
                   const existingTags = currentData?.tags || [];
                   if (existingTags.length > 0) {
                     const updatedTags = existingTags.slice(0, -1);
@@ -1679,7 +1788,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               onClick={handleCancel}
               className="image-upload-button image-upload-button-secondary"
             >
-              取消
+              {translate('image.upload.cancel')}
             </button>
             <button
               type="submit"
@@ -1696,7 +1805,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   <Upload className="image-upload-button-icon" />
                   <span>
                     {isMultipleUpload
-                      ? `${translate('image.upload.batchUploadButton')} (${files.length} 张)`
+                      ? `${translate('image.upload.batchUploadButton')} (${files.length})`
                       : translate('image.upload.uploadButton')}
                   </span>
                 </>

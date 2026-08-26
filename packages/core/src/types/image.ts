@@ -35,6 +35,8 @@ export interface ImageUploadData {
   name?: string;
   description?: string;
   tags?: string[];
+  /** 目标文件夹（相对工作区路径）；默认当前资源库范围 */
+  targetFolder?: string;
   /** REF-511 #141：拍照/选图采集上下文 */
   captureMetadata?: ImageCaptureMetadata;
 }
@@ -80,6 +82,8 @@ export interface MultiImageUploadData {
   name?: string;
   description?: string;
   tags?: string[];
+  /** 目标文件夹（相对工作区路径）；默认当前资源库范围 */
+  targetFolder?: string;
   /** 与 `files` 同序；无元数据项可省略 */
   captureMetadataList?: (ImageCaptureMetadata | undefined)[];
 }

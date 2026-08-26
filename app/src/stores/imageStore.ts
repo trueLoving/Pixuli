@@ -354,6 +354,7 @@ export const useImageStore = create<ImageState>((set, get) => {
                 name,
                 description,
                 tags,
+                targetFolder: uploadData.targetFolder,
                 captureMetadata: captureMetadataList?.[i],
               });
               completed++;

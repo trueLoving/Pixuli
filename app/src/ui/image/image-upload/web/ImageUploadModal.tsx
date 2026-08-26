@@ -36,6 +36,8 @@ export interface ImageUploadModalProps {
   compressionOptions?: ImageCompressionOptions;
   /** Capacitor 原生选图 */
   nativePickers?: NativeImagePickers;
+  /** 默认目标文件夹（当前资源库范围） */
+  defaultFolder?: string;
 }
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
@@ -51,6 +53,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   enableCompression = false,
   compressionOptions,
   nativePickers,
+  defaultFolder,
 }) => {
   if (!isOpen) return null;
 
@@ -62,7 +65,9 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       >
         <div className="image-upload-modal-header">
           <h2 className="image-upload-modal-title">
-            {t?.('header.upload') || '上传图片'}
+            {t?.('image.upload.addNewImage') ||
+              t?.('header.upload') ||
+              '添加到工作区'}
           </h2>
           <button
             onClick={onClose}
@@ -85,6 +90,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             enableCompression={enableCompression}
             compressionOptions={compressionOptions}
             nativePickers={nativePickers}
+            defaultFolder={defaultFolder}
           />
         </div>
       </div>
