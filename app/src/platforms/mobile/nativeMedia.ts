@@ -1,11 +1,11 @@
 import type { ImageCaptureMetadata } from '@pixuli/core/types';
 import type { ImageCaptureSource } from '@pixuli/core/types';
 import { buildImageCaptureMetadata } from '@pixuli/core/utils';
-import { isNativeMobile } from './platform';
+import { isNativeMobile } from '@/platforms/platform';
 import {
   buildCaptureMetadataFromFile,
   mapCapacitorExif,
-} from './imageCaptureMetadata';
+} from '@/utils/imageCaptureMetadata';
 
 export interface NativePickedImage {
   file: File;

@@ -1,5 +1,5 @@
 import type { AssetKind, ImageItem } from '@pixuli/core/types';
-import { getAssetKind } from '@/utils/assetKind';
+import { getAssetKind } from '@/features/library/utils/assetKind';
 
 export type SizeCompare = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
 

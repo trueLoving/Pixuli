@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
-import { SearchProvider } from './contexts/SearchContext';
+import { SearchProvider } from './features/library/SearchContext';
 import {
   useAppInitialization,
   useCapacitorBackButton,
-  useConfigManagement,
   useKeyboardShortcuts,
-  useSelectedSourceSync,
-  useSourceManagement,
-  useWorkspaceBindingSync,
 } from './hooks';
+import { useConfigManagement } from './features/settings/useConfigManagement';
+import { useSelectedSourceSync } from './features/settings/useSelectedSourceSync';
+import { useSourceManagement } from './features/settings/useSourceManagement';
+import { useWorkspaceBindingSync } from './features/workspace/useWorkspaceBindingSync';
 import { useI18n } from './i18n/useI18n';
 import { MainLayout } from './layouts/MainLayout';
 import { isWorkspaceAvailable } from './platforms/workspacePlatform';

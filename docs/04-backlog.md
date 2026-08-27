@@ -86,7 +86,7 @@ API 图床，请实现独立 Provider 或社区 fork，不在本仓库 P0 排期
 | `packages/wasm`   | Rust WASM 图片处理、Electron IPC | 已从仓库移除；Web/桌面以 Canvas 等为主                             |
 | `benchmark/`      | WASM vs JS 性能对比              | 已从仓库移除                                                       |
 | `server/`         | NestJS 可选后端                  | 已从仓库移除；非官方交付                                           |
-| `packages/common` | 旧共享包 pixuli-common           | REF-311 已删；由 `@pixuli/core` + `@pixuli/ui` + `provider-*` 替代 |
+| `packages/common` | 旧共享包 pixuli-common           | REF-311 已删；由 `@pixuli/core` + `app/src/ui` + `provider-*` 替代 |
 
 远期「高性能处理」可走独立 Processor 插件，非恢复 WASM 主路径。
 

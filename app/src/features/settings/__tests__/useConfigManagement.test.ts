@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConfigManagement } from '../useConfigManagement';
-import { useSourceStore } from '../../stores/sourceStore';
-import { useImageStore } from '../../stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { useImageStore } from '@/stores/imageStore';
 
 const githubSource = {
   id: 'gh-1',

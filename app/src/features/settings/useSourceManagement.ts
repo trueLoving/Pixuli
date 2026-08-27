@@ -3,9 +3,9 @@ import {
   pluginIdToLegacyType,
 } from '@pixuli/core/sources';
 import { useCallback, useMemo } from 'react';
-import { isStoragePluginRegistered } from '../storage/registry';
-import { useImageStore } from '../stores/imageStore';
-import { useSourceStore } from '../stores/sourceStore';
+import { isStoragePluginRegistered } from '@/storage/registry';
+import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
 
 /**
  * 源管理相关的 hooks

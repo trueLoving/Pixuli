@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { useImageStore } from '../stores/imageStore';
-import { useSourceStore } from '../stores/sourceStore';
-import { useUIStore } from '../stores/uiStore';
+import { useImageStore } from '@/stores/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
 
 /**
  * 配置管理相关的 hooks

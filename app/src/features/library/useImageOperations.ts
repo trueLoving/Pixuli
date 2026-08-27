@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useImageStore } from '../stores/imageStore';
+import { useImageStore } from '@/stores/imageStore';
 
 /**
  * 图片操作相关的 hooks

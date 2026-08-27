@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { exportJsonFile } from '../exportJsonFile';
 
-vi.mock('../platform', () => ({
+vi.mock('@/platforms/platform', () => ({
   isNativeMobile: vi.fn(() => false),
 }));
 
@@ -10,7 +10,7 @@ vi.mock('../clipboard', () => ({
 }));
 
 import { copyTextToClipboard } from '../clipboard';
-import { isNativeMobile } from '../platform';
+import { isNativeMobile } from '@/platforms/platform';
 
 describe('exportJsonFile', () => {
   afterEach(() => {

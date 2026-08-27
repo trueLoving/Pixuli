@@ -11,7 +11,7 @@ import React, {
   useEffect,
   useCallback,
 } from 'react';
-import type { FilterOptions } from '@/ui';
+import type { FilterOptions } from '@pixuli/core/types';
 import { createDefaultFilters } from '@pixuli/core/utils';
 import {
   getSearchHistory,
@@ -19,7 +19,7 @@ import {
   removeSearchHistory,
   clearSearchHistory,
   type SearchHistoryItem,
-} from '../utils/searchHistory';
+} from './utils/searchHistory';
 
 interface SearchContextValue {
   /** 输入框草稿（未回车） */

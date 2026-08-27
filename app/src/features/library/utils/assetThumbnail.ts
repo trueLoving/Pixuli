@@ -1,5 +1,5 @@
 import type { ImageItem } from '@pixuli/core/types';
-import { getAssetKind } from '@/utils/assetKind';
+import { getAssetKind } from '@/features/library/utils/assetKind';
 
 const THUMB_SIZE = 64;
 const CACHE_LIMIT = 120;

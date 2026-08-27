@@ -63,7 +63,7 @@ await provider.listImages();
 ## 依赖边界
 
 - **仅依赖** `@pixuli/core`
-- **禁止**依赖 `@pixuli/ui` 等 UI 层（REF-209）
+- **禁止**依赖 `app/src/ui`（`@/ui`）等 UI 层（REF-209）
 
 ## 测试
 

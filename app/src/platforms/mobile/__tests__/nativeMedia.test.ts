@@ -6,7 +6,7 @@ const share = vi.fn();
 const writeFile = vi.fn();
 const getUri = vi.fn();
 
-vi.mock('../platform', () => ({
+vi.mock('@/platforms/platform', () => ({
   isNativeMobile: vi.fn(() => false),
 }));
 
@@ -25,7 +25,7 @@ vi.mock('@capacitor/filesystem', () => ({
   Directory: { Cache: 'CACHE' },
 }));
 
-import { isNativeMobile } from '../platform';
+import { isNativeMobile } from '@/platforms/platform';
 import {
   pickImageFromCamera,
   pickImagesFromGallery,

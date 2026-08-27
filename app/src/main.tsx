@@ -6,7 +6,7 @@ import { bootstrapCapacitorNative } from './capacitor-bootstrap';
 
 import './i18n';
 import './index.css';
-import { loading } from './features';
+import { loading } from './boot/loading';
 
 function mountApp() {
   loading();

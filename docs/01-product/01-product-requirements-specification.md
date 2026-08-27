@@ -104,20 +104,20 @@ Gitee** 同步与公网直链。
 
 ### 2.3 不在官方范围内的能力
 
-| 项                                  | 处理方式                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------- |
-| `packages/wasm`、WASM IPC           | 已从仓库移除；Web/桌面图片处理以 Canvas 等为主                                  |
-| `benchmark/`                        | 已归档，非主构建路径                                                            |
-| `server/`（NestJS）                 | 已移出 workspace；**非官方交付物**                                              |
-| `packages/common`（pixuli-common）  | M3 REF-311 已删除；由 `@pixuli/core` + `@pixuli/ui` + `@pixuli/provider-*` 替代 |
-| 官方 Upyun 等未列入阶段二清单的图床 | 非官方 P0；可经同一 `StorageProvider` 扩展，见 backlog                          |
+| 项                                  | 处理方式                                                                                 |
+| ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| `packages/wasm`、WASM IPC           | 已从仓库移除；Web/桌面图片处理以 Canvas 等为主                                           |
+| `benchmark/`                        | 已归档，非主构建路径                                                                     |
+| `server/`（NestJS）                 | 已移出 workspace；**非官方交付物**                                                       |
+| `packages/common`（pixuli-common）  | M3 REF-311 已删除；由 `@pixuli/core` + `app/src/ui`（`@/ui`）+ `@pixuli/provider-*` 替代 |
+| 官方 Upyun 等未列入阶段二清单的图床 | 非官方 P0；可经同一 `StorageProvider` 扩展，见 backlog                                   |
 
 ### 2.4 当前架构与包（产品视角）
 
 ```text
 app     Web + Desktop + Android（Capacitor）共用（Vite + React + Electron + android/）
 packages/core   类型、工具、StoragePluginRegistry 契约
-app/src/ui  三端共享 UI（`@/ui`）；native 已 deprecated
+app/src/ui  三端共享 DOM UI（`@/ui`）
 packages/plugin-provider-github | plugin-provider-gitee  官方存储插件
 ```
 
@@ -184,16 +184,16 @@ Pixuli/
 
 ### 4.2 技术栈概览
 
-| 层级       | 技术                                | 说明                                    |
-| ---------- | ----------------------------------- | --------------------------------------- |
-| 前端框架   | React 19 + TypeScript               | Web/Desktop 统一 UI                     |
-| 构建工具   | Vite                                | Web/Desktop 构建；Desktop 叠加 Electron |
-| 桌面运行时 | Electron                            | 跨平台桌面                              |
-| 移动端     | React Native + Expo                 | 独立工程；M5 Capacitor 为长期方向       |
-| 状态管理   | Zustand                             | imageStore / sourceStore 等             |
-| 存储插件   | StorageProvider + Registry          | 官方 GitHub/Gitee provider 包           |
-| 图片处理   | Canvas API / expo-image-manipulator | Web/Desktop 渲染进程；Mobile 原生       |
-| 云存储     | GitHub API / Gitee API              | Gitee Web 需图片代理（REF-313）         |
+| 层级       | 技术                       | 说明                                             |
+| ---------- | -------------------------- | ------------------------------------------------ |
+| 前端框架   | React 19 + TypeScript      | Web/Desktop 统一 UI                              |
+| 构建工具   | Vite                       | Web/Desktop 构建；Desktop 叠加 Electron          |
+| 桌面运行时 | Electron                   | 跨平台桌面                                       |
+| 移动端     | Capacitor Android          | 与 Web/Desktop 共用 `app` DOM UI；Expo RN 已退役 |
+| 状态管理   | Zustand                    | imageStore / workspaceStore 等                   |
+| 存储插件   | StorageProvider + Registry | 官方 GitHub/Gitee provider 包                    |
+| 图片处理   | Canvas API                 | Web/Desktop/Capacitor 渲染进程                   |
+| 云存储     | GitHub API / Gitee API     | 预览走本地工作区；复制链接用 `publicUrl`         |
 
 ### 4.3 平台能力矩阵
 

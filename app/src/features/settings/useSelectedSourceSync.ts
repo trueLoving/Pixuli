@@ -3,8 +3,8 @@ import {
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 import { useEffect, useRef } from 'react';
-import { useImageStore } from '../stores/imageStore';
-import { useUIStore } from '../stores/uiStore';
+import { useImageStore } from '@/stores/imageStore';
+import { useUIStore } from '@/stores/uiStore';
 
 /**
  * 同步选中源到 store 的配置

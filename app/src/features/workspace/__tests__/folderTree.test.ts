@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildWorkspaceFolderTree,
-  filterImagesByFolder,
-} from '../workspaceFolderTree';
+import { buildWorkspaceFolderTree, filterImagesByFolder } from '../folderTree';
 
 describe('workspaceFolderTree', () => {
   it('builds nested folders from relative paths', () => {

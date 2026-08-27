@@ -1,11 +1,11 @@
 import type { ImageItem } from '@pixuli/core/types';
-import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePickers';
+import type { NativeImagePickers } from '@/features/library/image-upload/nativePickers';
 import { useCallback, useMemo } from 'react';
 import {
   pickImageFromCamera,
   pickImagesFromGallery,
   shareImageFile,
-} from '@/utils/nativeMedia';
+} from '@/platforms/mobile/nativeMedia';
 import { isNativeMobile } from '@/platforms/platform';
 
 export function useNativeImagePickers(): NativeImagePickers | undefined {
