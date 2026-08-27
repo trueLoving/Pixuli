@@ -368,7 +368,9 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       // 获取文件的当前 SHA
       const sha = await this.getFileSha(filePath, this.config.branch);
       if (!sha) {
-        throw new Error('文件不存在');
+        // 远端已无此文件：幂等成功，避免拖垮整批 syncPush
+        this.logger.warn(`Remote image already absent: ${path}`);
+        return;
       }
 
       // 删除文件

@@ -237,9 +237,8 @@ describe('GiteeStorageProvider', () => {
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, null));
 
-      await expect(provider.deleteImage('test.jpg')).rejects.toThrow(
-        '删除图片失败',
-      );
+      // 远端已无文件：幂等成功，避免拖垮 syncPush
+      await expect(provider.deleteImage('test.jpg')).resolves.toBeUndefined();
     });
 
     it('应该处理删除失败的情况', async () => {

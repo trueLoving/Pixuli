@@ -46,6 +46,9 @@ interface ImageUploadProps {
   nativePickers?: NativeImagePickers;
   /** 默认目标文件夹（当前资源库范围） */
   defaultFolder?: string;
+  /** 外部预填文件（主视图拖入打开确认） */
+  initialFiles?: File[];
+  onInitialFilesConsumed?: () => void;
 }
 
 function resolveDefaultFolder(folder?: string): string {
@@ -63,6 +66,22 @@ function needsRichConfirm(files: File[]): boolean {
   );
 }
 
+function fileTypeLabel(file: File, translate: (key: string) => string): string {
+  if (file.type.startsWith('image/')) {
+    return translate('image.upload.typeImage');
+  }
+  if (file.type.startsWith('video/')) {
+    return translate('image.upload.typeVideo');
+  }
+  if (
+    file.type === 'application/pdf' ||
+    file.name.toLowerCase().endsWith('.pdf')
+  ) {
+    return translate('image.upload.typePdf');
+  }
+  return translate('image.upload.typeOther');
+}
+
 const ImageUpload: React.FC<ImageUploadProps> = ({
   onUploadImage,
   onUploadMultipleImages,
@@ -75,9 +94,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   compressionOptions,
   nativePickers,
   defaultFolder,
+  initialFiles,
+  onInitialFilesConsumed,
 }) => {
   // 使用传入的翻译函数或默认中文翻译函数
   const translate = t || defaultTranslate;
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const [uploadData, setUploadData] = useState<WebImageUploadData | null>(null);
   const [multiUploadData, setMultiUploadData] =
     useState<MultiImageUploadData | null>(null);
@@ -393,8 +421,29 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }
       }
     },
-    [translate, getImageDimensions, defaultFolder, cleanupPreviewUrls, compressionOptions],
+    [
+      translate,
+      getImageDimensions,
+      defaultFolder,
+      cleanupPreviewUrls,
+      compressionOptions,
+    ],
   );
+
+  useEffect(() => {
+    if (!initialFiles || initialFiles.length === 0) return;
+    let cancelled = false;
+    void onDrop(initialFiles).finally(() => {
+      if (!cancelled) {
+        onInitialFilesConsumed?.();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+    // 仅在外部种子文件变化时预填；避免 onDrop 引用变化导致重复打开确认
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed files only
+  }, [initialFiles]);
 
   const handleNativePick = useCallback(
     async (source: 'camera' | 'gallery') => {
@@ -496,17 +545,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             .replace('{name}', fileName)
             .replace('{dims}', dimensionsText),
         );
-        setUploadData(null);
-        setShowForm(false);
-        // 清理尺寸信息
-        setFileDimensions(prev => {
-          const newDims = { ...prev };
-          delete newDims[uploadData.file.name];
-          if (finalFile.name !== uploadData.file.name) {
-            delete newDims[finalFile.name];
-          }
-          return newDims;
-        });
+        if (mountedRef.current) {
+          setUploadData(null);
+          setShowForm(false);
+          setFileDimensions(prev => {
+            const newDims = { ...prev };
+            delete newDims[uploadData.file.name];
+            if (finalFile.name !== uploadData.file.name) {
+              delete newDims[finalFile.name];
+            }
+            return newDims;
+          });
+        }
       } catch (error) {
         updateLoadingToError(
           loadingToast,
@@ -562,7 +612,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       }
 
       const loadingToast = showLoading(
-        `${translate('image.upload.uploadingMultiple')} ${processedFiles.length} 张图片...`,
+        `${translate('image.upload.uploadingMultiple')} ${processedFiles.length} ${translate('image.upload.file')}...`,
       );
       try {
         // 确保传递完整的 multiUploadData，包括 tags
@@ -572,8 +622,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           description: multiUploadData.description || '',
           tags: multiUploadData.tags || [],
           targetFolder:
-            multiUploadData.targetFolder ||
-            resolveDefaultFolder(defaultFolder),
+            multiUploadData.targetFolder || resolveDefaultFolder(defaultFolder),
           captureMetadataList: buildCaptureMetadataList(processedFiles),
         };
         await onUploadMultipleImages(completeMultiUploadData);
@@ -584,9 +633,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             String(processedFiles.length),
           ),
         );
-        setMultiUploadData(null);
-        setShowForm(false);
-        setIsMultiple(false);
+        if (mountedRef.current) {
+          setMultiUploadData(null);
+          setShowForm(false);
+          setIsMultiple(false);
+        }
       } catch (error) {
         updateLoadingToError(
           loadingToast,
@@ -670,16 +721,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             .replace('{name}', fileName)
             .replace('{dims}', dimensionsText),
         );
-        setUploadData(null);
-        setShowForm(false);
-        setFileDimensions(prev => {
-          const newDims = { ...prev };
-          if (uploadData?.file.name) delete newDims[uploadData.file.name];
-          if (finalFile.name !== uploadData?.file.name) {
-            delete newDims[finalFile.name];
-          }
-          return newDims;
-        });
+        if (mountedRef.current) {
+          setUploadData(null);
+          setShowForm(false);
+          setFileDimensions(prev => {
+            const newDims = { ...prev };
+            if (uploadData?.file.name) delete newDims[uploadData.file.name];
+            if (finalFile.name !== uploadData?.file.name) {
+              delete newDims[finalFile.name];
+            }
+            return newDims;
+          });
+        }
       } catch (error) {
         updateLoadingToError(
           loadingToast,
@@ -759,9 +812,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               String(processedFiles.length),
             ),
           );
-          setMultiUploadData(null);
-          setShowForm(false);
-          setIsMultiple(false);
+          if (mountedRef.current) {
+            setMultiUploadData(null);
+            setShowForm(false);
+            setIsMultiple(false);
+          }
         } catch (error) {
           updateLoadingToError(
             loadingToast,
@@ -824,16 +879,18 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             .replace('{name}', fileName)
             .replace('{dims}', dimensionsText),
         );
-        setUploadData(null);
-        setShowForm(false);
-        setFileDimensions(prev => {
-          const newDims = { ...prev };
-          if (uploadData?.file.name) delete newDims[uploadData.file.name];
-          if (finalFile.name !== uploadData?.file.name) {
-            delete newDims[finalFile.name];
-          }
-          return newDims;
-        });
+        if (mountedRef.current) {
+          setUploadData(null);
+          setShowForm(false);
+          setFileDimensions(prev => {
+            const newDims = { ...prev };
+            if (uploadData?.file.name) delete newDims[uploadData.file.name];
+            if (finalFile.name !== uploadData?.file.name) {
+              delete newDims[finalFile.name];
+            }
+            return newDims;
+          });
+        }
       } catch (error) {
         updateLoadingToError(
           loadingToast,
@@ -910,9 +967,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               String(processedFiles.length),
             ),
           );
-          setMultiUploadData(null);
-          setShowForm(false);
-          setIsMultiple(false);
+          if (mountedRef.current) {
+            setMultiUploadData(null);
+            setShowForm(false);
+            setIsMultiple(false);
+          }
         } catch (error) {
           updateLoadingToError(
             loadingToast,
@@ -1015,6 +1074,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               const previewUrl = previewUrls.get(file.name + file.size) ?? null;
               return (
                 <div key={index} className="image-upload-file-item">
+                  <span className="image-upload-type-badge">
+                    {fileTypeLabel(file, translate)}
+                  </span>
                   {previewUrl && file.type.startsWith('image/') ? (
                     <img
                       src={previewUrl}

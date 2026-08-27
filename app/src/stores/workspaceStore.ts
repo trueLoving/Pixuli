@@ -76,7 +76,8 @@ interface WorkspaceState {
   clearWorkspace: () => Promise<void>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;
-  refreshLocalImages: () => Promise<void>;
+  /** quiet：添加/写入时静默刷新，避免锁住资源库壳层（§5.1） */
+  refreshLocalImages: (options?: { quiet?: boolean }) => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
   importLocalImage: (uploadData: ImageUploadData) => Promise<void>;
@@ -446,12 +447,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     useImageStore.setState({ images: [], loading: false, error: null });
   },
 
-  refreshLocalImages: async () => {
+  refreshLocalImages: async options => {
     if (get().mode !== 'local') {
       return;
     }
 
-    set({ loading: true, error: null });
+    const quiet = options?.quiet === true;
+    if (!quiet) {
+      set({ loading: true, error: null });
+    }
     try {
       const vault = getVault();
       const entries = await vault.list();
@@ -627,7 +631,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
 
-    set({ loading: true, error: null });
+    // 添加不锁壳层：不置 loading，列表静默刷新（§5.1）
+    set({ error: null });
     try {
       const fileName = sanitizeFileName(
         getUploadFileName(uploadData.file, uploadData.name),
@@ -677,14 +682,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         relativePath: targetPath,
       });
 
-      await get().refreshLocalImages();
+      await get().refreshLocalImages({ quiet: true });
       await get().refreshSyncStatus();
-      set({ loading: false, syncMessage: '已保存到本地工作区' });
+      set({ syncMessage: '已保存到本地工作区' });
     } catch (error) {
       set({
-        loading: false,
         error: error instanceof Error ? error.message : '保存到本地工作区失败',
       });
+      throw error;
     }
   },
 

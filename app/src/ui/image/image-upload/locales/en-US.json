@@ -1,7 +1,7 @@
 {
   "image": {
     "upload": {
-      "selectedSingle": "Selected image",
+      "selectedSingle": "Selected file",
       "selectedMultiple": "Selected",
       "uploadingSingle": "Adding to workspace",
       "uploadingMultiple": "Adding files to workspace",
@@ -19,9 +19,9 @@
       "file": "File",
       "batchUploadTitle": "Add files",
       "addNewImage": "Add files to workspace",
-      "namePrefix": "Image Name Prefix",
+      "namePrefix": "Name prefix",
       "imageName": "File name",
-      "namePrefixPlaceholder": "Add a unified prefix name for all images",
+      "namePrefixPlaceholder": "Shared name prefix for all files",
       "imageNamePlaceholder": "Name for search and management",
       "description": "Description",
       "descriptionPlaceholder": "Optional: content, purpose, or notes",
@@ -35,7 +35,7 @@
       "dragActive": "Drop files to add",
       "dragInactive": "Drag files here or click to select",
       "dragInactiveWithCrop": "Drag files here or click to select (crop supported)",
-      "supportedFormats": "Supports mainstream image formats like JPG, PNG, GIF, BMP, WebP, SVG • Can select multiple images at once",
+      "supportedFormats": "Supports images, video, PDF and common files • Multiple selection allowed",
       "cropHint": "with crop support",
       "cropComplete": "Crop completed",
       "skipCrop": "Skip crop",
@@ -54,7 +54,11 @@
       "cancel": "Cancel",
       "selectedCount": "{count} files selected",
       "previewUnavailable": "No preview",
-      "localOnlyBadge": "Local only"
+      "localOnlyBadge": "Local only",
+      "typeImage": "Image",
+      "typeVideo": "Video",
+      "typePdf": "PDF",
+      "typeOther": "Other"
     },
     "crop": {
       "title": "Crop Image",

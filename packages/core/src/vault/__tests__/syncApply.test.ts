@@ -214,4 +214,55 @@ describe('syncApply', () => {
     const entry = await vault.getByPath('images/Readuli.png');
     expect(entry?.syncState).toBe('synced');
   });
+
+  it('pull reconciles unbound local-only in custom folder without duplicating', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    const remoteBytes = new Uint8Array([3, 3, 3]);
+    await vault.importFile(
+      new Uint8Array([1, 1]),
+      '111/1787193114444-Omnivuli.png',
+      {
+        name: 'Omnivuli.png',
+        mimeType: 'image/png',
+        syncState: 'local-only',
+      },
+    );
+
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      arrayBuffer: async () => remoteBytes.buffer,
+    })) as unknown as typeof fetch;
+
+    const result = await applySyncPull(
+      vault,
+      'binding-1',
+      {
+        items: [
+          {
+            remotePath: 'Omnivuli.png',
+            action: 'update',
+            metadata: {
+              name: 'Omnivuli.png',
+              updatedAt: new Date().toISOString(),
+              url: 'https://example.test/Omnivuli.png',
+            },
+          },
+        ],
+      },
+      createMockProvider(),
+      { fetchFn },
+    );
+
+    expect(result.pulled).toBe(1);
+    const listed = await vault.list();
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.relativePath).toBe('images/Omnivuli.png');
+    expect(listed[0]?.remotePath).toBe('Omnivuli.png');
+    expect(listed[0]?.syncState).toBe('synced');
+    expect(await adapter.exists('111/1787193114444-Omnivuli.png')).toBe(false);
+  });
 });

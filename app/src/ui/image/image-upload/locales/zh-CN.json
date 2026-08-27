@@ -1,7 +1,7 @@
 {
   "image": {
     "upload": {
-      "selectedSingle": "已选择图片",
+      "selectedSingle": "已选择文件",
       "selectedMultiple": "已选择",
       "uploadingSingle": "正在添加到工作区",
       "uploadingMultiple": "正在批量添加到工作区",
@@ -19,9 +19,9 @@
       "file": "文件",
       "batchUploadTitle": "批量添加文件",
       "addNewImage": "添加文件到工作区",
-      "namePrefix": "图片名称前缀",
+      "namePrefix": "名称前缀",
       "imageName": "文件名",
-      "namePrefixPlaceholder": "为所有图片添加统一的前缀名称",
+      "namePrefixPlaceholder": "为所有文件添加统一的前缀名称",
       "imageNamePlaceholder": "便于搜索和管理的名称",
       "description": "描述",
       "descriptionPlaceholder": "可选：内容、用途或备注",
@@ -35,7 +35,7 @@
       "dragActive": "释放文件以添加",
       "dragInactive": "拖拽文件到此处或点击选择",
       "dragInactiveWithCrop": "拖拽文件到此处或点击选择（支持裁剪）",
-      "supportedFormats": "支持 JPG, PNG, GIF, BMP, WebP, SVG 等主流图片格式 • 可同时选择多张图片",
+      "supportedFormats": "支持图片、视频、PDF 及其它常见文件 • 可同时选择多个",
       "cropHint": "支持裁剪",
       "cropComplete": "裁剪完成",
       "skipCrop": "跳过裁剪",
@@ -54,7 +54,11 @@
       "cancel": "取消",
       "selectedCount": "已选择 {count} 个文件",
       "previewUnavailable": "无可预览缩略",
-      "localOnlyBadge": "仅本机"
+      "localOnlyBadge": "仅本机",
+      "typeImage": "图片",
+      "typeVideo": "视频",
+      "typePdf": "PDF",
+      "typeOther": "其它"
     },
     "crop": {
       "title": "裁剪图片",

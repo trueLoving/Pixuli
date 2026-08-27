@@ -318,6 +318,7 @@
 }
 
 .image-upload-file-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -327,6 +328,20 @@
   border: 1.5px solid #e2e8f0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.image-upload-type-badge {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  z-index: 1;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .image-upload-file-item:hover {

@@ -38,6 +38,9 @@ export interface ImageUploadModalProps {
   nativePickers?: NativeImagePickers;
   /** 默认目标文件夹（当前资源库范围） */
   defaultFolder?: string;
+  /** 打开时预填的文件（主视图拖入） */
+  initialFiles?: File[];
+  onInitialFilesConsumed?: () => void;
 }
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
@@ -54,6 +57,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   compressionOptions,
   nativePickers,
   defaultFolder,
+  initialFiles,
+  onInitialFilesConsumed,
 }) => {
   if (!isOpen) return null;
 
@@ -91,6 +96,8 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             compressionOptions={compressionOptions}
             nativePickers={nativePickers}
             defaultFolder={defaultFolder}
+            initialFiles={initialFiles}
+            onInitialFilesConsumed={onInitialFilesConsumed}
           />
         </div>
       </div>

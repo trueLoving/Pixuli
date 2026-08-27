@@ -210,19 +210,44 @@ async function flushPushQueue(
   const pendingPaths = new Set<string>();
   if (options?.overwriteRemote) {
     for (const entry of entries) {
+      if (entry.deletedAt) {
+        // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
+        if (!entry.remotePath) {
+          await vault.removeEntry(entry.relativePath);
+          continue;
+        }
+        pendingPaths.add(entry.relativePath);
+        continue;
+      }
       pendingPaths.add(entry.relativePath);
     }
   } else {
     for (const entry of entries) {
+      if (entry.deletedAt) {
+        if (!entry.remotePath) {
+          await vault.removeEntry(entry.relativePath);
+          continue;
+        }
+        pendingPaths.add(entry.relativePath);
+        continue;
+      }
       if (
-        !entry.deletedAt &&
-        (entry.syncState === 'local-only' || entry.syncState === 'pending-push')
+        entry.syncState === 'local-only' ||
+        entry.syncState === 'pending-push'
       ) {
         pendingPaths.add(entry.relativePath);
       }
     }
   }
   for (const op of queue) {
+    const entry = await vault.getByPath(op.relativePath);
+    if (!entry) {
+      continue;
+    }
+    if (entry.deletedAt && !entry.remotePath) {
+      await vault.removeEntry(op.relativePath);
+      continue;
+    }
     pendingPaths.add(op.relativePath);
   }
 
@@ -230,18 +255,40 @@ async function flushPushQueue(
     return 0;
   }
 
-  const items = await buildSyncPushItems(
+  const built = await buildSyncPushItems(
     vault,
     binding.bindingId,
     [...pendingPaths],
     readFileBytes,
   );
 
+  // 队列里可能仍指向已无 remotePath 的 delete：再滤一遍
+  const items: Awaited<ReturnType<typeof buildSyncPushItems>> = [];
+  for (const item of built) {
+    if (item.action === 'delete') {
+      const entry = await vault.getByPath(item.localRelativePath);
+      if (!entry?.remotePath) {
+        if (entry) {
+          await vault.removeEntry(item.localRelativePath);
+        }
+        continue;
+      }
+    }
+    items.push(item);
+  }
+
+  if (items.length === 0) {
+    await writePushQueue(vault.adapter, []);
+    memoryQueue.length = 0;
+    return 0;
+  }
+
   await provider.syncPush(items);
 
   let pushed = 0;
   for (const item of items) {
     if (item.action === 'delete') {
+      await vault.removeEntry(item.localRelativePath);
       pushed += 1;
       continue;
     }

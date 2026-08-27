@@ -58,19 +58,29 @@ async function findExistingForPullItem(
     return byPath;
   }
 
-  const entries = await vault.list({ bindingId });
-  return (
-    entries.find(entry => {
-      if (entry.deletedAt) {
-        return false;
-      }
-      if (entry.remotePath === remotePath) {
-        return true;
-      }
-      // 兼容：本地 timestamp 路径 + 展示名与远端文件名一致（推送 name 与 remotePath 曾不一致）
-      return entry.name === remotePath;
-    }) ?? null
-  );
+  const matchesRemote = (entry: LocalImageIndexEntry): boolean => {
+    if (entry.deletedAt) {
+      return false;
+    }
+    if (entry.remotePath === remotePath) {
+      return true;
+    }
+    // 兼容：本地 timestamp 路径 / 自定义文件夹 + 展示名与远端文件名一致
+    if (entry.name === remotePath) {
+      return true;
+    }
+    return basename(entry.relativePath) === remotePath;
+  };
+
+  const boundEntries = await vault.list({ bindingId });
+  const fromBound = boundEntries.find(matchesRemote);
+  if (fromBound) {
+    return fromBound;
+  }
+
+  // push 半成功时本地可能仍是 local-only、无 bindingId；仍按名称对账，避免 pull 再写一份
+  const unboundEntries = await vault.list();
+  return unboundEntries.find(matchesRemote) ?? null;
 }
 
 function isRemoteUpToDate(
