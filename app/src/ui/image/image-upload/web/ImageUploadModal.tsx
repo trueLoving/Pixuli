@@ -17,9 +17,9 @@ export interface ImageUploadModalProps {
   /** 关闭弹窗回调 */
   onClose: () => void;
   /** 上传单张图片回调 */
-  onUploadImage: (data: ImageUploadData) => Promise<void>;
+  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
   /** 批量上传图片回调 */
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
+  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
   /** 是否正在加载 */
   loading?: boolean;
   /** 批量上传进度 */

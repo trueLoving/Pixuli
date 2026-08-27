@@ -72,7 +72,13 @@
       "newSubfolder": "New subfolder",
       "renameFolder": "Rename",
       "deleteFolder": "Delete folder",
-      "aiNotConnected": "AI tagging is not connected yet"
+      "aiNotConnected": "AI tagging is not connected yet",
+      "reviewTitle": "Review metadata",
+      "reviewProgress": "{current} / {total}",
+      "reviewPrev": "Previous",
+      "reviewNext": "Next",
+      "reviewDone": "Done",
+      "reviewHint": "Edit name, description, and tags (local only)"
     },
     "filter": {
       "title": "Image Filter",
@@ -207,6 +213,7 @@
       "deleteSelected": "Delete",
       "batchAccessDisabled": "Publishing multiple files at once is not available yet. Publish one file at a time.",
       "batchScope": "Scope",
+      "batchFocusHint": "Click a file name to edit it individually",
       "badgeLocal": "Available locally",
       "batchDownload": "Download",
       "emptyFolderTitle": "Folder is empty",

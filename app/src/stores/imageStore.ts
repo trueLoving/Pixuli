@@ -49,8 +49,10 @@ interface ImageState {
   clearGiteeConfig: () => void;
   initializeStorage: () => void;
   loadImages: () => Promise<void>;
-  uploadImage: (uploadData: ImageUploadData) => Promise<void>;
-  uploadMultipleImages: (uploadData: MultiImageUploadData) => Promise<void>;
+  uploadImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
+  uploadMultipleImages: (
+    uploadData: MultiImageUploadData,
+  ) => Promise<ImageItem[]>;
   deleteImage: (imageId: string, fileName: string) => Promise<void>;
   deleteMultipleImages: (
     imageIds: string[],
@@ -245,9 +247,14 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     uploadImage: async (uploadData: ImageUploadData) => {
       if (isLocalListMode()) {
-        await useWorkspaceStore.getState().importLocalImage(uploadData);
+        const imported = await useWorkspaceStore
+          .getState()
+          .importLocalImage(uploadData);
         await refreshLocalIntoImageStore(set, { quiet: true });
-        return;
+        if (!imported) {
+          return null;
+        }
+        return get().images.find(image => image.id === imported.id) ?? imported;
       }
 
       const { storageProvider, storageType } = get();
@@ -256,7 +263,7 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: `${storagePluginLabel(storageType)} 配置未初始化`,
           loading: false,
         });
-        return;
+        return null;
       }
 
       set({ loading: true, error: null });
@@ -280,6 +287,7 @@ export const useImageStore = create<ImageState>((set, get) => {
             capture: newImage.captureMetadata,
           },
         });
+        return newImage;
       } catch (error) {
         const duration = Date.now() - startTime;
         const errorMsg =
@@ -293,6 +301,7 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: errorMsg,
           duration,
         });
+        return null;
       } finally {
         set({ loading: false });
       }
@@ -305,12 +314,13 @@ export const useImageStore = create<ImageState>((set, get) => {
       if (isLocalListMode()) {
         const total = files.length;
         if (total === 0) {
-          return;
+          return [];
         }
 
         let completed = 0;
         let failed = 0;
         const startTime = Date.now();
+        const imported: ImageItem[] = [];
         const items: UploadProgress[] = files.map((_file, index) => ({
           id: `${Date.now()}-${index}`,
           progress: 0,
@@ -353,14 +363,19 @@ export const useImageStore = create<ImageState>((set, get) => {
             }));
 
             try {
-              await useWorkspaceStore.getState().importLocalImage({
-                file,
-                name,
-                description,
-                tags,
-                targetFolder: uploadData.targetFolder,
-                captureMetadata: captureMetadataList?.[i],
-              });
+              const created = await useWorkspaceStore
+                .getState()
+                .importLocalImage({
+                  file,
+                  name,
+                  description,
+                  tags,
+                  targetFolder: uploadData.targetFolder,
+                  captureMetadata: captureMetadataList?.[i],
+                });
+              if (created) {
+                imported.push(created);
+              }
               completed++;
               set(state => ({
                 batchUploadProgress: state.batchUploadProgress
@@ -412,6 +427,8 @@ export const useImageStore = create<ImageState>((set, get) => {
               details: { total, completed, failed },
               duration: Date.now() - startTime,
             });
+          const importedIds = new Set(imported.map(item => item.id));
+          return get().images.filter(image => importedIds.has(image.id));
         } catch (error) {
           const errorMsg =
             error instanceof Error ? error.message : '批量导入失败';
@@ -425,8 +442,8 @@ export const useImageStore = create<ImageState>((set, get) => {
               error: errorMsg,
               details: { total, completed, failed },
             });
+          return [];
         }
-        return;
       }
 
       const { storageProvider, storageType } = get();
@@ -435,12 +452,13 @@ export const useImageStore = create<ImageState>((set, get) => {
           error: `${storagePluginLabel(storageType)} 配置未初始化`,
           loading: false,
         });
-        return;
+        return [];
       }
 
       const total = files.length;
       let completed = 0;
       let failed = 0;
+      const uploadedImages: ImageItem[] = [];
 
       try {
         const items: UploadProgress[] = files.map((_file, index) => ({
@@ -461,8 +479,6 @@ export const useImageStore = create<ImageState>((set, get) => {
             items,
           },
         });
-
-        const uploadedImages: ImageItem[] = [];
 
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
@@ -561,6 +577,7 @@ export const useImageStore = create<ImageState>((set, get) => {
             },
             duration: Date.now() - batchStartTime,
           });
+        return uploadedImages;
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : '批量上传失败';
@@ -575,6 +592,7 @@ export const useImageStore = create<ImageState>((set, get) => {
             error: errorMsg,
             details: { total, completed, failed },
           });
+        return uploadedImages;
       } finally {
         set({ loading: false });
       }
