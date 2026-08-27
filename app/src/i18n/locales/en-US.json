@@ -89,6 +89,7 @@
     "picking": "Opening…",
     "current": "Workspace",
     "unnamed": "Unnamed workspace",
+    "localPath": "Local path",
     "pushManual": "Push to remote",
     "pushing": "Pushing…",
     "pushNeedsRemote": "Add a GitHub or Gitee remote source to push",
