@@ -72,7 +72,13 @@
       "newSubfolder": "新建子文件夹",
       "renameFolder": "重命名",
       "deleteFolder": "删除文件夹",
-      "aiNotConnected": "AI 标签尚未接入"
+      "aiNotConnected": "AI 标签尚未接入",
+      "reviewTitle": "逐张完善",
+      "reviewProgress": "{current} / {total}",
+      "reviewPrev": "上一张",
+      "reviewNext": "下一张",
+      "reviewDone": "完成",
+      "reviewHint": "可修改名称、描述与标签（仅本机）"
     },
     "filter": {
       "title": "图片筛选",
@@ -210,6 +216,7 @@
       "deleteSelected": "删除",
       "batchAccessDisabled": "暂不支持对多个文件同时发布，请逐个发布",
       "batchScope": "范围",
+      "batchFocusHint": "点击文件名可单独编辑",
       "badgeLocal": "本地可浏览",
       "batchDownload": "下载"
     },

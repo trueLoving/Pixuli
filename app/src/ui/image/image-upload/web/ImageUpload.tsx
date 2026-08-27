@@ -33,8 +33,8 @@ import ImageCropModal from './ImageCropModal';
 import './ImageUpload.css';
 
 interface ImageUploadProps {
-  onUploadImage: (data: ImageUploadData) => Promise<void>;
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
+  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
+  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   t?: (key: string) => string;

@@ -21,6 +21,8 @@ import {
   Edit,
   Link,
   type LucideIcon,
+  ChevronLeft,
+  ChevronRight,
   RefreshCw,
   Share2,
   SlidersHorizontal,
@@ -98,6 +100,16 @@ function InspectorActionGrid({
   );
 }
 
+export interface MetadataReviewSession {
+  ids: string[];
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onDone: () => void;
+  /** 变化时自动打开编辑弹层 */
+  openEditNonce: number;
+}
+
 interface AssetInspectorProps {
   image: ImageItem | null;
   selectedImages?: ImageItem[];
@@ -111,6 +123,10 @@ interface AssetInspectorProps {
   onSync?: () => void;
   onSendCompress?: () => void;
   onSendConvert?: () => void;
+  /** 批摘要列表点击 → 单文件 */
+  onSelectImage?: (id: string) => void;
+  /** 添加后逐张完善 */
+  metadataReview?: MetadataReviewSession | null;
   getImageDimensionsFromUrl?: (
     url: string,
   ) => Promise<{ width: number; height: number }>;
@@ -201,6 +217,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onSync,
   onSendCompress,
   onSendConvert,
+  onSelectImage,
+  metadataReview = null,
   getImageDimensionsFromUrl,
   t,
   variant = 'dock',
@@ -217,6 +235,16 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       image ?? (selectedImages.length === 1 ? selectedImages[0] : null),
     );
   }, [image, selectedImages]);
+
+  useEffect(() => {
+    if (!metadataReview || !onUpdateImage) {
+      return;
+    }
+    if (metadataReview.openEditNonce <= 0) {
+      return;
+    }
+    setShowEdit(true);
+  }, [metadataReview?.openEditNonce, onUpdateImage]);
 
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
@@ -568,11 +596,26 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             ? t('workspace.allImages')
             : selectedFolderPath}
         </p>
+        <p className="asset-inspector-batch-hint">
+          {t('image.library.batchFocusHint')}
+        </p>
         <ul className="asset-inspector-batch-list">
-          {selectedImages.slice(0, 8).map(item => (
-            <li key={item.id}>{item.name}</li>
+          {selectedImages.slice(0, 12).map(item => (
+            <li key={item.id}>
+              {onSelectImage ? (
+                <button
+                  type="button"
+                  className="asset-inspector-batch-item-btn"
+                  onClick={() => onSelectImage(item.id)}
+                >
+                  {item.name}
+                </button>
+              ) : (
+                item.name
+              )}
+            </li>
           ))}
-          {selectedImages.length > 8 ? <li>…</li> : null}
+          {selectedImages.length > 12 ? <li>…</li> : null}
         </ul>
       </>
     ) : null;
@@ -743,6 +786,52 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             <X size={18} />
           </button>
         </div>
+        {metadataReview && metadataReview.ids.length > 0 ? (
+          <div className="asset-inspector-review" role="group">
+            <div className="asset-inspector-review-text">
+              <p className="asset-inspector-review-title">
+                {t('image.inspector.reviewTitle')}
+              </p>
+              <p className="asset-inspector-review-progress">
+                {t('image.inspector.reviewProgress')
+                  .replace('{current}', String(metadataReview.index + 1))
+                  .replace('{total}', String(metadataReview.ids.length))}
+              </p>
+              <p className="asset-inspector-review-hint">
+                {t('image.inspector.reviewHint')}
+              </p>
+            </div>
+            <div className="asset-inspector-review-actions">
+              <button
+                type="button"
+                className="asset-inspector-review-btn"
+                onClick={metadataReview.onPrev}
+                disabled={metadataReview.index <= 0}
+                aria-label={t('image.inspector.reviewPrev')}
+                title={t('image.inspector.reviewPrev')}
+              >
+                <ChevronLeft size={16} aria-hidden />
+              </button>
+              <button
+                type="button"
+                className="asset-inspector-review-btn"
+                onClick={metadataReview.onNext}
+                disabled={metadataReview.index >= metadataReview.ids.length - 1}
+                aria-label={t('image.inspector.reviewNext')}
+                title={t('image.inspector.reviewNext')}
+              >
+                <ChevronRight size={16} aria-hidden />
+              </button>
+              <button
+                type="button"
+                className="asset-inspector-review-done"
+                onClick={metadataReview.onDone}
+              >
+                {t('image.inspector.reviewDone')}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </header>
       <div className="asset-inspector-body">{body}</div>
       {actions && (actions.grid.length > 0 || actions.danger) ? (

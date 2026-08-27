@@ -80,7 +80,7 @@ interface WorkspaceState {
   refreshLocalImages: (options?: { quiet?: boolean }) => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
-  importLocalImage: (uploadData: ImageUploadData) => Promise<void>;
+  importLocalImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
   updateLocalMetadata: (
     relativePath: string,
     patch: { name?: string; tags?: string[]; description?: string },
@@ -628,7 +628,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   importLocalImage: async uploadData => {
     if (get().mode !== 'local') {
       set({ error: '请先选择本地工作区' });
-      return;
+      return null;
     }
 
     // 添加不锁壳层：不置 loading，列表静默刷新（§5.1）
@@ -685,6 +685,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       await get().refreshLocalImages({ quiet: true });
       await get().refreshSyncStatus();
       set({ syncMessage: '已保存到本地工作区' });
+      return (
+        get().localImages.find(image => image.localPath === targetPath) ?? null
+      );
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : '保存到本地工作区失败',

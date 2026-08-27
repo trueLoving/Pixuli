@@ -14,9 +14,9 @@ import './UploadButton.css';
 
 export interface UploadButtonProps {
   /** 上传单张图片回调 */
-  onUploadImage: (data: ImageUploadData) => Promise<void>;
+  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
   /** 批量上传图片回调 */
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
+  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
   /** 是否正在加载（不再禁用「添加」按钮，避免 §5.1 锁壳） */
   loading?: boolean;
   /** 批量上传进度 */

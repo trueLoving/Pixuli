@@ -53,8 +53,8 @@ interface AssetLibraryProps {
   hasConfig?: boolean;
   search?: LibrarySearchConfig;
   t: (key: string) => string;
-  onUploadImage?: (data: ImageUploadData) => Promise<void>;
-  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<void>;
+  onUploadImage?: (data: ImageUploadData) => Promise<unknown>;
+  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<unknown>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   nativePickers?: NativeImagePickers;

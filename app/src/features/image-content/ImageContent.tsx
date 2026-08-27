@@ -1,7 +1,12 @@
 import { EmptyState } from '@/ui';
 import type { LibrarySearchConfig } from '@/ui';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import type {
+  ImageEditData,
+  ImageItem,
+  ImageUploadData,
+  MultiImageUploadData,
+} from '@pixuli/core/types';
 import React, {
   useCallback,
   useEffect,
@@ -104,6 +109,10 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   /** 与 selectedIds 同步的实体，避免仅靠 id 反查失败导致 Inspector 空白 */
   const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
+  /** 添加后「逐张完善」会话 */
+  const [reviewIds, setReviewIds] = useState<string[]>([]);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [editNonce, setEditNonce] = useState(0);
 
   const selectedImages = useMemo(
     () =>
@@ -159,10 +168,90 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     [isWide],
   );
 
+  const beginMetadataReview = useCallback(
+    (items: ImageItem[]) => {
+      const ids = items.map(item => item.id).filter(Boolean);
+      if (ids.length === 0) {
+        return;
+      }
+      setReviewIds(ids);
+      setReviewIndex(0);
+      handleSelectedIdsChange([ids[0]], [items[0]]);
+      setEditNonce(nonce => nonce + 1);
+    },
+    [handleSelectedIdsChange],
+  );
+
+  const handleUploadImage = useCallback(
+    async (data: ImageUploadData) => {
+      const created = await uploadImage(data);
+      if (created) {
+        beginMetadataReview([created]);
+      }
+    },
+    [beginMetadataReview, uploadImage],
+  );
+
+  const handleUploadMultipleImages = useCallback(
+    async (data: MultiImageUploadData) => {
+      const created = await uploadMultipleImages(data);
+      if (created.length > 0) {
+        beginMetadataReview(created);
+      }
+    },
+    [beginMetadataReview, uploadMultipleImages],
+  );
+
+  const handleReviewPrev = useCallback(() => {
+    setReviewIndex(index => {
+      const next = Math.max(0, index - 1);
+      const id = reviewIds[next];
+      if (id) {
+        handleSelectedIdsChange([id]);
+        setEditNonce(nonce => nonce + 1);
+      }
+      return next;
+    });
+  }, [handleSelectedIdsChange, reviewIds]);
+
+  const handleReviewNext = useCallback(() => {
+    setReviewIndex(index => {
+      const next = Math.min(reviewIds.length - 1, index + 1);
+      const id = reviewIds[next];
+      if (id) {
+        handleSelectedIdsChange([id]);
+        setEditNonce(nonce => nonce + 1);
+      }
+      return next;
+    });
+  }, [handleSelectedIdsChange, reviewIds]);
+
+  const handleReviewDone = useCallback(() => {
+    setReviewIds([]);
+    setReviewIndex(0);
+  }, []);
+
+  const handleSelectImage = useCallback(
+    (id: string) => {
+      const item =
+        imagesRef.current.find(image => image.id === id) ??
+        selectedItems.find(image => image.id === id);
+      handleSelectedIdsChange([id], item ? [item] : undefined);
+      const reviewPos = reviewIds.indexOf(id);
+      if (reviewPos >= 0) {
+        setReviewIndex(reviewPos);
+        setEditNonce(nonce => nonce + 1);
+      }
+    },
+    [handleSelectedIdsChange, reviewIds, selectedItems],
+  );
+
   const handleCloseInspector = useCallback(() => {
     setSheetOpen(false);
     setSelectedIds([]);
     setSelectedItems([]);
+    setReviewIds([]);
+    setReviewIndex(0);
   }, []);
 
   useEffect(() => {
@@ -178,6 +267,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       setSheetOpen(false);
       setSelectedIds([]);
       setSelectedItems([]);
+      setReviewIds([]);
+      setReviewIndex(0);
     };
     window.addEventListener('pixuli:openFilterPanel', onOpenFilter);
     window.addEventListener('pixuli:closeInspectorSheet', clearSelection);
@@ -224,6 +315,18 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     );
   }
 
+  const metadataReview =
+    reviewIds.length > 0
+      ? {
+          ids: reviewIds,
+          index: reviewIndex,
+          onPrev: handleReviewPrev,
+          onNext: handleReviewNext,
+          onDone: handleReviewDone,
+          openEditNonce: editNonce,
+        }
+      : null;
+
   const inspector = (
     <AssetInspector
       key={
@@ -243,6 +346,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       onSync={() => requestSync()}
       onSendCompress={handleSendCompress}
       onSendConvert={handleSendConvert}
+      onSelectImage={handleSelectImage}
+      metadataReview={metadataReview}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
@@ -261,8 +366,8 @@ export const ImageContent: React.FC<ImageContentProps> = ({
           errorMessage={errorMessage}
           onDismissError={onClearError}
           onRetry={handleRetry}
-          onUploadImage={uploadImage}
-          onUploadMultipleImages={uploadMultipleImages}
+          onUploadImage={handleUploadImage}
+          onUploadMultipleImages={handleUploadMultipleImages}
           uploadLoading={uploadLoading}
           batchUploadProgress={batchUploadProgress}
           nativePickers={nativePickers}
