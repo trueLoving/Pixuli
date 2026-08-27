@@ -7,16 +7,16 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
-import ImageEditModal from '@/ui/image/image-browser/web/ImageEditModal';
-import { ImagePreviewModal } from '@/ui/image/image-preview-modal/web';
+import ImageEditModal from './ImageEditModal';
+import ImagePreviewModal from './ImagePreviewModal';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { getPublishedAccess } from '@/features/access/accessPolicyStore';
-import { resolveRemoteCopyUrl } from '@/hooks/useImageCopyUrl';
+import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
-import { getAssetKind } from '@/utils/assetKind';
+import { getAssetKind } from '@/features/library/utils/assetKind';
 import {
   Edit,
   Link,

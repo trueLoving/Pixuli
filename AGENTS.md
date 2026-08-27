@@ -6,12 +6,12 @@
 
 ## 产品底线（不可破坏）
 
-| 项          | 约定                                                                    |
-| ----------- | ----------------------------------------------------------------------- |
-| **三端**    | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor，`app`）均维护    |
-| **存储**    | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**      |
-| **UI 共享** | Web + Desktop + Mobile 共用 `app`（含 `src/ui`）                        |
-| **分层**    | L1 业务 · L2 网格/列表 · L3 各端平台能力；**core/provider 禁止依赖 ui** |
+| 项          | 约定                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **三端**    | Web（含 PWA）、Desktop（Electron）、Mobile（Capacitor，`app`）均维护                                                                                   |
+| **存储**    | GitHub / Gitee 经 `StorageProvider` 插件；**无官方 NestJS Server**                                                                                     |
+| **UI 共享** | Web + Desktop + Mobile 共用 `app`（含 `src/ui`）                                                                                                       |
+| **分层**    | L1 `features/`+`stores/` · L2 薄 `src/ui`（primitives/brand）· L3 `layouts/`+`platforms/`+`boot/`；壳 hooks 在 `hooks/`；**core/provider 禁止依赖 ui** |
 
 进度追踪：[PLANS.md](PLANS.md)（与 GitHub Issues 对齐）；2.0 见
 [2.0.md](2.0.md)；决策见 [DECISIONS.md](DECISIONS.md)。

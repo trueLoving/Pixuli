@@ -17,7 +17,7 @@ import {
  *
  * - **当前**：`Directory.Data` 应用沙箱（`mobile://` 虚拟根），无需额外存储权限。
  * - **SAF 用户目录**：规划于 REF-510 [#120](https://github.com/trueLoving/Pixuli/issues/120)，不阻塞 P6 冒烟。
- * - **与 `apps/mobile`（Expo RN）**：Capacitor 路线不复用 RN 存储；RN 仅对照，见设计文档 §11.1。
+ * - Expo RN 工程已退役；本适配器仅服务 Capacitor Android 沙箱工作区。
  */
 export class MobileWorkspaceAdapter implements WorkspaceAdapter {
   readonly kind = 'mobile' as const;

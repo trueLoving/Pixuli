@@ -59,7 +59,7 @@
 | 选中/焦点  | 蓝 ring、蓝条                                | 紫 ring；同步/在线态用青点                                        |
 | 上传主按钮 | 蓝描边                                       | 紫实心或紫描边                                                    |
 
-硬编码散落在 `@pixuli/ui` 的
+硬编码散落在 `app/src/ui` 的
 `ImageBrowser`、`Sidebar`、`ImageActionMenu`、`EmptyState`
 等，迁移时应改为 token，避免再写 Tailwind `blue-*`。
 
@@ -87,7 +87,7 @@
 Logo 右面是「有图的格子」、左面是「有字的目录」、顶面是「有光的通道」。空态应是
 **同一立方，但格子空、目录空、顶面无光**——用户一眼知道「这是 Pixuli 的库，只是还没内容」，而不是通用灰色图片图标。
 
-### 4.1 插画（三端同一套 SVG/PNG，放 `brand/` 或 `@pixuli/ui` empty 资源）
+### 4.1 插画（三端同一套 SVG/PNG，放 `brand/` 或 `app/src/ui` empty 资源）
 
 | 场景                        | 画面                                                      | 文案方向（i18n）                                 |
 | --------------------------- | --------------------------------------------------------- | ------------------------------------------------ |
@@ -170,7 +170,7 @@ Logo 顶面青光 + 向上浮点 = 天然「数据在进出库」。Loading 用
 | V1  | 定义 CSS 变量（`:root` + 深色可选），替换 `--primary-color` 默认蓝 → 紫；青作 `--accent-color` | ✅                                                 |
 | V2  | Welcome + Empty + FullScreenLoading 三处先换品牌色与插画                                       | ✅ 2026-08-23：`BrandPixelMark` + 全屏青像素加载   |
 | V3  | 同步徽章 / 访问档位 / 选中态用 §三语义色                                                       | ✅ 2026-08-23：活动栏紫条+青徽章；访问档色点；角标 |
-| V4  | 扫 `@pixuli/ui` 硬编码 `#3b82f6` `#2563eb`，改 token                                           | 部分随 V1                                          |
+| V4  | 扫 `app/src/ui` 硬编码 `#3b82f6` `#2563eb`，改 token                                           | 部分随 V1                                          |
 
 插画资源建议放 `app/brand/source/empty-*.svg`（或 png），由
 `pnpm -F pixuli-app sync:brand` 进 `public/`，三端共用。

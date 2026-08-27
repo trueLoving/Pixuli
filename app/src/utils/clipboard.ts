@@ -1,4 +1,4 @@
-import { isNativeMobile } from './platform';
+import { isNativeMobile } from '@/platforms/platform';
 
 /**
  * 复制文本；Capacitor WebView 下 navigator.clipboard 常不可用（REF-607 P6 / #161）。

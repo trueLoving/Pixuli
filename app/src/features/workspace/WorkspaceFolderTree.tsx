@@ -22,7 +22,7 @@ import {
   buildWorkspaceFolderTree,
   folderNodeLabel,
   type WorkspaceFolderNode,
-} from '@/utils/workspaceFolderTree';
+} from './folderTree';
 import './WorkspaceFolderTree.css';
 
 /** 新建子文件夹的父路径：根（全部）→ 工作区顶层；否则用当前选中目录 */

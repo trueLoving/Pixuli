@@ -120,8 +120,6 @@ flowchart TD
 
 - **Capacitor / Web / Desktop**：统一 **左侧边栏**；视口 `< 768px`
   时侧栏**默认收起**，通过左上角汉堡展开**抽屉式侧栏**（覆盖内容，非底栏主导航）。
-- **RN 过渡期**：保留底栏（首页/设置）+ 抽屉源列表，但**菜单项命名与图标**与
-  `@pixuli/ui` `Sidebar` 对齐，减少双套心智。
 
 ### 3.2 二级：图床主内容区（`/photos`）
 
@@ -189,7 +187,7 @@ Electron 窗口可自由缩放，**遵循同一 CSS 断点**，不单独做「�
 
 ### 5.3 Desktop 快捷键（现状 — 保持并扩展）
 
-来源：`app/src/utils/keyboardShortcuts.ts`、`@pixuli/ui` `COMMON_SHORTCUTS`。
+来源：`app/src/utils/keyboardShortcuts.ts`、`@/ui` `COMMON_SHORTCUTS`。
 
 | 快捷键         | 行为           | 窄屏/Capacitor |
 | -------------- | -------------- | -------------- |
@@ -266,12 +264,12 @@ Electron 窗口可自由缩放，**遵循同一 CSS 断点**，不单独做「�
 
 ### 7.2 国际化
 
-| 项        | 约定                                                                                                  |
-| --------- | ----------------------------------------------------------------------------------------------------- |
-| 文案 SSOT | 用户可见字符串走 `react-i18next`；共享文案 `@pixuli/ui/locales` + `@pixuli/core/locales`              |
-| 键名      | `sidebar.*`、`photos.*`、`upload.*`、`keyboard.shortcuts.*`；新增须三端同时有 zh-CN / en-US           |
-| 参数化    | 计数、文件名用 `{{name}}` 插值，避免拼接                                                              |
-| RTL       | **预留**：布局使用逻辑属性（`ms-`/`me-`）；暂不实现 ar 翻译，REF-602 避免写死 `left`/`right` 唯一布局 |
+| 项        | 约定                                                                                                                  |
+| --------- | --------------------------------------------------------------------------------------------------------------------- |
+| 文案 SSOT | 用户可见字符串走 `react-i18next`；共享文案 `app/src/i18n/locales`（按 domain）+ `@pixuli/core/locales`（`deepMerge`） |
+| 键名      | `sidebar.*`、`photos.*`、`upload.*`、`keyboard.shortcuts.*`；新增须三端同时有 zh-CN / en-US                           |
+| 参数化    | 计数、文件名用 `{{name}}` 插值，避免拼接                                                                              |
+| RTL       | **预留**：布局使用逻辑属性（`ms-`/`me-`）；暂不实现 ar 翻译，REF-602 避免写死 `left`/`right` 唯一布局                 |
 
 ### 7.3 平台文案差异
 

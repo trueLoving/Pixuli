@@ -1,4 +1,4 @@
-import type { VersionInfo } from '@/ui';
+import type { VersionInfo } from './version-info';
 import { Calendar, Code, GitBranch, Hash, Info, Package } from 'lucide-react';
 import React, { useState } from 'react';
 

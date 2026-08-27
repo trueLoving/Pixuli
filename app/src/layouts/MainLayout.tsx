@@ -3,17 +3,16 @@
  * 包含侧边栏、主内容区域和所有弹窗组件
  */
 
-import {
-  FullScreenLoading,
-  GiteeConfigModal,
-  GitHubConfigModal,
-  Toaster,
-} from '@/ui';
-import type { VersionInfo } from '@/ui';
+import { FullScreenLoading, Toaster } from '@/ui';
+import type { VersionInfo } from '@/features/settings/version-info';
 import { pluginIdToLegacyType } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
-import { SettingsModal } from '../features/settings';
+import {
+  GiteeConfigModal,
+  GitHubConfigModal,
+  SettingsModal,
+} from '../features/settings';
 import { PublishDrawer } from '../features/access/PublishDrawer';
 import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
 import { useRouteSync } from '../hooks/useRouteSync';
@@ -30,7 +29,7 @@ import {
   resolveModalRepoConfig,
 } from '../utils/resolveModalRepoConfig';
 import { AppMain } from './AppMain';
-import { Sidebar } from './Sidebar';
+import { AppSidebar } from './AppSidebar';
 import { WorkspaceShell } from './WorkspaceShell';
 import { WorkspaceWelcomeScreen } from './WorkspaceWelcomeScreen';
 
@@ -231,7 +230,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         backgroundColor: 'var(--app-theme-background-primary, #ffffff)',
       }}
     >
-      <Sidebar
+      <AppSidebar
         sidebarSources={sidebarSources}
         selectedSourceId={selectedSourceId}
         onSourceSelect={onSourceSelect}

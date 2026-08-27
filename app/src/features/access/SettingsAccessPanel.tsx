@@ -1,6 +1,6 @@
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { copyTextToClipboard } from '@/utils/clipboard';
-import { resolveRemoteCopyUrl } from '@/hooks/useImageCopyUrl';
+import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
 import { isPublishChannel } from '@/features/source-type/connectionPurpose';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useImageStore } from '@/stores/imageStore';

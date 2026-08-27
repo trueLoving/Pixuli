@@ -65,7 +65,7 @@ export default tseslint.config(
                 '@/storage/providers/*',
               ],
               message:
-                'src/ui 禁止依赖具体云 provider（目录边界，原 @pixuli/ui 契约）',
+                'src/ui 禁止依赖具体云 provider（目录边界，REF-209）',
             },
           ],
         },

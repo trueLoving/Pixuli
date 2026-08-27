@@ -1,23 +1,29 @@
 import {
   ContentFeedback,
   Search,
-  UploadButton,
   keyboardManager,
   COMMON_SHORTCUTS,
   SHORTCUT_CATEGORIES,
 } from '@/ui';
-import type { UploadButtonHandle } from '@/ui/primitives/upload-button/web';
-import type { LibrarySearchConfig } from '@/ui';
-import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePickers';
+import UploadButton from './UploadButton';
+import type { UploadButtonHandle } from './UploadButton';
+import type { LibrarySearchConfig } from './librarySearchTypes';
+import type { NativeImagePickers } from './image-upload/nativePickers';
 import { isAssetPublished } from '@/features/access/accessPolicyStore';
 import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
-import { getAssetKind } from '@/utils/assetKind';
-import { filterByLibraryQuery } from '@/utils/libraryQuery';
-import { nextSelectedIds, pruneSelectedIds } from '@/utils/librarySelection';
+import { getAssetKind } from '@/features/library/utils/assetKind';
+import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';
+import {
+  nextSelectedIds,
+  pruneSelectedIds,
+} from '@/features/library/utils/librarySelection';
 import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
-import { getVirtualWindow, LIBRARY_ROW_HEIGHT } from '@/utils/virtualWindow';
+import {
+  getVirtualWindow,
+  LIBRARY_ROW_HEIGHT,
+} from '@/features/library/utils/virtualWindow';
 import type {
   BatchUploadProgress,
   ImageItem,

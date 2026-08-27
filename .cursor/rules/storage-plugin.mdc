@@ -29,7 +29,7 @@ packages/plugin-provider-{id}/src/
 
 ## 禁止
 
-- Provider 包内引入 React / `@pixuli/ui`
+- Provider 包内引入 React / `app/src/ui`（`@/ui`）
 - core 内写 GitHub/Gitee API 具体实现（应在 provider 包）
 
 ## 参考

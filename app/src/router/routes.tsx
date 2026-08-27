@@ -6,12 +6,14 @@ const PhotosPage = lazy(() =>
   import('../pages/photos').then(module => ({ default: module.PhotosPage })),
 );
 const CompressPage = lazy(() =>
-  import('../pages/compress').then(module => ({
+  import('../features/tools/compress').then(module => ({
     default: module.CompressPage,
   })),
 );
 const ConvertPage = lazy(() =>
-  import('../pages/convert').then(module => ({ default: module.ConvertPage })),
+  import('../features/tools/convert').then(module => ({
+    default: module.ConvertPage,
+  })),
 );
 const WorkspacePage = lazy(() =>
   import('../pages/workspace').then(module => ({

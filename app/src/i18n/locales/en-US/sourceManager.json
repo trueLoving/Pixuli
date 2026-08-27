@@ -1,0 +1,26 @@
+{
+  "sourceManager": {
+    "title": "Repository Sources",
+    "add": "Add",
+    "open": "Open",
+    "openInNewWindow": "Open in New Window",
+    "edit": "Edit",
+    "delete": "Delete",
+    "empty": "No sources yet. Click the \"Add\" button to start configuring.",
+    "emptyTitle": "No Repository Source Configured",
+    "selectSource": "Please select a repository source from the list above to view images",
+    "selectSourceTitle": "Please Select a Source",
+    "repoLine": "{{owner}}/{{repo}}@{{branch}}",
+    "subPath": "Sub Path",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "loading": "Loading data...",
+    "imageCount": "images",
+    "githubRepo": "GitHub Repository",
+    "giteeRepo": "Gitee Repository",
+    "path": "Path",
+    "domain": "Domain",
+    "bucket": "Bucket",
+    "repository": "Repository"
+  }
+}
