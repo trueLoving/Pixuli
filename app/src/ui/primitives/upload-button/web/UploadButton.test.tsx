@@ -5,7 +5,7 @@ import React from 'react';
 import UploadButton from './UploadButton';
 
 // Mock ImageUploadModal
-vi.mock('../../image-upload/ImageUploadModal', () => ({
+vi.mock('../../../image/image-upload/web/ImageUploadModal', () => ({
   default: ({
     isOpen,
     onClose,
@@ -156,7 +156,7 @@ describe('UploadButton', () => {
   });
 
   describe('loading 状态', () => {
-    it('应该在 loading 为 true 时禁用按钮', () => {
+    it('添加进行中仍可再次打开（不锁「添加」按钮）', () => {
       const { container } = render(
         <UploadButton {...defaultProps} loading={true} />,
       );
@@ -164,7 +164,7 @@ describe('UploadButton', () => {
       const button = container.querySelector(
         '.upload-button',
       ) as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
     });
 
     it('应该在 loading 为 false 时启用按钮', () => {
@@ -176,6 +176,30 @@ describe('UploadButton', () => {
         '.upload-button',
       ) as HTMLButtonElement;
       expect(button).not.toBeDisabled();
+    });
+  });
+
+  describe('关浮层', () => {
+    it('提交后立刻关闭弹窗，不等待写入完成', async () => {
+      let resolveUpload!: () => void;
+      const deferred = new Promise<void>(resolve => {
+        resolveUpload = resolve;
+      });
+      mockUploadImage.mockImplementation(() => deferred);
+
+      render(<UploadButton {...defaultProps} />);
+      fireEvent.click(screen.getByRole('button', { name: /上传/i }));
+      expect(screen.getByTestId('image-upload-modal')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('upload-single'));
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('image-upload-modal'),
+        ).not.toBeInTheDocument();
+      });
+      expect(mockUploadImage).toHaveBeenCalled();
+      resolveUpload();
     });
   });
 
@@ -272,7 +296,8 @@ describe('UploadButton', () => {
       rerender(<UploadButton {...defaultProps} loading={true} />);
 
       button = container.querySelector('.upload-button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      // §5.1：添加进行中不禁用按钮
+      expect(button).not.toBeDisabled();
     });
   });
 });

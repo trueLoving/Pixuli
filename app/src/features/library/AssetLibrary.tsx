@@ -6,6 +6,7 @@ import {
   COMMON_SHORTCUTS,
   SHORTCUT_CATEGORIES,
 } from '@/ui';
+import type { UploadButtonHandle } from '@/ui/primitives/upload-button/web';
 import type { LibrarySearchConfig } from '@/ui';
 import type { NativeImagePickers } from '@/ui/image/image-upload/common/nativePickers';
 import { isAssetPublished } from '@/features/access/accessPolicyStore';
@@ -124,6 +125,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const longPressRef = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const uploadButtonRef = useRef<UploadButtonHandle>(null);
+  const [libraryDragOver, setLibraryDragOver] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(480);
 
@@ -261,6 +264,50 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       setSortOrder(field === 'name' ? 'asc' : 'desc');
     },
     [sortField],
+  );
+
+  const canAcceptLibraryDrop = Boolean(onUploadImage && onUploadMultipleImages);
+
+  const handleLibraryDragEnter = useCallback(
+    (event: React.DragEvent) => {
+      if (!canAcceptLibraryDrop) return;
+      if (![...event.dataTransfer.types].includes('Files')) return;
+      event.preventDefault();
+      setLibraryDragOver(true);
+    },
+    [canAcceptLibraryDrop],
+  );
+
+  const handleLibraryDragOver = useCallback(
+    (event: React.DragEvent) => {
+      if (!canAcceptLibraryDrop) return;
+      if (![...event.dataTransfer.types].includes('Files')) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+    },
+    [canAcceptLibraryDrop],
+  );
+
+  const handleLibraryDragLeave = useCallback(
+    (event: React.DragEvent) => {
+      if (!canAcceptLibraryDrop) return;
+      const next = event.relatedTarget as Node | null;
+      if (next && event.currentTarget.contains(next)) return;
+      setLibraryDragOver(false);
+    },
+    [canAcceptLibraryDrop],
+  );
+
+  const handleLibraryDrop = useCallback(
+    (event: React.DragEvent) => {
+      if (!canAcceptLibraryDrop) return;
+      event.preventDefault();
+      setLibraryDragOver(false);
+      const files = Array.from(event.dataTransfer.files);
+      if (files.length === 0) return;
+      uploadButtonRef.current?.openWithFiles(files);
+    },
+    [canAcceptLibraryDrop],
   );
 
   const handleBatchDelete = useCallback(async () => {
@@ -435,6 +482,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
 
           {onUploadImage && onUploadMultipleImages ? (
             <UploadButton
+              ref={uploadButtonRef}
               onUploadImage={onUploadImage}
               onUploadMultipleImages={onUploadMultipleImages}
               loading={uploadLoading}
@@ -448,7 +496,18 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         </div>
       </div>
 
-      <div className="asset-library-content">
+      <div
+        className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}`}
+        onDragEnter={handleLibraryDragEnter}
+        onDragOver={handleLibraryDragOver}
+        onDragLeave={handleLibraryDragLeave}
+        onDrop={handleLibraryDrop}
+      >
+        {libraryDragOver ? (
+          <div className="asset-library-drop-hint" aria-hidden>
+            {t('image.upload.dragActive')}
+          </div>
+        ) : null}
         {loading && files.length === 0 ? (
           <div className="asset-library-loading" aria-busy="true">
             <BrandPixelMark variant="loading" size={72} />

@@ -167,4 +167,54 @@ describe('createSyncEngine', () => {
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0]?.message).toContain('network down');
   });
+
+  it('run push skips never-synced tombstones without remote DELETE', async () => {
+    const { engine, vault, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1]), 'images/gone.png', {
+      name: 'gone.png',
+      syncState: 'local-only',
+    });
+    await vault.softDelete('images/gone.png');
+    await vault.importFile(new Uint8Array([2, 2]), '111/ts-Omnivuli.png', {
+      name: 'Omnivuli.png',
+      syncState: 'local-only',
+    });
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.errors).toHaveLength(0);
+    expect(result.pushed).toBe(1);
+    expect(syncPush).toHaveBeenCalledOnce();
+    const pushedItems = syncPush.mock.calls[0]?.[0] as Array<{
+      action: string;
+      remotePath: string;
+    }>;
+    expect(pushedItems.every(item => item.action !== 'delete')).toBe(true);
+    expect(pushedItems.some(item => item.remotePath === 'Omnivuli.png')).toBe(
+      true,
+    );
+    expect(await vault.list({ includeDeleted: true })).toHaveLength(1);
+  });
+
+  it('run push removes tombstone after successful remote delete', async () => {
+    const { engine, vault, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1]), 'images/old.png', {
+      name: 'old.png',
+      syncState: 'synced',
+      remotePath: 'old.png',
+      bindingId: 'binding-1',
+    });
+    await vault.softDelete('images/old.png');
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.errors).toHaveLength(0);
+    expect(result.pushed).toBe(1);
+    const pushedItems = syncPush.mock.calls[0]?.[0] as Array<{
+      action: string;
+      remotePath: string;
+    }>;
+    expect(pushedItems).toEqual([
+      expect.objectContaining({ action: 'delete', remotePath: 'old.png' }),
+    ]);
+    expect(await vault.list({ includeDeleted: true })).toHaveLength(0);
+  });
 });

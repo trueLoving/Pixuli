@@ -291,9 +291,25 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
       const filePath = `${this.config.path}/${path}`;
 
       // 首先获取文件的SHA
-      const fileInfo = await this.makeGitHubRequest(
-        `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`,
-      );
+      let fileInfo: { sha: string };
+      try {
+        fileInfo = await this.makeGitHubRequest(
+          `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${this.config.branch}`,
+        );
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const isNotFound =
+          errorMessage.includes('404') ||
+          errorMessage.includes('Not Found') ||
+          errorMessage.includes('not found');
+        if (isNotFound) {
+          // 远端已无此文件：幂等成功，避免拖垮整批 syncPush
+          this.logger.warn(`Remote image already absent: ${path}`);
+          return;
+        }
+        throw error;
+      }
 
       // 删除文件
       await this.makeGitHubRequest(

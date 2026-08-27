@@ -137,6 +137,27 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.asset-library-content.is-drag-over {
+  outline: 2px dashed #6366f1;
+  outline-offset: -6px;
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.asset-library-drop-hint {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #4338ca;
+  background: rgba(238, 242, 255, 0.72);
 }
 
 .asset-library-table-wrap {

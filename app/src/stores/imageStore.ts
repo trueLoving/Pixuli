@@ -71,11 +71,15 @@ function isLocalListMode(): boolean {
 
 async function refreshLocalIntoImageStore(
   set: (partial: Partial<ImageState>) => void,
+  options?: { quiet?: boolean },
 ): Promise<void> {
   const workspace = useWorkspaceStore.getState();
-  set({ loading: true, error: null });
+  const quiet = options?.quiet === true;
+  if (!quiet) {
+    set({ loading: true, error: null });
+  }
   try {
-    await workspace.refreshLocalImages();
+    await workspace.refreshLocalImages(quiet ? { quiet: true } : undefined);
     set({
       images: useWorkspaceStore.getState().localImages,
       loading: false,
@@ -242,7 +246,7 @@ export const useImageStore = create<ImageState>((set, get) => {
     uploadImage: async (uploadData: ImageUploadData) => {
       if (isLocalListMode()) {
         await useWorkspaceStore.getState().importLocalImage(uploadData);
-        await refreshLocalIntoImageStore(set);
+        await refreshLocalIntoImageStore(set, { quiet: true });
         return;
       }
 
@@ -314,8 +318,8 @@ export const useImageStore = create<ImageState>((set, get) => {
           message: '等待导入...',
         }));
 
+        // 批量添加不锁壳层：进度走 batchUploadProgress / toast，不置 loading（§5.1）
         set({
-          loading: true,
           error: null,
           batchUploadProgress: {
             total,
@@ -400,7 +404,7 @@ export const useImageStore = create<ImageState>((set, get) => {
             }
           }
 
-          await refreshLocalIntoImageStore(set);
+          await refreshLocalIntoImageStore(set, { quiet: true });
           set({ batchUploadProgress: null });
           useLogStore
             .getState()
@@ -413,7 +417,6 @@ export const useImageStore = create<ImageState>((set, get) => {
             error instanceof Error ? error.message : '批量导入失败';
           set({
             error: errorMsg,
-            loading: false,
             batchUploadProgress: null,
           });
           useLogStore

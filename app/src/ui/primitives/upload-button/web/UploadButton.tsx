@@ -1,5 +1,5 @@
 import { Upload } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { defaultTranslate } from '@/ui/locales';
 import type {
   BatchUploadProgress,
@@ -17,7 +17,7 @@ export interface UploadButtonProps {
   onUploadImage: (data: ImageUploadData) => Promise<void>;
   /** 批量上传图片回调 */
   onUploadMultipleImages: (data: MultiImageUploadData) => Promise<void>;
-  /** 是否正在加载 */
+  /** 是否正在加载（不再禁用「添加」按钮，避免 §5.1 锁壳） */
   loading?: boolean;
   /** 批量上传进度 */
   batchUploadProgress?: BatchUploadProgress | null;
@@ -39,84 +39,105 @@ export interface UploadButtonProps {
   defaultFolder?: string;
 }
 
-const UploadButton: React.FC<UploadButtonProps> = ({
-  onUploadImage,
-  onUploadMultipleImages,
-  loading = false,
-  batchUploadProgress,
-  t,
-  enableCrop = false,
-  cropOptions,
-  enableCompression = false,
-  compressionOptions,
-  className = '',
-  nativePickers,
-  defaultFolder,
-}) => {
-  const translate = t || defaultTranslate;
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export interface UploadButtonHandle {
+  open: () => void;
+  openWithFiles: (files: File[]) => void;
+}
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
+const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
+  (
+    {
+      onUploadImage,
+      onUploadMultipleImages,
+      batchUploadProgress,
+      t,
+      enableCrop = false,
+      cropOptions,
+      enableCompression = false,
+      compressionOptions,
+      className = '',
+      nativePickers,
+      defaultFolder,
+    },
+    ref,
+  ) => {
+    const translate = t || defaultTranslate;
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [seedFiles, setSeedFiles] = useState<File[] | null>(null);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
+    useImperativeHandle(ref, () => ({
+      open: () => {
+        setSeedFiles(null);
+        setIsModalOpen(true);
+      },
+      openWithFiles: (files: File[]) => {
+        if (files.length === 0) return;
+        setSeedFiles(files);
+        setIsModalOpen(true);
+      },
+    }));
 
-  // 包装上传回调，成功后关闭弹窗
-  const handleUploadImage = async (data: ImageUploadData) => {
-    try {
+    const handleOpenModal = () => {
+      setSeedFiles(null);
+      setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setSeedFiles(null);
+    };
+
+    // §5.1：点「添加到工作区」后立刻关浮层，写入在后台进行
+    const handleUploadImage = async (data: ImageUploadData) => {
+      setIsModalOpen(false);
+      setSeedFiles(null);
       await onUploadImage(data);
-      setIsModalOpen(false);
-    } catch (error) {
-      throw error;
-    }
-  };
+    };
 
-  const handleUploadMultipleImages = async (data: MultiImageUploadData) => {
-    try {
+    const handleUploadMultipleImages = async (data: MultiImageUploadData) => {
+      setIsModalOpen(false);
+      setSeedFiles(null);
       await onUploadMultipleImages(data);
-      setIsModalOpen(false);
-    } catch (error) {
-      throw error;
-    }
-  };
+    };
 
-  const title = translate('header.upload') || '添加';
+    const title = translate('header.upload') || '添加';
 
-  return (
-    <>
-      <button
-        onClick={handleOpenModal}
-        disabled={loading}
-        className={`upload-button ${className}`}
-        title={title}
-        type="button"
-      >
-        <Upload size={18} />
-        <span className="upload-button-label">{title}</span>
-      </button>
+    return (
+      <>
+        <button
+          onClick={handleOpenModal}
+          className={`upload-button ${className}`}
+          title={title}
+          type="button"
+        >
+          <Upload size={18} />
+          <span className="upload-button-label">{title}</span>
+        </button>
 
-      {isModalOpen && (
-        <ImageUploadModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onUploadImage={handleUploadImage}
-          onUploadMultipleImages={handleUploadMultipleImages}
-          loading={loading}
-          batchUploadProgress={batchUploadProgress}
-          t={t}
-          enableCrop={enableCrop}
-          cropOptions={cropOptions}
-          enableCompression={enableCompression}
-          compressionOptions={compressionOptions}
-          nativePickers={nativePickers}
-          defaultFolder={defaultFolder}
-        />
-      )}
-    </>
-  );
-};
+        {isModalOpen && (
+          <ImageUploadModal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onUploadImage={handleUploadImage}
+            onUploadMultipleImages={handleUploadMultipleImages}
+            loading={false}
+            batchUploadProgress={batchUploadProgress}
+            t={t}
+            enableCrop={enableCrop}
+            cropOptions={cropOptions}
+            enableCompression={enableCompression}
+            compressionOptions={compressionOptions}
+            nativePickers={nativePickers}
+            defaultFolder={defaultFolder}
+            initialFiles={seedFiles ?? undefined}
+            onInitialFilesConsumed={() => setSeedFiles(null)}
+          />
+        )}
+      </>
+    );
+  },
+);
+
+UploadButton.displayName = 'UploadButton';
 
 export default UploadButton;
