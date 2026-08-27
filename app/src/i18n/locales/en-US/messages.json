@@ -1,0 +1,17 @@
+{
+  "messages": {
+    "configSaved": "Gitee configuration saved successfully!",
+    "configCleared": "Gitee configuration cleared successfully!",
+    "configExported": "Gitee configuration exported successfully!",
+    "configImported": "Gitee configuration imported successfully!",
+    "saveFailed": "Failed to save configuration",
+    "clearFailed": "Failed to clear configuration",
+    "exportFailed": "Failed to export configuration",
+    "importFailed": "Failed to import configuration",
+    "invalidFormat": "Configuration file format is incorrect",
+    "noConfigToExport": "No configuration to export",
+    "configExportedToClipboard": "Gitee configuration JSON copied to clipboard",
+    "unknownError": "Unknown error",
+    "fileFormatError": "File format error"
+  }
+}

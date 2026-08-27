@@ -1,0 +1,50 @@
+{
+  "pwa": {
+    "install": {
+      "title": "安装 Pixuli",
+      "description": "安装到主屏幕，获得更好的体验",
+      "hint": "请使用浏览器菜单（⋮）→「安装应用」或「添加到主屏幕」",
+      "button": "安装",
+      "dismiss": "稍后"
+    },
+    "offline": {
+      "online": "网络连接已恢复",
+      "offline": "您当前处于离线状态，部分功能可能不可用",
+      "cachedImages": "已缓存图片",
+      "syncPending": "待同步操作"
+    },
+    "sync": {
+      "title": "后台同步",
+      "enabled": "后台同步已启用",
+      "disabled": "后台同步未启用",
+      "pending": "有 {count} 个操作待同步",
+      "syncing": "正在同步...",
+      "success": "同步成功",
+      "failed": "同步失败"
+    },
+    "notification": {
+      "title": "推送通知",
+      "enabled": "推送通知已启用",
+      "disabled": "推送通知未启用",
+      "requestPermission": "请求通知权限",
+      "subscribe": "订阅推送通知",
+      "unsubscribe": "取消订阅",
+      "permissionDenied": "通知权限被拒绝",
+      "permissionGranted": "通知权限已授予"
+    },
+    "update": {
+      "title": "应用更新",
+      "available": "有新版本可用",
+      "description": "点击更新以获取最新功能",
+      "button": "更新",
+      "later": "稍后"
+    },
+    "cache": {
+      "title": "缓存管理",
+      "size": "缓存大小",
+      "clear": "清除缓存",
+      "cleared": "缓存已清除",
+      "calculating": "正在计算..."
+    }
+  }
+}

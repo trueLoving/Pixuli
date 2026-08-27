@@ -1,0 +1,14 @@
+{
+  "app": {
+    "title": "Pixuli",
+    "subtitle": "Professional Image Management and Storage Solution",
+    "welcome": "Welcome to Pixuli",
+    "description": "Please configure GitHub or Gitee repository information to get started",
+    "configureGitHub": "Configure GitHub",
+    "configureGitee": "Configure Gitee",
+    "repository": "Repository",
+    "imageLibrary": "Image Library",
+    "images": "images",
+    "loadingImages": "Loading images..."
+  }
+}

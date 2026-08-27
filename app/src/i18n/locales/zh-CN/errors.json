@@ -1,0 +1,9 @@
+{
+  "errors": {
+    "configNotInitialized": "{{provider}} 配置未初始化",
+    "loadImagesFailed": "加载图片失败",
+    "updateImageFailed": "更新图片失败",
+    "initStorageFailed": "初始化存储服务失败",
+    "imageNotFound": "图片不存在"
+  }
+}

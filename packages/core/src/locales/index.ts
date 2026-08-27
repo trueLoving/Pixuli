@@ -1,3 +1,7 @@
+/**
+ * 应用级通用文案（历史包路径）。
+ * 产品 UI 文案 SSOT 已迁至 `app/src/i18n/locales`；此处保留供 deepMerge / 包内工具使用。
+ */
 import appZhCN from './app/zh-CN.json';
 import appEnUS from './app/en-US.json';
 

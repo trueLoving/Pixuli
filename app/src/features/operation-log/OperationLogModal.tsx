@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
-import { operationLogLocales } from './locales';
+import { operationLogLocales } from '@/i18n/locales';
 
 interface OperationLogModalProps {
   isOpen: boolean;

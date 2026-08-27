@@ -1,0 +1,17 @@
+{
+  "messages": {
+    "configSaved": "Gitee 配置已成功保存！",
+    "configCleared": "Gitee 配置已成功清除！",
+    "configExported": "Gitee 配置已成功导出！",
+    "configImported": "Gitee 配置已成功导入！",
+    "saveFailed": "保存配置失败",
+    "clearFailed": "清除配置失败",
+    "exportFailed": "导出配置失败",
+    "importFailed": "导入配置失败",
+    "invalidFormat": "配置文件格式不正确",
+    "noConfigToExport": "没有可导出的配置",
+    "configExportedToClipboard": "Gitee 配置 JSON 已复制到剪贴板",
+    "unknownError": "未知错误",
+    "fileFormatError": "文件格式错误"
+  }
+}

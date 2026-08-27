@@ -1,0 +1,50 @@
+{
+  "pwa": {
+    "install": {
+      "title": "Install Pixuli",
+      "description": "Install to home screen for a better experience",
+      "hint": "Use browser menu (⋮) → Install app or Add to Home Screen",
+      "button": "Install",
+      "dismiss": "Later"
+    },
+    "offline": {
+      "online": "Connection restored",
+      "offline": "You are currently offline. Some features may be unavailable",
+      "cachedImages": "Cached images",
+      "syncPending": "Pending sync operations"
+    },
+    "sync": {
+      "title": "Background Sync",
+      "enabled": "Background sync enabled",
+      "disabled": "Background sync disabled",
+      "pending": "{count} operations pending sync",
+      "syncing": "Syncing...",
+      "success": "Sync successful",
+      "failed": "Sync failed"
+    },
+    "notification": {
+      "title": "Push Notifications",
+      "enabled": "Push notifications enabled",
+      "disabled": "Push notifications disabled",
+      "requestPermission": "Request notification permission",
+      "subscribe": "Subscribe to push notifications",
+      "unsubscribe": "Unsubscribe",
+      "permissionDenied": "Notification permission denied",
+      "permissionGranted": "Notification permission granted"
+    },
+    "update": {
+      "title": "App Update",
+      "available": "New version available",
+      "description": "Click update to get the latest features",
+      "button": "Update",
+      "later": "Later"
+    },
+    "cache": {
+      "title": "Cache Management",
+      "size": "Cache size",
+      "clear": "Clear cache",
+      "cleared": "Cache cleared",
+      "calculating": "Calculating..."
+    }
+  }
+}

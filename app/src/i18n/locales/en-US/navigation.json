@@ -1,0 +1,10 @@
+{
+  "navigation": {
+    "settings": "Settings",
+    "refresh": "Refresh",
+    "search": "Search",
+    "filter": "Filter",
+    "help": "Help",
+    "play": "Play"
+  }
+}

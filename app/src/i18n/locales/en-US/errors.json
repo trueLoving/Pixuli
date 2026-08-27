@@ -1,0 +1,9 @@
+{
+  "errors": {
+    "configNotInitialized": "{{provider}} configuration not initialized",
+    "loadImagesFailed": "Failed to load images",
+    "updateImageFailed": "Failed to update image",
+    "initStorageFailed": "Failed to initialize storage service",
+    "imageNotFound": "Image not found"
+  }
+}
