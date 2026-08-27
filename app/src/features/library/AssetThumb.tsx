@@ -1,8 +1,8 @@
 import type { ImageItem } from '@pixuli/core/types';
 import { File, FileText, FileVideo } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { getAssetKind } from '@/utils/assetKind';
-import { resolveAssetThumbnail } from '@/utils/assetThumbnail';
+import { getAssetKind } from '@/features/library/utils/assetKind';
+import { resolveAssetThumbnail } from '@/features/library/utils/assetThumbnail';
 
 interface AssetThumbProps {
   item: ImageItem;

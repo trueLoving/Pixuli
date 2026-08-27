@@ -5,3 +5,4 @@ export { WorkspaceSetupPanel } from './WorkspaceSetupPanel';
 export { WorkspaceFolderTree } from './WorkspaceFolderTree';
 export { WorkspaceModal } from './WorkspaceModal';
 export { SyncDirectionModal } from './SyncDirectionModal';
+export { useWorkspaceBindingSync } from './useWorkspaceBindingSync';

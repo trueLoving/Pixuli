@@ -1,10 +1,10 @@
-import type { SidebarSource } from '@/ui';
+import type { SidebarSource } from '@/layouts/sidebar';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
-import { useSourceManagement } from '@/hooks/useSourceManagement';
+import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

@@ -1,9 +1,24 @@
 # 应用内 UI（`app/src/ui`）
 
-原 `@pixuli/ui` 已内联。从 `@/ui`
-导入 Web 组件（网格/列表、配置 Modal、toast、locales、Canvas 图片处理）。
+三端共用的薄 DOM UI 层，从 `@/ui` 导入：
 
-`native/` 为 RN 历史子路径，**不参与** Capacitor / tsc；仅作归档对照。
+- **primitives**（Search、Toaster、ContentFeedback…）
+- **brand**（`BrandPixelMark`）
+- hooks / toast / keyboard
+
+复合业务 UI 在 owning feature / layout：
+
+| 模块                                             | 位置                                     |
+| ------------------------------------------------ | ---------------------------------------- |
+| 上传 / UploadButton / EmptyState / SearchContext | `features/library`                       |
+| 编辑 / 预览 Modal                                | `features/inspector`                     |
+| GitHub/Gitee 配置、版本信息、源管理 hooks        | `features/settings`                      |
+| 压缩 / 转换 / imageProcessor                     | `features/tools`                         |
+| 工作区 / folderTree                              | `features/workspace`                     |
+| 启动 splash                                      | `boot/loading`                           |
+| 侧栏呈现 / 容器                                  | `layouts/sidebar` · `layouts/AppSidebar` |
+
+文案 SSOT：`app/src/i18n/locales`。
 
 ## 边界
 

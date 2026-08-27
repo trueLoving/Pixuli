@@ -1,5 +1,5 @@
-import { EmptyState } from '@/ui';
-import type { LibrarySearchConfig } from '@/ui';
+import { EmptyState } from '@/features/library/empty-state';
+import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type {
   ImageEditData,
@@ -18,11 +18,11 @@ import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from '../library/AssetLibrary';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
-import { useImageCopyUrl } from '../../hooks/useImageCopyUrl';
+import { useImageCopyUrl } from '@/features/library/useImageCopyUrl';
 import {
   useNativeImagePickers,
   useNativeShareImage,
-} from '../../hooks/useNativeImageActions';
+} from '@/features/library/useNativeImageActions';
 import { ROUTES } from '@/router/routes';
 import { useNavigate } from 'react-router-dom';
 import { useImageStore } from '../../stores/imageStore';

@@ -1,5 +1,5 @@
 import { useEscapeKey } from '@/ui';
-import type { VersionInfo } from '@/ui';
+import type { VersionInfo } from './version-info';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { SettingsAccessPanel } from '@/features/access/SettingsAccessPanel';
 import {

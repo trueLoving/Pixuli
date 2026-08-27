@@ -1,14 +1,14 @@
-import { useSearchContextSafe } from '@/contexts/SearchContext';
+import { useSearchContextSafe } from '@/features/library/SearchContext';
 import { ImageContent } from '@/features/image-content/ImageContent';
-import { useImageOperations } from '@/hooks/useImageOperations';
+import { useImageOperations } from '@/features/library/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { filterImagesByFolder } from '@/utils/workspaceFolderTree';
-import type { LibrarySearchConfig } from '@/ui';
+import { filterImagesByFolder } from '@/features/workspace/folderTree';
+import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import React, { useMemo } from 'react';
 
 interface PhotosPageProps {
