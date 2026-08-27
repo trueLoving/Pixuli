@@ -89,6 +89,7 @@
     "picking": "正在打开…",
     "current": "当前工作区",
     "unnamed": "未命名工作区",
+    "localPath": "本机路径",
     "pushManual": "推送到远端",
     "pushing": "推送中…",
     "pushNeedsRemote": "请先添加 GitHub 或 Gitee 远端源以推送",

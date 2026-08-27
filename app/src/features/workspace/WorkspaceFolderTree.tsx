@@ -4,7 +4,6 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
-  MoreHorizontal,
   Pencil,
   Trash2,
   X,
@@ -26,6 +25,39 @@ import {
 } from '@/utils/workspaceFolderTree';
 import './WorkspaceFolderTree.css';
 
+/** 新建子文件夹的父路径：根（全部）→ 工作区顶层；否则用当前选中目录 */
+export function resolveNewFolderParent(selectedOrMenuPath: string): string {
+  const path = selectedOrMenuPath.trim();
+  if (!path || path === '__root__') {
+    return '';
+  }
+  return path.replace(/\/+$/, '');
+}
+
+/** 资源管理器展示的本机位置：真实路径优先，虚拟存储用可读说明 */
+export function formatWorkspaceLocation(
+  rootPath: string | null,
+  displayName: string | null,
+  t: (key: string) => string,
+): string | null {
+  if (!rootPath) {
+    return null;
+  }
+  if (rootPath.startsWith('mobile://')) {
+    return t('workspace.mobileStorage');
+  }
+  if (rootPath.startsWith('opfs://')) {
+    return t('workspace.webStorage');
+  }
+  if (rootPath.startsWith('fsa://')) {
+    const name = displayName?.trim();
+    return name
+      ? `${t('workspace.fsaStorage')} · ${name}`
+      : t('workspace.fsaStorage');
+  }
+  return rootPath;
+}
+
 interface TreeRowProps {
   node: WorkspaceFolderNode;
   depth: number;
@@ -33,7 +65,7 @@ interface TreeRowProps {
   expandedPaths: Set<string>;
   onToggle: (path: string) => void;
   onSelect: (path: string) => void;
-  onMenu: (path: string, event: React.MouseEvent) => void;
+  onContextMenu: (path: string, event: React.MouseEvent) => void;
   allLabel: string;
 }
 
@@ -44,7 +76,7 @@ const TreeRow: React.FC<TreeRowProps> = ({
   expandedPaths,
   onToggle,
   onSelect,
-  onMenu,
+  onContextMenu,
   allLabel,
 }) => {
   const hasChildren = node.children.length > 0;
@@ -58,6 +90,10 @@ const TreeRow: React.FC<TreeRowProps> = ({
       <div
         className={`workspace-tree-row ${isSelected ? 'workspace-tree-row--active' : ''}`}
         style={{ paddingLeft: `${0.5 + depth * 0.75}rem` }}
+        onContextMenu={event => {
+          event.preventDefault();
+          onContextMenu(node.path, event);
+        }}
       >
         <button
           type="button"
@@ -90,17 +126,6 @@ const TreeRow: React.FC<TreeRowProps> = ({
           <span className="workspace-tree-label">{label}</span>
           <span className="workspace-tree-count">{node.imageCount}</span>
         </button>
-        <button
-          type="button"
-          className="workspace-tree-more"
-          aria-label="Folder menu"
-          onClick={event => {
-            event.stopPropagation();
-            onMenu(node.path, event);
-          }}
-        >
-          <MoreHorizontal size={14} aria-hidden />
-        </button>
       </div>
       {hasChildren && isExpanded
         ? node.children.map(child => (
@@ -112,7 +137,7 @@ const TreeRow: React.FC<TreeRowProps> = ({
               expandedPaths={expandedPaths}
               onToggle={onToggle}
               onSelect={onSelect}
-              onMenu={onMenu}
+              onContextMenu={onContextMenu}
               allLabel={allLabel}
             />
           ))
@@ -127,6 +152,7 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   const { t } = useI18n();
   const images = useImageStore(state => state.images);
   const displayName = useWorkspaceStore(state => state.displayName);
+  const rootPath = useWorkspaceStore(state => state.rootPath);
   const localFolders = useWorkspaceStore(state => state.localFolders);
   const createLocalFolder = useWorkspaceStore(state => state.createLocalFolder);
   const renameLocalFolder = useWorkspaceStore(state => state.renameLocalFolder);
@@ -187,18 +213,26 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
     }
   };
 
-  const parentForNew = (path: string) => path || 'images';
+  const handleFolderContextMenu = (path: string, event: React.MouseEvent) => {
+    setSelectedFolderPath(path);
+    setMenu({ path, x: event.clientX, y: event.clientY });
+  };
+
+  const parentForNew = (path: string) => resolveNewFolderParent(path);
 
   const handleCreate = async (parentPath: string) => {
     setMenu(null);
     const name = window.prompt(t('workspace.newFolderPrompt'));
     if (!name?.trim()) return;
     const safe = name.trim().replace(/[/\\]/g, '_');
-    const target = `${parentForNew(parentPath)}/${safe}`;
+    const parent = parentForNew(parentPath);
+    const target = parent ? `${parent}/${safe}` : safe;
     await createLocalFolder(target);
-    setExpandedPaths(prev =>
-      new Set(prev).add(parentForNew(parentPath) || '__root__'),
-    );
+    setExpandedPaths(prev => {
+      const next = new Set(prev);
+      next.add(parent || '__root__');
+      return next;
+    });
     setSelectedFolderPath(target);
   };
 
@@ -249,6 +283,8 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
     }
   };
 
+  const workspaceLocation = formatWorkspaceLocation(rootPath, displayName, t);
+
   return (
     <aside
       className={`workspace-explorer ${overlay ? 'workspace-explorer--overlay' : ''}`}
@@ -256,25 +292,24 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
       aria-modal={overlay || undefined}
     >
       <div className="workspace-explorer-header">
-        <div>
+        <div className="workspace-explorer-header-text">
           <h2 className="workspace-explorer-title">
             {displayName || t('workspace.unnamed')}
           </h2>
           <p className="workspace-explorer-subtitle">
             {t('workspace.explorer')}
           </p>
+          {workspaceLocation ? (
+            <p className="workspace-explorer-path" title={workspaceLocation}>
+              <span className="workspace-explorer-path-label">
+                {t('workspace.localPath')}
+              </span>
+              {workspaceLocation}
+            </p>
+          ) : null}
         </div>
-        <div className="workspace-explorer-header-actions">
-          <button
-            type="button"
-            className="workspace-explorer-close"
-            aria-label={t('workspace.newFolder')}
-            title={t('workspace.newFolder')}
-            onClick={() => void handleCreate(selectedFolderPath || 'images')}
-          >
-            <FolderPlus size={18} />
-          </button>
-          {overlay ? (
+        {overlay ? (
+          <div className="workspace-explorer-header-actions">
             <button
               type="button"
               className="workspace-explorer-close"
@@ -283,8 +318,8 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
             >
               <X size={20} />
             </button>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="workspace-explorer-tree" role="tree">
@@ -295,9 +330,7 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
           expandedPaths={expandedPaths}
           onToggle={toggleExpanded}
           onSelect={handleSelect}
-          onMenu={(path, event) =>
-            setMenu({ path, x: event.clientX, y: event.clientY })
-          }
+          onContextMenu={handleFolderContextMenu}
           allLabel={t('workspace.allImages')}
         />
       </div>
