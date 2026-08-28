@@ -20,14 +20,14 @@ import { createPortal } from 'react-dom';
 import { defaultTranslate } from '@/i18n/locales';
 import './Sidebar.css';
 
-export type SidebarView = 'photos' | 'explore' | 'tags' | 'favorites';
+export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarUtilityTool = 'compress' | 'convert';
 
-// 统一的菜单项类型（图床 + 工具）
+// 统一的菜单项类型（资源库 + 工具）
 export type SidebarMenuItem =
-  | { type: 'photos' }
+  | { type: 'library' }
   | { type: 'workspace' }
   | { type: 'utility'; tool: SidebarUtilityTool };
 
@@ -278,11 +278,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       </button>
     );
   };
-  const galleryNavItem = {
-    menuKey: 'photos',
+  const libraryNavItem = {
+    menuKey: 'library',
     icon: <FileText size={20} />,
-    label: translate('sidebar.photos'),
-    menuItem: { type: 'photos' as const },
+    label: translate('sidebar.libraryNav'),
+    menuItem: { type: 'library' as const },
     requiresConfig: true,
   };
 
@@ -316,7 +316,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         },
       ];
 
-  const primaryNavItems = [galleryNavItem, ...utilityNavItems];
+  const primaryNavItems = [libraryNavItem, ...utilityNavItems];
 
   const renderExpandedNavItems = (
     items: typeof primaryNavItems,
@@ -682,16 +682,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* 主导航：图床 */}
+        {/* 主导航：资源库 */}
         {onMenuClick && (
           <div className="sidebar-section">
             <div className="sidebar-section-header">
               <span className="sidebar-section-title">
-                {translate('sidebar.galleryNav')}
+                {translate('sidebar.libraryNav')}
               </span>
             </div>
             <nav className="sidebar-nav">
-              {renderExpandedNavItems([galleryNavItem])}
+              {renderExpandedNavItems([libraryNavItem])}
             </nav>
           </div>
         )}

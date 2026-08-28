@@ -1,111 +1,85 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { WorkspaceRouteRedirect } from './WorkspaceRouteRedirect';
 
-// 路由懒加载 - 提升初始加载性能
-const PhotosPage = lazy(() =>
-  import('../pages/photos').then(module => ({ default: module.PhotosPage })),
+const LibraryPage = lazy(() =>
+  import('../pages/library').then(module => ({ default: module.LibraryPage })),
 );
-const CompressPage = lazy(() =>
-  import('../features/tools/compress').then(module => ({
-    default: module.CompressPage,
-  })),
-);
-const ConvertPage = lazy(() =>
-  import('../features/tools/convert').then(module => ({
-    default: module.ConvertPage,
-  })),
-);
-const WorkspacePage = lazy(() =>
-  import('../pages/workspace').then(module => ({
-    default: module.WorkspacePage,
-  })),
-);
-// 路由路径常量
+
 export const ROUTES = {
-  PHOTOS: '/photos',
+  LIBRARY: '/library',
   WORKSPACE: '/workspace',
-  COMPRESS: '/compress',
-  CONVERT: '/convert',
 } as const;
 
-// 路由配置类型
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 
-// 主内容区域路由组件
 interface AppRoutesProps {
   onOpenConfigModal: () => void;
   isFullscreenMode: boolean;
   setIsFullscreenMode: (isFullscreen: boolean) => void;
 }
 
+const RouteSuspense = ({ children }: { children: React.ReactNode }) => (
+  <Suspense
+    fallback={
+      <div className="flex items-center justify-center h-full">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }
+  >
+    {children}
+  </Suspense>
+);
+
 export const AppRoutes: React.FC<AppRoutesProps> = ({ onOpenConfigModal }) => {
-  // 路由加载中的占位组件
-  const RouteSuspense = ({ children }: { children: React.ReactNode }) => (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center h-full">
-          <div className="text-gray-500">Loading...</div>
-        </div>
-      }
-    >
-      {children}
-    </Suspense>
+  const libraryElement = (
+    <RouteSuspense>
+      <LibraryPage onOpenConfigModal={onOpenConfigModal} />
+    </RouteSuspense>
   );
 
   return (
     <Routes>
+      <Route path={ROUTES.LIBRARY} element={libraryElement} />
       <Route
-        path={ROUTES.PHOTOS}
-        element={
-          <RouteSuspense>
-            <PhotosPage onOpenConfigModal={onOpenConfigModal} />
-          </RouteSuspense>
-        }
+        path="/photos"
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
         path="/slideshow"
-        element={<Navigate to={ROUTES.PHOTOS} replace />}
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
         path="/timeline"
-        element={<Navigate to={ROUTES.PHOTOS} replace />}
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
         path={ROUTES.WORKSPACE}
         element={
           <RouteSuspense>
-            <WorkspacePage />
+            <WorkspaceRouteRedirect />
           </RouteSuspense>
         }
       />
       <Route
-        path={ROUTES.COMPRESS}
-        element={
-          <RouteSuspense>
-            <CompressPage />
-          </RouteSuspense>
-        }
+        path="/compress"
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
-        path={ROUTES.CONVERT}
-        element={
-          <RouteSuspense>
-            <ConvertPage />
-          </RouteSuspense>
-        }
+        path="/convert"
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
         path="/analyze"
-        element={<Navigate to={ROUTES.PHOTOS} replace />}
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
-      <Route path="/edit" element={<Navigate to={ROUTES.PHOTOS} replace />} />
+      <Route path="/edit" element={<Navigate to={ROUTES.LIBRARY} replace />} />
       <Route
         path="/generate"
-        element={<Navigate to={ROUTES.PHOTOS} replace />}
+        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
-      <Route path="/" element={<Navigate to={ROUTES.PHOTOS} replace />} />
-      {/* 404 路由 - 重定向到首页 */}
-      <Route path="*" element={<Navigate to={ROUTES.PHOTOS} replace />} />
+      <Route path="/" element={<Navigate to={ROUTES.LIBRARY} replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.LIBRARY} replace />} />
     </Routes>
   );
 };
