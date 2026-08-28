@@ -11,14 +11,9 @@ import './AppMain.css';
 
 interface AppMainProps {
   children: React.ReactNode;
-  /** 旧版侧栏布局：窄屏显示菜单浮动按钮 */
-  legacyMobileMenu?: boolean;
 }
 
-export const AppMain: React.FC<AppMainProps> = ({
-  children,
-  legacyMobileMenu = false,
-}) => {
+export const AppMain: React.FC<AppMainProps> = ({ children }) => {
   const { t } = useI18n();
   const { isFullscreenMode, toggleMobileSidebar, mobileSidebarOpen } =
     useUIStore();
@@ -26,7 +21,7 @@ export const AppMain: React.FC<AppMainProps> = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-      {legacyMobileMenu && isMobile && !isFullscreenMode ? (
+      {isMobile && !isFullscreenMode ? (
         <button
           type="button"
           className="app-main-mobile-menu"

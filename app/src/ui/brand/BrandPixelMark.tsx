@@ -193,12 +193,4 @@ export const BrandPixelMark: React.FC<BrandPixelMarkProps> = ({
   );
 };
 
-/** @deprecated 使用 BrandPixelMark variant="empty" */
-export const BrandEmptyMark: React.FC<{
-  className?: string;
-  size?: number;
-}> = ({ className, size = 96 }) => (
-  <BrandPixelMark variant="empty" className={className} size={size} />
-);
-
 export default BrandPixelMark;

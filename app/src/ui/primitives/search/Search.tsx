@@ -1,8 +1,6 @@
 import { CircleHelp, Search as SearchIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { defaultTranslate } from '@/i18n/locales';
-import type { ImageItem } from '@pixuli/core/types';
-import type { FilterOptions } from '@pixuli/core/types';
 import SearchBar from './SearchBar';
 import './SearchBar.css';
 import './Search.css';
@@ -24,16 +22,6 @@ export interface SearchProps {
   onCommitSearch?: (query?: string) => void;
   variant?: SearchVariant;
   hasConfig?: boolean;
-  /** @deprecated 查询语法已取代面板筛选；保留以免破坏调用方类型 */
-  images?: ImageItem[];
-  /** @deprecated */
-  externalFilters?: FilterOptions;
-  /** @deprecated */
-  onFiltersChange?: (
-    filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
-  ) => void;
-  /** @deprecated 已忽略 */
-  showFilter?: boolean;
   selectedTags?: string[];
   onTagsChange?: (tags: string[]) => void;
   allTags?: string[];

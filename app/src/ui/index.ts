@@ -15,7 +15,7 @@ export * from './primitives/fullscreen-loading';
 export * from './primitives/content-feedback';
 export * from './primitives/action-button';
 
-export { BrandPixelMark, BrandEmptyMark } from './brand/BrandPixelMark';
+export { BrandPixelMark } from './brand/BrandPixelMark';
 export type { BrandPixelMarkProps } from './brand/BrandPixelMark';
 
 export * from './feedback/toast';
