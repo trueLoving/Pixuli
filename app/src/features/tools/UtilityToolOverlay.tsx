@@ -25,8 +25,8 @@ export const UtilityToolOverlay: React.FC = () => {
 
   const title =
     currentUtilityTool === 'compress'
-      ? t('compressPage.title')
-      : t('convertPage.title');
+      ? t('tools.compress.title')
+      : t('tools.convert.title');
 
   return (
     <div
