@@ -9,18 +9,16 @@ import {
 } from '@/ui/feedback/toast';
 import ImageEditModal from './ImageEditModal';
 import ImagePreviewModal from './ImagePreviewModal';
-import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
-import { getPublishedAccess } from '@/features/access/accessPolicyStore';
-import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
-import { useSourceStore } from '@/stores/sourceStore';
-import { useUIStore } from '@/stores/uiStore';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
-import { formatFileSize } from '@pixuli/core/utils';
-import { getAssetKind } from '@/features/library/utils/assetKind';
+import {
+  AssetInspectorBatchBody,
+  AssetInspectorFolderSummary,
+  AssetInspectorSingleBody,
+} from './AssetInspectorBodies';
+import { InspectorActionGrid } from './InspectorActionGrid';
+import type { CompactAction, MetadataReviewSession } from './inspectorTypes';
 import {
   Edit,
   Link,
-  type LucideIcon,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -38,6 +36,13 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { getPublishedAccess } from '@/features/access/accessPolicyStore';
+import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
+import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
+import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import { formatFileSize } from '@pixuli/core/utils';
+import { getAssetKind } from '@/features/library/utils/assetKind';
 import {
   INSPECTOR_WIDTH_MAX,
   INSPECTOR_WIDTH_MIN,
@@ -45,70 +50,7 @@ import {
 } from '@/hooks/usePanelResize';
 import './AssetInspector.css';
 
-interface CompactAction {
-  id: string;
-  label: string;
-  title?: string;
-  icon: LucideIcon;
-  onClick: () => void;
-  disabled?: boolean;
-}
-
-function InspectorActionGrid({
-  actions,
-  danger,
-}: {
-  actions: CompactAction[];
-  danger?: CompactAction | null;
-}) {
-  const DangerIcon = danger?.icon;
-  return (
-    <div className="asset-inspector-actions-block">
-      <div className="asset-inspector-action-grid" role="group">
-        {actions.map(action => {
-          const Icon = action.icon;
-          return (
-            <button
-              key={action.id}
-              type="button"
-              className="asset-inspector-action-btn"
-              title={action.title ?? action.label}
-              aria-label={action.title ?? action.label}
-              disabled={action.disabled}
-              onClick={action.onClick}
-            >
-              <Icon size={18} aria-hidden />
-              <span>{action.label}</span>
-            </button>
-          );
-        })}
-      </div>
-      {danger && DangerIcon ? (
-        <button
-          type="button"
-          className="asset-inspector-action-danger"
-          title={danger.title ?? danger.label}
-          aria-label={danger.title ?? danger.label}
-          disabled={danger.disabled}
-          onClick={danger.onClick}
-        >
-          <DangerIcon size={16} aria-hidden />
-          <span>{danger.label}</span>
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-export interface MetadataReviewSession {
-  ids: string[];
-  index: number;
-  onPrev: () => void;
-  onNext: () => void;
-  onDone: () => void;
-  /** 变化时自动打开编辑弹层 */
-  openEditNonce: number;
-}
+export type { MetadataReviewSession } from './inspectorTypes';
 
 interface AssetInspectorProps {
   image: ImageItem | null;
@@ -132,76 +74,6 @@ interface AssetInspectorProps {
   ) => Promise<{ width: number; height: number }>;
   t: (key: string) => string;
   variant?: 'dock' | 'sheet';
-}
-
-function FileContent({
-  image,
-  onPreview,
-  t,
-}: {
-  image: ImageItem;
-  onPreview: () => void;
-  t: (key: string) => string;
-}) {
-  const kind = getAssetKind(image);
-
-  if (kind === 'video') {
-    return (
-      <div className="asset-inspector-preview asset-inspector-preview--media">
-        <video src={image.url} controls playsInline preload="metadata">
-          {t('image.inspector.openExternal')}
-        </video>
-      </div>
-    );
-  }
-
-  if (kind === 'pdf') {
-    return (
-      <div className="asset-inspector-preview asset-inspector-preview--media">
-        <iframe title={image.name} src={image.url} />
-        <a
-          className="asset-inspector-open-external"
-          href={image.url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('image.inspector.openExternal')}
-        </a>
-      </div>
-    );
-  }
-
-  if (kind === 'other') {
-    return (
-      <div className="asset-inspector-preview asset-inspector-preview--file">
-        <a
-          className="asset-inspector-open-external"
-          href={image.url}
-          download={image.name}
-        >
-          {t('image.inspector.openExternal')}
-        </a>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      className="asset-inspector-preview"
-      onClick={onPreview}
-      aria-label={t('image.inspector.previewHint')}
-    >
-      <img src={image.url} alt={image.name} />
-    </button>
-  );
-}
-
-function folderLabel(path?: string): string {
-  if (!path) return '—';
-  const parts = path.split(/[/\\]/).filter(Boolean);
-  if (parts.length <= 1) return '/';
-  return parts.slice(0, -1).join('/');
 }
 
 export const AssetInspector: React.FC<AssetInspectorProps> = ({
@@ -582,146 +454,28 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const batchBody =
     selectedImages.length >= 2 ? (
-      <>
-        <p className="asset-inspector-batch-lead">
-          {t('image.library.selectedCount').replace(
-            '{count}',
-            String(selectedImages.length),
-          )}
-        </p>
-        <p className="asset-inspector-batch-scope">
-          {t('image.library.batchScope')}
-          {': '}
-          {!selectedFolderPath || selectedFolderPath === '__root__'
-            ? t('workspace.allImages')
-            : selectedFolderPath}
-        </p>
-        <p className="asset-inspector-batch-hint">
-          {t('image.library.batchFocusHint')}
-        </p>
-        <ul className="asset-inspector-batch-list">
-          {selectedImages.slice(0, 12).map(item => (
-            <li key={item.id}>
-              {onSelectImage ? (
-                <button
-                  type="button"
-                  className="asset-inspector-batch-item-btn"
-                  onClick={() => onSelectImage(item.id)}
-                >
-                  {item.name}
-                </button>
-              ) : (
-                item.name
-              )}
-            </li>
-          ))}
-          {selectedImages.length > 12 ? <li>…</li> : null}
-        </ul>
-      </>
+      <AssetInspectorBatchBody
+        selectedImages={selectedImages}
+        selectedFolderPath={selectedFolderPath}
+        onSelectImage={onSelectImage}
+        t={t}
+      />
     ) : null;
 
   const singleBody = activeImage ? (
-    <>
-      <section className="asset-inspector-section">
-        <h3>{t('image.inspector.sectionContent')}</h3>
-        <FileContent
-          image={activeImage}
-          onPreview={() => setShowPreview(true)}
-          t={t}
-        />
-      </section>
-
-      <section className="asset-inspector-section">
-        <h3>{t('image.inspector.sectionInfo')}</h3>
-        <dl className="asset-inspector-dl">
-          <div>
-            <dt>{t('image.inspector.name')}</dt>
-            <dd title={activeImage.name}>{activeImage.name}</dd>
-          </div>
-          {kind === 'image' ? (
-            <div>
-              <dt>{t('image.inspector.dimensions')}</dt>
-              <dd>{dimensions}</dd>
-            </div>
-          ) : null}
-          <div>
-            <dt>{t('image.inspector.size')}</dt>
-            <dd>
-              {activeImage.size > 0 ? formatFileSize(activeImage.size) : '—'}
-            </dd>
-          </div>
-          <div>
-            <dt>{t('image.inspector.date')}</dt>
-            <dd>
-              {activeImage.createdAt
-                ? new Date(activeImage.createdAt).toLocaleString()
-                : '—'}
-            </dd>
-          </div>
-          <div>
-            <dt>{t('image.inspector.folder')}</dt>
-            <dd>{folderLabel(activeImage.localPath)}</dd>
-          </div>
-          <div>
-            <dt>{t('image.inspector.sync')}</dt>
-            <dd>
-              {activeImage.linkKind === 'remote-raw' ||
-              hasPublishableRemoteUrl(activeImage)
-                ? t('image.inspector.syncRemote')
-                : t('image.inspector.syncLocal')}
-            </dd>
-          </div>
-          <div>
-            <dt>{t('image.inspector.access')}</dt>
-            <dd>
-              {published
-                ? t('image.inspector.accessPublic')
-                : t('image.inspector.accessLocalOnly')}
-            </dd>
-          </div>
-          {(activeImage.tags?.length ?? 0) > 0 ? (
-            <div>
-              <dt>{t('image.inspector.tags')}</dt>
-              <dd>{(activeImage.tags ?? []).join('、')}</dd>
-            </div>
-          ) : null}
-          {activeImage.description ? (
-            <div>
-              <dt>{t('image.inspector.description')}</dt>
-              <dd>{activeImage.description}</dd>
-            </div>
-          ) : null}
-        </dl>
-      </section>
-    </>
+    <AssetInspectorSingleBody
+      activeImage={activeImage}
+      published={published}
+      dimensions={dimensions}
+      onPreview={() => setShowPreview(true)}
+      t={t}
+    />
   ) : selectedFolderPath ? (
-    <section className="asset-inspector-section">
-      <h3>{t('image.inspector.folderSummaryTitle')}</h3>
-      <dl className="asset-inspector-dl">
-        <div>
-          <dt>{t('image.inspector.folderPath')}</dt>
-          <dd>{selectedFolderPath}</dd>
-        </div>
-        <div>
-          <dt>{t('image.inspector.folder')}</dt>
-          <dd>
-            {t('image.inspector.folderFileCount').replace(
-              '{count}',
-              String(
-                images.filter(item => {
-                  const path = item.localPath;
-                  if (!path) return false;
-                  const prefix = `${selectedFolderPath}/`;
-                  if (!path.startsWith(prefix)) return false;
-                  const rest = path.slice(prefix.length);
-                  return rest.length > 0 && !rest.includes('/');
-                }).length,
-              ),
-            )}
-          </dd>
-        </div>
-      </dl>
-    </section>
+    <AssetInspectorFolderSummary
+      selectedFolderPath={selectedFolderPath}
+      images={images}
+      t={t}
+    />
   ) : (
     <p className="asset-inspector-empty">{t('image.inspector.empty')}</p>
   );

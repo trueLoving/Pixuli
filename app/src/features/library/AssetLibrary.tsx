@@ -1,16 +1,12 @@
 import {
   ContentFeedback,
-  Search,
   keyboardManager,
   COMMON_SHORTCUTS,
   SHORTCUT_CATEGORIES,
 } from '@/ui';
-import UploadButton from './UploadButton';
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
-import { isAssetPublished } from '@/features/access/accessPolicyStore';
-import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { getAssetKind } from '@/features/library/utils/assetKind';
@@ -24,6 +20,11 @@ import {
   getVirtualWindow,
   LIBRARY_ROW_HEIGHT,
 } from '@/features/library/utils/virtualWindow';
+import { AssetLibraryBatchBar } from './AssetLibraryBatchBar';
+import { AssetLibraryContextMenu } from './AssetLibraryContextMenu';
+import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
+import { AssetLibraryTable } from './AssetLibraryTable';
+import { AssetLibraryToolbar } from './AssetLibraryToolbar';
 import type {
   BatchUploadProgress,
   ImageItem,
@@ -32,16 +33,7 @@ import type {
   SortField,
   SortOrder,
 } from '@pixuli/core/types';
-import { formatFileSize, getSortedImages } from '@pixuli/core/utils';
-import {
-  Folder,
-  Cloud,
-  Globe,
-  HardDrive,
-  RefreshCw,
-  Trash2,
-  Wand2,
-} from 'lucide-react';
+import { getSortedImages } from '@pixuli/core/utils';
 import React, {
   useCallback,
   useEffect,
@@ -51,8 +43,6 @@ import React, {
 } from 'react';
 import './AssetLibrary.css';
 import { AssetThumb } from './AssetThumb';
-
-const LONG_PRESS_MS = 480;
 
 interface AssetLibraryProps {
   images: ImageItem[];
@@ -77,19 +67,6 @@ interface AssetLibraryProps {
   onOpenAccess?: (imageId: string, imageIds?: string[]) => void;
   onSendCompress?: () => void;
   onSendConvert?: () => void;
-}
-
-function kindLabel(item: ImageItem, t: (key: string) => string): string {
-  const kind = getAssetKind(item);
-  if (kind === 'video') return t('image.kind.video');
-  if (kind === 'pdf') return t('image.kind.pdf');
-  if (kind === 'other') return t('image.kind.other');
-  return t('image.kind.image');
-}
-
-function sortIndicator(active: boolean, order: SortOrder): string {
-  if (!active) return '';
-  return order === 'asc' ? ' ↑' : ' ↓';
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
@@ -426,81 +403,22 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         </div>
       ) : null}
 
-      <div className="asset-library-toolbar">
-        <div className="asset-library-header">
-          {loading ? (
-            <span className="asset-library-loading-indicator">
-              <span
-                className="asset-library-loading-spinner-inline"
-                aria-hidden
-              />
-              <span>{t('image.library.loading')}</span>
-            </span>
-          ) : (
-            <span className="asset-library-count">
-              {t('image.library.fileCount').replace(
-                '{count}',
-                String(files.length),
-              )}
-              {search && files.length !== images.length ? (
-                <span className="asset-library-filter-count">
-                  {' '}
-                  / {images.length}
-                </span>
-              ) : null}
-            </span>
-          )}
-        </div>
-
-        {search ? (
-          <Search
-            variant="header"
-            searchQuery={search.searchQuery}
-            draftQuery={search.draftQuery}
-            onDraftChange={search.onDraftChange}
-            onCommitSearch={search.onCommitSearch}
-            onSearchChange={search.onSearchChange}
-            hasConfig={hasConfig}
-            images={images}
-            showHistory={true}
-            history={search.history}
-            onSelectHistory={search.onSelectHistory}
-            onDeleteHistory={search.onDeleteHistory}
-            onClearHistory={search.onClearHistory}
-            t={t}
-            className="asset-library-search"
-          />
-        ) : null}
-
-        <div className="asset-library-controls">
-          {onOpenFolders ? (
-            <button
-              type="button"
-              className="asset-library-chrome-btn asset-library-folders-btn"
-              onClick={onOpenFolders}
-              aria-label={t('workspace.explorer')}
-              title={t('workspace.explorer')}
-            >
-              <Folder size={16} aria-hidden />
-              <span>{t('workspace.explorer')}</span>
-            </button>
-          ) : null}
-
-          {onUploadImage && onUploadMultipleImages ? (
-            <UploadButton
-              ref={uploadButtonRef}
-              onUploadImage={onUploadImage}
-              onUploadMultipleImages={onUploadMultipleImages}
-              loading={uploadLoading}
-              batchUploadProgress={batchUploadProgress}
-              t={t}
-              className="asset-library-upload-btn"
-              nativePickers={nativePickers}
-              defaultFolder={selectedFolderPath || 'images'}
-            />
-          ) : null}
-        </div>
-      </div>
+      <AssetLibraryToolbar
+        filesCount={files.length}
+        totalCount={images.length}
+        loading={loading}
+        hasConfig={hasConfig}
+        search={search}
+        t={t}
+        onOpenFolders={onOpenFolders}
+        onUploadImage={onUploadImage}
+        onUploadMultipleImages={onUploadMultipleImages}
+        uploadLoading={uploadLoading}
+        batchUploadProgress={batchUploadProgress}
+        nativePickers={nativePickers}
+        selectedFolderPath={selectedFolderPath}
+        uploadButtonRef={uploadButtonRef}
+      />
 
       <div
         className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}`}
@@ -522,335 +440,78 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             </p>
           </div>
         ) : showEmpty ? (
-          <div className="asset-library-empty">
-            <div className="asset-library-empty-icon" aria-hidden>
-              <BrandPixelMark
-                variant={isFilteredEmpty ? 'filter' : 'empty'}
-                size={isFilteredEmpty ? 88 : 96}
-              />
-            </div>
-            <h3 className="asset-library-empty-title">
-              {t(
-                isFilteredEmpty
-                  ? 'image.library.filteredTitle'
-                  : isFolderEmpty
-                    ? 'image.library.emptyFolderTitle'
-                    : 'image.library.emptyTitle',
-              )}
-            </h3>
-            <p className="asset-library-empty-description">
-              {t(
-                isFilteredEmpty
-                  ? 'image.library.filteredDescription'
-                  : isFolderEmpty
-                    ? 'image.library.emptyFolderDescription'
-                    : 'image.library.emptyDescription',
-              )}
-            </p>
-          </div>
+          <AssetLibraryEmptyState
+            isFilteredEmpty={isFilteredEmpty}
+            isFolderEmpty={isFolderEmpty}
+            t={t}
+          />
         ) : (
-          <div
-            className="asset-library-table-wrap"
-            ref={tableWrapRef}
-            onScroll={event => setScrollTop(event.currentTarget.scrollTop)}
-          >
-            <table className="asset-library-table">
-              <thead>
-                <tr>
-                  <th>
-                    <button type="button" onClick={() => handleSort('name')}>
-                      {t('image.library.colName')}
-                      {sortIndicator(sortField === 'name', sortOrder)}
-                    </button>
-                  </th>
-                  <th className="asset-library-col-type">
-                    {t('image.library.colType')}
-                  </th>
-                  <th className="asset-library-col-size">
-                    <button type="button" onClick={() => handleSort('size')}>
-                      {t('image.library.colSize')}
-                      {sortIndicator(sortField === 'size', sortOrder)}
-                    </button>
-                  </th>
-                  <th className="asset-library-col-date">
-                    <button
-                      type="button"
-                      onClick={() => handleSort('createdAt')}
-                    >
-                      {t('image.library.colDate')}
-                      {sortIndicator(sortField === 'createdAt', sortOrder)}
-                    </button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableWindow.offsetTop > 0 ? (
-                  <tr aria-hidden className="asset-library-spacer">
-                    <td
-                      colSpan={4}
-                      style={{
-                        height: tableWindow.offsetTop,
-                        padding: 0,
-                        border: 0,
-                      }}
-                    />
-                  </tr>
-                ) : null}
-                {visibleFiles.map(file => {
-                  const selected = selectedIds.includes(file.id);
-                  const published = Boolean(
-                    sourceId && isAssetPublished(file.id, sourceId),
-                  );
-                  const synced =
-                    file.linkKind === 'remote-raw' ||
-                    hasPublishableRemoteUrl(file);
-                  return (
-                    <tr
-                      key={file.id}
-                      data-file-id={file.id}
-                      className={`asset-library-row ${selected ? 'asset-library-row--selected' : ''}`}
-                      aria-selected={selected}
-                      onClick={event => {
-                        if (longPressFiredRef.current) {
-                          longPressFiredRef.current = false;
-                          return;
-                        }
-                        applySelection(
-                          file.id,
-                          event.metaKey || event.ctrlKey,
-                          event.shiftKey,
-                        );
-                      }}
-                      onContextMenu={event => {
-                        event.preventDefault();
-                        setContextMenu({
-                          x: event.clientX,
-                          y: event.clientY,
-                          file,
-                        });
-                      }}
-                      onPointerDown={event => {
-                        if (event.pointerType !== 'touch') return;
-                        longPressFiredRef.current = false;
-                        clearLongPress();
-                        longPressRef.current = window.setTimeout(() => {
-                          longPressFiredRef.current = true;
-                          applySelection(file.id, true, false, true);
-                        }, LONG_PRESS_MS);
-                      }}
-                      onPointerUp={clearLongPress}
-                      onPointerCancel={clearLongPress}
-                      onPointerMove={clearLongPress}
-                    >
-                      <td>
-                        <div className="asset-library-name-cell">
-                          <AssetThumb item={file} />
-                          <span
-                            className="asset-library-name-text"
-                            title={file.name}
-                          >
-                            {file.name}
-                          </span>
-                          <span className="asset-library-badges">
-                            <span
-                              className="asset-library-badge asset-library-badge--local"
-                              title={t('image.library.badgeLocal')}
-                            >
-                              <HardDrive size={10} aria-hidden />
-                            </span>
-                            <span
-                              className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
-                              title={
-                                synced
-                                  ? t('image.inspector.syncRemote')
-                                  : t('image.inspector.syncLocal')
-                              }
-                            >
-                              <Cloud size={10} aria-hidden />
-                            </span>
-                            {published ? (
-                              <span
-                                className="asset-library-badge asset-library-badge--public"
-                                title={t('image.inspector.accessPublic')}
-                              >
-                                <Globe size={10} aria-hidden />
-                              </span>
-                            ) : null}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="asset-library-col-type">
-                        {kindLabel(file, t)}
-                      </td>
-                      <td className="asset-library-col-size">
-                        {file.size > 0 ? formatFileSize(file.size) : '—'}
-                      </td>
-                      <td className="asset-library-col-date">
-                        {file.createdAt
-                          ? new Date(file.createdAt).toLocaleString()
-                          : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {tableWindow.offsetBottom > 0 ? (
-                  <tr aria-hidden className="asset-library-spacer">
-                    <td
-                      colSpan={4}
-                      style={{
-                        height: tableWindow.offsetBottom,
-                        padding: 0,
-                        border: 0,
-                      }}
-                    />
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+          <AssetLibraryTable
+            visibleFiles={visibleFiles}
+            tableWindow={tableWindow}
+            sortField={sortField}
+            sortOrder={sortOrder}
+            selectedIds={selectedIds}
+            sourceId={sourceId}
+            tableWrapRef={tableWrapRef}
+            t={t}
+            onSort={handleSort}
+            onScroll={setScrollTop}
+            onSelect={applySelection}
+            onContextMenu={(event, file) => {
+              event.preventDefault();
+              setContextMenu({
+                x: event.clientX,
+                y: event.clientY,
+                file,
+              });
+            }}
+            onTouchPointerDown={fileId => {
+              longPressFiredRef.current = false;
+              clearLongPress();
+              longPressRef.current = window.setTimeout(() => {
+                longPressFiredRef.current = true;
+                applySelection(fileId, true, false, true);
+              }, 480);
+            }}
+            onTouchPointerEnd={clearLongPress}
+            longPressFiredRef={longPressFiredRef}
+          />
         )}
       </div>
 
       {showBatchBar ? (
-        <div className="asset-library-batch" role="toolbar">
-          <span className="asset-library-batch-count">
-            {t('image.library.selectedCount').replace(
-              '{count}',
-              String(selectedIds.length),
-            )}
-          </span>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            onClick={handleBatchDownload}
-          >
-            {t('image.library.batchDownload')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            onClick={onSync}
-            disabled={!onSync}
-          >
-            <RefreshCw size={16} aria-hidden />
-            {t('image.toolbar.sync')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            onClick={() => onOpenAccess?.(selectedIds[0], selectedIds)}
-            disabled={!onOpenAccess}
-          >
-            {t('image.toolbar.access')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            disabled={!allImagesSelected || !onSendCompress}
-            title={
-              allImagesSelected ? undefined : t('image.inspector.toolImageOnly')
-            }
-            onClick={() => {
-              if (!allImagesSelected) return;
-              onSendCompress?.();
-            }}
-          >
-            {t('image.inspector.sendCompress')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            disabled={!allImagesSelected || !onSendConvert}
-            title={
-              allImagesSelected ? undefined : t('image.inspector.toolImageOnly')
-            }
-            onClick={() => {
-              if (!allImagesSelected) return;
-              onSendConvert?.();
-            }}
-          >
-            <Wand2 size={16} aria-hidden />
-            {t('image.inspector.sendConvert')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn asset-library-batch-delete"
-            onClick={() => void handleBatchDelete()}
-            disabled={!onDeleteImage && !onDeleteMultipleImages}
-          >
-            <Trash2 size={16} aria-hidden />
-            {t('image.library.deleteSelected')}
-          </button>
-          <button
-            type="button"
-            className="asset-library-chrome-btn"
-            onClick={() => {
-              setMultiMode(false);
-              onSelectedIdsChange([]);
-            }}
-          >
-            {t('image.library.clearSelection')}
-          </button>
-        </div>
+        <AssetLibraryBatchBar
+          selectedCount={selectedIds.length}
+          allImagesSelected={allImagesSelected}
+          t={t}
+          onBatchDownload={handleBatchDownload}
+          onSync={onSync}
+          onOpenAccess={
+            onOpenAccess
+              ? () => onOpenAccess(selectedIds[0], selectedIds)
+              : undefined
+          }
+          onSendCompress={onSendCompress}
+          onSendConvert={onSendConvert}
+          onBatchDelete={handleBatchDelete}
+          onClearSelection={() => {
+            setMultiMode(false);
+            onSelectedIdsChange([]);
+          }}
+          canDelete={Boolean(onDeleteImage || onDeleteMultipleImages)}
+        />
       ) : null}
 
       {contextMenu ? (
-        <>
-          <button
-            type="button"
-            className="asset-library-menu-backdrop"
-            aria-label={t('image.actions.dismissMenu')}
-            onClick={() => setContextMenu(null)}
-          />
-          <div
-            className="asset-library-menu"
-            style={{
-              left: Math.min(contextMenu.x, window.innerWidth - 176),
-              top: Math.min(contextMenu.y, window.innerHeight - 148),
-            }}
-            role="menu"
-          >
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onOpenAccess?.(contextMenu.file.id);
-                setContextMenu(null);
-              }}
-            >
-              {t('image.inspector.openAccess')}
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                onSync?.();
-                setContextMenu(null);
-              }}
-            >
-              {t('image.toolbar.sync')}
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="asset-library-menu-danger"
-              onClick={() => {
-                const file = contextMenu.file;
-                setContextMenu(null);
-                if (
-                  onDeleteImage &&
-                  confirm(
-                    `${t('image.grid.confirmDelete')} "${file.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
-                  )
-                ) {
-                  void onDeleteImage(file.id, file.name);
-                }
-              }}
-            >
-              {t('image.actions.delete')}
-            </button>
-          </div>
-        </>
+        <AssetLibraryContextMenu
+          menu={contextMenu}
+          t={t}
+          onClose={() => setContextMenu(null)}
+          onOpenAccess={id => onOpenAccess?.(id)}
+          onSync={onSync}
+          onDeleteImage={onDeleteImage}
+        />
       ) : null}
     </div>
   );

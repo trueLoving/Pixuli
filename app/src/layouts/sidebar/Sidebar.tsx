@@ -1,5 +1,4 @@
 import {
-  ExternalLink,
   Github,
   HelpCircle,
   Info,
@@ -7,8 +6,6 @@ import {
   Lock,
   Plus,
   FileText,
-  Edit,
-  Trash2,
   Zap,
   FileImage,
   RefreshCw,
@@ -16,128 +13,27 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { defaultTranslate } from '@/i18n/locales';
+import { SidebarNavItem } from './SidebarNavItem';
+import {
+  SidebarMobileOverlay,
+  SidebarSourceContextMenu,
+} from './SidebarSourceContextMenu';
+import type {
+  SidebarMenuItem,
+  SidebarPrimaryNavItem,
+  SidebarProps,
+} from './types';
+
+export type {
+  SidebarView,
+  SidebarFilter,
+  SidebarUtilityTool,
+  SidebarMenuItem,
+  SidebarSource,
+} from './types';
+
 import './Sidebar.css';
-
-export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
-
-export type SidebarFilter = 'all' | 'tags' | 'favorites';
-export type SidebarUtilityTool = 'compress' | 'convert';
-
-// 统一的菜单项类型（资源库 + 工具）
-export type SidebarMenuItem =
-  | { type: 'library' }
-  | { type: 'workspace' }
-  | { type: 'utility'; tool: SidebarUtilityTool };
-
-export interface SidebarSource {
-  id: string;
-  name: string;
-  type: 'github' | 'gitee';
-  owner: string;
-  repo: string;
-  path: string;
-  active?: boolean;
-  /** 对应 pluginId 是否已在 Registry 注册（REF-307） */
-  available?: boolean;
-}
-
-interface SidebarProps {
-  // 统一的菜单点击处理
-  onMenuClick?: (menuItem: SidebarMenuItem) => void;
-  // 当前激活的菜单（用于高亮显示）
-  activeMenu?: string;
-  sources: SidebarSource[];
-  selectedSourceId: string | null;
-  onSourceSelect: (id: string) => void;
-  onSourceEdit?: (id: string) => void;
-  onSourceDelete?: (id: string) => void;
-  onSourceOpenInWindow?: (id: string) => void;
-  hasConfig: boolean;
-  onAddSource: () => void;
-  collapsed?: boolean;
-  onToggleCollapse?: () => void;
-  /** 窄屏抽屉是否展开（配合 CSS `.sidebar.open`） */
-  mobileOpen?: boolean;
-  /** 点击遮罩或完成导航后关闭抽屉 */
-  onMobileClose?: () => void;
-  /** 侧栏底部区域上方插槽 */
-  footerExtra?: React.ReactNode;
-  /** 为 true 时不渲染侧栏内仓库源区块（由主内容区工作区栏承载） */
-  hideSources?: boolean;
-  /** 打开存储配置（REF-602 / REF-601 §3.1 设置入口） */
-  onSettingsClick?: () => void;
-  /** 侧栏一键同步（REF-602） */
-  onSyncClick?: () => void;
-  syncBusy?: boolean;
-  syncDisabled?: boolean;
-  syncDisabledTitle?: string;
-  /** 侧栏同步按钮副文案：策略 · 远端仓库 */
-  syncStrategyLabel?: string;
-  syncRemoteLabel?: string;
-  /** 隐藏实用工具导航（压缩/转换等） */
-  hideUtilityTools?: boolean;
-  /** 隐藏底部文档/快捷键/版本信息入口 */
-  hideHelpFooter?: boolean;
-  /** 显示工作区导航（本地工作区平台） */
-  showWorkspaceNav?: boolean;
-  t?: (key: string) => string;
-}
-
-interface NavItemProps {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  disabled?: boolean;
-  comingSoon?: boolean;
-  onClick?: () => void;
-  tooltip?: string;
-  t?: (key: string) => string;
-}
-
-const NavItem: React.FC<NavItemProps> = ({
-  icon,
-  label,
-  active,
-  disabled,
-  comingSoon,
-  onClick,
-  tooltip,
-  t,
-}) => {
-  const translate = t || defaultTranslate;
-  const finalTooltip = comingSoon
-    ? translate('sidebar.comingSoon')
-    : tooltip || (disabled ? translate('sidebar.disabled') : undefined);
-
-  return (
-    <button
-      className={`sidebar-nav-item ${active ? 'active' : ''} ${
-        disabled ? 'disabled' : ''
-      } ${comingSoon ? 'coming-soon' : ''}`}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      title={finalTooltip}
-    >
-      <span className="sidebar-nav-icon">{icon}</span>
-      <span className="sidebar-nav-label">{label}</span>
-      {comingSoon && (
-        <span
-          className="sidebar-nav-badge coming-soon-badge"
-          title={finalTooltip}
-        >
-          <Lock size={12} />
-        </span>
-      )}
-      {disabled && !comingSoon && (
-        <span className="sidebar-nav-badge" title={finalTooltip}>
-          <Lock size={12} />
-        </span>
-      )}
-    </button>
-  );
-};
 
 const Sidebar: React.FC<SidebarProps> = ({
   onMenuClick,
@@ -326,7 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       const disabled =
         (options?.requiresConfig ?? item.requiresConfig) && !hasConfig;
       return (
-        <NavItem
+        <SidebarNavItem
           key={item.menuKey}
           icon={item.icon}
           label={item.label}
@@ -405,69 +301,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       };
     }
   }, [contextMenu?.visible]);
-
-  // 渲染右键菜单（使用 Portal 避免被遮挡）
-  const renderContextMenu = () => {
-    if (!contextMenu?.visible) return null;
-
-    const menuContent = (
-      <div
-        ref={contextMenuRef}
-        className="sidebar-context-menu"
-        style={{
-          position: 'fixed',
-          left: contextMenu.x,
-          top: contextMenu.y,
-          zIndex: 999999,
-        }}
-      >
-        {onSourceOpenInWindow && (
-          <button
-            className="sidebar-context-menu-item"
-            onClick={() => handleOpenInWindow(contextMenu.sourceId)}
-          >
-            <ExternalLink size={16} />
-            <span>{translate('sidebar.openInWindow')}</span>
-          </button>
-        )}
-        <button
-          className="sidebar-context-menu-item"
-          onClick={() => handleEdit(contextMenu.sourceId)}
-        >
-          <Edit size={16} />
-          <span>{translate('sidebar.editSource')}</span>
-        </button>
-        <button
-          className="sidebar-context-menu-item sidebar-context-menu-item-danger"
-          onClick={() => handleDelete(contextMenu.sourceId)}
-        >
-          <Trash2 size={16} />
-          <span>{translate('sidebar.deleteSource')}</span>
-        </button>
-      </div>
-    );
-
-    // 使用 Portal 渲染到 body，避免被父元素的 stacking context 影响
-    return typeof document !== 'undefined'
-      ? createPortal(menuContent, document.body)
-      : null;
-  };
-
-  const renderMobileOverlay = () => {
-    if (!mobileOpen || !onMobileClose) return null;
-
-    const overlay = (
-      <div
-        className="sidebar-overlay"
-        onClick={onMobileClose}
-        aria-hidden="true"
-      />
-    );
-
-    return typeof document !== 'undefined'
-      ? createPortal(overlay, document.body)
-      : null;
-  };
 
   if (collapsed) {
     return (
@@ -655,9 +488,19 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* 右键菜单 - 折叠状态（使用 Portal） */}
-          {renderContextMenu()}
+          <SidebarSourceContextMenu
+            contextMenu={contextMenu}
+            contextMenuRef={contextMenuRef}
+            translate={translate}
+            onOpenInWindow={onSourceOpenInWindow}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         </aside>
-        {renderMobileOverlay()}
+        <SidebarMobileOverlay
+          mobileOpen={mobileOpen}
+          onMobileClose={onMobileClose}
+        />
       </>
     );
   }
@@ -821,7 +664,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {onSettingsClick && (
           <div className="sidebar-section sidebar-settings">
             <nav className="sidebar-nav">
-              <NavItem
+              <SidebarNavItem
                 icon={<Settings size={20} />}
                 label={translate('sidebar.settings')}
                 active={activeMenu === 'settings'}
@@ -835,7 +678,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* 底部操作 */}
         {!hideHelpFooter && (
           <div className="sidebar-footer">
-            <NavItem
+            <SidebarNavItem
               icon={<HelpCircle size={20} />}
               label={translate('sidebar.docs')}
               onClick={() => {
@@ -845,14 +688,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                 );
               }}
             />
-            <NavItem
+            <SidebarNavItem
               icon={<Keyboard size={20} />}
               label={translate('sidebar.keyboardShortcuts')}
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
               }}
             />
-            <NavItem
+            <SidebarNavItem
               icon={<Info size={20} />}
               label={translate('sidebar.versionInfo')}
               onClick={() => {
@@ -863,9 +706,19 @@ const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* 右键菜单（使用 Portal） */}
-        {renderContextMenu()}
+        <SidebarSourceContextMenu
+          contextMenu={contextMenu}
+          contextMenuRef={contextMenuRef}
+          translate={translate}
+          onOpenInWindow={onSourceOpenInWindow}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </aside>
-      {renderMobileOverlay()}
+      <SidebarMobileOverlay
+        mobileOpen={mobileOpen}
+        onMobileClose={onMobileClose}
+      />
     </>
   );
 };

@@ -5,4 +5,4 @@ export type {
   SidebarUtilityTool,
   SidebarSource,
   SidebarMenuItem,
-} from './Sidebar';
+} from './types';
