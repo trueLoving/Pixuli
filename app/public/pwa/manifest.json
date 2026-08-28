@@ -1,7 +1,7 @@
 {
-  "name": "Pixuli Web - 智能图片管理",
+  "name": "Pixuli — 资源工作区",
   "short_name": "Pixuli",
-  "description": "基于 GitHub 的智能图片管理 Web 应用",
+  "description": "在本机管理资源，通过 GitHub/Gitee 等连接同步与发布",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -26,9 +26,9 @@
   "screenshots": [],
   "shortcuts": [
     {
-      "name": "上传图片",
-      "short_name": "上传",
-      "description": "快速上传新图片",
+      "name": "添加到资源库",
+      "short_name": "添加",
+      "description": "快速添加文件到本地资源库",
       "url": "/?action=upload",
       "icons": [{ "src": "/pwa/icon-192x192.png", "sizes": "192x192" }]
     }

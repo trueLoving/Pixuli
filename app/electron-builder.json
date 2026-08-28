@@ -45,10 +45,10 @@
     ],
     "artifactName": "${productName}_${version}_${arch}.${ext}",
     "category": "Graphics",
-    "description": "智能图片管理桌面应用",
+    "description": "本地优先的资源工作区桌面客户端",
     "desktop": {
       "Name": "Pixuli",
-      "Comment": "智能图片管理桌面应用",
+      "Comment": "本地优先的资源工作区",
       "Keywords": "image;photo;management;compression;conversion;",
       "StartupWMClass": "Pixuli"
     }

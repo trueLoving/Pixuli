@@ -17,7 +17,7 @@
     "hintNeedConnectionAlt": "可：保持仅本地 / 在「连接」中添加 GitHub 或 Gitee。",
     "hintPublicTitle": "不支持公开 URL",
     "hintPublicReason": "当前连接未声明公开直链能力，不能生成可热链地址。",
-    "hintPublicAlt": "可：保持仅本地 / 换用支持图床直链的连接（如公开 GitHub/Gitee 仓库）。",
+    "hintPublicAlt": "可：保持仅本地 / 换用支持公开直链的连接（如公开 GitHub/Gitee 仓库）。",
     "hintShareTitle": "不支持仅链接可见",
     "hintShareReason": "当前连接没有分享链接能力，不能生成「仅有链接的人可打开」的地址。",
     "hintShareAlt": "可：保持仅本地 / 使用公开 GitHub 或 Gitee 仓库的公开 URL / 使用该云官网分享（若有）。",

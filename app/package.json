@@ -32,7 +32,7 @@
     "react",
     "typescript",
     "capacitor",
-    "图片管理"
+    "resource-workspace"
   ],
   "author": "trueLoving",
   "license": "MIT",

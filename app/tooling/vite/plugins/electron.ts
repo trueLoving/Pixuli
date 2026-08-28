@@ -41,6 +41,11 @@ export function createElectronPlugins({
       preload: {
         input: 'electron/preload/index.ts',
         vite: {
+          resolve: {
+            alias: {
+              '@': path.join(process.cwd(), 'src'),
+            },
+          },
           build: {
             target: 'esnext',
             sourcemap: sourcemap ? 'inline' : undefined,

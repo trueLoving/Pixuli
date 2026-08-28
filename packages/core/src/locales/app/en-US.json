@@ -18,15 +18,15 @@
   },
   "app": {
     "title": "Pixuli",
-    "subtitle": "Professional Image Management and Storage Solution",
+    "subtitle": "Local-first resource workspace",
     "welcome": "Welcome to Pixuli",
-    "description": "Please configure GitHub or Gitee repository information to get started",
+    "description": "Add a connection or enable a local workspace to build your library",
     "configureGitHub": "Configure GitHub",
     "configureGitee": "Configure Gitee",
     "repository": "Repository",
-    "imageLibrary": "Image Library",
-    "images": "images",
-    "loadingImages": "Loading images..."
+    "resourceLibrary": "Library",
+    "resources": "resources",
+    "loadingResources": "Loading resources..."
   },
   "navigation": {
     "settings": "Settings",

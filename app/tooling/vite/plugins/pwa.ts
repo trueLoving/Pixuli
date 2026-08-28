@@ -1,6 +1,8 @@
 import { VitePWA } from 'vite-plugin-pwa';
+import zhBrand from '../../../src/i18n/locales/zh-CN/brand.json';
 
 export function createPwaPlugin(isServe: boolean) {
+  const brand = zhBrand.brand;
   return VitePWA({
     registerType: 'prompt',
     injectRegister: 'auto',
@@ -11,9 +13,9 @@ export function createPwaPlugin(isServe: boolean) {
       'pwa/icon-512x512.png',
     ],
     manifest: {
-      name: 'Pixuli - 智能图片管理',
-      short_name: 'Pixuli',
-      description: '基于 GitHub/Gitee 的智能图片管理 Web 应用',
+      name: brand.pwaName,
+      short_name: brand.name,
+      description: brand.pwaDescription,
       theme_color: '#7c6cf0',
       background_color: '#ffffff',
       display: 'standalone',
@@ -36,9 +38,9 @@ export function createPwaPlugin(isServe: boolean) {
       ],
       shortcuts: [
         {
-          name: '上传图片',
-          short_name: '上传',
-          description: '快速上传新图片',
+          name: brand.pwaShortcutAdd,
+          short_name: brand.pwaShortcutAddShort,
+          description: brand.pwaShortcutAddDescription,
           url: '/?action=upload',
           icons: [{ src: '/pwa/icon-192x192.png', sizes: '192x192' }],
         },

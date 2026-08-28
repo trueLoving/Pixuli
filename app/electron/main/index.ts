@@ -10,6 +10,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getBrandCopyForElectronLocale } from '../../src/i18n/brandCopy';
 import { setApp } from './app';
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
@@ -142,9 +143,10 @@ function getAppIcon(): Electron.NativeImage {
 
 async function createWindow() {
   const appIcon = getAppIcon();
+  const brand = getBrandCopyForElectronLocale(app.getLocale());
 
   win = new BrowserWindow({
-    title: `${APP_NAME} - 智能图片管理工具 v${APP_VERSION}`,
+    title: `${APP_NAME} — ${brand.windowTitleSuffix} v${APP_VERSION}`,
     icon: appIcon,
     webPreferences: {
       preload,

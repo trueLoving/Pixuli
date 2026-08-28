@@ -1,0 +1,19 @@
+{
+  "brand": {
+    "name": "Pixuli",
+    "tagline": "本地优先的资源工作区",
+    "description": "在本机管理图片、文档与媒体；通过连接同步与发布",
+    "bootAriaLabel": "Pixuli 正在加载",
+    "windowTitleSuffix": "本地优先的资源工作区",
+    "trayTooltip": "Pixuli — 本地优先的资源工作区",
+    "htmlTitle": "Pixuli — 资源工作区",
+    "htmlDescription": "Pixuli — 本地优先的资源工作区（Web / Desktop / Mobile）",
+    "pwaName": "Pixuli — 资源工作区",
+    "pwaDescription": "在本机管理资源，通过 GitHub/Gitee 等连接同步与发布",
+    "pwaShortcutAdd": "添加到资源库",
+    "pwaShortcutAddShort": "添加",
+    "pwaShortcutAddDescription": "快速添加文件到本地资源库",
+    "desktopDescription": "本地优先的资源工作区桌面客户端",
+    "desktopComment": "本地优先的资源工作区"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "brand": {
+    "name": "Pixuli",
+    "tagline": "Local-first resource workspace",
+    "description": "Manage images, documents, and media on your device; sync and publish via connections",
+    "bootAriaLabel": "Pixuli is loading",
+    "windowTitleSuffix": "Local-first resource workspace",
+    "trayTooltip": "Pixuli — Local-first resource workspace",
+    "htmlTitle": "Pixuli — Resource workspace",
+    "htmlDescription": "Pixuli — Local-first resource workspace (Web / Desktop / Mobile)",
+    "pwaName": "Pixuli — Resource workspace",
+    "pwaDescription": "Manage resources locally; sync and publish via GitHub, Gitee, and other connections",
+    "pwaShortcutAdd": "Add to library",
+    "pwaShortcutAddShort": "Add",
+    "pwaShortcutAddDescription": "Quickly add files to your local library",
+    "desktopDescription": "Local-first resource workspace desktop client",
+    "desktopComment": "Local-first resource workspace"
+  }
+}

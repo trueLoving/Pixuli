@@ -1,21 +1,21 @@
 {
   "emptyState": {
     "title": "Welcome to Pixuli",
-    "description": "Start managing your image library by adding a repository source",
+    "description": "Add a connection or enable a local workspace to build your library",
     "addGitHub": "Configure GitHub",
     "addGitee": "Configure Gitee",
     "quickStart": "Quick Start",
     "step1": {
-      "title": "Choose Storage Platform",
-      "description": "Select GitHub or Gitee as your image storage repository"
+      "title": "Choose how to connect",
+      "description": "Add a GitHub or Gitee connection, or enable a local workspace"
     },
     "step2": {
-      "title": "Fill Repository Info",
-      "description": "Enter repository owner, name, branch, and access token"
+      "title": "Finish setup",
+      "description": "Enter repository details or pick a folder on your device"
     },
     "step3": {
-      "title": "Start Using",
-      "description": "After configuration, you can upload and manage images"
+      "title": "Start using",
+      "description": "Add files to your library, then sync or publish when needed"
     },
     "needHelp": "Need help?",
     "viewDocs": "View Docs"

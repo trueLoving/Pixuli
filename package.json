@@ -1,6 +1,6 @@
 {
   "name": "pixuli-monorepo",
-  "description": "Pixuli - 智能图片管理应用 Monorepo",
+  "description": "Pixuli — 本地优先的资源工作区 Monorepo",
   "private": true,
   "scripts": {
     "dev:web": "pnpm -F pixuli-app dev:web",
