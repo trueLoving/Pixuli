@@ -14,8 +14,11 @@ import {
   type StoragePluginId,
 } from '@/storage/createProvider';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { LogActionType, LogStatus } from '@/types/log';
-import { useLogStore } from '@/stores/logStore';
+import {
+  LogActionType,
+  LogStatus,
+  useLogStore,
+} from '@/features/operation-log';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import type {
   BatchUploadProgress,

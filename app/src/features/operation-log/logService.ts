@@ -39,10 +39,3 @@ export function getLogService(): OperationLogService {
   }
   return instance;
 }
-
-/** @deprecated 使用 getLogService()，保留单例 getInstance 兼容 */
-export const LogService = {
-  getInstance(): OperationLogService {
-    return getLogService();
-  },
-};

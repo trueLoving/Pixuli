@@ -1,12 +1,12 @@
-import { getLogService } from '@/services/logService';
+import { create } from 'zustand';
+import { getLogService } from './logService';
 import {
   OperationLog,
   LogActionType,
   LogStatus,
   LogQueryOptions,
   LogStatistics,
-} from '@/types/log';
-import { create } from 'zustand';
+} from './types';
 
 interface LogState {
   logs: OperationLog[];
@@ -15,7 +15,6 @@ interface LogState {
   error: string | null;
   filter: LogQueryOptions['filter'] | null;
 
-  // Actions
   loadLogs: (options?: LogQueryOptions) => Promise<void>;
   addLog: (
     action: LogActionType,
@@ -147,7 +146,6 @@ export const useLogStore = create<LogState>((set, get) => ({
       const extension = format === 'json' ? 'json' : 'csv';
       const mimeType = format === 'json' ? 'application/json' : 'text/csv';
 
-      // 使用浏览器下载文件
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const fileName = `pixuli-logs-${timestamp}.${extension}`;
 
@@ -167,7 +165,6 @@ export const useLogStore = create<LogState>((set, get) => ({
   },
 }));
 
-// 初始化时加载日志和统计信息（异步）
 if (typeof window !== 'undefined') {
   void useLogStore.getState().loadLogs();
 }
