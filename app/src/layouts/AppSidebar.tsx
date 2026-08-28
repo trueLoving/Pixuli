@@ -93,11 +93,11 @@ export const AppSidebar: React.FC<SidebarProps> = ({
   }, [isMobile, closeMobileSidebar]);
 
   const handleMenuClick = (menuItem: SidebarMenuItem) => {
-    if (menuItem.type === 'photos') {
-      setCurrentView('photos');
+    if (menuItem.type === 'library') {
+      setCurrentView('library');
       setCurrentUtilityTool(null);
-      setActiveMenu('photos');
-      navigate(ROUTES.PHOTOS);
+      setActiveMenu('library');
+      navigate(ROUTES.LIBRARY);
     } else if (menuItem.type === 'workspace') {
       setCurrentView('workspace');
       setCurrentUtilityTool(null);
@@ -105,16 +105,9 @@ export const AppSidebar: React.FC<SidebarProps> = ({
       navigate(ROUTES.WORKSPACE);
     } else if (menuItem.type === 'utility') {
       setCurrentUtilityTool(menuItem.tool);
-      setCurrentView('photos');
+      setCurrentView('library');
       setActiveMenu(menuItem.tool);
-      const routeMap: Record<string, string> = {
-        compress: ROUTES.COMPRESS,
-        convert: ROUTES.CONVERT,
-      };
-      const route = routeMap[menuItem.tool];
-      if (route) {
-        navigate(route);
-      }
+      navigate(ROUTES.LIBRARY);
     }
     closeDrawerIfMobile();
   };

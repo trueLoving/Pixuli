@@ -2,6 +2,7 @@ import { deepMerge } from '@pixuli/core/locales';
 
 import zhAccess from './zh-CN/access.json';
 import zhApp from './zh-CN/app.json';
+import zhBrand from './zh-CN/brand.json';
 import zhCommon from './zh-CN/common.json';
 import zhCompressPage from './zh-CN/compressPage.json';
 import zhConvertPage from './zh-CN/convertPage.json';
@@ -27,6 +28,7 @@ import zhWorkspace from './zh-CN/workspace.json';
 
 import enAccess from './en-US/access.json';
 import enApp from './en-US/app.json';
+import enBrand from './en-US/brand.json';
 import enCommon from './en-US/common.json';
 import enCompressPage from './en-US/compressPage.json';
 import enConvertPage from './en-US/convertPage.json';
@@ -56,6 +58,7 @@ import enWorkspace from './en-US/workspace.json';
  */
 const zhParts = [
   zhCommon,
+  zhBrand,
   zhApp,
   zhNavigation,
   zhStorage,
@@ -83,6 +86,7 @@ const zhParts = [
 
 const enParts = [
   enCommon,
+  enBrand,
   enApp,
   enNavigation,
   enStorage,

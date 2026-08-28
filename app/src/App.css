@@ -459,14 +459,14 @@ body {
 
 /* 工具页窄屏排版（REF-512 #150） */
 @media (max-width: 767px) {
-  .photos-page {
+  .library-page {
     padding-left: env(safe-area-inset-left, 0);
     padding-right: env(safe-area-inset-right, 0);
     overflow-x: hidden;
     max-width: 100%;
   }
 
-  .image-content-stats {
+  .library-stats {
     display: none;
   }
 

@@ -1,5 +1,5 @@
 import { useSearchContextSafe } from '@/features/library/SearchContext';
-import { ImageContent } from '@/features/image-content/ImageContent';
+import { LibraryWorkbench } from '@/features/library/LibraryWorkbench';
 import { useImageOperations } from '@/features/library/useImageOperations';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/stores/imageStore';
@@ -9,16 +9,18 @@ import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { filterImagesByFolder } from '@/features/workspace/folderTree';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-interface PhotosPageProps {
+interface LibraryPageProps {
   onOpenConfigModal: () => void;
 }
 
-export const PhotosPage: React.FC<PhotosPageProps> = ({
+export const LibraryPage: React.FC<LibraryPageProps> = ({
   onOpenConfigModal,
 }) => {
   const { t } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
   const images = useImageStore(state => state.images);
   const loading = useImageStore(state => state.loading);
   const error = useImageStore(state => state.error);
@@ -26,6 +28,10 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
+  const setCurrentUtilityTool = useUIStore(
+    state => state.setCurrentUtilityTool,
+  );
+  const setActiveMenu = useUIStore(state => state.setActiveMenu);
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
   const searchContext = useSearchContextSafe();
@@ -56,10 +62,22 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
     };
   }, [searchContext]);
 
+  useEffect(() => {
+    const tool = searchParams.get('tool');
+    if (tool !== 'compress' && tool !== 'convert') {
+      return;
+    }
+    setCurrentUtilityTool(tool);
+    setActiveMenu(tool);
+    const next = new URLSearchParams(searchParams);
+    next.delete('tool');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setActiveMenu, setCurrentUtilityTool, setSearchParams]);
+
   return (
-    <div className="photos-page h-full min-h-0 flex flex-col overflow-hidden">
+    <div className="library-page h-full min-h-0 flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 overflow-hidden">
-        <ImageContent
+        <LibraryWorkbench
           hasConfig={hasConfig}
           error={error}
           onClearError={clearError}
@@ -77,4 +95,7 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({
   );
 };
 
-export default PhotosPage;
+export default LibraryPage;
+
+/** @deprecated 使用 LibraryPage */
+export const PhotosPage = LibraryPage;

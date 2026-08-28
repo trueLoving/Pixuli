@@ -28,15 +28,15 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const syncBusy = pushing || syncing || workspaceLoading;
 
   const navigateToLibrary = useCallback(() => {
-    setActiveMenu('photos');
-    setCurrentView('photos');
+    setActiveMenu('library');
+    setCurrentView('library');
     setCurrentUtilityTool(null);
-    navigate(ROUTES.PHOTOS);
+    navigate(ROUTES.LIBRARY);
   }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
 
   const primary = [
     {
-      id: 'photos',
+      id: 'library',
       label: t('sidebar.library'),
       icon: LayoutGrid,
       onClick: navigateToLibrary,

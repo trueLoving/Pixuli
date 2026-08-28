@@ -1,3 +1,5 @@
+import { getBrandCopy } from '../i18n/brandCopy';
+
 const safeDOM = {
   append(parent: HTMLElement, child: HTMLElement) {
     if (!Array.from(parent.children).find(e => e === child)) {
@@ -37,6 +39,7 @@ const BRAND_PIXEL_SVG = `
 `;
 
 function useLoading() {
+  const brand = getBrandCopy();
   const className = `simple-loading`;
   const styleContent = `
   @keyframes simple-loading-fade-in {
@@ -239,15 +242,15 @@ function useLoading() {
   oDiv.className = className;
   oDiv.setAttribute('role', 'status');
   oDiv.setAttribute('aria-live', 'polite');
-  oDiv.setAttribute('aria-label', 'Pixuli 正在加载');
+  oDiv.setAttribute('aria-label', brand.bootAriaLabel);
 
   oDiv.innerHTML = `
       <div class="loading-content">
         <div class="logo-container">
           ${BRAND_PIXEL_SVG}
         </div>
-        <div class="loading-text">Pixuli</div>
-        <div class="loading-subtitle">智能图片管理应用</div>
+        <div class="loading-text">${brand.name}</div>
+        <div class="loading-subtitle">${brand.tagline}</div>
         <div class="progress-container">
           <div class="progress-bar" id="progress-bar"></div>
         </div>

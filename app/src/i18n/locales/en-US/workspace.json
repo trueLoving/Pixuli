@@ -1,10 +1,10 @@
 {
   "workspace": {
     "setupTitle": "Choose a local workspace",
-    "setupHint": "Pick a folder as your Pixuli local image workspace. Images are stored under images/ in that directory.",
-    "setupHintWeb": "Create a browser-local workspace (OPFS). Images and index stay on this device; clearing site data may remove the workspace.",
+    "setupHint": "Pick a folder as your Pixuli local workspace. Resources are stored in that directory.",
+    "setupHintWeb": "Create a browser-local workspace (OPFS). Resources and index stay on this device; clearing site data may remove the workspace.",
     "setupHintWebLocal": "Web supports local workspace only. Connect a folder on your computer (recommended) or create a browser workspace.",
-    "setupHintMobile": "Create a workspace in the app sandbox. Images and index stay in app storage; uninstalling removes the workspace.",
+    "setupHintMobile": "Create a workspace in the app sandbox. Resources and index stay in app storage; uninstalling removes the workspace.",
     "createMobileWorkspace": "Create app workspace",
     "mobileStorage": "App local storage (Capacitor)",
     "switchMobileWorkspace": "New app workspace",

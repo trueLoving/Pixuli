@@ -8,10 +8,10 @@ import { useUIStore } from '../stores/uiStore';
 export function useUIState() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [editingSourceId, setEditingSourceId] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<SidebarView>('photos');
+  const [currentView, setCurrentView] = useState<SidebarView>('library');
   const [currentUtilityTool, setCurrentUtilityTool] =
     useState<SidebarUtilityTool | null>(null);
-  const [activeMenu, setActiveMenu] = useState<string>('photos');
+  const [activeMenu, setActiveMenu] = useState<string>('library');
   const [isFullscreenMode, setIsFullscreenMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');

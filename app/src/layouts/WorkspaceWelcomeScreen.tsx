@@ -17,7 +17,7 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
   const showMigration = sourceCount > 0;
 
   const handleOpened = () => {
-    navigate(ROUTES.PHOTOS, { replace: true });
+    navigate(ROUTES.LIBRARY, { replace: true });
   };
 
   return (

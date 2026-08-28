@@ -10,7 +10,7 @@ import { useI18n } from '@/i18n/useI18n';
 
 type ResultItem = { file: File; result: ImageProcessResult };
 
-export const CompressPage: React.FC = () => {
+export const CompressToolPanel: React.FC = () => {
   const { t } = useI18n();
   const [files, setFiles] = useState<File[]>([]);
   const [results, setResults] = useState<ResultItem[]>([]);
@@ -105,12 +105,8 @@ export const CompressPage: React.FC = () => {
   };
 
   return (
-    <div className="utility-page h-full w-full overflow-auto p-4 sm:p-6">
+    <div className="utility-tool-panel utility-tool-panel--compress h-full w-full overflow-auto p-4 sm:p-6">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-6 text-xl font-semibold text-gray-800 dark:text-gray-200">
-          {t('compressPage.title')}
-        </h1>
-
         <div
           className="mb-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800/50"
           onDrop={onDrop}
@@ -327,4 +323,7 @@ export const CompressPage: React.FC = () => {
   );
 };
 
-export default CompressPage;
+export default CompressToolPanel;
+
+/** @deprecated 使用 CompressToolPanel */
+export const CompressPage = CompressToolPanel;

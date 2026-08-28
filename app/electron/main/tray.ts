@@ -1,6 +1,7 @@
-import { BrowserWindow, Menu, nativeImage, Tray } from 'electron';
+import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getBrandCopyForElectronLocale } from '../../src/i18n/brandCopy';
 import { resolvePreloadScript } from './resolvePreload';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,8 +94,8 @@ export function createTray(
   // 创建托盘
   tray = new Tray(trayIcon);
 
-  // 设置托盘提示
-  tray.setToolTip('Pixuli - 智能图片管理工具');
+  const brand = getBrandCopyForElectronLocale(app.getLocale());
+  tray.setToolTip(brand.trayTooltip);
 
   // 创建上下文菜单
   updateTrayMenu(win);

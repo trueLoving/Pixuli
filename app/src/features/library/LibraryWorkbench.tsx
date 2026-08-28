@@ -1,5 +1,6 @@
 import { EmptyState } from '@/features/library/empty-state';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
+import { UtilityToolOverlay } from '@/features/tools/UtilityToolOverlay';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type {
   ImageEditData,
@@ -15,22 +16,20 @@ import React, {
   useState,
 } from 'react';
 import { AssetInspector } from '../inspector/AssetInspector';
-import { AssetLibrary } from '../library/AssetLibrary';
+import { AssetLibrary } from './AssetLibrary';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
-import { isWorkspaceAvailable } from '../../platforms/workspacePlatform';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useImageCopyUrl } from '@/features/library/useImageCopyUrl';
 import {
   useNativeImagePickers,
   useNativeShareImage,
 } from '@/features/library/useNativeImageActions';
-import { ROUTES } from '@/router/routes';
-import { useNavigate } from 'react-router-dom';
-import { useImageStore } from '../../stores/imageStore';
-import { useUIStore } from '../../stores/uiStore';
-import { useWorkspaceStore } from '../../stores/workspaceStore';
-import './ImageContent.css';
+import { useImageStore } from '@/stores/imageStore';
+import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
+import './LibraryWorkbench.css';
 
-interface ImageContentProps {
+export interface LibraryWorkbenchProps {
   hasConfig: boolean;
   error: string | null;
   onClearError: () => void;
@@ -43,13 +42,13 @@ interface ImageContentProps {
   ) => Promise<void>;
   onUpdateImage: (data: ImageEditData) => Promise<void>;
   onOpenConfigModal: () => void;
-  t: (key: string, options?: Record<string, any>) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
   search?: LibrarySearchConfig;
 }
 
 function resolveImageErrorMessage(
   error: string,
-  t: (key: string, options?: Record<string, any>) => string,
+  t: (key: string, options?: Record<string, unknown>) => string,
 ): string {
   if (error.includes('|')) {
     const [key, provider] = error.split('|');
@@ -61,7 +60,7 @@ function resolveImageErrorMessage(
   return error;
 }
 
-export const ImageContent: React.FC<ImageContentProps> = ({
+export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   hasConfig,
   error,
   onClearError,
@@ -74,7 +73,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   t,
   search,
 }) => {
-  const navigate = useNavigate();
   const uploadImage = useImageStore(state => state.uploadImage);
   const uploadMultipleImages = useImageStore(
     state => state.uploadMultipleImages,
@@ -104,12 +102,11 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   );
   const setCurrentView = useUIStore(state => state.setCurrentView);
   const setActiveMenu = useUIStore(state => state.setActiveMenu);
+  const currentUtilityTool = useUIStore(state => state.currentUtilityTool);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  /** 与 selectedIds 同步的实体，避免仅靠 id 反查失败导致 Inspector 空白 */
   const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
-  /** 添加后「逐张完善」会话 */
   const [reviewIds, setReviewIds] = useState<string[]>([]);
   const [reviewIndex, setReviewIndex] = useState(0);
   const [editNonce, setEditNonce] = useState(0);
@@ -127,8 +124,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   );
 
   const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
-
-  // 宽屏常驻右栏（空态提示点选）；有选中时中/窄屏也打开 dock；手机用 sheet
   const showDockedInspector = !isMobile && (isWide || selectedIds.length > 0);
   const showSheetInspector = isMobile && selectedIds.length > 0;
 
@@ -254,6 +249,23 @@ export const ImageContent: React.FC<ImageContentProps> = ({
     setReviewIndex(0);
   }, []);
 
+  const openUtilityTool = useCallback(
+    (tool: 'compress' | 'convert') => {
+      setCurrentUtilityTool(tool);
+      setCurrentView('library');
+      setActiveMenu(tool);
+    },
+    [setActiveMenu, setCurrentUtilityTool, setCurrentView],
+  );
+
+  const handleSendCompress = useCallback(() => {
+    openUtilityTool('compress');
+  }, [openUtilityTool]);
+
+  const handleSendConvert = useCallback(() => {
+    openUtilityTool('convert');
+  }, [openUtilityTool]);
+
   useEffect(() => {
     if (!workspaceExplorerOpen) return;
     window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
@@ -282,20 +294,6 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       );
     };
   }, []);
-
-  const handleSendCompress = useCallback(() => {
-    setCurrentUtilityTool('compress');
-    setCurrentView('photos');
-    setActiveMenu('compress');
-    navigate(ROUTES.COMPRESS);
-  }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
-
-  const handleSendConvert = useCallback(() => {
-    setCurrentUtilityTool('convert');
-    setCurrentView('photos');
-    setActiveMenu('convert');
-    navigate(ROUTES.CONVERT);
-  }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
 
   if (!hasConfig) {
     return (
@@ -355,8 +353,11 @@ export const ImageContent: React.FC<ImageContentProps> = ({
   );
 
   return (
-    <div className="image-content-workbench">
-      <div className="image-content-library">
+    <div className="library-workbench">
+      <div
+        className="library-workbench__main"
+        aria-hidden={currentUtilityTool ? true : undefined}
+      >
         <AssetLibrary
           t={t}
           images={images}
@@ -386,6 +387,10 @@ export const ImageContent: React.FC<ImageContentProps> = ({
       </div>
       {showDockedInspector ? inspector : null}
       {showSheetInspector ? inspector : null}
+      <UtilityToolOverlay />
     </div>
   );
 };
+
+/** @deprecated 使用 LibraryWorkbench */
+export const ImageContent = LibraryWorkbench;

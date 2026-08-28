@@ -182,7 +182,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       <FullScreenLoading
         visible={showGlobalLoading}
-        text={showGlobalLoading ? t('app.loadingImages') : undefined}
+        text={showGlobalLoading ? t('app.loadingResources') : undefined}
       />
 
       <WebBrowserChrome />
