@@ -1,14 +1,3 @@
-import {
-  AlertCircle,
-  Camera,
-  CheckCircle,
-  Crop,
-  Image as ImageIcon,
-  Images,
-  Loader2,
-  Upload,
-  X,
-} from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { defaultTranslate } from '@/i18n/locales';
@@ -30,6 +19,18 @@ import {
 } from '@/ui/feedback/toast';
 import type { NativeImagePickers } from './nativePickers';
 import ImageCropModal from './ImageCropModal';
+import { ImageUploadBatchProgress } from './ImageUploadBatchProgress';
+import { ImageUploadConfirmForm } from './ImageUploadConfirmForm';
+import { ImageUploadDropzone } from './ImageUploadDropzone';
+import {
+  DEFAULT_COMPRESSION_OPTIONS,
+  type CompressionPreviewMap,
+} from './imageUploadTypes';
+import {
+  getImageDimensions,
+  isPreviewableMedia,
+  resolveDefaultFolder,
+} from './imageUploadUtils';
 import './ImageUpload.css';
 
 interface ImageUploadProps {
@@ -49,37 +50,6 @@ interface ImageUploadProps {
   /** 外部预填文件（主视图拖入打开确认） */
   initialFiles?: File[];
   onInitialFilesConsumed?: () => void;
-}
-
-function resolveDefaultFolder(folder?: string): string {
-  if (!folder || folder === '__root__') return 'images';
-  return folder.replace(/\/+$/, '');
-}
-
-function isPreviewableMedia(file: File): boolean {
-  return file.type.startsWith('image/') || file.type.startsWith('video/');
-}
-
-function needsRichConfirm(files: File[]): boolean {
-  return files.some(
-    file => file.type.startsWith('image/') || file.type.startsWith('video/'),
-  );
-}
-
-function fileTypeLabel(file: File, translate: (key: string) => string): string {
-  if (file.type.startsWith('image/')) {
-    return translate('image.upload.typeImage');
-  }
-  if (file.type.startsWith('video/')) {
-    return translate('image.upload.typeVideo');
-  }
-  if (
-    file.type === 'application/pdf' ||
-    file.name.toLowerCase().endsWith('.pdf')
-  ) {
-    return translate('image.upload.typePdf');
-  }
-  return translate('image.upload.typeOther');
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -119,28 +89,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   }>({});
   const [userWantsCompress, setUserWantsCompress] = useState(false);
   const [userWantsCrop, setUserWantsCrop] = useState(false);
-  const [compressionPreview, setCompressionPreview] = useState<{
-    [key: string]: {
-      originalSize: number;
-      compressedSize: number;
-      compressionRatio: number;
-      originalDimensions: { width: number; height: number };
-      compressedDimensions: { width: number; height: number };
-      originalPreviewUrl?: string;
-      compressedPreviewUrl?: string;
-    };
-  }>({});
+  const [compressionPreview, setCompressionPreview] =
+    useState<CompressionPreviewMap>({});
   const [calculatingCompression, setCalculatingCompression] = useState(false);
   const [showCompressionConfig, setShowCompressionConfig] = useState(false);
   const [userCompressionConfig, setUserCompressionConfig] =
     useState<ImageCompressionOptions>(
-      compressionOptions || {
-        quality: 0.8,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        maintainAspectRatio: true,
-        outputFormat: 'image/jpeg',
-      },
+      compressionOptions || DEFAULT_COMPRESSION_OPTIONS,
     );
   const tagInputRef = useRef<HTMLInputElement>(null);
   const captureMetadataByFileRef = useRef(
@@ -199,39 +154,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       cleanupPreviewUrls();
     };
   }, [cleanupPreviewUrls]);
-
-  // 获取图片尺寸的辅助函数
-  const getImageDimensions = useCallback(
-    (file: File): Promise<{ width: number; height: number }> => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        const objectUrl = URL.createObjectURL(file);
-
-        const timeout = setTimeout(() => {
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error('获取图片尺寸超时'));
-        }, 10000);
-
-        img.onload = () => {
-          clearTimeout(timeout);
-          URL.revokeObjectURL(objectUrl);
-          resolve({
-            width: img.naturalWidth || img.width,
-            height: img.naturalHeight || img.height,
-          });
-        };
-
-        img.onerror = () => {
-          clearTimeout(timeout);
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error('图片加载失败'));
-        };
-
-        img.src = objectUrl;
-      });
-    },
-    [],
-  );
 
   // 压缩文件的辅助函数
   const compressFileIfNeeded = useCallback(
@@ -379,13 +301,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         setShowCompressionConfig(false);
         // 重置为用户配置或默认配置
         setUserCompressionConfig(
-          compressionOptions || {
-            quality: 0.8,
-            maxWidth: 1920,
-            maxHeight: 1080,
-            maintainAspectRatio: true,
-            outputFormat: 'image/jpeg',
-          },
+          compressionOptions || DEFAULT_COMPRESSION_OPTIONS,
         );
 
         if (acceptedFiles.length === 1) {
@@ -1015,7 +931,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       ? multiUploadData
       : uploadData
     : null;
-  const richConfirm = files.length > 0 && needsRichConfirm(files);
   const folderValue =
     currentData?.targetFolder || resolveDefaultFolder(defaultFolder);
   const previewUrls = React.useMemo(() => {
@@ -1042,840 +957,71 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
+  const handleCompressionConfigChange = useCallback(
+    (config: ImageCompressionOptions) => {
+      setUserCompressionConfig(config);
+      if (userWantsCompress) {
+        const previewFiles = uploadData
+          ? [uploadData.file]
+          : multiUploadData
+            ? multiUploadData.files
+            : [];
+        if (previewFiles.length > 0) {
+          void calculateCompressionPreview(previewFiles);
+        }
+      }
+    },
+    [
+      userWantsCompress,
+      uploadData,
+      multiUploadData,
+      calculateCompressionPreview,
+    ],
+  );
+
+  const handleFormFieldChange = (
+    field: keyof WebImageUploadData | keyof MultiImageUploadData,
+    value: string | string[],
+  ) => {
+    if (isMultipleUpload) {
+      handleMultiInputChange(field as keyof MultiImageUploadData, value);
+      return;
+    }
+    handleInputChange(field as keyof WebImageUploadData, value);
+  };
+
   // 如果显示表单，直接返回表单内容（不显示拖拽区域）
   if (showFormContent && currentData) {
     return (
-      <div className="image-upload-form-container">
-        <form
-          onSubmit={isMultipleUpload ? handleMultiSubmit : handleSubmit}
-          className="image-upload-form"
-        >
-          <div className="image-upload-confirm-header">
-            <p className="image-upload-confirm-title">
-              {translate('image.upload.confirmTitle')}
-            </p>
-            <p className="image-upload-confirm-hint">
-              <span className="image-upload-local-badge">
-                {translate('image.upload.localOnlyBadge')}
-              </span>
-              {translate('image.upload.confirmHint')}
-            </p>
-          </div>
-
-          {/* 文件列表（短确认：图/视频带预览） */}
-          <div className="image-upload-file-list">
-            {files.map((file, index) => {
-              const dimensions = fileDimensions[file.name];
-              const dimensionsText =
-                dimensions && dimensions.width > 0 && dimensions.height > 0
-                  ? `${dimensions.width} × ${dimensions.height}`
-                  : null;
-              const previewable = isPreviewableMedia(file);
-              const previewUrl = previewUrls.get(file.name + file.size) ?? null;
-              return (
-                <div key={index} className="image-upload-file-item">
-                  <span className="image-upload-type-badge">
-                    {fileTypeLabel(file, translate)}
-                  </span>
-                  {previewUrl && file.type.startsWith('image/') ? (
-                    <img
-                      src={previewUrl}
-                      alt=""
-                      className="image-upload-file-thumb"
-                    />
-                  ) : previewUrl && file.type.startsWith('video/') ? (
-                    <video
-                      src={previewUrl}
-                      className="image-upload-file-thumb"
-                      muted
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : (
-                    <ImageIcon className="image-upload-file-icon" />
-                  )}
-                  <div className="image-upload-file-info">
-                    <p className="image-upload-file-name">{file.name}</p>
-                    <div className="image-upload-file-meta">
-                      <p className="image-upload-file-size">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                      {dimensionsText && (
-                        <p className="image-upload-file-dimensions">
-                          {dimensionsText}
-                        </p>
-                      )}
-                      {!previewable ? (
-                        <p className="image-upload-file-dimensions">
-                          {translate('image.upload.previewUnavailable')}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* 压缩和裁剪选项 */}
-          {(enableCompression || enableCrop) &&
-            files.every(file => file.type.startsWith('image/')) && (
-              <div className="image-upload-form-group">
-                <label className="image-upload-form-label">处理选项</label>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                  }}
-                >
-                  {enableCrop && (
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={userWantsCrop}
-                        onChange={e => setUserWantsCrop(e.target.checked)}
-                        style={{
-                          width: '1rem',
-                          height: '1rem',
-                          cursor: 'pointer',
-                        }}
-                      />
-                      <span>裁剪图片</span>
-                    </label>
-                  )}
-                  {enableCompression && (
-                    <>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <label
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            flex: 1,
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={userWantsCompress}
-                            onChange={e =>
-                              handleCompressionToggle(e.target.checked)
-                            }
-                            style={{
-                              width: '1rem',
-                              height: '1rem',
-                              cursor: 'pointer',
-                            }}
-                          />
-                          <span>压缩图片</span>
-                          {calculatingCompression && (
-                            <Loader2
-                              style={{
-                                width: '0.875rem',
-                                height: '0.875rem',
-                                animation: 'spin 1s linear infinite',
-                              }}
-                            />
-                          )}
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowCompressionConfig(!showCompressionConfig)
-                          }
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            color: '#0369a1',
-                            backgroundColor: 'transparent',
-                            border: '1px solid #bae6fd',
-                            borderRadius: '0.25rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {showCompressionConfig ? '收起配置' : '配置'}
-                        </button>
-                      </div>
-                      {/* 压缩配置面板 */}
-                      {showCompressionConfig && (
-                        <div
-                          style={{
-                            marginTop: '0.75rem',
-                            padding: '0.75rem',
-                            backgroundColor: '#f8fafc',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '0.375rem',
-                            fontSize: '0.75rem',
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '0.75rem',
-                            }}
-                          >
-                            {/* 质量设置 */}
-                            <div>
-                              <label
-                                style={{
-                                  display: 'block',
-                                  marginBottom: '0.25rem',
-                                  fontWeight: 500,
-                                  color: '#374151',
-                                }}
-                              >
-                                压缩质量:{' '}
-                                {Math.round(
-                                  (userCompressionConfig.quality || 0.8) * 100,
-                                )}
-                                %
-                              </label>
-                              <input
-                                type="range"
-                                min="0.1"
-                                max="1"
-                                step="0.05"
-                                value={userCompressionConfig.quality || 0.8}
-                                onChange={e => {
-                                  const newConfig = {
-                                    ...userCompressionConfig,
-                                    quality: parseFloat(e.target.value),
-                                  };
-                                  setUserCompressionConfig(newConfig);
-                                  // 如果已选择压缩，重新计算预览
-                                  if (userWantsCompress) {
-                                    const files = uploadData
-                                      ? [uploadData.file]
-                                      : multiUploadData
-                                        ? multiUploadData.files
-                                        : [];
-                                    if (files.length > 0) {
-                                      calculateCompressionPreview(files);
-                                    }
-                                  }
-                                }}
-                                style={{ width: '100%' }}
-                              />
-                              <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  fontSize: '0.625rem',
-                                  color: '#6b7280',
-                                  marginTop: '0.125rem',
-                                }}
-                              >
-                                <span>低质量 (10%)</span>
-                                <span>高质量 (100%)</span>
-                              </div>
-                            </div>
-
-                            {/* 最大尺寸设置 */}
-                            <div
-                              style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '0.5rem',
-                              }}
-                            >
-                              <div>
-                                <label
-                                  style={{
-                                    display: 'block',
-                                    marginBottom: '0.25rem',
-                                    fontWeight: 500,
-                                    color: '#374151',
-                                  }}
-                                >
-                                  最大宽度 (px)
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="100"
-                                  value={userCompressionConfig.maxWidth || ''}
-                                  onChange={e => {
-                                    const newConfig = {
-                                      ...userCompressionConfig,
-                                      maxWidth: e.target.value
-                                        ? parseInt(e.target.value, 10)
-                                        : undefined,
-                                    };
-                                    setUserCompressionConfig(newConfig);
-                                    if (userWantsCompress) {
-                                      const files = uploadData
-                                        ? [uploadData.file]
-                                        : multiUploadData
-                                          ? multiUploadData.files
-                                          : [];
-                                      if (files.length > 0) {
-                                        calculateCompressionPreview(files);
-                                      }
-                                    }
-                                  }}
-                                  placeholder="不限制"
-                                  style={{
-                                    width: '100%',
-                                    padding: '0.375rem',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '0.25rem',
-                                    fontSize: '0.75rem',
-                                  }}
-                                />
-                              </div>
-                              <div>
-                                <label
-                                  style={{
-                                    display: 'block',
-                                    marginBottom: '0.25rem',
-                                    fontWeight: 500,
-                                    color: '#374151',
-                                  }}
-                                >
-                                  最大高度 (px)
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="100"
-                                  value={userCompressionConfig.maxHeight || ''}
-                                  onChange={e => {
-                                    const newConfig = {
-                                      ...userCompressionConfig,
-                                      maxHeight: e.target.value
-                                        ? parseInt(e.target.value, 10)
-                                        : undefined,
-                                    };
-                                    setUserCompressionConfig(newConfig);
-                                    if (userWantsCompress) {
-                                      const files = uploadData
-                                        ? [uploadData.file]
-                                        : multiUploadData
-                                          ? multiUploadData.files
-                                          : [];
-                                      if (files.length > 0) {
-                                        calculateCompressionPreview(files);
-                                      }
-                                    }
-                                  }}
-                                  placeholder="不限制"
-                                  style={{
-                                    width: '100%',
-                                    padding: '0.375rem',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '0.25rem',
-                                    fontSize: '0.75rem',
-                                  }}
-                                />
-                              </div>
-                            </div>
-
-                            {/* 输出格式 */}
-                            <div>
-                              <label
-                                style={{
-                                  display: 'block',
-                                  marginBottom: '0.25rem',
-                                  fontWeight: 500,
-                                  color: '#374151',
-                                }}
-                              >
-                                输出格式
-                              </label>
-                              <select
-                                value={
-                                  userCompressionConfig.outputFormat ||
-                                  'image/jpeg'
-                                }
-                                onChange={e => {
-                                  const newConfig = {
-                                    ...userCompressionConfig,
-                                    outputFormat: e.target.value as
-                                      | 'image/jpeg'
-                                      | 'image/png'
-                                      | 'image/webp',
-                                  };
-                                  setUserCompressionConfig(newConfig);
-                                  if (userWantsCompress) {
-                                    const files = uploadData
-                                      ? [uploadData.file]
-                                      : multiUploadData
-                                        ? multiUploadData.files
-                                        : [];
-                                    if (files.length > 0) {
-                                      calculateCompressionPreview(files);
-                                    }
-                                  }
-                                }}
-                                style={{
-                                  width: '100%',
-                                  padding: '0.375rem',
-                                  border: '1px solid #d1d5db',
-                                  borderRadius: '0.25rem',
-                                  fontSize: '0.75rem',
-                                }}
-                              >
-                                <option value="image/jpeg">JPEG</option>
-                                <option value="image/png">PNG</option>
-                                <option value="image/webp">WebP</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {/* 压缩预览信息 */}
-                      {userWantsCompress &&
-                        !calculatingCompression &&
-                        Object.keys(compressionPreview).length > 0 && (
-                          <div
-                            style={{
-                              marginTop: '0.5rem',
-                              padding: '0.75rem',
-                              backgroundColor: '#f0f9ff',
-                              border: '1px solid #bae6fd',
-                              borderRadius: '0.375rem',
-                              fontSize: '0.75rem',
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontWeight: 500,
-                                marginBottom: '0.5rem',
-                                color: '#0369a1',
-                              }}
-                            >
-                              压缩预览
-                            </div>
-                            {files.map((file, index) => {
-                              const preview = compressionPreview[file.name];
-                              if (!preview) return null;
-
-                              const formatSize = (bytes: number) => {
-                                if (bytes < 1024) return bytes + ' B';
-                                if (bytes < 1024 * 1024)
-                                  return (bytes / 1024).toFixed(2) + ' KB';
-                                return (
-                                  (bytes / (1024 * 1024)).toFixed(2) + ' MB'
-                                );
-                              };
-
-                              const sizeChanged =
-                                preview.originalSize !== preview.compressedSize;
-                              const dimensionsChanged =
-                                preview.originalDimensions.width !==
-                                  preview.compressedDimensions.width ||
-                                preview.originalDimensions.height !==
-                                  preview.compressedDimensions.height;
-
-                              return (
-                                <div
-                                  key={index}
-                                  style={{
-                                    marginBottom:
-                                      index < files.length - 1 ? '0.5rem' : 0,
-                                    paddingBottom:
-                                      index < files.length - 1 ? '0.5rem' : 0,
-                                    borderBottom:
-                                      index < files.length - 1
-                                        ? '1px solid #bae6fd'
-                                        : 'none',
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      fontWeight: 500,
-                                      marginBottom: '0.25rem',
-                                      color: '#0c4a6e',
-                                    }}
-                                  >
-                                    {file.name}
-                                  </div>
-                                  <div style={{ color: '#075985' }}>
-                                    <div>
-                                      文件大小:{' '}
-                                      <span
-                                        style={{
-                                          textDecoration: sizeChanged
-                                            ? 'line-through'
-                                            : 'none',
-                                          color: sizeChanged
-                                            ? '#64748b'
-                                            : 'inherit',
-                                        }}
-                                      >
-                                        {formatSize(preview.originalSize)}
-                                      </span>
-                                      {sizeChanged && (
-                                        <>
-                                          {' → '}
-                                          <span
-                                            style={{
-                                              color: '#059669',
-                                              fontWeight: 500,
-                                            }}
-                                          >
-                                            {formatSize(preview.compressedSize)}
-                                          </span>{' '}
-                                          <span
-                                            style={{
-                                              color:
-                                                preview.compressionRatio > 30
-                                                  ? '#059669'
-                                                  : preview.compressionRatio >
-                                                      10
-                                                    ? '#d97706'
-                                                    : '#64748b',
-                                              fontWeight: 500,
-                                            }}
-                                          >
-                                            (节省{' '}
-                                            {preview.compressionRatio.toFixed(
-                                              1,
-                                            )}
-                                            %)
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
-                                    {dimensionsChanged && (
-                                      <div style={{ marginTop: '0.25rem' }}>
-                                        尺寸:{' '}
-                                        <span
-                                          style={{
-                                            textDecoration: 'line-through',
-                                            color: '#64748b',
-                                          }}
-                                        >
-                                          {preview.originalDimensions.width} ×{' '}
-                                          {preview.originalDimensions.height}
-                                        </span>
-                                        {' → '}
-                                        <span
-                                          style={{
-                                            color: '#059669',
-                                            fontWeight: 500,
-                                          }}
-                                        >
-                                          {preview.compressedDimensions.width} ×{' '}
-                                          {preview.compressedDimensions.height}
-                                        </span>
-                                      </div>
-                                    )}
-                                    {!sizeChanged && !dimensionsChanged && (
-                                      <div
-                                        style={{
-                                          color: '#64748b',
-                                          fontStyle: 'italic',
-                                        }}
-                                      >
-                                        文件较小，无需压缩
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* 图片预览对比 */}
-                                  {(preview.originalPreviewUrl ||
-                                    preview.compressedPreviewUrl) && (
-                                    <div
-                                      style={{
-                                        marginTop: '0.75rem',
-                                        display: 'grid',
-                                        gridTemplateColumns:
-                                          preview.originalPreviewUrl &&
-                                          preview.compressedPreviewUrl
-                                            ? '1fr 1fr'
-                                            : '1fr',
-                                        gap: '0.5rem',
-                                      }}
-                                    >
-                                      {preview.originalPreviewUrl && (
-                                        <div>
-                                          <div
-                                            style={{
-                                              fontSize: '0.625rem',
-                                              color: '#64748b',
-                                              marginBottom: '0.25rem',
-                                            }}
-                                          >
-                                            原图
-                                          </div>
-                                          <div
-                                            style={{
-                                              position: 'relative',
-                                              width: '100%',
-                                              aspectRatio: '16/9',
-                                              border: '1px solid #e5e7eb',
-                                              borderRadius: '0.25rem',
-                                              overflow: 'hidden',
-                                              backgroundColor: '#f9fafb',
-                                            }}
-                                          >
-                                            <img
-                                              src={preview.originalPreviewUrl}
-                                              alt="原图预览"
-                                              style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                              }}
-                                            />
-                                          </div>
-                                        </div>
-                                      )}
-                                      {preview.compressedPreviewUrl && (
-                                        <div>
-                                          <div
-                                            style={{
-                                              fontSize: '0.625rem',
-                                              color: '#64748b',
-                                              marginBottom: '0.25rem',
-                                            }}
-                                          >
-                                            压缩后
-                                          </div>
-                                          <div
-                                            style={{
-                                              position: 'relative',
-                                              width: '100%',
-                                              aspectRatio: '16/9',
-                                              border: '1px solid #10b981',
-                                              borderRadius: '0.25rem',
-                                              overflow: 'hidden',
-                                              backgroundColor: '#f9fafb',
-                                            }}
-                                          >
-                                            <img
-                                              src={preview.compressedPreviewUrl}
-                                              alt="压缩后预览"
-                                              style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                              }}
-                                            />
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-          <div className="image-upload-form-group">
-            <label className="image-upload-form-label">
-              {translate('image.upload.folder')}
-            </label>
-            <input
-              type="text"
-              value={folderValue}
-              onChange={e => setTargetFolder(e.target.value)}
-              placeholder={translate('image.upload.folderPlaceholder')}
-              className="image-upload-form-input"
-            />
-          </div>
-
-          <div className="image-upload-form-group">
-            <label className="image-upload-form-label">
-              {isMultipleUpload
-                ? translate('image.upload.namePrefix')
-                : translate('image.upload.fileName')}{' '}
-              <span className="image-upload-form-optional">
-                {translate('image.upload.optional')}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={currentData?.name || ''}
-              onChange={e =>
-                isMultipleUpload
-                  ? handleMultiInputChange('name', e.target.value)
-                  : handleInputChange('name', e.target.value)
-              }
-              placeholder={
-                isMultipleUpload
-                  ? translate('image.upload.namePrefixPlaceholder')
-                  : translate('image.upload.fileNamePlaceholder')
-              }
-              className="image-upload-form-input"
-            />
-          </div>
-
-          <div className="image-upload-form-group">
-            <label className="image-upload-form-label">
-              {translate('image.upload.description')}{' '}
-              <span className="image-upload-form-optional">
-                {translate('image.upload.optional')}
-              </span>
-            </label>
-            <textarea
-              value={currentData?.description || ''}
-              onChange={e =>
-                isMultipleUpload
-                  ? handleMultiInputChange('description', e.target.value)
-                  : handleInputChange('description', e.target.value)
-              }
-              placeholder={
-                isMultipleUpload
-                  ? translate('image.upload.descriptionPlaceholderMultiple')
-                  : translate('image.upload.descriptionPlaceholder')
-              }
-              rows={richConfirm ? 3 : 2}
-              className="image-upload-form-textarea"
-            />
-          </div>
-
-          <div className="image-upload-form-group">
-            <label className="image-upload-form-label">
-              {translate('image.upload.tags')}{' '}
-              <span className="image-upload-form-optional">
-                {translate('image.upload.optional')}
-              </span>
-            </label>
-            {/* 标签显示区域 */}
-            {Array.isArray(currentData?.tags) &&
-              currentData.tags.length > 0 && (
-                <div className="image-upload-tags-container">
-                  {currentData.tags.map((tag, index) => (
-                    <span key={index} className="image-upload-tag">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newTags =
-                            currentData.tags?.filter((_, i) => i !== index) ||
-                            [];
-                          isMultipleUpload
-                            ? handleMultiInputChange('tags', newTags)
-                            : handleInputChange('tags', newTags);
-                        }}
-                        className="image-upload-tag-remove"
-                      >
-                        <X className="image-upload-tag-remove-icon" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            {/* 标签输入框 */}
-            <input
-              ref={tagInputRef}
-              type="text"
-              onChange={e => {
-                const value = e.target.value;
-                if (value.includes(',')) {
-                  const newTags = value
-                    .split(',')
-                    .map(tag => tag.trim())
-                    .filter(Boolean);
-                  const existingTags = currentData?.tags || [];
-                  const uniqueNewTags = newTags.filter(
-                    tag => !existingTags.includes(tag),
-                  );
-                  if (uniqueNewTags.length > 0) {
-                    const updatedTags = [...existingTags, ...uniqueNewTags];
-                    isMultipleUpload
-                      ? handleMultiInputChange('tags', updatedTags)
-                      : handleInputChange('tags', updatedTags);
-                  }
-                  if (tagInputRef.current) {
-                    tagInputRef.current.value = '';
-                  }
-                }
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ',') {
-                  e.preventDefault();
-                  const value = e.currentTarget.value.trim();
-                  if (value) {
-                    const existingTags = currentData?.tags || [];
-                    if (!existingTags.includes(value)) {
-                      const updatedTags = [...existingTags, value];
-                      isMultipleUpload
-                        ? handleMultiInputChange('tags', updatedTags)
-                        : handleInputChange('tags', updatedTags);
-                    }
-                    if (tagInputRef.current) {
-                      tagInputRef.current.value = '';
-                    }
-                  }
-                } else if (
-                  e.key === 'Backspace' &&
-                  e.currentTarget.value === ''
-                ) {
-                  const existingTags = currentData?.tags || [];
-                  if (existingTags.length > 0) {
-                    const updatedTags = existingTags.slice(0, -1);
-                    isMultipleUpload
-                      ? handleMultiInputChange('tags', updatedTags)
-                      : handleInputChange('tags', updatedTags);
-                  }
-                }
-              }}
-              placeholder={
-                isMultipleUpload
-                  ? translate('image.upload.tagsPlaceholderMultiple')
-                  : translate('image.upload.tagsPlaceholder')
-              }
-              className="image-upload-form-input"
-            />
-          </div>
-
-          <div className="image-upload-button-group">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="image-upload-button image-upload-button-secondary"
-            >
-              {translate('image.upload.cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="image-upload-button image-upload-button-primary"
-            >
-              {loading ? (
-                <>
-                  <div className="image-upload-spinner"></div>
-                  <span>{translate('image.upload.uploading')}</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="image-upload-button-icon" />
-                  <span>
-                    {isMultipleUpload
-                      ? `${translate('image.upload.batchUploadButton')} (${files.length})`
-                      : translate('image.upload.uploadButton')}
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+      <ImageUploadConfirmForm
+        files={files}
+        isMultipleUpload={Boolean(isMultipleUpload)}
+        currentData={currentData}
+        folderValue={folderValue}
+        fileDimensions={fileDimensions}
+        previewUrls={previewUrls}
+        enableCrop={enableCrop}
+        enableCompression={enableCompression}
+        userWantsCrop={userWantsCrop}
+        userWantsCompress={userWantsCompress}
+        calculatingCompression={calculatingCompression}
+        showCompressionConfig={showCompressionConfig}
+        userCompressionConfig={userCompressionConfig}
+        compressionPreview={compressionPreview}
+        onCropToggle={setUserWantsCrop}
+        onCompressionToggle={handleCompressionToggle}
+        onToggleCompressionConfig={() =>
+          setShowCompressionConfig(open => !open)
+        }
+        onCompressionConfigChange={handleCompressionConfigChange}
+        loading={loading}
+        translate={translate}
+        tagInputRef={tagInputRef}
+        onSubmit={isMultipleUpload ? handleMultiSubmit : handleSubmit}
+        onCancel={handleCancel}
+        onTargetFolderChange={setTargetFolder}
+        onFieldChange={handleFormFieldChange}
+      />
     );
   }
 
@@ -1899,187 +1045,24 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         />
       )}
 
-      {/* 批量上传进度显示 - 集成到主弹窗内 */}
       {showProgress && batchUploadProgress ? (
-        <div className="image-upload-progress-container">
-          <div className="image-upload-progress-header">
-            <h3 className="image-upload-progress-title">
-              {translate('image.upload.batchProgress') || '上传进度'}
-            </h3>
-            <div className="image-upload-progress-count">
-              {batchUploadProgress.completed + batchUploadProgress.failed} /{' '}
-              {batchUploadProgress.total}
-            </div>
-          </div>
-
-          {/* 总体进度 */}
-          <div className="image-upload-progress-overall">
-            <div className="image-upload-progress-overall-header">
-              <span>
-                {translate('image.upload.overallProgress') || '总体进度'}
-              </span>
-              <span>
-                {Math.round(
-                  ((batchUploadProgress.completed +
-                    batchUploadProgress.failed) /
-                    batchUploadProgress.total) *
-                    100,
-                )}
-                %
-              </span>
-            </div>
-            <div className="image-upload-progress-bar">
-              <div
-                className="image-upload-progress-bar-fill"
-                style={{
-                  width: `${((batchUploadProgress.completed + batchUploadProgress.failed) / batchUploadProgress.total) * 100}%`,
-                }}
-              />
-            </div>
-            <div className="image-upload-progress-stats">
-              <span>
-                {translate('image.upload.success') || '成功'}:{' '}
-                {batchUploadProgress.completed}
-              </span>
-              <span>
-                {translate('image.upload.failed') || '失败'}:{' '}
-                {batchUploadProgress.failed}
-              </span>
-            </div>
-          </div>
-
-          {/* 当前上传文件 */}
-          {batchUploadProgress.current && (
-            <div className="image-upload-progress-current">
-              <div className="image-upload-progress-current-content">
-                <Loader2 className="image-upload-progress-current-spinner" />
-                <span className="image-upload-progress-current-text">
-                  {translate('image.upload.uploadingCurrent') || '正在上传'}:{' '}
-                  {batchUploadProgress.current}
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* 文件列表 */}
-          <div className="image-upload-progress-list">
-            {batchUploadProgress.items.map((item, index) => (
-              <div key={item.id} className="image-upload-progress-item">
-                <div className="image-upload-progress-item-icon">
-                  {item.status === 'success' && (
-                    <CheckCircle className="image-upload-progress-item-icon success" />
-                  )}
-                  {item.status === 'error' && (
-                    <AlertCircle className="image-upload-progress-item-icon error" />
-                  )}
-                  {item.status === 'uploading' && (
-                    <Loader2 className="image-upload-progress-item-icon uploading" />
-                  )}
-                </div>
-                <div className="image-upload-progress-item-info">
-                  <p className="image-upload-progress-item-name">
-                    {multiUploadData?.files[index]?.name ||
-                      `${translate('image.upload.file') || '文件'} ${index + 1}`}
-                  </p>
-                  <p className="image-upload-progress-item-message">
-                    {item.message}
-                    {item.status === 'success' && item.width && item.height && (
-                      <span className="image-upload-progress-item-dimensions">
-                        {' '}
-                        ({item.width} × {item.height})
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div className="image-upload-progress-item-progress">
-                  {item.progress}%
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ImageUploadBatchProgress
+          batchUploadProgress={batchUploadProgress}
+          translate={translate}
+          fileNameAt={index => multiUploadData?.files[index]?.name}
+        />
       ) : (
-        <div
-          {...getRootProps()}
-          className={`image-upload-dropzone ${isDragActive ? 'active' : 'inactive'}`}
-        >
-          <input {...getInputProps({})} />
-          <div className="image-upload-content">
-            <div
-              className={`image-upload-icon-container ${isDragActive ? 'active' : 'inactive'}`}
-            >
-              {enableCrop ? (
-                <Crop
-                  className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
-                />
-              ) : (
-                <Upload
-                  className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
-                />
-              )}
-            </div>
-            <div style={{ width: '100%' }}>
-              <p
-                className={`image-upload-text ${isDragActive ? 'active' : 'inactive'}`}
-              >
-                {isDragActive
-                  ? translate('image.upload.dragActive') || '松开鼠标上传图片'
-                  : enableCrop
-                    ? translate('image.upload.dragInactiveWithCrop') ||
-                      '拖拽图片到此处或点击选择'
-                    : translate('image.upload.dragInactive') ||
-                      '拖拽图片到此处或点击选择'}
-              </p>
-              <p className="image-upload-description">
-                {translate('image.upload.supportedFormats') ||
-                  '支持 JPG, PNG, GIF, BMP, WebP, SVG 等主流图片格式'}
-                {enableCrop && (
-                  <span className="image-upload-crop-hint">
-                    {' · '}
-                    {translate('image.upload.cropHint') || '支持裁剪'}
-                  </span>
-                )}
-              </p>
-              <div className="image-upload-formats">
-                {['JPG', 'PNG', 'GIF', 'BMP', 'WebP', 'SVG'].map(format => (
-                  <span key={format} className="image-upload-format-tag">
-                    {format}
-                  </span>
-                ))}
-              </div>
-              {nativePickers && (
-                <div className="image-upload-native-actions">
-                  <button
-                    type="button"
-                    className="image-upload-native-button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      void handleNativePick('camera');
-                    }}
-                  >
-                    <Camera className="image-upload-native-icon" />
-                    <span>
-                      {translate('image.upload.pickFromCamera') || '拍照'}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    className="image-upload-native-button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      void handleNativePick('gallery');
-                    }}
-                  >
-                    <Images className="image-upload-native-icon" />
-                    <span>
-                      {translate('image.upload.pickFromGallery') || '相册'}
-                    </span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ImageUploadDropzone
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          isDragActive={isDragActive}
+          enableCrop={enableCrop}
+          nativePickers={nativePickers}
+          translate={translate}
+          onNativePick={source => {
+            void handleNativePick(source);
+          }}
+        />
       )}
     </>
   );
