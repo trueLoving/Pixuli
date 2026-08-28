@@ -3,7 +3,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { WorkspaceRouteRedirect } from './WorkspaceRouteRedirect';
 
 const LibraryPage = lazy(() =>
-  import('../pages/library').then(module => ({ default: module.LibraryPage })),
+  import('@/features/library/LibraryPage').then(module => ({
+    default: module.LibraryPage,
+  })),
 );
 
 export const ROUTES = {

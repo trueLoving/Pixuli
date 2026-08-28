@@ -4,9 +4,9 @@
 
 import { Menu } from 'lucide-react';
 import React from 'react';
-import { useMobileViewport } from '../hooks/useMobileViewport';
-import { useI18n } from '../i18n/useI18n';
-import { useUIStore } from '../stores/uiStore';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { useI18n } from '@/i18n/useI18n';
+import { useUIStore } from '@/stores/uiStore';
 import './AppMain.css';
 
 interface AppMainProps {

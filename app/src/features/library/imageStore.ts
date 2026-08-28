@@ -1,28 +1,39 @@
 import {
   clearGiteeConfig,
-  loadGiteeConfig,
   saveGiteeConfig,
 } from '@/features/settings/config/gitee';
 import {
   clearGitHubConfig,
-  loadGitHubConfig,
   saveGitHubConfig,
 } from '@/features/settings/config/github';
-import {
-  createConfiguredStorageProvider,
-  storagePluginLabel,
-  type StoragePluginId,
-} from '@/storage/createProvider';
-import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import type { StoragePluginId } from '@/storage/createProvider';
 import {
   LogActionType,
   LogStatus,
   useLogStore,
 } from '@/features/operation-log';
 import {
-  getWorkspaceLibraryPort,
-  registerLibraryImageReset,
-} from '@/features/library/workspaceImageBridge';
+  deleteAssetImage,
+  deleteMultipleAssetImages,
+  updateAssetImage,
+} from '@/features/library/assetMutationService';
+import {
+  uploadAssetImage,
+  uploadMultipleAssetImages,
+} from '@/features/library/assetUploadService';
+import {
+  createStorageProvider,
+  resolveInitialProviderSession,
+  resolveActiveRepoConfig,
+} from '@/features/library/assetProviderSession';
+import {
+  isLocalListMode,
+  loadRemoteImageList,
+  refreshLocalImageList,
+  shouldSkipRemoteListLoad,
+  unconfiguredStorageError,
+} from '@/features/library/assetListService';
+import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
 import type {
   BatchUploadProgress,
   GiteeConfig,
@@ -31,9 +42,7 @@ import type {
   ImageItem,
   ImageUploadData,
   MultiImageUploadData,
-  UploadProgress,
 } from '@pixuli/core/types';
-import { getUploadFileName } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 import { create } from 'zustand';
 
@@ -73,55 +82,17 @@ interface ImageState {
   setBatchUploadProgress: (progress: BatchUploadProgress | null) => void;
 }
 
-function isLocalListMode(): boolean {
-  return getWorkspaceLibraryPort().isLocalActive();
-}
-
-async function refreshLocalIntoImageStore(
-  set: (partial: Partial<ImageState>) => void,
-  options?: { quiet?: boolean },
-): Promise<void> {
-  const workspace = getWorkspaceLibraryPort();
-  const quiet = options?.quiet === true;
-  if (!quiet) {
-    set({ loading: true, error: null });
-  }
-  try {
-    await workspace.refreshLocalImages(quiet ? { quiet: true } : undefined);
-    set({
-      images: workspace.getLocalImages(),
-      loading: false,
-    });
-  } catch (error) {
-    set({
-      loading: false,
-      error: error instanceof Error ? error.message : '加载本地图片失败',
-    });
-  }
-}
-
 export const useImageStore = create<ImageState>((set, get) => {
-  const initialGitHubConfig = loadGitHubConfig();
-  const initialGiteeConfig = loadGiteeConfig();
-
-  const storageType: StoragePluginId | null = initialGiteeConfig
-    ? 'gitee'
-    : initialGitHubConfig
-      ? 'github'
-      : null;
-  const initialConfig = initialGiteeConfig || initialGitHubConfig;
+  const initialSession = resolveInitialProviderSession();
 
   return {
     images: [],
     loading: false,
     error: null,
-    githubConfig: initialGitHubConfig,
-    giteeConfig: initialGiteeConfig,
-    storageProvider:
-      initialConfig && storageType
-        ? createConfiguredStorageProvider(storageType, initialConfig)
-        : null,
-    storageType,
+    githubConfig: initialSession.githubConfig,
+    giteeConfig: initialSession.giteeConfig,
+    storageProvider: initialSession.storageProvider,
+    storageType: initialSession.storageType,
     batchUploadProgress: null,
 
     setGitHubConfig: (config: GitHubConfig) => {
@@ -178,39 +149,34 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     initializeStorage: () => {
       const { githubConfig, giteeConfig, storageType } = get();
-
-      if (storageType === 'gitee' && giteeConfig) {
-        try {
-          const storageProvider = createConfiguredStorageProvider(
-            'gitee',
-            giteeConfig,
-          );
-          set({ storageProvider });
-        } catch (error) {
-          console.error('Failed to initialize gitee storage provider:', error);
-          set({ error: '初始化Gitee存储服务失败' });
-        }
-      } else if (storageType === 'github' && githubConfig) {
-        try {
-          const storageProvider = createConfiguredStorageProvider(
-            'github',
-            githubConfig,
-          );
-          set({ storageProvider });
-        } catch (error) {
-          console.error('Failed to initialize github storage provider:', error);
-          set({ error: '初始化GitHub存储服务失败' });
-        }
+      const config = resolveActiveRepoConfig(
+        storageType,
+        githubConfig,
+        giteeConfig,
+      );
+      if (!storageType || !config) {
+        return;
+      }
+      try {
+        set({ storageProvider: createStorageProvider(storageType, config) });
+      } catch (error) {
+        console.error('Failed to initialize storage provider:', error);
+        set({
+          error:
+            storageType === 'gitee'
+              ? '初始化Gitee存储服务失败'
+              : '初始化GitHub存储服务失败',
+        });
       }
     },
 
     loadImages: async () => {
-      if (isWorkspaceAvailable() && !isLocalListMode()) {
+      if (shouldSkipRemoteListLoad()) {
         return;
       }
 
       if (isLocalListMode()) {
-        await refreshLocalIntoImageStore(set);
+        await refreshLocalImageList(set);
         return;
       }
 
@@ -218,28 +184,14 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       if (!storageProvider) {
         set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
+          error: unconfiguredStorageError(storageType),
         });
         return;
       }
 
       set({ loading: true, error: null });
       try {
-        const images = await storageProvider.listImages();
-
-        const uniqueImages = images.reduce((acc: ImageItem[], current) => {
-          const existingIndex = acc.findIndex(img => img.id === current.id);
-          if (existingIndex === -1) {
-            acc.push(current);
-          } else {
-            const existing = acc[existingIndex];
-            if (new Date(current.updatedAt) > new Date(existing.updatedAt)) {
-              acc[existingIndex] = current;
-            }
-          }
-          return acc;
-        }, []);
-
+        const uniqueImages = await loadRemoteImageList(storageProvider);
         set({ images: uniqueImages, loading: false });
       } catch (error) {
         const errorMsg =
@@ -251,639 +203,62 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
-    uploadImage: async (uploadData: ImageUploadData) => {
-      if (isLocalListMode()) {
-        const imported =
-          await getWorkspaceLibraryPort().importLocalImage(uploadData);
-        await refreshLocalIntoImageStore(set, { quiet: true });
-        if (!imported) {
-          return null;
-        }
-        return get().images.find(image => image.id === imported.id) ?? imported;
-      }
+    uploadImage: async (uploadData: ImageUploadData) =>
+      uploadAssetImage(
+        uploadData,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
 
-      const { storageProvider, storageType } = get();
-      if (!storageProvider) {
-        set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
-          loading: false,
-        });
-        return null;
-      }
+    uploadMultipleImages: async (uploadData: MultiImageUploadData) =>
+      uploadMultipleAssetImages(
+        uploadData,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
 
-      set({ loading: true, error: null });
-      const startTime = Date.now();
-      try {
-        const newImage = await storageProvider.uploadImage(uploadData);
-        const duration = Date.now() - startTime;
-        set(state => ({
-          images: state.images.some(img => img.id === newImage.id)
-            ? state.images.map(img => (img.id === newImage.id ? newImage : img))
-            : [...state.images, newImage],
-          loading: false,
-        }));
-        useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.SUCCESS, {
-          imageId: newImage.id,
-          imageName: newImage.name,
-          duration,
-          details: {
-            size: newImage.size,
-            type: newImage.type,
-            capture: newImage.captureMetadata,
-          },
-        });
-        return newImage;
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        const errorMsg =
-          error instanceof Error ? error.message : '上传图片失败';
-        set({
-          error: errorMsg,
-          loading: false,
-        });
-        useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
-          imageName: getUploadFileName(uploadData.file, uploadData.name),
-          error: errorMsg,
-          duration,
-        });
-        return null;
-      } finally {
-        set({ loading: false });
-      }
-    },
+    deleteImage: async (imageId: string, fileName: string) =>
+      deleteAssetImage(
+        imageId,
+        fileName,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
 
-    uploadMultipleImages: async (uploadData: MultiImageUploadData) => {
-      const { files, name, description, tags, captureMetadataList } =
-        uploadData;
-
-      if (isLocalListMode()) {
-        const total = files.length;
-        if (total === 0) {
-          return [];
-        }
-
-        let completed = 0;
-        let failed = 0;
-        const startTime = Date.now();
-        const imported: ImageItem[] = [];
-        const items: UploadProgress[] = files.map((_file, index) => ({
-          id: `${Date.now()}-${index}`,
-          progress: 0,
-          status: 'uploading' as const,
-          message: '等待导入...',
-        }));
-
-        // 批量添加不锁壳层：进度走 batchUploadProgress / toast，不置 loading（§5.1）
-        set({
-          error: null,
-          batchUploadProgress: {
-            total,
-            completed: 0,
-            failed: 0,
-            current: files[0]?.name,
-            items,
-          },
-        });
-
-        try {
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const itemId = items[i].id;
-            set(state => ({
-              batchUploadProgress: state.batchUploadProgress
-                ? {
-                    ...state.batchUploadProgress,
-                    current: file.name,
-                    items: state.batchUploadProgress.items.map(item =>
-                      item.id === itemId
-                        ? {
-                            ...item,
-                            status: 'uploading',
-                            message: '正在导入...',
-                          }
-                        : item,
-                    ),
-                  }
-                : null,
-            }));
-
-            try {
-              const created = await getWorkspaceLibraryPort().importLocalImage({
-                file,
-                name,
-                description,
-                tags,
-                targetFolder: uploadData.targetFolder,
-                captureMetadata: captureMetadataList?.[i],
-              });
-              if (created) {
-                imported.push(created);
-              }
-              completed++;
-              set(state => ({
-                batchUploadProgress: state.batchUploadProgress
-                  ? {
-                      ...state.batchUploadProgress,
-                      completed,
-                      items: state.batchUploadProgress.items.map(item =>
-                        item.id === itemId
-                          ? {
-                              ...item,
-                              status: 'success',
-                              progress: 100,
-                              message: '导入成功',
-                            }
-                          : item,
-                      ),
-                    }
-                  : null,
-              }));
-            } catch (error) {
-              failed++;
-              const errorMessage =
-                error instanceof Error ? error.message : '导入失败';
-              set(state => ({
-                batchUploadProgress: state.batchUploadProgress
-                  ? {
-                      ...state.batchUploadProgress,
-                      failed,
-                      items: state.batchUploadProgress.items.map(item =>
-                        item.id === itemId
-                          ? {
-                              ...item,
-                              status: 'error',
-                              message: errorMessage,
-                            }
-                          : item,
-                      ),
-                    }
-                  : null,
-              }));
-            }
-          }
-
-          await refreshLocalIntoImageStore(set, { quiet: true });
-          set({ batchUploadProgress: null });
-          useLogStore
-            .getState()
-            .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
-              details: { total, completed, failed },
-              duration: Date.now() - startTime,
-            });
-          const importedIds = new Set(imported.map(item => item.id));
-          return get().images.filter(image => importedIds.has(image.id));
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : '批量导入失败';
-          set({
-            error: errorMsg,
-            batchUploadProgress: null,
-          });
-          useLogStore
-            .getState()
-            .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
-              error: errorMsg,
-              details: { total, completed, failed },
-            });
-          return [];
-        }
-      }
-
-      const { storageProvider, storageType } = get();
-      if (!storageProvider) {
-        set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
-          loading: false,
-        });
-        return [];
-      }
-
-      const total = files.length;
-      let completed = 0;
-      let failed = 0;
-      const uploadedImages: ImageItem[] = [];
-
-      try {
-        const items: UploadProgress[] = files.map((_file, index) => ({
-          id: `${Date.now()}-${index}`,
-          progress: 0,
-          status: 'uploading' as const,
-          message: '等待上传...',
-        }));
-
-        set({
-          loading: true,
-          error: null,
-          batchUploadProgress: {
-            total,
-            completed: 0,
-            failed: 0,
-            current: files[0]?.name,
-            items,
-          },
-        });
-
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const itemId = items[i].id;
-
-          try {
-            set(state => ({
-              batchUploadProgress: state.batchUploadProgress
-                ? {
-                    ...state.batchUploadProgress,
-                    current: file.name,
-                    items: state.batchUploadProgress.items.map(item =>
-                      item.id === itemId
-                        ? {
-                            ...item,
-                            status: 'uploading',
-                            message: '正在上传...',
-                          }
-                        : item,
-                    ),
-                  }
-                : null,
-            }));
-
-            const fileName = name ? `${name}-${i + 1}-${file.name}` : file.name;
-
-            const singleUploadData: ImageUploadData = {
-              file,
-              name: fileName,
-              description,
-              tags,
-              captureMetadata: captureMetadataList?.[i],
-            };
-
-            const newImage =
-              await storageProvider.uploadImage(singleUploadData);
-            uploadedImages.push(newImage);
-            completed++;
-
-            set(state => ({
-              batchUploadProgress: state.batchUploadProgress
-                ? {
-                    ...state.batchUploadProgress,
-                    completed,
-                    items: state.batchUploadProgress.items.map(item =>
-                      item.id === itemId
-                        ? {
-                            ...item,
-                            status: 'success',
-                            progress: 100,
-                            message: '上传成功',
-                          }
-                        : item,
-                    ),
-                  }
-                : null,
-            }));
-          } catch (error) {
-            failed++;
-            const errorMessage =
-              error instanceof Error ? error.message : '上传失败';
-
-            set(state => ({
-              batchUploadProgress: state.batchUploadProgress
-                ? {
-                    ...state.batchUploadProgress,
-                    failed,
-                    items: state.batchUploadProgress.items.map(item =>
-                      item.id === itemId
-                        ? { ...item, status: 'error', message: errorMessage }
-                        : item,
-                    ),
-                  }
-                : null,
-            }));
-          }
-        }
-
-        const batchStartTime = Date.now();
-        set(state => ({
-          images: [...state.images, ...uploadedImages],
-          loading: false,
-          batchUploadProgress: null,
-        }));
-        useLogStore
-          .getState()
-          .addLog(LogActionType.BATCH_UPLOAD, LogStatus.SUCCESS, {
-            details: {
-              total,
-              completed,
-              failed,
-              images: uploadedImages.map(img => ({
-                id: img.id,
-                name: img.name,
-              })),
-            },
-            duration: Date.now() - batchStartTime,
-          });
-        return uploadedImages;
-      } catch (error) {
-        const errorMsg =
-          error instanceof Error ? error.message : '批量上传失败';
-        set({
-          error: errorMsg,
-          loading: false,
-          batchUploadProgress: null,
-        });
-        useLogStore
-          .getState()
-          .addLog(LogActionType.BATCH_UPLOAD, LogStatus.FAILED, {
-            error: errorMsg,
-            details: { total, completed, failed },
-          });
-        return uploadedImages;
-      } finally {
-        set({ loading: false });
-      }
-    },
-
-    deleteImage: async (imageId: string, fileName: string) => {
-      if (isLocalListMode()) {
-        const image = get().images.find(img => img.id === imageId);
-        const relativePath = image?.localPath ?? fileName;
-        set({ loading: true, error: null });
-        try {
-          await getWorkspaceLibraryPort().softDeleteLocal(relativePath);
-          await refreshLocalIntoImageStore(set);
-        } catch (error) {
-          set({
-            loading: false,
-            error: error instanceof Error ? error.message : '删除图片失败',
-          });
-        }
-        return;
-      }
-
-      const { storageProvider, storageType } = get();
-      if (!storageProvider) {
-        set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
-          loading: false,
-        });
-        return;
-      }
-
-      set({ loading: true, error: null });
-      const startTime = Date.now();
-      try {
-        await storageProvider.deleteImage(fileName);
-        const duration = Date.now() - startTime;
-        set(state => ({
-          images: state.images.filter(img => img.id !== imageId),
-          loading: false,
-        }));
-        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
-          imageId,
-          imageName: fileName,
-          duration,
-        });
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        const errorMsg =
-          error instanceof Error ? error.message : '删除图片失败';
-        set({
-          error: errorMsg,
-          loading: false,
-        });
-        useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
-          imageId,
-          imageName: fileName,
-          error: errorMsg,
-          duration,
-        });
-      } finally {
-        set({ loading: false });
-      }
-    },
-
-    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) => {
-      if (imageIds.length === 0) {
-        return;
-      }
-
-      const batchLogDetails = {
+    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) =>
+      deleteMultipleAssetImages(
         imageIds,
-        imageNames: fileNames,
-        count: imageIds.length,
-      };
+        fileNames,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
 
-      if (isLocalListMode()) {
-        const startTime = Date.now();
-        set({ loading: true, error: null });
-        try {
-          const { images } = get();
-          for (const imageId of imageIds) {
-            const image = images.find(img => img.id === imageId);
-            if (image?.localPath) {
-              await getWorkspaceLibraryPort().softDeleteLocal(image.localPath);
-            }
-          }
-          await refreshLocalIntoImageStore(set);
-          useLogStore
-            .getState()
-            .addLog(LogActionType.BATCH_DELETE, LogStatus.SUCCESS, {
-              details: batchLogDetails,
-              duration: Date.now() - startTime,
-            });
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : '批量删除图片失败';
-          set({
-            loading: false,
-            error: errorMsg,
-          });
-          useLogStore
-            .getState()
-            .addLog(LogActionType.BATCH_DELETE, LogStatus.FAILED, {
-              details: batchLogDetails,
-              error: errorMsg,
-            });
-        }
-        return;
-      }
-
-      const { storageProvider, storageType } = get();
-      if (!storageProvider) {
-        set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
-          loading: false,
-        });
-        return;
-      }
-
-      set({ loading: true, error: null });
-      const startTime = Date.now();
-      try {
-        const deletePromises = fileNames.map(fileName =>
-          storageProvider.deleteImage(fileName),
-        );
-        await Promise.all(deletePromises);
-
-        const duration = Date.now() - startTime;
-        set(state => ({
-          images: state.images.filter(img => !imageIds.includes(img.id)),
-          loading: false,
-        }));
-
-        useLogStore
-          .getState()
-          .addLog(LogActionType.BATCH_DELETE, LogStatus.SUCCESS, {
-            details: batchLogDetails,
-            duration,
-          });
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        const errorMsg =
-          error instanceof Error ? error.message : '批量删除图片失败';
-        set({
-          error: errorMsg,
-          loading: false,
-        });
-
-        useLogStore
-          .getState()
-          .addLog(LogActionType.BATCH_DELETE, LogStatus.FAILED, {
-            details: batchLogDetails,
-            error: errorMsg,
-            duration,
-          });
-      } finally {
-        set({ loading: false });
-      }
-    },
-
-    updateImage: async (editData: ImageEditData) => {
-      const { storageProvider, storageType, images } = get();
-      const image = images.find(img => img.id === editData.id);
-      if (!image) {
-        set({ error: '图片不存在', loading: false });
-        return;
-      }
-
-      if (isLocalListMode()) {
-        if (!image.localPath) {
-          set({ error: '本地路径缺失', loading: false });
-          return;
-        }
-        set({ loading: true, error: null });
-        const startTime = Date.now();
-        try {
-          const workspace = getWorkspaceLibraryPort();
-          let relativePath = image.localPath;
-          if (editData.targetFolder !== undefined && relativePath) {
-            const slash = relativePath.lastIndexOf('/');
-            const currentFolder =
-              slash === -1 ? '' : relativePath.slice(0, slash);
-            const nextFolder = editData.targetFolder || 'images';
-            if (nextFolder !== currentFolder) {
-              await workspace.moveLocalFile(relativePath, nextFolder);
-              const fileName = relativePath.slice(slash + 1);
-              relativePath = nextFolder
-                ? `${nextFolder}/${fileName}`
-                : fileName;
-            }
-          }
-          await workspace.updateLocalMetadata(relativePath, {
-            name: editData.name || image.name,
-            description: editData.description ?? image.description,
-            tags: editData.tags ?? image.tags,
-          });
-          await refreshLocalIntoImageStore(set);
-          useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
-            imageId: editData.id,
-            imageName: editData.name || image.name,
-            duration: Date.now() - startTime,
-          });
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : '更新图片失败';
-          set({ error: errorMsg, loading: false });
-          useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
-            imageId: editData.id,
-            imageName: image.name,
-            error: errorMsg,
-            duration: Date.now() - startTime,
-          });
-        }
-        return;
-      }
-
-      if (!storageProvider) {
-        set({
-          error: `${storagePluginLabel(storageType)} 配置未初始化`,
-          loading: false,
-        });
-        return;
-      }
-
-      if (!storageProvider.updateImageMetadata) {
-        set({ error: '当前存储插件不支持更新元数据', loading: false });
-        return;
-      }
-
-      set({ loading: true, error: null });
-      const startTime = Date.now();
-      try {
-        const metadata: ImageItem = {
-          ...image,
-          name: editData.name || image.name,
-          description: editData.description ?? image.description,
-          tags: editData.tags ?? image.tags,
-          updatedAt: new Date().toISOString(),
-        };
-
-        await storageProvider.updateImageMetadata(metadata.name, metadata);
-
-        const duration = Date.now() - startTime;
-        set(state => ({
-          images: state.images.map(img =>
-            img.id === editData.id ? { ...img, ...metadata } : img,
-          ),
-          loading: false,
-        }));
-        useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
-          imageId: editData.id,
-          imageName: metadata.name,
-          duration,
-          details: {
-            changes: {
-              name:
-                editData.name !== image.name
-                  ? { old: image.name, new: editData.name }
-                  : undefined,
-              description:
-                editData.description !== image.description
-                  ? { old: image.description, new: editData.description }
-                  : undefined,
-              tags:
-                editData.tags !== image.tags
-                  ? { old: image.tags, new: editData.tags }
-                  : undefined,
-            },
-          },
-        });
-      } catch (error) {
-        const duration = Date.now() - startTime;
-        const errorMsg =
-          error instanceof Error ? error.message : '更新图片失败';
-        set({
-          error: errorMsg,
-          loading: false,
-        });
-        useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
-          imageId: editData.id,
-          imageName: image.name,
-          error: errorMsg,
-          duration,
-        });
-      } finally {
-        set({ loading: false });
-      }
-    },
+    updateImage: async (editData: ImageEditData) =>
+      updateAssetImage(
+        editData,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
 
     addImage: (image: ImageItem) => {
       set(state => ({

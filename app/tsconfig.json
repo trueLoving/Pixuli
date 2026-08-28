@@ -36,7 +36,6 @@
     "src/**/__tests__/**/*",
     "src/test/**/*",
     "**/*.test.*",
-    "**/__tests__/**",
-    "src/pages/HomePage/**"
+    "**/__tests__/**"
   ]
 }
