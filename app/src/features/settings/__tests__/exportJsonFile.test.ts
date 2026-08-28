@@ -5,11 +5,11 @@ vi.mock('@/platforms/platform', () => ({
   isNativeMobile: vi.fn(() => false),
 }));
 
-vi.mock('../clipboard', () => ({
+vi.mock('@/utils/clipboard', () => ({
   copyTextToClipboard: vi.fn(),
 }));
 
-import { copyTextToClipboard } from '../clipboard';
+import { copyTextToClipboard } from '@/utils/clipboard';
 import { isNativeMobile } from '@/platforms/platform';
 
 describe('exportJsonFile', () => {

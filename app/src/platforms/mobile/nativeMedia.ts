@@ -5,7 +5,7 @@ import { isNativeMobile } from '@/platforms/platform';
 import {
   buildCaptureMetadataFromFile,
   mapCapacitorExif,
-} from '@/utils/imageCaptureMetadata';
+} from './imageCaptureMetadata';
 
 export interface NativePickedImage {
   file: File;

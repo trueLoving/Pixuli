@@ -1,5 +1,5 @@
 import React from 'react';
-import OperationLogModal from '@/features/operation-log/OperationLogModal';
+import { OperationLogModal } from '@/features/operation-log';
 
 export const SettingsOperationLogPanel: React.FC = () => {
   return (

@@ -1,5 +1,5 @@
-import { LogActionType, LogStatus, LogFilter } from '@/types/log';
-import { useLogStore } from '@/stores/logStore';
+import { LogActionType, LogStatus, LogFilter } from './types';
+import { useLogStore } from './logStore';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import {
   Calendar,

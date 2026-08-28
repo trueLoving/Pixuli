@@ -122,7 +122,7 @@ export const ConvertToolPanel: React.FC = () => {
             className="cursor-pointer text-gray-600 dark:text-gray-400"
           >
             <ImageIcon className="mx-auto mb-2 h-12 w-12" />
-            <p>{t('convertPage.dropHint')}</p>
+            <p>{t('tools.convert.dropHint')}</p>
             {files.length > 0 && (
               <p className="mt-2 text-sm">
                 {files.length} {t('sourceManager.imageCount')}
@@ -138,7 +138,7 @@ export const ConvertToolPanel: React.FC = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('convertPage.targetFormat')}
+                {t('tools.convert.targetFormat')}
               </label>
               <select
                 value={targetFormat}
@@ -154,7 +154,7 @@ export const ConvertToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('convertPage.quality')} ({(quality * 100).toFixed(0)}%)
+                {t('tools.convert.quality')} ({(quality * 100).toFixed(0)}%)
               </label>
               <input
                 type="range"
@@ -168,12 +168,12 @@ export const ConvertToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('convertPage.maxWidth')}
+                {t('tools.convert.maxWidth')}
               </label>
               <input
                 type="number"
                 min="1"
-                placeholder={t('convertPage.maxWidthPlaceholder')}
+                placeholder={t('tools.convert.maxWidthPlaceholder')}
                 value={maxWidth}
                 onChange={e =>
                   setMaxWidth(
@@ -185,12 +185,12 @@ export const ConvertToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('convertPage.maxHeight')}
+                {t('tools.convert.maxHeight')}
               </label>
               <input
                 type="number"
                 min="1"
-                placeholder={t('convertPage.maxHeightPlaceholder')}
+                placeholder={t('tools.convert.maxHeightPlaceholder')}
                 value={maxHeight}
                 onChange={e =>
                   setMaxHeight(
@@ -212,7 +212,7 @@ export const ConvertToolPanel: React.FC = () => {
                 htmlFor="convert-keep-aspect"
                 className="text-sm text-gray-600 dark:text-gray-400"
               >
-                {t('convertPage.keepAspectRatio')}
+                {t('tools.convert.keepAspectRatio')}
               </label>
             </div>
           </div>
@@ -228,10 +228,10 @@ export const ConvertToolPanel: React.FC = () => {
             {processing ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t('convertPage.converting')}
+                {t('tools.convert.converting')}
               </>
             ) : (
-              t('convertPage.convertBtn')
+              t('tools.convert.convertBtn')
             )}
           </button>
           <button
@@ -240,13 +240,13 @@ export const ConvertToolPanel: React.FC = () => {
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <Trash2 className="h-4 w-4" />
-            {t('convertPage.clear')}
+            {t('tools.convert.clear')}
           </button>
         </div>
 
         {!files.length && !results.length && (
           <p className="text-center text-sm text-gray-500">
-            {t('convertPage.noFiles')}
+            {t('tools.convert.noFiles')}
           </p>
         )}
 
@@ -271,15 +271,15 @@ export const ConvertToolPanel: React.FC = () => {
                       {item.result.file.name}
                     </p>
                     <p className="text-gray-500">
-                      {t('convertPage.originalSize')}:{' '}
+                      {t('tools.convert.originalSize')}:{' '}
                       {formatFileSize(item.result.originalSize)} →{' '}
-                      {t('convertPage.processedSize')}:{' '}
+                      {t('tools.convert.processedSize')}:{' '}
                       {formatFileSize(item.result.processedSize)} (
-                      {t('convertPage.ratio')}:{' '}
+                      {t('tools.convert.ratio')}:{' '}
                       {(item.result.compressionRatio * 100).toFixed(1)}%)
                     </p>
                     <p className="text-gray-500">
-                      {t('convertPage.dimensions')}: {item.result.width} ×{' '}
+                      {t('tools.convert.dimensions')}: {item.result.width} ×{' '}
                       {item.result.height}
                     </p>
                   </div>
@@ -289,7 +289,7 @@ export const ConvertToolPanel: React.FC = () => {
                     className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
                   >
                     <Download className="h-4 w-4" />
-                    {t('convertPage.download')}
+                    {t('tools.convert.download')}
                   </button>
                 </li>
               ))}
@@ -302,6 +302,3 @@ export const ConvertToolPanel: React.FC = () => {
 };
 
 export default ConvertToolPanel;
-
-/** @deprecated 使用 ConvertToolPanel */
-export const ConvertPage = ConvertToolPanel;

@@ -96,6 +96,3 @@ export const LibraryPage: React.FC<LibraryPageProps> = ({
 };
 
 export default LibraryPage;
-
-/** @deprecated 使用 LibraryPage */
-export const PhotosPage = LibraryPage;

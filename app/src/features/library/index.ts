@@ -1,7 +1,7 @@
 export { default as UploadButton } from './UploadButton';
 export type { UploadButtonHandle, UploadButtonProps } from './UploadButton';
 export { AssetLibrary } from './AssetLibrary';
-export { LibraryWorkbench, ImageContent } from './LibraryWorkbench';
+export { LibraryWorkbench } from './LibraryWorkbench';
 export { AssetThumb } from './AssetThumb';
 export { EmptyState } from './empty-state';
 export type { LibrarySearchConfig } from './librarySearchTypes';

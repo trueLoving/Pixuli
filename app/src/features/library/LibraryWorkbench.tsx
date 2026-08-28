@@ -391,6 +391,3 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     </div>
   );
 };
-
-/** @deprecated 使用 LibraryWorkbench */
-export const ImageContent = LibraryWorkbench;

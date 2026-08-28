@@ -1,4 +1,4 @@
-import { copyTextToClipboard } from './clipboard';
+import { copyTextToClipboard } from '@/utils/clipboard';
 import { isNativeMobile } from '@/platforms/platform';
 
 export type ExportJsonResult = 'file' | 'clipboard';

@@ -125,7 +125,7 @@ export const CompressToolPanel: React.FC = () => {
             className="cursor-pointer text-gray-600 dark:text-gray-400"
           >
             <ImageIcon className="mx-auto mb-2 h-12 w-12" />
-            <p>{t('compressPage.dropHint')}</p>
+            <p>{t('tools.compress.dropHint')}</p>
             {files.length > 0 && (
               <p className="mt-2 text-sm">
                 {files.length} {t('sourceManager.imageCount')}
@@ -141,7 +141,7 @@ export const CompressToolPanel: React.FC = () => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('compressPage.quality')} ({(quality * 100).toFixed(0)}%)
+                {t('tools.compress.quality')} ({(quality * 100).toFixed(0)}%)
               </label>
               <input
                 type="range"
@@ -155,12 +155,12 @@ export const CompressToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('compressPage.maxWidth')}
+                {t('tools.compress.maxWidth')}
               </label>
               <input
                 type="number"
                 min="1"
-                placeholder={t('compressPage.maxWidthPlaceholder')}
+                placeholder={t('tools.compress.maxWidthPlaceholder')}
                 value={maxWidth}
                 onChange={e =>
                   setMaxWidth(
@@ -172,12 +172,12 @@ export const CompressToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('compressPage.maxHeight')}
+                {t('tools.compress.maxHeight')}
               </label>
               <input
                 type="number"
                 min="1"
-                placeholder={t('compressPage.maxHeightPlaceholder')}
+                placeholder={t('tools.compress.maxHeightPlaceholder')}
                 value={maxHeight}
                 onChange={e =>
                   setMaxHeight(
@@ -189,7 +189,7 @@ export const CompressToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('compressPage.outputFormat')}
+                {t('tools.compress.outputFormat')}
               </label>
               <select
                 value={outputFormat}
@@ -207,12 +207,12 @@ export const CompressToolPanel: React.FC = () => {
             </div>
             <div>
               <label className="mb-1 block text-xs text-gray-500">
-                {t('compressPage.minSizeToCompress')}
+                {t('tools.compress.minSizeToCompress')}
               </label>
               <input
                 type="number"
                 min="0"
-                placeholder={t('compressPage.minSizePlaceholder')}
+                placeholder={t('tools.compress.minSizePlaceholder')}
                 value={minSizeKB}
                 onChange={e =>
                   setMinSizeKB(
@@ -234,7 +234,7 @@ export const CompressToolPanel: React.FC = () => {
                 htmlFor="keep-aspect"
                 className="text-sm text-gray-600 dark:text-gray-400"
               >
-                {t('compressPage.keepAspectRatio')}
+                {t('tools.compress.keepAspectRatio')}
               </label>
             </div>
           </div>
@@ -250,10 +250,10 @@ export const CompressToolPanel: React.FC = () => {
             {processing ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                {t('compressPage.compressing')}
+                {t('tools.compress.compressing')}
               </>
             ) : (
-              t('compressPage.compressBtn')
+              t('tools.compress.compressBtn')
             )}
           </button>
           <button
@@ -262,13 +262,13 @@ export const CompressToolPanel: React.FC = () => {
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <Trash2 className="h-4 w-4" />
-            {t('compressPage.clear')}
+            {t('tools.compress.clear')}
           </button>
         </div>
 
         {!files.length && !results.length && (
           <p className="text-center text-sm text-gray-500">
-            {t('compressPage.noFiles')}
+            {t('tools.compress.noFiles')}
           </p>
         )}
 
@@ -293,15 +293,15 @@ export const CompressToolPanel: React.FC = () => {
                       {item.result.file.name}
                     </p>
                     <p className="text-gray-500">
-                      {t('compressPage.originalSize')}:{' '}
+                      {t('tools.compress.originalSize')}:{' '}
                       {formatFileSize(item.result.originalSize)} →{' '}
-                      {t('compressPage.processedSize')}:{' '}
+                      {t('tools.compress.processedSize')}:{' '}
                       {formatFileSize(item.result.processedSize)} (
                       {((1 - item.result.compressionRatio) * 100).toFixed(1)}%{' '}
-                      {t('compressPage.ratio')})
+                      {t('tools.compress.ratio')})
                     </p>
                     <p className="text-gray-500">
-                      {t('compressPage.dimensions')}: {item.result.width} ×{' '}
+                      {t('tools.compress.dimensions')}: {item.result.width} ×{' '}
                       {item.result.height}
                     </p>
                   </div>
@@ -311,7 +311,7 @@ export const CompressToolPanel: React.FC = () => {
                     className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
                   >
                     <Download className="h-4 w-4" />
-                    {t('compressPage.download')}
+                    {t('tools.compress.download')}
                   </button>
                 </li>
               ))}
@@ -324,6 +324,3 @@ export const CompressToolPanel: React.FC = () => {
 };
 
 export default CompressToolPanel;
-
-/** @deprecated 使用 CompressToolPanel */
-export const CompressPage = CompressToolPanel;
