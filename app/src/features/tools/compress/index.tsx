@@ -324,6 +324,3 @@ export const CompressToolPanel: React.FC = () => {
 };
 
 export default CompressToolPanel;
-
-/** @deprecated 使用 CompressToolPanel */
-export const CompressPage = CompressToolPanel;

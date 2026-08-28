@@ -302,6 +302,3 @@ export const ConvertToolPanel: React.FC = () => {
 };
 
 export default ConvertToolPanel;
-
-/** @deprecated 使用 ConvertToolPanel */
-export const ConvertPage = ConvertToolPanel;

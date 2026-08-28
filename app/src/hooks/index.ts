@@ -4,6 +4,5 @@ export { useCapacitorBackButton } from './useCapacitorBackButton';
 export { useKeyboardCategories } from './useKeyboardCategories';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useRouteSync } from './useRouteSync';
-export { useUIState } from './useUIState';
 export { useMobileViewport, useWideViewport } from './useMobileViewport';
 export { usePanelResize } from './usePanelResize';

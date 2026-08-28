@@ -19,22 +19,12 @@ export function navigateToLibrary(navigate: RouteNavigator): void {
   navigateToRoute(navigate, ROUTES.LIBRARY);
 }
 
-/** @deprecated 使用 navigateToLibrary */
-export function navigateToPhotos(navigate: RouteNavigator): void {
-  navigateToLibrary(navigate);
-}
-
 export function isCurrentRoute(pathname: string, route: string): boolean {
   return pathname === route;
 }
 
 export function isLibraryRoute(pathname: string): boolean {
   return pathname === ROUTES.LIBRARY || pathname === '/photos';
-}
-
-/** @deprecated 使用 isLibraryRoute */
-export function isPhotosRoute(pathname: string): boolean {
-  return isLibraryRoute(pathname);
 }
 
 export function isBrowseRoute(pathname: string): boolean {
