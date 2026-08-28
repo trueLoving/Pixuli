@@ -5,10 +5,9 @@
 
 import {
   getRepoConfigFromSource,
-  pluginIdToLegacyType,
+  resolveSourceDisplay,
 } from '@pixuli/core/sources';
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
-import { create } from 'zustand';
+import type { GitHubConfig } from '@pixuli/core/types';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import type { SettingsSection } from '@/features/settings/settingsTypes';
 import {
@@ -22,7 +21,9 @@ import {
 } from '../constants/panelWidth';
 import { isStoragePluginRegistered } from '../storage/registry';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from './sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
+import { syncRepoConfigToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
+import { create } from 'zustand';
 
 export type EditingSourceRepoConfig = Pick<
   GitHubConfig,
@@ -131,19 +132,6 @@ interface UIState {
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
 }
 
-function syncImageStoreForRepoConfig(
-  pluginId: string,
-  repoConfig: EditingSourceRepoConfig,
-): void {
-  const legacyType = pluginIdToLegacyType(pluginId);
-  const { setGitHubConfig, setGiteeConfig } = useImageStore.getState();
-  if (legacyType === 'github') {
-    setGitHubConfig(repoConfig as GitHubConfig);
-  } else {
-    setGiteeConfig(repoConfig as GiteeConfig);
-  }
-}
-
 export const useUIStore = create<UIState>(set => ({
   showConfigModal: false,
   showSettingsModal: false,
@@ -222,7 +210,7 @@ export const useUIStore = create<UIState>(set => ({
       return false;
     }
     const repoConfig = getRepoConfigFromSource(source);
-    syncImageStoreForRepoConfig(source.pluginId, repoConfig);
+    syncRepoConfigToImageStore(source.pluginId, repoConfig);
     set({
       editingSourceId: sourceId,
       editingSourcePluginId: source.pluginId,
@@ -324,7 +312,7 @@ export const useUIStore = create<UIState>(set => ({
   clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
     useImageStore.setState({
-      storageType: pluginId as 'github' | 'gitee',
+      storageType: resolveSourceDisplay(pluginId).legacyType,
     });
     set({
       editingSourceId: null,

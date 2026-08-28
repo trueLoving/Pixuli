@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getRepoConfigFromSource,
-  pluginIdToLegacyType,
+  resolveSourceDisplay,
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 
@@ -15,7 +15,7 @@ function resolveEditFormFromSource(
     return null;
   }
   return {
-    legacyType: pluginIdToLegacyType(source.pluginId),
+    legacyType: resolveSourceDisplay(source.pluginId).legacyType,
     form: getRepoConfigFromSource(source),
   };
 }

@@ -2,8 +2,7 @@ import { Cloud, Globe, HardDrive } from 'lucide-react';
 import React, { RefObject } from 'react';
 import type { ImageItem, SortField, SortOrder } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
-import { isAssetPublished } from '@/features/access/accessPolicyStore';
-import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
+import { isAssetPublished, hasPublishableRemoteUrl } from './publishContract';
 import { AssetThumb } from './AssetThumb';
 import { kindLabel, sortIndicator } from './assetLibraryUtils';
 

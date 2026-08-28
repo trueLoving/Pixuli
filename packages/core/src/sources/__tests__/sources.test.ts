@@ -5,6 +5,7 @@ import {
   normalizeStoredSourceEntry,
   normalizeStoredSources,
   parsePluginConfigImport,
+  resolveSourceDisplay,
 } from '../index';
 
 describe('normalizeStoredSourceEntry', () => {
@@ -144,5 +145,22 @@ describe('createStoredSourceEntry', () => {
     });
     expect(entry.pluginId).toBe('github');
     expect(entry.createdAt).toBeLessThanOrEqual(Date.now());
+  });
+});
+
+describe('resolveSourceDisplay', () => {
+  it('maps pluginId to legacy type and label', () => {
+    expect(resolveSourceDisplay('github')).toEqual({
+      legacyType: 'github',
+      typeLabel: 'GitHub',
+    });
+    expect(resolveSourceDisplay('gitee')).toEqual({
+      legacyType: 'gitee',
+      typeLabel: 'Gitee',
+    });
+    expect(resolveSourceDisplay('custom-github')).toEqual({
+      legacyType: 'github',
+      typeLabel: 'GitHub',
+    });
   });
 });

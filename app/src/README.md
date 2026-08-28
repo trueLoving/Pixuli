@@ -15,10 +15,10 @@ L3  layouts/ + platforms/ + boot/ + router/ + pages/   壳层与路由
 | ------------------------ | ---------------------------------------------------------------------------------- |
 | `features/library`       | 资源库 SSOT：`LibraryWorkbench`、`AssetLibrary`、上传、`imageStore`、SearchContext |
 | `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`                  |
-| `features/settings`      | 设置、源管理 hooks、配置 Modal、legacy localStorage config                         |
+| `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                      |
 | `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                           |
 | `features/operation-log` | 操作日志 UI + store + service（域内聚）                                            |
-| `stores/`                | **跨 feature** 全局 Zustand（见下表）                                              |
+| `stores/`                | **跨 feature** 壳层全局 Zustand                                                    |
 | `pages/library`          | 薄路由入口，挂载 `LibraryWorkbench`                                                |
 | `router/`                | `/library` 主路由、legacy redirect、`navigation` 工具                              |
 | `i18n/`                  | 文案 SSOT；壳层标语见 `brand.json` + `brandCopy.ts`                                |
@@ -33,16 +33,18 @@ L3  layouts/ + platforms/ + boot/ + router/ + pages/   壳层与路由
 
 ## Store 放置规则
 
-| 位置               | 何时使用                        | 示例                                                                                                   |
-| ------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `stores/`          | 多 feature / 壳层共享的全局状态 | `uiStore`、`sourceStore`                                                                               |
-| `features/<name>/` | 单 feature 私有持久化或服务     | `library/imageStore`、`workspace/workspaceStore`、`operation-log/logStore`、`access/accessPolicyStore` |
+| 位置               | 何时使用                    | 示例                                                                                                 |
+| ------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `stores/`          | 壳层全局 UI 状态            | `uiStore`                                                                                            |
+| `features/<name>/` | 单 feature 私有持久化或服务 | `settings/sourceStore`、`library/imageStore`、`workspace/workspaceStore`、`access/accessPolicyStore` |
 
 新增 store 前先问：是否被 2 个以上 feature 或 `App.tsx` 壳层直接依赖？是 →
 `stores/`；否 → 留在 owning feature。
 
-跨 feature store 互调经 `workspaceImageBridge`（`library` ↔
-`workspace`），避免直接 import 对方 store。
+跨 feature 互调经端口契约，避免直接 import 对方 store：
+
+- `workspaceImageBridge`（`library` ↔ `workspace`）
+- `publishContract`（`library` / `inspector` ↔ `access` 只读发布状态）
 
 ## 导入约定
 

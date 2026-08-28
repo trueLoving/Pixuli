@@ -2,7 +2,7 @@ import {
   createConfiguredStorageProvider,
   type StoragePluginId,
 } from '@/storage/createProvider';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import {

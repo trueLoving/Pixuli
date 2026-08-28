@@ -1,13 +1,13 @@
 import { Sidebar as CommonSidebar, type SidebarMenuItem } from './sidebar';
 import {
   getRepoConfigFromSource,
-  pluginIdToLegacyType,
+  resolveSourceDisplay,
 } from '@pixuli/core/sources';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
-import { useSourceStore } from '../stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
@@ -67,8 +67,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
       return t('settings.noSyncTarget');
     }
     const repo = getRepoConfigFromSource(activeSyncSource);
-    const legacyType = pluginIdToLegacyType(activeSyncSource.pluginId);
-    const typeLabel = legacyType === 'github' ? 'GitHub' : 'Gitee';
+    const { typeLabel } = resolveSourceDisplay(activeSyncSource.pluginId);
     return `${typeLabel} ${repo.owner}/${repo.repo}`;
   }, [activeSyncSource, t]);
 

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { runSyncWithFeedback } from './syncFeedback';

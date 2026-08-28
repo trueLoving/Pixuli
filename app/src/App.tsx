@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
+import '@/features/access/registerPublishPort';
 import { SearchProvider } from '@/features/library/SearchContext';
 import {
   useAppInitialization,
@@ -15,7 +16,7 @@ import { MainLayout } from '@/layouts/MainLayout';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { AppRoutes } from '@/router/routes';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
