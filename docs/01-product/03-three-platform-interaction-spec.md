@@ -187,7 +187,7 @@ Electron 窗口可自由缩放，**遵循同一 CSS 断点**，不单独做「�
 
 ### 5.3 Desktop 快捷键（现状 — 保持并扩展）
 
-来源：`app/src/utils/keyboardShortcuts.ts`、`@/ui` `COMMON_SHORTCUTS`。
+来源：`app/src/hooks/keyboardShortcuts.ts`、`@/ui` `COMMON_SHORTCUTS`。
 
 | 快捷键         | 行为           | 窄屏/Capacitor |
 | -------------- | -------------- | -------------- |
