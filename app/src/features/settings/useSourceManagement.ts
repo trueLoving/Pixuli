@@ -4,7 +4,7 @@ import {
 } from '@pixuli/core/sources';
 import { useCallback, useMemo } from 'react';
 import { isStoragePluginRegistered } from '@/storage/registry';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 
 /**

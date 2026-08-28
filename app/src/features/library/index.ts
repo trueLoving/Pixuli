@@ -12,6 +12,7 @@ export {
 } from './SearchContext';
 export { useImageCopyUrl, resolveRemoteCopyUrl } from './useImageCopyUrl';
 export { useImageOperations } from './useImageOperations';
+export { useImageStore } from './imageStore';
 export {
   useNativeImagePickers,
   useNativeShareImage,

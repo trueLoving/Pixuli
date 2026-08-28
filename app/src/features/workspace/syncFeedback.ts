@@ -5,7 +5,7 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatSyncOutcome, type SyncRunOutcome } from './syncOutcome';
 
 type TranslateFn = (

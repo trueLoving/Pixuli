@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useSourceStore } from '@/stores/sourceStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
 /**
  * 本地工作区激活时，将 sourceStore 变更同步至 vault bindings（REF-607 P4）。

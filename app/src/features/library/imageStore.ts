@@ -19,7 +19,10 @@ import {
   LogStatus,
   useLogStore,
 } from '@/features/operation-log';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import {
+  getWorkspaceLibraryPort,
+  registerLibraryImageReset,
+} from '@/features/library/workspaceImageBridge';
 import type {
   BatchUploadProgress,
   GiteeConfig,
@@ -71,14 +74,14 @@ interface ImageState {
 }
 
 function isLocalListMode(): boolean {
-  return useWorkspaceStore.getState().isLocalActive();
+  return getWorkspaceLibraryPort().isLocalActive();
 }
 
 async function refreshLocalIntoImageStore(
   set: (partial: Partial<ImageState>) => void,
   options?: { quiet?: boolean },
 ): Promise<void> {
-  const workspace = useWorkspaceStore.getState();
+  const workspace = getWorkspaceLibraryPort();
   const quiet = options?.quiet === true;
   if (!quiet) {
     set({ loading: true, error: null });
@@ -86,7 +89,7 @@ async function refreshLocalIntoImageStore(
   try {
     await workspace.refreshLocalImages(quiet ? { quiet: true } : undefined);
     set({
-      images: useWorkspaceStore.getState().localImages,
+      images: workspace.getLocalImages(),
       loading: false,
     });
   } catch (error) {
@@ -250,9 +253,8 @@ export const useImageStore = create<ImageState>((set, get) => {
 
     uploadImage: async (uploadData: ImageUploadData) => {
       if (isLocalListMode()) {
-        const imported = await useWorkspaceStore
-          .getState()
-          .importLocalImage(uploadData);
+        const imported =
+          await getWorkspaceLibraryPort().importLocalImage(uploadData);
         await refreshLocalIntoImageStore(set, { quiet: true });
         if (!imported) {
           return null;
@@ -366,16 +368,14 @@ export const useImageStore = create<ImageState>((set, get) => {
             }));
 
             try {
-              const created = await useWorkspaceStore
-                .getState()
-                .importLocalImage({
-                  file,
-                  name,
-                  description,
-                  tags,
-                  targetFolder: uploadData.targetFolder,
-                  captureMetadata: captureMetadataList?.[i],
-                });
+              const created = await getWorkspaceLibraryPort().importLocalImage({
+                file,
+                name,
+                description,
+                tags,
+                targetFolder: uploadData.targetFolder,
+                captureMetadata: captureMetadataList?.[i],
+              });
               if (created) {
                 imported.push(created);
               }
@@ -607,7 +607,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         const relativePath = image?.localPath ?? fileName;
         set({ loading: true, error: null });
         try {
-          await useWorkspaceStore.getState().softDeleteLocal(relativePath);
+          await getWorkspaceLibraryPort().softDeleteLocal(relativePath);
           await refreshLocalIntoImageStore(set);
         } catch (error) {
           set({
@@ -679,9 +679,7 @@ export const useImageStore = create<ImageState>((set, get) => {
           for (const imageId of imageIds) {
             const image = images.find(img => img.id === imageId);
             if (image?.localPath) {
-              await useWorkspaceStore
-                .getState()
-                .softDeleteLocal(image.localPath);
+              await getWorkspaceLibraryPort().softDeleteLocal(image.localPath);
             }
           }
           await refreshLocalIntoImageStore(set);
@@ -774,7 +772,7 @@ export const useImageStore = create<ImageState>((set, get) => {
         set({ loading: true, error: null });
         const startTime = Date.now();
         try {
-          const workspace = useWorkspaceStore.getState();
+          const workspace = getWorkspaceLibraryPort();
           let relativePath = image.localPath;
           if (editData.targetFolder !== undefined && relativePath) {
             const slash = relativePath.lastIndexOf('/');
@@ -917,4 +915,8 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ batchUploadProgress: progress });
     },
   };
+});
+
+registerLibraryImageReset(() => {
+  useImageStore.setState({ images: [], loading: false, error: null });
 });

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './ActivityBar.css';
 
 interface ActivityBarProps {

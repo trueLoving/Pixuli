@@ -39,8 +39,6 @@ interface SearchContextValue {
   handleSelectHistory: (query: string) => void;
   handleDeleteHistory: (query: string) => void;
   handleClearHistory: () => void;
-  /** @deprecated 使用 commitSearch；保留别名供旧调用 */
-  handleSaveHistory: (query: string) => void;
 }
 
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
@@ -120,7 +118,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         handleSelectHistory,
         handleDeleteHistory,
         handleClearHistory,
-        handleSaveHistory: commitSearch,
       }}
     >
       {children}

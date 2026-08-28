@@ -2,10 +2,10 @@ import { CloudDownload, CloudUpload, Loader2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { runSyncWithFeedback } from './syncFeedback';
 
 export type SyncDirectionChoice = 'pull' | 'push';
