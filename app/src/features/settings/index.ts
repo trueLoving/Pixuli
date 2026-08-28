@@ -7,3 +7,9 @@ export { VersionInfoModal } from './version-info';
 export { useConfigManagement } from './useConfigManagement';
 export { useSelectedSourceSync } from './useSelectedSourceSync';
 export { useSourceManagement } from './useSourceManagement';
+export { exportJsonFile } from './exportJsonFile';
+export type { ExportJsonResult } from './exportJsonFile';
+export {
+  configFieldsKey,
+  resolveModalRepoConfig,
+} from './resolveModalRepoConfig';

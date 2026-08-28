@@ -2,12 +2,12 @@ import {
   clearGiteeConfig,
   loadGiteeConfig,
   saveGiteeConfig,
-} from '@/config/gitee';
+} from '@/features/settings/config/gitee';
 import {
   clearGitHubConfig,
   loadGitHubConfig,
   saveGitHubConfig,
-} from '@/config/github';
+} from '@/features/settings/config/github';
 import {
   createConfiguredStorageProvider,
   storagePluginLabel,

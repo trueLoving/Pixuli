@@ -22,12 +22,12 @@ import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
 import { useWorkspaceStore } from '../stores/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
-import { exportJsonFile } from '../utils/exportJsonFile';
+import { exportJsonFile } from '@/features/settings/exportJsonFile';
 import { getPlatform, WebBrowserChrome } from '@/platforms';
 import {
   configFieldsKey,
   resolveModalRepoConfig,
-} from '../utils/resolveModalRepoConfig';
+} from '@/features/settings/resolveModalRepoConfig';
 import { AppMain } from './AppMain';
 import { AppSidebar } from './AppSidebar';
 import { WorkspaceShell } from './WorkspaceShell';

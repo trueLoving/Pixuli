@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { keyboardManager } from '@/ui';
-import { createKeyboardShortcuts } from '../utils/keyboardShortcuts';
+import { createKeyboardShortcuts } from './keyboardShortcuts';
 
 /**
  * 键盘快捷键管理 hooks
