@@ -1,28 +1,13 @@
-import {
-  createConfiguredStorageProvider,
-  type StoragePluginId,
-} from '@/storage/createProvider';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import {
-  createLocalVault,
-  createSyncEngine,
-  guessMimeType,
-  providerSupportsSync,
   storedSourcesToWorkspaceBindings,
   type LocalVault,
-  type SyncEngine,
-  type SyncEngineBinding,
   type SyncStatusSummary,
   type WorkspaceMode,
 } from '@pixuli/core/vault';
-import { getUploadFileName } from '@pixuli/core/types';
 import { create } from 'zustand';
-import {
-  clearLocalPreviewCache,
-  mapEntriesToImageItems,
-} from '@/features/workspace/localImageMapper';
+import { mapEntriesToImageItems } from '@/features/workspace/localImageMapper';
 import {
   getWorkspaceAdapter,
   isMobileWorkspaceActive,
@@ -45,18 +30,26 @@ import {
   type SyncRunOutcome,
 } from '@/features/workspace/syncOutcome';
 import {
+  enqueuePendingPushForFolder,
+  importImageToLocalVault,
+} from '@/features/workspace/workspaceLocalFs';
+import {
   notifyWorkspaceCleared,
   registerWorkspaceLibraryPort,
 } from '@/features/library/workspaceImageBridge';
-
-const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
-const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
-
-interface WorkspacePersist {
-  rootPath: string;
-  workspaceId: string;
-  folderLabel?: string;
-}
+import {
+  clearPersistedWorkspace,
+  loadPersistedWorkspace,
+  savePersistedWorkspace,
+  saveWorkspaceModePref,
+} from '@/features/workspace/workspacePersist';
+import {
+  getWorkspaceSyncEngine,
+  getWorkspaceVault,
+  registerWorkspaceModeReader,
+  resetWorkspaceRuntime,
+  resetWorkspaceSyncEngineOnly,
+} from '@/features/workspace/workspaceRuntime';
 
 interface WorkspaceState {
   mode: WorkspaceMode;
@@ -102,86 +95,8 @@ interface WorkspaceState {
   clearError: () => void;
 }
 
-let vaultInstance: LocalVault | null = null;
-let syncEngineInstance: SyncEngine | null = null;
-
 function getAdapter() {
   return getWorkspaceAdapter();
-}
-
-function getVault(): LocalVault {
-  if (!vaultInstance) {
-    vaultInstance = createLocalVault(getAdapter());
-  }
-  return vaultInstance;
-}
-
-function getSyncEngine(): SyncEngine {
-  if (!syncEngineInstance) {
-    syncEngineInstance = createSyncEngine({
-      vault: getVault(),
-      getBindings: resolveSyncBindings,
-      readFileBytes: relativePath => getAdapter().readFile(relativePath),
-    });
-  }
-  return syncEngineInstance;
-}
-
-function resetSyncEngineOnly(): void {
-  syncEngineInstance = null;
-}
-
-function resetWorkspaceRuntime(): void {
-  clearLocalPreviewCache();
-  vaultInstance = null;
-  syncEngineInstance = null;
-  resetWorkspaceAdapter();
-}
-
-function saveModePref(mode: Exclude<WorkspaceMode, 'unset'>): void {
-  try {
-    localStorage.setItem(WORKSPACE_MODE_KEY, mode);
-  } catch {
-    // ignore
-  }
-}
-
-function loadPersistedWorkspace(): WorkspacePersist | null {
-  try {
-    const raw = localStorage.getItem(WORKSPACE_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as WorkspacePersist;
-    if (parsed?.rootPath) {
-      return parsed;
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
-function savePersistedWorkspace(
-  rootPath: string,
-  workspaceId: string,
-  folderLabel?: string,
-): void {
-  try {
-    localStorage.setItem(
-      WORKSPACE_STORAGE_KEY,
-      JSON.stringify({ rootPath, workspaceId, folderLabel }),
-    );
-  } catch {
-    // ignore
-  }
-}
-
-function clearPersistedWorkspace(): void {
-  try {
-    localStorage.removeItem(WORKSPACE_STORAGE_KEY);
-    localStorage.removeItem(WORKSPACE_MODE_KEY);
-  } catch {
-    // ignore
-  }
 }
 
 async function cleanupFsaWorkspaceRoot(rootPath: string | null): Promise<void> {
@@ -218,10 +133,6 @@ function readFolderLabel(
   return null;
 }
 
-function sanitizeFileName(name: string): string {
-  return name.replace(/[/\\?%*:|"<>]/g, '_');
-}
-
 async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   const adapter = getAdapter();
   if ('setRootPath' in adapter && typeof adapter.setRootPath === 'function') {
@@ -230,7 +141,7 @@ async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   if (window.workspaceAPI) {
     await window.workspaceAPI.setRoot(rootPath);
   }
-  const vault = getVault();
+  const vault = getWorkspaceVault();
   await vault.open();
   await hydrateAccessPolicy(vault.adapter);
   return vault;
@@ -288,7 +199,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         config.workspaceId,
         folderLabel,
       );
-      saveModePref('local');
+      saveWorkspaceModePref('local');
       set({
         mode: 'local',
         rootPath: persisted.rootPath,
@@ -324,7 +235,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const config = vault.getConfig();
       const folderLabel =
         persisted.folderLabel ?? readFolderLabel(getAdapter()) ?? undefined;
-      saveModePref('local');
+      saveWorkspaceModePref('local');
       set({
         mode: 'local',
         rootPath: persisted.rootPath,
@@ -352,10 +263,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
     const sources = useSourceStore.getState().sources;
-    await getVault().upsertBindings(storedSourcesToWorkspaceBindings(sources), {
-      replace: true,
-    });
-    resetSyncEngineOnly();
+    await getWorkspaceVault().upsertBindings(
+      storedSourcesToWorkspaceBindings(sources),
+      {
+        replace: true,
+      },
+    );
+    resetWorkspaceSyncEngineOnly();
   },
 
   pickWorkspace: async (options?: {
@@ -397,7 +311,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       const vault = await openVaultWithRoot(rootPath);
       const config = vault.getConfig();
       savePersistedWorkspace(rootPath, config.workspaceId, folderLabel);
-      saveModePref('local');
+      saveWorkspaceModePref('local');
 
       if (previousRootPath && previousRootPath !== rootPath) {
         await cleanupFsaWorkspaceRoot(previousRootPath);
@@ -460,7 +374,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       set({ loading: true, error: null });
     }
     try {
-      const vault = getVault();
+      const vault = getWorkspaceVault();
       const entries = await vault.list();
       const provider = resolveSelectedProvider();
       const images = await mapEntriesToImageItems(entries, provider);
@@ -479,7 +393,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
     try {
-      const localFolders = await getVault().listFolders();
+      const localFolders = await getWorkspaceVault().listFolders();
       set({ localFolders });
     } catch (error) {
       set({
@@ -494,7 +408,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      await getVault().createFolder(relativeDir);
+      await getWorkspaceVault().createFolder(relativeDir);
       await get().refreshLocalFolders();
       set({ loading: false, syncMessage: '已新建文件夹（仅本机）' });
     } catch (error) {
@@ -511,23 +425,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      const moved = await getVault().renameFolder(fromDir, toDir);
-      for (let i = 0; i < moved; i += 1) {
-        // enqueue is per-file; refresh will show pending. Queue metadata/uploads for moved paths via scan of pending-push
-      }
-      const entries = await getVault().list();
-      for (const entry of entries) {
-        if (
-          entry.syncState === 'pending-push' &&
-          (entry.relativePath === toDir ||
-            entry.relativePath.startsWith(`${toDir}/`))
-        ) {
-          await getSyncEngine().enqueuePush({
-            type: 'upload',
-            relativePath: entry.relativePath,
-          });
-        }
-      }
+      const moved = await getWorkspaceVault().renameFolder(fromDir, toDir);
+      void moved;
+      await enqueuePendingPushForFolder(getWorkspaceVault(), toDir, 'upload');
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
       set({ loading: false, syncMessage: '已重命名文件夹（仅本机）' });
@@ -545,20 +445,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      const count = await getVault().deleteFolder(relativeDir);
-      const deleted = await getVault().list({ includeDeleted: true });
-      for (const entry of deleted) {
-        if (
-          entry.deletedAt &&
-          (entry.relativePath === relativeDir ||
-            entry.relativePath.startsWith(`${relativeDir}/`))
-        ) {
-          await getSyncEngine().enqueuePush({
-            type: 'delete',
-            relativePath: entry.relativePath,
-          });
-        }
-      }
+      const count = await getWorkspaceVault().deleteFolder(relativeDir);
+      await enqueuePendingPushForFolder(
+        getWorkspaceVault(),
+        relativeDir,
+        'delete',
+      );
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
       set({ loading: false, syncMessage: '已删除文件夹（仅本机）' });
@@ -578,8 +470,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      const entry = await getVault().moveFile(relativePath, targetDir);
-      await getSyncEngine().enqueuePush({
+      const entry = await getWorkspaceVault().moveFile(relativePath, targetDir);
+      await getWorkspaceSyncEngine().enqueuePush({
         type: 'upload',
         relativePath: entry.relativePath,
       });
@@ -599,7 +491,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
     try {
-      const status = await getSyncEngine().getStatus();
+      const status = await getWorkspaceSyncEngine().getStatus();
       set({ syncStatus: status });
     } catch {
       // ignore status refresh errors
@@ -612,7 +504,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      const added = await getVault().scan();
+      const added = await getWorkspaceVault().scan();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
       set({
@@ -637,54 +529,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     // 添加不锁壳层：不置 loading，列表静默刷新（§5.1）
     set({ error: null });
     try {
-      const fileName = sanitizeFileName(
-        getUploadFileName(uploadData.file, uploadData.name),
-      );
-      const { useUIStore } = await import('@/stores/uiStore');
-      const selectedFolderPath = useUIStore.getState().selectedFolderPath;
-      const fromForm = uploadData.targetFolder?.replace(/\/+$/, '');
-      const fromTree =
-        selectedFolderPath && selectedFolderPath !== '__root__'
-          ? selectedFolderPath
-          : '';
-      const targetDir = fromForm || fromTree || 'images';
-      const targetPath = `${targetDir.replace(/\/+$/, '')}/${Date.now()}-${fileName}`;
-      const vault = getVault();
-      const mimeType =
-        typeof uploadData.file === 'string'
-          ? guessMimeType(fileName)
-          : uploadData.file.type || guessMimeType(fileName);
-      let width = 0;
-      let height = 0;
-      if (mimeType.startsWith('image/')) {
-        try {
-          const platform = new DefaultPlatformAdapter();
-          const dimensions = await platform.getImageDimensions(uploadData.file);
-          width = dimensions.width;
-          height = dimensions.height;
-        } catch {
-          width = 0;
-          height = 0;
-        }
-      }
-
-      await vault.importFile(uploadData.file, targetPath, {
-        name: uploadData.name ?? fileName,
-        tags: uploadData.tags ?? [],
-        description: uploadData.description,
-        mimeType,
-        width,
-        height,
-        syncState: 'local-only',
-        createdAt: uploadData.captureMetadata?.takenAt,
-        captureMetadata: uploadData.captureMetadata,
-      });
-
-      await getSyncEngine().enqueuePush({
-        type: 'upload',
-        relativePath: targetPath,
-      });
-
+      const targetPath = await importImageToLocalVault(uploadData);
       await get().refreshLocalImages({ quiet: true });
       await get().refreshSyncStatus();
       set({ syncMessage: '已保存到本地工作区' });
@@ -705,8 +550,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      await getVault().updateMetadata(relativePath, patch);
-      await getSyncEngine().enqueuePush({
+      await getWorkspaceVault().updateMetadata(relativePath, patch);
+      await getWorkspaceSyncEngine().enqueuePush({
         type: 'metadata',
         relativePath,
       });
@@ -750,7 +595,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
 
     if (direction === 'push') {
-      const entries = await getVault().list({ includeDeleted: true });
+      const entries = await getWorkspaceVault().list({ includeDeleted: true });
       const hasPushable =
         entries.some(entry => !entry.deletedAt) ||
         entries.some(
@@ -758,7 +603,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
             entry.deletedAt &&
             (entry.remotePath || entry.syncState === 'pending-push'),
         );
-      const status = await getSyncEngine().getStatus();
+      const status = await getWorkspaceSyncEngine().getStatus();
       if (!hasPushable && status.pendingPush === 0) {
         const outcome: SyncRunOutcome = {
           kind: 'info',
@@ -778,7 +623,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     });
 
     try {
-      const result = await getSyncEngine().run({ direction });
+      const result = await getWorkspaceSyncEngine().run({ direction });
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
 
@@ -828,8 +673,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     }
     set({ loading: true, error: null });
     try {
-      await getVault().softDelete(relativePath);
-      await getSyncEngine().enqueuePush({
+      await getWorkspaceVault().softDelete(relativePath);
+      await getWorkspaceSyncEngine().enqueuePush({
         type: 'delete',
         relativePath,
       });
@@ -847,6 +692,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   clearError: () => set({ error: null, syncOutcome: null }),
 }));
 
+registerWorkspaceModeReader(() => useWorkspaceStore.getState().mode);
+
 registerWorkspaceLibraryPort({
   isLocalActive: () => useWorkspaceStore.getState().isLocalActive(),
   refreshLocalImages: options =>
@@ -861,60 +708,3 @@ registerWorkspaceLibraryPort({
   updateLocalMetadata: (relativePath, patch) =>
     useWorkspaceStore.getState().updateLocalMetadata(relativePath, patch),
 });
-
-function resolveSyncBindings(): SyncEngineBinding[] {
-  if (vaultInstance && useWorkspaceStore.getState().mode === 'local') {
-    const config = vaultInstance.getConfig();
-    const bindingDefs =
-      config.bindings.length > 0
-        ? config.bindings
-        : storedSourcesToWorkspaceBindings(useSourceStore.getState().sources);
-
-    const bindings: SyncEngineBinding[] = [];
-    for (const binding of bindingDefs) {
-      try {
-        const provider = createConfiguredStorageProvider(
-          binding.pluginId as StoragePluginId,
-          binding.config as never,
-        );
-        if (providerSupportsSync(provider)) {
-          bindings.push({ bindingId: binding.id, provider });
-        }
-      } catch {
-        // skip invalid binding
-      }
-    }
-    return bindings;
-  }
-
-  const source = resolveSelectedSource();
-  const provider = resolveSelectedProvider();
-  if (!source || !provider || !providerSupportsSync(provider)) {
-    return [];
-  }
-  return [{ bindingId: source.id, provider }];
-}
-
-function resolveSelectedSource() {
-  const { selectedSourceId, sources, getSourceById } =
-    useSourceStore.getState();
-  if (selectedSourceId) {
-    return getSourceById(selectedSourceId) ?? null;
-  }
-  return sources[0] ?? null;
-}
-
-function resolveSelectedProvider() {
-  const source = resolveSelectedSource();
-  if (!source) {
-    return null;
-  }
-  try {
-    return createConfiguredStorageProvider(
-      source.pluginId as StoragePluginId,
-      source.config as never,
-    );
-  } catch {
-    return null;
-  }
-}

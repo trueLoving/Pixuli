@@ -3,14 +3,12 @@ import { useDropzone } from 'react-dropzone';
 import { defaultTranslate } from '@/i18n/locales';
 import type {
   BatchUploadProgress,
-  ImageCaptureMetadata,
   ImageCompressionOptions,
   ImageCropOptions,
   ImageUploadData,
   MultiImageUploadData,
   WebImageUploadData,
 } from '@pixuli/core/types';
-import { compressImage } from '@pixuli/core/utils';
 import {
   showInfo,
   showLoading,
@@ -23,14 +21,12 @@ import { ImageUploadBatchProgress } from './ImageUploadBatchProgress';
 import { ImageUploadConfirmForm } from './ImageUploadConfirmForm';
 import { ImageUploadDropzone } from './ImageUploadDropzone';
 import {
-  DEFAULT_COMPRESSION_OPTIONS,
-  type CompressionPreviewMap,
-} from './imageUploadTypes';
-import {
   getImageDimensions,
   isPreviewableMedia,
   resolveDefaultFolder,
 } from './imageUploadUtils';
+import { useImageUploadCapture } from './useImageUploadCapture';
+import { useImageUploadCompression } from './useImageUploadCompression';
 import './ImageUpload.css';
 
 interface ImageUploadProps {
@@ -87,189 +83,55 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const [fileDimensions, setFileDimensions] = useState<{
     [key: string]: { width: number; height: number };
   }>({});
-  const [userWantsCompress, setUserWantsCompress] = useState(false);
   const [userWantsCrop, setUserWantsCrop] = useState(false);
-  const [compressionPreview, setCompressionPreview] =
-    useState<CompressionPreviewMap>({});
-  const [calculatingCompression, setCalculatingCompression] = useState(false);
-  const [showCompressionConfig, setShowCompressionConfig] = useState(false);
-  const [userCompressionConfig, setUserCompressionConfig] =
-    useState<ImageCompressionOptions>(
-      compressionOptions || DEFAULT_COMPRESSION_OPTIONS,
-    );
   const tagInputRef = useRef<HTMLInputElement>(null);
-  const captureMetadataByFileRef = useRef(
-    new WeakMap<File, ImageCaptureMetadata>(),
-  );
 
-  const rememberCaptureMetadata = useCallback(
-    (file: File, metadata?: ImageCaptureMetadata) => {
-      if (metadata) {
-        captureMetadataByFileRef.current.set(file, metadata);
-      }
-    },
-    [],
-  );
+  const {
+    rememberCaptureMetadata,
+    transferCaptureMetadata,
+    getCaptureMetadata,
+    buildCaptureMetadataList,
+  } = useImageUploadCapture();
 
-  const transferCaptureMetadata = useCallback((from: File, to: File) => {
-    const metadata = captureMetadataByFileRef.current.get(from);
-    if (metadata) {
-      captureMetadataByFileRef.current.set(to, metadata);
-      captureMetadataByFileRef.current.delete(from);
+  const {
+    userWantsCompress,
+    compressionPreview,
+    calculatingCompression,
+    showCompressionConfig,
+    userCompressionConfig,
+    setShowCompressionConfig,
+    compressFileIfNeeded,
+    handleCompressionToggle: toggleCompressionPreview,
+    handleCompressionConfigChange: applyCompressionConfig,
+    resetCompressionState,
+  } = useImageUploadCompression({
+    enableCompression,
+    compressionOptions,
+    fileDimensions,
+  });
+
+  const getPreviewFiles = useCallback((): File[] => {
+    if (uploadData) {
+      return [uploadData.file];
     }
-  }, []);
+    if (multiUploadData) {
+      return multiUploadData.files;
+    }
+    return [];
+  }, [uploadData, multiUploadData]);
 
-  const getCaptureMetadata = useCallback(
-    (file: File): ImageCaptureMetadata | undefined =>
-      captureMetadataByFileRef.current.get(file),
-    [],
-  );
-
-  const buildCaptureMetadataList = useCallback(
-    (files: File[]) => files.map(file => getCaptureMetadata(file)),
-    [getCaptureMetadata],
-  );
-
-  // 使用 ref 存储预览数据，避免依赖变化导致函数重新创建
-  const compressionPreviewRef = useRef(compressionPreview);
-  useEffect(() => {
-    compressionPreviewRef.current = compressionPreview;
-  }, [compressionPreview]);
-
-  // 清理预览URL的辅助函数
-  const cleanupPreviewUrls = useCallback(() => {
-    Object.values(compressionPreviewRef.current).forEach(preview => {
-      if (preview.originalPreviewUrl) {
-        URL.revokeObjectURL(preview.originalPreviewUrl);
-      }
-      if (preview.compressedPreviewUrl) {
-        URL.revokeObjectURL(preview.compressedPreviewUrl);
-      }
-    });
-  }, []);
-
-  // 组件卸载时清理预览URL
-  useEffect(() => {
-    return () => {
-      cleanupPreviewUrls();
-    };
-  }, [cleanupPreviewUrls]);
-
-  // 压缩文件的辅助函数
-  const compressFileIfNeeded = useCallback(
-    async (file: File, shouldCompress: boolean): Promise<File> => {
-      if (!shouldCompress || !enableCompression) {
-        return file;
-      }
-
-      try {
-        const compressionResult = await compressImage(
-          file,
-          userCompressionConfig,
-        );
-        if (compressionResult.compressionRatio > 0) {
-          showInfo(
-            `图片已压缩: ${compressionResult.compressionRatio.toFixed(1)}% (${(compressionResult.originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressionResult.compressedSize / 1024 / 1024).toFixed(2)}MB)`,
-          );
-        }
-        return compressionResult.compressedFile;
-      } catch (error) {
-        console.warn('图片压缩失败，使用原文件:', error);
-        showInfo('图片压缩失败，将使用原文件上传');
-        return file;
-      }
-    },
-    [enableCompression, userCompressionConfig],
-  );
-
-  // 计算压缩预览
-  const calculateCompressionPreview = useCallback(
-    async (files: File[]) => {
-      if (!enableCompression || files.length === 0) {
-        setCompressionPreview({});
-        return;
-      }
-
-      setCalculatingCompression(true);
-      const preview: typeof compressionPreview = {};
-
-      try {
-        await Promise.all(
-          files.map(async file => {
-            try {
-              // 创建原图预览URL
-              const originalPreviewUrl = URL.createObjectURL(file);
-
-              const result = await compressImage(file, userCompressionConfig);
-
-              // 创建压缩后图片预览URL
-              const compressedPreviewUrl = URL.createObjectURL(
-                result.compressedFile,
-              );
-
-              preview[file.name] = {
-                originalSize: result.originalSize,
-                compressedSize: result.compressedSize,
-                compressionRatio: result.compressionRatio,
-                originalDimensions: result.originalDimensions,
-                compressedDimensions: result.compressedDimensions,
-                originalPreviewUrl,
-                compressedPreviewUrl,
-              };
-            } catch (error) {
-              console.warn(`计算压缩预览失败 ${file.name}:`, error);
-              // 如果计算失败，使用原始信息
-              const dimensions = fileDimensions[file.name] || {
-                width: 0,
-                height: 0,
-              };
-              const originalPreviewUrl = URL.createObjectURL(file);
-              preview[file.name] = {
-                originalSize: file.size,
-                compressedSize: file.size,
-                compressionRatio: 0,
-                originalDimensions: dimensions,
-                compressedDimensions: dimensions,
-                originalPreviewUrl,
-              };
-            }
-          }),
-        );
-        setCompressionPreview(preview);
-      } catch (error) {
-        console.error('计算压缩预览时出错:', error);
-      } finally {
-        setCalculatingCompression(false);
-      }
-    },
-    [enableCompression, userCompressionConfig, fileDimensions],
-  );
-
-  // 当用户选择压缩时，计算预览
   const handleCompressionToggle = useCallback(
     (checked: boolean) => {
-      setUserWantsCompress(checked);
-      if (checked) {
-        const files = uploadData
-          ? [uploadData.file]
-          : multiUploadData
-            ? multiUploadData.files
-            : [];
-        if (files.length > 0) {
-          calculateCompressionPreview(files);
-        }
-      } else {
-        // 清理预览URL
-        cleanupPreviewUrls();
-        setCompressionPreview({});
-      }
+      toggleCompressionPreview(checked, getPreviewFiles());
     },
-    [
-      uploadData,
-      multiUploadData,
-      calculateCompressionPreview,
-      cleanupPreviewUrls,
-    ],
+    [toggleCompressionPreview, getPreviewFiles],
+  );
+
+  const handleCompressionConfigChange = useCallback(
+    (config: ImageCompressionOptions) => {
+      applyCompressionConfig(config, getPreviewFiles());
+    },
+    [applyCompressionConfig, getPreviewFiles],
   );
 
   const onDrop = useCallback(
@@ -292,17 +154,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
         setFileDimensions(dimensionsMap);
 
-        // 重置用户选择
-        setUserWantsCompress(false);
+        resetCompressionState();
         setUserWantsCrop(false);
-        // 清理预览URL
-        cleanupPreviewUrls();
-        setCompressionPreview({});
-        setShowCompressionConfig(false);
-        // 重置为用户配置或默认配置
-        setUserCompressionConfig(
-          compressionOptions || DEFAULT_COMPRESSION_OPTIONS,
-        );
 
         if (acceptedFiles.length === 1) {
           // 单文件短确认
@@ -337,13 +190,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         }
       }
     },
-    [
-      translate,
-      getImageDimensions,
-      defaultFolder,
-      cleanupPreviewUrls,
-      compressionOptions,
-    ],
+    [translate, getImageDimensions, defaultFolder, resetCompressionState],
   );
 
   useEffect(() => {
@@ -574,8 +421,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleCancel = useCallback(() => {
     showInfo(translate('image.upload.cancelled'));
-    // 清理预览URL
-    cleanupPreviewUrls();
+    resetCompressionState();
     setUploadData(null);
     setMultiUploadData(null);
     setShowForm(false);
@@ -583,8 +429,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setShowCropModal(false);
     setCropFile(null);
     setCropFileIndex(-1);
-    setCompressionPreview({});
-  }, [translate, cleanupPreviewUrls]);
+  }, [translate, resetCompressionState]);
 
   // 处理裁剪完成
   const handleCropComplete = async (croppedFile: File) => {
@@ -956,28 +801,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       setUploadData({ ...uploadData, targetFolder: value });
     }
   };
-
-  const handleCompressionConfigChange = useCallback(
-    (config: ImageCompressionOptions) => {
-      setUserCompressionConfig(config);
-      if (userWantsCompress) {
-        const previewFiles = uploadData
-          ? [uploadData.file]
-          : multiUploadData
-            ? multiUploadData.files
-            : [];
-        if (previewFiles.length > 0) {
-          void calculateCompressionPreview(previewFiles);
-        }
-      }
-    },
-    [
-      userWantsCompress,
-      uploadData,
-      multiUploadData,
-      calculateCompressionPreview,
-    ],
-  );
 
   const handleFormFieldChange = (
     field: keyof WebImageUploadData | keyof MultiImageUploadData,

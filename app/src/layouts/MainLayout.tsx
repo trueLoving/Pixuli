@@ -3,6 +3,7 @@
  * 包含侧边栏、主内容区域和所有弹窗组件
  */
 
+import type { AppMainLayoutProps } from '@/hooks/useAppOrchestration';
 import { FullScreenLoading, Toaster } from '@/ui';
 import type { VersionInfo } from '@/features/settings/version-info';
 import { resolveSourceDisplay } from '@pixuli/core/sources';
@@ -36,19 +37,8 @@ import { WorkspaceWelcomeScreen } from './WorkspaceWelcomeScreen';
 // 声明构建时注入的全局变量
 declare const __VERSION_INFO__: VersionInfo;
 
-interface MainLayoutProps {
+interface MainLayoutProps extends AppMainLayoutProps {
   children: React.ReactNode;
-  // Source 相关 props
-  sidebarSources: any[];
-  selectedSourceId: string | null;
-  onSourceSelect: (sourceId: string) => void;
-  onSourceEdit: (sourceId: string) => void;
-  onSourceDelete: (sourceId: string) => void;
-  hasConfig: boolean;
-  onAddSource: () => void;
-  // 配置相关 props（用于弹窗）
-  onSaveConfig: (config: any) => void;
-  onClearConfig: () => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({

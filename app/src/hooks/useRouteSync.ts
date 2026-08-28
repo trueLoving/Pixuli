@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getMenuKeyByPath } from '../router/config';
-import { ROUTES } from '../router/routes';
-import { useUIStore } from '../stores/uiStore';
+import { getMenuKeyByPath } from '@/router/config';
+import { ROUTES } from '@/router/routes';
+import { useUIStore } from '@/stores/uiStore';
 
 /**
  * 路由同步 Hook

@@ -1,24 +1,18 @@
 import { useSearchContextSafe } from '@/features/library/SearchContext';
-import { LibraryWorkbench } from '@/features/library/LibraryWorkbench';
 import { useImageOperations } from '@/features/library/useImageOperations';
-import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/features/settings/sourceStore';
-import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
-import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { filterImagesByFolder } from '@/features/workspace/folderTree';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
-import React, { useEffect, useMemo } from 'react';
+import { useSourceStore } from '@/features/settings/sourceStore';
+import { filterImagesByFolder } from '@/features/workspace/folderTree';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { useI18n } from '@/i18n/useI18n';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { useUIStore } from '@/stores/uiStore';
+import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-interface LibraryPageProps {
-  onOpenConfigModal: () => void;
-}
-
-export const LibraryPage: React.FC<LibraryPageProps> = ({
-  onOpenConfigModal,
-}) => {
+/** `/library` 路由：store 接线、文件夹过滤、搜索适配、工具深链 */
+export function useLibraryRoute() {
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const images = useImageStore(state => state.images);
@@ -74,25 +68,16 @@ export const LibraryPage: React.FC<LibraryPageProps> = ({
     setSearchParams(next, { replace: true });
   }, [searchParams, setActiveMenu, setCurrentUtilityTool, setSearchParams]);
 
-  return (
-    <div className="library-page h-full min-h-0 flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <LibraryWorkbench
-          hasConfig={hasConfig}
-          error={error}
-          onClearError={clearError}
-          images={visibleImages}
-          loading={loading}
-          onDeleteImage={handleDeleteImage}
-          onDeleteMultipleImages={handleDeleteMultipleImages}
-          onUpdateImage={handleUpdateImage}
-          onOpenConfigModal={onOpenConfigModal}
-          search={search}
-          t={t}
-        />
-      </div>
-    </div>
-  );
-};
-
-export default LibraryPage;
+  return {
+    t,
+    hasConfig,
+    error,
+    clearError,
+    visibleImages,
+    loading,
+    handleDeleteImage,
+    handleDeleteMultipleImages,
+    handleUpdateImage,
+    search,
+  };
+}

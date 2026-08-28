@@ -8,21 +8,20 @@
 ```text
 L1  features/* + stores/     业务与全局状态
 L2  ui/                      薄 primitives / brand（@/ui）
-L3  layouts/ + platforms/ + boot/ + router/ + pages/   壳层与路由
+L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 ```
 
-| 路径                     | 职责                                                                               |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| `features/library`       | 资源库 SSOT：`LibraryWorkbench`、`AssetLibrary`、上传、`imageStore`、SearchContext |
-| `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`                  |
-| `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                      |
-| `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                           |
-| `features/operation-log` | 操作日志 UI + store + service（域内聚）                                            |
-| `stores/`                | **跨 feature** 壳层全局 Zustand                                                    |
-| `pages/library`          | 薄路由入口，挂载 `LibraryWorkbench`                                                |
-| `router/`                | `/library` 主路由、legacy redirect、`navigation` 工具                              |
-| `i18n/`                  | 文案 SSOT；壳层标语见 `brand.json` + `brandCopy.ts`                                |
-| `ui/`                    | 禁止放复合业务 UI                                                                  |
+| 路径                     | 职责                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `features/library`       | 资源库 SSOT：`LibraryPage`、`useLibraryRoute`、`LibraryWorkbench`、`imageStore` |
+| `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`               |
+| `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                   |
+| `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                        |
+| `features/operation-log` | 操作日志 UI + store + service（域内聚）                                         |
+| `stores/`                | **跨 feature** 壳层全局 Zustand                                                 |
+| `router/`                | `/library` 主路由、`LibraryPage` lazy 加载、legacy redirect                     |
+| `i18n/`                  | 文案 SSOT；壳层标语见 `brand.json` + `brandCopy.ts`                             |
+| `ui/`                    | 禁止放复合业务 UI                                                               |
 
 ## 路由
 

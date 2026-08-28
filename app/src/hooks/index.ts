@@ -1,4 +1,9 @@
 /** App shell hooks only — feature hooks live under `@/features/*`. */
+export { useAppOrchestration } from './useAppOrchestration';
+export type {
+  AppMainLayoutProps,
+  AppRoutesOrchestrationProps,
+} from './useAppOrchestration';
 export { useAppInitialization } from './useAppInitialization';
 export { useCapacitorBackButton } from './useCapacitorBackButton';
 export { useKeyboardCategories } from './useKeyboardCategories';

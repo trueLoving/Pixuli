@@ -5,15 +5,16 @@ import {
 } from '@pixuli/core/sources';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMobileViewport } from '../hooks/useMobileViewport';
-import { ROUTES } from '../router/routes';
+import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useUIStore } from '../stores/uiStore';
+import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
-import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 
 interface SidebarProps {
-  sidebarSources: any[];
+  sidebarSources: SidebarSourceItem[];
   selectedSourceId: string | null;
   onSourceSelect: (sourceId: string) => void;
   onSourceEdit: (sourceId: string) => void;
