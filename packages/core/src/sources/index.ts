@@ -6,7 +6,9 @@ export {
   normalizeStoredSourceEntry,
   normalizeStoredSources,
   pluginIdToLegacyType,
+  resolveSourceDisplay,
   type CreateStoredSourceInput,
+  type LegacyStorageType,
 } from './normalize';
 export {
   buildPluginConfigExport,

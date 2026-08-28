@@ -9,7 +9,7 @@ import {
   isWorkspaceAvailable,
 } from '@/platforms/workspacePlatform';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatSyncOutcome } from './syncOutcome';

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
-import { hasPublishableRemoteUrl } from '@/features/access/accessCapabilities';
+import { hasPublishableRemoteUrl } from '@/features/library/publishContract';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { AssetInspectorFilePreview } from './AssetInspectorFilePreview';
 import { folderLabel } from './inspectorUtils';

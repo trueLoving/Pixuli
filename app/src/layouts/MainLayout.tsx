@@ -5,7 +5,7 @@
 
 import { FullScreenLoading, Toaster } from '@/ui';
 import type { VersionInfo } from '@/features/settings/version-info';
-import { pluginIdToLegacyType } from '@pixuli/core/sources';
+import { resolveSourceDisplay } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import React, { useMemo } from 'react';
 import {
@@ -18,7 +18,7 @@ import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
 import { useRouteSync } from '@/hooks/useRouteSync';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -100,9 +100,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const configModalStorageType =
     editingSourceId && editingSourcePluginId
-      ? pluginIdToLegacyType(editingSourcePluginId)
+      ? resolveSourceDisplay(editingSourcePluginId).legacyType
       : editingSource
-        ? pluginIdToLegacyType(editingSource.pluginId)
+        ? resolveSourceDisplay(editingSource.pluginId).legacyType
         : storageType;
 
   const modalResolveOptions = {

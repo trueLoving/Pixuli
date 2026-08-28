@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
 /**

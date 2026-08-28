@@ -7,6 +7,16 @@ export { VersionInfoModal } from './version-info';
 export { useConfigManagement } from './useConfigManagement';
 export { useSelectedSourceSync } from './useSelectedSourceSync';
 export { useSourceManagement } from './useSourceManagement';
+export {
+  useSourceStore,
+  type AddSourceInput,
+  type SourceConfig,
+  type UpdateSourceInput,
+} from './sourceStore';
+export {
+  syncRepoConfigToImageStore,
+  syncSourceEntryToImageStore,
+} from './syncSourceRepoToImageStore';
 export { exportJsonFile } from './exportJsonFile';
 export type { ExportJsonResult } from './exportJsonFile';
 export {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useUIStore } from '../uiStore';
-import { useSourceStore } from '../sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useImageStore } from '@/features/library/imageStore';
 
 vi.mock('../../storage/registry', async importOriginal => {

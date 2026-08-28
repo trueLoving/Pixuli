@@ -1,10 +1,10 @@
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { copyTextToClipboard } from '@/utils/clipboard';
-import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
+import { resolveRemoteCopyUrl } from '@/features/library/publishContract';
 import { isPublishChannel } from '@/features/source-type/connectionPurpose';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import React, { useEffect, useMemo, useState } from 'react';
 import {

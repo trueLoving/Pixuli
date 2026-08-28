@@ -153,6 +153,20 @@ export function getRepoConfigFromSource(entry: StoredSourceEntry): {
   };
 }
 
-export function pluginIdToLegacyType(pluginId: string): 'github' | 'gitee' {
+export type LegacyStorageType = 'github' | 'gitee';
+
+export function pluginIdToLegacyType(pluginId: string): LegacyStorageType {
   return pluginId === 'gitee' ? 'gitee' : 'github';
+}
+
+/** UI 展示用：legacy 存储类型与平台标签（收口 pluginId 桥接） */
+export function resolveSourceDisplay(pluginId: string): {
+  legacyType: LegacyStorageType;
+  typeLabel: 'GitHub' | 'Gitee';
+} {
+  const legacyType = pluginIdToLegacyType(pluginId);
+  return {
+    legacyType,
+    typeLabel: legacyType === 'gitee' ? 'Gitee' : 'GitHub',
+  };
 }

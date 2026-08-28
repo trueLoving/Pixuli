@@ -1,6 +1,6 @@
 import {
   getRepoConfigFromSource,
-  pluginIdToLegacyType,
+  resolveSourceDisplay,
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
@@ -34,14 +34,14 @@ export function resolveModalRepoConfig(
   } = options;
 
   if (editingSourceId && editingSourceRepoConfig && editingSourcePluginId) {
-    if (pluginIdToLegacyType(editingSourcePluginId) === plugin) {
+    if (resolveSourceDisplay(editingSourcePluginId).legacyType === plugin) {
       return { ...editingSourceRepoConfig } as GitHubConfig | GiteeConfig;
     }
     return null;
   }
 
   if (editingSourceId && editingSource) {
-    const legacy = pluginIdToLegacyType(editingSource.pluginId);
+    const legacy = resolveSourceDisplay(editingSource.pluginId).legacyType;
     if (legacy === plugin) {
       return getRepoConfigFromSource(editingSource) as
         | GitHubConfig

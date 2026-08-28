@@ -5,7 +5,7 @@ import { WorkspaceMigrationWizard } from '@/features/workspace/WorkspaceMigratio
 import { WorkspaceSetupPanel } from '@/features/workspace/WorkspaceSetupPanel';
 import { useI18n } from '@/i18n/useI18n';
 import { ROUTES } from '@/router/routes';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import './WorkspaceWelcomeScreen.css';
 

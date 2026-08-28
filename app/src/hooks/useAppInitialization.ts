@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '../stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 
 /**
  * 应用初始化相关的 hooks

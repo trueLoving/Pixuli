@@ -7,7 +7,7 @@ import {
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';

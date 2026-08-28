@@ -36,9 +36,11 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { getPublishedAccess } from '@/features/access/accessPolicyStore';
-import { resolveRemoteCopyUrl } from '@/features/library/useImageCopyUrl';
-import { useSourceStore } from '@/stores/sourceStore';
+import {
+  getPublishedAccess,
+  resolveRemoteCopyUrl,
+} from '@/features/library/publishContract';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';

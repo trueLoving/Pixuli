@@ -1,17 +1,18 @@
 import {
   getRepoConfigFromSource,
-  pluginIdToLegacyType,
+  resolveSourceDisplay,
 } from '@pixuli/core/sources';
 import { useCallback, useMemo } from 'react';
 import { isStoragePluginRegistered } from '@/storage/registry';
 import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/stores/sourceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
+import { syncSourceEntryToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
 
 /**
  * 源管理相关的 hooks
  */
 export function useSourceManagement() {
-  const { setGitHubConfig, setGiteeConfig, loadImages } = useImageStore();
+  const { loadImages } = useImageStore();
   const { sources, selectedSourceId, setSelectedSourceId, removeSource } =
     useSourceStore();
 
@@ -24,7 +25,7 @@ export function useSourceManagement() {
   const sidebarSources = useMemo(() => {
     return sources.map(source => {
       const repo = getRepoConfigFromSource(source);
-      const legacyType = pluginIdToLegacyType(source.pluginId);
+      const { legacyType } = resolveSourceDisplay(source.pluginId);
       return {
         id: source.id,
         name: source.label || `${repo.owner}/${repo.repo}`,
@@ -47,17 +48,10 @@ export function useSourceManagement() {
       if (!isStoragePluginRegistered(source.pluginId)) {
         return null;
       }
-      const legacyType = pluginIdToLegacyType(source.pluginId);
-      const sourceConfig = getRepoConfigFromSource(source);
-      useImageStore.setState({ storageType: legacyType });
-      if (legacyType === 'github') {
-        setGitHubConfig(sourceConfig);
-      } else {
-        setGiteeConfig(sourceConfig);
-      }
+      syncSourceEntryToImageStore(source);
       return sourceId;
     },
-    [sources, setGitHubConfig, setGiteeConfig],
+    [sources],
   );
 
   const handleDeleteSource = useCallback(
@@ -79,16 +73,10 @@ export function useSourceManagement() {
         return;
       }
       setSelectedSourceId(id);
-      const sourceConfig = getRepoConfigFromSource(source);
-      const legacyType = pluginIdToLegacyType(source.pluginId);
-      if (legacyType === 'github') {
-        setGitHubConfig(sourceConfig);
-      } else {
-        setGiteeConfig(sourceConfig);
-      }
+      syncSourceEntryToImageStore(source);
       loadImages();
     },
-    [sources, setSelectedSourceId, setGitHubConfig, setGiteeConfig, loadImages],
+    [sources, setSelectedSourceId, loadImages],
   );
 
   return {
