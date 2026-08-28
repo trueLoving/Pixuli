@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useImageStore } from '../stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '../stores/sourceStore';
 
 /**

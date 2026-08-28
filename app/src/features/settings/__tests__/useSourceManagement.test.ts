@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSourceManagement } from '../useSourceManagement';
 import { useSourceStore } from '@/stores/sourceStore';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 
 vi.mock('@/storage/registry', async importOriginal => {
   const actual = await importOriginal<typeof import('@/storage/registry')>();

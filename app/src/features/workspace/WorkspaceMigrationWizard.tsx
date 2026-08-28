@@ -6,9 +6,9 @@ import {
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { runSyncWithFeedback } from './syncFeedback';
 

@@ -7,7 +7,7 @@ import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;

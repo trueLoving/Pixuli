@@ -9,7 +9,7 @@ import { useMobileViewport } from '../hooks/useMobileViewport';
 import { ROUTES } from '../router/routes';
 import { useSourceStore } from '../stores/sourceStore';
 import { useUIStore } from '../stores/uiStore';
-import { useWorkspaceStore } from '../stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
 
 interface SidebarProps {

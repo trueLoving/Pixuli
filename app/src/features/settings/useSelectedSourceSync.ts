@@ -3,7 +3,7 @@ import {
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 import { useEffect, useRef } from 'react';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 
 /**

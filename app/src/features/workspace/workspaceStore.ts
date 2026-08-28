@@ -22,28 +22,32 @@ import { create } from 'zustand';
 import {
   clearLocalPreviewCache,
   mapEntriesToImageItems,
-} from '../features/workspace/localImageMapper';
+} from '@/features/workspace/localImageMapper';
 import {
   getWorkspaceAdapter,
   isMobileWorkspaceActive,
   isWebWorkspaceActive,
   isWorkspaceAvailable,
   resetWorkspaceAdapter,
-} from '../platforms/workspacePlatform';
-import { isMobileWorkspaceAdapter } from '../platforms/mobile/workspaceAdapter';
-import { isWebWorkspaceAdapter } from '../platforms/web/workspaceAdapter';
+} from '@/platforms/workspacePlatform';
+import { isMobileWorkspaceAdapter } from '@/platforms/mobile/workspaceAdapter';
+import { isWebWorkspaceAdapter } from '@/platforms/web/workspaceAdapter';
 import {
   deleteFsaDirectoryHandle,
   parseFsaRootPath,
-} from '../platforms/web/fsaWorkspaceFs';
+} from '@/platforms/web/fsaWorkspaceFs';
 import {
   hydrateAccessPolicy,
   resetAccessPolicy,
-} from '../features/access/accessPolicyStore';
+} from '@/features/access/accessPolicyStore';
 import {
   buildSyncResultOutcome,
   type SyncRunOutcome,
-} from '../features/workspace/syncOutcome';
+} from '@/features/workspace/syncOutcome';
+import {
+  notifyWorkspaceCleared,
+  registerWorkspaceLibraryPort,
+} from '@/features/library/workspaceImageBridge';
 
 const WORKSPACE_STORAGE_KEY = 'pixuli.workspace.v1';
 const WORKSPACE_MODE_KEY = 'pixuli.workspaceMode.v1';
@@ -443,8 +447,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       syncMessage: null,
       syncOutcome: null,
     });
-    const { useImageStore } = await import('./imageStore');
-    useImageStore.setState({ images: [], loading: false, error: null });
+    notifyWorkspaceCleared();
   },
 
   refreshLocalImages: async options => {
@@ -843,6 +846,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   clearError: () => set({ error: null, syncOutcome: null }),
 }));
+
+registerWorkspaceLibraryPort({
+  isLocalActive: () => useWorkspaceStore.getState().isLocalActive(),
+  refreshLocalImages: options =>
+    useWorkspaceStore.getState().refreshLocalImages(options),
+  getLocalImages: () => useWorkspaceStore.getState().localImages,
+  importLocalImage: uploadData =>
+    useWorkspaceStore.getState().importLocalImage(uploadData),
+  softDeleteLocal: relativePath =>
+    useWorkspaceStore.getState().softDeleteLocal(relativePath),
+  moveLocalFile: (relativePath, targetDir) =>
+    useWorkspaceStore.getState().moveLocalFile(relativePath, targetDir),
+  updateLocalMetadata: (relativePath, patch) =>
+    useWorkspaceStore.getState().updateLocalMetadata(relativePath, patch),
+});
 
 function resolveSyncBindings(): SyncEngineBinding[] {
   if (vaultInstance && useWorkspaceStore.getState().mode === 'local') {

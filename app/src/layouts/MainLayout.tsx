@@ -12,16 +12,16 @@ import {
   GiteeConfigModal,
   GitHubConfigModal,
   SettingsModal,
-} from '../features/settings';
-import { PublishDrawer } from '../features/access/PublishDrawer';
+} from '@/features/settings';
+import { PublishDrawer } from '@/features/access/PublishDrawer';
 import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
-import { useRouteSync } from '../hooks/useRouteSync';
-import { useI18n } from '../i18n/useI18n';
-import { useImageStore } from '../stores/imageStore';
-import { useSourceStore } from '../stores/sourceStore';
-import { useUIStore } from '../stores/uiStore';
-import { useWorkspaceStore } from '../stores/workspaceStore';
-import { isWorkspaceAvailable } from '../platforms/workspacePlatform';
+import { useRouteSync } from '@/hooks/useRouteSync';
+import { useI18n } from '@/i18n/useI18n';
+import { useImageStore } from '@/features/library/imageStore';
+import { useSourceStore } from '@/stores/sourceStore';
+import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { exportJsonFile } from '@/features/settings/exportJsonFile';
 import { getPlatform, WebBrowserChrome } from '@/platforms';
 import {
@@ -241,7 +241,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         t={t}
       />
 
-      <AppMain legacyMobileMenu>{children}</AppMain>
+      <AppMain>{children}</AppMain>
 
       {modals}
     </div>

@@ -7,8 +7,8 @@ import {
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/stores/imageStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useImageStore } from '@/features/library/imageStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './workspace-setup.css';
 
 export interface WorkspaceSetupPanelProps {

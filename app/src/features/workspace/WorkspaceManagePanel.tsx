@@ -8,10 +8,10 @@ import {
   isWebWorkspaceActive,
   isWorkspaceAvailable,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/stores/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatSyncOutcome } from './syncOutcome';
 
 function formatSyncTime(

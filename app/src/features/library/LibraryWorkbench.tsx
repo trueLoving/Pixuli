@@ -24,9 +24,9 @@ import {
   useNativeImagePickers,
   useNativeShareImage,
 } from '@/features/library/useNativeImageActions';
-import { useImageStore } from '@/stores/imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './LibraryWorkbench.css';
 
 export interface LibraryWorkbenchProps {

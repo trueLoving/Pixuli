@@ -21,7 +21,7 @@ import {
   clampPanelWidth,
 } from '../constants/panelWidth';
 import { isStoragePluginRegistered } from '../storage/registry';
-import { useImageStore } from './imageStore';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from './sourceStore';
 
 export type EditingSourceRepoConfig = Pick<
