@@ -84,7 +84,7 @@ function resolveSelectedSource() {
   return sources[0] ?? null;
 }
 
-function resolveSelectedProvider() {
+export function resolveSelectedProvider() {
   const source = resolveSelectedSource();
   if (!source) {
     return null;

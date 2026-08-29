@@ -5,6 +5,8 @@ export type WorkspacePersist = {
   rootPath: string;
   workspaceId: string;
   folderLabel?: string;
+  /** FSA 工作区解析到的本机绝对路径（若运行时曾成功获取） */
+  absolutePath?: string;
 };
 
 export function saveWorkspaceModePref(
@@ -35,11 +37,18 @@ export function savePersistedWorkspace(
   rootPath: string,
   workspaceId: string,
   folderLabel?: string,
+  absolutePath?: string,
 ): void {
   try {
+    const existing = loadPersistedWorkspace();
     localStorage.setItem(
       WORKSPACE_STORAGE_KEY,
-      JSON.stringify({ rootPath, workspaceId, folderLabel }),
+      JSON.stringify({
+        rootPath,
+        workspaceId,
+        folderLabel,
+        absolutePath: absolutePath ?? existing?.absolutePath,
+      }),
     );
   } catch {
     // ignore

@@ -11,6 +11,7 @@ import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 
 interface SidebarProps {
@@ -156,7 +157,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
           syncBusy={syncBusy}
           syncDisabled={syncBusy}
           syncRemoteLabel={syncRemoteLabel}
-          hideUtilityTools
+          hideUtilityTools={!UTILITY_TOOLS_ENABLED}
           hideHelpFooter
           showWorkspaceNav={isWorkspaceAvailable()}
           hideSources

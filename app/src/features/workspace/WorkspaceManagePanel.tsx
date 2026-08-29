@@ -12,6 +12,7 @@ import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { formatWorkspaceTitle } from '@/features/workspace/workspacePathDisplay';
 import { formatSyncOutcome } from './syncOutcome';
 
 function formatSyncTime(
@@ -33,6 +34,7 @@ export const WorkspaceManagePanel: React.FC = () => {
   const {
     displayName,
     rootPath,
+    rootDisplayPath,
     pushing,
     syncing,
     syncStatus,
@@ -171,35 +173,17 @@ export const WorkspaceManagePanel: React.FC = () => {
           {t('settings.workspaceCurrentTitle')}
         </h3>
         <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-          <p className="text-sm font-medium text-gray-900">
-            {displayName || t('workspace.unnamed')}
-          </p>
-          {rootPath?.startsWith('mobile://') && (
-            <p className="mt-1 text-xs text-gray-500">
-              {t('workspace.mobileStorage')}
-            </p>
-          )}
-          {rootPath?.startsWith('fsa://') && (
-            <p className="mt-1 text-xs text-gray-500">
-              {t('workspace.fsaStorage')}
-            </p>
-          )}
-          {rootPath?.startsWith('opfs://') && (
-            <p className="mt-1 text-xs text-gray-500">
-              {t('workspace.webStorage')}
-            </p>
-          )}
-          {rootPath &&
-            !rootPath.startsWith('opfs://') &&
-            !rootPath.startsWith('fsa://') &&
-            !rootPath.startsWith('mobile://') && (
-              <p
-                className="mt-1 truncate text-xs text-gray-500"
-                title={rootPath}
-              >
-                {rootPath}
-              </p>
+          <p
+            className="truncate text-sm font-medium text-gray-900"
+            title={formatWorkspaceTitle(
+              rootPath,
+              displayName,
+              rootDisplayPath,
+              t,
             )}
+          >
+            {formatWorkspaceTitle(rootPath, displayName, rootDisplayPath, t)}
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-700">
               {t('workspace.lastSync')}:{' '}
