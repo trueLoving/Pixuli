@@ -1,29 +1,24 @@
 import {
-  Github,
   HelpCircle,
   Info,
   Keyboard,
-  Lock,
   Plus,
-  FileText,
-  Zap,
-  FileImage,
   RefreshCw,
   Settings,
-  FolderOpen,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { SidebarSourceSection } from '@/features/settings/sidebar/SidebarSourceSection';
 import { defaultTranslate } from '@/i18n/locales';
 import { SidebarNavItem } from './SidebarNavItem';
+import { SidebarMobileOverlay } from './SidebarSourceContextMenu';
 import {
-  SidebarMobileOverlay,
-  SidebarSourceContextMenu,
-} from './SidebarSourceContextMenu';
-import type {
-  SidebarMenuItem,
-  SidebarPrimaryNavItem,
-  SidebarProps,
-} from './types';
+  buildLibraryNavItem,
+  buildPrimaryNavItems,
+  buildUtilityNavItems,
+  buildWorkspaceNavItem,
+  cloneNavIcon,
+} from './sidebarNavItems';
+import type { SidebarProps } from './types';
 
 export type {
   SidebarView,
@@ -72,14 +67,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   ]
     .filter(Boolean)
     .join(' ');
-  const [contextMenu, setContextMenu] = useState<{
-    visible: boolean;
-    x: number;
-    y: number;
-    sourceId: string;
-  } | null>(null);
-  const contextMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
+  const libraryNavItem = buildLibraryNavItem(translate);
+  const workspaceNavItem = buildWorkspaceNavItem(translate);
+  const utilityNavItems = buildUtilityNavItems(translate, hideUtilityTools);
+  const primaryNavItems = buildPrimaryNavItems(translate, hideUtilityTools);
 
   // 性能优化：动画开始前设置 will-change，动画结束后移除
   useEffect(() => {
@@ -174,46 +166,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       </button>
     );
   };
-  const libraryNavItem = {
-    menuKey: 'library',
-    icon: <FileText size={20} />,
-    label: translate('sidebar.libraryNav'),
-    menuItem: { type: 'library' as const },
-    requiresConfig: true,
-  };
-
-  const workspaceNavItem = {
-    menuKey: 'workspace',
-    icon: <FolderOpen size={20} />,
-    label: translate('sidebar.workspaceNav'),
-    menuItem: { type: 'workspace' as const },
-  };
-
-  const utilityNavItems: Array<{
-    menuKey: string;
-    icon: React.ReactNode;
-    label: string;
-    menuItem: SidebarMenuItem;
-    requiresConfig?: boolean;
-  }> = hideUtilityTools
-    ? []
-    : [
-        {
-          menuKey: 'compress',
-          icon: <Zap size={20} />,
-          label: translate('sidebar.imageCompress'),
-          menuItem: { type: 'utility' as const, tool: 'compress' as const },
-        },
-        {
-          menuKey: 'convert',
-          icon: <FileImage size={20} />,
-          label: translate('sidebar.imageConvert'),
-          menuItem: { type: 'utility' as const, tool: 'convert' as const },
-        },
-      ];
-
-  const primaryNavItems = [libraryNavItem, ...utilityNavItems];
-
   const renderExpandedNavItems = (
     items: typeof primaryNavItems,
     options?: { requiresConfig?: boolean },
@@ -238,69 +190,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       );
     });
-
-  // 处理右键菜单
-  const handleContextMenu = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    sourceId: string,
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      sourceId,
-    });
-  };
-
-  // 关闭右键菜单
-  const closeContextMenu = () => {
-    setContextMenu(null);
-  };
-
-  // 处理编辑
-  const handleEdit = (sourceId: string) => {
-    if (onSourceEdit) {
-      onSourceEdit(sourceId);
-    }
-    closeContextMenu();
-  };
-
-  // 处理删除
-  const handleDelete = (sourceId: string) => {
-    if (onSourceDelete) {
-      onSourceDelete(sourceId);
-    }
-    closeContextMenu();
-  };
-
-  // 处理在单独窗口打开
-  const handleOpenInWindow = (sourceId: string) => {
-    if (onSourceOpenInWindow) {
-      onSourceOpenInWindow(sourceId);
-    }
-    closeContextMenu();
-  };
-
-  // 点击外部关闭右键菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        contextMenuRef.current &&
-        !contextMenuRef.current.contains(event.target as Node)
-      ) {
-        closeContextMenu();
-      }
-    };
-
-    if (contextMenu?.visible) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [contextMenu?.visible]);
 
   if (collapsed) {
     return (
@@ -340,10 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       disabled ? translate('sidebar.needSource') : item.label
                     }
                   >
-                    {React.cloneElement(
-                      item.icon as React.ReactElement<{ size?: number }>,
-                      { size: 28 },
-                    )}
+                    {cloneNavIcon(item.icon, 28)}
                     <span className="sidebar-collapsed-tooltip">
                       {item.label}
                     </span>
@@ -360,12 +246,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onMenuClick(workspaceNavItem.menuItem)}
                   title={workspaceNavItem.label}
                 >
-                  {React.cloneElement(
-                    workspaceNavItem.icon as React.ReactElement<{
-                      size?: number;
-                    }>,
-                    { size: 28 },
-                  )}
+                  {cloneNavIcon(workspaceNavItem.icon, 28)}
                   <span className="sidebar-collapsed-tooltip">
                     {workspaceNavItem.label}
                   </span>
@@ -374,40 +255,18 @@ const Sidebar: React.FC<SidebarProps> = ({
               {renderSyncButton(true)}
             </nav>
           )}
-          {!hideSources && sources.length > 0 && (
-            <div className="sidebar-collapsed-sources">
-              {sources.slice(0, 3).map(source => (
-                <button
-                  key={source.id}
-                  className={`sidebar-collapsed-source-item ${
-                    selectedSourceId === source.id ? 'active' : ''
-                  }`}
-                  onClick={() => onSourceSelect(source.id)}
-                  onContextMenu={e => handleContextMenu(e, source.id)}
-                  title={`${source.name}\n${source.owner}/${source.repo}`}
-                >
-                  {source.type === 'github' ? (
-                    <Github size={26} />
-                  ) : (
-                    <div className="gitee-icon-small">码</div>
-                  )}
-                  <span className="sidebar-collapsed-tooltip">
-                    {source.name}
-                  </span>
-                </button>
-              ))}
-              {sources.length > 3 && (
-                <div
-                  className="sidebar-collapsed-more"
-                  title={`还有 ${sources.length - 3} 个源`}
-                >
-                  <Plus size={16} />
-                  <span className="sidebar-collapsed-tooltip">
-                    {translate('sidebar.sources')} (+{sources.length - 3})
-                  </span>
-                </div>
-              )}
-            </div>
+          {!hideSources && (
+            <SidebarSourceSection
+              variant="collapsed"
+              sources={sources}
+              selectedSourceId={selectedSourceId}
+              onSourceSelect={onSourceSelect}
+              onAddSource={onAddSource}
+              onSourceEdit={onSourceEdit}
+              onSourceDelete={onSourceDelete}
+              onSourceOpenInWindow={onSourceOpenInWindow}
+              translate={translate}
+            />
           )}
 
           {/* 添加源按钮 - 折叠状态 */}
@@ -486,16 +345,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </>
             )}
           </div>
-
-          {/* 右键菜单 - 折叠状态（使用 Portal） */}
-          <SidebarSourceContextMenu
-            contextMenu={contextMenu}
-            contextMenuRef={contextMenuRef}
-            translate={translate}
-            onOpenInWindow={onSourceOpenInWindow}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
         </aside>
         <SidebarMobileOverlay
           mobileOpen={mobileOpen}
@@ -579,83 +428,18 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* 仓库源列表 */}
         {!hideSources && (
-          <div className="sidebar-section sidebar-sources">
-            <div className="sidebar-section-header">
-              <span className="sidebar-section-title">
-                {translate('sidebar.sources')}
-              </span>
-              <button
-                onClick={onAddSource}
-                className="sidebar-add-source-btn"
-                title={translate('sidebar.addSource')}
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-
-            {sources.length === 0 ? (
-              <div className="sidebar-empty-state">
-                <div className="sidebar-empty-icon">
-                  <Plus size={24} className="text-gray-400" />
-                </div>
-                <p className="sidebar-empty-text">
-                  {translate('sidebar.emptyState.text')}
-                </p>
-                <button onClick={onAddSource} className="sidebar-add-button">
-                  <Plus size={16} />
-                  {translate('sidebar.emptyState.addSource')}
-                </button>
-              </div>
-            ) : (
-              <div className="sidebar-source-list">
-                {sources.map(source => {
-                  const unavailable = source.available === false;
-                  return (
-                    <button
-                      key={source.id}
-                      type="button"
-                      className={`sidebar-source-item ${
-                        selectedSourceId === source.id ? 'active' : ''
-                      } ${unavailable ? 'sidebar-source-item--unavailable' : ''}`}
-                      onClick={() => {
-                        if (!unavailable) {
-                          onSourceSelect(source.id);
-                        }
-                      }}
-                      onContextMenu={e => handleContextMenu(e, source.id)}
-                      title={
-                        unavailable
-                          ? translate('sidebar.pluginUnavailable')
-                          : `${source.owner}/${source.repo}`
-                      }
-                      disabled={unavailable}
-                    >
-                      <div className="sidebar-source-icon">
-                        {source.type === 'github' ? (
-                          <Github size={16} />
-                        ) : (
-                          <div className="gitee-icon">码</div>
-                        )}
-                      </div>
-                      <div className="sidebar-source-info">
-                        <div className="sidebar-source-name">{source.name}</div>
-                        <div className="sidebar-source-path">
-                          {unavailable
-                            ? translate('sidebar.pluginUnavailable')
-                            : `${source.owner}/${source.repo}`}
-                        </div>
-                      </div>
-                      {source.active && !unavailable && (
-                        <div className="sidebar-source-active-dot" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <SidebarSourceSection
+            variant="expanded"
+            sources={sources}
+            selectedSourceId={selectedSourceId}
+            onSourceSelect={onSourceSelect}
+            onAddSource={onAddSource}
+            onSourceEdit={onSourceEdit}
+            onSourceDelete={onSourceDelete}
+            onSourceOpenInWindow={onSourceOpenInWindow}
+            translate={translate}
+          />
         )}
 
         {footerExtra}
@@ -704,16 +488,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
         )}
-
-        {/* 右键菜单（使用 Portal） */}
-        <SidebarSourceContextMenu
-          contextMenu={contextMenu}
-          contextMenuRef={contextMenuRef}
-          translate={translate}
-          onOpenInWindow={onSourceOpenInWindow}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
       </aside>
       <SidebarMobileOverlay
         mobileOpen={mobileOpen}

@@ -11,6 +11,7 @@ import {
   isPreviewableMedia,
   needsRichConfirm,
 } from './imageUploadUtils';
+import './ImageUploadConfirmForm.css';
 
 type UploadFormData = WebImageUploadData | MultiImageUploadData;
 
