@@ -25,6 +25,7 @@ import {
   useNativeShareImage,
 } from '@/features/library/useNativeImageActions';
 import { useImageStore } from '@/features/library/imageStore';
+import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './LibraryWorkbench.css';
@@ -97,11 +98,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
-  const setCurrentUtilityTool = useUIStore(
-    state => state.setCurrentUtilityTool,
-  );
-  const setCurrentView = useUIStore(state => state.setCurrentView);
-  const setActiveMenu = useUIStore(state => state.setActiveMenu);
   const currentUtilityTool = useUIStore(state => state.currentUtilityTool);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -249,22 +245,13 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     setReviewIndex(0);
   }, []);
 
-  const openUtilityTool = useCallback(
-    (tool: 'compress' | 'convert') => {
-      setCurrentUtilityTool(tool);
-      setCurrentView('library');
-      setActiveMenu(tool);
-    },
-    [setActiveMenu, setCurrentUtilityTool, setCurrentView],
-  );
-
   const handleSendCompress = useCallback(() => {
     openUtilityTool('compress');
-  }, [openUtilityTool]);
+  }, []);
 
   const handleSendConvert = useCallback(() => {
     openUtilityTool('convert');
-  }, [openUtilityTool]);
+  }, []);
 
   useEffect(() => {
     if (!workspaceExplorerOpen) return;

@@ -4,37 +4,19 @@
  */
 
 import type { AppMainLayoutProps } from '@/hooks/useAppOrchestration';
-import { FullScreenLoading, Toaster } from '@/ui';
 import type { VersionInfo } from '@/features/settings/version-info';
-import { resolveSourceDisplay } from '@pixuli/core/sources';
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
-import React, { useMemo } from 'react';
-import {
-  GiteeConfigModal,
-  GitHubConfigModal,
-  SettingsModal,
-} from '@/features/settings';
-import { PublishDrawer } from '@/features/access/PublishDrawer';
-import { SyncDirectionModal, WorkspaceModal } from '@/features/workspace';
+import React from 'react';
 import { useRouteSync } from '@/hooks/useRouteSync';
 import { useI18n } from '@/i18n/useI18n';
-import { useImageStore } from '@/features/library/imageStore';
-import { useSourceStore } from '@/features/settings/sourceStore';
-import { useUIStore } from '@/stores/uiStore';
+import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { exportJsonFile } from '@/features/settings/exportJsonFile';
-import { getPlatform, WebBrowserChrome } from '@/platforms';
-import {
-  configFieldsKey,
-  resolveModalRepoConfig,
-} from '@/features/settings/resolveModalRepoConfig';
+import { MainLayoutModals } from './MainLayoutModals';
 import { AppMain } from './AppMain';
 import { AppSidebar } from './AppSidebar';
 import { WorkspaceShell } from './WorkspaceShell';
 import { WorkspaceWelcomeScreen } from './WorkspaceWelcomeScreen';
 
-// 声明构建时注入的全局变量
 declare const __VERSION_INFO__: VersionInfo;
 
 interface MainLayoutProps extends AppMainLayoutProps {
@@ -54,7 +36,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onClearConfig,
 }) => {
   const { t } = useI18n();
-  const { loading, storageType, githubConfig, giteeConfig } = useImageStore();
+  const { loading } = useSourceSelection();
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const needsWorkspaceSetup = useWorkspaceStore(
@@ -63,120 +45,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
   const workspacePlatform = isWorkspaceAvailable();
   const showGlobalLoading = localActive ? workspaceLoading : loading;
-  const sources = useSourceStore(state => state.sources);
-  const platform = getPlatform();
 
   useRouteSync();
 
-  const {
-    showConfigModal,
-    showSettingsModal,
-    showWorkspaceModal,
-    editingSourceId,
-    editingSourcePluginId,
-    editingSourceRepoConfig,
-    closeConfigModal,
-    closeSettingsModal,
-    closeWorkspaceModal,
-  } = useUIStore();
-
-  const editingSource = useMemo(
-    () =>
-      editingSourceId
-        ? (sources.find(s => s.id === editingSourceId) ?? null)
-        : null,
-    [sources, editingSourceId],
-  );
-
-  const configModalStorageType =
-    editingSourceId && editingSourcePluginId
-      ? resolveSourceDisplay(editingSourcePluginId).legacyType
-      : editingSource
-        ? resolveSourceDisplay(editingSource.pluginId).legacyType
-        : storageType;
-
-  const modalResolveOptions = {
-    editingSourceId,
-    editingSourcePluginId,
-    editingSourceRepoConfig,
-    editingSource,
-    fallbackGithub: githubConfig,
-    fallbackGitee: giteeConfig,
-  };
-
-  const modalGitHubConfig = resolveModalRepoConfig(
-    'github',
-    modalResolveOptions,
-  ) as GitHubConfig | null;
-
-  const modalGiteeConfig = resolveModalRepoConfig(
-    'gitee',
-    modalResolveOptions,
-  ) as GiteeConfig | null;
-
-  const modalGitHubConfigKey = configFieldsKey(modalGitHubConfig);
-  const modalGiteeConfigKey = configFieldsKey(modalGiteeConfig);
-
   const modals = (
-    <>
-      <GitHubConfigModal
-        key={
-          editingSourceId
-            ? `github-edit-${editingSourceId}-${modalGitHubConfigKey}`
-            : `github-new-${storageType ?? 'none'}`
-        }
-        isOpen={showConfigModal && configModalStorageType !== 'gitee'}
-        onClose={closeConfigModal}
-        githubConfig={modalGitHubConfig}
-        onSaveConfig={onSaveConfig}
-        onClearConfig={onClearConfig}
-        platform={platform}
-        exportJsonFile={exportJsonFile}
-        t={t}
-      />
-
-      <GiteeConfigModal
-        key={
-          editingSourceId
-            ? `gitee-edit-${editingSourceId}-${modalGiteeConfigKey}`
-            : `gitee-new-${storageType ?? 'none'}`
-        }
-        isOpen={showConfigModal && configModalStorageType === 'gitee'}
-        onClose={closeConfigModal}
-        giteeConfig={modalGiteeConfig}
-        onSaveConfig={onSaveConfig}
-        onClearConfig={onClearConfig}
-        platform={platform}
-        exportJsonFile={exportJsonFile}
-        t={t}
-      />
-
-      <SettingsModal
-        isOpen={showSettingsModal}
-        onClose={closeSettingsModal}
-        t={t}
-        versionInfo={__VERSION_INFO__}
-      />
-
-      <PublishDrawer />
-
-      <WorkspaceModal
-        isOpen={showWorkspaceModal}
-        onClose={closeWorkspaceModal}
-        t={t}
-      />
-
-      <SyncDirectionModal />
-
-      <Toaster />
-
-      <FullScreenLoading
-        visible={showGlobalLoading}
-        text={showGlobalLoading ? t('app.loadingResources') : undefined}
-      />
-
-      <WebBrowserChrome />
-    </>
+    <MainLayoutModals
+      showGlobalLoading={showGlobalLoading}
+      onSaveConfig={onSaveConfig}
+      onClearConfig={onClearConfig}
+      versionInfo={__VERSION_INFO__}
+    />
   );
 
   if (workspacePlatform && needsWorkspaceSetup() && !workspaceLoading) {

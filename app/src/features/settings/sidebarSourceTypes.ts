@@ -11,3 +11,6 @@ export type SidebarSourceItem = {
   active: boolean;
   available: boolean;
 };
+
+/** 与 `SidebarSourceItem` 同型；layouts 侧栏 props 沿用此别名 */
+export type SidebarSource = SidebarSourceItem;

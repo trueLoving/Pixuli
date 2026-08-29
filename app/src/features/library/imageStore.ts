@@ -34,6 +34,7 @@ import {
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
 import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
+import { registerSourceSelectionPort } from '@/features/library/sourceSelectionPort';
 import type {
   BatchUploadProgress,
   GiteeConfig,
@@ -294,4 +295,23 @@ export const useImageStore = create<ImageState>((set, get) => {
 
 registerLibraryImageReset(() => {
   useImageStore.setState({ images: [], loading: false, error: null });
+});
+
+registerSourceSelectionPort({
+  getStorageType: () => useImageStore.getState().storageType,
+  getGitHubConfig: () => useImageStore.getState().githubConfig,
+  getGiteeConfig: () => useImageStore.getState().giteeConfig,
+  getStorageProvider: () => useImageStore.getState().storageProvider,
+  setStorageType: type => useImageStore.setState({ storageType: type }),
+  setGitHubConfig: config => useImageStore.getState().setGitHubConfig(config),
+  setGiteeConfig: config => useImageStore.getState().setGiteeConfig(config),
+  clearGitHubConfig: () => useImageStore.getState().clearGitHubConfig(),
+  clearGiteeConfig: () => useImageStore.getState().clearGiteeConfig(),
+  loadImages: () => useImageStore.getState().loadImages(),
+  initializeStorageIfNeeded: () => {
+    const { storageProvider, initializeStorage } = useImageStore.getState();
+    if (!storageProvider) {
+      initializeStorage();
+    }
+  },
 });

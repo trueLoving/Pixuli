@@ -5,7 +5,7 @@ import {
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useCallback, useMemo } from 'react';
 import { isStoragePluginRegistered } from '@/storage/registry';
-import { useImageStore } from '@/features/library/imageStore';
+import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { syncSourceEntryToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
 
@@ -13,7 +13,7 @@ import { syncSourceEntryToImageStore } from '@/features/settings/syncSourceRepoT
  * 源管理相关的 hooks
  */
 export function useSourceManagement() {
-  const { loadImages } = useImageStore();
+  const { loadImages } = useSourceSelection();
   const { sources, selectedSourceId, setSelectedSourceId, removeSource } =
     useSourceStore();
 
@@ -75,7 +75,7 @@ export function useSourceManagement() {
       }
       setSelectedSourceId(id);
       syncSourceEntryToImageStore(source);
-      loadImages();
+      void loadImages();
     },
     [sources, setSelectedSourceId, loadImages],
   );

@@ -1,4 +1,4 @@
-import type { SidebarSource } from '@/layouts/sidebar';
+import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';

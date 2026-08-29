@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useImageStore } from '@/features/library/imageStore';
+import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -14,7 +14,7 @@ export function useConfigManagement() {
     clearGitHubConfig,
     clearGiteeConfig,
     loadImages,
-  } = useImageStore();
+  } = useSourceSelection();
   const { addSource, updateSource, removeSource, setSelectedSourceId } =
     useSourceStore();
 
@@ -73,7 +73,7 @@ export function useConfigManagement() {
       }
 
       setTimeout(() => {
-        loadImages();
+        void loadImages();
       }, 100);
     },
     [

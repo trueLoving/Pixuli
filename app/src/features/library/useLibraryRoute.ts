@@ -7,6 +7,7 @@ import { filterImagesByFolder } from '@/features/workspace/folderTree';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
 import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -22,10 +23,6 @@ export function useLibraryRoute() {
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  const setCurrentUtilityTool = useUIStore(
-    state => state.setCurrentUtilityTool,
-  );
-  const setActiveMenu = useUIStore(state => state.setActiveMenu);
   const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
     useImageOperations();
   const searchContext = useSearchContextSafe();
@@ -61,12 +58,11 @@ export function useLibraryRoute() {
     if (tool !== 'compress' && tool !== 'convert') {
       return;
     }
-    setCurrentUtilityTool(tool);
-    setActiveMenu(tool);
+    openUtilityTool(tool);
     const next = new URLSearchParams(searchParams);
     next.delete('tool');
     setSearchParams(next, { replace: true });
-  }, [searchParams, setActiveMenu, setCurrentUtilityTool, setSearchParams]);
+  }, [searchParams, setSearchParams]);
 
   return {
     t,

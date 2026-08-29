@@ -2,11 +2,12 @@ import { LibraryWorkbench } from '@/features/library/LibraryWorkbench';
 import { useLibraryRoute } from '@/features/library/useLibraryRoute';
 import React from 'react';
 
-interface LibraryPageProps {
+interface LibraryRouteProps {
   onOpenConfigModal: () => void;
 }
 
-export const LibraryPage: React.FC<LibraryPageProps> = ({
+/** `/library` 路由视图：接线 `useLibraryRoute` 与 `LibraryWorkbench` */
+export const LibraryRoute: React.FC<LibraryRouteProps> = ({
   onOpenConfigModal,
 }) => {
   const {
@@ -43,4 +44,4 @@ export const LibraryPage: React.FC<LibraryPageProps> = ({
   );
 };
 
-export default LibraryPage;
+export default LibraryRoute;
