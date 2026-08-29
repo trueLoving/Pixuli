@@ -3,17 +3,18 @@ import {
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 import { useEffect, useRef } from 'react';
-import { useImageStore } from '@/features/library/imageStore';
+import { getSourceSelectionPort } from '@/features/library/sourceSelectionPort';
+import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useUIStore } from '@/stores/uiStore';
 
 /**
- * 同步选中源到 store 的配置
+ * 同步选中源到资源库配置
  */
 export function useSelectedSourceSync(
   selectedSource: StoredSourceEntry | null,
   onConfigSynced?: () => void,
 ) {
-  const { setGitHubConfig, setGiteeConfig } = useImageStore();
+  const { setGitHubConfig, setGiteeConfig } = useSourceSelection();
   const lastSyncedSourceIdRef = useRef<string | null>(null);
   const isInitialMountRef = useRef(true);
 
@@ -33,12 +34,13 @@ export function useSelectedSourceSync(
       }
 
       const sourceConfig = getRepoConfigFromSource(selectedSource);
+      const port = getSourceSelectionPort();
       if (selectedSource.pluginId === 'github') {
         setGitHubConfig(sourceConfig);
-        useImageStore.setState({ storageType: 'github' });
+        port.setStorageType('github');
       } else {
         setGiteeConfig(sourceConfig);
-        useImageStore.setState({ storageType: 'gitee' });
+        port.setStorageType('gitee');
       }
 
       lastSyncedSourceIdRef.current = selectedSource.id;
@@ -46,11 +48,7 @@ export function useSelectedSourceSync(
 
       if (onConfigSynced) {
         setTimeout(() => {
-          const { storageProvider, initializeStorage } =
-            useImageStore.getState();
-          if (!storageProvider) {
-            initializeStorage();
-          }
+          port.initializeStorageIfNeeded();
           onConfigSynced();
         }, 100);
       }

@@ -2,9 +2,9 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { WorkspaceRouteRedirect } from './WorkspaceRouteRedirect';
 
-const LibraryPage = lazy(() =>
-  import('@/features/library/LibraryPage').then(module => ({
-    default: module.LibraryPage,
+const LibraryRoute = lazy(() =>
+  import('@/features/library/LibraryRoute').then(module => ({
+    default: module.LibraryRoute,
   })),
 );
 
@@ -36,7 +36,7 @@ const RouteSuspense = ({ children }: { children: React.ReactNode }) => (
 export const AppRoutes: React.FC<AppRoutesProps> = ({ onOpenConfigModal }) => {
   const libraryElement = (
     <RouteSuspense>
-      <LibraryPage onOpenConfigModal={onOpenConfigModal} />
+      <LibraryRoute onOpenConfigModal={onOpenConfigModal} />
     </RouteSuspense>
   );
 

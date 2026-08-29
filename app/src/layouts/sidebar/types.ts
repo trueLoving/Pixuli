@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 
 export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
 
@@ -9,17 +10,6 @@ export type SidebarMenuItem =
   | { type: 'library' }
   | { type: 'workspace' }
   | { type: 'utility'; tool: SidebarUtilityTool };
-
-export interface SidebarSource {
-  id: string;
-  name: string;
-  type: 'github' | 'gitee';
-  owner: string;
-  repo: string;
-  path: string;
-  active?: boolean;
-  available?: boolean;
-}
 
 export interface SidebarProps {
   onMenuClick?: (menuItem: SidebarMenuItem) => void;

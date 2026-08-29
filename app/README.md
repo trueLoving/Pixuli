@@ -44,7 +44,7 @@ pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:deb
 
 | 路径               | 说明                                               |
 | ------------------ | -------------------------------------------------- |
-| `src/`             | 应用源码（features、layouts、pages）               |
+| `src/`             | 应用源码（features、layouts、router）              |
 | `src/platforms/`   | 平台检测、各端适配器、Web 浏览器壳层               |
 | `electron/`        | Desktop 主进程 / preload                           |
 | `android/`         | Capacitor Android 工程                             |

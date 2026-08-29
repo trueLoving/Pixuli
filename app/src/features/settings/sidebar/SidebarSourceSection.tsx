@@ -1,7 +1,7 @@
 import { Github, Plus } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { SidebarSourceContextMenu } from '@/layouts/sidebar/SidebarSourceContextMenu';
-import type { SidebarSource } from '@/layouts/sidebar/types';
+import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 
 export interface SidebarSourceSectionProps {
   sources: SidebarSource[];

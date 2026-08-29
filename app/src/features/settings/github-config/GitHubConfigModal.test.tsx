@@ -3,6 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GitHubConfigModal from './GitHubConfigModal';
 import type { GitHubConfig } from '@pixuli/core/types';
+import {
+  createConfigModalDefaultProps,
+  resetModalBodyOverflow,
+} from '../__tests__/modalTestFixtures';
 
 // Mock toast utilities
 vi.mock('@/ui/feedback/toast', () => ({
@@ -10,44 +14,15 @@ vi.mock('@/ui/feedback/toast', () => ({
   showError: vi.fn(),
 }));
 
-// Mock defaultTranslate
-vi.mock('@/i18n/locales', () => ({
-  defaultTranslate: (key: string) => {
-    const translations: Record<string, string> = {
-      'github.config.title': 'GitHub 仓库配置',
-      'github.config.username': 'GitHub 用户名',
-      'github.config.repository': '仓库名称',
-      'github.config.branch': '分支名称',
-      'github.config.path': '图片存储路径',
-      'github.config.token': 'GitHub Token',
-      'github.config.import': '↑ 导入',
-      'github.config.export': '导出',
-      'github.config.clearConfig': '清除配置',
-      'github.config.saveConfig': '保存配置',
-      'github.config.usernamePlaceholder': '您的 GitHub 用户名或组织名',
-      'github.config.repositoryPlaceholder': '用于存储图片的仓库名称',
-      'github.config.branchPlaceholder': '通常为 main 或 master',
-      'github.config.pathPlaceholder': '仓库中存储图片的文件夹路径',
-      'github.config.tokenPlaceholder': 'ghp_xxxxxxxxxxxxxxxxxxxx',
-      'github.config.tokenDescription':
-        '需要 repo 权限的 Personal Access Token',
-      'github.help.title': '配置帮助',
-      'storage.configuration': '配置',
-      'common.cancel': '取消',
-      'messages.configSaved': 'GitHub 配置已成功保存！',
-      'messages.configCleared': 'GitHub 配置已成功清除！',
-      'messages.configExported': 'GitHub 配置已成功导出！',
-      'messages.configImported': 'GitHub 配置已成功导入！',
-      'messages.saveFailed': '保存配置失败',
-      'messages.clearFailed': '清除配置失败',
-      'messages.exportFailed': '导出配置失败',
-      'messages.importFailed': '导入配置失败',
-      'messages.invalidFormat': '配置文件格式不正确',
-      'messages.noConfigToExport': '没有可导出的配置',
-    };
-    return translations[key] || key;
-  },
-}));
+vi.mock('@/i18n/locales', async importOriginal => {
+  const { githubConfigModalTranslations, makeModalTranslate } = await import(
+    '../__tests__/modalTestFixtures'
+  );
+  return {
+    ...((await importOriginal()) as object),
+    defaultTranslate: makeModalTranslate(githubConfigModalTranslations),
+  };
+});
 
 describe('GitHubConfigModal', () => {
   const mockGitHubConfig: GitHubConfig = {
@@ -58,23 +33,15 @@ describe('GitHubConfigModal', () => {
     path: 'images',
   };
 
-  const defaultProps = {
-    isOpen: true,
-    onClose: vi.fn(),
-    onSaveConfig: vi.fn(),
-    onClearConfig: vi.fn(),
-  };
+  const defaultProps = createConfigModalDefaultProps();
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // 重置 document.body.style
-    document.body.style.overflow = '';
+    resetModalBodyOverflow();
   });
 
   afterEach(() => {
-    // 清理事件监听器
-    document.removeEventListener('keydown', vi.fn());
-    document.body.style.overflow = '';
+    resetModalBodyOverflow();
   });
 
   describe('渲染', () => {

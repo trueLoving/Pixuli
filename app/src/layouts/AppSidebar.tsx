@@ -9,10 +9,11 @@ import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useUIStore } from '@/stores/uiStore';
-import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
 interface SidebarProps {
   sidebarSources: SidebarSourceItem[];
@@ -105,9 +106,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
       setActiveMenu('workspace');
       navigate(ROUTES.WORKSPACE);
     } else if (menuItem.type === 'utility') {
-      setCurrentUtilityTool(menuItem.tool);
-      setCurrentView('library');
-      setActiveMenu(menuItem.tool);
+      openUtilityTool(menuItem.tool);
       navigate(ROUTES.LIBRARY);
     }
     closeDrawerIfMobile();

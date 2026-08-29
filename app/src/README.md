@@ -11,17 +11,17 @@ L2  ui/                      薄 primitives / brand（@/ui）
 L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 ```
 
-| 路径                     | 职责                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------- |
-| `features/library`       | 资源库 SSOT：`LibraryPage`、`useLibraryRoute`、`LibraryWorkbench`、`imageStore` |
-| `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`               |
-| `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                   |
-| `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                        |
-| `features/operation-log` | 操作日志 UI + store + service（域内聚）                                         |
-| `stores/`                | **跨 feature** 壳层全局 Zustand                                                 |
-| `router/`                | `/library` 主路由、`LibraryPage` lazy 加载、legacy redirect                     |
-| `i18n/`                  | 文案 SSOT；壳层标语见 `brand.json` + `brandCopy.ts`                             |
-| `ui/`                    | 禁止放复合业务 UI                                                               |
+| 路径                     | 职责                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| `features/library`       | 资源库 SSOT：`LibraryRoute`、`useLibraryRoute`、`LibraryWorkbench`、`imageStore` |
+| `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`                |
+| `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                    |
+| `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                         |
+| `features/operation-log` | 操作日志 UI + store + service（域内聚）                                          |
+| `stores/`                | **跨 feature** 壳层全局 Zustand                                                  |
+| `router/`                | `/library` 主路由、`LibraryRoute` lazy 加载、legacy redirect                     |
+| `i18n/`                  | 文案 SSOT；壳层标语见 `brand.json` + `brandCopy.ts`                              |
+| `ui/`                    | 禁止放复合业务 UI                                                                |
 
 ## 路由
 
@@ -43,6 +43,8 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 跨 feature 互调经端口契约，避免直接 import 对方 store：
 
 - `workspaceImageBridge`（`library` ↔ `workspace`）
+- `sourceSelectionPort`（`settings` ↔ `library` 源选中与仓库配置）
+- `utilityToolPort`（`library` / `inspector` / 侧栏 → `tools` overlay）
 - `publishContract`（`library` / `inspector` ↔ `access` 只读发布状态）
 
 ## 导入约定
@@ -51,6 +53,8 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 - 薄 UI：`@/ui`
 - 壳层 hooks：`@/hooks`（仅 init、路由同步、键盘、面板）
 - 无域归属的纯函数：`@/utils`（当前仅 `clipboard`）
+- 面板宽度常量：`constants/panelWidth.ts`（壳层 `usePanelResize`）
+- 全局 ambient 类型：`types/*.d.ts`（FSA / SW / workspace API 等，无 barrel）
 
 ## 文案
 
@@ -62,4 +66,5 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 
 在仓库根目录：`pnpm test` · `pnpm dev:web` · `pnpm build:web`
 
-更细的 UI 边界见 [ui/README.md](./ui/README.md)。
+更细的 UI 边界见 [ui/README.md](./ui/README.md)；壳层 hooks 见
+[hooks/README.md](./hooks/README.md)。
