@@ -2,6 +2,7 @@ import { Camera, Crop, Images, Upload } from 'lucide-react';
 import React from 'react';
 import type { DropzoneRootProps, DropzoneInputProps } from 'react-dropzone';
 import type { NativeImagePickers } from './nativePickers';
+import './ImageUploadDropzone.css';
 
 export interface ImageUploadDropzoneProps {
   getRootProps: <T extends DropzoneRootProps>(props?: T) => T;

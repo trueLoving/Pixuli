@@ -1,6 +1,7 @@
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import React from 'react';
 import type { BatchUploadProgress } from '@pixuli/core/types';
+import './ImageUploadBatchProgress.css';
 
 export interface ImageUploadBatchProgressProps {
   batchUploadProgress: BatchUploadProgress;

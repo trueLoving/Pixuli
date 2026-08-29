@@ -1,0 +1,175 @@
+/* 批量上传进度 */
+.image-upload-progress-container {
+  width: 100%;
+  padding: 1.5rem 0;
+}
+
+.image-upload-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.image-upload-progress-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.image-upload-progress-count {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.image-upload-progress-overall {
+  margin-bottom: 1.5rem;
+}
+
+.image-upload-progress-overall-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.image-upload-progress-bar {
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.5rem;
+}
+
+.image-upload-progress-bar-fill {
+  background-color: var(--pix-violet-deep);
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease-in-out;
+}
+
+.image-upload-progress-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+}
+
+.image-upload-progress-current {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: var(--pix-violet-soft);
+  border-radius: 0.5rem;
+}
+
+.image-upload-progress-current-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.image-upload-progress-current-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--pix-violet-deep);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: image-upload-spin 1s linear infinite;
+}
+
+.image-upload-progress-current-text {
+  font-size: 0.875rem;
+  color: var(--pix-violet-deep);
+}
+
+.image-upload-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  margin-top: 1rem;
+  padding-right: 0.5rem;
+}
+
+.image-upload-progress-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.image-upload-progress-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.image-upload-progress-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.image-upload-progress-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.image-upload-progress-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+}
+
+.image-upload-progress-item-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.image-upload-progress-item-icon.success {
+  color: #10b981;
+}
+
+.image-upload-progress-item-icon.error {
+  color: #ef4444;
+}
+
+.image-upload-progress-item-icon.uploading {
+  color: var(--pix-violet);
+  animation: image-upload-spin 1s linear infinite;
+}
+
+.image-upload-progress-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-upload-progress-item-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-upload-progress-item-message {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.image-upload-progress-item-progress {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+@keyframes image-upload-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
