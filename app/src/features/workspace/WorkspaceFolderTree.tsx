@@ -8,7 +8,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
 import {
   EXPLORER_WIDTH_MAX,
@@ -18,6 +18,7 @@ import {
 import { useImageStore } from '@/features/library/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { formatWorkspaceTitle } from '@/features/workspace/workspacePathDisplay';
 import {
   buildWorkspaceFolderTree,
   folderNodeLabel,
@@ -32,30 +33,6 @@ export function resolveNewFolderParent(selectedOrMenuPath: string): string {
     return '';
   }
   return path.replace(/\/+$/, '');
-}
-
-/** 资源管理器展示的本机位置：真实路径优先，虚拟存储用可读说明 */
-export function formatWorkspaceLocation(
-  rootPath: string | null,
-  displayName: string | null,
-  t: (key: string) => string,
-): string | null {
-  if (!rootPath) {
-    return null;
-  }
-  if (rootPath.startsWith('mobile://')) {
-    return t('workspace.mobileStorage');
-  }
-  if (rootPath.startsWith('opfs://')) {
-    return t('workspace.webStorage');
-  }
-  if (rootPath.startsWith('fsa://')) {
-    const name = displayName?.trim();
-    return name
-      ? `${t('workspace.fsaStorage')} · ${name}`
-      : t('workspace.fsaStorage');
-  }
-  return rootPath;
 }
 
 interface TreeRowProps {
@@ -153,6 +130,10 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   const images = useImageStore(state => state.images);
   const displayName = useWorkspaceStore(state => state.displayName);
   const rootPath = useWorkspaceStore(state => state.rootPath);
+  const rootDisplayPath = useWorkspaceStore(state => state.rootDisplayPath);
+  const refreshRootDisplayPath = useWorkspaceStore(
+    state => state.refreshRootDisplayPath,
+  );
   const localFolders = useWorkspaceStore(state => state.localFolders);
   const createLocalFolder = useWorkspaceStore(state => state.createLocalFolder);
   const renameLocalFolder = useWorkspaceStore(state => state.renameLocalFolder);
@@ -283,7 +264,18 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
     }
   };
 
-  const workspaceLocation = formatWorkspaceLocation(rootPath, displayName, t);
+  const workspaceTitle = formatWorkspaceTitle(
+    rootPath,
+    displayName,
+    rootDisplayPath,
+    t,
+  );
+
+  useEffect(() => {
+    if (rootPath?.startsWith('fsa://') && !rootDisplayPath) {
+      void refreshRootDisplayPath();
+    }
+  }, [rootPath, rootDisplayPath, refreshRootDisplayPath]);
 
   return (
     <aside
@@ -293,20 +285,12 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
     >
       <div className="workspace-explorer-header">
         <div className="workspace-explorer-header-text">
-          <h2 className="workspace-explorer-title">
-            {displayName || t('workspace.unnamed')}
+          <h2 className="workspace-explorer-title" title={workspaceTitle}>
+            {workspaceTitle}
           </h2>
           <p className="workspace-explorer-subtitle">
             {t('workspace.explorer')}
           </p>
-          {workspaceLocation ? (
-            <p className="workspace-explorer-path" title={workspaceLocation}>
-              <span className="workspace-explorer-path-label">
-                {t('workspace.localPath')}
-              </span>
-              {workspaceLocation}
-            </p>
-          ) : null}
         </div>
         {overlay ? (
           <div className="workspace-explorer-header-actions">

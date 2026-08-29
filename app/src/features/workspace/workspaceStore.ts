@@ -43,18 +43,22 @@ import {
   savePersistedWorkspace,
   saveWorkspaceModePref,
 } from '@/features/workspace/workspacePersist';
+import { resolveWorkspaceRootDisplayPath } from '@/features/workspace/workspacePathDisplay';
 import {
   getWorkspaceSyncEngine,
   getWorkspaceVault,
   registerWorkspaceModeReader,
   resetWorkspaceRuntime,
   resetWorkspaceSyncEngineOnly,
+  resolveSelectedProvider,
 } from '@/features/workspace/workspaceRuntime';
 
 interface WorkspaceState {
   mode: WorkspaceMode;
   rootPath: string | null;
   displayName: string | null;
+  /** 本机绝对路径或虚拟存储说明（FSA 在可解析时为绝对路径） */
+  rootDisplayPath: string | null;
   localImages: ImageItem[];
   loading: boolean;
   pushing: boolean;
@@ -75,6 +79,7 @@ interface WorkspaceState {
   syncBindingsFromSources: () => Promise<void>;
   /** quiet：添加/写入时静默刷新，避免锁住资源库壳层（§5.1） */
   refreshLocalImages: (options?: { quiet?: boolean }) => Promise<void>;
+  refreshRootDisplayPath: () => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
   importLocalImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
@@ -147,10 +152,36 @@ async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   return vault;
 }
 
+async function refreshAndPersistRootDisplayPath(
+  rootPath: string | null,
+  apply: (rootDisplayPath: string | null) => void,
+): Promise<void> {
+  const persisted = loadPersistedWorkspace();
+  const resolved = await resolveWorkspaceRootDisplayPath(
+    rootPath,
+    persisted?.absolutePath,
+  );
+  apply(resolved);
+  if (
+    resolved &&
+    rootPath?.startsWith('fsa://') &&
+    persisted?.rootPath === rootPath &&
+    resolved !== persisted.absolutePath
+  ) {
+    savePersistedWorkspace(
+      persisted.rootPath,
+      persisted.workspaceId,
+      persisted.folderLabel,
+      resolved,
+    );
+  }
+}
+
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   mode: 'unset',
   rootPath: null,
   displayName: null,
+  rootDisplayPath: null,
   localImages: [],
   localFolders: [],
   loading: false,
@@ -206,6 +237,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         displayName: folderLabel ?? config.displayName,
         loading: false,
       });
+      await refreshAndPersistRootDisplayPath(
+        persisted.rootPath,
+        rootDisplayPath => set({ rootDisplayPath }),
+      );
       await get().syncBindingsFromSources();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
@@ -244,6 +279,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         syncMessage: null,
         syncOutcome: null,
       });
+      await refreshAndPersistRootDisplayPath(
+        persisted.rootPath,
+        rootDisplayPath => set({ rootDisplayPath }),
+      );
       await get().syncBindingsFromSources();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
@@ -325,6 +364,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         syncMessage: null,
         syncOutcome: null,
       });
+      await refreshAndPersistRootDisplayPath(rootPath, rootDisplayPath =>
+        set({ rootDisplayPath }),
+      );
       await get().syncBindingsFromSources();
       await get().refreshLocalImages();
       await get().refreshSyncStatus();
@@ -351,6 +393,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       mode: 'unset',
       rootPath: null,
       displayName: null,
+      rootDisplayPath: null,
       localImages: [],
       localFolders: [],
       loading: false,
@@ -362,6 +405,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       syncOutcome: null,
     });
     notifyWorkspaceCleared();
+  },
+
+  refreshRootDisplayPath: async () => {
+    await refreshAndPersistRootDisplayPath(get().rootPath, rootDisplayPath =>
+      set({ rootDisplayPath }),
+    );
   },
 
   refreshLocalImages: async options => {

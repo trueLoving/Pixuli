@@ -45,6 +45,7 @@ import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/features/library/utils/assetKind';
+import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import {
   INSPECTOR_WIDTH_MAX,
   INSPECTOR_WIDTH_MIN,
@@ -326,28 +327,30 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     grid.push({
       id: 'compress',
       label: t('image.inspector.actionCompress'),
-      title:
-        kind === 'image'
+      title: !UTILITY_TOOLS_ENABLED
+        ? t('image.inspector.toolDisabled')
+        : kind === 'image'
           ? t('image.inspector.sendCompress')
           : t('image.inspector.toolImageOnly'),
       icon: SlidersHorizontal,
-      disabled: kind !== 'image' || !onSendCompress,
+      disabled: !UTILITY_TOOLS_ENABLED || kind !== 'image' || !onSendCompress,
       onClick: () => {
-        if (kind !== 'image') return;
+        if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
         onSendCompress?.();
       },
     });
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
-      title:
-        kind === 'image'
+      title: !UTILITY_TOOLS_ENABLED
+        ? t('image.inspector.toolDisabled')
+        : kind === 'image'
           ? t('image.inspector.sendConvert')
           : t('image.inspector.toolImageOnly'),
       icon: Wand2,
-      disabled: kind !== 'image' || !onSendConvert,
+      disabled: !UTILITY_TOOLS_ENABLED || kind !== 'image' || !onSendConvert,
       onClick: () => {
-        if (kind !== 'image') return;
+        if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
         onSendConvert?.();
       },
     });
@@ -398,12 +401,18 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     const imageCount = selectedImages.filter(
       item => getAssetKind(item) === 'image',
     ).length;
-    const compressTitle =
-      imageCount === 0
+    const compressTitle = !UTILITY_TOOLS_ENABLED
+      ? t('image.inspector.toolDisabled')
+      : imageCount === 0
         ? t('image.inspector.toolImageOnly')
         : imageCount < selectedImages.length
           ? `${t('image.inspector.sendCompress')} (${imageCount}/${selectedImages.length})`
           : t('image.inspector.sendCompress');
+    const convertTitle = !UTILITY_TOOLS_ENABLED
+      ? t('image.inspector.toolDisabled')
+      : imageCount === 0
+        ? t('image.inspector.toolImageOnly')
+        : t('image.inspector.sendConvert');
     const grid: CompactAction[] = [
       {
         id: 'sync',
@@ -418,19 +427,22 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         label: t('image.inspector.actionCompress'),
         title: compressTitle,
         icon: SlidersHorizontal,
-        disabled: imageCount === 0 || !onSendCompress,
-        onClick: () => onSendCompress?.(),
+        disabled: !UTILITY_TOOLS_ENABLED || imageCount === 0 || !onSendCompress,
+        onClick: () => {
+          if (!UTILITY_TOOLS_ENABLED) return;
+          onSendCompress?.();
+        },
       },
       {
         id: 'convert',
         label: t('image.inspector.actionConvert'),
-        title:
-          imageCount === 0
-            ? t('image.inspector.toolImageOnly')
-            : t('image.inspector.sendConvert'),
+        title: convertTitle,
         icon: Wand2,
-        disabled: imageCount === 0 || !onSendConvert,
-        onClick: () => onSendConvert?.(),
+        disabled: !UTILITY_TOOLS_ENABLED || imageCount === 0 || !onSendConvert,
+        onClick: () => {
+          if (!UTILITY_TOOLS_ENABLED) return;
+          onSendConvert?.();
+        },
       },
     ];
     return {

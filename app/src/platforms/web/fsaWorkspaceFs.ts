@@ -217,6 +217,50 @@ export async function fsaListFiles(
   return results.sort();
 }
 
+function deriveDirectoryFromFilePath(
+  filePath: string,
+  fileName: string,
+): string | null {
+  const normalized = filePath.replace(/\\/g, '/');
+  const suffix = `/${fileName}`;
+  if (normalized.endsWith(suffix)) {
+    return normalized.slice(0, -suffix.length);
+  }
+  const lastSlash = normalized.lastIndexOf('/');
+  if (lastSlash > 0) {
+    return normalized.slice(0, lastSlash);
+  }
+  return null;
+}
+
+/** 尝试从 FSA 目录内文件推断本机绝对路径（浏览器通常不可用；Electron 等环境可能有效） */
+export async function resolveFsaAbsolutePath(
+  workspaceId: string,
+): Promise<string | null> {
+  const handle = await loadFsaDirectoryHandle(workspaceId);
+  if (!handle) {
+    return null;
+  }
+
+  try {
+    for await (const [name, entry] of handle.entries()) {
+      if (entry.kind !== 'file') {
+        continue;
+      }
+      const file = await (entry as FileSystemFileHandle).getFile();
+      const filePath = (file as File & { path?: string }).path;
+      if (typeof filePath === 'string' && filePath.trim().length > 0) {
+        return deriveDirectoryFromFilePath(filePath, name);
+      }
+      break;
+    }
+  } catch {
+    // ignore probe errors
+  }
+
+  return null;
+}
+
 export async function pickFsaDirectory(): Promise<FileSystemDirectoryHandle | null> {
   if (!isFileSystemAccessSupported()) {
     return null;

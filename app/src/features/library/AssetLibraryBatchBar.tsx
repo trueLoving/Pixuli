@@ -1,5 +1,6 @@
 import { RefreshCw, Trash2, Wand2 } from 'lucide-react';
 import React from 'react';
+import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 
 export interface AssetLibraryBatchBarProps {
   selectedCount: number;
@@ -62,10 +63,16 @@ export const AssetLibraryBatchBar: React.FC<AssetLibraryBatchBarProps> = ({
     <button
       type="button"
       className="asset-library-chrome-btn"
-      disabled={!allImagesSelected || !onSendCompress}
-      title={allImagesSelected ? undefined : t('image.inspector.toolImageOnly')}
+      disabled={!UTILITY_TOOLS_ENABLED || !allImagesSelected || !onSendCompress}
+      title={
+        !UTILITY_TOOLS_ENABLED
+          ? t('image.inspector.toolDisabled')
+          : allImagesSelected
+            ? undefined
+            : t('image.inspector.toolImageOnly')
+      }
       onClick={() => {
-        if (!allImagesSelected) return;
+        if (!UTILITY_TOOLS_ENABLED || !allImagesSelected) return;
         onSendCompress?.();
       }}
     >
@@ -74,10 +81,16 @@ export const AssetLibraryBatchBar: React.FC<AssetLibraryBatchBarProps> = ({
     <button
       type="button"
       className="asset-library-chrome-btn"
-      disabled={!allImagesSelected || !onSendConvert}
-      title={allImagesSelected ? undefined : t('image.inspector.toolImageOnly')}
+      disabled={!UTILITY_TOOLS_ENABLED || !allImagesSelected || !onSendConvert}
+      title={
+        !UTILITY_TOOLS_ENABLED
+          ? t('image.inspector.toolDisabled')
+          : allImagesSelected
+            ? undefined
+            : t('image.inspector.toolImageOnly')
+      }
       onClick={() => {
-        if (!allImagesSelected) return;
+        if (!UTILITY_TOOLS_ENABLED || !allImagesSelected) return;
         onSendConvert?.();
       }}
     >
