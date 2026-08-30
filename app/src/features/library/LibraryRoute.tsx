@@ -20,6 +20,7 @@ export const LibraryRoute: React.FC<LibraryRouteProps> = ({
     handleDeleteImage,
     handleDeleteMultipleImages,
     handleUpdateImage,
+    handleBatchUpdateMetadata,
     search,
   } = useLibraryRoute();
 
@@ -35,6 +36,7 @@ export const LibraryRoute: React.FC<LibraryRouteProps> = ({
           onDeleteImage={handleDeleteImage}
           onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
+          onBatchUpdateMetadata={handleBatchUpdateMetadata}
           onOpenConfigModal={onOpenConfigModal}
           search={search}
           t={t}

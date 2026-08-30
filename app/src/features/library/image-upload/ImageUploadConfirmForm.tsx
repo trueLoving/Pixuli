@@ -23,7 +23,6 @@ export interface ImageUploadConfirmFormProps
   files: File[];
   isMultipleUpload: boolean;
   currentData: UploadFormData;
-  folderValue: string;
   fileDimensions: Record<string, { width: number; height: number }>;
   previewUrls: Map<string, string>;
   enableCrop?: boolean;
@@ -33,7 +32,6 @@ export interface ImageUploadConfirmFormProps
   tagInputRef: RefObject<HTMLInputElement | null>;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
-  onTargetFolderChange: (value: string) => void;
   onFieldChange: (
     field: keyof UploadFormData,
     value: string | string[],
@@ -44,7 +42,6 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
   files,
   isMultipleUpload,
   currentData,
-  folderValue,
   fileDimensions,
   previewUrls,
   enableCrop = false,
@@ -54,7 +51,6 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
   tagInputRef,
   onSubmit,
   onCancel,
-  onTargetFolderChange,
   onFieldChange,
   ...compressionProps
 }) => {
@@ -135,41 +131,6 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
           enableCompression={enableCompression}
           {...compressionProps}
         />
-
-        <div className="image-upload-form-group">
-          <label className="image-upload-form-label">
-            {translate('image.upload.folder')}
-          </label>
-          <input
-            type="text"
-            value={folderValue}
-            onChange={e => onTargetFolderChange(e.target.value)}
-            placeholder={translate('image.upload.folderPlaceholder')}
-            className="image-upload-form-input"
-          />
-        </div>
-
-        <div className="image-upload-form-group">
-          <label className="image-upload-form-label">
-            {isMultipleUpload
-              ? translate('image.upload.namePrefix')
-              : translate('image.upload.fileName')}{' '}
-            <span className="image-upload-form-optional">
-              {translate('image.upload.optional')}
-            </span>
-          </label>
-          <input
-            type="text"
-            value={currentData?.name || ''}
-            onChange={e => onFieldChange('name', e.target.value)}
-            placeholder={
-              isMultipleUpload
-                ? translate('image.upload.namePrefixPlaceholder')
-                : translate('image.upload.fileNamePlaceholder')
-            }
-            className="image-upload-form-input"
-          />
-        </div>
 
         <div className="image-upload-form-group">
           <label className="image-upload-form-label">

@@ -23,8 +23,12 @@ export function useLibraryRoute() {
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  const { handleDeleteImage, handleDeleteMultipleImages, handleUpdateImage } =
-    useImageOperations();
+  const {
+    handleDeleteImage,
+    handleDeleteMultipleImages,
+    handleUpdateImage,
+    handleBatchUpdateMetadata,
+  } = useImageOperations();
   const searchContext = useSearchContextSafe();
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
@@ -74,6 +78,7 @@ export function useLibraryRoute() {
     handleDeleteImage,
     handleDeleteMultipleImages,
     handleUpdateImage,
+    handleBatchUpdateMetadata,
     search,
   };
 }

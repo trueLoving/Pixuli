@@ -1,3 +1,4 @@
+import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import { EmptyState } from '@/features/library/empty-state';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import { UtilityToolOverlay } from '@/features/tools/UtilityToolOverlay';
@@ -17,6 +18,8 @@ import React, {
 } from 'react';
 import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
+import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
+import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useImageCopyUrl } from '@/features/library/useImageCopyUrl';
@@ -42,6 +45,10 @@ export interface LibraryWorkbenchProps {
     fileNames: string[],
   ) => Promise<void>;
   onUpdateImage: (data: ImageEditData) => Promise<void>;
+  onBatchUpdateMetadata: (
+    imageIds: string[],
+    patch: BatchMetadataPatch,
+  ) => Promise<{ updated: number; failed: number }>;
   onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, unknown>) => string;
   search?: LibrarySearchConfig;
@@ -70,6 +77,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   onDeleteImage,
   onDeleteMultipleImages,
   onUpdateImage,
+  onBatchUpdateMetadata,
   onOpenConfigModal,
   t,
   search,
@@ -102,6 +110,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [batchEditOpen, setBatchEditOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reviewIds, setReviewIds] = useState<string[]>([]);
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -120,8 +130,12 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   );
 
   const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
-  const showDockedInspector = !isMobile && (isWide || selectedIds.length > 0);
-  const showSheetInspector = isMobile && selectedIds.length > 0;
+  const hasSelection = selectedIds.length > 0;
+  const showDockedInspector = !isMobile && (isWide || hasSelection);
+  const showSheetInspector =
+    isMobile && !multiSelectMode && selectedIds.length === 1 && sheetOpen;
+  const showMobileSelectionBar =
+    isMobile && hasSelection && (multiSelectMode || selectedIds.length >= 2);
 
   const errorMessage = useMemo(
     () => (error ? resolveImageErrorMessage(error, t) : null),
@@ -150,47 +164,40 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
             .filter((item): item is ImageItem => Boolean(item)),
         );
       }
-      setSheetOpen(ids.length > 0);
-      if (ids.length > 0 && !isWide) {
+      setSheetOpen(isMobile && ids.length === 1 && !multiSelectMode);
+      if (
+        ids.length > 0 &&
+        isMobile &&
+        !isWide &&
+        !multiSelectMode &&
+        ids.length === 1
+      ) {
         window.dispatchEvent(new CustomEvent('pixuli:closeFilterPanel'));
         useUIStore.getState().setWorkspaceExplorerOpen(false);
       }
     },
-    [isWide],
+    [isMobile, isWide, multiSelectMode],
   );
 
-  const beginMetadataReview = useCallback(
-    (items: ImageItem[]) => {
-      const ids = items.map(item => item.id).filter(Boolean);
-      if (ids.length === 0) {
-        return;
-      }
-      setReviewIds(ids);
-      setReviewIndex(0);
-      handleSelectedIdsChange([ids[0]], [items[0]]);
-      setEditNonce(nonce => nonce + 1);
-    },
-    [handleSelectedIdsChange],
-  );
+  const handleMultiSelectModeChange = useCallback((active: boolean) => {
+    setMultiSelectMode(active);
+    if (active) {
+      setSheetOpen(false);
+    }
+  }, []);
 
   const handleUploadImage = useCallback(
     async (data: ImageUploadData) => {
-      const created = await uploadImage(data);
-      if (created) {
-        beginMetadataReview([created]);
-      }
+      await uploadImage(data);
     },
-    [beginMetadataReview, uploadImage],
+    [uploadImage],
   );
 
   const handleUploadMultipleImages = useCallback(
     async (data: MultiImageUploadData) => {
-      const created = await uploadMultipleImages(data);
-      if (created.length > 0) {
-        beginMetadataReview(created);
-      }
+      await uploadMultipleImages(data);
     },
-    [beginMetadataReview, uploadMultipleImages],
+    [uploadMultipleImages],
   );
 
   const handleReviewPrev = useCallback(() => {
@@ -224,6 +231,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const handleSelectImage = useCallback(
     (id: string) => {
+      setMultiSelectMode(false);
       const item =
         imagesRef.current.find(image => image.id === id) ??
         selectedItems.find(image => image.id === id);
@@ -237,13 +245,64 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [handleSelectedIdsChange, reviewIds, selectedItems],
   );
 
-  const handleCloseInspector = useCallback(() => {
+  const handleClearSelection = useCallback(() => {
     setSheetOpen(false);
     setSelectedIds([]);
     setSelectedItems([]);
     setReviewIds([]);
     setReviewIndex(0);
+    setMultiSelectMode(false);
   }, []);
+
+  const handleBatchDelete = useCallback(async () => {
+    if (selectedImages.length === 0) return;
+    if (
+      !confirm(
+        t('image.library.confirmDeleteN').replace(
+          '{count}',
+          String(selectedImages.length),
+        ),
+      )
+    ) {
+      return;
+    }
+    if (selectedImages.length === 1) {
+      await onDeleteImage(selectedImages[0].id, selectedImages[0].name);
+    } else if (onDeleteMultipleImages) {
+      await onDeleteMultipleImages(
+        selectedImages.map(item => item.id),
+        selectedImages.map(item => item.name),
+      );
+    }
+    handleClearSelection();
+  }, [
+    handleClearSelection,
+    onDeleteImage,
+    onDeleteMultipleImages,
+    selectedImages,
+    t,
+  ]);
+
+  const handleBatchDownload = useCallback(() => {
+    for (const file of selectedImages) {
+      const link = document.createElement('a');
+      link.href = file.url;
+      link.download = file.name;
+      link.rel = 'noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+  }, [selectedImages]);
+
+  const handleBatchEditSubmit = useCallback(
+    async (patch: BatchMetadataPatch) => {
+      const result = await onBatchUpdateMetadata(selectedIds, patch);
+      await loadImages();
+      return result;
+    },
+    [loadImages, onBatchUpdateMetadata, selectedIds],
+  );
 
   const handleSendCompress = useCallback(() => {
     openUtilityTool('compress');
@@ -252,6 +311,43 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const handleSendConvert = useCallback(() => {
     openUtilityTool('convert');
   }, []);
+
+  const batchSelectionActions = useMemo(
+    () =>
+      buildBatchSelectionActions(selectedImages, t, {
+        onBatchEdit:
+          selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined,
+        onBatchDownload: handleBatchDownload,
+        onSync: () => requestSync(),
+        onOpenAccess:
+          selectedImages.length > 0
+            ? () =>
+                openAccessModal(
+                  selectedImages[0].id,
+                  selectedImages.map(item => item.id),
+                )
+            : undefined,
+        onSendCompress: handleSendCompress,
+        onSendConvert: handleSendConvert,
+        onBatchDelete: () => {
+          void handleBatchDelete();
+        },
+      }),
+    [
+      handleBatchDelete,
+      handleBatchDownload,
+      handleSendCompress,
+      handleSendConvert,
+      openAccessModal,
+      requestSync,
+      selectedImages,
+      t,
+    ],
+  );
+
+  const handleCloseInspector = useCallback(() => {
+    handleClearSelection();
+  }, [handleClearSelection]);
 
   useEffect(() => {
     if (!workspaceExplorerOpen) return;
@@ -263,11 +359,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       useUIStore.getState().setWorkspaceExplorerOpen(false);
     };
     const clearSelection = () => {
-      setSheetOpen(false);
-      setSelectedIds([]);
-      setSelectedItems([]);
-      setReviewIds([]);
-      setReviewIndex(0);
+      handleClearSelection();
     };
     window.addEventListener('pixuli:openFilterPanel', onOpenFilter);
     window.addEventListener('pixuli:closeInspectorSheet', clearSelection);
@@ -280,7 +372,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         clearSelection,
       );
     };
-  }, []);
+  }, [handleClearSelection]);
 
   if (!hasConfig) {
     return (
@@ -331,6 +423,11 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onSync={() => requestSync()}
       onSendCompress={handleSendCompress}
       onSendConvert={handleSendConvert}
+      onBatchEdit={
+        selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined
+      }
+      onBatchDownload={handleBatchDownload}
+      onOpenAccess={openAccessModal}
       onSelectImage={handleSelectImage}
       metadataReview={metadataReview}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
@@ -365,15 +462,25 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           selectedIds={selectedIds}
           onSelectedIdsChange={handleSelectedIdsChange}
           onDeleteImage={onDeleteImage}
-          onDeleteMultipleImages={onDeleteMultipleImages}
+          onOpenAccess={id => openAccessModal(id)}
           onSync={() => requestSync()}
-          onOpenAccess={openAccessModal}
-          onSendCompress={handleSendCompress}
-          onSendConvert={handleSendConvert}
+          multiSelectMode={multiSelectMode}
+          onMultiSelectModeChange={handleMultiSelectModeChange}
+          showSelectionActionBar={showMobileSelectionBar}
+          selectionActions={batchSelectionActions}
+          onClearSelection={handleClearSelection}
         />
       </div>
       {showDockedInspector ? inspector : null}
       {showSheetInspector ? inspector : null}
+      <AssetLibraryBatchEditModal
+        isOpen={batchEditOpen}
+        selectedCount={selectedIds.length}
+        loading={loading}
+        t={t}
+        onClose={() => setBatchEditOpen(false)}
+        onSubmit={handleBatchEditSubmit}
+      />
       <UtilityToolOverlay />
     </div>
   );

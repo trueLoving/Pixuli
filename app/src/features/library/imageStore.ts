@@ -13,6 +13,7 @@ import {
   useLogStore,
 } from '@/features/operation-log';
 import {
+  batchUpdateAssetMetadata,
   deleteAssetImage,
   deleteMultipleAssetImages,
   updateAssetImage,
@@ -35,6 +36,7 @@ import {
 } from '@/features/library/assetListService';
 import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
 import { registerSourceSelectionPort } from '@/features/library/sourceSelectionPort';
+import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import type {
   BatchUploadProgress,
   GiteeConfig,
@@ -75,6 +77,10 @@ interface ImageState {
     fileNames: string[],
   ) => Promise<void>;
   updateImage: (editData: ImageEditData) => Promise<void>;
+  batchUpdateMetadata: (
+    imageIds: string[],
+    patch: BatchMetadataPatch,
+  ) => Promise<{ updated: number; failed: number }>;
   addImage: (image: ImageItem) => void;
   removeImage: (imageId: string) => void;
   setLoading: (loading: boolean) => void;
@@ -253,6 +259,18 @@ export const useImageStore = create<ImageState>((set, get) => {
     updateImage: async (editData: ImageEditData) =>
       updateAssetImage(
         editData,
+        () => ({
+          images: get().images,
+          storageProvider: get().storageProvider,
+          storageType: get().storageType,
+        }),
+        set,
+      ),
+
+    batchUpdateMetadata: async (imageIds, patch) =>
+      batchUpdateAssetMetadata(
+        imageIds,
+        patch,
         () => ({
           images: get().images,
           storageProvider: get().storageProvider,

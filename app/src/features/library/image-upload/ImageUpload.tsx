@@ -40,7 +40,6 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
         files={flow.files}
         isMultipleUpload={flow.isMultipleUpload}
         currentData={flow.currentData}
-        folderValue={flow.folderValue}
         fileDimensions={flow.fileDimensions}
         previewUrls={flow.previewUrls}
         enableCrop={flow.enableCrop}
@@ -64,7 +63,6 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
           flow.isMultipleUpload ? flow.handleMultiSubmit : flow.handleSubmit
         }
         onCancel={flow.handleCancel}
-        onTargetFolderChange={flow.setTargetFolder}
         onFieldChange={flow.handleFormFieldChange}
       />
     );
