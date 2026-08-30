@@ -147,18 +147,17 @@ export function useImageUploadFlow({
 
   const performSingleUpload = useCallback(
     async (finalFile: File, meta: WebImageUploadData) => {
-      const fileName = meta.name || finalFile.name;
+      const fileName = finalFile.name;
       const loadingToast = showLoading(
         `${translate('image.upload.uploadingSingle')} "${fileName}"...`,
       );
       try {
         await onUploadImage({
           file: finalFile,
-          name: meta.name || finalFile.name,
+          name: fileName,
           description: meta.description || '',
           tags: meta.tags || [],
-          targetFolder:
-            meta.targetFolder || resolveDefaultFolder(defaultFolder),
+          targetFolder: resolveDefaultFolder(defaultFolder),
           captureMetadata: getCaptureMetadata(finalFile),
         });
         updateLoadingToSuccess(
@@ -197,11 +196,10 @@ export function useImageUploadFlow({
       try {
         await onUploadMultipleImages({
           files: processedFiles,
-          name: meta.name || '',
+          name: '',
           description: meta.description || '',
           tags: meta.tags || [],
-          targetFolder:
-            meta.targetFolder || resolveDefaultFolder(defaultFolder),
+          targetFolder: resolveDefaultFolder(defaultFolder),
           captureMetadataList: buildCaptureMetadataList(processedFiles),
         });
         updateLoadingToSuccess(
@@ -564,8 +562,6 @@ export function useImageUploadFlow({
       ? multiUploadData
       : uploadData
     : null;
-  const folderValue =
-    currentData?.targetFolder || resolveDefaultFolder(defaultFolder);
 
   const previewUrls = useMemo(() => {
     const map = new Map<string, string>();
@@ -582,14 +578,6 @@ export function useImageUploadFlow({
       previewUrls.forEach(url => URL.revokeObjectURL(url));
     };
   }, [previewUrls]);
-
-  const setTargetFolder = (value: string) => {
-    if (isMultipleUpload) {
-      handleMultiInputChange('targetFolder', value);
-    } else if (uploadData) {
-      setUploadData({ ...uploadData, targetFolder: value });
-    }
-  };
 
   const handleFormFieldChange = (
     field: keyof WebImageUploadData | keyof MultiImageUploadData,
@@ -618,7 +606,6 @@ export function useImageUploadFlow({
     isMultipleUpload,
     files,
     currentData,
-    folderValue,
     fileDimensions,
     previewUrls,
     userWantsCrop,
@@ -642,7 +629,6 @@ export function useImageUploadFlow({
     handleSkipCrop,
     handleCropCancel,
     handleNativePick,
-    setTargetFolder,
     handleFormFieldChange,
   };
 }

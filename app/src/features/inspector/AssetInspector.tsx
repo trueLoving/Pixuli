@@ -7,6 +7,10 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
+import {
+  buildBatchSelectionActions,
+  buildSingleSelectionActions,
+} from '@/features/library/selectionActions';
 import ImageEditModal from './ImageEditModal';
 import ImagePreviewModal from './ImagePreviewModal';
 import {
@@ -15,20 +19,8 @@ import {
   AssetInspectorSingleBody,
 } from './AssetInspectorBodies';
 import { InspectorActionGrid } from './InspectorActionGrid';
-import type { CompactAction, MetadataReviewSession } from './inspectorTypes';
-import {
-  Edit,
-  Link,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-  Share2,
-  SlidersHorizontal,
-  Sparkles,
-  Trash2,
-  Wand2,
-  X,
-} from 'lucide-react';
+import type { MetadataReviewSession } from './inspectorTypes';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import React, {
   useCallback,
   useEffect,
@@ -45,7 +37,6 @@ import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import {
   INSPECTOR_WIDTH_MAX,
   INSPECTOR_WIDTH_MIN,
@@ -68,6 +59,9 @@ interface AssetInspectorProps {
   onSync?: () => void;
   onSendCompress?: () => void;
   onSendConvert?: () => void;
+  onBatchEdit?: () => void;
+  onBatchDownload?: () => void;
+  onOpenAccess?: (imageId: string, imageIds?: string[]) => void;
   /** 批摘要列表点击 → 单文件 */
   onSelectImage?: (id: string) => void;
   /** 添加后逐张完善 */
@@ -92,6 +86,9 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onSync,
   onSendCompress,
   onSendConvert,
+  onBatchEdit,
+  onBatchDownload,
+  onOpenAccess,
   onSelectImage,
   metadataReview = null,
   getImageDimensionsFromUrl,
@@ -285,186 +282,86 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     onClose();
   }, [onClose, onDeleteImage, onDeleteMultipleImages, selectedImages, t]);
 
-  const singleActions = useMemo((): {
-    grid: CompactAction[];
-    danger: CompactAction | null;
-  } => {
-    if (!activeImage) return { grid: [], danger: null };
-    const grid: CompactAction[] = [];
-
-    if (onUpdateImage) {
-      grid.push({
-        id: 'edit',
-        label: t('image.inspector.actionEdit'),
-        title: t('image.actions.edit'),
-        icon: Edit,
-        onClick: () => {
-          setShowEdit(true);
-          showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
-        },
-      });
-    }
-    grid.push({
-      id: 'copy',
-      label: t('image.inspector.actionCopy'),
-      title: t('image.actions.copyUrl'),
-      icon: Link,
-      onClick: () => {
-        void handleCopy();
-      },
-    });
-    if (onShareImage) {
-      grid.push({
-        id: 'share',
-        label: t('image.inspector.actionShare'),
-        title: t('image.actions.share'),
-        icon: Share2,
-        onClick: () => {
-          void handleShare();
-        },
-      });
-    }
-    grid.push({
-      id: 'compress',
-      label: t('image.inspector.actionCompress'),
-      title: !UTILITY_TOOLS_ENABLED
-        ? t('image.inspector.toolDisabled')
-        : kind === 'image'
-          ? t('image.inspector.sendCompress')
-          : t('image.inspector.toolImageOnly'),
-      icon: SlidersHorizontal,
-      disabled: !UTILITY_TOOLS_ENABLED || kind !== 'image' || !onSendCompress,
-      onClick: () => {
-        if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
-        onSendCompress?.();
-      },
-    });
-    grid.push({
-      id: 'convert',
-      label: t('image.inspector.actionConvert'),
-      title: !UTILITY_TOOLS_ENABLED
-        ? t('image.inspector.toolDisabled')
-        : kind === 'image'
-          ? t('image.inspector.sendConvert')
-          : t('image.inspector.toolImageOnly'),
-      icon: Wand2,
-      disabled: !UTILITY_TOOLS_ENABLED || kind !== 'image' || !onSendConvert,
-      onClick: () => {
-        if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
-        onSendConvert?.();
-      },
-    });
-    grid.push({
-      id: 'ai',
-      label: t('image.inspector.actionAi'),
-      title:
-        kind !== 'image'
-          ? t('image.inspector.toolImageOnly')
-          : t('image.inspector.aiNotConnected'),
-      icon: Sparkles,
-      disabled: true,
-      onClick: () => undefined,
-    });
-
-    const danger: CompactAction | null = onDeleteImage
-      ? {
-          id: 'delete',
-          label: t('image.inspector.actionDelete'),
-          title: t('image.actions.delete'),
-          icon: Trash2,
-          onClick: () => {
+  const singleActions = useMemo(
+    () =>
+      buildSingleSelectionActions(
+        kind,
+        t,
+        {
+          onEdit: onUpdateImage
+            ? () => {
+                setShowEdit(true);
+                if (activeImage) {
+                  showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
+                }
+              }
+            : undefined,
+          onCopy: () => {
+            void handleCopy();
+          },
+          onShare: onShareImage
+            ? () => {
+                void handleShare();
+              }
+            : undefined,
+          onSendCompress,
+          onSendConvert,
+          onDelete: () => {
             void handleDelete();
           },
-        }
-      : null;
-
-    return { grid, danger };
-  }, [
-    activeImage,
-    handleCopy,
-    handleDelete,
-    handleShare,
-    kind,
-    onDeleteImage,
-    onSendCompress,
-    onSendConvert,
-    onShareImage,
-    onUpdateImage,
-    t,
-  ]);
-
-  const batchActions = useMemo((): {
-    grid: CompactAction[];
-    danger: CompactAction | null;
-  } => {
-    if (selectedImages.length < 2) return { grid: [], danger: null };
-    const imageCount = selectedImages.filter(
-      item => getAssetKind(item) === 'image',
-    ).length;
-    const compressTitle = !UTILITY_TOOLS_ENABLED
-      ? t('image.inspector.toolDisabled')
-      : imageCount === 0
-        ? t('image.inspector.toolImageOnly')
-        : imageCount < selectedImages.length
-          ? `${t('image.inspector.sendCompress')} (${imageCount}/${selectedImages.length})`
-          : t('image.inspector.sendCompress');
-    const convertTitle = !UTILITY_TOOLS_ENABLED
-      ? t('image.inspector.toolDisabled')
-      : imageCount === 0
-        ? t('image.inspector.toolImageOnly')
-        : t('image.inspector.sendConvert');
-    const grid: CompactAction[] = [
-      {
-        id: 'sync',
-        label: t('image.inspector.actionSync'),
-        title: t('image.toolbar.sync'),
-        icon: RefreshCw,
-        disabled: !onSync,
-        onClick: () => onSync?.(),
-      },
-      {
-        id: 'compress',
-        label: t('image.inspector.actionCompress'),
-        title: compressTitle,
-        icon: SlidersHorizontal,
-        disabled: !UTILITY_TOOLS_ENABLED || imageCount === 0 || !onSendCompress,
-        onClick: () => {
-          if (!UTILITY_TOOLS_ENABLED) return;
-          onSendCompress?.();
         },
-      },
-      {
-        id: 'convert',
-        label: t('image.inspector.actionConvert'),
-        title: convertTitle,
-        icon: Wand2,
-        disabled: !UTILITY_TOOLS_ENABLED || imageCount === 0 || !onSendConvert,
-        onClick: () => {
-          if (!UTILITY_TOOLS_ENABLED) return;
-          onSendConvert?.();
+        {
+          canEdit: Boolean(onUpdateImage),
+          canShare: Boolean(onShareImage),
+          canDelete: Boolean(onDeleteImage),
         },
-      },
-    ];
-    return {
-      grid,
-      danger: {
-        id: 'delete',
-        label: t('image.inspector.actionDelete'),
-        title: t('image.library.deleteSelected'),
-        icon: Trash2,
-        onClick: () => {
+      ),
+    [
+      activeImage,
+      handleCopy,
+      handleDelete,
+      handleShare,
+      kind,
+      onDeleteImage,
+      onSendCompress,
+      onSendConvert,
+      onShareImage,
+      onUpdateImage,
+      t,
+    ],
+  );
+
+  const batchActions = useMemo(
+    () =>
+      buildBatchSelectionActions(selectedImages, t, {
+        onBatchEdit,
+        onBatchDownload,
+        onSync,
+        onOpenAccess: onOpenAccess
+          ? () =>
+              onOpenAccess(
+                selectedImages[0]?.id ?? '',
+                selectedImages.map(item => item.id),
+              )
+          : undefined,
+        onSendCompress,
+        onSendConvert,
+        onBatchDelete: () => {
           void handleBatchDelete();
         },
-      },
-    };
-  }, [
-    handleBatchDelete,
-    onSendCompress,
-    onSendConvert,
-    onSync,
-    selectedImages,
-    t,
-  ]);
+      }),
+    [
+      handleBatchDelete,
+      onBatchDownload,
+      onBatchEdit,
+      onOpenAccess,
+      onSendCompress,
+      onSendConvert,
+      onSync,
+      selectedImages,
+      t,
+    ],
+  );
 
   const batchBody =
     selectedImages.length >= 2 ? (

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import { useImageStore } from '@/features/library/imageStore';
 
 /**
@@ -47,9 +48,20 @@ export function useImageOperations() {
     [updateImage, loadImages],
   );
 
+  const handleBatchUpdateMetadata = useCallback(
+    async (imageIds: string[], patch: BatchMetadataPatch) => {
+      const { batchUpdateMetadata } = useImageStore.getState();
+      const result = await batchUpdateMetadata(imageIds, patch);
+      await loadImages();
+      return result;
+    },
+    [loadImages],
+  );
+
   return {
     handleDeleteImage,
     handleDeleteMultipleImages,
     handleUpdateImage,
+    handleBatchUpdateMetadata,
   };
 }

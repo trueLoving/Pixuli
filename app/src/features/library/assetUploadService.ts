@@ -186,7 +186,7 @@ export async function uploadMultipleAssetImages(
         try {
           const created = await getWorkspaceLibraryPort().importLocalImage({
             file,
-            name,
+            name: file.name,
             description,
             tags,
             targetFolder: uploadData.targetFolder,

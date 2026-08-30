@@ -37,6 +37,8 @@ export interface UploadButtonProps {
   nativePickers?: NativeImagePickers;
   /** 默认目标文件夹（当前资源库范围） */
   defaultFolder?: string;
+  /** 仅显示图标（与资源库工具栏其他按钮一致） */
+  iconOnly?: boolean;
 }
 
 export interface UploadButtonHandle {
@@ -58,6 +60,7 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
       className = '',
       nativePickers,
       defaultFolder,
+      iconOnly = false,
     },
     ref,
   ) => {
@@ -106,12 +109,15 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
       <>
         <button
           onClick={handleOpenModal}
-          className={`upload-button ${className}`}
+          className={`upload-button${iconOnly ? ' icon-only' : ''} ${className}`}
           title={title}
+          aria-label={title}
           type="button"
         >
           <Upload size={18} />
-          <span className="upload-button-label">{title}</span>
+          {iconOnly ? null : (
+            <span className="upload-button-label">{title}</span>
+          )}
         </button>
 
         {isModalOpen && (

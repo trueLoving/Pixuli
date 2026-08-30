@@ -198,6 +198,12 @@
     },
     "library": {
       "fileCount": "共 {count} 个文件",
+      "statusBar": {
+        "summary": "共 {count} 个文件 · {size}",
+        "filtered": "{visible} / {total} 个文件 · {size}",
+        "selected": "已选 {selected} 项",
+        "loading": "正在加载文件..."
+      },
       "loading": "正在加载文件...",
       "emptyTitle": "还没有文件",
       "emptyDescription": "添加图片、PDF 或视频到当前文件夹（仅本机）",
@@ -218,7 +224,20 @@
       "batchScope": "范围",
       "batchFocusHint": "点击文件名可单独编辑",
       "badgeLocal": "本地可浏览",
-      "batchDownload": "下载"
+      "batchDownload": "下载",
+      "selectMode": "选择",
+      "selectAll": "全选",
+      "batchEdit": "编辑",
+      "batchEditTitle": "批量编辑元数据",
+      "batchEditScope": "正在编辑 {count} 个选中文件",
+      "batchEditTagsHint": "标签将追加到每个文件（自动去重）",
+      "batchEditUpdateDescription": "更新描述",
+      "batchEditDescriptionHint": "勾选后，下方描述将统一覆盖所有选中项（可为空）",
+      "batchEditSave": "应用",
+      "batchEditSaving": "正在批量保存...",
+      "batchEditSuccess": "已更新 {count} 个文件",
+      "batchEditPartial": "{failed} 个文件更新失败",
+      "batchEditFailed": "批量编辑失败"
     },
     "kind": {
       "label": "资源类型",

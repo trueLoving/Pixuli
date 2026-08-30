@@ -198,6 +198,12 @@
     },
     "library": {
       "fileCount": "{count} files",
+      "statusBar": {
+        "summary": "{count} files · {size}",
+        "filtered": "{visible} / {total} files · {size}",
+        "selected": "{selected} selected",
+        "loading": "Loading files..."
+      },
       "loading": "Loading files...",
       "emptyTitle": "No files yet",
       "emptyDescription": "Add images, PDFs, or videos to this folder (local only)",
@@ -218,7 +224,20 @@
       "batchDownload": "Download",
       "emptyFolderTitle": "Folder is empty",
       "emptyFolderDescription": "Add files or create a subfolder (local only — not synced)",
-      "confirmDeleteFolder": "Delete folder \"{name}\"? Local only — includes {count} files; remote copies will not be deleted."
+      "confirmDeleteFolder": "Delete folder \"{name}\"? Local only — includes {count} files; remote copies will not be deleted.",
+      "selectMode": "Select",
+      "selectAll": "Select all",
+      "batchEdit": "Edit",
+      "batchEditTitle": "Batch edit metadata",
+      "batchEditScope": "Editing {count} selected files",
+      "batchEditTagsHint": "Tags will be appended to each file (duplicates removed)",
+      "batchEditUpdateDescription": "Update description",
+      "batchEditDescriptionHint": "When enabled, the description below will overwrite all selected files (can be empty)",
+      "batchEditSave": "Apply",
+      "batchEditSaving": "Saving batch changes...",
+      "batchEditSuccess": "Updated {count} files",
+      "batchEditPartial": "{failed} files failed to update",
+      "batchEditFailed": "Batch edit failed"
     },
     "kind": {
       "label": "Asset type",

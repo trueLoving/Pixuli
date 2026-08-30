@@ -9,7 +9,6 @@ import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
-import { getAssetKind } from '@/features/library/utils/assetKind';
 import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';
 import {
   nextSelectedIds,
@@ -20,11 +19,14 @@ import {
   getVirtualWindow,
   LIBRARY_ROW_HEIGHT,
 } from '@/features/library/utils/virtualWindow';
-import { AssetLibraryBatchBar } from './AssetLibraryBatchBar';
+import { AssetLibraryStatusBar } from './AssetLibraryStatusBar';
+import { sumListedFileSize } from './libraryListStats';
+import { SelectionActionBar } from './SelectionActionBar';
 import { AssetLibraryContextMenu } from './AssetLibraryContextMenu';
 import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
+import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import type {
   BatchUploadProgress,
   ImageItem,
@@ -42,7 +44,6 @@ import React, {
   useState,
 } from 'react';
 import './AssetLibrary.css';
-import { AssetThumb } from './AssetThumb';
 
 interface AssetLibraryProps {
   images: ImageItem[];
@@ -62,11 +63,13 @@ interface AssetLibraryProps {
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
+  onOpenAccess?: (imageId: string) => void;
   onSync?: () => void;
-  onOpenAccess?: (imageId: string, imageIds?: string[]) => void;
-  onSendCompress?: () => void;
-  onSendConvert?: () => void;
+  multiSelectMode?: boolean;
+  onMultiSelectModeChange?: (active: boolean) => void;
+  showSelectionActionBar?: boolean;
+  selectionActions?: { grid: CompactAction[]; danger: CompactAction | null };
+  onClearSelection?: () => void;
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
@@ -87,18 +90,19 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   selectedIds,
   onSelectedIdsChange,
   onDeleteImage,
-  onDeleteMultipleImages,
-  onSync,
   onOpenAccess,
-  onSendCompress,
-  onSendConvert,
+  onSync,
+  multiSelectMode = false,
+  onMultiSelectModeChange,
+  showSelectionActionBar = false,
+  selectionActions = { grid: [], danger: null },
+  onClearSelection,
 }) => {
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const sourceId = selectedSourceId ?? sources[0]?.id;
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const [multiMode, setMultiMode] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -112,6 +116,13 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [libraryDragOver, setLibraryDragOver] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(480);
+
+  const setMultiSelectActive = useCallback(
+    (active: boolean) => {
+      onMultiSelectModeChange?.(active);
+    },
+    [onMultiSelectModeChange],
+  );
 
   useEffect(() => {
     if (!search) return;
@@ -153,7 +164,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         .map(id => files.find(file => file.id === id))
         .filter((item): item is ImageItem => Boolean(item));
       onSelectedIdsChange(next, selectedItems);
-      if (next.length <= 1) setMultiMode(false);
     }
   }, [files, onSelectedIdsChange, selectedIds, visibleIds]);
 
@@ -164,7 +174,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       range: boolean,
       enterMulti = false,
     ) => {
-      if (enterMulti) setMultiMode(true);
+      if (enterMulti) setMultiSelectActive(true);
       const next = nextSelectedIds({
         visibleIds,
         selectedIds,
@@ -172,15 +182,21 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         additive,
         range,
         anchorId: anchorIdRef.current,
-        multiMode: enterMulti || multiMode,
+        multiMode: enterMulti || multiSelectMode,
       });
       anchorIdRef.current = next.anchorId;
       const selectedItems = next.selectedIds
         .map(id => files.find(file => file.id === id))
         .filter((item): item is ImageItem => Boolean(item));
       onSelectedIdsChange(next.selectedIds, selectedItems);
-      if (next.selectedIds.length <= 1 && !enterMulti && !additive && !range) {
-        setMultiMode(false);
+      if (
+        next.selectedIds.length <= 1 &&
+        !enterMulti &&
+        !additive &&
+        !range &&
+        !multiSelectMode
+      ) {
+        setMultiSelectActive(false);
       }
       requestAnimationFrame(() => {
         document
@@ -188,7 +204,14 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           ?.scrollIntoView({ block: 'nearest' });
       });
     },
-    [files, multiMode, onSelectedIdsChange, selectedIds, visibleIds],
+    [
+      files,
+      multiSelectMode,
+      onSelectedIdsChange,
+      selectedIds,
+      visibleIds,
+      setMultiSelectActive,
+    ],
   );
 
   const selectedIndex = useMemo(() => {
@@ -293,50 +316,27 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     [canAcceptLibraryDrop],
   );
 
-  const handleBatchDelete = useCallback(async () => {
-    const selected = files.filter(file => selectedIds.includes(file.id));
-    if (selected.length === 0) return;
-    if (
-      !confirm(
-        t('image.library.confirmDeleteN').replace(
-          '{count}',
-          String(selected.length),
-        ),
-      )
-    ) {
+  const handleToggleSelectMode = useCallback(() => {
+    if (multiSelectMode) {
+      setMultiSelectActive(false);
+      onClearSelection?.();
+      onSelectedIdsChange([]);
       return;
     }
-    if (selected.length === 1 && onDeleteImage) {
-      await onDeleteImage(selected[0].id, selected[0].name);
-    } else if (onDeleteMultipleImages) {
-      await onDeleteMultipleImages(
-        selected.map(file => file.id),
-        selected.map(file => file.name),
-      );
-    }
+    setMultiSelectActive(true);
     onSelectedIdsChange([]);
-    setMultiMode(false);
   }, [
-    files,
-    onDeleteImage,
-    onDeleteMultipleImages,
+    multiSelectMode,
+    onClearSelection,
     onSelectedIdsChange,
-    selectedIds,
-    t,
+    setMultiSelectActive,
   ]);
 
-  const handleBatchDownload = useCallback(() => {
-    const selected = files.filter(file => selectedIds.includes(file.id));
-    for (const file of selected) {
-      const link = document.createElement('a');
-      link.href = file.url;
-      link.download = file.name;
-      link.rel = 'noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }
-  }, [files, selectedIds]);
+  const handleClearSelectionFromBar = useCallback(() => {
+    setMultiSelectActive(false);
+    onClearSelection?.();
+    onSelectedIdsChange([]);
+  }, [onClearSelection, onSelectedIdsChange, setMultiSelectActive]);
 
   const clearLongPress = () => {
     if (longPressRef.current != null) {
@@ -371,6 +371,20 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   );
   const visibleFiles = files.slice(tableWindow.start, tableWindow.end);
 
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id));
+
+  const handleToggleSelectAll = useCallback(() => {
+    if (allVisibleSelected) {
+      onSelectedIdsChange([]);
+      return;
+    }
+    const selectedItems = visibleIds
+      .map(id => files.find(file => file.id === id))
+      .filter((item): item is ImageItem => Boolean(item));
+    onSelectedIdsChange(visibleIds, selectedItems);
+  }, [allVisibleSelected, files, onSelectedIdsChange, visibleIds]);
+
   useEffect(() => {
     const el = tableWrapRef.current;
     if (!el) return;
@@ -382,12 +396,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => observer.disconnect();
   }, [showEmpty, loading, files.length]);
 
-  const showBatchBar = selectedIds.length >= 2;
-  const allImagesSelected =
-    selectedIds.length > 0 &&
-    files
-      .filter(file => selectedIds.includes(file.id))
-      .every(file => getAssetKind(file) === 'image');
+  const listedTotalSize = useMemo(() => sumListedFileSize(files), [files]);
+  const isFilteredList =
+    Boolean(search?.searchQuery) && files.length !== images.length;
 
   return (
     <div className="asset-library">
@@ -404,9 +415,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       ) : null}
 
       <AssetLibraryToolbar
-        filesCount={files.length}
-        totalCount={images.length}
-        loading={loading}
         hasConfig={hasConfig}
         search={search}
         t={t}
@@ -418,6 +426,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         nativePickers={nativePickers}
         selectedFolderPath={selectedFolderPath}
         uploadButtonRef={uploadButtonRef}
+        multiSelectMode={multiSelectMode}
+        onToggleSelectMode={handleToggleSelectMode}
       />
 
       <div
@@ -452,6 +462,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             sortField={sortField}
             sortOrder={sortOrder}
             selectedIds={selectedIds}
+            multiSelectMode={multiSelectMode}
+            allVisibleSelected={allVisibleSelected}
+            onToggleSelectAll={handleToggleSelectAll}
             sourceId={sourceId}
             tableWrapRef={tableWrapRef}
             t={t}
@@ -478,28 +491,24 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             longPressFiredRef={longPressFiredRef}
           />
         )}
+        <AssetLibraryStatusBar
+          filesCount={files.length}
+          totalCount={images.length}
+          totalSize={listedTotalSize}
+          selectedCount={selectedIds.length}
+          loading={loading}
+          isFiltered={isFilteredList}
+          t={t}
+        />
       </div>
 
-      {showBatchBar ? (
-        <AssetLibraryBatchBar
+      {showSelectionActionBar ? (
+        <SelectionActionBar
           selectedCount={selectedIds.length}
-          allImagesSelected={allImagesSelected}
+          actions={selectionActions}
+          compact
           t={t}
-          onBatchDownload={handleBatchDownload}
-          onSync={onSync}
-          onOpenAccess={
-            onOpenAccess
-              ? () => onOpenAccess(selectedIds[0], selectedIds)
-              : undefined
-          }
-          onSendCompress={onSendCompress}
-          onSendConvert={onSendConvert}
-          onBatchDelete={handleBatchDelete}
-          onClearSelection={() => {
-            setMultiMode(false);
-            onSelectedIdsChange([]);
-          }}
-          canDelete={Boolean(onDeleteImage || onDeleteMultipleImages)}
+          onClearSelection={handleClearSelectionFromBar}
         />
       ) : null}
 
@@ -508,7 +517,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           menu={contextMenu}
           t={t}
           onClose={() => setContextMenu(null)}
-          onOpenAccess={id => onOpenAccess?.(id)}
+          onOpenAccess={onOpenAccess}
           onSync={onSync}
           onDeleteImage={onDeleteImage}
         />

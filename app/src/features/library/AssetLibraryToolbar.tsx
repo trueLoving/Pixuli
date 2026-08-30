@@ -1,5 +1,5 @@
 import { Search } from '@/ui';
-import { Folder } from 'lucide-react';
+import { Folder, ListChecks } from 'lucide-react';
 import React, { RefObject } from 'react';
 import UploadButton from './UploadButton';
 import type { UploadButtonHandle } from './UploadButton';
@@ -12,9 +12,6 @@ import type {
 } from '@pixuli/core/types';
 
 export interface AssetLibraryToolbarProps {
-  filesCount: number;
-  totalCount: number;
-  loading: boolean;
   hasConfig: boolean;
   search?: LibrarySearchConfig;
   t: (key: string) => string;
@@ -26,12 +23,11 @@ export interface AssetLibraryToolbarProps {
   nativePickers?: NativeImagePickers;
   selectedFolderPath?: string;
   uploadButtonRef: RefObject<UploadButtonHandle | null>;
+  multiSelectMode?: boolean;
+  onToggleSelectMode?: () => void;
 }
 
 export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
-  filesCount,
-  totalCount,
-  loading,
   hasConfig,
   search,
   t,
@@ -43,24 +39,10 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   nativePickers,
   selectedFolderPath,
   uploadButtonRef,
+  multiSelectMode = false,
+  onToggleSelectMode,
 }) => (
   <div className="asset-library-toolbar">
-    <div className="asset-library-header">
-      {loading ? (
-        <span className="asset-library-loading-indicator">
-          <span className="asset-library-loading-spinner-inline" aria-hidden />
-          <span>{t('image.library.loading')}</span>
-        </span>
-      ) : (
-        <span className="asset-library-count">
-          {t('image.library.fileCount').replace('{count}', String(filesCount))}
-          {search && filesCount !== totalCount ? (
-            <span className="asset-library-filter-count"> / {totalCount}</span>
-          ) : null}
-        </span>
-      )}
-    </div>
-
     {search ? (
       <Search
         variant="header"
@@ -81,16 +63,28 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
     ) : null}
 
     <div className="asset-library-controls">
+      {onToggleSelectMode ? (
+        <button
+          type="button"
+          className={`asset-library-icon-btn asset-library-select-btn${multiSelectMode ? ' is-active' : ''}`}
+          onClick={onToggleSelectMode}
+          aria-pressed={multiSelectMode}
+          aria-label={t('image.library.selectMode')}
+          title={t('image.library.selectMode')}
+        >
+          <ListChecks size={18} aria-hidden />
+        </button>
+      ) : null}
+
       {onOpenFolders ? (
         <button
           type="button"
-          className="asset-library-chrome-btn asset-library-folders-btn"
+          className="asset-library-icon-btn asset-library-folders-btn"
           onClick={onOpenFolders}
           aria-label={t('workspace.explorer')}
           title={t('workspace.explorer')}
         >
-          <Folder size={16} aria-hidden />
-          <span>{t('workspace.explorer')}</span>
+          <Folder size={18} aria-hidden />
         </button>
       ) : null}
 
@@ -102,9 +96,10 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
           loading={uploadLoading}
           batchUploadProgress={batchUploadProgress}
           t={t}
-          className="asset-library-upload-btn"
+          className="asset-library-upload-btn asset-library-icon-btn asset-library-icon-btn--accent"
           nativePickers={nativePickers}
           defaultFolder={selectedFolderPath || 'images'}
+          iconOnly
         />
       ) : null}
     </div>
