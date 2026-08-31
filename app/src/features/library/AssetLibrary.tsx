@@ -399,6 +399,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const listedTotalSize = useMemo(() => sumListedFileSize(files), [files]);
   const isFilteredList =
     Boolean(search?.searchQuery) && files.length !== images.length;
+  const showStatusBar = files.length > 0;
 
   return (
     <div className="asset-library">
@@ -431,7 +432,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       />
 
       <div
-        className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}`}
+        className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}${showStatusBar ? ' has-status-bar' : ''}`}
         onDragEnter={handleLibraryDragEnter}
         onDragOver={handleLibraryDragOver}
         onDragLeave={handleLibraryDragLeave}
@@ -491,15 +492,17 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             longPressFiredRef={longPressFiredRef}
           />
         )}
-        <AssetLibraryStatusBar
-          filesCount={files.length}
-          totalCount={images.length}
-          totalSize={listedTotalSize}
-          selectedCount={selectedIds.length}
-          loading={loading}
-          isFiltered={isFilteredList}
-          t={t}
-        />
+        {showStatusBar ? (
+          <AssetLibraryStatusBar
+            filesCount={files.length}
+            totalCount={images.length}
+            totalSize={listedTotalSize}
+            selectedCount={selectedIds.length}
+            loading={loading}
+            isFiltered={isFilteredList}
+            t={t}
+          />
+        ) : null}
       </div>
 
       {showSelectionActionBar ? (
