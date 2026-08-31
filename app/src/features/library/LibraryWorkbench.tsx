@@ -19,7 +19,13 @@ import React, {
 import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
+import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
+import {
+  showLoading,
+  updateLoadingToError,
+  updateLoadingToSuccess,
+} from '@/ui/feedback/toast';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useImageCopyUrl } from '@/features/library/useImageCopyUrl';
@@ -283,17 +289,47 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     t,
   ]);
 
-  const handleBatchDownload = useCallback(() => {
-    for (const file of selectedImages) {
-      const link = document.createElement('a');
-      link.href = file.url;
-      link.download = file.name;
-      link.rel = 'noreferrer';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+  const handleBatchDownload = useCallback(async () => {
+    if (selectedImages.length === 0) return;
+
+    const loadingToast = showLoading(
+      selectedImages.length === 1
+        ? t('image.library.batchDownloadSingle')
+        : t('image.library.batchDownloadZipping').replace(
+            '{count}',
+            String(selectedImages.length),
+          ),
+    );
+
+    try {
+      const result = await downloadAssetsAsZip(selectedImages);
+      if (result.failed > 0) {
+        updateLoadingToError(
+          loadingToast,
+          t('image.library.batchDownloadPartial').replace(
+            '{failed}',
+            String(result.failed),
+          ),
+        );
+        return;
+      }
+
+      updateLoadingToSuccess(
+        loadingToast,
+        selectedImages.length === 1
+          ? t('image.library.batchDownloadSuccessSingle')
+          : t('image.library.batchDownloadSuccessZip').replace(
+              '{count}',
+              String(result.packed),
+            ),
+      );
+    } catch {
+      updateLoadingToError(
+        loadingToast,
+        t('image.library.batchDownloadFailed'),
+      );
     }
-  }, [selectedImages]);
+  }, [selectedImages, t]);
 
   const handleBatchEditSubmit = useCallback(
     async (patch: BatchMetadataPatch) => {

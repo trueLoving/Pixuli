@@ -214,9 +214,13 @@
   min-height: 0;
   overflow: auto;
   border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.asset-library-content.has-status-bar .asset-library-table-wrap {
   border-bottom: 0;
   border-radius: 0.5rem 0.5rem 0 0;
-  background: #fff;
 }
 
 .asset-library-status-bar {
