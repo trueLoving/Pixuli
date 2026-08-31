@@ -3,7 +3,22 @@ import type {
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
-import { buildProviderSidecarPayload } from '@pixuli/core/utils';
+import {
+  basenameRelative,
+  buildProviderSidecarPayload,
+  createEmptyManifest,
+  dirnameRelative,
+  getDirManifestRelativePath,
+  getManifestEntry,
+  manifestEntryFromImageFields,
+  manifestEntryToRecord,
+  parseManifestEntryRecord,
+  parseMetadataManifest,
+  removeManifestEntry,
+  upsertManifestEntry,
+  type MetadataManifest,
+} from '@pixuli/core/utils';
+import { joinConfigRoot, SYNC_EXCLUDED_DIR } from '@pixuli/core/vault';
 import type {
   ImageListOptions,
   ImageMetadataLoadOptions,
@@ -64,13 +79,17 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     }
   }
 
+  private joinRemotePath(relativePath: string): string {
+    return joinConfigRoot(this.config.path, relativePath);
+  }
+
   getRawUrl(path: string): string {
     return this.buildPublicUrl(path);
   }
 
   buildPublicUrl(remotePath: string): string {
     this.assertConfigured();
-    const filePath = `${this.config.path}/${remotePath}`;
+    const filePath = this.joinRemotePath(remotePath);
     return this.buildRawUrl(
       this.config.owner,
       this.config.repo,
@@ -217,7 +236,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     const base64Content = await this.platformAdapter.fileToBase64(file);
 
     // 构建文件路径
-    const filePath = `${this.config.path}/${fileName}`;
+    const filePath = this.joinRemotePath(fileName);
 
     // 首先检查文件是否已存在
     const existingSha = await this.getFileSha(filePath, this.config.branch);
@@ -294,34 +313,32 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       const description = uploadData.description;
       const tags = uploadData.tags;
 
-      // 从 file 或 URI 中提取文件名
-      let fileName: string;
-      if (typeof file === 'string') {
-        fileName = name || file.split('/').pop() || 'image.jpg';
-      } else {
-        fileName = name || file.name;
-      }
+      const storagePath =
+        uploadData.storagePath ??
+        (typeof file === 'string'
+          ? name || file.split('/').pop() || 'image.jpg'
+          : name || file.name);
+      const displayName = name ?? storagePath.split('/').pop() ?? storagePath;
 
-      // ========== 准备阶段：获取图片尺寸信息 ==========
-      // 在上传前获取图片尺寸，作为元数据的一部分
       const imageDimensions = await this.getImageDimensions(file);
       const fileSize = await this.platformAdapter.getFileSize(file);
-      const mimeType = await this.platformAdapter.getMimeType(file, fileName);
+      const mimeType = await this.platformAdapter.getMimeType(
+        file,
+        displayName,
+      );
 
-      // ========== 步骤1：上传图片文件 ==========
       const uploadResponse = await this.uploadImageFile(
         file,
-        fileName,
+        storagePath,
         description,
       );
 
-      // ========== 构建图片元数据对象 ==========
-      // 包含所有元数据信息：尺寸、标签、描述等
       const imageItem: ImageItem = {
         id:
           uploadResponse.sha ||
           `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: fileName,
+        name: displayName,
+        storagePath,
         url: uploadResponse.downloadUrl,
         githubUrl: uploadResponse.htmlUrl,
         size: fileSize,
@@ -336,13 +353,9 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
         captureMetadata: uploadData.captureMetadata,
       };
 
-      // ========== 步骤2：上传图片元数据 ==========
-      // 将包含尺寸信息的元数据上传到 Gitee
       try {
-        await this.uploadImageMetadata(fileName, imageItem);
+        await this.uploadImageMetadata(storagePath, imageItem);
       } catch (error) {
-        // 元数据上传失败时，记录警告但不影响图片上传的成功
-        // 因为图片文件已经成功上传，元数据可以在后续补充
         this.logger.warn(
           'Image file uploaded successfully, but metadata upload failed:',
           error,
@@ -363,7 +376,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   async deleteImage(path: string): Promise<void> {
     this.assertConfigured();
     try {
-      const filePath = `${this.config.path}/${path}`;
+      const filePath = this.joinRemotePath(path);
 
       // 获取文件的当前 SHA
       const sha = await this.getFileSha(filePath, this.config.branch);
@@ -397,187 +410,265 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     }
   }
 
-  // 删除图片元数据文件
-  private async deleteImageMetadata(fileName: string): Promise<void> {
+  private encodeJsonBase64(value: unknown): string {
+    const jsonString = JSON.stringify(value, null, 2);
+    return btoa(unescape(encodeURIComponent(jsonString)));
+  }
+
+  private decodeJsonBase64(base64Content: string): unknown {
+    const binaryString = atob(base64Content);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const content = new TextDecoder('utf-8').decode(bytes);
+    return JSON.parse(content);
+  }
+
+  private async readRepoJsonFile(
+    relativePath: string,
+  ): Promise<{ data: unknown; sha: string } | null> {
+    const filePath = this.joinRemotePath(relativePath);
+    const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(filePath)}?ref=${encodeURIComponent(this.config.branch)}`;
     try {
-      const metadataFileName = this.getMetadataFileName(fileName);
-      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
-
-      // 检查元数据文件是否存在
-      const metadataSha = await this.getFileSha(
-        metadataFilePath,
-        this.config.branch,
-      );
-
-      if (!metadataSha) {
-        // 元数据文件不存在，无需删除
-        return;
-      }
-
-      // 删除元数据文件
-      const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataFilePath)}`;
-      await this.makeGiteeRequest(endpoint, {
-        method: 'DELETE',
-        body: JSON.stringify({
-          message: `Delete metadata for image: ${fileName}`,
-          sha: metadataSha,
-          branch: this.config.branch,
-        }),
+      const existingFile = await this.makeGiteeRequest(endpoint, {
+        method: 'GET',
       });
-    } catch (error) {
-      // 删除元数据失败不应该阻止图片删除，只记录警告
-      this.logger.warn(`Failed to delete metadata for ${fileName}:`, error);
-      throw new Error(`Failed to delete metadata for ${fileName}: ${error}`);
+      if (
+        !existingFile ||
+        Array.isArray(existingFile) ||
+        !existingFile.content ||
+        !existingFile.sha
+      ) {
+        return null;
+      }
+      return {
+        data: this.decodeJsonBase64(String(existingFile.content)),
+        sha: existingFile.sha,
+      };
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (
+        errorMessage.includes('404') ||
+        errorMessage.includes('401') ||
+        errorMessage.includes('Not Found')
+      ) {
+        return null;
+      }
+      throw error;
     }
   }
 
+  private async writeRepoJsonFile(
+    relativePath: string,
+    data: unknown,
+    message: string,
+    existingSha?: string,
+  ): Promise<void> {
+    const filePath = this.joinRemotePath(relativePath);
+    const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(filePath)}`;
+    const requestBody: Record<string, string> = {
+      message,
+      content: this.encodeJsonBase64(data),
+      branch: this.config.branch,
+    };
+    if (existingSha) {
+      requestBody.sha = existingSha;
+    }
+    await this.makeGiteeRequest(endpoint, {
+      method: existingSha ? 'PUT' : 'POST',
+      body: JSON.stringify(requestBody),
+    });
+  }
+
+  private async loadDirManifest(dirPath: string): Promise<MetadataManifest> {
+    const manifestPath = getDirManifestRelativePath(dirPath);
+    const file = await this.readRepoJsonFile(manifestPath);
+    if (!file) {
+      return createEmptyManifest();
+    }
+    return parseMetadataManifest(file.data) ?? createEmptyManifest();
+  }
+
+  private async saveDirManifest(
+    dirPath: string,
+    manifest: MetadataManifest,
+    summary: string,
+  ): Promise<void> {
+    const manifestPath = getDirManifestRelativePath(dirPath);
+    const existing = await this.readRepoJsonFile(manifestPath);
+    await this.writeRepoJsonFile(
+      manifestPath,
+      manifest,
+      existing
+        ? `Update metadata manifest: ${summary}`
+        : `Create metadata manifest: ${summary}`,
+      existing?.sha,
+    );
+  }
+
+  private async deleteImageMetadata(storagePath: string): Promise<void> {
+    const dirPath = dirnameRelative(storagePath);
+    const fileName = basenameRelative(storagePath);
+    const manifest = await this.loadDirManifest(dirPath);
+    if (!getManifestEntry(manifest, fileName)) {
+      return;
+    }
+    const next = removeManifestEntry(manifest, fileName);
+    await this.saveDirManifest(dirPath, next, storagePath);
+  }
+
+  private async getImageMetadata(
+    storagePath: string,
+  ): Promise<Record<string, unknown> | null> {
+    const dirPath = dirnameRelative(storagePath);
+    const fileName = basenameRelative(storagePath);
+    const manifest = await this.loadDirManifest(dirPath);
+    const entry = getManifestEntry(manifest, fileName);
+    if (!entry) {
+      return null;
+    }
+    return manifestEntryToRecord(entry);
+  }
+
+  private async persistImageMetadata(
+    storagePath: string,
+    metadata: Partial<ImageItem> & Record<string, unknown>,
+  ): Promise<void> {
+    const dirPath = dirnameRelative(storagePath);
+    const fileName = basenameRelative(storagePath);
+    const manifest = await this.loadDirManifest(dirPath);
+    const existing = getManifestEntry(manifest, fileName);
+    const merged = buildProviderSidecarPayload({
+      id: existing?.id,
+      name: metadata.name ?? existing?.name ?? fileName,
+      description: metadata.description ?? existing?.description ?? '',
+      tags: metadata.tags ?? existing?.tags ?? [],
+      size: metadata.size ?? existing?.size ?? 0,
+      width: metadata.width ?? existing?.width ?? 0,
+      height: metadata.height ?? existing?.height ?? 0,
+      updatedAt: new Date().toISOString(),
+      createdAt: existing?.createdAt ?? new Date().toISOString(),
+      captureMetadata: metadata.captureMetadata ?? existing?.capture,
+    } as ImageItem);
+    const entry =
+      parseManifestEntryRecord(merged) ??
+      manifestEntryFromImageFields({ name: fileName });
+    const next = upsertManifestEntry(manifest, fileName, entry);
+    await this.saveDirManifest(dirPath, next, storagePath);
+  }
+
+  private async collectImageFiles(
+    dirRelative: string,
+  ): Promise<Array<{ remotePath: string; item: any }>> {
+    const dirPath = this.joinRemotePath(dirRelative);
+    const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(dirPath)}?ref=${this.config.branch}`;
+    const response = await this.makeGiteeRequest(endpoint, { method: 'GET' });
+    if (!Array.isArray(response)) {
+      return [];
+    }
+
+    const results: Array<{ remotePath: string; item: any }> = [];
+    for (const entry of response) {
+      if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
+        continue;
+      }
+      if (entry.type === 'dir') {
+        const subDir = dirRelative
+          ? `${dirRelative}/${entry.name}`
+          : entry.name;
+        results.push(...(await this.collectImageFiles(subDir)));
+        continue;
+      }
+      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+        const remotePath = dirRelative
+          ? `${dirRelative}/${entry.name}`
+          : entry.name;
+        results.push({ remotePath, item: entry });
+      }
+    }
+    return results;
+  }
+
   // 获取图片列表
-  async listImages(_options?: ImageListOptions): Promise<ImageItem[]> {
+  async listImages(options?: ImageListOptions): Promise<ImageItem[]> {
     this.assertConfigured();
     try {
-      const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.config.path)}?ref=${this.config.branch}`;
-      const response = await this.makeGiteeRequest(endpoint, {
-        method: 'GET',
-      });
+      const recursive = options?.recursive ?? false;
+      let imageEntries: Array<{ remotePath: string; item: any }>;
 
-      if (!Array.isArray(response)) {
-        return [];
-      }
-
-      // 筛选出图片文件
-      const imageFiles = response.filter(
-        (item: any) => this.isImageFile(item.name) && item.type === 'file',
-      );
-
-      if (imageFiles.length === 0) {
-        return [];
-      }
-
-      // 批量获取 metadata 文件
-      const metadataMap = new Map<string, any>();
-
-      try {
-        const metadataEndpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.config.path + '/.metadata')}?ref=${this.config.branch}`;
-        const metadataResponse = await this.makeGiteeRequest(metadataEndpoint, {
+      if (recursive) {
+        imageEntries = await this.collectImageFiles('');
+      } else {
+        const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(this.joinRemotePath(''))}?ref=${this.config.branch}`;
+        const response = await this.makeGiteeRequest(endpoint, {
           method: 'GET',
         });
-
-        if (Array.isArray(metadataResponse)) {
-          const metadataPromises = metadataResponse
-            .filter((file: any) => file.name.endsWith('.json'))
-            .map(async (file: any) => {
-              try {
-                const fileEndpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(file.path)}?ref=${this.config.branch}`;
-                const fileResponse = await this.makeGiteeRequest(fileEndpoint, {
-                  method: 'GET',
-                });
-
-                if (fileResponse.content) {
-                  // Gitee API 返回的 content 是 base64 编码的字符串
-                  // 使用正确的方式解码 UTF-8 编码的 base64 字符串
-                  const base64Content = fileResponse.content;
-                  try {
-                    // 方法1: 使用 atob 解码，然后处理 UTF-8
-                    const binaryString = atob(base64Content);
-                    // 将二进制字符串转换为 UTF-8 字符串
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                      bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    const content = new TextDecoder('utf-8').decode(bytes);
-                    const metadata = JSON.parse(content);
-                    let imageName = file.name;
-                    if (file.name.includes('.metadata.')) {
-                      imageName = file.name.replace(
-                        /\.metadata\.([^.]+)\.json$/,
-                        '.$1',
-                      );
-                    } else {
-                      imageName = file.name.replace('.json', '');
-                    }
-                    metadataMap.set(imageName, metadata);
-                    if (file.name !== imageName) {
-                      metadataMap.set(file.name, metadata);
-                    }
-                  } catch (decodeError) {
-                    // 如果解码失败，记录错误但继续处理其他文件
-                    this.logger.log(
-                      `Failed to decode metadata file ${file.name}:`,
-                      decodeError,
-                    );
-                  }
-                }
-              } catch (error) {
-                // 忽略单个 metadata 文件加载失败
-                this.logger.log(
-                  `Failed to load metadata file ${file.name}:`,
-                  error,
-                );
-              }
-            });
-
-          await Promise.all(metadataPromises);
-        }
-      } catch (metadataError) {
-        // .metadata 目录不存在或无法访问，使用默认值
-        this.logger.log(
-          'Metadata directory not found or inaccessible:',
-          metadataError,
-        );
+        imageEntries = (Array.isArray(response) ? response : [])
+          .filter(
+            (item: any) =>
+              item.type === 'file' &&
+              this.isImageFile(item.name) &&
+              item.name !== SYNC_EXCLUDED_DIR,
+          )
+          .map((item: any) => ({ remotePath: item.name, item }));
       }
 
-      // 构建最终结果
+      const manifestCache = new Map<string, MetadataManifest>();
+      const loadManifestCached = async (dirPath: string) => {
+        if (!manifestCache.has(dirPath)) {
+          manifestCache.set(dirPath, await this.loadDirManifest(dirPath));
+        }
+        return manifestCache.get(dirPath)!;
+      };
+
       const defaultDate = new Date().toISOString();
-      const images = imageFiles.map((item: any) => {
-        const metadataKey = item.name.replace(/\.metadata\.[^.]+\.json$/, '');
-        const parsedMetadata =
-          metadataMap.get(metadataKey) || metadataMap.get(item.name);
-        const metadata = parsedMetadata
-          ? {
-              size: parsedMetadata.size || item.size || 0,
-              width: parsedMetadata.width || 0,
-              height: parsedMetadata.height || 0,
-              tags: Array.isArray(parsedMetadata.tags)
-                ? parsedMetadata.tags
-                : [],
-              description: parsedMetadata.description || '',
-              updatedAt: parsedMetadata.updatedAt || defaultDate,
-            }
-          : {
-              size: item.size || 0,
-              width: 0,
-              height: 0,
-              tags: [] as string[],
-              description: '',
-              updatedAt: defaultDate,
-            };
+      const images = await Promise.all(
+        imageEntries.map(async ({ remotePath, item }) => {
+          let metadata: Record<string, unknown> | null = null;
+          try {
+            const dirPath = dirnameRelative(remotePath);
+            const fileName = basenameRelative(remotePath);
+            const manifest = await loadManifestCached(dirPath);
+            const entry = getManifestEntry(manifest, fileName);
+            metadata = entry ? manifestEntryToRecord(entry) : null;
+          } catch (error) {
+            this.logger.log(
+              `Failed to fetch metadata for ${remotePath}:`,
+              error,
+            );
+          }
 
-        // 使用 raw URL 替代 API 返回的 download_url，避免跨域问题
-        const filePath = `${this.config.path}/${item.name}`;
-        const rawUrl = this.buildRawUrl(
-          this.config.owner,
-          this.config.repo,
-          this.config.branch,
-          filePath,
-        );
+          const fileName = basenameRelative(remotePath);
+          const filePath = this.joinRemotePath(remotePath);
+          const rawUrl = this.buildRawUrl(
+            this.config.owner,
+            this.config.repo,
+            this.config.branch,
+            filePath,
+          );
 
-        return {
-          id: parsedMetadata?.id || item.sha,
-          name: parsedMetadata?.name || item.name,
-          url: rawUrl,
-          githubUrl: item.html_url || '',
-          size: metadata.size,
-          width: metadata.width,
-          height: metadata.height,
-          type: this.getMimeType(item.name),
-          tags: metadata.tags,
-          description: metadata.description,
-          createdAt: parsedMetadata?.createdAt || defaultDate,
-          updatedAt: metadata.updatedAt,
-        };
-      });
+          return {
+            id: (metadata?.id as string | undefined) || item.sha,
+            name: (metadata?.name as string | undefined) || fileName,
+            storagePath: remotePath,
+            url: rawUrl,
+            githubUrl: item.html_url || '',
+            size: (metadata?.size as number | undefined) || item.size || 0,
+            width: (metadata?.width as number | undefined) || 0,
+            height: (metadata?.height as number | undefined) || 0,
+            type: this.getMimeType(fileName),
+            tags: (metadata?.tags as string[] | undefined) || [],
+            description: (metadata?.description as string | undefined) || '',
+            createdAt:
+              (metadata?.createdAt as string | undefined) || defaultDate,
+            updatedAt:
+              (metadata?.updatedAt as string | undefined) || defaultDate,
+          };
+        }),
+      );
 
-      // 检查重复ID
       const idCounts = images.reduce(
         (acc: Record<string, number>, img: ImageItem) => {
           acc[img.id] = (acc[img.id] || 0) + 1;
@@ -591,17 +682,12 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       );
       if (duplicateIds.length > 0) {
         this.logger.warn('发现重复的图片ID:', duplicateIds);
-        // 为重复的ID添加后缀以确保唯一性
-        const processedImages = images.map((img: ImageItem, index: number) => {
+        return images.map((img: ImageItem, index: number) => {
           if (idCounts[img.id] > 1) {
-            return {
-              ...img,
-              id: `${img.id}-${index}`,
-            };
+            return { ...img, id: `${img.id}-${index}` };
           }
           return img;
         });
-        return processedImages;
       }
 
       return images;
@@ -625,7 +711,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     this.assertConfigured();
     try {
       await this.persistImageMetadata(path, metadata);
-      const filePath = `${this.config.path}/${path}`;
+      const filePath = this.joinRemotePath(path);
       return {
         id: metadata.id ?? path,
         name: metadata.name ?? path,
@@ -667,133 +753,6 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
     await this.updateImageMetadata(fileName, metadata);
   }
 
-  private async persistImageMetadata(
-    fileName: string,
-    metadata: any,
-  ): Promise<void> {
-    try {
-      const metadataFileName = this.getMetadataFileName(fileName);
-      const metadataFilePath = `${this.config.path}/.metadata/${metadataFileName}`;
-
-      const metadataContent = buildProviderSidecarPayload(metadata);
-
-      // 将元数据转换为 base64
-      const jsonString = JSON.stringify(metadataContent, null, 2);
-      const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-      // 获取文件的当前 SHA（如果文件存在）
-      const fileSha = await this.getFileSha(
-        metadataFilePath,
-        this.config.branch,
-      );
-
-      // 构建请求参数
-      const requestBody: any = {
-        message: fileSha
-          ? `Update metadata for image: ${fileName}`
-          : `Create metadata for image: ${fileName}`,
-        content: base64Content,
-        branch: this.config.branch,
-      };
-
-      // 根据文件是否存在选择使用 POST 或 PUT 方法
-      // POST: 创建新文件（如果文件已存在且没有 SHA，会报错）
-      // PUT: 更新已存在的文件（必须提供 SHA）
-      if (fileSha) {
-        // 文件存在，使用 PUT 方法更新，必须提供 SHA
-        requestBody.sha = fileSha;
-      }
-
-      const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(metadataFilePath)}`;
-      const method = fileSha ? 'PUT' : 'POST';
-
-      // 创建或更新元数据文件
-      try {
-        await this.makeGiteeRequest(endpoint, {
-          method,
-          body: JSON.stringify(requestBody),
-        });
-      } catch (error: any) {
-        // 如果错误是因为 SHA 不匹配，重新获取最新的 SHA 并重试
-        const errorMessage = error?.message || '';
-        if (errorMessage.includes('does not match') && fileSha) {
-          try {
-            // 重新获取最新的 SHA
-            const latestSha = await this.getFileSha(
-              metadataFilePath,
-              this.config.branch,
-            );
-            if (latestSha) {
-              // 使用最新的 SHA 重试
-              const retryRequestBody = {
-                message: `Update metadata for image: ${fileName}`,
-                content: base64Content,
-                sha: latestSha,
-                branch: this.config.branch,
-              };
-              await this.makeGiteeRequest(endpoint, {
-                method: 'PUT',
-                body: JSON.stringify(retryRequestBody),
-              });
-            } else {
-              throw error;
-            }
-          } catch (retryError) {
-            // 重试失败，抛出原始错误
-            throw error;
-          }
-        } else {
-          throw error;
-        }
-      }
-    } catch (error) {
-      this.logger.error('Update image metadata failed:', error);
-      throw new Error(`更新图片元数据失败: ${error}`);
-    }
-  }
-
-  // 获取元数据文件名
-  private getMetadataFileName(fileName: string): string {
-    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-    const extension = fileName.substring(fileName.lastIndexOf('.'));
-    // 格式：filename.metadata.ext.json (例如：abc23.metadata.png.json)
-    return `${nameWithoutExt}.metadata${extension}.json`;
-  }
-
-  /**
-   * 获取图片元数据
-   */
-  private async getImageMetadata(fileName: string): Promise<any | null> {
-    try {
-      const metadataFileName = this.getMetadataFileName(fileName);
-      // 使用 Gitee raw URL 直接获取文件内容
-      const metadataUrl = this.buildRawUrl(
-        this.config.owner,
-        this.config.repo,
-        this.config.branch,
-        `${this.config.path}/.metadata/${metadataFileName}`,
-      );
-
-      const response = await this.fetchFn(metadataUrl);
-
-      if (response.status === 404) {
-        return null;
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch metadata: ${response.status}`);
-      }
-
-      const metadataContent = await response.json();
-      return metadataContent;
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('404')) {
-        return null;
-      }
-      return null;
-    }
-  }
-
   /**
    * 异步加载图片元数据并更新图片列表
    * @param images 图片列表
@@ -809,7 +768,8 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       // 批量获取元数据
       const metadataPromises = images.map(async img => {
         try {
-          const metadata = await this.getImageMetadata(img.name);
+          const metadataPath = img.storagePath ?? img.name;
+          const metadata = await this.getImageMetadata(metadataPath);
           if (metadata) {
             return {
               ...img,
@@ -842,26 +802,29 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
   }
 
   async syncPull(options?: SyncPullOptions): Promise<SyncPullResult> {
-    const images = await this.listImages();
+    const images = await this.listImages({ recursive: true });
     const since = options?.since;
     const items = images
-      .map(img => ({
-        remotePath: img.name,
-        action: 'update' as const,
-        contentHash: img.id,
-        metadata: {
-          name: img.name,
-          tags: img.tags,
-          description: img.description,
-          width: img.width,
-          height: img.height,
-          size: img.size,
-          type: img.type,
-          createdAt: img.createdAt,
-          updatedAt: img.updatedAt,
-          url: img.url,
-        },
-      }))
+      .map(img => {
+        const remotePath = img.storagePath ?? img.name;
+        return {
+          remotePath,
+          action: 'update' as const,
+          contentHash: img.id,
+          metadata: {
+            name: img.name,
+            tags: img.tags,
+            description: img.description,
+            width: img.width,
+            height: img.height,
+            size: img.size,
+            type: img.type,
+            createdAt: img.createdAt,
+            updatedAt: img.updatedAt,
+            url: img.url,
+          },
+        };
+      })
       .filter(item => !since || (item.metadata.updatedAt ?? '') > since);
 
     this.syncCursor = new Date().toISOString();
@@ -887,6 +850,7 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
       await this.uploadImage({
         file,
         name: item.metadata?.name,
+        storagePath: item.remotePath,
         tags: item.metadata?.tags,
         description: item.metadata?.description,
       });

@@ -6,7 +6,7 @@ import type {
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
-import { createMockResponse } from './helpers';
+import { createMockResponse, encodeManifestForMock } from './helpers';
 
 describe('GiteeStorageProvider', () => {
   let provider: GiteeStorageProvider;
@@ -396,7 +396,12 @@ describe('GiteeStorageProvider', () => {
 
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce(createMockResponse(true, null))
+        .mockResolvedValueOnce(
+          createMockResponse(false, { message: 'Not Found' }, 404),
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(false, { message: 'Not Found' }, 404),
+        )
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
@@ -447,18 +452,27 @@ describe('GiteeStorageProvider', () => {
       ];
 
       const mockMetadata = {
-        size: 1024,
-        width: 100,
-        height: 200,
-        tags: ['tag1'],
-        description: 'Test image',
-        updatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+        version: 1,
+        files: {
+          'image1.jpg': {
+            name: 'image1.jpg',
+            size: 1024,
+            width: 100,
+            height: 200,
+            tags: ['tag1'],
+            description: 'Test image',
+            updatedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          },
+        },
       };
 
-      global.fetch = vi
-        .fn()
-        .mockResolvedValueOnce(createMockResponse(true, mockMetadata));
+      global.fetch = vi.fn().mockResolvedValueOnce(
+        createMockResponse(true, {
+          content: encodeManifestForMock(mockMetadata),
+          sha: 'manifest-sha',
+        }),
+      );
 
       const result = await provider.loadImageMetadata(images);
 

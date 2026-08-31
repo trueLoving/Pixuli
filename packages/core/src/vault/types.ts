@@ -24,8 +24,8 @@ export interface WorkspaceBinding {
   id: string;
   label: string;
   pluginId: string;
-  remotePathPrefix: string;
-  localPathPrefix: string;
+  /** 远端仓库挂载点（provider config.path / D3 configRoot） */
+  configRoot: string;
   config: StorageProviderConfig;
 }
 

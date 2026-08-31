@@ -4,8 +4,10 @@ import { MemoryWorkspaceAdapter } from '../memoryAdapter';
 import {
   applySyncPull,
   buildSyncPushItems,
+  resolveLocalPathForPull,
   resolveRemotePathForPush,
 } from '../syncApply';
+import { isSyncExcludedPath } from '../syncPath';
 import type { StorageProvider } from '../../plugins/types';
 
 function createMockProvider(
@@ -29,26 +31,41 @@ function createMockProvider(
   } as StorageProvider;
 }
 
-describe('syncApply', () => {
-  it('resolveRemotePathForPush prefers display name over timestamp local path', async () => {
+describe('syncPath', () => {
+  it('excludes .pixuli paths from sync', () => {
+    expect(isSyncExcludedPath('.pixuli/config.json')).toBe(true);
+    expect(isSyncExcludedPath('images/a.jpg')).toBe(false);
+  });
+});
+
+describe('syncApply (configRoot 1:1)', () => {
+  it('resolveRemotePathForPush mirrors workspace relative path', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
     await vault.open();
-    await vault.importFile(
-      new Uint8Array([1]),
-      'images/1787193114444-Readuli.png',
-      {
-        name: 'Readuli.png',
-        syncState: 'local-only',
-      },
-    );
-    const entry = await vault.getByPath('images/1787193114444-Readuli.png');
-    expect(entry).toBeTruthy();
-    expect(resolveRemotePathForPush(entry!)).toBe('Readuli.png');
+    await vault.importFile(new Uint8Array([1]), 'images/trip/photo.jpg', {
+      name: 'photo.jpg',
+      syncState: 'local-only',
+    });
+    const entry = await vault.getByPath('images/trip/photo.jpg');
+    expect(resolveRemotePathForPush(entry!)).toBe('images/trip/photo.jpg');
+    expect(resolveLocalPathForPull('video/1.mp4')).toBe('video/1.mp4');
   });
 
-  it('buildSyncPushItems uses display name as remotePath', async () => {
+  it('resolveRemotePathForPush returns null for .pixuli', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(new Uint8Array([1]), '.pixuli/config.json', {
+      syncState: 'local-only',
+    });
+    const entry = await vault.getByPath('.pixuli/config.json');
+    expect(resolveRemotePathForPush(entry!)).toBeNull();
+  });
+
+  it('buildSyncPushItems uses workspace relative path as remotePath', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
@@ -69,24 +86,16 @@ describe('syncApply', () => {
       async () => new Uint8Array([1, 2]),
     );
 
-    expect(items[0]?.remotePath).toBe('Readuli.png');
+    expect(items[0]?.remotePath).toBe('images/1787193114444-Readuli.png');
   });
 
-  it('pull reconciles timestamp local path to canonical remote filename', async () => {
+  it('pull writes files to the same workspace relative path', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
     await vault.open();
 
-    const remoteBytes = new Uint8Array([9, 9, 9]);
-    await vault.importFile(remoteBytes, 'images/1787193114444-Readuli.png', {
-      name: 'Readuli.png',
-      mimeType: 'image/png',
-      syncState: 'synced',
-      remotePath: '1787193114444-Readuli.png',
-      bindingId: 'binding-1',
-    });
-
+    const remoteBytes = new Uint8Array([5, 5, 5]);
     const provider = createMockProvider();
     const fetchFn = vi.fn(async () => ({
       ok: true,
@@ -99,12 +108,12 @@ describe('syncApply', () => {
       {
         items: [
           {
-            remotePath: 'Readuli.png',
+            remotePath: 'images/trip/photo.jpg',
             action: 'update',
             metadata: {
-              name: 'Readuli.png',
+              name: 'photo.jpg',
               updatedAt: new Date().toISOString(),
-              url: 'https://example.test/Readuli.png',
+              url: 'https://example.test/images/trip/photo.jpg',
             },
           },
         ],
@@ -114,17 +123,9 @@ describe('syncApply', () => {
     );
 
     expect(result.pulled).toBe(1);
-    expect(result.conflicts).toHaveLength(0);
-
-    const listed = await vault.list();
-    expect(listed).toHaveLength(1);
-    expect(listed[0].relativePath).toBe('images/Readuli.png');
-    expect(listed[0].remotePath).toBe('Readuli.png');
-    expect(listed[0].name).toBe('Readuli.png');
-    expect(await adapter.exists('images/1787193114444-Readuli.png')).toBe(
-      false,
-    );
-    expect(await adapter.exists('images/Readuli.png')).toBe(true);
+    const entry = await vault.getByPath('images/trip/photo.jpg');
+    expect(entry?.remotePath).toBe('images/trip/photo.jpg');
+    expect(entry?.syncState).toBe('synced');
   });
 
   it('pull skips already synced remote file', async () => {
@@ -137,7 +138,7 @@ describe('syncApply', () => {
     await vault.importFile(new Uint8Array([1]), 'images/Readuli.png', {
       name: 'Readuli.png',
       syncState: 'synced',
-      remotePath: 'Readuli.png',
+      remotePath: 'images/Readuli.png',
       bindingId: 'binding-1',
       updatedAt: remoteUpdatedAt,
     });
@@ -149,7 +150,7 @@ describe('syncApply', () => {
       {
         items: [
           {
-            remotePath: 'Readuli.png',
+            remotePath: 'images/Readuli.png',
             action: 'update',
             metadata: {
               name: 'Readuli.png',
@@ -191,12 +192,12 @@ describe('syncApply', () => {
       {
         items: [
           {
-            remotePath: 'Readuli.png',
+            remotePath: 'images/Readuli.png',
             action: 'update',
             metadata: {
               name: 'Readuli.png',
               updatedAt: '2026-08-20T02:00:00.000Z',
-              url: 'https://example.test/Readuli.png',
+              url: 'https://example.test/images/Readuli.png',
             },
           },
         ],
@@ -206,16 +207,12 @@ describe('syncApply', () => {
     );
 
     expect(result.pulled).toBe(1);
-    expect(result.conflicts).toHaveLength(0);
     expect(fetchFn).toHaveBeenCalledOnce();
-
     const data = await adapter.readFile('images/Readuli.png');
     expect(Array.from(data)).toEqual([7, 7, 7]);
-    const entry = await vault.getByPath('images/Readuli.png');
-    expect(entry?.syncState).toBe('synced');
   });
 
-  it('pull reconciles unbound local-only in custom folder without duplicating', async () => {
+  it('pull creates file at exact remote path without merging unrelated local paths', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
@@ -243,12 +240,12 @@ describe('syncApply', () => {
       {
         items: [
           {
-            remotePath: 'Omnivuli.png',
+            remotePath: '111/Omnivuli.png',
             action: 'update',
             metadata: {
               name: 'Omnivuli.png',
               updatedAt: new Date().toISOString(),
-              url: 'https://example.test/Omnivuli.png',
+              url: 'https://example.test/111/Omnivuli.png',
             },
           },
         ],
@@ -259,10 +256,9 @@ describe('syncApply', () => {
 
     expect(result.pulled).toBe(1);
     const listed = await vault.list();
-    expect(listed).toHaveLength(1);
-    expect(listed[0]?.relativePath).toBe('images/Omnivuli.png');
-    expect(listed[0]?.remotePath).toBe('Omnivuli.png');
-    expect(listed[0]?.syncState).toBe('synced');
-    expect(await adapter.exists('111/1787193114444-Omnivuli.png')).toBe(false);
+    expect(listed.some(item => item.relativePath === '111/Omnivuli.png')).toBe(
+      true,
+    );
+    expect(await adapter.exists('111/Omnivuli.png')).toBe(true);
   });
 });

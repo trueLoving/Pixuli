@@ -4,3 +4,4 @@ export * from './fileSizeUtils';
 export * from './imageUtils';
 export * from './randomUUID';
 export * from './imageCaptureMetadata';
+export * from './metadataManifest';
