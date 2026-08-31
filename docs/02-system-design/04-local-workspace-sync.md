@@ -9,6 +9,9 @@
 
 > **本地为 SSOT**；远端经 Provider
 > **可选同步**。库内增删改不自动 push（产品口径见 04）。
+>
+> **路径与元数据目标架构**（configRoot、manifest、目录 1:1）见
+> [06-sync-path-and-metadata-design](./06-sync-path-and-metadata-design.md)。
 
 ---
 

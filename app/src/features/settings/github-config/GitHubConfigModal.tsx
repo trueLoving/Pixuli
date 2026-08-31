@@ -166,7 +166,7 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
             repo: String(parsed.config.repo ?? ''),
             branch: String(parsed.config.branch ?? 'main'),
             token: String(parsed.config.token ?? ''),
-            path: String(parsed.config.path ?? 'images'),
+            path: String(parsed.config.path ?? ''),
           });
 
           showSuccess(translate('messages.configImported'));

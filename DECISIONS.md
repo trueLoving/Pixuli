@@ -1,6 +1,6 @@
 # DECISIONS
 
-> **产品与架构决策记录** · 更新：2026-08-25  
+> **产品与架构决策记录** · 更新：2026-08-31  
 > 进度见 [PLANS.md](./PLANS.md)；2.0 能力对照见 [2.0.md](./2.0.md)。
 
 本文记录「为什么这样定」，不是功能清单，也不是 Issue 进度表。
@@ -63,3 +63,46 @@
 | D2.6 | 默认 TypeScript               | 业务与 provider 一律 `.ts`/`.tsx`；工具链例外另记 |
 
 新增重大取舍时，在本文追加 `D3…`，并在 PR / Issue 里引用编号。
+
+---
+
+## D3 · 同步路径（configRoot）与元数据 manifest
+
+> 详设：[docs/02-system-design/06-sync-path-and-metadata-design.md](docs/02-system-design/06-sync-path-and-metadata-design.md)  
+> 日期：2026-08-31
+> · **无旧数据兼容**（产品尚未正式使用）
+
+### 问题
+
+- 旧模型将 `config.path` 同时当作「远端资源根」与「本地 `images/`
+  前缀」，需维护 strip/join、展示名等映射；子文件夹同步易错乱。
+- 元数据采用全局扁平 sidecar（`.metadata/{name}.metadata.{ext}.json`），嵌套目录下 basename 冲突，且 list 时 API 请求为 O(文件数)。
+
+### 决策
+
+| 项               | 选择                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| **远端挂载点**   | 数据源配置 `path` 语义为 **configRoot**（远端仓库内子目录，可为空表示仓库根下直接镜像）    |
+| **路径映射**     | 工作区相对路径 ↔ 远端相对 configRoot 路径 **1:1**；`remotePath === relativePath`          |
+| **`.pixuli/`**   | **永不同步**（本地工作区配置与索引）                                                       |
+| **`.metadata/`** | **同步**；各资源目录下 `{dir}/.metadata/manifest.json` 描述**本层直接文件**                |
+| **资源目录**     | `images/`、`video/` 等为工作区普通顶层目录，不再是同步边界                                 |
+| **UI 浏览**      | Explorer 模型：选中目录仅展示**本层文件**（shallow）；子目录在左侧树（可选网格文件夹卡片） |
+| **兼容**         | 不做历史迁移                                                                               |
+
+### 示例
+
+configRoot = `root`：
+
+```text
+本地 images/1.png     → 远端 root/images/1.png
+本地 video/1.mp4      → 远端 root/video/1.mp4
+本地 .pixuli/config   → 不同步
+本地 images/.metadata/manifest.json → 远端 root/images/.metadata/manifest.json
+```
+
+### 理由
+
+- 与 Git 目录语义一致，降低 sync 与排查成本。
+- manifest 按目录 batch，与 shallow UI 对齐，减少 API 次数。
+- 支持多类型资源目录并存，无需全部塞进 `images/`。

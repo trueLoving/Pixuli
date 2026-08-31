@@ -14,6 +14,7 @@ import {
   assertSyncProvider,
   buildSyncPushItems,
 } from './syncApply';
+import { isSyncExcludedPath } from './syncPath';
 import type {
   LocalVault,
   SyncEngine,
@@ -27,6 +28,7 @@ import { nowIso } from './utils';
 export interface SyncEngineBinding {
   bindingId: string;
   provider: StorageProvider;
+  configRoot?: string;
 }
 
 export interface CreateSyncEngineOptions {
@@ -210,6 +212,9 @@ async function flushPushQueue(
   const pendingPaths = new Set<string>();
   if (options?.overwriteRemote) {
     for (const entry of entries) {
+      if (isSyncExcludedPath(entry.relativePath)) {
+        continue;
+      }
       if (entry.deletedAt) {
         // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
         if (!entry.remotePath) {
@@ -223,6 +228,9 @@ async function flushPushQueue(
     }
   } else {
     for (const entry of entries) {
+      if (isSyncExcludedPath(entry.relativePath)) {
+        continue;
+      }
       if (entry.deletedAt) {
         if (!entry.remotePath) {
           await vault.removeEntry(entry.relativePath);
@@ -242,6 +250,9 @@ async function flushPushQueue(
   for (const op of queue) {
     const entry = await vault.getByPath(op.relativePath);
     if (!entry) {
+      continue;
+    }
+    if (isSyncExcludedPath(entry.relativePath)) {
       continue;
     }
     if (entry.deletedAt && !entry.remotePath) {

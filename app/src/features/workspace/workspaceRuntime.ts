@@ -58,7 +58,11 @@ function resolveSyncBindings(): SyncEngineBinding[] {
           binding.config as never,
         );
         if (providerSupportsSync(provider)) {
-          bindings.push({ bindingId: binding.id, provider });
+          bindings.push({
+            bindingId: binding.id,
+            provider,
+            configRoot: binding.configRoot,
+          });
         }
       } catch {
         // skip invalid binding
@@ -72,7 +76,14 @@ function resolveSyncBindings(): SyncEngineBinding[] {
   if (!source || !provider || !providerSupportsSync(provider)) {
     return [];
   }
-  return [{ bindingId: source.id, provider }];
+  const bindingDef = storedSourcesToWorkspaceBindings([source])[0];
+  return [
+    {
+      bindingId: source.id,
+      provider,
+      configRoot: bindingDef?.configRoot,
+    },
+  ];
 }
 
 function resolveSelectedSource() {

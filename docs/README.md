@@ -37,18 +37,19 @@
 
 ---
 
-## 02-system-design（技术 · 5 篇）
+## 02-system-design（技术 · 6 篇）
 
 读架构：**01**，再按需打开插件 / 同步 / 性能 / 发版；三端脚本见
 [app/README](../app/README.md)。
 
-| 文档                                                                      | SSOT 职责                    |
-| ------------------------------------------------------------------------- | ---------------------------- |
-| [01-system-design.md](02-system-design/01-system-design.md)               | 整体架构总览                 |
-| [02-performance.md](02-system-design/02-performance.md)                   | 列表/缩略性能边界（REF-603） |
-| [03-plugin-system.md](02-system-design/03-plugin-system.md)               | 存储插件契约与开发           |
-| [04-local-workspace-sync.md](02-system-design/04-local-workspace-sync.md) | 本地工作区 + 同步            |
-| [05-release-versioning.md](02-system-design/05-release-versioning.md)     | SemVer / tag / 发版清单      |
+| 文档                                                                                        | SSOT 职责                              |
+| ------------------------------------------------------------------------------------------- | -------------------------------------- |
+| [01-system-design.md](02-system-design/01-system-design.md)                                 | 整体架构总览                           |
+| [02-performance.md](02-system-design/02-performance.md)                                     | 列表/缩略性能边界（REF-603）           |
+| [03-plugin-system.md](02-system-design/03-plugin-system.md)                                 | 存储插件契约与开发                     |
+| [04-local-workspace-sync.md](02-system-design/04-local-workspace-sync.md)                   | 本地工作区 + 同步（现行摘要）          |
+| [05-release-versioning.md](02-system-design/05-release-versioning.md)                       | SemVer / tag / 发版清单                |
+| [06-sync-path-and-metadata-design.md](02-system-design/06-sync-path-and-metadata-design.md) | configRoot、metadata manifest、目录 UI |
 
 产品 UI SSOT：壳层 [03](01-product/03-three-platform-interaction-spec.md)
 · 资源库 [04](01-product/04-asset-library-ui.md) · 品牌
@@ -92,13 +93,14 @@
 
 ## 修订
 
-| 日期       | 变更                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------- |
-| 2026-08-25 | `Plans`→`PLANS.md`；新增 `DECISIONS.md`；删 TS/JS 策略篇；`03-business-design/README.md` |
-| 2026-08-25 | 删除 `docs/archive`；`REFACTOR_PLAN`→`PLANS`；`2.0-release-feature-list`→`2.0.md`        |
-| 2026-08-25 | **02-system-design 瘦身**：保留 7 篇                                                     |
-| 2026-08-25 | **01-product 瘦身**：保留 5 篇                                                           |
-| 2026-08-13 | 增补品牌 / 资源库 / UI 排期等（后经瘦身调整）                                            |
-| 2026-08-18 | 删除根目录 `archive/`；历史快照见 git tag `backup`                                       |
-| 2026-06-17 | **P0**：角色路径；归档索引                                                               |
-| 2026-06-06 | REF-407：角色索引、架构摘要                                                              |
+| 日期       | 变更                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| 2026-08-31 | 新增 [06-sync-path-and-metadata-design](02-system-design/06-sync-path-and-metadata-design.md) |
+| 2026-08-25 | `Plans`→`PLANS.md`；新增 `DECISIONS.md`；删 TS/JS 策略篇；`03-business-design/README.md`      |
+| 2026-08-25 | 删除 `docs/archive`；`REFACTOR_PLAN`→`PLANS`；`2.0-release-feature-list`→`2.0.md`             |
+| 2026-08-25 | **02-system-design 瘦身**：保留 7 篇                                                          |
+| 2026-08-25 | **01-product 瘦身**：保留 5 篇                                                                |
+| 2026-08-13 | 增补品牌 / 资源库 / UI 排期等（后经瘦身调整）                                                 |
+| 2026-08-18 | 删除根目录 `archive/`；历史快照见 git tag `backup`                                            |
+| 2026-06-17 | **P0**：角色路径；归档索引                                                                    |
+| 2026-06-06 | REF-407：角色索引、架构摘要                                                                   |

@@ -6,6 +6,8 @@ export type LinkKind = 'local' | 'remote-raw';
 export interface ImageItem {
   id: string;
   name: string;
+  /** 远端存储相对路径（相对 provider config.path，可含子目录） */
+  storagePath?: string;
   url: string;
   /**
    * @deprecated 使用 `publicUrl`；保留以兼容现有 GitHub raw 字段与远端列表。
@@ -37,6 +39,8 @@ export interface ImageUploadData {
   tags?: string[];
   /** 目标文件夹（相对工作区路径）；默认当前资源库范围 */
   targetFolder?: string;
+  /** 远端存储相对路径（含子目录）；sync / 指定路径上传时使用 */
+  storagePath?: string;
   /** REF-511 #141：拍照/选图采集上下文 */
   captureMetadata?: ImageCaptureMetadata;
 }

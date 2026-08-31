@@ -14,3 +14,7 @@ export function createMockResponse(
     text: async () => (typeof data === 'string' ? data : JSON.stringify(data)),
   };
 }
+
+export function encodeManifestForMock(manifest: object): string {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(manifest, null, 2))));
+}

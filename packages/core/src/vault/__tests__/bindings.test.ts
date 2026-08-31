@@ -17,26 +17,25 @@ function makeSource(
       repo: 'photos',
       branch: 'main',
       token: 'secret',
-      path: '/images/',
+      path: '/root/',
     },
     ...overrides,
   };
 }
 
-describe('storedSourceToWorkspaceBinding (REF-607 P4)', () => {
+describe('storedSourceToWorkspaceBinding (D3 configRoot)', () => {
   it('maps source fields to workspace binding', () => {
     const binding = storedSourceToWorkspaceBinding(makeSource());
     expect(binding).toEqual({
       id: 'source-1',
       label: 'My Repo',
       pluginId: 'github',
-      remotePathPrefix: 'images',
-      localPathPrefix: 'images',
+      configRoot: 'root',
       config: makeSource().config,
     });
   });
 
-  it('normalizes path prefix slashes', () => {
+  it('normalizes configRoot slashes', () => {
     const binding = storedSourceToWorkspaceBinding(
       makeSource({
         config: {
@@ -48,11 +47,10 @@ describe('storedSourceToWorkspaceBinding (REF-607 P4)', () => {
         },
       }),
     );
-    expect(binding.remotePathPrefix).toBe('photos');
-    expect(binding.localPathPrefix).toBe('photos');
+    expect(binding.configRoot).toBe('photos');
   });
 
-  it('defaults path prefix to images when empty', () => {
+  it('allows empty configRoot for repo root mirror', () => {
     const binding = storedSourceToWorkspaceBinding(
       makeSource({
         config: {
@@ -64,7 +62,7 @@ describe('storedSourceToWorkspaceBinding (REF-607 P4)', () => {
         },
       }),
     );
-    expect(binding.remotePathPrefix).toBe('images');
+    expect(binding.configRoot).toBe('');
   });
 });
 
@@ -89,5 +87,6 @@ describe('storedSourcesToWorkspaceBindings', () => {
     expect(bindings).toHaveLength(2);
     expect(bindings[0].id).toBe('a');
     expect(bindings[1].pluginId).toBe('gitee');
+    expect(bindings[1].configRoot).toBe('img');
   });
 });

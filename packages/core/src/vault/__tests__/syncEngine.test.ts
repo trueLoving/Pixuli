@@ -189,9 +189,9 @@ describe('createSyncEngine', () => {
       remotePath: string;
     }>;
     expect(pushedItems.every(item => item.action !== 'delete')).toBe(true);
-    expect(pushedItems.some(item => item.remotePath === 'Omnivuli.png')).toBe(
-      true,
-    );
+    expect(
+      pushedItems.some(item => item.remotePath === '111/ts-Omnivuli.png'),
+    ).toBe(true);
     expect(await vault.list({ includeDeleted: true })).toHaveLength(1);
   });
 

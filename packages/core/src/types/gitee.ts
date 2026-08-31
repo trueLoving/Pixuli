@@ -3,6 +3,7 @@ export interface GiteeConfig {
   repo: string;
   branch: string;
   token: string;
+  /** 远端仓库挂载点（configRoot）；空字符串表示镜像到仓库根下 */
   path: string;
 }
 

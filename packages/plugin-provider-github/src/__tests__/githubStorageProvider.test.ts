@@ -6,7 +6,7 @@ import type {
   ImageItem,
   ImageUploadData,
 } from '@pixuli/core/types';
-import { createMockResponse } from './helpers';
+import { createMockResponse, encodeManifestForMock } from './helpers';
 
 const mockRemoteFileMissing = () =>
   createMockResponse(false, { message: 'Not Found' }, 404);
@@ -413,23 +413,31 @@ describe('GitHubStorageProvider', () => {
       ];
 
       const mockMetadata = {
-        id: 'metadata-id',
-        name: 'image1.jpg',
-        size: 2048,
-        width: 200,
-        height: 400,
-        tags: ['tag1', 'tag2'],
-        description: 'Test image',
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-02T00:00:00Z',
+        version: 1,
+        files: {
+          'image1.jpg': {
+            id: 'metadata-id',
+            name: 'image1.jpg',
+            size: 2048,
+            width: 200,
+            height: 400,
+            tags: ['tag1', 'tag2'],
+            description: 'Test image',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-02T00:00:00Z',
+          },
+        },
       };
 
-      // Mock get contents
-      // Mock get metadata
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(createMockResponse(true, mockImageFiles))
-        .mockResolvedValueOnce(createMockResponse(true, mockMetadata));
+        .mockResolvedValueOnce(
+          createMockResponse(true, {
+            content: encodeManifestForMock(mockMetadata),
+            sha: 'manifest-sha',
+          }),
+        );
 
       const result = await provider.listImages();
 
@@ -458,6 +466,9 @@ describe('GitHubStorageProvider', () => {
         .mockResolvedValueOnce(
           createMockResponse(false, { message: 'Not Found' }, 404),
         )
+        .mockResolvedValueOnce(
+          createMockResponse(false, { message: 'Not Found' }, 404),
+        )
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
       await expect(
@@ -473,7 +484,34 @@ describe('GitHubStorageProvider', () => {
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce(
-          createMockResponse(true, { sha: 'metadata-sha' }),
+          createMockResponse(true, {
+            content: encodeManifestForMock({
+              version: 1,
+              files: {
+                'test.jpg': {
+                  name: 'test.jpg',
+                  tags: [],
+                  updatedAt: '2024-01-01T00:00:00Z',
+                },
+              },
+            }),
+            sha: 'metadata-sha',
+          }),
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(true, {
+            content: encodeManifestForMock({
+              version: 1,
+              files: {
+                'test.jpg': {
+                  name: 'test.jpg',
+                  tags: [],
+                  updatedAt: '2024-01-01T00:00:00Z',
+                },
+              },
+            }),
+            sha: 'metadata-sha',
+          }),
         )
         .mockResolvedValueOnce(createMockResponse(true, {}));
 
@@ -487,14 +525,34 @@ describe('GitHubStorageProvider', () => {
         description: 'Updated description',
       };
 
+      const manifestBody = {
+        version: 1,
+        files: {
+          'test.jpg': {
+            name: 'test.jpg',
+            tags: [],
+            updatedAt: '2024-01-01T00:00:00Z',
+          },
+        },
+      };
+
       global.fetch = vi
         .fn()
-        .mockResolvedValueOnce(createMockResponse(true, { sha: 'old-sha' }))
         .mockResolvedValueOnce(
-          createMockResponse(false, { message: 'sha does not match' }, 409),
+          createMockResponse(true, {
+            content: encodeManifestForMock(manifestBody),
+            sha: 'old-sha',
+          }),
         )
-        .mockResolvedValueOnce(createMockResponse(true, { sha: 'new-sha' }))
-        .mockResolvedValueOnce(createMockResponse(true, {}));
+        .mockResolvedValueOnce(
+          createMockResponse(true, {
+            content: encodeManifestForMock(manifestBody),
+            sha: 'old-sha',
+          }),
+        )
+        .mockResolvedValueOnce(
+          createMockResponse(true, { content: { sha: 'new' } }),
+        );
 
       await expect(
         provider.updateImageMetadata('test.jpg', metadata),
@@ -543,20 +601,27 @@ describe('GitHubStorageProvider', () => {
       ];
 
       const mockMetadata = {
-        size: 1024,
-        width: 100,
-        height: 200,
-        tags: ['tag1'],
-        description: 'Test image',
-        updatedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+        version: 1,
+        files: {
+          'image1.jpg': {
+            name: 'image1.jpg',
+            size: 1024,
+            width: 100,
+            height: 200,
+            tags: ['tag1'],
+            description: 'Test image',
+            updatedAt: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+          },
+        },
       };
 
-      global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockMetadata,
-      } as any);
+      global.fetch = vi.fn().mockResolvedValueOnce(
+        createMockResponse(true, {
+          content: encodeManifestForMock(mockMetadata),
+          sha: 'manifest-sha',
+        }),
+      );
 
       const result = await provider.loadImageMetadata(images);
 

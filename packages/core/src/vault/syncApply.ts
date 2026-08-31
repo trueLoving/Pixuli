@@ -7,7 +7,17 @@ import type {
 } from '../plugins/types';
 import { hasStorageProviderSync } from '../plugins/types';
 import type { LocalImageIndexEntry, LocalVault, SyncConflict } from './types';
+import { resolveLocalPathForPull, resolveRemotePathForPush } from './syncPath';
 import { basename, nowIso } from './utils';
+
+export {
+  isSyncExcludedPath,
+  joinConfigRoot,
+  normalizeConfigRoot,
+  resolveLocalPathForPull,
+  resolveRemotePathForPush,
+  SYNC_EXCLUDED_DIR,
+} from './syncPath';
 
 export async function downloadRemoteBytes(
   provider: StorageProvider,
@@ -42,45 +52,36 @@ function pickImageMetadata(metadata?: Partial<ImageItem>): Partial<ImageItem> {
   };
 }
 
-/** 推送时远端文件名：优先已记录的 remotePath，否则用展示名（与 GitHub upload 的 name 一致） */
-export function resolveRemotePathForPush(entry: LocalImageIndexEntry): string {
-  return entry.remotePath ?? entry.name ?? basename(entry.relativePath);
-}
-
 async function findExistingForPullItem(
   vault: LocalVault,
   bindingId: string,
   remotePath: string,
-  canonicalPath: string,
 ): Promise<LocalImageIndexEntry | null> {
+  const canonicalPath = resolveLocalPathForPull(remotePath);
   const byPath = await vault.getByPath(canonicalPath);
   if (byPath && !byPath.deletedAt) {
     return byPath;
   }
 
-  const matchesRemote = (entry: LocalImageIndexEntry): boolean => {
-    if (entry.deletedAt) {
-      return false;
-    }
-    if (entry.remotePath === remotePath) {
-      return true;
-    }
-    // 兼容：本地 timestamp 路径 / 自定义文件夹 + 展示名与远端文件名一致
-    if (entry.name === remotePath) {
-      return true;
-    }
-    return basename(entry.relativePath) === remotePath;
-  };
-
   const boundEntries = await vault.list({ bindingId });
-  const fromBound = boundEntries.find(matchesRemote);
+  const fromBound = boundEntries.find(
+    entry =>
+      !entry.deletedAt &&
+      (entry.remotePath === remotePath || entry.relativePath === canonicalPath),
+  );
   if (fromBound) {
     return fromBound;
   }
 
-  // push 半成功时本地可能仍是 local-only、无 bindingId；仍按名称对账，避免 pull 再写一份
   const unboundEntries = await vault.list();
-  return unboundEntries.find(matchesRemote) ?? null;
+  return (
+    unboundEntries.find(
+      entry =>
+        !entry.deletedAt &&
+        (entry.remotePath === remotePath ||
+          entry.relativePath === canonicalPath),
+    ) ?? null
+  );
 }
 
 function isRemoteUpToDate(
@@ -91,7 +92,10 @@ function isRemoteUpToDate(
   if (existing.syncState !== 'synced') {
     return false;
   }
-  if (existing.remotePath !== remotePath && existing.name !== remotePath) {
+  if (
+    existing.remotePath !== remotePath &&
+    existing.relativePath !== resolveLocalPathForPull(remotePath)
+  ) {
     return false;
   }
   if (!remoteUpdatedAt) {
@@ -115,12 +119,11 @@ export async function applySyncPull(
   let pulled = 0;
 
   for (const item of pullResult.items) {
-    const canonicalPath = `images/${item.remotePath}`;
+    const canonicalPath = resolveLocalPathForPull(item.remotePath);
     const existing = await findExistingForPullItem(
       vault,
       bindingId,
       item.remotePath,
-      canonicalPath,
     );
     const remoteUpdatedAt = item.metadata?.updatedAt ?? nowIso();
 
@@ -189,6 +192,9 @@ export function buildSyncPushItems(
         throw new Error(`Missing local entry: ${relativePath}`);
       }
       const remotePath = resolveRemotePathForPush(entry);
+      if (!remotePath) {
+        throw new Error(`Path is not syncable: ${relativePath}`);
+      }
       if (entry.deletedAt) {
         return {
           localRelativePath: relativePath,
