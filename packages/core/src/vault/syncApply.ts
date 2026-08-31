@@ -84,10 +84,52 @@ async function findExistingForPullItem(
   );
 }
 
+/** 远端 manifest 未单独存展示名时，listImages 会回退为 basename（含 timestamp 前缀） */
+export function resolvePullDisplayName(
+  meta: Partial<ImageItem>,
+  existing: LocalImageIndexEntry | null | undefined,
+  remotePath: string,
+): string {
+  const remoteBase = basename(remotePath);
+  if (meta.name && meta.name !== remoteBase) {
+    return meta.name;
+  }
+  if (existing?.name && existing.name !== remoteBase) {
+    return existing.name;
+  }
+  return meta.name ?? existing?.name ?? remoteBase;
+}
+
+function metadataPatchFromPull(
+  existing: LocalImageIndexEntry,
+  meta: Partial<ImageItem>,
+  remotePath: string,
+): Partial<LocalImageIndexEntry> | null {
+  const patch: Partial<LocalImageIndexEntry> = {};
+  const name = resolvePullDisplayName(meta, existing, remotePath);
+  if (name !== existing.name) {
+    patch.name = name;
+  }
+  if (
+    meta.description !== undefined &&
+    meta.description !== existing.description
+  ) {
+    patch.description = meta.description;
+  }
+  if (
+    meta.tags !== undefined &&
+    JSON.stringify(meta.tags) !== JSON.stringify(existing.tags)
+  ) {
+    patch.tags = meta.tags;
+  }
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
 function isRemoteUpToDate(
   existing: LocalImageIndexEntry,
   remotePath: string,
   remoteUpdatedAt: string,
+  meta: Partial<ImageItem>,
 ): boolean {
   if (existing.syncState !== 'synced') {
     return false;
@@ -95,6 +137,22 @@ function isRemoteUpToDate(
   if (
     existing.remotePath !== remotePath &&
     existing.relativePath !== resolveLocalPathForPull(remotePath)
+  ) {
+    return false;
+  }
+  const resolvedName = resolvePullDisplayName(meta, existing, remotePath);
+  if (resolvedName !== existing.name) {
+    return false;
+  }
+  if (
+    meta.description !== undefined &&
+    meta.description !== existing.description
+  ) {
+    return false;
+  }
+  if (
+    meta.tags !== undefined &&
+    JSON.stringify(meta.tags) !== JSON.stringify(existing.tags)
   ) {
     return false;
   }
@@ -135,11 +193,29 @@ export async function applySyncPull(
       continue;
     }
 
+    const meta = pickImageMetadata(item.metadata);
+
     if (
       existing &&
       !existing.deletedAt &&
-      isRemoteUpToDate(existing, item.remotePath, remoteUpdatedAt)
+      isRemoteUpToDate(existing, item.remotePath, remoteUpdatedAt, meta)
     ) {
+      continue;
+    }
+
+    if (
+      existing &&
+      !existing.deletedAt &&
+      existing.syncState === 'synced' &&
+      existing.updatedAt >= remoteUpdatedAt
+    ) {
+      const patch = metadataPatchFromPull(existing, meta, item.remotePath);
+      if (patch) {
+        await vault.updateMetadata(existing.relativePath, patch, {
+          skipPendingPush: true,
+        });
+        pulled += 1;
+      }
       continue;
     }
 
@@ -150,14 +226,13 @@ export async function applySyncPull(
       fetchFn,
     );
 
-    const meta = pickImageMetadata(item.metadata);
     const previousPath = existing?.relativePath;
 
     await vault.adapter.writeFile(canonicalPath, bytes);
     await vault.importFile(canonicalPath, canonicalPath, {
       ...meta,
       id: existing?.id,
-      name: meta.name ?? basename(item.remotePath),
+      name: resolvePullDisplayName(meta, existing, item.remotePath),
       mimeType: meta.type,
       syncState: 'synced',
       remotePath: item.remotePath,

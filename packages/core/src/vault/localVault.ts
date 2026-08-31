@@ -189,12 +189,25 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       );
     },
 
-    async updateMetadata(relativePath, patch) {
+    async updateMetadata(relativePath, patch, options) {
       const entry = index.find(item => item.relativePath === relativePath);
       if (!entry || entry.deletedAt) {
         throw new Error(`Image not found: ${relativePath}`);
       }
+      const metadataChanged =
+        (patch.name !== undefined && patch.name !== entry.name) ||
+        (patch.description !== undefined &&
+          patch.description !== entry.description) ||
+        (patch.tags !== undefined &&
+          JSON.stringify(patch.tags) !== JSON.stringify(entry.tags));
       Object.assign(entry, patch, { updatedAt: nowIso() });
+      if (
+        metadataChanged &&
+        entry.syncState === 'synced' &&
+        !options?.skipPendingPush
+      ) {
+        entry.syncState = 'pending-push';
+      }
       await persistIndex();
       return { ...entry };
     },

@@ -5,6 +5,7 @@ import {
   applySyncPull,
   buildSyncPushItems,
   resolveLocalPathForPull,
+  resolvePullDisplayName,
   resolveRemotePathForPush,
 } from '../syncApply';
 import { isSyncExcludedPath } from '../syncPath';
@@ -260,5 +261,115 @@ describe('syncApply (configRoot 1:1)', () => {
       true,
     );
     expect(await adapter.exists('111/Omnivuli.png')).toBe(true);
+  });
+
+  it('resolvePullDisplayName keeps local display name when remote only has basename', () => {
+    const remotePath = 'images/1788164287239-photo.jpg';
+    expect(
+      resolvePullDisplayName(
+        { name: '1788164287239-photo.jpg' },
+        { name: 'Vacation Photo' } as never,
+        remotePath,
+      ),
+    ).toBe('Vacation Photo');
+  });
+
+  it('resolvePullDisplayName prefers remote manifest display name', () => {
+    const remotePath = 'images/1788164287239-photo.jpg';
+    expect(
+      resolvePullDisplayName(
+        { name: 'Vacation Photo' },
+        { name: 'Old Name' } as never,
+        remotePath,
+      ),
+    ).toBe('Vacation Photo');
+  });
+
+  it('pull preserves local display name when remote metadata falls back to basename', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.importFile(
+      new Uint8Array([1, 2, 3]),
+      'images/1788164287239-photo.jpg',
+      {
+        name: 'Vacation Photo',
+        syncState: 'synced',
+        remotePath: 'images/1788164287239-photo.jpg',
+        bindingId: 'binding-1',
+        updatedAt: '2026-08-20T10:00:00.000Z',
+      },
+    );
+
+    const fetchFn = vi.fn();
+    const result = await applySyncPull(
+      vault,
+      'binding-1',
+      {
+        items: [
+          {
+            remotePath: 'images/1788164287239-photo.jpg',
+            action: 'update',
+            metadata: {
+              name: '1788164287239-photo.jpg',
+              updatedAt: '2026-08-20T02:00:00.000Z',
+            },
+          },
+        ],
+      },
+      createMockProvider(),
+      { fetchFn },
+    );
+
+    expect(result.pulled).toBe(0);
+    expect(fetchFn).not.toHaveBeenCalled();
+    const entry = await vault.getByPath('images/1788164287239-photo.jpg');
+    expect(entry?.name).toBe('Vacation Photo');
+  });
+
+  it('pull merges remote display name without re-downloading file bytes', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.importFile(
+      new Uint8Array([1, 2, 3]),
+      'images/1788164287239-photo.jpg',
+      {
+        name: '1788164287239-photo.jpg',
+        syncState: 'synced',
+        remotePath: 'images/1788164287239-photo.jpg',
+        bindingId: 'binding-1',
+        updatedAt: '2026-08-20T10:00:00.000Z',
+      },
+    );
+
+    const fetchFn = vi.fn();
+    const result = await applySyncPull(
+      vault,
+      'binding-1',
+      {
+        items: [
+          {
+            remotePath: 'images/1788164287239-photo.jpg',
+            action: 'update',
+            metadata: {
+              name: 'Vacation Photo',
+              updatedAt: '2026-08-20T08:00:00.000Z',
+            },
+          },
+        ],
+      },
+      createMockProvider(),
+      { fetchFn },
+    );
+
+    expect(result.pulled).toBe(1);
+    expect(fetchFn).not.toHaveBeenCalled();
+    const entry = await vault.getByPath('images/1788164287239-photo.jpg');
+    expect(entry?.name).toBe('Vacation Photo');
   });
 });
