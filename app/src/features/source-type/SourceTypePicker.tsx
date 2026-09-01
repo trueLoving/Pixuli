@@ -60,11 +60,6 @@ const PURPOSE_OPTIONS: Array<{
     titleKey: 'settings.purposeDefaultSync',
     hintKey: 'settings.purposeDefaultSyncHint',
   },
-  {
-    value: 'publishChannel',
-    titleKey: 'settings.purposePublishChannel',
-    hintKey: 'settings.purposePublishChannelHint',
-  },
 ];
 
 export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({

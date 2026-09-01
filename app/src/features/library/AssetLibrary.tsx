@@ -7,7 +7,6 @@ import {
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
-import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';
 import {
@@ -63,7 +62,7 @@ interface AssetLibraryProps {
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onOpenAccess?: (imageId: string) => void;
+  onCopyLink?: (image: ImageItem) => void;
   onSync?: () => void;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
@@ -90,7 +89,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   selectedIds,
   onSelectedIdsChange,
   onDeleteImage,
-  onOpenAccess,
+  onCopyLink,
   onSync,
   multiSelectMode = false,
   onMultiSelectModeChange,
@@ -98,9 +97,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   selectionActions = { grid: [], danger: null },
   onClearSelection,
 }) => {
-  const sources = useSourceStore(state => state.sources);
-  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
-  const sourceId = selectedSourceId ?? sources[0]?.id;
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [contextMenu, setContextMenu] = useState<{
@@ -466,7 +462,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             multiSelectMode={multiSelectMode}
             allVisibleSelected={allVisibleSelected}
             onToggleSelectAll={handleToggleSelectAll}
-            sourceId={sourceId}
             tableWrapRef={tableWrapRef}
             t={t}
             onSort={handleSort}
@@ -520,7 +515,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           menu={contextMenu}
           t={t}
           onClose={() => setContextMenu(null)}
-          onOpenAccess={onOpenAccess}
+          onCopyLink={onCopyLink}
           onSync={onSync}
           onDeleteImage={onDeleteImage}
         />

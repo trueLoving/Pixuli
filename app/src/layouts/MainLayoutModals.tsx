@@ -29,11 +29,6 @@ const SettingsModal = lazy(() =>
     default: m.SettingsModal,
   })),
 );
-const PublishDrawer = lazy(() =>
-  import('@/features/access/PublishDrawer').then(m => ({
-    default: m.PublishDrawer,
-  })),
-);
 const WorkspaceModal = lazy(() =>
   import('@/features/workspace/WorkspaceModal').then(m => ({
     default: m.WorkspaceModal,
@@ -170,8 +165,6 @@ export const MainLayoutModals: React.FC<MainLayoutModalsProps> = ({
           t={t}
           versionInfo={versionInfo}
         />
-
-        <PublishDrawer />
 
         <WorkspaceModal
           isOpen={showWorkspaceModal}

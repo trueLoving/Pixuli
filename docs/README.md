@@ -25,13 +25,13 @@
 
 ## 01-product（产物 · 5 篇）
 
-| 文档                                                                                            | SSOT 职责                                                     |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [01-product-requirements-specification.md](01-product/01-product-requirements-specification.md) | 产品底线、需求、验收                                          |
-| [02-product-user-manual.md](01-product/02-product-user-manual.md)                               | 用户手册源稿 → Wiki                                           |
-| [03-three-platform-interaction-spec.md](01-product/03-three-platform-interaction-spec.md)       | 三端壳层、断点、手势（REF-601）                               |
-| [04-asset-library-ui.md](01-product/04-asset-library-ui.md)                                     | 资源库 UI：硬规则、精简 IA、默认行为、P0/P1                   |
-| [05-brand-visual-ui.md](01-product/05-brand-visual-ui.md)                                       | Logo 色板；empty / loading / 状态色                           |
+| 文档                                                                                            | SSOT 职责                                            |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [01-product-requirements-specification.md](01-product/01-product-requirements-specification.md) | 产品底线、需求、验收                                 |
+| [02-product-user-manual.md](01-product/02-product-user-manual.md)                               | 用户手册源稿 → Wiki                                  |
+| [03-three-platform-interaction-spec.md](01-product/03-three-platform-interaction-spec.md)       | 三端壳层、断点、手势（REF-601）                      |
+| [04-asset-library-ui.md](01-product/04-asset-library-ui.md)                                     | 资源库 UI：硬规则、精简 IA、同步、复制链接与外部访问 |
+| [05-brand-visual-ui.md](01-product/05-brand-visual-ui.md)                                       | Logo 色板；empty / loading / 状态色                  |
 
 发版制度：[05-release-versioning.md](02-system-design/05-release-versioning.md)。
 

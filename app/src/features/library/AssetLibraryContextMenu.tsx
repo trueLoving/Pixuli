@@ -5,14 +5,14 @@ export interface AssetLibraryContextMenuProps {
   menu: { x: number; y: number; file: ImageItem };
   t: (key: string) => string;
   onClose: () => void;
-  onOpenAccess?: (imageId: string) => void;
+  onCopyLink?: (image: ImageItem) => void;
   onSync?: () => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
 }
 
 export const AssetLibraryContextMenu: React.FC<
   AssetLibraryContextMenuProps
-> = ({ menu, t, onClose, onOpenAccess, onSync, onDeleteImage }) => (
+> = ({ menu, t, onClose, onCopyLink, onSync, onDeleteImage }) => (
   <>
     <button
       type="button"
@@ -32,11 +32,11 @@ export const AssetLibraryContextMenu: React.FC<
         type="button"
         role="menuitem"
         onClick={() => {
-          onOpenAccess?.(menu.file.id);
+          onCopyLink?.(menu.file);
           onClose();
         }}
       >
-        {t('image.inspector.openAccess')}
+        {t('image.actions.copyUrl')}
       </button>
       <button
         type="button"

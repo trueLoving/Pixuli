@@ -22,6 +22,12 @@
       "more": "更多操作",
       "dismissMenu": "关闭菜单"
     },
+    "copyLink": {
+      "needSync": "该文件尚未同步，无法复制公网链接。请先同步。",
+      "needSelect": "请先选择文件",
+      "unavailable": "当前无法复制公网链接",
+      "copiedMany": "已复制 {count} 个链接到剪贴板"
+    },
     "inspector": {
       "title": "文件",
       "empty": "点选文件，或查看当前文件夹摘要",
@@ -41,7 +47,7 @@
       "tags": "标签",
       "description": "描述",
       "syncLocal": "仅本地",
-      "syncRemote": "已有远端链接",
+      "syncRemote": "已同步",
       "accessLocalOnly": "不对外发布",
       "accessPublic": "公开 URL",
       "openAccess": "去发布",

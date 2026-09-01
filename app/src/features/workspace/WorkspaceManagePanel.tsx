@@ -205,17 +205,23 @@ export const WorkspaceManagePanel: React.FC = () => {
             )}
           </div>
         </div>
-        <div className="mt-3">
+        <details className="mt-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-gray-800">
+            {t('workspace.advancedTitle')}
+          </summary>
+          <p className="mt-2 text-xs text-gray-500">
+            {t('workspace.rescanFolderHint')}
+          </p>
           <button
             type="button"
             onClick={() => void scanWorkspace()}
             disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
           >
             <ScanSearch size={16} />
-            {t('workspace.scan')}
+            {t('workspace.rescanFolder')}
           </button>
-        </div>
+        </details>
         {syncOutcome &&
           (syncOutcome.kind === 'success' || syncOutcome.kind === 'info') && (
             <p className="mt-2 text-xs text-green-700">

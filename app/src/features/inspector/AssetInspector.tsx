@@ -28,11 +28,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  getPublishedAccess,
-  resolveRemoteCopyUrl,
-} from '@/features/library/publishContract';
-import { useSourceStore } from '@/features/settings/sourceStore';
+import { getCopyablePublicUrl } from '@/features/library/copyLink';
+import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
@@ -61,7 +58,7 @@ interface AssetInspectorProps {
   onSendConvert?: () => void;
   onBatchEdit?: () => void;
   onBatchDownload?: () => void;
-  onOpenAccess?: (imageId: string, imageIds?: string[]) => void;
+  onCopyLinks?: () => void;
   /** 批摘要列表点击 → 单文件 */
   onSelectImage?: (id: string) => void;
   /** 添加后逐张完善 */
@@ -88,16 +85,13 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onSendConvert,
   onBatchEdit,
   onBatchDownload,
-  onOpenAccess,
+  onCopyLinks,
   onSelectImage,
   metadataReview = null,
   getImageDimensionsFromUrl,
   t,
   variant = 'dock',
 }) => {
-  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
-  const sources = useSourceStore(state => state.sources);
-
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewImage, setPreviewImage] = useState<ImageItem | null>(image);
@@ -186,16 +180,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     ),
   );
 
-  const sourceId = selectedSourceId ?? sources[0]?.id;
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   /** 单选时以 props.image 为准，缺省则回退 selectedImages[0] */
   const activeImage =
     image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
-  const published = Boolean(
-    activeImage &&
-      sourceId &&
-      getPublishedAccess(activeImage.id)?.sourceId === sourceId,
-  );
   const previewIndex = previewImage
     ? images.findIndex(item => item.id === previewImage.id)
     : -1;
@@ -208,10 +196,17 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const handleCopy = useCallback(async () => {
     if (!activeImage) return;
+    const url = getCopyablePublicUrl(activeImage);
+    if (!url) {
+      showError(t('image.copyLink.needSync'));
+      return;
+    }
     try {
-      const url = resolveRemoteCopyUrl(activeImage);
       if (onCopyUrl) {
         await onCopyUrl(url, 'url');
+      } else {
+        const { copyTextToClipboard } = await import('@/utils/clipboard');
+        await copyTextToClipboard(url);
       }
       showSuccess(
         `${t('image.grid.imageUrlCopied')}${t('image.grid.copiedToClipboard')}`,
@@ -337,13 +332,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         onBatchEdit,
         onBatchDownload,
         onSync,
-        onOpenAccess: onOpenAccess
-          ? () =>
-              onOpenAccess(
-                selectedImages[0]?.id ?? '',
-                selectedImages.map(item => item.id),
-              )
-          : undefined,
+        onCopyLinks,
         onSendCompress,
         onSendConvert,
         onBatchDelete: () => {
@@ -354,7 +343,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       handleBatchDelete,
       onBatchDownload,
       onBatchEdit,
-      onOpenAccess,
+      onCopyLinks,
       onSendCompress,
       onSendConvert,
       onSync,
@@ -376,7 +365,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const singleBody = activeImage ? (
     <AssetInspectorSingleBody
       activeImage={activeImage}
-      published={published}
       dimensions={dimensions}
       onPreview={() => setShowPreview(true)}
       t={t}

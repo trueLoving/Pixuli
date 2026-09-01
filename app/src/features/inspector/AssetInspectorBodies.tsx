@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
-import { hasPublishableRemoteUrl } from '@/features/library/publishContract';
+import { isAssetSynced } from '@/features/library/copyLink';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { AssetInspectorFilePreview } from './AssetInspectorFilePreview';
 import { folderLabel } from './inspectorUtils';
@@ -59,13 +59,11 @@ export function AssetInspectorBatchBody({
 
 export function AssetInspectorSingleBody({
   activeImage,
-  published,
   dimensions,
   onPreview,
   t,
 }: {
   activeImage: ImageItem;
-  published: boolean;
   dimensions: string;
   onPreview: () => void;
   t: (key: string) => string;
@@ -117,18 +115,9 @@ export function AssetInspectorSingleBody({
           <div>
             <dt>{t('image.inspector.sync')}</dt>
             <dd>
-              {activeImage.linkKind === 'remote-raw' ||
-              hasPublishableRemoteUrl(activeImage)
+              {isAssetSynced(activeImage)
                 ? t('image.inspector.syncRemote')
                 : t('image.inspector.syncLocal')}
-            </dd>
-          </div>
-          <div>
-            <dt>{t('image.inspector.access')}</dt>
-            <dd>
-              {published
-                ? t('image.inspector.accessPublic')
-                : t('image.inspector.accessLocalOnly')}
             </dd>
           </div>
           {(activeImage.tags?.length ?? 0) > 0 ? (

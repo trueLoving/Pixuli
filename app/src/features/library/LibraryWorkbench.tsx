@@ -20,9 +20,12 @@ import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
 import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
+import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import {
+  showError,
   showLoading,
+  showSuccess,
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
@@ -104,7 +107,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const onShareImage = useNativeShareImage();
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
-  const openAccessModal = useUIStore(state => state.openAccessModal);
   const requestSync = useUIStore(state => state.requestSync);
   const workspaceExplorerOpen = useUIStore(
     state => state.workspaceExplorerOpen,
@@ -348,6 +350,35 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     openUtilityTool('convert');
   }, []);
 
+  const notifyCopyLinkResult = useCallback(
+    (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
+      if (!result.ok) {
+        showError(t(result.reasonKey));
+        return;
+      }
+      showSuccess(
+        result.count === 1
+          ? `${t('image.grid.imageUrlCopied')}${t('image.grid.copiedToClipboard')}`
+          : t('image.copyLink.copiedMany').replace(
+              '{count}',
+              String(result.count),
+            ),
+      );
+    },
+    [t],
+  );
+
+  const handleCopyLinks = useCallback(async () => {
+    notifyCopyLinkResult(await copyImagePublicLinks(selectedImages));
+  }, [notifyCopyLinkResult, selectedImages]);
+
+  const handleCopyLinkForImage = useCallback(
+    async (image: ImageItem) => {
+      notifyCopyLinkResult(await copyImagePublicLinks([image]));
+    },
+    [notifyCopyLinkResult],
+  );
+
   const batchSelectionActions = useMemo(
     () =>
       buildBatchSelectionActions(selectedImages, t, {
@@ -355,14 +386,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined,
         onBatchDownload: handleBatchDownload,
         onSync: () => requestSync(),
-        onOpenAccess:
-          selectedImages.length > 0
-            ? () =>
-                openAccessModal(
-                  selectedImages[0].id,
-                  selectedImages.map(item => item.id),
-                )
-            : undefined,
+        onCopyLinks:
+          selectedImages.length > 0 ? () => void handleCopyLinks() : undefined,
         onSendCompress: handleSendCompress,
         onSendConvert: handleSendConvert,
         onBatchDelete: () => {
@@ -372,9 +397,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [
       handleBatchDelete,
       handleBatchDownload,
+      handleCopyLinks,
       handleSendCompress,
       handleSendConvert,
-      openAccessModal,
       requestSync,
       selectedImages,
       t,
@@ -463,7 +488,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined
       }
       onBatchDownload={handleBatchDownload}
-      onOpenAccess={openAccessModal}
+      onCopyLinks={handleCopyLinks}
       onSelectImage={handleSelectImage}
       metadataReview={metadataReview}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
@@ -498,7 +523,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           selectedIds={selectedIds}
           onSelectedIdsChange={handleSelectedIdsChange}
           onDeleteImage={onDeleteImage}
-          onOpenAccess={id => openAccessModal(id)}
+          onCopyLink={image => void handleCopyLinkForImage(image)}
           onSync={() => requestSync()}
           multiSelectMode={multiSelectMode}
           onMultiSelectModeChange={handleMultiSelectModeChange}

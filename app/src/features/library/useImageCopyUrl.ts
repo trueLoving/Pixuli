@@ -1,7 +1,7 @@
 import type { ImageItem } from '@pixuli/core/types';
 import { useCallback } from 'react';
 import { copyTextToClipboard } from '@/utils/clipboard';
-import { resolveRemoteCopyUrl } from './publishContract';
+import { resolveRemoteCopyUrl } from './copyLink';
 
 export { resolveRemoteCopyUrl };
 
