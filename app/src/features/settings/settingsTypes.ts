@@ -4,5 +4,4 @@ export type SettingsSection =
   | 'language'
   | 'keyboard'
   | 'version'
-  | 'sync'
-  | 'access';
+  | 'sync';

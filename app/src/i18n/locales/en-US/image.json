@@ -22,6 +22,12 @@
       "more": "More actions",
       "dismissMenu": "Close menu"
     },
+    "copyLink": {
+      "needSync": "This file is not synced yet. Sync first to copy a public link.",
+      "needSelect": "Select one or more files first",
+      "unavailable": "No public link available to copy",
+      "copiedMany": "Copied {count} links to clipboard"
+    },
     "inspector": {
       "title": "File",
       "empty": "Select a file in the library",
@@ -41,7 +47,7 @@
       "tags": "Tags",
       "description": "Description",
       "syncLocal": "Local only",
-      "syncRemote": "Has a remote URL",
+      "syncRemote": "Synced",
       "accessLocalOnly": "Not published",
       "accessPublic": "Public URL",
       "openAccess": "Publish",

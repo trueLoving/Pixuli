@@ -14,6 +14,7 @@ import type {
   WorkspaceStoreGet,
   WorkspaceStoreSet,
 } from '@/features/workspace/workspaceStoreTypes';
+import type { SyncRunOutcome } from './syncOutcome';
 
 export async function refreshRootDisplayPath(
   get: WorkspaceStoreGet,
@@ -183,15 +184,26 @@ export async function scanWorkspace(
     const added = await getWorkspaceVault().scan();
     await get().refreshLocalImages();
     await get().refreshSyncStatus();
+    const outcome: SyncRunOutcome =
+      added > 0
+        ? {
+            kind: 'success',
+            parts: [{ key: 'workspace.rescanAdded', params: { count: added } }],
+          }
+        : { kind: 'info', parts: [{ key: 'workspace.rescanUpToDate' }] };
     set({
       loading: false,
-      syncMessage:
-        added > 0 ? `扫描完成，新增 ${added} 张图片` : '扫描完成，索引已更新',
+      syncOutcome: outcome,
+      syncMessage: null,
     });
   } catch (error) {
     set({
       loading: false,
-      error: error instanceof Error ? error.message : '扫描工作区失败',
+      syncOutcome: {
+        kind: 'error',
+        parts: [{ key: 'workspace.rescanFailed' }],
+        rawMessage: error instanceof Error ? error.message : undefined,
+      },
     });
   }
 }

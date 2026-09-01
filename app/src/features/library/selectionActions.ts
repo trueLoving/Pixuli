@@ -5,7 +5,6 @@ import type { ImageItem } from '@pixuli/core/types';
 import {
   Download,
   Edit,
-  Globe,
   Link,
   RefreshCw,
   Share2,
@@ -22,7 +21,7 @@ export interface BatchSelectionActionHandlers {
   onBatchEdit?: () => void;
   onBatchDownload?: () => void;
   onSync?: () => void;
-  onOpenAccess?: () => void;
+  onCopyLinks?: () => void;
   onSendCompress?: () => void;
   onSendConvert?: () => void;
   onBatchDelete: () => void;
@@ -108,13 +107,13 @@ export function buildBatchSelectionActions(
     onClick: () => handlers.onSync?.(),
   });
 
-  if (handlers.onOpenAccess) {
+  if (handlers.onCopyLinks) {
     grid.push({
-      id: 'access',
-      label: t('image.toolbar.access'),
-      title: t('image.toolbar.access'),
-      icon: Globe,
-      onClick: handlers.onOpenAccess,
+      id: 'copy-links',
+      label: t('image.actions.copyUrl'),
+      title: t('image.actions.copyUrl'),
+      icon: Link,
+      onClick: handlers.onCopyLinks,
     });
   }
 

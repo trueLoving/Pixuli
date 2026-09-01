@@ -37,12 +37,6 @@ interface UIState {
   /** 同步方向选择（远端→本地 / 本地→远端） */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
-  /** 独立发布抽屉（与同步入口分离） */
-  showPublishDrawer: boolean;
-  /** 访问面板当前针对的资源；空则只改通道策略提示 */
-  accessTargetImageId: string | null;
-  /** 多选发布时带入的资源 id */
-  accessTargetImageIds: string[];
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
@@ -125,8 +119,6 @@ interface UIState {
   requestSync: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
-  openAccessModal: (imageId?: string, imageIds?: string[]) => void;
-  closePublishDrawer: () => void;
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
@@ -154,9 +146,6 @@ export const useUIStore = create<UIState>(set => ({
   inspectorWidth: INSPECTOR_WIDTH_DEFAULT,
   inspectorCollapsed: false,
   showWorkspaceModal: false,
-  showPublishDrawer: false,
-  accessTargetImageId: null,
-  accessTargetImageIds: [],
 
   setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
@@ -266,8 +255,6 @@ export const useUIStore = create<UIState>(set => ({
     set({
       showSettingsModal: false,
       settingsSyncAddOpen: false,
-      accessTargetImageId: null,
-      accessTargetImageIds: [],
     }),
   openSyncDirectionModal: () => set({ showSyncDirectionModal: true }),
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
@@ -286,22 +273,6 @@ export const useUIStore = create<UIState>(set => ({
   },
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
-  openAccessModal: (imageId?: string, imageIds?: string[]) =>
-    set({
-      showPublishDrawer: true,
-      accessTargetImageId: imageId ?? imageIds?.[0] ?? null,
-      accessTargetImageIds: imageIds?.length
-        ? imageIds
-        : imageId
-          ? [imageId]
-          : [],
-    }),
-  closePublishDrawer: () =>
-    set({
-      showPublishDrawer: false,
-      accessTargetImageId: null,
-      accessTargetImageIds: [],
-    }),
   openSettingsModalForAddSource: () =>
     set({
       showSettingsModal: true,

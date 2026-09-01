@@ -1,5 +1,4 @@
 import './App.css';
-import '@/features/access/registerPublishPort';
 import '@/features/tools/registerUtilityToolPort';
 import { SearchProvider } from '@/features/library/SearchContext';
 import { useAppOrchestration } from '@/hooks/useAppOrchestration';

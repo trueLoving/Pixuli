@@ -32,10 +32,10 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 
 ## Store 放置规则
 
-| 位置               | 何时使用                    | 示例                                                                                                 |
-| ------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `stores/`          | 壳层全局 UI 状态            | `uiStore`                                                                                            |
-| `features/<name>/` | 单 feature 私有持久化或服务 | `settings/sourceStore`、`library/imageStore`、`workspace/workspaceStore`、`access/accessPolicyStore` |
+| 位置               | 何时使用                    | 示例                                                                     |
+| ------------------ | --------------------------- | ------------------------------------------------------------------------ |
+| `stores/`          | 壳层全局 UI 状态            | `uiStore`                                                                |
+| `features/<name>/` | 单 feature 私有持久化或服务 | `settings/sourceStore`、`library/imageStore`、`workspace/workspaceStore` |
 
 新增 store 前先问：是否被 2 个以上 feature 或 `App.tsx` 壳层直接依赖？是 →
 `stores/`；否 → 留在 owning feature。
@@ -45,7 +45,7 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 - `workspaceImageBridge`（`library` ↔ `workspace`）
 - `sourceSelectionPort`（`settings` ↔ `library` 源选中与仓库配置）
 - `utilityToolPort`（`library` / `inspector` / 侧栏 → `tools` overlay）
-- `publishContract`（`library` / `inspector` ↔ `access` 只读发布状态）
+- `copyLink` / `copyImageLink`（资源库复制公网链接）
 
 ## 导入约定
 

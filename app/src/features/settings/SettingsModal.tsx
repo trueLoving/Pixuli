@@ -1,7 +1,6 @@
 import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from './version-info';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
-import { SettingsAccessPanel } from '@/features/access/SettingsAccessPanel';
 import {
   FolderOpen,
   Globe,
@@ -10,7 +9,6 @@ import {
   RefreshCw,
   ScrollText,
   Settings,
-  Shield,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -101,16 +99,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           id: 'sync',
           labelKey: 'settings.menuSync',
           icon: <RefreshCw size={18} />,
-        },
-      ],
-    },
-    {
-      labelKey: 'settings.groupAccess',
-      items: [
-        {
-          id: 'access',
-          labelKey: 'settings.menuAccess',
-          icon: <Shield size={18} />,
         },
       ],
     },
@@ -221,7 +209,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />
             )}
             {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
-            {activeSection === 'access' && <SettingsAccessPanel t={t} />}
           </div>
         </div>
 

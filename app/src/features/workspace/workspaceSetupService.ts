@@ -1,8 +1,4 @@
 import { useSourceStore } from '@/features/settings/sourceStore';
-import {
-  hydrateAccessPolicy,
-  resetAccessPolicy,
-} from '@/features/access/accessPolicyStore';
 import { notifyWorkspaceCleared } from '@/features/library/workspaceImageBridge';
 import {
   clearPersistedWorkspace,
@@ -87,7 +83,6 @@ export async function openVaultWithRoot(rootPath: string): Promise<LocalVault> {
   }
   const vault = getWorkspaceVault();
   await vault.open();
-  await hydrateAccessPolicy(vault.adapter);
   return vault;
 }
 
@@ -310,7 +305,6 @@ export async function clearWorkspace(
   await cleanupFsaWorkspaceRoot(rootPath);
   clearPersistedWorkspace();
   resetWorkspaceRuntime();
-  resetAccessPolicy();
   set({
     mode: 'unset',
     rootPath: null,

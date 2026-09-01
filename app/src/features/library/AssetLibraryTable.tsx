@@ -1,8 +1,8 @@
-import { Cloud, Globe, HardDrive } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import React, { RefObject } from 'react';
 import type { ImageItem, SortField, SortOrder } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
-import { isAssetPublished, hasPublishableRemoteUrl } from './publishContract';
+import { isAssetSynced } from './copyLink';
 import { AssetThumb } from './AssetThumb';
 import { kindLabel, sortIndicator } from './assetLibraryUtils';
 
@@ -20,7 +20,6 @@ export interface AssetLibraryTableProps {
   multiSelectMode?: boolean;
   allVisibleSelected?: boolean;
   onToggleSelectAll?: () => void;
-  sourceId?: string;
   tableWrapRef: RefObject<HTMLDivElement | null>;
   t: (key: string) => string;
   onSort: (field: SortField) => void;
@@ -46,7 +45,6 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
   multiSelectMode = false,
   allVisibleSelected = false,
   onToggleSelectAll,
-  sourceId,
   tableWrapRef,
   t,
   onSort,
@@ -117,11 +115,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
           ) : null}
           {visibleFiles.map(file => {
             const selected = selectedIds.includes(file.id);
-            const published = Boolean(
-              sourceId && isAssetPublished(file.id, sourceId),
-            );
-            const synced =
-              file.linkKind === 'remote-raw' || hasPublishableRemoteUrl(file);
+            const synced = isAssetSynced(file);
             return (
               <tr
                 key={file.id}
@@ -169,12 +163,6 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                     </span>
                     <span className="asset-library-badges">
                       <span
-                        className="asset-library-badge asset-library-badge--local"
-                        title={t('image.library.badgeLocal')}
-                      >
-                        <HardDrive size={10} aria-hidden />
-                      </span>
-                      <span
                         className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
                         title={
                           synced
@@ -184,14 +172,6 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                       >
                         <Cloud size={10} aria-hidden />
                       </span>
-                      {published ? (
-                        <span
-                          className="asset-library-badge asset-library-badge--public"
-                          title={t('image.inspector.accessPublic')}
-                        >
-                          <Globe size={10} aria-hidden />
-                        </span>
-                      ) : null}
                     </span>
                   </div>
                 </td>
