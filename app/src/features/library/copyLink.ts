@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { ImageItem, ImageSyncState } from '@pixuli/core/types';
 
 /** 远端公网链接优先（同步后 publicUrl / githubUrl） */
 export function resolveRemoteCopyUrl(image: ImageItem): string {
@@ -16,6 +16,9 @@ export function hasPublishableRemoteUrl(image: {
 }
 
 export function getCopyablePublicUrl(image: ImageItem): string | null {
+  if (!isAssetSynced(image)) {
+    return null;
+  }
   if (!hasPublishableRemoteUrl(image)) {
     return null;
   }
@@ -30,7 +33,11 @@ export function isAssetSynced(image: {
   linkKind?: string;
   publicUrl?: string;
   githubUrl?: string;
+  syncState?: ImageSyncState;
 }): boolean {
+  if (image.syncState) {
+    return image.syncState === 'synced';
+  }
   return image.linkKind === 'remote-raw' || hasPublishableRemoteUrl(image);
 }
 

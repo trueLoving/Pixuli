@@ -300,6 +300,15 @@
   margin-top: 0.5rem;
 }
 
+.image-upload-edit-after {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
 .image-upload-button {
   flex: 1;
   padding: 0.75rem 1.5rem;

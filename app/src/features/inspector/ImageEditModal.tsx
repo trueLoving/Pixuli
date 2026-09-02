@@ -7,6 +7,7 @@ import {
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
 import './ImageEditModal.css';
+import { folderFromLocalPath } from './inspectorUtils';
 
 interface ImageEditModalProps {
   image: ImageItem;
@@ -16,6 +17,8 @@ interface ImageEditModalProps {
   onSuccess?: (image: ImageItem) => void;
   onCancel?: () => void;
   loading?: boolean;
+  enableFolderMove?: boolean;
+  folderOptions?: string[];
   getImageDimensionsFromUrl?: (
     url: string,
   ) => Promise<{ width: number; height: number }>;
@@ -30,6 +33,8 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   onSuccess,
   onCancel,
   loading = false,
+  enableFolderMove = false,
+  folderOptions = [],
   getImageDimensionsFromUrl,
   t,
 }) => {
@@ -120,6 +125,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
         name: image.name,
         description: image.description || '',
         tags: image.tags || [],
+        targetFolder: folderFromLocalPath(image.localPath),
       });
       // 清空标签输入框
       if (tagInputRef.current) {
@@ -213,6 +219,28 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
               className="image-edit-form-textarea"
             />
           </div>
+
+          {enableFolderMove ? (
+            <div className="image-edit-form-group">
+              <label className="image-edit-form-label">
+                {translate('image.edit.folder')}
+              </label>
+              <select
+                className="image-edit-form-input"
+                value={formData.targetFolder ?? ''}
+                onChange={e =>
+                  handleInputChange('targetFolder', e.target.value)
+                }
+              >
+                <option value="">{translate('workspace.allImages')}</option>
+                {folderOptions.map(folder => (
+                  <option key={folder} value={folder}>
+                    {folder}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
           <div className="image-edit-form-group">
             <label className="image-edit-form-label">

@@ -3,6 +3,13 @@ import type { ImageCaptureMetadata } from './imageCapture';
 /** REF-607：与 `StorageProviderPublicUrl.resolveLinkKind` 一致 */
 export type LinkKind = 'local' | 'remote-raw';
 
+/** 本地工作区同步态（UI 默认折叠为仅本地 / 已同步两态） */
+export type ImageSyncState =
+  | 'local-only'
+  | 'synced'
+  | 'pending-push'
+  | 'conflict';
+
 export interface ImageItem {
   id: string;
   name: string;
@@ -27,6 +34,8 @@ export interface ImageItem {
   linkKind?: LinkKind;
   /** REF-607：当前绑定远端下的公网 URL */
   publicUrl?: string;
+  /** 本地工作区条目同步态（仅 local 列表模式） */
+  syncState?: ImageSyncState;
   /** REF-511 #141：原生选图/拍照采集上下文 */
   captureMetadata?: ImageCaptureMetadata;
 }

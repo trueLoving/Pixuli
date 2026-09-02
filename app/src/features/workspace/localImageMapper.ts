@@ -48,6 +48,7 @@ export function localEntryToImageItem(
     publicUrl,
     localPath: entry.relativePath,
     linkKind,
+    syncState: entry.syncState,
     size: entry.size,
     width: entry.width,
     height: entry.height,

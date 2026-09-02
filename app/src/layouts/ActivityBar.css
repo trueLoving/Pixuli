@@ -199,6 +199,11 @@
   font-size: 0.5625rem;
 }
 
+.activity-bar-badge--pending {
+  background: #f59e0b;
+  color: #fff;
+}
+
 .activity-bar-item:disabled {
   opacity: 0.45;
   cursor: not-allowed;

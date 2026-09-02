@@ -29,7 +29,6 @@ import React, {
   useState,
 } from 'react';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
-import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
@@ -61,6 +60,8 @@ interface AssetInspectorProps {
   onCopyLinks?: () => void;
   /** 批摘要列表点击 → 单文件 */
   onSelectImage?: (id: string) => void;
+  enableFolderMove?: boolean;
+  folderOptions?: string[];
   /** 添加后逐张完善 */
   metadataReview?: MetadataReviewSession | null;
   getImageDimensionsFromUrl?: (
@@ -87,6 +88,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onBatchDownload,
   onCopyLinks,
   onSelectImage,
+  enableFolderMove = false,
+  folderOptions = [],
   metadataReview = null,
   getImageDimensionsFromUrl,
   t,
@@ -309,6 +312,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           canEdit: Boolean(onUpdateImage),
           canShare: Boolean(onShareImage),
           canDelete: Boolean(onDeleteImage),
+          canCopy: Boolean(activeImage && getCopyablePublicUrl(activeImage)),
         },
       ),
     [
@@ -522,6 +526,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           onUpdateImage={onUpdateImage}
           onSuccess={() => setShowEdit(false)}
           onCancel={() => setShowEdit(false)}
+          enableFolderMove={enableFolderMove}
+          folderOptions={folderOptions}
           getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           t={t}
         />

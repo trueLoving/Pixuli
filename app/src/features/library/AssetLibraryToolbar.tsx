@@ -7,6 +7,7 @@ import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
 import type {
   BatchUploadProgress,
+  ImageItem,
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
@@ -25,6 +26,7 @@ export interface AssetLibraryToolbarProps {
   uploadButtonRef: RefObject<UploadButtonHandle | null>;
   multiSelectMode?: boolean;
   onToggleSelectMode?: () => void;
+  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
@@ -41,6 +43,7 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   uploadButtonRef,
   multiSelectMode = false,
   onToggleSelectMode,
+  onUploadComplete,
 }) => (
   <div className="asset-library-toolbar">
     {search ? (
@@ -100,6 +103,7 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
           nativePickers={nativePickers}
           defaultFolder={selectedFolderPath || 'images'}
           iconOnly
+          onUploadComplete={onUploadComplete}
         />
       ) : null}
     </div>

@@ -1,4 +1,5 @@
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
+import { getCopyablePublicUrl } from '@/features/library/copyLink';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import type { ImageItem } from '@pixuli/core/types';
@@ -108,11 +109,15 @@ export function buildBatchSelectionActions(
   });
 
   if (handlers.onCopyLinks) {
+    const canCopyAny = selectedImages.some(
+      item => getCopyablePublicUrl(item) !== null,
+    );
     grid.push({
       id: 'copy-links',
       label: t('image.actions.copyUrl'),
       title: t('image.actions.copyUrl'),
       icon: Link,
+      disabled: !canCopyAny,
       onClick: handlers.onCopyLinks,
     });
   }
@@ -163,6 +168,7 @@ export function buildSingleSelectionActions(
     canEdit: boolean;
     canShare: boolean;
     canDelete: boolean;
+    canCopy?: boolean;
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   const grid: CompactAction[] = [];
@@ -182,6 +188,7 @@ export function buildSingleSelectionActions(
     label: t('image.inspector.actionCopy'),
     title: t('image.actions.copyUrl'),
     icon: Link,
+    disabled: options.canCopy === false,
     onClick: handlers.onCopy,
   });
 

@@ -36,6 +36,9 @@ export interface ImageUploadConfirmFormProps
     field: keyof UploadFormData,
     value: string | string[],
   ) => void;
+  editAfterAdd?: boolean;
+  onEditAfterAddChange?: (value: boolean) => void;
+  showEditAfterAddOption?: boolean;
 }
 
 export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
@@ -52,6 +55,9 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
   onSubmit,
   onCancel,
   onFieldChange,
+  editAfterAdd = false,
+  onEditAfterAddChange,
+  showEditAfterAddOption = false,
   ...compressionProps
 }) => {
   const richConfirm = files.length > 0 && needsRichConfirm(files);
@@ -232,6 +238,17 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
             className="image-upload-form-input"
           />
         </div>
+
+        {showEditAfterAddOption ? (
+          <label className="image-upload-edit-after">
+            <input
+              type="checkbox"
+              checked={editAfterAdd}
+              onChange={event => onEditAfterAddChange?.(event.target.checked)}
+            />
+            <span>{translate('image.upload.editAfterAdd')}</span>
+          </label>
+        ) : null}
 
         <div className="image-upload-button-group">
           <button

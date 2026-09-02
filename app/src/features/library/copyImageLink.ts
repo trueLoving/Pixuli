@@ -8,6 +8,7 @@ export type CopyImageLinkResult =
 
 export function resolveCopyLinkFailure(
   images: ImageItem[],
+  options?: { hasRemoteConnection?: boolean },
 ): CopyImageLinkResult {
   if (images.length === 0) {
     return { ok: false, reasonKey: 'image.copyLink.needSelect' };
@@ -15,6 +16,9 @@ export function resolveCopyLinkFailure(
   const urls = collectCopyablePublicUrls(images);
   if (urls.length > 0) {
     return { ok: true, count: urls.length };
+  }
+  if (options?.hasRemoteConnection === false) {
+    return { ok: false, reasonKey: 'image.copyLink.needConnection' };
   }
   const hasLocalOnly = images.some(
     item => item.localPath && !getCopyablePublicUrl(item),
@@ -27,8 +31,9 @@ export function resolveCopyLinkFailure(
 
 export async function copyImagePublicLinks(
   images: ImageItem[],
+  options?: { hasRemoteConnection?: boolean },
 ): Promise<CopyImageLinkResult> {
-  const check = resolveCopyLinkFailure(images);
+  const check = resolveCopyLinkFailure(images, options);
   if (!check.ok) {
     return check;
   }

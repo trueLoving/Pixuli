@@ -40,6 +40,7 @@ import { useImageStore } from '@/features/library/imageStore';
 import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import './LibraryWorkbench.css';
 
 export interface LibraryWorkbenchProps {
@@ -101,6 +102,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
+  const localFolders = useWorkspaceStore(state => state.localFolders);
+  const sources = useSourceStore(state => state.sources);
+  const hasRemoteConnection = sources.length > 0;
   const uploadLoading = localActive ? workspaceLoading : imageLoading;
   const onCopyUrl = useImageCopyUrl();
   const nativePickers = useNativeImagePickers();
@@ -195,17 +199,25 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   }, []);
 
   const handleUploadImage = useCallback(
-    async (data: ImageUploadData) => {
-      await uploadImage(data);
-    },
+    (data: ImageUploadData) => uploadImage(data),
     [uploadImage],
   );
 
   const handleUploadMultipleImages = useCallback(
-    async (data: MultiImageUploadData) => {
-      await uploadMultipleImages(data);
-    },
+    (data: MultiImageUploadData) => uploadMultipleImages(data),
     [uploadMultipleImages],
+  );
+
+  const startMetadataReview = useCallback(
+    (items: ImageItem[]) => {
+      const ids = items.map(item => item.id).filter(Boolean);
+      if (ids.length === 0) return;
+      setReviewIds(ids);
+      setReviewIndex(0);
+      setEditNonce(nonce => nonce + 1);
+      handleSelectedIdsChange([ids[0]], [items[0]]);
+    },
+    [handleSelectedIdsChange],
   );
 
   const handleReviewPrev = useCallback(() => {
@@ -369,14 +381,18 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   );
 
   const handleCopyLinks = useCallback(async () => {
-    notifyCopyLinkResult(await copyImagePublicLinks(selectedImages));
-  }, [notifyCopyLinkResult, selectedImages]);
+    notifyCopyLinkResult(
+      await copyImagePublicLinks(selectedImages, { hasRemoteConnection }),
+    );
+  }, [hasRemoteConnection, notifyCopyLinkResult, selectedImages]);
 
   const handleCopyLinkForImage = useCallback(
     async (image: ImageItem) => {
-      notifyCopyLinkResult(await copyImagePublicLinks([image]));
+      notifyCopyLinkResult(
+        await copyImagePublicLinks([image], { hasRemoteConnection }),
+      );
     },
-    [notifyCopyLinkResult],
+    [hasRemoteConnection, notifyCopyLinkResult],
   );
 
   const batchSelectionActions = useMemo(
@@ -490,6 +506,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onBatchDownload={handleBatchDownload}
       onCopyLinks={handleCopyLinks}
       onSelectImage={handleSelectImage}
+      enableFolderMove={localActive}
+      folderOptions={localFolders}
       metadataReview={metadataReview}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
@@ -530,6 +548,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           showSelectionActionBar={showMobileSelectionBar}
           selectionActions={batchSelectionActions}
           onClearSelection={handleClearSelection}
+          onUploadComplete={startMetadataReview}
         />
       </div>
       {showDockedInspector ? inspector : null}
