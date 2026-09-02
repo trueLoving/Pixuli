@@ -4,6 +4,7 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
+  ImageItem,
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
@@ -41,6 +42,7 @@ export interface ImageUploadModalProps {
   /** 打开时预填的文件（主视图拖入） */
   initialFiles?: File[];
   onInitialFilesConsumed?: () => void;
+  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
@@ -59,6 +61,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   defaultFolder,
   initialFiles,
   onInitialFilesConsumed,
+  onUploadComplete,
 }) => {
   if (!isOpen) return null;
 
@@ -98,6 +101,7 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             defaultFolder={defaultFolder}
             initialFiles={initialFiles}
             onInitialFilesConsumed={onInitialFilesConsumed}
+            onUploadComplete={onUploadComplete}
           />
         </div>
       </div>

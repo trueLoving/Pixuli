@@ -25,6 +25,7 @@
     "copyLink": {
       "needSync": "该文件尚未同步，无法复制公网链接。请先同步。",
       "needSelect": "请先选择文件",
+      "needConnection": "请先在设置中添加远端连接，再同步后复制链接。",
       "unavailable": "当前无法复制公网链接",
       "copiedMany": "已复制 {count} 个链接到剪贴板"
     },
@@ -215,6 +216,8 @@
       "emptyDescription": "添加图片、PDF 或视频到当前文件夹（仅本机）",
       "emptyFolderTitle": "文件夹为空",
       "emptyFolderDescription": "添加文件或新建子文件夹（仅本机，不同步远端）",
+      "addFiles": "添加文件",
+      "newSubfolder": "新建子文件夹",
       "filteredTitle": "没有匹配的文件",
       "filteredDescription": "尝试调整查询或清除搜索",
       "colName": "名称",
@@ -342,6 +345,7 @@
       "successToastMultiple": "已添加 {count} 个文件到工作区（仅本机）",
       "confirmTitle": "确认添加到工作区",
       "confirmHint": "仅写入本机；需要远端一致时请之后点同步。",
+      "editAfterAdd": "添加后逐张完善元数据",
       "folder": "目标文件夹",
       "folderPlaceholder": "例如 images/相册",
       "fileName": "文件名",

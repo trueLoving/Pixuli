@@ -25,6 +25,7 @@
     "copyLink": {
       "needSync": "This file is not synced yet. Sync first to copy a public link.",
       "needSelect": "Select one or more files first",
+      "needConnection": "Add a remote connection in Settings, then sync before copying a link.",
       "unavailable": "No public link available to copy",
       "copiedMany": "Copied {count} links to clipboard"
     },
@@ -236,6 +237,8 @@
       "batchDownloadFailed": "ZIP download failed",
       "emptyFolderTitle": "Folder is empty",
       "emptyFolderDescription": "Add files or create a subfolder (local only — not synced)",
+      "addFiles": "Add files",
+      "newSubfolder": "New subfolder",
       "confirmDeleteFolder": "Delete folder \"{name}\"? Local only — includes {count} files; remote copies will not be deleted.",
       "selectMode": "Select",
       "selectAll": "Select all",
@@ -342,6 +345,7 @@
       "successToastMultiple": "Added {count} files to workspace (local only)",
       "confirmTitle": "Confirm add to workspace",
       "confirmHint": "Writes locally only. Sync later when you want the remote copy updated.",
+      "editAfterAdd": "Review metadata after adding",
       "folder": "Target folder",
       "folderPlaceholder": "e.g. images/album",
       "fileName": "File name",

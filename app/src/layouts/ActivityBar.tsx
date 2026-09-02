@@ -25,6 +25,9 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
+  const pendingPush = useWorkspaceStore(
+    state => state.syncStatus?.pendingPush ?? 0,
+  );
   const syncBusy = pushing || syncing || workspaceLoading;
 
   const navigateToLibrary = useCallback(() => {
@@ -91,6 +94,13 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
         {isBusy ? (
           <span className="activity-bar-badge">
             {t('workspace.syncingShort')}
+          </span>
+        ) : item.id === 'sync' && pendingPush > 0 ? (
+          <span
+            className="activity-bar-badge activity-bar-badge--pending"
+            aria-label={t('workspace.pendingPush', { count: pendingPush })}
+          >
+            {pendingPush > 99 ? '99+' : String(pendingPush)}
           </span>
         ) : null}
         {isMobile ? (

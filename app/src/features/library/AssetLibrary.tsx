@@ -8,6 +8,8 @@ import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
 import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';
 import {
   nextSelectedIds,
@@ -25,6 +27,7 @@ import { AssetLibraryContextMenu } from './AssetLibraryContextMenu';
 import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
+import { resolveNewFolderParent } from '@/features/workspace/WorkspaceFolderTree';
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import type {
   BatchUploadProgress,
@@ -69,6 +72,7 @@ interface AssetLibraryProps {
   showSelectionActionBar?: boolean;
   selectionActions?: { grid: CompactAction[]; danger: CompactAction | null };
   onClearSelection?: () => void;
+  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
@@ -96,6 +100,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   showSelectionActionBar = false,
   selectionActions = { grid: [], danger: null },
   onClearSelection,
+  onUploadComplete,
 }) => {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -351,6 +356,28 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [contextMenu]);
 
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
+  const setSelectedFolderPath = useUIStore(
+    state => state.setSelectedFolderPath,
+  );
+  const createLocalFolder = useWorkspaceStore(state => state.createLocalFolder);
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const localWorkspaceActive =
+    isWorkspaceAvailable() && workspaceMode === 'local';
+
+  const handleEmptyAddFiles = useCallback(() => {
+    uploadButtonRef.current?.open();
+  }, []);
+
+  const handleEmptyNewSubfolder = useCallback(async () => {
+    const name = window.prompt(t('workspace.newFolderPrompt'));
+    if (!name?.trim()) return;
+    const safe = name.trim().replace(/[/\\]/g, '_');
+    const parent = resolveNewFolderParent(selectedFolderPath);
+    const target = parent ? `${parent}/${safe}` : safe;
+    await createLocalFolder(target);
+    setSelectedFolderPath(target);
+  }, [createLocalFolder, selectedFolderPath, setSelectedFolderPath, t]);
+
   const showEmpty = !loading && files.length === 0;
   const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
   const isFolderEmpty =
@@ -425,6 +452,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         uploadButtonRef={uploadButtonRef}
         multiSelectMode={multiSelectMode}
         onToggleSelectMode={handleToggleSelectMode}
+        onUploadComplete={onUploadComplete}
       />
 
       <div
@@ -451,6 +479,10 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             isFilteredEmpty={isFilteredEmpty}
             isFolderEmpty={isFolderEmpty}
             t={t}
+            onAddFiles={localWorkspaceActive ? handleEmptyAddFiles : undefined}
+            onNewSubfolder={
+              localWorkspaceActive ? handleEmptyNewSubfolder : undefined
+            }
           />
         ) : (
           <AssetLibraryTable
