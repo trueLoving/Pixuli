@@ -23,7 +23,7 @@
       "title": "配置帮助",
       "tokenGuide": {
         "title": "如何获取 GitHub Token？",
-        "step1": "1. 访问 GitHub Settings → Developer settings",
+        "step1": "1. 点击「创建令牌」打开 GitHub（已预勾选 repo），或打开 Settings → Developer settings",
         "step2": "2. 选择 Personal access tokens → Tokens (classic)",
         "step3": "3. 生成新 token，勾选 repo 权限",
         "step4": "4. 复制生成的 token 并粘贴到上方输入框"

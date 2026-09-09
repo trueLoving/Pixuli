@@ -4,12 +4,16 @@ export function createMockResponse(
   data: unknown = null,
   status: number = 200,
   statusText: string = 'OK',
+  extraHeaders: Record<string, string> = {},
 ) {
   return {
     ok,
     status,
     statusText,
-    headers: new Headers({ 'content-type': 'application/json' }),
+    headers: new Headers({
+      'content-type': 'application/json',
+      ...extraHeaders,
+    }),
     json: async () => data,
     text: async () => (typeof data === 'string' ? data : JSON.stringify(data)),
   };

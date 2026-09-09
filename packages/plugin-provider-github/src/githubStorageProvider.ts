@@ -20,11 +20,14 @@ import type {
   ImageListOptions,
   ImageMetadataLoadOptions,
   ProviderContext,
+  RemoteRepositoryRef,
   StorageProviderConfig,
+  StorageProviderDiscovery,
   StorageProviderWithMetadata,
   SyncPullOptions,
   SyncPullResult,
   SyncPushItem,
+  TokenValidationResult,
 } from '@pixuli/core/plugins';
 import { githubManifest } from './manifest';
 
@@ -46,7 +49,41 @@ function narrowGitHubConfig(
   return { owner, repo, branch, token, path };
 }
 
-export class GitHubStorageProvider implements StorageProviderWithMetadata {
+function mapGitHubRepo(item: unknown): RemoteRepositoryRef | null {
+  if (!item || typeof item !== 'object') {
+    return null;
+  }
+  const record = item as {
+    name?: unknown;
+    full_name?: unknown;
+    private?: unknown;
+    default_branch?: unknown;
+    owner?: { login?: unknown };
+  };
+  const name = typeof record.name === 'string' ? record.name : '';
+  const fullName = typeof record.full_name === 'string' ? record.full_name : '';
+  const ownerFromLogin =
+    typeof record.owner?.login === 'string' ? record.owner.login : '';
+  const owner =
+    ownerFromLogin || (fullName.includes('/') ? fullName.split('/')[0] : '');
+  if (!name || !owner) {
+    return null;
+  }
+  return {
+    owner,
+    name,
+    fullName: fullName || `${owner}/${name}`,
+    private: Boolean(record.private),
+    defaultBranch:
+      typeof record.default_branch === 'string'
+        ? record.default_branch
+        : undefined,
+  };
+}
+
+export class GitHubStorageProvider
+  implements StorageProviderWithMetadata, StorageProviderDiscovery
+{
   readonly manifest = githubManifest;
 
   private config!: GitHubConfig;
@@ -83,6 +120,130 @@ export class GitHubStorageProvider implements StorageProviderWithMetadata {
   getRawUrl(path: string): string {
     this.assertConfigured();
     return `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.joinRemotePath(path)}`;
+  }
+
+  private async requestWithToken(
+    token: string,
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<Response> {
+    const url = `${this.baseUrl}${endpoint}`;
+    return this.fetchFn(url, {
+      ...options,
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'Pixuli',
+        ...options.headers,
+      },
+    });
+  }
+
+  private async readGithubError(
+    response: Response,
+    fallback: string,
+  ): Promise<string> {
+    const errorData = (await response.json().catch(() => ({}))) as {
+      message?: unknown;
+    };
+    return typeof errorData.message === 'string' && errorData.message
+      ? errorData.message
+      : fallback;
+  }
+
+  async validateToken(token: string): Promise<TokenValidationResult> {
+    const trimmed = token.trim();
+    if (!trimmed) {
+      return { ok: false, message: 'Token is required' };
+    }
+    const response = await this.requestWithToken(trimmed, '/user');
+    if (!response.ok) {
+      return {
+        ok: false,
+        message: await this.readGithubError(
+          response,
+          `GitHub API error: ${response.status}`,
+        ),
+      };
+    }
+    const data = (await response.json()) as { login?: unknown };
+    const scopesHeader = response.headers.get('x-oauth-scopes') ?? '';
+    const scopes = scopesHeader
+      .split(',')
+      .map(scope => scope.trim())
+      .filter(Boolean);
+    return {
+      ok: true,
+      login: typeof data.login === 'string' ? data.login : undefined,
+      scopes,
+    };
+  }
+
+  async listRepositories(token: string): Promise<RemoteRepositoryRef[]> {
+    const trimmed = token.trim();
+    const repos: RemoteRepositoryRef[] = [];
+    const perPage = 100;
+    const maxPages = 3;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const response = await this.requestWithToken(
+        trimmed,
+        `/user/repos?per_page=${perPage}&page=${page}&sort=updated&affiliation=owner,collaborator,organization_member`,
+      );
+      if (!response.ok) {
+        throw new Error(
+          await this.readGithubError(
+            response,
+            `GitHub API error: ${response.status}`,
+          ),
+        );
+      }
+      const data = (await response.json()) as unknown;
+      if (!Array.isArray(data) || data.length === 0) {
+        break;
+      }
+      for (const item of data) {
+        const mapped = mapGitHubRepo(item);
+        if (mapped) {
+          repos.push(mapped);
+        }
+      }
+      if (data.length < perPage) {
+        break;
+      }
+    }
+    return repos;
+  }
+
+  async listBranches(
+    token: string,
+    owner: string,
+    repo: string,
+  ): Promise<string[]> {
+    const response = await this.requestWithToken(
+      token.trim(),
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches?per_page=100`,
+    );
+    if (!response.ok) {
+      throw new Error(
+        await this.readGithubError(
+          response,
+          `GitHub API error: ${response.status}`,
+        ),
+      );
+    }
+    const data = (await response.json()) as unknown;
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map(item =>
+        item && typeof item === 'object' && 'name' in item
+          ? (item as { name?: unknown }).name
+          : undefined,
+      )
+      .filter(
+        (name): name is string => typeof name === 'string' && name.length > 0,
+      );
   }
 
   private async makeGitHubRequest(endpoint: string, options: RequestInit = {}) {

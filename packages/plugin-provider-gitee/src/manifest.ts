@@ -13,4 +13,9 @@ export const giteeManifest: StoragePluginManifest = {
     sync: true,
     publicUrl: true,
   },
+  auth: {
+    modes: ['pat'],
+    tokenCreateUrl: 'https://gitee.com/profile/personal_access_tokens',
+    requiredScopes: ['projects'],
+  },
 };

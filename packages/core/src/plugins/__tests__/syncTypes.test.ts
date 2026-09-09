@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { StorageProvider } from '../types';
-import { hasStorageProviderPublicUrl, hasStorageProviderSync } from '../types';
+import {
+  hasStorageProviderDiscovery,
+  hasStorageProviderPublicUrl,
+  hasStorageProviderSync,
+} from '../types';
 
 describe('StorageProvider sync type guards', () => {
   const baseProvider = {
@@ -46,5 +50,16 @@ describe('StorageProvider sync type guards', () => {
       resolveLinkKind: () => 'remote-raw' as const,
     };
     expect(hasStorageProviderPublicUrl(withUrl)).toBe(true);
+  });
+
+  it('hasStorageProviderDiscovery detects PAT discovery methods', () => {
+    expect(hasStorageProviderDiscovery(baseProvider)).toBe(false);
+    const withDiscovery = {
+      ...baseProvider,
+      validateToken: async () => ({ ok: true, login: 'octocat' }),
+      listRepositories: async () => [],
+      listBranches: async () => ['main'],
+    };
+    expect(hasStorageProviderDiscovery(withDiscovery)).toBe(true);
   });
 });

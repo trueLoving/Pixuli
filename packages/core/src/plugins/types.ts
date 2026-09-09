@@ -34,6 +34,21 @@ export interface HostIntegrationDescriptor {
   exportName: string;
 }
 
+/** 连接向导第「授权」步可声明的模式；UI 只渲染已声明且本端可用的。 */
+export type StorageAuthMode =
+  | 'pat'
+  | 'oauthBrowser'
+  | 'deviceFlow'
+  | 'systemAccount';
+
+export interface StoragePluginAuth {
+  modes: StorageAuthMode[];
+  /** 创建 PAT 的官方页面（可带预勾选 scope） */
+  tokenCreateUrl?: string;
+  /** PAT 所需 scope，供 UI 说明与校验提示 */
+  requiredScopes?: string[];
+}
+
 export interface StoragePluginManifest {
   id: string;
   name: string;
@@ -41,6 +56,8 @@ export interface StoragePluginManifest {
   icon?: string;
   configSchema?: Record<string, unknown>;
   capabilities: StorageCapabilities;
+  /** 连接鉴权能力；缺省视为仅手工粘贴令牌 */
+  auth?: StoragePluginAuth;
   /** REF-411：Vite / Electron / Serverless 宿主集成声明 */
   hostIntegrations?: HostIntegrationDescriptor[];
 }
@@ -130,6 +147,28 @@ export interface StorageProviderPublicUrl {
   resolveLinkKind(url: string): LinkKind;
 }
 
+/** PAT 连接向导：校验令牌并列出仓库 / 分支（无需先 configure 完整仓库） */
+export interface TokenValidationResult {
+  ok: boolean;
+  login?: string;
+  message?: string;
+  scopes?: string[];
+}
+
+export interface RemoteRepositoryRef {
+  owner: string;
+  name: string;
+  fullName: string;
+  private: boolean;
+  defaultBranch?: string;
+}
+
+export interface StorageProviderDiscovery {
+  validateToken(token: string): Promise<TokenValidationResult>;
+  listRepositories(token: string): Promise<RemoteRepositoryRef[]>;
+  listBranches(token: string, owner: string, repo: string): Promise<string[]>;
+}
+
 export interface StorageProviderWithSync
   extends StorageProvider,
     StorageProviderSync,
@@ -153,6 +192,17 @@ export function hasStorageProviderPublicUrl(
   return (
     typeof candidate.buildPublicUrl === 'function' &&
     typeof candidate.resolveLinkKind === 'function'
+  );
+}
+
+export function hasStorageProviderDiscovery(
+  provider: StorageProvider,
+): provider is StorageProvider & StorageProviderDiscovery {
+  const candidate = provider as Partial<StorageProviderDiscovery>;
+  return (
+    typeof candidate.validateToken === 'function' &&
+    typeof candidate.listRepositories === 'function' &&
+    typeof candidate.listBranches === 'function'
   );
 }
 
