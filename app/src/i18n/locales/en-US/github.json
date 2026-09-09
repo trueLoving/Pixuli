@@ -23,7 +23,7 @@
       "title": "Configuration Help",
       "tokenGuide": {
         "title": "How to get GitHub Token?",
-        "step1": "1. Visit GitHub Settings → Developer settings",
+        "step1": "1. Click Create token to open GitHub (repo scope pre-checked), or visit Settings → Developer settings",
         "step2": "2. Select Personal access tokens → Tokens (classic)",
         "step3": "3. Generate new token, check repo permissions",
         "step4": "4. Copy the generated token and paste it in the input field above"

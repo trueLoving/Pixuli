@@ -24,7 +24,7 @@
       "title": "Help Information",
       "tokenGuide": {
         "title": "📋 How to Get Personal Access Token",
-        "step1": "1. Log in to your Gitee account",
+        "step1": "1. Click Create token to open Gitee private tokens, or go to Settings → Security → Private Tokens",
         "step2": "2. Go to Settings → Security Settings → Private Tokens",
         "step3": "3. Click Generate New Token",
         "step4": "4. Check required permissions (at least projects and repo permissions)",

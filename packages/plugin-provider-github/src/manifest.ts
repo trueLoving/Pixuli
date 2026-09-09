@@ -13,4 +13,10 @@ export const githubManifest: StoragePluginManifest = {
     sync: true,
     publicUrl: true,
   },
+  auth: {
+    modes: ['pat'],
+    tokenCreateUrl:
+      'https://github.com/settings/tokens/new?scopes=repo&description=Pixuli',
+    requiredScopes: ['repo'],
+  },
 };

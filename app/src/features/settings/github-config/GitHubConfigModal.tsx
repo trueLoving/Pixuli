@@ -7,6 +7,7 @@ import {
 } from '@pixuli/core/sources';
 import type { GitHubConfig } from '@pixuli/core/types';
 import { showError, showSuccess } from '@/ui/feedback/toast';
+import { GitPatConnectionFields } from '@/features/settings/git-connection/GitPatConnectionFields';
 import './GitHubConfigModal.css';
 
 interface GitHubConfigModalProps {
@@ -79,10 +80,6 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
         `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : '未知错误'}`,
       );
     }
-  };
-
-  const handleInputChange = (field: keyof GitHubConfig, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleClearConfig = () => {
@@ -290,107 +287,24 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
             <form onSubmit={handleSubmit} className="github-config-form">
               {/* GitHub 配置 */}
               <div className="github-config-form-section">
-                <h3 className="github-config-form-section-title">
-                  GitHub {translate('storage.configuration')}
-                </h3>
-
-                <div className="github-config-form-row">
-                  <div className="github-config-form-group">
-                    <label className="github-config-form-label">
-                      {translate('github.config.username')}{' '}
-                      <span className="github-config-form-required">
-                        {translate('github.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.owner}
-                      onChange={e => handleInputChange('owner', e.target.value)}
-                      placeholder={translate(
-                        'github.config.usernamePlaceholder',
-                      )}
-                      className="github-config-form-input"
-                      required
-                    />
-                  </div>
-
-                  <div className="github-config-form-group">
-                    <label className="github-config-form-label">
-                      {translate('github.config.repository')}{' '}
-                      <span className="github-config-form-required">
-                        {translate('github.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.repo}
-                      onChange={e => handleInputChange('repo', e.target.value)}
-                      placeholder={translate(
-                        'github.config.repositoryPlaceholder',
-                      )}
-                      className="github-config-form-input"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="github-config-form-row">
-                  <div className="github-config-form-group">
-                    <label className="github-config-form-label">
-                      {translate('github.config.branch')}{' '}
-                      <span className="github-config-form-required">
-                        {translate('github.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.branch}
-                      onChange={e =>
-                        handleInputChange('branch', e.target.value)
-                      }
-                      placeholder={translate('github.config.branchPlaceholder')}
-                      className="github-config-form-input"
-                      required
-                    />
-                  </div>
-
-                  <div className="github-config-form-group">
-                    <label className="github-config-form-label">
-                      {translate('github.config.path')}{' '}
-                      <span className="github-config-form-required">
-                        {translate('github.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.path}
-                      onChange={e => handleInputChange('path', e.target.value)}
-                      placeholder={translate('github.config.pathPlaceholder')}
-                      className="github-config-form-input"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="github-config-form-group">
-                  <label className="github-config-form-label">
-                    {translate('github.config.token')}{' '}
-                    <span className="github-config-form-required">
-                      {translate('github.config.required')}
-                    </span>
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.token}
-                    onChange={e => handleInputChange('token', e.target.value)}
-                    placeholder={translate('github.config.tokenPlaceholder')}
-                    className="github-config-form-input"
-                    required
-                  />
-                  <p className="github-config-form-description">
-                    {translate('github.config.tokenDescription')}
-                  </p>
-                </div>
+                <GitPatConnectionFields
+                  pluginId="github"
+                  labelPrefix="github.config"
+                  values={formData}
+                  onChange={patch =>
+                    setFormData(prev => ({ ...prev, ...patch }))
+                  }
+                  t={translate}
+                  classes={{
+                    sectionTitle: 'github-config-form-section-title',
+                    group: 'github-config-form-group',
+                    row: 'github-config-form-row',
+                    label: 'github-config-form-label',
+                    required: 'github-config-form-required',
+                    input: 'github-config-form-input',
+                    description: 'github-config-form-description',
+                  }}
+                />
               </div>
 
               {/* 帮助信息 */}

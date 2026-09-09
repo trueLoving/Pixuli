@@ -747,4 +747,99 @@ describe('GitHubStorageProvider', () => {
       await expect(provider.uploadImage(uploadData)).rejects.toThrow();
     });
   });
+
+  describe('token discovery', () => {
+    const discoveryAdapter = {
+      getImageDimensions: vi.fn(),
+      fileToBase64: vi.fn(),
+      getFileSize: vi.fn(),
+      getMimeType: vi.fn(),
+    };
+
+    function createUnconfigured() {
+      return new GitHubStorageProvider({
+        platform: 'web',
+        platformAdapter: discoveryAdapter as never,
+      });
+    }
+
+    it('validateToken succeeds without configure', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockResponse(true, { login: 'octocat' }, 200, 'OK', {
+          'x-oauth-scopes': 'repo, user',
+        }),
+      );
+
+      const result = await unconfigured.validateToken('ghp_test');
+
+      expect(result).toEqual({
+        ok: true,
+        login: 'octocat',
+        scopes: ['repo', 'user'],
+      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://api.github.com/user',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'token ghp_test',
+          }),
+        }),
+      );
+    });
+
+    it('validateToken returns ok:false on 401', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          createMockResponse(false, { message: 'Bad credentials' }, 401),
+        );
+
+      await expect(unconfigured.validateToken('bad')).resolves.toEqual({
+        ok: false,
+        message: 'Bad credentials',
+      });
+    });
+
+    it('listRepositories maps owner/name and paginates until short page', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockResponse(true, [
+          {
+            name: 'pixuli',
+            full_name: 'octocat/pixuli',
+            private: true,
+            default_branch: 'main',
+            owner: { login: 'octocat' },
+          },
+        ]),
+      );
+
+      const repos = await unconfigured.listRepositories('ghp_test');
+
+      expect(repos).toEqual([
+        {
+          owner: 'octocat',
+          name: 'pixuli',
+          fullName: 'octocat/pixuli',
+          private: true,
+          defaultBranch: 'main',
+        },
+      ]);
+    });
+
+    it('listBranches returns branch names', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          createMockResponse(true, [{ name: 'main' }, { name: 'develop' }]),
+        );
+
+      await expect(
+        unconfigured.listBranches('ghp_test', 'octocat', 'pixuli'),
+      ).resolves.toEqual(['main', 'develop']);
+    });
+  });
 });

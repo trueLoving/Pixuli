@@ -566,4 +566,92 @@ describe('GiteeStorageProvider', () => {
       );
     });
   });
+
+  describe('token discovery', () => {
+    const discoveryAdapter = {
+      getImageDimensions: vi.fn(),
+      fileToBase64: vi.fn(),
+      getFileSize: vi.fn(),
+      getMimeType: vi.fn(),
+    };
+
+    function createUnconfigured() {
+      return new GiteeStorageProvider({
+        platform: 'web',
+        platformAdapter: discoveryAdapter as never,
+      });
+    }
+
+    it('validateToken succeeds without configure', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(createMockResponse(true, { login: 'starsky' }));
+
+      const result = await unconfigured.validateToken('gitee_token');
+
+      expect(result).toEqual({ ok: true, login: 'starsky' });
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'https://gitee.com/api/v5/user?access_token=gitee_token',
+        ),
+        expect.any(Object),
+      );
+    });
+
+    it('validateToken returns ok:false on 401', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          createMockResponse(false, { message: '401 Unauthorized' }, 401),
+        );
+
+      await expect(unconfigured.validateToken('bad')).resolves.toEqual({
+        ok: false,
+        message: '401 Unauthorized',
+      });
+    });
+
+    it('listRepositories maps namespace path as owner', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi.fn().mockResolvedValue(
+        createMockResponse(true, [
+          {
+            name: 'Pixuli',
+            path: 'pixuli',
+            full_name: 'starsky/pixuli',
+            private: false,
+            default_branch: 'master',
+            namespace: { path: 'starsky' },
+          },
+        ]),
+      );
+
+      const repos = await unconfigured.listRepositories('gitee_token');
+
+      expect(repos).toEqual([
+        {
+          owner: 'starsky',
+          name: 'pixuli',
+          fullName: 'starsky/pixuli',
+          private: false,
+          defaultBranch: 'master',
+        },
+      ]);
+    });
+
+    it('listBranches returns branch names', async () => {
+      const unconfigured = createUnconfigured();
+      global.fetch = vi
+        .fn()
+        .mockResolvedValue(
+          createMockResponse(true, [{ name: 'master' }, { name: 'dev' }]),
+        );
+
+      await expect(
+        unconfigured.listBranches('gitee_token', 'starsky', 'pixuli'),
+      ).resolves.toEqual(['master', 'dev']);
+    });
+  });
 });

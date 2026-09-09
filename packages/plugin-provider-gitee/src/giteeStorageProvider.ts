@@ -24,11 +24,14 @@ import type {
   ImageMetadataLoadOptions,
   LinkKind,
   ProviderContext,
+  RemoteRepositoryRef,
   StorageProviderConfig,
+  StorageProviderDiscovery,
   StorageProviderWithMetadata,
   SyncPullOptions,
   SyncPullResult,
   SyncPushItem,
+  TokenValidationResult,
 } from '@pixuli/core/plugins';
 import { giteeManifest } from './manifest';
 
@@ -50,7 +53,49 @@ function narrowGiteeConfig(
   return { owner, repo, branch, token, path };
 }
 
-export class GiteeStorageProvider implements StorageProviderWithMetadata {
+function mapGiteeRepo(item: unknown): RemoteRepositoryRef | null {
+  if (!item || typeof item !== 'object') {
+    return null;
+  }
+  const record = item as {
+    name?: unknown;
+    path?: unknown;
+    full_name?: unknown;
+    private?: unknown;
+    default_branch?: unknown;
+    owner?: { login?: unknown };
+    namespace?: { path?: unknown };
+  };
+  const name =
+    (typeof record.path === 'string' && record.path) ||
+    (typeof record.name === 'string' ? record.name : '');
+  const fullName = typeof record.full_name === 'string' ? record.full_name : '';
+  const ownerFromOwner =
+    typeof record.owner?.login === 'string' ? record.owner.login : '';
+  const ownerFromNamespace =
+    typeof record.namespace?.path === 'string' ? record.namespace.path : '';
+  const owner =
+    ownerFromOwner ||
+    ownerFromNamespace ||
+    (fullName.includes('/') ? fullName.split('/')[0] : '');
+  if (!name || !owner) {
+    return null;
+  }
+  return {
+    owner,
+    name,
+    fullName: fullName || `${owner}/${name}`,
+    private: Boolean(record.private),
+    defaultBranch:
+      typeof record.default_branch === 'string'
+        ? record.default_branch
+        : undefined,
+  };
+}
+
+export class GiteeStorageProvider
+  implements StorageProviderWithMetadata, StorageProviderDiscovery
+{
   readonly manifest = giteeManifest;
 
   private config!: GiteeConfig;
@@ -81,6 +126,131 @@ export class GiteeStorageProvider implements StorageProviderWithMetadata {
 
   private joinRemotePath(relativePath: string): string {
     return joinConfigRoot(this.config.path, relativePath);
+  }
+
+  private async requestWithToken(
+    token: string,
+    endpoint: string,
+    options: RequestInit = {},
+  ): Promise<Response> {
+    let url: string;
+    if (endpoint.includes('?')) {
+      url = `${this.baseUrl}${endpoint}&access_token=${encodeURIComponent(token)}`;
+    } else {
+      url = `${this.baseUrl}${endpoint}?access_token=${encodeURIComponent(token)}`;
+    }
+    return this.fetchFn(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers as Record<string, string>),
+      },
+    });
+  }
+
+  private async readGiteeError(
+    response: Response,
+    fallback: string,
+  ): Promise<string> {
+    const errorText = await response.text();
+    try {
+      const errorData = JSON.parse(errorText) as { message?: unknown };
+      if (typeof errorData.message === 'string' && errorData.message) {
+        return errorData.message;
+      }
+    } catch {
+      // keep fallback
+    }
+    return errorText ? `${fallback} - ${errorText}` : fallback;
+  }
+
+  async validateToken(token: string): Promise<TokenValidationResult> {
+    const trimmed = token.trim();
+    if (!trimmed) {
+      return { ok: false, message: 'Token is required' };
+    }
+    const response = await this.requestWithToken(trimmed, '/user');
+    if (!response.ok) {
+      return {
+        ok: false,
+        message: await this.readGiteeError(
+          response,
+          `Gitee API error: ${response.status}`,
+        ),
+      };
+    }
+    const data = (await response.json()) as { login?: unknown };
+    return {
+      ok: true,
+      login: typeof data.login === 'string' ? data.login : undefined,
+    };
+  }
+
+  async listRepositories(token: string): Promise<RemoteRepositoryRef[]> {
+    const trimmed = token.trim();
+    const repos: RemoteRepositoryRef[] = [];
+    const perPage = 100;
+    const maxPages = 3;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const response = await this.requestWithToken(
+        trimmed,
+        `/user/repos?type=all&sort=updated&per_page=${perPage}&page=${page}`,
+      );
+      if (!response.ok) {
+        throw new Error(
+          await this.readGiteeError(
+            response,
+            `Gitee API error: ${response.status}`,
+          ),
+        );
+      }
+      const data = (await response.json()) as unknown;
+      if (!Array.isArray(data) || data.length === 0) {
+        break;
+      }
+      for (const item of data) {
+        const mapped = mapGiteeRepo(item);
+        if (mapped) {
+          repos.push(mapped);
+        }
+      }
+      if (data.length < perPage) {
+        break;
+      }
+    }
+    return repos;
+  }
+
+  async listBranches(
+    token: string,
+    owner: string,
+    repo: string,
+  ): Promise<string[]> {
+    const response = await this.requestWithToken(
+      token.trim(),
+      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches?per_page=100`,
+    );
+    if (!response.ok) {
+      throw new Error(
+        await this.readGiteeError(
+          response,
+          `Gitee API error: ${response.status}`,
+        ),
+      );
+    }
+    const data = (await response.json()) as unknown;
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data
+      .map(item =>
+        item && typeof item === 'object' && 'name' in item
+          ? (item as { name?: unknown }).name
+          : undefined,
+      )
+      .filter(
+        (name): name is string => typeof name === 'string' && name.length > 0,
+      );
   }
 
   getRawUrl(path: string): string {

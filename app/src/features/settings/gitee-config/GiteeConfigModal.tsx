@@ -7,6 +7,7 @@ import {
 } from '@pixuli/core/sources';
 import type { GiteeConfig } from '@pixuli/core/types';
 import { showError, showSuccess } from '@/ui/feedback/toast';
+import { GitPatConnectionFields } from '@/features/settings/git-connection/GitPatConnectionFields';
 import './GiteeConfigModal.css';
 
 interface GiteeConfigModalProps {
@@ -83,10 +84,6 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
         `${translate('messages.saveFailed')}: ${error instanceof Error ? error.message : translate('messages.unknownError')}`,
       );
     }
-  };
-
-  const handleInputChange = (field: keyof GiteeConfig, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleClearConfig = () => {
@@ -294,107 +291,24 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
             <form onSubmit={handleSubmit} className="gitee-config-form">
               {/* Gitee 配置 */}
               <div className="gitee-config-form-section">
-                <h3 className="gitee-config-form-section-title">
-                  Gitee {translate('storage.configuration')}
-                </h3>
-
-                <div className="gitee-config-form-row">
-                  <div className="gitee-config-form-group">
-                    <label className="gitee-config-form-label">
-                      {translate('gitee.config.username')}{' '}
-                      <span className="gitee-config-form-required">
-                        {translate('gitee.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.owner}
-                      onChange={e => handleInputChange('owner', e.target.value)}
-                      placeholder={translate(
-                        'gitee.config.usernamePlaceholder',
-                      )}
-                      className="gitee-config-form-input"
-                      required
-                    />
-                  </div>
-
-                  <div className="gitee-config-form-group">
-                    <label className="gitee-config-form-label">
-                      {translate('gitee.config.repository')}{' '}
-                      <span className="gitee-config-form-required">
-                        {translate('gitee.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.repo}
-                      onChange={e => handleInputChange('repo', e.target.value)}
-                      placeholder={translate(
-                        'gitee.config.repositoryPlaceholder',
-                      )}
-                      className="gitee-config-form-input"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="gitee-config-form-row">
-                  <div className="gitee-config-form-group">
-                    <label className="gitee-config-form-label">
-                      {translate('gitee.config.branch')}{' '}
-                      <span className="gitee-config-form-required">
-                        {translate('gitee.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.branch}
-                      onChange={e =>
-                        handleInputChange('branch', e.target.value)
-                      }
-                      placeholder={translate('gitee.config.branchPlaceholder')}
-                      className="gitee-config-form-input"
-                      required
-                    />
-                  </div>
-
-                  <div className="gitee-config-form-group">
-                    <label className="gitee-config-form-label">
-                      {translate('gitee.config.path')}{' '}
-                      <span className="gitee-config-form-required">
-                        {translate('gitee.config.required')}
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.path}
-                      onChange={e => handleInputChange('path', e.target.value)}
-                      placeholder={translate('gitee.config.pathPlaceholder')}
-                      className="gitee-config-form-input"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="gitee-config-form-group">
-                  <label className="gitee-config-form-label">
-                    {translate('gitee.config.token')}{' '}
-                    <span className="gitee-config-form-required">
-                      {translate('gitee.config.required')}
-                    </span>
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.token}
-                    onChange={e => handleInputChange('token', e.target.value)}
-                    placeholder={translate('gitee.config.tokenPlaceholder')}
-                    className="gitee-config-form-input"
-                    required
-                  />
-                  <p className="gitee-config-form-description">
-                    {translate('gitee.config.tokenDescription')}
-                  </p>
-                </div>
+                <GitPatConnectionFields
+                  pluginId="gitee"
+                  labelPrefix="gitee.config"
+                  values={formData}
+                  onChange={patch =>
+                    setFormData(prev => ({ ...prev, ...patch }))
+                  }
+                  t={translate}
+                  classes={{
+                    sectionTitle: 'gitee-config-form-section-title',
+                    group: 'gitee-config-form-group',
+                    row: 'gitee-config-form-row',
+                    label: 'gitee-config-form-label',
+                    required: 'gitee-config-form-required',
+                    input: 'gitee-config-form-input',
+                    description: 'gitee-config-form-description',
+                  }}
+                />
               </div>
 
               {/* 帮助信息 */}
