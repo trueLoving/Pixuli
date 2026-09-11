@@ -27,5 +27,8 @@ export function pickRepoConfig(
   ) {
     config.connectionPurpose = raw.connectionPurpose;
   }
+  if (typeof raw.private === 'boolean') {
+    config.private = raw.private;
+  }
   return config;
 }

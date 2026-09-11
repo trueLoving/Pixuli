@@ -67,6 +67,7 @@ interface AssetLibraryProps {
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   onCopyLink?: (image: ImageItem) => void;
   onSync?: () => void;
+  hasRemoteConnection?: boolean;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
   showSelectionActionBar?: boolean;
@@ -95,6 +96,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   onDeleteImage,
   onCopyLink,
   onSync,
+  hasRemoteConnection,
   multiSelectMode = false,
   onMultiSelectModeChange,
   showSelectionActionBar = false,
@@ -550,6 +552,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           onCopyLink={onCopyLink}
           onSync={onSync}
           onDeleteImage={onDeleteImage}
+          hasRemoteConnection={hasRemoteConnection}
         />
       ) : null}
     </div>

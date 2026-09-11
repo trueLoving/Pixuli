@@ -132,6 +132,7 @@ describe('GitPatConnectionFields', () => {
         owner: 'octocat',
         repo: 'pixuli',
         branch: 'main',
+        private: true,
       });
     });
 

@@ -58,6 +58,9 @@ interface AssetInspectorProps {
   onBatchEdit?: () => void;
   onBatchDownload?: () => void;
   onCopyLinks?: () => void;
+  /** 单文件复制链接（走 Workbench 统一三态反馈） */
+  onCopyActiveLink?: () => void;
+  hasRemoteConnection?: boolean;
   /** 批摘要列表点击 → 单文件 */
   onSelectImage?: (id: string) => void;
   enableFolderMove?: boolean;
@@ -87,6 +90,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onBatchEdit,
   onBatchDownload,
   onCopyLinks,
+  onCopyActiveLink,
+  hasRemoteConnection,
   onSelectImage,
   enableFolderMove = false,
   folderOptions = [],
@@ -199,6 +204,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const handleCopy = useCallback(async () => {
     if (!activeImage) return;
+    if (onCopyActiveLink) {
+      onCopyActiveLink();
+      return;
+    }
     const url = getCopyablePublicUrl(activeImage);
     if (!url) {
       showError(t('image.copyLink.needSync'));
@@ -217,7 +226,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     } catch {
       showError(t('image.grid.copyFailed'));
     }
-  }, [activeImage, onCopyUrl, t]);
+  }, [activeImage, onCopyActiveLink, onCopyUrl, t]);
 
   const handleDelete = useCallback(async () => {
     if (!activeImage || !onDeleteImage) return;
@@ -313,6 +322,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           canShare: Boolean(onShareImage),
           canDelete: Boolean(onDeleteImage),
           canCopy: Boolean(activeImage && getCopyablePublicUrl(activeImage)),
+          copyDisabledTitle:
+            hasRemoteConnection === false
+              ? t('image.copyLink.needConnection')
+              : t('image.copyLink.needSync'),
         },
       ),
     [
@@ -320,6 +333,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       handleCopy,
       handleDelete,
       handleShare,
+      hasRemoteConnection,
       kind,
       onDeleteImage,
       onSendCompress,
@@ -332,19 +346,25 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const batchActions = useMemo(
     () =>
-      buildBatchSelectionActions(selectedImages, t, {
-        onBatchEdit,
-        onBatchDownload,
-        onSync,
-        onCopyLinks,
-        onSendCompress,
-        onSendConvert,
-        onBatchDelete: () => {
-          void handleBatchDelete();
+      buildBatchSelectionActions(
+        selectedImages,
+        t,
+        {
+          onBatchEdit,
+          onBatchDownload,
+          onSync,
+          onCopyLinks,
+          onSendCompress,
+          onSendConvert,
+          onBatchDelete: () => {
+            void handleBatchDelete();
+          },
         },
-      }),
+        { hasRemoteConnection },
+      ),
     [
       handleBatchDelete,
+      hasRemoteConnection,
       onBatchDownload,
       onBatchEdit,
       onCopyLinks,

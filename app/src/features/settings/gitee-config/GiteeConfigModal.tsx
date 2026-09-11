@@ -52,6 +52,9 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
     branch: config?.branch ?? 'master',
     token: config?.token ?? '',
     path: config?.path ?? 'images',
+    ...(typeof config?.private === 'boolean'
+      ? { private: config.private }
+      : {}),
   });
 
   const [formData, setFormData] = useState<GiteeConfig>(() =>
@@ -71,6 +74,7 @@ const GiteeConfigModal: React.FC<GiteeConfigModalProps> = ({
     giteeConfig?.branch,
     giteeConfig?.token,
     giteeConfig?.path,
+    giteeConfig?.private,
   ]);
 
   const handleSubmit = (e: React.FormEvent) => {

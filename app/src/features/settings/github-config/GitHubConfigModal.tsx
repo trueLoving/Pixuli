@@ -42,6 +42,9 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
     branch: githubConfig?.branch || 'main',
     token: githubConfig?.token || '',
     path: githubConfig?.path || 'images',
+    ...(typeof githubConfig?.private === 'boolean'
+      ? { private: githubConfig.private }
+      : {}),
   });
 
   // 当模态框打开时，更新表单数据
@@ -55,6 +58,9 @@ const GitHubConfigModal: React.FC<GitHubConfigModalProps> = ({
           branch: githubConfig.branch || 'main',
           token: githubConfig.token || '',
           path: githubConfig.path || 'images',
+          ...(typeof githubConfig.private === 'boolean'
+            ? { private: githubConfig.private }
+            : {}),
         });
       } else {
         // 配置被清除后，重置表单数据为空

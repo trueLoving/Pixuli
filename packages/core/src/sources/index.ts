@@ -2,6 +2,7 @@ export type { StoredSourceEntry } from '../plugins/types';
 export {
   createStoredSourceEntry,
   getRepoConfigFromSource,
+  isStoredSourcePrivate,
   mergeStoredSourceUpdate,
   normalizeStoredSourceEntry,
   normalizeStoredSources,

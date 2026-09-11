@@ -13,6 +13,8 @@ export type GitPatFieldValues = {
   branch: string;
   token: string;
   path: string;
+  /** 从仓库列表选择时写入；手工改 owner/repo 会清除 */
+  private?: boolean;
 };
 
 export type GitPatFieldClasses = {
@@ -138,6 +140,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
           item => item.owner === values.owner && item.name === values.repo,
         );
         if (current) {
+          onChange({ private: current.private });
           await loadBranches(client, current.owner, current.name, values.token);
         }
       } catch {
@@ -163,6 +166,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
       owner: selected.owner,
       repo: selected.name,
       branch: nextBranch,
+      private: selected.private,
     });
     try {
       const client = resolveDiscovery();
@@ -295,7 +299,9 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
             <input
               type="text"
               value={values.owner}
-              onChange={event => onChange({ owner: event.target.value })}
+              onChange={event =>
+                onChange({ owner: event.target.value, private: false })
+              }
               placeholder={t(`${labelPrefix}.usernamePlaceholder`)}
               className={classes.input}
               required
@@ -311,7 +317,9 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
             <input
               type="text"
               value={values.repo}
-              onChange={event => onChange({ repo: event.target.value })}
+              onChange={event =>
+                onChange({ repo: event.target.value, private: false })
+              }
               placeholder={t(`${labelPrefix}.repositoryPlaceholder`)}
               className={classes.input}
               required

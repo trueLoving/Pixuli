@@ -180,6 +180,7 @@ describe('GiteeConfigModal', () => {
           branch: 'main',
           token: 'test-token',
           path: 'images',
+          private: false,
         });
       });
     });

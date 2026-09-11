@@ -27,6 +27,7 @@ export function useConfigManagement() {
         token: string;
         path: string;
         name?: string;
+        private?: boolean;
       },
       editingSourceId: string | null,
     ) => {
@@ -37,6 +38,9 @@ export function useConfigManagement() {
         branch: config.branch,
         token: config.token,
         path: config.path,
+        ...(typeof config.private === 'boolean'
+          ? { private: config.private }
+          : {}),
       };
 
       const editingSource = editingSourceId

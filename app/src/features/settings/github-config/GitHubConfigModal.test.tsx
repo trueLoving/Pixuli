@@ -191,6 +191,7 @@ describe('GitHubConfigModal', () => {
           branch: 'main',
           token: 'ghp_testtoken123456789',
           path: 'images',
+          private: false,
         });
       });
     });
