@@ -65,6 +65,7 @@ export function buildBatchSelectionActions(
   selectedImages: ImageItem[],
   t: (key: string) => string,
   handlers: BatchSelectionActionHandlers,
+  options?: { hasRemoteConnection?: boolean },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   if (selectedImages.length === 0) {
     return { grid: [], danger: null };
@@ -112,10 +113,15 @@ export function buildBatchSelectionActions(
     const canCopyAny = selectedImages.some(
       item => getCopyablePublicUrl(item) !== null,
     );
+    const copyTitle = canCopyAny
+      ? t('image.actions.copyUrl')
+      : options?.hasRemoteConnection === false
+        ? t('image.copyLink.needConnection')
+        : t('image.copyLink.needSync');
     grid.push({
       id: 'copy-links',
       label: t('image.actions.copyUrl'),
-      title: t('image.actions.copyUrl'),
+      title: copyTitle,
       icon: Link,
       disabled: !canCopyAny,
       onClick: handlers.onCopyLinks,
@@ -169,6 +175,8 @@ export function buildSingleSelectionActions(
     canShare: boolean;
     canDelete: boolean;
     canCopy?: boolean;
+    /** 复制禁用时的原因文案（title） */
+    copyDisabledTitle?: string;
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   const grid: CompactAction[] = [];
@@ -183,12 +191,15 @@ export function buildSingleSelectionActions(
     });
   }
 
+  const canCopy = options.canCopy !== false;
   grid.push({
     id: 'copy',
     label: t('image.inspector.actionCopy'),
-    title: t('image.actions.copyUrl'),
+    title: canCopy
+      ? t('image.actions.copyUrl')
+      : (options.copyDisabledTitle ?? t('image.copyLink.needSync')),
     icon: Link,
-    disabled: options.canCopy === false,
+    disabled: !canCopy,
     onClick: handlers.onCopy,
   });
 

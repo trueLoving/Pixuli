@@ -15,7 +15,7 @@
     },
     "step3": {
       "title": "开始使用",
-      "description": "将文件添加到资源库，按需同步与发布"
+      "description": "将文件添加到资源库，按需同步后复制链接"
     },
     "needHelp": "需要帮助？",
     "viewDocs": "查看文档"

@@ -141,6 +141,7 @@ export function getRepoConfigFromSource(entry: StoredSourceEntry): {
   branch: string;
   token: string;
   path: string;
+  private?: boolean;
 } {
   const c = entry.config;
   const defaultBranch = entry.pluginId === 'gitee' ? 'master' : 'main';
@@ -150,7 +151,13 @@ export function getRepoConfigFromSource(entry: StoredSourceEntry): {
     branch: String(c.branch ?? defaultBranch),
     token: String(c.token ?? ''),
     path: String(c.path ?? 'images'),
+    ...(typeof c.private === 'boolean' ? { private: c.private } : {}),
   };
+}
+
+/** 当前连接仓库是否私有（未知则 false，不附注） */
+export function isStoredSourcePrivate(entry: StoredSourceEntry): boolean {
+  return entry.config.private === true;
 }
 
 export type LegacyStorageType = 'github' | 'gitee';

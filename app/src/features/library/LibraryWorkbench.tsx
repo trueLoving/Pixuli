@@ -24,6 +24,7 @@ import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import {
   showError,
+  showErrorWithAction,
   showLoading,
   showSuccess,
   updateLoadingToError,
@@ -41,6 +42,7 @@ import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
+import { isStoredSourcePrivate } from '@pixuli/core/sources';
 import './LibraryWorkbench.css';
 
 export interface LibraryWorkbenchProps {
@@ -104,7 +106,15 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
   const localFolders = useWorkspaceStore(state => state.localFolders);
   const sources = useSourceStore(state => state.sources);
+  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
+  const getSourceById = useSourceStore(state => state.getSourceById);
   const hasRemoteConnection = sources.length > 0;
+  const repoPrivate = useMemo(() => {
+    const source = selectedSourceId
+      ? getSourceById(selectedSourceId)
+      : sources[0];
+    return source ? isStoredSourcePrivate(source) : false;
+  }, [getSourceById, selectedSourceId, sources]);
   const uploadLoading = localActive ? workspaceLoading : imageLoading;
   const onCopyUrl = useImageCopyUrl();
   const nativePickers = useNativeImagePickers();
@@ -365,57 +375,84 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const notifyCopyLinkResult = useCallback(
     (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
       if (!result.ok) {
+        if (result.offerSync) {
+          showErrorWithAction(
+            t(result.reasonKey),
+            t('image.copyLink.goSync'),
+            () => requestSync(),
+          );
+          return;
+        }
         showError(t(result.reasonKey));
         return;
       }
-      showSuccess(
+      const base =
         result.count === 1
           ? `${t('image.grid.imageUrlCopied')}${t('image.grid.copiedToClipboard')}`
           : t('image.copyLink.copiedMany').replace(
               '{count}',
               String(result.count),
-            ),
+            );
+      showSuccess(
+        result.privateRepo
+          ? `${base} ${t('image.copyLink.privateRepoNote')}`
+          : base,
       );
     },
-    [t],
+    [requestSync, t],
+  );
+
+  const copyLinkOptions = useMemo(
+    () => ({ hasRemoteConnection, repoPrivate }),
+    [hasRemoteConnection, repoPrivate],
   );
 
   const handleCopyLinks = useCallback(async () => {
     notifyCopyLinkResult(
-      await copyImagePublicLinks(selectedImages, { hasRemoteConnection }),
+      await copyImagePublicLinks(selectedImages, copyLinkOptions),
     );
-  }, [hasRemoteConnection, notifyCopyLinkResult, selectedImages]);
+  }, [copyLinkOptions, notifyCopyLinkResult, selectedImages]);
 
   const handleCopyLinkForImage = useCallback(
     async (image: ImageItem) => {
       notifyCopyLinkResult(
-        await copyImagePublicLinks([image], { hasRemoteConnection }),
+        await copyImagePublicLinks([image], copyLinkOptions),
       );
     },
-    [hasRemoteConnection, notifyCopyLinkResult],
+    [copyLinkOptions, notifyCopyLinkResult],
   );
 
   const batchSelectionActions = useMemo(
     () =>
-      buildBatchSelectionActions(selectedImages, t, {
-        onBatchEdit:
-          selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined,
-        onBatchDownload: handleBatchDownload,
-        onSync: () => requestSync(),
-        onCopyLinks:
-          selectedImages.length > 0 ? () => void handleCopyLinks() : undefined,
-        onSendCompress: handleSendCompress,
-        onSendConvert: handleSendConvert,
-        onBatchDelete: () => {
-          void handleBatchDelete();
+      buildBatchSelectionActions(
+        selectedImages,
+        t,
+        {
+          onBatchEdit:
+            selectedImages.length > 0
+              ? () => setBatchEditOpen(true)
+              : undefined,
+          onBatchDownload: handleBatchDownload,
+          onSync: () => requestSync(),
+          onCopyLinks:
+            selectedImages.length > 0
+              ? () => void handleCopyLinks()
+              : undefined,
+          onSendCompress: handleSendCompress,
+          onSendConvert: handleSendConvert,
+          onBatchDelete: () => {
+            void handleBatchDelete();
+          },
         },
-      }),
+        { hasRemoteConnection },
+      ),
     [
       handleBatchDelete,
       handleBatchDownload,
       handleCopyLinks,
       handleSendCompress,
       handleSendConvert,
+      hasRemoteConnection,
       requestSync,
       selectedImages,
       t,
@@ -505,6 +542,12 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       }
       onBatchDownload={handleBatchDownload}
       onCopyLinks={handleCopyLinks}
+      onCopyActiveLink={
+        selectedImage
+          ? () => void handleCopyLinkForImage(selectedImage)
+          : undefined
+      }
+      hasRemoteConnection={hasRemoteConnection}
       onSelectImage={handleSelectImage}
       enableFolderMove={localActive}
       folderOptions={localFolders}
@@ -543,6 +586,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           onDeleteImage={onDeleteImage}
           onCopyLink={image => void handleCopyLinkForImage(image)}
           onSync={() => requestSync()}
+          hasRemoteConnection={hasRemoteConnection}
           multiSelectMode={multiSelectMode}
           onMultiSelectModeChange={handleMultiSelectModeChange}
           showSelectionActionBar={showMobileSelectionBar}

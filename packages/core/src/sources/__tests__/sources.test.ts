@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPluginConfigExport,
   createStoredSourceEntry,
+  getRepoConfigFromSource,
+  isStoredSourcePrivate,
   normalizeStoredSourceEntry,
   normalizeStoredSources,
   parsePluginConfigImport,
@@ -145,6 +147,27 @@ describe('createStoredSourceEntry', () => {
     });
     expect(entry.pluginId).toBe('github');
     expect(entry.createdAt).toBeLessThanOrEqual(Date.now());
+  });
+});
+
+describe('isStoredSourcePrivate / private in config', () => {
+  it('preserves private through normalize and helper', () => {
+    const entry = normalizeStoredSourceEntry({
+      id: 'p1',
+      label: 'o/r',
+      pluginId: 'github',
+      config: {
+        owner: 'o',
+        repo: 'r',
+        token: 't',
+        private: true,
+      },
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    expect(entry?.config.private).toBe(true);
+    expect(isStoredSourcePrivate(entry!)).toBe(true);
+    expect(getRepoConfigFromSource(entry!).private).toBe(true);
   });
 });
 

@@ -1,4 +1,5 @@
 import toast from 'react-hot-toast';
+import { createElement } from 'react';
 
 // 存储活跃的 toast 信息，用于语言切换时更新
 interface ToastInfo {
@@ -88,6 +89,61 @@ export const showError = (
   }
 
   return toastId;
+};
+
+/** 错误 toast，附带一个可选操作按钮（如「去同步」） */
+export const showErrorWithAction = (
+  message: string,
+  actionLabel: string,
+  onAction: () => void,
+) => {
+  return toast(
+    tid =>
+      createElement(
+        'div',
+        {
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            alignItems: 'flex-start',
+          },
+        },
+        createElement('span', null, message),
+        createElement(
+          'button',
+          {
+            type: 'button',
+            onClick: () => {
+              toast.dismiss(tid);
+              onAction();
+            },
+            style: {
+              background: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.45)',
+              color: '#fff',
+              borderRadius: '6px',
+              padding: '4px 10px',
+              cursor: 'pointer',
+              fontSize: '13px',
+            },
+          },
+          actionLabel,
+        ),
+      ),
+    {
+      duration: 6000,
+      position: 'top-right',
+      style: {
+        background: '#ef4444',
+        color: '#fff',
+        fontSize: '14px',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      },
+    },
+  );
 };
 
 // 警告消息提示

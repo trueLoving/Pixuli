@@ -7,7 +7,7 @@
     "groupSync": "同步",
     "groupAccess": "访问",
     "menuSync": "远端与同步",
-    "menuAccess": "发布与访问",
+    "menuAccess": "外链与访问",
     "syncOnClickHint": "点击「同步」时：尚未配置远端则打开本页添加仓库；已配置则选择同步方向。",
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",

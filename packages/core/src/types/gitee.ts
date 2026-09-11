@@ -5,6 +5,8 @@ export interface GiteeConfig {
   token: string;
   /** 远端仓库挂载点（configRoot）；空字符串表示镜像到仓库根下 */
   path: string;
+  /** 连接时从仓库列表写入；复制链接私有仓附注用 */
+  private?: boolean;
 }
 
 // Gitee API 相关类型

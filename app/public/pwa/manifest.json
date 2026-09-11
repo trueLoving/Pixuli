@@ -1,7 +1,7 @@
 {
   "name": "Pixuli — 资源工作区",
   "short_name": "Pixuli",
-  "description": "在本机管理资源，通过 GitHub/Gitee 等连接同步与发布",
+  "description": "在本机管理资源，通过 GitHub/Gitee 等连接同步与复制链接",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
