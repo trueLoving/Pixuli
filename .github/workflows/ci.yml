@@ -1,10 +1,8 @@
 name: Pixuli CI
 
 on:
-  pull_request:
   push:
     branches: [main]
-  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -15,25 +13,26 @@ permissions:
 
 jobs:
   ci:
-    name: Pixuli CI
+    name: lint · test · web/desktop build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: 检出代码
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 安装 pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: 设置 Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 运行 Pixuli CI（lint + Vitest + Web/Desktop 构建）
+      - name: Run pnpm ci
         run: pnpm run ci

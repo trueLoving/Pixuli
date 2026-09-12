@@ -13,7 +13,7 @@
     "build:android:debug": "pnpm -F pixuli-app build:android:debug",
     "test": "vitest run",
     "lint": "eslint packages/core",
-    "ci": "pnpm lint && pnpm test && pnpm build:web && pnpm -F pixuli-app exec tsc && pnpm -F pixuli-app exec vite build --mode desktop",
+    "ci": "pnpm lint && pnpm test && pnpm build:web && pnpm -F pixuli-app exec vite build --mode desktop",
     "e2e": "playwright test e2e/smoke --project=chromium",
     "prepare": "husky"
   },

@@ -1,6 +1,8 @@
 import type React from 'react';
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 
+export type { SidebarSource };
+
 export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';

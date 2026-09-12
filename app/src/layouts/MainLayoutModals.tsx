@@ -48,18 +48,8 @@ interface MainLayoutModalsProps {
 }
 
 interface AppMainLayoutModalsConfigProps {
-  onSaveConfig: (
-    config: {
-      owner: string;
-      repo: string;
-      branch: string;
-      token: string;
-      path: string;
-      name?: string;
-    },
-    editingSourceId: string | null,
-  ) => void;
-  onClearConfig: (editingSourceId: string | null) => void;
+  onSaveConfig: (config: GitHubConfig | GiteeConfig) => void;
+  onClearConfig: () => void;
 }
 
 const ModalFallback = () => null;

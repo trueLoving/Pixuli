@@ -48,6 +48,8 @@ export function createPwaPlugin(isServe: boolean) {
       categories: ['productivity', 'utilities'],
     },
     workbox: {
+      // CI/sandbox 下 workbox 默认 terser 偶发 early exit；development 跳过压缩更稳
+      mode: process.env.CI ? 'development' : 'production',
       globPatterns: isServe ? [] : ['**/*.{js,css,html,ico,png,svg,woff2}'],
       runtimeCaching: [
         {

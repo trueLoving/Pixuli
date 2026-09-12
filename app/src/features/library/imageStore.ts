@@ -76,7 +76,7 @@ interface ImageState {
     imageIds: string[],
     fileNames: string[],
   ) => Promise<void>;
-  updateImage: (editData: ImageEditData) => Promise<void>;
+  updateImage: (editData: ImageEditData) => Promise<boolean>;
   batchUpdateMetadata: (
     imageIds: string[],
     patch: BatchMetadataPatch,

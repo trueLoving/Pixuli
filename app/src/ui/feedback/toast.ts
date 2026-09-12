@@ -115,7 +115,7 @@ export const showErrorWithAction = (
           {
             type: 'button',
             onClick: () => {
-              toast.dismiss(tid);
+              toast.dismiss(String(tid));
               onAction();
             },
             style: {

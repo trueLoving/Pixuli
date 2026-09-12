@@ -8,7 +8,7 @@ import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './ActivityBar.css';
 
 interface ActivityBarProps {
-  t: (key: string) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }
 
 export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {

@@ -1,14 +1,16 @@
-name: 发布 Pixuli Desktop
+name: Release Desktop
+
+# 仅 GitHub Actions 手动触发（workflow_dispatch）
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: '发布版本 (例如: 1.0.0)'
-        required: true
-        default: '1.0.0'
+        description: 'SemVer without prefix (e.g. 2.0.0). Empty = app/package.json'
+        required: false
+        default: ''
       platform:
-        description: '选择要发布的平台'
+        description: 'Build targets'
         required: true
         type: choice
         options:
@@ -18,64 +20,72 @@ on:
           - all
         default: all
       is-publish:
-        description: '是否进行发布操作'
+        description: 'Create/upload GitHub Release'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: release-desktop-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   detect:
-    name: 检测输入参数
+    name: Resolve version & platforms
     runs-on: ubuntu-latest
     outputs:
       do_win: ${{ steps.set.outputs.do_win }}
       do_mac_x64: ${{ steps.set.outputs.do_mac_x64 }}
       do_mac_arm64: ${{ steps.set.outputs.do_mac_arm64 }}
-      target_branch: ${{ steps.set.outputs.target_branch }}
       version: ${{ steps.set.outputs.version }}
+      tag: ${{ steps.set.outputs.tag }}
       is_publish: ${{ steps.set.outputs.is_publish }}
+      ref: ${{ steps.set.outputs.ref }}
     steps:
-      - name: 解析输入参数
+      - uses: actions/checkout@v4
+
+      - name: Parse
         id: set
         shell: bash
         run: |
-          PLATFORM="${{ github.event.inputs.platform }}"
-          BRANCH="${{ github.ref_name }}"
+          set -euo pipefail
+          PKG_VERSION=$(node -p "require('./app/package.json').version")
           VERSION="${{ github.event.inputs.version }}"
+          if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
+          TAG="v${VERSION}-desktop"
+          PLATFORM="${{ github.event.inputs.platform }}"
           IS_PUBLISH="${{ github.event.inputs.is-publish }}"
 
           DO_WIN=false
           DO_MAC_X64=false
           DO_MAC_ARM64=false
-
           if [[ "$PLATFORM" == "win" || "$PLATFORM" == "all" ]]; then DO_WIN=true; fi
           if [[ "$PLATFORM" == "mac-x64" || "$PLATFORM" == "all" ]]; then DO_MAC_X64=true; fi
           if [[ "$PLATFORM" == "mac-arm64" || "$PLATFORM" == "all" ]]; then DO_MAC_ARM64=true; fi
 
-          echo "do_win=$DO_WIN" >> $GITHUB_OUTPUT
-          echo "do_mac_x64=$DO_MAC_X64" >> $GITHUB_OUTPUT
-          echo "do_mac_arm64=$DO_MAC_ARM64" >> $GITHUB_OUTPUT
-          echo "target_branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "is_publish=$IS_PUBLISH" >> $GITHUB_OUTPUT
+          {
+            echo "do_win=$DO_WIN"
+            echo "do_mac_x64=$DO_MAC_X64"
+            echo "do_mac_arm64=$DO_MAC_ARM64"
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+            echo "is_publish=$IS_PUBLISH"
+            echo "ref=${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Desktop release → version=$VERSION tag=$TAG platform=$PLATFORM publish=$IS_PUBLISH"
 
   build-win:
-    name: 构建 Windows
+    name: Windows x64
     needs: detect
     if: needs.detect.outputs.do_win == 'true'
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.detect.outputs.target_branch }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -86,40 +96,31 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: 提取版本号
-        id: version
-        shell: bash
-        run: |
-          VERSION="${{ needs.detect.outputs.version }}"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
-
-      - name: 更新 app 版本号
+      - name: Bump app version
         shell: bash
         run: |
           cd app
-          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
-            pnpm version "$TARGET_VERSION" --no-git-tag-version
+          TARGET="${{ needs.detect.outputs.version }}"
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ "$CURRENT" != "$TARGET" ]]; then
+            pnpm version "$TARGET" --no-git-tag-version
           fi
 
-      - name: 安装依赖
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: 构建桌面应用 (Windows x64)
+      - name: Build
         shell: bash
+        working-directory: app
         run: |
-          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
-          npx electron-builder --win --x64
+          pnpm exec electron-builder --win --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pixuli-desktop-win-v${{ steps.version.outputs.VERSION }}
+          name: pixuli-desktop-win-v${{ needs.detect.outputs.version }}
           path: |
             app/release/*.exe
             !app/release/*.blockmap
@@ -127,14 +128,13 @@ jobs:
           retention-days: 30
 
   build-mac-x64:
-    name: 构建 macOS x64
+    name: macOS x64
     needs: detect
     if: needs.detect.outputs.do_mac_x64 == 'true'
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.detect.outputs.target_branch }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -145,37 +145,29 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: 提取版本号
-        id: version
-        run: |
-          VERSION="${{ needs.detect.outputs.version }}"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
-
-      - name: 更新 app 版本号
+      - name: Bump app version
         run: |
           cd app
-          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
-            pnpm version "$TARGET_VERSION" --no-git-tag-version
+          TARGET="${{ needs.detect.outputs.version }}"
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ "$CURRENT" != "$TARGET" ]]; then
+            pnpm version "$TARGET" --no-git-tag-version
           fi
 
-      - name: 安装依赖
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: 构建桌面应用 (macOS x64)
+      - name: Build
+        working-directory: app
         run: |
-          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
-          npx electron-builder --mac --x64
+          pnpm exec electron-builder --mac --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }}
+          name: pixuli-desktop-mac-x64-v${{ needs.detect.outputs.version }}
           path: |
             app/release/*.dmg
             !app/release/*.blockmap
@@ -183,14 +175,13 @@ jobs:
           retention-days: 30
 
   build-mac-arm64:
-    name: 构建 macOS ARM64
+    name: macOS arm64
     needs: detect
     if: needs.detect.outputs.do_mac_arm64 == 'true'
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.detect.outputs.target_branch }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -201,56 +192,37 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: 提取版本号
-        id: version
-        run: |
-          VERSION="${{ needs.detect.outputs.version }}"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
-
-      - name: 更新 app 版本号
+      - name: Bump app version
         run: |
           cd app
-          TARGET_VERSION="${{ steps.version.outputs.VERSION }}"
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
-            pnpm version "$TARGET_VERSION" --no-git-tag-version
+          TARGET="${{ needs.detect.outputs.version }}"
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ "$CURRENT" != "$TARGET" ]]; then
+            pnpm version "$TARGET" --no-git-tag-version
           fi
 
-      - name: 安装依赖
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: 构建桌面应用 (macOS ARM64)
+      - name: Build
+        working-directory: app
         run: |
-          cd app
           pnpm exec tsc
           pnpm exec vite build --mode desktop
-          npx electron-builder --mac --arm64
+          pnpm exec electron-builder --mac --arm64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }}
+          name: pixuli-desktop-mac-arm64-v${{ needs.detect.outputs.version }}
           path: |
             app/release/*.dmg
             !app/release/*.blockmap
             !app/release/*.yml
           retention-days: 30
 
-  skip-release:
-    needs: [detect, build-win, build-mac-x64, build-mac-arm64]
-    runs-on: ubuntu-latest
-    if: |
-      always() &&
-      needs.detect.outputs.is_publish == 'false' &&
-      (needs.build-win.result == 'success' || needs.build-win.result == 'skipped') &&
-      (needs.build-mac-x64.result == 'success' || needs.build-mac-x64.result == 'skipped') &&
-      (needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped')
-    steps:
-      - run: echo "is-publish=false，构建产物已上传至 artifacts"
-
-  prepare-release:
+  publish:
+    name: GitHub Release
     needs: [detect, build-win, build-mac-x64, build-mac-arm64]
     runs-on: ubuntu-latest
     if: |
@@ -258,63 +230,47 @@ jobs:
       needs.detect.outputs.is_publish == 'true' &&
       (needs.build-win.result == 'success' || needs.build-win.result == 'skipped') &&
       (needs.build-mac-x64.result == 'success' || needs.build-mac-x64.result == 'skipped') &&
-      (needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped')
+      (needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped') &&
+      (needs.build-win.result == 'success' || needs.build-mac-x64.result == 'success' || needs.build-mac-arm64.result == 'success')
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.detect.outputs.target_branch }}
-
-      - name: 提取版本号
-        id: version
-        run: |
-          VERSION="${{ needs.detect.outputs.version }}"
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG_VERSION=v$VERSION-desktop" >> $GITHUB_OUTPUT
 
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: 创建 GitHub Release
-        shell: bash
+      - name: Create release if missing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ steps.version.outputs.TAG_VERSION }}"
+          TAG="${{ needs.detect.outputs.tag }}"
+          VER="${{ needs.detect.outputs.version }}"
+          SHA="${{ needs.detect.outputs.ref }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG 已存在，跳过创建"
+            echo "Release $TAG exists"
           else
             gh release create "$TAG" \
-              --title "Pixuli Desktop v${{ steps.version.outputs.VERSION }}" \
-              --notes "Desktop release built from \`${{ needs.detect.outputs.target_branch }}\` without WASM (M1+ refactor). See CHANGELOG [Unreleased]."
+              --title "Pixuli Desktop v${VER}" \
+              --notes "$(cat <<EOF
+          ## Pixuli Desktop v${VER}
+
+          - **Tag:** \`${TAG}\`
+          - **Commit:** \`${SHA}\`
+          - See [CHANGELOG](./CHANGELOG.md) and [release versioning](./docs/02-system-design/05-release-versioning.md).
+          EOF
+          )"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 上传 Windows 构建产物
-        if: needs.detect.outputs.do_win == 'true'
-        shell: bash
-        run: |
-          find "artifacts/pixuli-desktop-win-v${{ steps.version.outputs.VERSION }}" -name "*.exe" -type f | while read -r file; do
-            gh release upload "${{ steps.version.outputs.TAG_VERSION }}" "$file" --clobber
-          done
+      - name: Upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 上传 macOS x64 DMG
-        if: needs.detect.outputs.do_mac_x64 == 'true'
-        shell: bash
         run: |
-          find "artifacts/pixuli-desktop-mac-x64-v${{ steps.version.outputs.VERSION }}" -name "*.dmg" -type f | while read -r file; do
-            gh release upload "${{ steps.version.outputs.TAG_VERSION }}" "$file" --clobber
+          TAG="${{ needs.detect.outputs.tag }}"
+          VER="${{ needs.detect.outputs.version }}"
+          shopt -s nullglob
+          for f in artifacts/pixuli-desktop-win-v${VER}/*.exe \
+                   artifacts/pixuli-desktop-mac-x64-v${VER}/*.dmg \
+                   artifacts/pixuli-desktop-mac-arm64-v${VER}/*.dmg; do
+            echo "Uploading $f"
+            gh release upload "$TAG" "$f" --clobber
           done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 上传 macOS ARM64 DMG
-        if: needs.detect.outputs.do_mac_arm64 == 'true'
-        shell: bash
-        run: |
-          find "artifacts/pixuli-desktop-mac-arm64-v${{ steps.version.outputs.VERSION }}" -name "*.dmg" -type f | while read -r file; do
-            gh release upload "${{ steps.version.outputs.TAG_VERSION }}" "$file" --clobber
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

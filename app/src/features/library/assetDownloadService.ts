@@ -97,7 +97,9 @@ export async function downloadAssetsAsZip(
   }
 
   const zipped = zipSync(archive);
-  const blob = new Blob([zipped], { type: 'application/zip' });
+  const blob = new Blob([zipped.buffer as ArrayBuffer], {
+    type: 'application/zip',
+  });
   triggerBlobDownload(blob, zipFilename ?? buildZipDownloadFilename(packed));
 
   return { packed, failed };
