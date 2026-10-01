@@ -122,6 +122,8 @@ interface UIState {
   openSettingsModalForAddSource: () => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
+  /** 向导保存前写入 plugin 与用途，不打开分云大表单 */
+  prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
 }
 
 export const useUIStore = create<UIState>(set => ({
@@ -281,7 +283,7 @@ export const useUIStore = create<UIState>(set => ({
       activeMenu: 'settings',
     }),
   clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
-  beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
+  prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
     useImageStore.setState({
       storageType: resolveSourceDisplay(pluginId).legacyType,
     });
@@ -289,8 +291,12 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: true,
+      showConfigModal: false,
       pendingConnectionPurpose: purpose ?? 'defaultSync',
     });
+  },
+  beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
+    useUIStore.getState().prepareNewSource(pluginId, purpose);
+    set({ showConfigModal: true });
   },
 }));

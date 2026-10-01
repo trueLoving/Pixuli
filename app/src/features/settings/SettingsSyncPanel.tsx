@@ -1,9 +1,8 @@
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { SourceTypePicker } from '@/features/source-type/SourceTypePicker';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
-import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
+import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
@@ -26,7 +25,6 @@ function renderSourceTypeIcon(type: SidebarSource['type']) {
 
 export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const [addingSource, setAddingSource] = useState(false);
-  const beginNewSource = useUIStore(state => state.beginNewSource);
   const settingsSyncAddOpen = useUIStore(state => state.settingsSyncAddOpen);
   const clearSettingsSyncAddOpen = useUIStore(
     state => state.clearSettingsSyncAddOpen,
@@ -60,14 +58,6 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
     }
   };
 
-  const handleSelectSourceType = (
-    pluginId: string,
-    purpose: ConnectionPurpose,
-  ) => {
-    setAddingSource(false);
-    beginNewSource(pluginId, purpose);
-  };
-
   return (
     <div className="space-y-8">
       <section>
@@ -96,14 +86,12 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
         </div>
 
         {addingSource ? (
-          <div className="mt-4">
-            <SourceTypePicker
-              manifests={manifests}
-              onSelect={handleSelectSourceType}
-              onCancel={() => setAddingSource(false)}
-              t={t}
-            />
-          </div>
+          <ConnectionWizard
+            manifests={manifests}
+            t={t}
+            onCancel={() => setAddingSource(false)}
+            onComplete={() => setAddingSource(false)}
+          />
         ) : null}
 
         {!addingSource && sidebarSources.length === 0 ? (

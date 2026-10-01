@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useImageStore } from '@/features/library/imageStore';
 import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -46,7 +47,8 @@ export function useConfigManagement() {
       const editingSource = editingSourceId
         ? useSourceStore.getState().getSourceById(editingSourceId)
         : undefined;
-      const activePluginId = editingSource?.pluginId ?? storageType;
+      const liveStorageType = useImageStore.getState().storageType;
+      const activePluginId = editingSource?.pluginId ?? liveStorageType;
 
       if (editingSourceId) {
         updateSource(editingSourceId, {
@@ -57,7 +59,7 @@ export function useConfigManagement() {
         const purpose =
           useUIStore.getState().pendingConnectionPurpose ?? 'defaultSync';
         const newSource = addSource({
-          pluginId: storageType!,
+          pluginId: liveStorageType!,
           label,
           config: { ...repoConfig, connectionPurpose: purpose },
         });
