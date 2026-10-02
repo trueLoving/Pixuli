@@ -1,7 +1,7 @@
 # PLANS
 
 > **工作进度 SSOT** · 与 GitHub Issues **对齐**
-> **最近同步**：2026-10-01（#241 已关；#242 进行中） **状态**：执行中 ·
+> **最近同步**：2026-10-02（#242 已关；#243 进行中） **状态**：执行中 ·
 > **主路径冻结**（添加 → 同步 → 复制链接）
 
 本文件是仓库**唯一的任务与进度汇总表**。新增任务、更新进度、关闭项，都在这里维护，并与远程 Issue 保持一致。
@@ -52,8 +52,8 @@ closed 查阅。
 
 ### 当前应开工
 
-1. **[#242](https://github.com/trueLoving/Pixuli/issues/242)**
-   — 连接统一向导壳（Sprint B）
+1. **[#243](https://github.com/trueLoving/Pixuli/issues/243)**
+   — 批量移动 / 库内拖放（Sprint C）
 2. 并行：**J0 自测**（不建 Issue，除非出现可修缺陷）
 
 ### 资源库 UI P0（已完成）
@@ -103,8 +103,8 @@ closed 查阅。
 | ID      | 标题                     | GitHub                                                  | Sprint | 状态                                                     |
 | ------- | ------------------------ | ------------------------------------------------------- | ------ | -------------------------------------------------------- |
 | REF-609 | 对外叙事对齐：README/PRS | [#241](https://github.com/trueLoving/Pixuli/issues/241) | A      | ✅ [#246](https://github.com/trueLoving/Pixuli/pull/246) |
-| REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ⏳ **进行中**                                            |
-| REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ⬜                                                       |
+| REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ✅ [#247](https://github.com/trueLoving/Pixuli/pull/247) |
+| REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ⏳ **进行中**                                            |
 | REF-612 | 在全部中搜索             | [#244](https://github.com/trueLoving/Pixuli/issues/244) | C      | ⬜                                                       |
 | REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ⬜                                                       |
 | REF-603 | 大数据 / 性能边界        | [#132](https://github.com/trueLoving/Pixuli/issues/132) | D      | ⏳ 部分                                                  |
@@ -119,7 +119,7 @@ closed 查阅。
 | REF-412 | 集成测试体系              | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-415 | 文档中/英策略             | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
-**OPEN 合计**：**11** 条（2026-09-12：关 4 + 建 5，相对原 10 条净 +1）。
+**OPEN 合计**：**9** 条（2026-10-02：#241、#242 已关）。
 
 ---
 
