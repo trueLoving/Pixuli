@@ -172,6 +172,51 @@ export async function moveLocalFile(
   }
 }
 
+export async function moveLocalFiles(
+  get: WorkspaceStoreGet,
+  set: WorkspaceStoreSet,
+  relativePaths: string[],
+  targetDir: string,
+): Promise<number> {
+  if (get().mode !== 'local') {
+    return 0;
+  }
+  set({ loading: true, error: null });
+  let moved = 0;
+  try {
+    const vault = getWorkspaceVault();
+    const sync = getWorkspaceSyncEngine();
+    for (const relativePath of relativePaths) {
+      const entry = await vault.moveFile(relativePath, targetDir);
+      if (entry.relativePath !== relativePath) {
+        await sync.enqueuePush({
+          type: 'upload',
+          relativePath: entry.relativePath,
+        });
+        moved += 1;
+      }
+    }
+    await get().refreshLocalImages();
+    await get().refreshSyncStatus();
+    set({
+      loading: false,
+      syncMessage: `已移动 ${moved} 个文件（仅本机）`,
+    });
+    return moved;
+  } catch (error) {
+    try {
+      await get().refreshLocalImages();
+    } catch {
+      // 刷新失败不掩盖移动错误
+    }
+    set({
+      loading: false,
+      error: error instanceof Error ? error.message : '移动文件失败',
+    });
+    return moved;
+  }
+}
+
 export async function scanWorkspace(
   get: WorkspaceStoreGet,
   set: WorkspaceStoreSet,

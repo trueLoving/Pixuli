@@ -11,6 +11,7 @@ import {
   deleteLocalFolder,
   importLocalImage,
   moveLocalFile,
+  moveLocalFiles,
   refreshLocalFolders,
   refreshLocalImages,
   refreshRootDisplayPath,
@@ -72,6 +73,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   moveLocalFile: (relativePath, targetDir) =>
     moveLocalFile(get, set, relativePath, targetDir),
+
+  moveLocalFiles: (relativePaths, targetDir) =>
+    moveLocalFiles(get, set, relativePaths, targetDir),
 
   refreshSyncStatus: () => refreshSyncStatus(get, set),
 

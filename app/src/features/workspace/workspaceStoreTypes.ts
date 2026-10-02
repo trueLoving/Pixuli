@@ -44,6 +44,10 @@ export interface WorkspaceState {
   renameLocalFolder: (fromDir: string, toDir: string) => Promise<void>;
   deleteLocalFolder: (relativeDir: string) => Promise<number>;
   moveLocalFile: (relativePath: string, targetDir: string) => Promise<void>;
+  moveLocalFiles: (
+    relativePaths: string[],
+    targetDir: string,
+  ) => Promise<number>;
   clearError: () => void;
 }
 
