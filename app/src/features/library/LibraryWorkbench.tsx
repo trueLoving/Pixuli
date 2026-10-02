@@ -123,6 +123,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
   const requestSync = useUIStore(state => state.requestSync);
+  const inspectorCollapsed = useUIStore(state => state.inspectorCollapsed);
+  const setInspectorCollapsed = useUIStore(
+    state => state.setInspectorCollapsed,
+  );
   const workspaceExplorerOpen = useUIStore(
     state => state.workspaceExplorerOpen,
   );
@@ -155,7 +159,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
   const hasSelection = selectedIds.length > 0;
-  const showDockedInspector = !isMobile && (isWide || hasSelection);
+  const showDockedInspector =
+    !isMobile && !inspectorCollapsed && (isWide || hasSelection);
   const showSheetInspector =
     isMobile && !multiSelectMode && selectedIds.length === 1 && sheetOpen;
   const showMobileSelectionBar =
@@ -189,6 +194,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         );
       }
       setSheetOpen(isMobile && ids.length === 1 && !multiSelectMode);
+      if (ids.length > 0) {
+        setInspectorCollapsed(false);
+      }
       if (
         ids.length > 0 &&
         isMobile &&
@@ -200,7 +208,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         useUIStore.getState().setWorkspaceExplorerOpen(false);
       }
     },
-    [isMobile, isWide, multiSelectMode],
+    [isMobile, isWide, multiSelectMode, setInspectorCollapsed],
   );
 
   const handleMultiSelectModeChange = useCallback((active: boolean) => {
@@ -499,7 +507,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const handleCloseInspector = useCallback(() => {
     handleClearSelection();
-  }, [handleClearSelection]);
+    setInspectorCollapsed(true);
+  }, [handleClearSelection, setInspectorCollapsed]);
 
   useEffect(() => {
     if (!workspaceExplorerOpen) return;
