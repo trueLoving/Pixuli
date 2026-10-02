@@ -14,12 +14,14 @@ import {
   SquarePen,
   Trash2,
   Wand2,
+  FolderInput,
 } from 'lucide-react';
 
-export const MOBILE_BAR_ACTION_IDS = new Set(['batch-edit']);
+export const MOBILE_BAR_ACTION_IDS = new Set(['batch-edit', 'batch-move']);
 
 export interface BatchSelectionActionHandlers {
   onBatchEdit?: () => void;
+  onBatchMove?: () => void;
   onBatchDownload?: () => void;
   onSync?: () => void;
   onCopyLinks?: () => void;
@@ -87,6 +89,16 @@ export function buildBatchSelectionActions(
       title: t('image.library.batchEdit'),
       icon: SquarePen,
       onClick: handlers.onBatchEdit,
+    });
+  }
+
+  if (handlers.onBatchMove) {
+    grid.push({
+      id: 'batch-move',
+      label: t('image.library.batchMove'),
+      title: t('image.library.batchMoveHint'),
+      icon: FolderInput,
+      onClick: handlers.onBatchMove,
     });
   }
 

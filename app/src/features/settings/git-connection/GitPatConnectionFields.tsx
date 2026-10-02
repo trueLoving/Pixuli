@@ -35,6 +35,9 @@ interface GitPatConnectionFieldsProps {
   t: (key: string) => string;
   classes: GitPatFieldClasses;
   discovery?: StorageProviderDiscovery;
+  /** 向导分步时只渲染对应块；缺省两块都显示（编辑大表单） */
+  section?: 'all' | 'auth' | 'location';
+  onValidatedChange?: (ok: boolean) => void;
 }
 
 function interpolate(template: string, vars: Record<string, string>): string {
@@ -52,6 +55,8 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
   t,
   classes,
   discovery,
+  section = 'all',
+  onValidatedChange,
 }) => {
   const manifest = useMemo(
     () => listStoragePluginManifests().find(item => item.id === pluginId),
@@ -86,6 +91,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
     setRepositories([]);
     setBranches([]);
     setRepoLoadError(null);
+    onValidatedChange?.(false);
     onChange({ token });
   };
 
@@ -120,10 +126,12 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
       if (!result.ok) {
         setStatus('error');
         setLogin(null);
+        onValidatedChange?.(false);
         setErrorMessage(result.message || t('settings.pat.validateFailed'));
         return;
       }
       setStatus('ok');
+      onValidatedChange?.(true);
       setLogin(result.login ?? null);
       const scopes = result.scopes ?? [];
       setMissingScopes(
@@ -152,6 +160,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
     } catch {
       setStatus('error');
       setLogin(null);
+      onValidatedChange?.(false);
       setErrorMessage(t('settings.pat.validateFailed'));
     }
   };
@@ -181,217 +190,226 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
       item => item.owner === values.owner && item.name === values.repo,
     )?.fullName ?? '';
 
+  const showAuth = section === 'all' || section === 'auth';
+  const showLocation = section === 'all' || section === 'location';
+
   return (
     <>
-      <div className={classes.group}>
-        <h3 className={classes.sectionTitle}>{t('settings.pat.authTitle')}</h3>
-        <label className={classes.label}>
-          {t(`${labelPrefix}.token`)}{' '}
-          <span className={classes.required}>
-            {t(`${labelPrefix}.required`)}
-          </span>
-        </label>
-        <input
-          type="password"
-          value={values.token}
-          onChange={event => handleTokenChange(event.target.value)}
-          placeholder={t(`${labelPrefix}.tokenPlaceholder`)}
-          className={classes.input}
-          required
-          autoComplete="off"
-        />
-        {requiredScopes.length > 0 ? (
-          <p className={classes.description}>
-            {interpolate(t('settings.pat.scopeHint'), {
-              scopes: requiredScopes.join(', '),
-            })}
-          </p>
-        ) : (
-          <p className={classes.description}>
-            {t(`${labelPrefix}.tokenDescription`)}
-          </p>
-        )}
-        <div className="git-pat-actions">
-          {tokenCreateUrl ? (
-            <a
-              className="git-pat-link"
-              href={tokenCreateUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+      {showAuth ? (
+        <div className={classes.group}>
+          <h3 className={classes.sectionTitle}>
+            {t('settings.pat.authTitle')}
+          </h3>
+          <label className={classes.label}>
+            {t(`${labelPrefix}.token`)}{' '}
+            <span className={classes.required}>
+              {t(`${labelPrefix}.required`)}
+            </span>
+          </label>
+          <input
+            type="password"
+            value={values.token}
+            onChange={event => handleTokenChange(event.target.value)}
+            placeholder={t(`${labelPrefix}.tokenPlaceholder`)}
+            className={classes.input}
+            required
+            autoComplete="off"
+          />
+          {requiredScopes.length > 0 ? (
+            <p className={classes.description}>
+              {interpolate(t('settings.pat.scopeHint'), {
+                scopes: requiredScopes.join(', '),
+              })}
+            </p>
+          ) : (
+            <p className={classes.description}>
+              {t(`${labelPrefix}.tokenDescription`)}
+            </p>
+          )}
+          <div className="git-pat-actions">
+            {tokenCreateUrl ? (
+              <a
+                className="git-pat-link"
+                href={tokenCreateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('settings.pat.createToken')}
+              </a>
+            ) : null}
+            <button
+              type="button"
+              className="git-pat-validate"
+              onClick={() => void handleValidate()}
+              disabled={!values.token.trim() || status === 'validating'}
             >
-              {t('settings.pat.createToken')}
-            </a>
+              {status === 'validating'
+                ? t('settings.pat.validating')
+                : t('settings.pat.validateToken')}
+            </button>
+          </div>
+          {status === 'ok' && login ? (
+            <p className="git-pat-status git-pat-status--ok">
+              {interpolate(t('settings.pat.validatedAs'), { login })}
+            </p>
           ) : null}
-          <button
-            type="button"
-            className="git-pat-validate"
-            onClick={() => void handleValidate()}
-            disabled={!values.token.trim() || status === 'validating'}
-          >
-            {status === 'validating'
-              ? t('settings.pat.validating')
-              : t('settings.pat.validateToken')}
-          </button>
+          {status === 'error' ? (
+            <p className="git-pat-status git-pat-status--error">
+              {errorMessage || t('settings.pat.validateFailed')}
+            </p>
+          ) : null}
+          {missingScopes.length > 0 ? (
+            <p className="git-pat-status git-pat-status--error">
+              {interpolate(t('settings.pat.scopeMissing'), {
+                scopes: missingScopes.join(', '),
+              })}
+            </p>
+          ) : null}
         </div>
-        {status === 'ok' && login ? (
-          <p className="git-pat-status git-pat-status--ok">
-            {interpolate(t('settings.pat.validatedAs'), { login })}
-          </p>
-        ) : null}
-        {status === 'error' ? (
-          <p className="git-pat-status git-pat-status--error">
-            {errorMessage || t('settings.pat.validateFailed')}
-          </p>
-        ) : null}
-        {missingScopes.length > 0 ? (
-          <p className="git-pat-status git-pat-status--error">
-            {interpolate(t('settings.pat.scopeMissing'), {
-              scopes: missingScopes.join(', '),
-            })}
-          </p>
-        ) : null}
-      </div>
+      ) : null}
 
-      <div className={classes.group}>
-        <h3 className={classes.sectionTitle}>
-          {t('settings.pat.locationTitle')}
-        </h3>
-        {loadingRepos ? (
-          <p className={classes.description}>
-            {t('settings.pat.loadingRepos')}
-          </p>
-        ) : null}
-        {repoLoadError ? (
-          <p className="git-pat-status git-pat-status--error">
-            {repoLoadError}
-          </p>
-        ) : null}
-        {repositories.length > 0 ? (
-          <div className={classes.group}>
-            <label className={classes.label} htmlFor="git-pat-repo">
-              {t('settings.pat.pickRepo')}
-            </label>
-            <select
-              id="git-pat-repo"
-              className={classes.input}
-              value={selectedRepoValue}
-              onChange={event => void handleSelectRepo(event.target.value)}
-            >
-              <option value="">{t('settings.pat.pickRepo')}</option>
-              {repositories.map(item => (
-                <option key={item.fullName} value={item.fullName}>
-                  {item.fullName}
-                  {item.private ? ` · ${t('settings.pat.privateRepo')}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
+      {showLocation ? (
+        <div className={classes.group}>
+          <h3 className={classes.sectionTitle}>
+            {t('settings.pat.locationTitle')}
+          </h3>
+          {loadingRepos ? (
+            <p className={classes.description}>
+              {t('settings.pat.loadingRepos')}
+            </p>
+          ) : null}
+          {repoLoadError ? (
+            <p className="git-pat-status git-pat-status--error">
+              {repoLoadError}
+            </p>
+          ) : null}
+          {repositories.length > 0 ? (
+            <div className={classes.group}>
+              <label className={classes.label} htmlFor="git-pat-repo">
+                {t('settings.pat.pickRepo')}
+              </label>
+              <select
+                id="git-pat-repo"
+                className={classes.input}
+                value={selectedRepoValue}
+                onChange={event => void handleSelectRepo(event.target.value)}
+              >
+                <option value="">{t('settings.pat.pickRepo')}</option>
+                {repositories.map(item => (
+                  <option key={item.fullName} value={item.fullName}>
+                    {item.fullName}
+                    {item.private ? ` · ${t('settings.pat.privateRepo')}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
-        <div className={classes.row}>
-          <div className={classes.group}>
-            <label className={classes.label}>
-              {t(`${labelPrefix}.username`)}{' '}
-              <span className={classes.required}>
-                {t(`${labelPrefix}.required`)}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={values.owner}
-              onChange={event =>
-                onChange({ owner: event.target.value, private: false })
-              }
-              placeholder={t(`${labelPrefix}.usernamePlaceholder`)}
-              className={classes.input}
-              required
-            />
-          </div>
-          <div className={classes.group}>
-            <label className={classes.label}>
-              {t(`${labelPrefix}.repository`)}{' '}
-              <span className={classes.required}>
-                {t(`${labelPrefix}.required`)}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={values.repo}
-              onChange={event =>
-                onChange({ repo: event.target.value, private: false })
-              }
-              placeholder={t(`${labelPrefix}.repositoryPlaceholder`)}
-              className={classes.input}
-              required
-            />
-          </div>
-        </div>
-
-        {branches.length > 0 ? (
-          <div className={classes.group}>
-            <label className={classes.label} htmlFor="git-pat-branch">
-              {t('settings.pat.pickBranch')}
-            </label>
-            <select
-              id="git-pat-branch"
-              className={classes.input}
-              value={branches.includes(values.branch) ? values.branch : ''}
-              onChange={event => onChange({ branch: event.target.value })}
-            >
-              <option value="">{t('settings.pat.pickBranch')}</option>
-              {branches.map(name => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
-
-        <div className={classes.row}>
-          <div className={classes.group}>
-            <label className={classes.label}>
-              {t(`${labelPrefix}.branch`)}{' '}
-              <span className={classes.required}>
-                {t(`${labelPrefix}.required`)}
-              </span>
-            </label>
-            <input
-              type="text"
-              value={values.branch}
-              onChange={event => onChange({ branch: event.target.value })}
-              placeholder={t(`${labelPrefix}.branchPlaceholder`)}
-              className={classes.input}
-              required
-            />
-          </div>
-        </div>
-
-        <details className="git-pat-advanced">
-          <summary>{t('settings.pat.advancedPath')}</summary>
-          <div className="git-pat-advanced-body">
+          <div className={classes.row}>
             <div className={classes.group}>
               <label className={classes.label}>
-                {t(`${labelPrefix}.path`)}{' '}
+                {t(`${labelPrefix}.username`)}{' '}
                 <span className={classes.required}>
                   {t(`${labelPrefix}.required`)}
                 </span>
               </label>
               <input
                 type="text"
-                value={values.path}
-                onChange={event => onChange({ path: event.target.value })}
-                placeholder={t(`${labelPrefix}.pathPlaceholder`)}
+                value={values.owner}
+                onChange={event =>
+                  onChange({ owner: event.target.value, private: false })
+                }
+                placeholder={t(`${labelPrefix}.usernamePlaceholder`)}
                 className={classes.input}
                 required
               />
-              <p className={classes.description}>
-                {t('settings.pat.pathHint')}
-              </p>
+            </div>
+            <div className={classes.group}>
+              <label className={classes.label}>
+                {t(`${labelPrefix}.repository`)}{' '}
+                <span className={classes.required}>
+                  {t(`${labelPrefix}.required`)}
+                </span>
+              </label>
+              <input
+                type="text"
+                value={values.repo}
+                onChange={event =>
+                  onChange({ repo: event.target.value, private: false })
+                }
+                placeholder={t(`${labelPrefix}.repositoryPlaceholder`)}
+                className={classes.input}
+                required
+              />
             </div>
           </div>
-        </details>
-      </div>
+
+          {branches.length > 0 ? (
+            <div className={classes.group}>
+              <label className={classes.label} htmlFor="git-pat-branch">
+                {t('settings.pat.pickBranch')}
+              </label>
+              <select
+                id="git-pat-branch"
+                className={classes.input}
+                value={branches.includes(values.branch) ? values.branch : ''}
+                onChange={event => onChange({ branch: event.target.value })}
+              >
+                <option value="">{t('settings.pat.pickBranch')}</option>
+                {branches.map(name => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
+          <div className={classes.row}>
+            <div className={classes.group}>
+              <label className={classes.label}>
+                {t(`${labelPrefix}.branch`)}{' '}
+                <span className={classes.required}>
+                  {t(`${labelPrefix}.required`)}
+                </span>
+              </label>
+              <input
+                type="text"
+                value={values.branch}
+                onChange={event => onChange({ branch: event.target.value })}
+                placeholder={t(`${labelPrefix}.branchPlaceholder`)}
+                className={classes.input}
+                required
+              />
+            </div>
+          </div>
+
+          <details className="git-pat-advanced">
+            <summary>{t('settings.pat.advancedPath')}</summary>
+            <div className="git-pat-advanced-body">
+              <div className={classes.group}>
+                <label className={classes.label}>
+                  {t(`${labelPrefix}.path`)}{' '}
+                  <span className={classes.required}>
+                    {t(`${labelPrefix}.required`)}
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={values.path}
+                  onChange={event => onChange({ path: event.target.value })}
+                  placeholder={t(`${labelPrefix}.pathPlaceholder`)}
+                  className={classes.input}
+                  required
+                />
+                <p className={classes.description}>
+                  {t('settings.pat.pathHint')}
+                </p>
+              </div>
+            </div>
+          </details>
+        </div>
+      ) : null}
     </>
   );
 };

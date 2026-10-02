@@ -19,6 +19,7 @@ import React, {
 import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
+import { AssetLibraryBatchMoveModal } from './AssetLibraryBatchMoveModal';
 import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
 import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
@@ -122,6 +123,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
   const requestSync = useUIStore(state => state.requestSync);
+  const inspectorCollapsed = useUIStore(state => state.inspectorCollapsed);
+  const setInspectorCollapsed = useUIStore(
+    state => state.setInspectorCollapsed,
+  );
   const workspaceExplorerOpen = useUIStore(
     state => state.workspaceExplorerOpen,
   );
@@ -134,6 +139,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [batchEditOpen, setBatchEditOpen] = useState(false);
+  const [batchMoveOpen, setBatchMoveOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reviewIds, setReviewIds] = useState<string[]>([]);
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -153,7 +159,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
   const hasSelection = selectedIds.length > 0;
-  const showDockedInspector = !isMobile && (isWide || hasSelection);
+  const showDockedInspector =
+    !isMobile && !inspectorCollapsed && (isWide || hasSelection);
   const showSheetInspector =
     isMobile && !multiSelectMode && selectedIds.length === 1 && sheetOpen;
   const showMobileSelectionBar =
@@ -187,6 +194,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         );
       }
       setSheetOpen(isMobile && ids.length === 1 && !multiSelectMode);
+      if (ids.length > 0) {
+        setInspectorCollapsed(false);
+      }
       if (
         ids.length > 0 &&
         isMobile &&
@@ -198,7 +208,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         useUIStore.getState().setWorkspaceExplorerOpen(false);
       }
     },
-    [isMobile, isWide, multiSelectMode],
+    [isMobile, isWide, multiSelectMode, setInspectorCollapsed],
   );
 
   const handleMultiSelectModeChange = useCallback((active: boolean) => {
@@ -364,6 +374,37 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [loadImages, onBatchUpdateMetadata, selectedIds],
   );
 
+  const handleBatchMoveSubmit = useCallback(
+    async (targetDir: string) => {
+      const paths = selectedImages
+        .map(item => item.localPath)
+        .filter((path): path is string => Boolean(path));
+      if (paths.length === 0) {
+        showError(t('image.library.batchMoveFailed'));
+        return;
+      }
+      const moved = await useWorkspaceStore
+        .getState()
+        .moveLocalFiles(paths, targetDir);
+      if (useWorkspaceStore.getState().error) {
+        showError(t('image.library.batchMoveFailed'));
+        return;
+      }
+      showSuccess(
+        moved === 0
+          ? t('image.library.batchMoveNone')
+          : t('image.library.batchMoveSuccess').replace(
+              '{count}',
+              String(moved),
+            ),
+      );
+      setBatchMoveOpen(false);
+      handleClearSelection();
+      await loadImages();
+    },
+    [handleClearSelection, loadImages, selectedImages, t],
+  );
+
   const handleSendCompress = useCallback(() => {
     openUtilityTool('compress');
   }, []);
@@ -432,6 +473,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
             selectedImages.length > 0
               ? () => setBatchEditOpen(true)
               : undefined,
+          onBatchMove:
+            localActive && selectedImages.length > 0
+              ? () => setBatchMoveOpen(true)
+              : undefined,
           onBatchDownload: handleBatchDownload,
           onSync: () => requestSync(),
           onCopyLinks:
@@ -453,6 +498,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       handleSendCompress,
       handleSendConvert,
       hasRemoteConnection,
+      localActive,
       requestSync,
       selectedImages,
       t,
@@ -461,7 +507,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const handleCloseInspector = useCallback(() => {
     handleClearSelection();
-  }, [handleClearSelection]);
+    setInspectorCollapsed(true);
+  }, [handleClearSelection, setInspectorCollapsed]);
 
   useEffect(() => {
     if (!workspaceExplorerOpen) return;
@@ -604,6 +651,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         t={t}
         onClose={() => setBatchEditOpen(false)}
         onSubmit={handleBatchEditSubmit}
+      />
+      <AssetLibraryBatchMoveModal
+        isOpen={batchMoveOpen}
+        selectedCount={selectedIds.length}
+        folders={localFolders}
+        t={t}
+        onClose={() => setBatchMoveOpen(false)}
+        onSubmit={handleBatchMoveSubmit}
       />
       <UtilityToolOverlay />
     </div>
