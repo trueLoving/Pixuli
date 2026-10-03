@@ -457,6 +457,29 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         onUploadComplete={onUploadComplete}
       />
 
+      {search?.searchQuery && search.canSearchInAll ? (
+        <div
+          className="asset-library-search-scope"
+          role="status"
+          aria-live="polite"
+        >
+          <span>
+            {search.searchScope === 'workspace'
+              ? t('image.library.searchScopeAll')
+              : t('image.library.searchScopeFolder')}
+          </span>
+          {search.searchScope === 'workspace' && search.onSearchInFolder ? (
+            <button
+              type="button"
+              className="asset-library-search-scope-btn"
+              onClick={search.onSearchInFolder}
+            >
+              {t('image.library.searchInFolder')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       <div
         className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}${showStatusBar ? ' has-status-bar' : ''}`}
         onDragEnter={handleLibraryDragEnter}
@@ -484,6 +507,13 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             onAddFiles={localWorkspaceActive ? handleEmptyAddFiles : undefined}
             onNewSubfolder={
               localWorkspaceActive ? handleEmptyNewSubfolder : undefined
+            }
+            onSearchInAll={
+              isFilteredEmpty &&
+              search?.canSearchInAll &&
+              search.searchScope === 'folder'
+                ? search.onSearchInAll
+                : undefined
             }
           />
         ) : (

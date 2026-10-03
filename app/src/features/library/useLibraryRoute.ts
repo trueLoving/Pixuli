@@ -33,15 +33,30 @@ export function useLibraryRoute() {
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
+  const searchScope = searchContext?.searchScope ?? 'folder';
+  const searchAllWorkspace =
+    searchScope === 'workspace' &&
+    Boolean(searchContext?.searchQuery?.trim()) &&
+    Boolean(selectedFolderPath);
+
   const visibleImages = useMemo(
-    () => filterImagesByFolder(images, selectedFolderPath),
-    [images, selectedFolderPath],
+    () =>
+      searchAllWorkspace
+        ? images
+        : filterImagesByFolder(images, selectedFolderPath),
+    [images, searchAllWorkspace, selectedFolderPath],
   );
+
+  const setSearchScope = searchContext?.setSearchScope;
+  useEffect(() => {
+    setSearchScope?.('folder');
+  }, [selectedFolderPath, setSearchScope]);
 
   const search = useMemo<LibrarySearchConfig | undefined>(() => {
     if (!searchContext) {
       return undefined;
     }
+    const canSearchInAll = Boolean(selectedFolderPath);
     return {
       searchQuery: searchContext.searchQuery,
       draftQuery: searchContext.draftQuery,
@@ -54,8 +69,14 @@ export function useLibraryRoute() {
       onSelectHistory: searchContext.handleSelectHistory,
       onDeleteHistory: searchContext.handleDeleteHistory,
       onClearHistory: searchContext.handleClearHistory,
+      searchScope: searchContext.searchScope,
+      canSearchInAll,
+      onSearchInAll: canSearchInAll
+        ? () => searchContext.setSearchScope('workspace')
+        : undefined,
+      onSearchInFolder: () => searchContext.setSearchScope('folder'),
     };
-  }, [searchContext]);
+  }, [searchContext, selectedFolderPath]);
 
   useEffect(() => {
     const tool = searchParams.get('tool');
