@@ -75,6 +75,13 @@
     "menuOperationLog": "操作日志",
     "menuLanguage": "语言",
     "menuKeyboard": "快捷键",
-    "menuVersion": "版本信息"
+    "menuVersion": "版本信息",
+    "menuTools": "图片工具",
+    "toolsCompressTitle": "压缩与转换",
+    "toolsCompressHint": "控制侧栏与检查器中的图片压缩 / 转换入口。",
+    "toolsCompressEnable": "启用图片工具",
+    "toolsCompressOffDetail": "关闭时隐藏入口，避免误用未需要的工具。",
+    "toolsCompressOnDetail": "打开后可在检查器将图片发送到压缩；产物仅本机。",
+    "toolsLocalOnlyNote": "压缩 / 转换只改本机文件，不会自动同步远端。"
   }
 }

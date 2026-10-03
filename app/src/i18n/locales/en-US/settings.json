@@ -75,6 +75,13 @@
     "menuOperationLog": "Operation log",
     "menuLanguage": "Language",
     "menuKeyboard": "Shortcuts",
-    "menuVersion": "Version"
+    "menuVersion": "Version",
+    "menuTools": "Image tools",
+    "toolsCompressTitle": "Compress & convert",
+    "toolsCompressHint": "Controls compress / convert entries in the sidebar and inspector.",
+    "toolsCompressEnable": "Enable image tools",
+    "toolsCompressOffDetail": "When off, those entries stay hidden.",
+    "toolsCompressOnDetail": "When on, you can send images to compress from the inspector. Output stays on this device.",
+    "toolsLocalOnlyNote": "Compress / convert only change local files. Nothing syncs until you sync."
   }
 }

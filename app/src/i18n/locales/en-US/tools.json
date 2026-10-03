@@ -20,7 +20,8 @@
       "download": "Download",
       "noFiles": "Select images to compress first",
       "clear": "Clear",
-      "keepAspectRatio": "Keep aspect ratio"
+      "keepAspectRatio": "Keep aspect ratio",
+      "localOnlyNote": "Compressed files stay on this device. Nothing syncs until you sync."
     },
     "convert": {
       "title": "Image Conversion",

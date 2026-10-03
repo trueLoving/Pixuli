@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ScrollText,
   Settings,
+  SlidersHorizontal,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -17,6 +18,7 @@ import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
 import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
+import { SettingsToolsPanel } from './SettingsToolsPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
 import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
@@ -57,6 +59,11 @@ const GENERAL_ITEMS: Array<{
     id: 'version',
     labelKey: 'settings.menuVersion',
     icon: <Info size={18} />,
+  },
+  {
+    id: 'tools',
+    labelKey: 'settings.menuTools',
+    icon: <SlidersHorizontal size={18} />,
   },
 ];
 
@@ -209,6 +216,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />
             )}
             {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
+            {activeSection === 'tools' && <SettingsToolsPanel t={t} />}
           </div>
         </div>
 
