@@ -8,6 +8,9 @@ export type {
 
 import type { FilterOptions } from '@pixuli/core/types';
 
+/** 查询作用范围：树选中文件夹，或忽略树范围查整个工作区 */
+export type LibrarySearchScope = 'folder' | 'workspace';
+
 export interface LibrarySearchConfig {
   /** 已确认查询（用于过滤结果） */
   searchQuery: string;
@@ -26,4 +29,10 @@ export interface LibrarySearchConfig {
   onSelectHistory?: (query: string) => void;
   onDeleteHistory?: (query: string) => void;
   onClearHistory?: () => void;
+  /** 当前范围；仅在选中文件夹时「全部」有意义 */
+  searchScope: LibrarySearchScope;
+  /** 当前是否可扩到全部（处于某文件夹下） */
+  canSearchInAll: boolean;
+  onSearchInAll?: () => void;
+  onSearchInFolder?: () => void;
 }
