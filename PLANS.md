@@ -53,7 +53,8 @@ closed 查阅。
 ### 当前应开工
 
 1. **[#244](https://github.com/trueLoving/Pixuli/issues/244)**
-   — 在全部中搜索（Sprint C）· ⏳ PR 待合入 `develop`
+   — 在全部中搜索（Sprint C）· ⏳
+   [#251](https://github.com/trueLoving/Pixuli/pull/251) 待合入 `develop`
 2. 并行：**J0 自测**（不建 Issue，除非出现可修缺陷）
 
 ### 资源库 UI P0（已完成）
