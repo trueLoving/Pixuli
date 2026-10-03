@@ -13,6 +13,7 @@ import React, {
 } from 'react';
 import type { FilterOptions } from '@pixuli/core/types';
 import { createDefaultFilters } from '@pixuli/core/utils';
+import type { LibrarySearchScope } from './librarySearchTypes';
 import {
   getSearchHistory,
   addSearchHistory,
@@ -39,6 +40,8 @@ interface SearchContextValue {
   handleSelectHistory: (query: string) => void;
   handleDeleteHistory: (query: string) => void;
   handleClearHistory: () => void;
+  searchScope: LibrarySearchScope;
+  setSearchScope: (scope: LibrarySearchScope) => void;
 }
 
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
@@ -64,6 +67,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [searchQuery, setSearchQueryState] = useState('');
   const [filters, setFilters] = useState<FilterOptions>(createDefaultFilters());
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
+  const [searchScope, setSearchScope] = useState<LibrarySearchScope>('folder');
 
   useEffect(() => {
     setHistory(getSearchHistory());
@@ -72,6 +76,9 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const setSearchQuery = useCallback((query: string) => {
     setDraftQuery(query);
     setSearchQueryState(query);
+    if (!query.trim()) {
+      setSearchScope('folder');
+    }
   }, []);
 
   const commitSearch = useCallback(
@@ -82,6 +89,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       if (q.length > 0) {
         addSearchHistory(q);
         setHistory(getSearchHistory());
+      } else {
+        setSearchScope('folder');
       }
     },
     [draftQuery],
@@ -118,6 +127,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         handleSelectHistory,
         handleDeleteHistory,
         handleClearHistory,
+        searchScope,
+        setSearchScope,
       }}
     >
       {children}

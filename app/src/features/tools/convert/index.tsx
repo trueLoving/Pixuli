@@ -4,6 +4,7 @@ import {
   webImageProcessorService,
   type OutputMimeType,
 } from '../imageProcessor';
+import { takeUtilityToolSeedFiles } from '../utilityToolSeed';
 import { Download, ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
@@ -30,6 +31,14 @@ export const ConvertToolPanel: React.FC = () => {
     items.forEach(({ result }) => {
       if (result.uri?.startsWith('blob:')) URL.revokeObjectURL(result.uri);
     });
+  }, []);
+
+  useEffect(() => {
+    const seeded = takeUtilityToolSeedFiles();
+    if (seeded.length > 0) {
+      setFiles(seeded);
+      setResults([]);
+    }
   }, []);
 
   useEffect(() => {

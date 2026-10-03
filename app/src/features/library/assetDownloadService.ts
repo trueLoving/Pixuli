@@ -29,7 +29,7 @@ export function buildZipDownloadFilename(count: number): string {
   return `pixuli-${count}-files-${stamp}.zip`;
 }
 
-async function readAssetBytes(item: ImageItem): Promise<Uint8Array> {
+export async function readAssetBytes(item: ImageItem): Promise<Uint8Array> {
   if (item.localPath && isWorkspaceAvailable()) {
     return getWorkspaceAdapter().readFile(item.localPath);
   }
@@ -39,6 +39,34 @@ async function readAssetBytes(item: ImageItem): Promise<Uint8Array> {
     throw new Error(`HTTP ${response.status}`);
   }
   return new Uint8Array(await response.arrayBuffer());
+}
+
+function guessImageMime(name: string, type?: string): string {
+  if (type && type.startsWith('image/')) return type;
+  const ext = name.includes('.')
+    ? name.slice(name.lastIndexOf('.') + 1).toLowerCase()
+    : '';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'gif') return 'image/gif';
+  if (ext === 'svg') return 'image/svg+xml';
+  if (ext === 'bmp') return 'image/bmp';
+  return 'image/jpeg';
+}
+
+/** 将库内图片读成 File，供压缩 / 转换工具预填 */
+export async function loadAssetsAsFiles(items: ImageItem[]): Promise<File[]> {
+  const files: File[] = [];
+  for (const item of items) {
+    try {
+      const bytes = await readAssetBytes(item);
+      const mime = guessImageMime(item.name, item.type);
+      files.push(new File([bytes], item.name, { type: mime }));
+    } catch {
+      // 单文件失败跳过，其余继续
+    }
+  }
+  return files;
 }
 
 function triggerBlobDownload(blob: Blob, filename: string): void {

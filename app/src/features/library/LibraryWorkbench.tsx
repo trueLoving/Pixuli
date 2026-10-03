@@ -20,9 +20,13 @@ import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
 import { AssetLibraryBatchMoveModal } from './AssetLibraryBatchMoveModal';
-import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
+import {
+  downloadAssetsAsZip,
+  loadAssetsAsFiles,
+} from '@/features/library/assetDownloadService';
 import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
+import { getAssetKind } from '@/features/library/utils/assetKind';
 import {
   showError,
   showErrorWithAction,
@@ -40,6 +44,8 @@ import {
 } from '@/features/library/useNativeImageActions';
 import { useImageStore } from '@/features/library/imageStore';
 import { openUtilityTool } from '@/features/tools/utilityToolPort';
+import { setUtilityToolSeedFiles } from '@/features/tools/utilityToolSeed';
+import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -405,13 +411,27 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [handleClearSelection, loadImages, selectedImages, t],
   );
 
-  const handleSendCompress = useCallback(() => {
-    openUtilityTool('compress');
-  }, []);
+  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
 
-  const handleSendConvert = useCallback(() => {
+  const handleSendCompress = useCallback(async () => {
+    if (!toolsEnabled) return;
+    const images = selectedImages.filter(
+      item => getAssetKind(item) === 'image',
+    );
+    const files = await loadAssetsAsFiles(images);
+    setUtilityToolSeedFiles(files);
+    openUtilityTool('compress');
+  }, [selectedImages, toolsEnabled]);
+
+  const handleSendConvert = useCallback(async () => {
+    if (!toolsEnabled) return;
+    const images = selectedImages.filter(
+      item => getAssetKind(item) === 'image',
+    );
+    const files = await loadAssetsAsFiles(images);
+    setUtilityToolSeedFiles(files);
     openUtilityTool('convert');
-  }, []);
+  }, [selectedImages, toolsEnabled]);
 
   const notifyCopyLinkResult = useCallback(
     (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
@@ -483,13 +503,17 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
             selectedImages.length > 0
               ? () => void handleCopyLinks()
               : undefined,
-          onSendCompress: handleSendCompress,
-          onSendConvert: handleSendConvert,
+          onSendCompress: () => {
+            void handleSendCompress();
+          },
+          onSendConvert: () => {
+            void handleSendConvert();
+          },
           onBatchDelete: () => {
             void handleBatchDelete();
           },
         },
-        { hasRemoteConnection },
+        { hasRemoteConnection, toolsEnabled },
       ),
     [
       handleBatchDelete,
@@ -502,6 +526,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       requestSync,
       selectedImages,
       t,
+      toolsEnabled,
     ],
   );
 
@@ -582,8 +607,12 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onCopyUrl={onCopyUrl}
       onShareImage={onShareImage}
       onSync={() => requestSync()}
-      onSendCompress={handleSendCompress}
-      onSendConvert={handleSendConvert}
+      onSendCompress={() => {
+        void handleSendCompress();
+      }}
+      onSendConvert={() => {
+        void handleSendConvert();
+      }}
       onBatchEdit={
         selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined
       }

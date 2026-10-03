@@ -1,13 +1,15 @@
 import { X } from 'lucide-react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useI18n } from '@/i18n/useI18n';
 import { useUIStore } from '@/stores/uiStore';
 import { CompressToolPanel } from './compress';
 import { ConvertToolPanel } from './convert';
+import { useUtilityToolsStore } from './utilityToolsConfig';
 import './UtilityToolOverlay.css';
 
 export const UtilityToolOverlay: React.FC = () => {
   const { t } = useI18n();
+  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
   const currentUtilityTool = useUIStore(state => state.currentUtilityTool);
   const setCurrentUtilityTool = useUIStore(
     state => state.setCurrentUtilityTool,
@@ -19,7 +21,13 @@ export const UtilityToolOverlay: React.FC = () => {
     setActiveMenu('library');
   }, [setActiveMenu, setCurrentUtilityTool]);
 
-  if (!currentUtilityTool) {
+  useEffect(() => {
+    if (!toolsEnabled && currentUtilityTool) {
+      close();
+    }
+  }, [close, currentUtilityTool, toolsEnabled]);
+
+  if (!currentUtilityTool || !toolsEnabled) {
     return null;
   }
 

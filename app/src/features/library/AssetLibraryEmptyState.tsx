@@ -1,5 +1,5 @@
 import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
-import { FolderPlus, Upload } from 'lucide-react';
+import { FolderPlus, Search, Upload } from 'lucide-react';
 import React from 'react';
 
 export interface AssetLibraryEmptyStateProps {
@@ -8,6 +8,8 @@ export interface AssetLibraryEmptyStateProps {
   t: (key: string) => string;
   onAddFiles?: () => void;
   onNewSubfolder?: () => void;
+  /** 文件夹范围内无匹配时，扩到整个工作区 */
+  onSearchInAll?: () => void;
 }
 
 export const AssetLibraryEmptyState: React.FC<AssetLibraryEmptyStateProps> = ({
@@ -16,8 +18,11 @@ export const AssetLibraryEmptyState: React.FC<AssetLibraryEmptyStateProps> = ({
   t,
   onAddFiles,
   onNewSubfolder,
+  onSearchInAll,
 }) => {
-  const showActions = !isFilteredEmpty && (onAddFiles || onNewSubfolder);
+  const showActions =
+    (!isFilteredEmpty && (onAddFiles || onNewSubfolder)) ||
+    (isFilteredEmpty && onSearchInAll);
 
   return (
     <div className="asset-library-empty">
@@ -47,7 +52,17 @@ export const AssetLibraryEmptyState: React.FC<AssetLibraryEmptyStateProps> = ({
       </p>
       {showActions ? (
         <div className="asset-library-empty-actions">
-          {onAddFiles ? (
+          {isFilteredEmpty && onSearchInAll ? (
+            <button
+              type="button"
+              className="asset-library-empty-btn asset-library-empty-btn--primary"
+              onClick={onSearchInAll}
+            >
+              <Search size={16} aria-hidden />
+              {t('image.library.searchInAll')}
+            </button>
+          ) : null}
+          {!isFilteredEmpty && onAddFiles ? (
             <button
               type="button"
               className="asset-library-empty-btn asset-library-empty-btn--primary"
@@ -57,7 +72,7 @@ export const AssetLibraryEmptyState: React.FC<AssetLibraryEmptyStateProps> = ({
               {t('image.library.addFiles')}
             </button>
           ) : null}
-          {onNewSubfolder ? (
+          {!isFilteredEmpty && onNewSubfolder ? (
             <button
               type="button"
               className="asset-library-empty-btn"

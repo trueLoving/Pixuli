@@ -1,7 +1,6 @@
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import type { ImageItem } from '@pixuli/core/types';
 import {
   Download,
@@ -48,18 +47,14 @@ function imageToolTitles(
   const imageCount = selectedImages.filter(
     item => getAssetKind(item) === 'image',
   ).length;
-  const compressTitle = !UTILITY_TOOLS_ENABLED
-    ? t('image.inspector.toolDisabled')
-    : imageCount === 0
+  const compressTitle =
+    imageCount === 0
       ? t('image.inspector.toolImageOnly')
       : imageCount < selectedImages.length
         ? `${compressLabel} (${imageCount}/${selectedImages.length})`
         : compressLabel;
-  const convertTitle = !UTILITY_TOOLS_ENABLED
-    ? t('image.inspector.toolDisabled')
-    : imageCount === 0
-      ? t('image.inspector.toolImageOnly')
-      : convertLabel;
+  const convertTitle =
+    imageCount === 0 ? t('image.inspector.toolImageOnly') : convertLabel;
   return { compressTitle, convertTitle, imageCount };
 }
 
@@ -67,12 +62,13 @@ export function buildBatchSelectionActions(
   selectedImages: ImageItem[],
   t: (key: string) => string,
   handlers: BatchSelectionActionHandlers,
-  options?: { hasRemoteConnection?: boolean },
+  options?: { hasRemoteConnection?: boolean; toolsEnabled?: boolean },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   if (selectedImages.length === 0) {
     return { grid: [], danger: null };
   }
 
+  const toolsEnabled = options?.toolsEnabled === true;
   const { compressTitle, convertTitle, imageCount } = imageToolTitles(
     selectedImages,
     t,
@@ -140,31 +136,31 @@ export function buildBatchSelectionActions(
     });
   }
 
-  grid.push({
-    id: 'compress',
-    label: t('image.inspector.actionCompress'),
-    title: compressTitle,
-    icon: SlidersHorizontal,
-    disabled:
-      !UTILITY_TOOLS_ENABLED || imageCount === 0 || !handlers.onSendCompress,
-    onClick: () => {
-      if (!UTILITY_TOOLS_ENABLED || imageCount === 0) return;
-      handlers.onSendCompress?.();
-    },
-  });
+  if (toolsEnabled) {
+    grid.push({
+      id: 'compress',
+      label: t('image.inspector.actionCompress'),
+      title: compressTitle,
+      icon: SlidersHorizontal,
+      disabled: imageCount === 0 || !handlers.onSendCompress,
+      onClick: () => {
+        if (imageCount === 0) return;
+        handlers.onSendCompress?.();
+      },
+    });
 
-  grid.push({
-    id: 'convert',
-    label: t('image.inspector.actionConvert'),
-    title: convertTitle,
-    icon: Wand2,
-    disabled:
-      !UTILITY_TOOLS_ENABLED || imageCount === 0 || !handlers.onSendConvert,
-    onClick: () => {
-      if (!UTILITY_TOOLS_ENABLED || imageCount === 0) return;
-      handlers.onSendConvert?.();
-    },
-  });
+    grid.push({
+      id: 'convert',
+      label: t('image.inspector.actionConvert'),
+      title: convertTitle,
+      icon: Wand2,
+      disabled: imageCount === 0 || !handlers.onSendConvert,
+      onClick: () => {
+        if (imageCount === 0) return;
+        handlers.onSendConvert?.();
+      },
+    });
+  }
 
   return {
     grid,
@@ -189,9 +185,11 @@ export function buildSingleSelectionActions(
     canCopy?: boolean;
     /** 复制禁用时的原因文案（title） */
     copyDisabledTitle?: string;
+    toolsEnabled?: boolean;
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   const grid: CompactAction[] = [];
+  const toolsEnabled = options.toolsEnabled === true;
 
   if (options.canEdit && handlers.onEdit) {
     grid.push({
@@ -225,39 +223,37 @@ export function buildSingleSelectionActions(
     });
   }
 
-  grid.push({
-    id: 'compress',
-    label: t('image.inspector.actionCompress'),
-    title: !UTILITY_TOOLS_ENABLED
-      ? t('image.inspector.toolDisabled')
-      : kind === 'image'
-        ? t('image.inspector.sendCompress')
-        : t('image.inspector.toolImageOnly'),
-    icon: SlidersHorizontal,
-    disabled:
-      !UTILITY_TOOLS_ENABLED || kind !== 'image' || !handlers.onSendCompress,
-    onClick: () => {
-      if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
-      handlers.onSendCompress?.();
-    },
-  });
+  if (toolsEnabled) {
+    grid.push({
+      id: 'compress',
+      label: t('image.inspector.actionCompress'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendCompress')
+          : t('image.inspector.toolImageOnly'),
+      icon: SlidersHorizontal,
+      disabled: kind !== 'image' || !handlers.onSendCompress,
+      onClick: () => {
+        if (kind !== 'image') return;
+        handlers.onSendCompress?.();
+      },
+    });
 
-  grid.push({
-    id: 'convert',
-    label: t('image.inspector.actionConvert'),
-    title: !UTILITY_TOOLS_ENABLED
-      ? t('image.inspector.toolDisabled')
-      : kind === 'image'
-        ? t('image.inspector.sendConvert')
-        : t('image.inspector.toolImageOnly'),
-    icon: Wand2,
-    disabled:
-      !UTILITY_TOOLS_ENABLED || kind !== 'image' || !handlers.onSendConvert,
-    onClick: () => {
-      if (!UTILITY_TOOLS_ENABLED || kind !== 'image') return;
-      handlers.onSendConvert?.();
-    },
-  });
+    grid.push({
+      id: 'convert',
+      label: t('image.inspector.actionConvert'),
+      title:
+        kind === 'image'
+          ? t('image.inspector.sendConvert')
+          : t('image.inspector.toolImageOnly'),
+      icon: Wand2,
+      disabled: kind !== 'image' || !handlers.onSendConvert,
+      onClick: () => {
+        if (kind !== 'image') return;
+        handlers.onSendConvert?.();
+      },
+    });
+  }
 
   grid.push({
     id: 'ai',

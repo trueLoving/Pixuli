@@ -4,6 +4,7 @@ import type {
 } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { webImageProcessorService } from '../imageProcessor';
+import { takeUtilityToolSeedFiles } from '../utilityToolSeed';
 import { Download, ImageIcon, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/i18n/useI18n';
@@ -42,6 +43,14 @@ export const CompressToolPanel: React.FC = () => {
     items.forEach(({ result }) => {
       if (result.uri?.startsWith('blob:')) URL.revokeObjectURL(result.uri);
     });
+  }, []);
+
+  useEffect(() => {
+    const seeded = takeUtilityToolSeedFiles();
+    if (seeded.length > 0) {
+      setFiles(seeded);
+      setResults([]);
+    }
   }, []);
 
   useEffect(() => {
@@ -107,6 +116,9 @@ export const CompressToolPanel: React.FC = () => {
   return (
     <div className="utility-tool-panel utility-tool-panel--compress h-full w-full overflow-auto p-4 sm:p-6">
       <div className="mx-auto max-w-4xl">
+        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+          {t('tools.compress.localOnlyNote')}
+        </p>
         <div
           className="mb-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800/50"
           onDrop={onDrop}

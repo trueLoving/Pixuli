@@ -1,7 +1,10 @@
 export { CompressToolPanel } from './compress';
 export { ConvertToolPanel } from './convert';
 export { UtilityToolOverlay } from './UtilityToolOverlay';
-export { UTILITY_TOOLS_ENABLED } from './utilityToolsConfig';
+export {
+  isUtilityToolsEnabled,
+  useUtilityToolsStore,
+} from './utilityToolsConfig';
 export {
   WebImageProcessorService,
   webImageProcessorService,
