@@ -1,3 +1,5 @@
+import { isUtilityToolsEnabled } from '@/features/tools/utilityToolsConfig';
+
 export type UtilityToolId = 'compress' | 'convert';
 
 /** inspector / library / 侧栏 → tools overlay：打开增强工具（避免跨域直接写 uiStore） */
@@ -22,6 +24,7 @@ export function getUtilityToolPort(): UtilityToolPort {
 }
 
 export function openUtilityTool(tool: UtilityToolId): void {
+  if (!isUtilityToolsEnabled()) return;
   getUtilityToolPort().openUtilityTool(tool);
 }
 

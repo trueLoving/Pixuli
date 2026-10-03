@@ -1,6 +1,5 @@
 import { FileImage, FileText, FolderOpen, Zap } from 'lucide-react';
 import React from 'react';
-import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
 import type {
   SidebarMenuItem,
   SidebarPrimaryNavItem,
@@ -33,7 +32,7 @@ export function buildUtilityNavItems(
   translate: (key: string) => string,
   hideUtilityTools: boolean,
 ): SidebarPrimaryNavItem[] {
-  if (hideUtilityTools || !UTILITY_TOOLS_ENABLED) {
+  if (hideUtilityTools) {
     return [];
   }
   return [

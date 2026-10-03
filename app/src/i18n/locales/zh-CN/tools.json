@@ -20,7 +20,8 @@
       "download": "下载",
       "noFiles": "请先选择要压缩的图片",
       "clear": "清空",
-      "keepAspectRatio": "保持宽高比"
+      "keepAspectRatio": "保持宽高比",
+      "localOnlyNote": "压缩产物仅保存在本机，不会自动同步远端。"
     },
     "convert": {
       "title": "图片转换",

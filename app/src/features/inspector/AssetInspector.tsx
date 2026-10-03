@@ -29,6 +29,7 @@ import React, {
   useState,
 } from 'react';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
+import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
@@ -120,6 +121,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     setShowEdit(true);
   }, [metadataReview?.openEditNonce, onUpdateImage]);
 
+  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const sheetDragRef = useRef<{ y: number; moved: boolean } | null>(null);
@@ -326,6 +328,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             hasRemoteConnection === false
               ? t('image.copyLink.needConnection')
               : t('image.copyLink.needSync'),
+          toolsEnabled,
         },
       ),
     [
@@ -341,6 +344,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       onShareImage,
       onUpdateImage,
       t,
+      toolsEnabled,
     ],
   );
 
@@ -360,7 +364,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             void handleBatchDelete();
           },
         },
-        { hasRemoteConnection },
+        { hasRemoteConnection, toolsEnabled },
       ),
     [
       handleBatchDelete,
@@ -373,6 +377,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       onSync,
       selectedImages,
       t,
+      toolsEnabled,
     ],
   );
 

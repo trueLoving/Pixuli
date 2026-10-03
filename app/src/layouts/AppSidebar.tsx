@@ -10,7 +10,7 @@ import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { openUtilityTool } from '@/features/tools/utilityToolPort';
-import { UTILITY_TOOLS_ENABLED } from '@/features/tools/utilityToolsConfig';
+import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -57,6 +57,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
   } = useUIStore();
 
   const syncBusy = pushing || syncing || workspaceLoading;
+  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
 
   const activeSyncSource = useMemo(() => {
     if (selectedSourceId) {
@@ -156,7 +157,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
           syncBusy={syncBusy}
           syncDisabled={syncBusy}
           syncRemoteLabel={syncRemoteLabel}
-          hideUtilityTools={!UTILITY_TOOLS_ENABLED}
+          hideUtilityTools={!toolsEnabled}
           hideHelpFooter
           showWorkspaceNav={isWorkspaceAvailable()}
           hideSources
