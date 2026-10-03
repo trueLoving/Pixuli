@@ -1,8 +1,8 @@
 # PLANS
 
 > **工作进度 SSOT** · 与 GitHub Issues **对齐** **最近同步**：2026-10-03（#245
-> REF-613 进行中；#244 ✅
-> [#251](https://github.com/trueLoving/Pixuli/pull/251)） **状态**：执行中 ·
+> REF-613 · [#252](https://github.com/trueLoving/Pixuli/pull/252) 待合入
+> `develop`；#244 ✅） **状态**：执行中 ·
 > **主路径冻结**（添加 → 同步 → 复制链接）
 
 本文件是仓库**唯一的任务与进度汇总表**。新增任务、更新进度、关闭项，都在这里维护，并与远程 Issue 保持一致。
@@ -108,7 +108,7 @@ closed 查阅。
 | REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ✅ [#247](https://github.com/trueLoving/Pixuli/pull/247) |
 | REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ✅ [#248](https://github.com/trueLoving/Pixuli/pull/248) |
 | REF-612 | 在全部中搜索             | [#244](https://github.com/trueLoving/Pixuli/issues/244) | C      | ✅ [#251](https://github.com/trueLoving/Pixuli/pull/251) |
-| REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ⏳                                                       |
+| REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ⏳ [#252](https://github.com/trueLoving/Pixuli/pull/252) |
 | REF-603 | 大数据 / 性能边界        | [#132](https://github.com/trueLoving/Pixuli/issues/132) | D      | ⏳ 部分                                                  |
 | REF-411 | 插件体系重设计           | [#126](https://github.com/trueLoving/Pixuli/issues/126) | E      | ⬜                                                       |
 
