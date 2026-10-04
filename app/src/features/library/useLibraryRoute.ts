@@ -9,7 +9,8 @@ import { useI18n } from '@/i18n/useI18n';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
-import { useEffect, useMemo } from 'react';
+import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 /** `/library` 路由：store 接线、文件夹过滤、搜索适配、工具深链 */
@@ -47,10 +48,15 @@ export function useLibraryRoute() {
     [images, searchAllWorkspace, selectedFolderPath],
   );
 
-  const setSearchScope = searchContext?.setSearchScope;
+  const clearCommittedSearch = searchContext?.clearCommittedSearch;
+  const folderPathForSearchRef = useRef<string | null>(null);
   useEffect(() => {
-    setSearchScope?.('folder');
-  }, [selectedFolderPath, setSearchScope]);
+    const previous = folderPathForSearchRef.current;
+    if (shouldResetOnFolderChange(previous, selectedFolderPath)) {
+      clearCommittedSearch?.();
+    }
+    folderPathForSearchRef.current = selectedFolderPath;
+  }, [selectedFolderPath, clearCommittedSearch]);
 
   const search = useMemo<LibrarySearchConfig | undefined>(() => {
     if (!searchContext) {

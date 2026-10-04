@@ -38,7 +38,6 @@ export type AppMainLayoutProps = {
 };
 
 export type AppRoutesOrchestrationProps = {
-  onOpenConfigModal: () => void;
   isFullscreenMode: boolean;
   setIsFullscreenMode: (isFullscreen: boolean) => void;
 };
@@ -166,7 +165,6 @@ export function useAppOrchestration(): {
       onClearConfig: handleClearConfigWithId,
     },
     routesProps: {
-      onOpenConfigModal: openConfigModal,
       isFullscreenMode,
       setIsFullscreenMode,
     },

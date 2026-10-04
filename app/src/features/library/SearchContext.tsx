@@ -32,6 +32,10 @@ interface SearchContextValue {
   setSearchQuery: (query: string) => void;
   /** 回车确认：以当前草稿（或传入值）生效并写入历史 */
   commitSearch: (query?: string) => void;
+  /**
+   * 切换文件夹时清已生效查询与全库范围；草稿可保留（SSOT P1-3）
+   */
+  clearCommittedSearch: () => void;
   filters: FilterOptions;
   setFilters: (
     filters: FilterOptions | ((prev: FilterOptions) => FilterOptions),
@@ -81,6 +85,12 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const clearCommittedSearch = useCallback(() => {
+    setSearchQueryState('');
+    setSearchScope('folder');
+    setFilters(prev => (prev.searchTerm ? { ...prev, searchTerm: '' } : prev));
+  }, []);
+
   const commitSearch = useCallback(
     (query?: string) => {
       const q = (query ?? draftQuery).trim();
@@ -121,6 +131,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         searchQuery,
         setSearchQuery,
         commitSearch,
+        clearCommittedSearch,
         filters,
         setFilters,
         history,

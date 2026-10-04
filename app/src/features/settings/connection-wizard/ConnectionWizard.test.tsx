@@ -84,6 +84,7 @@ const manifests: StoragePluginManifest[] = [
 const copy = {
   ...githubConfigModalTranslations,
   'settings.wizardShellTitle': '添加连接',
+  'settings.wizardEditTitle': '编辑连接',
   'settings.wizardStepService': '选服务',
   'settings.wizardStepAuth': '授权',
   'settings.wizardStepLocation': '选位置',
@@ -93,6 +94,7 @@ const copy = {
   'settings.wizardFinish': '完成',
   'settings.wizardFinishAndSync': '完成并选择同步',
   'settings.wizardDoneHint': '保存后出现在连接列表。不会自动开始同步。',
+  'settings.wizardEditDoneHint': '保存后更新当前连接。不会自动开始同步。',
   'settings.purposeDefaultSync': '默认同步',
   'settings.purposeBackup': '仅备份同步',
   'settings.upcomingTitle': '即将支持',
@@ -179,5 +181,67 @@ describe('ConnectionWizard', () => {
     );
     expect(onComplete).toHaveBeenCalled();
     expect(openSyncDirectionModal).not.toHaveBeenCalled();
+  });
+
+  it('opens add wizard on auth when a service is prefilled', () => {
+    render(
+      <ConnectionWizard
+        manifests={manifests}
+        t={makeModalTranslate(copy)}
+        onCancel={vi.fn()}
+        onComplete={onComplete}
+        discovery={discovery}
+        initialPluginId="github"
+      />,
+    );
+
+    expect(screen.getByText('添加连接')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('ghp_xxxxxxxxxxxxxxxxxxxx'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Gitee|码/ })).toBeNull();
+  });
+
+  it('edits an existing connection without recreating the source', async () => {
+    render(
+      <ConnectionWizard
+        manifests={manifests}
+        t={makeModalTranslate(copy)}
+        onCancel={vi.fn()}
+        onComplete={onComplete}
+        discovery={discovery}
+        editSourceId="src-1"
+        initialPluginId="github"
+        initialValues={{
+          owner: 'octo',
+          repo: 'pics',
+          branch: 'main',
+          token: 'ghp_existing',
+          path: 'images',
+        }}
+      />,
+    );
+
+    expect(screen.getByText('编辑连接')).toBeInTheDocument();
+    expect(screen.queryByText('选服务')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('ghp_xxxxxxxxxxxxxxxxxxxx')).toHaveValue(
+      'ghp_existing',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '继续' }));
+    expect(screen.getByRole('heading', { name: '选位置' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '继续' }));
+    fireEvent.click(screen.getByRole('button', { name: '完成' }));
+
+    expect(prepareNewSource).not.toHaveBeenCalled();
+    expect(handleSaveConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: 'octo',
+        repo: 'pics',
+        token: 'ghp_existing',
+      }),
+      'src-1',
+    );
+    expect(onComplete).toHaveBeenCalled();
   });
 });
