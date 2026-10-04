@@ -41,6 +41,8 @@ interface UIState {
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
   settingsSyncAddOpen: boolean;
+  /** 空态等入口预选的服务（打开添加向导时带入） */
+  settingsSyncPrefillPluginId: 'github' | 'gitee' | null;
   /** 新建连接时暂存向导用途 */
   pendingConnectionPurpose: ConnectionPurpose | null;
 
@@ -104,7 +106,7 @@ interface UIState {
   setShowWorkspaceModal: (show: boolean) => void;
 
   // Helper actions
-  /** 右键/菜单编辑：从 sourceStore 读取 config 并打开对应类型弹窗 */
+  /** 编辑连接：打开设置 · 同步分区内的统一向导（不再走分云旧表单） */
   openConfigModalForEdit: (sourceId: string) => boolean;
   openConfigModal: () => void;
   closeConfigModal: () => void;
@@ -119,7 +121,7 @@ interface UIState {
   requestSync: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
-  openSettingsModalForAddSource: () => void;
+  openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
   /** 向导保存前写入 plugin 与用途，不打开分云大表单 */
@@ -132,6 +134,7 @@ export const useUIStore = create<UIState>(set => ({
   showSyncDirectionModal: false,
   settingsSection: 'workspace',
   settingsSyncAddOpen: false,
+  settingsSyncPrefillPluginId: null,
   pendingConnectionPurpose: null,
   editingSourceId: null,
   editingSourcePluginId: null,
@@ -206,18 +209,19 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: sourceId,
       editingSourcePluginId: source.pluginId,
       editingSourceRepoConfig: repoConfig,
-      showConfigModal: true,
+      showConfigModal: false,
+      showSettingsModal: true,
+      settingsSection: 'sync',
+      settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
+      activeMenu: 'settings',
     });
     return true;
   },
 
-  openConfigModal: () =>
-    set({
-      showConfigModal: true,
-      editingSourceId: null,
-      editingSourcePluginId: null,
-      editingSourceRepoConfig: null,
-    }),
+  openConfigModal: () => {
+    useUIStore.getState().openSettingsModalForAddSource();
+  },
   closeConfigModal: () =>
     set({
       showConfigModal: false,
@@ -230,6 +234,7 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: true,
       settingsSection: 'keyboard',
       settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
   openVersionInfo: () =>
@@ -237,6 +242,7 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: true,
       settingsSection: 'version',
       settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
   openOperationLog: () =>
@@ -244,6 +250,7 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: true,
       settingsSection: 'operationLog',
       settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
   openSettingsModal: (section = 'workspace') =>
@@ -251,12 +258,17 @@ export const useUIStore = create<UIState>(set => ({
       showSettingsModal: true,
       settingsSection: section,
       settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
   closeSettingsModal: () =>
     set({
       showSettingsModal: false,
       settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
+      editingSourceId: null,
+      editingSourcePluginId: null,
+      editingSourceRepoConfig: null,
     }),
   openSyncDirectionModal: () => set({ showSyncDirectionModal: true }),
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
@@ -275,14 +287,23 @@ export const useUIStore = create<UIState>(set => ({
   },
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
-  openSettingsModalForAddSource: () =>
+  openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') =>
     set({
       showSettingsModal: true,
       settingsSection: 'sync',
       settingsSyncAddOpen: true,
+      settingsSyncPrefillPluginId: pluginId ?? null,
+      editingSourceId: null,
+      editingSourcePluginId: null,
+      editingSourceRepoConfig: null,
+      showConfigModal: false,
       activeMenu: 'settings',
     }),
-  clearSettingsSyncAddOpen: () => set({ settingsSyncAddOpen: false }),
+  clearSettingsSyncAddOpen: () =>
+    set({
+      settingsSyncAddOpen: false,
+      settingsSyncPrefillPluginId: null,
+    }),
   prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
     useImageStore.setState({
       storageType: resolveSourceDisplay(pluginId).legacyType,
@@ -296,7 +317,13 @@ export const useUIStore = create<UIState>(set => ({
     });
   },
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
-    useUIStore.getState().prepareNewSource(pluginId, purpose);
-    set({ showConfigModal: true });
+    useUIStore
+      .getState()
+      .openSettingsModalForAddSource(
+        pluginId === 'gitee' || pluginId === 'github' ? pluginId : undefined,
+      );
+    if (purpose) {
+      set({ pendingConnectionPurpose: purpose });
+    }
   },
 }));

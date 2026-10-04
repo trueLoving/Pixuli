@@ -13,8 +13,10 @@ import { showSuccess } from '@/ui/feedback/toast';
 import { useUIStore } from '@/stores/uiStore';
 
 type WizardStep = 'service' | 'auth' | 'location' | 'done';
+type GitPluginId = 'github' | 'gitee';
 
 const STEPS: WizardStep[] = ['service', 'auth', 'location', 'done'];
+const EDIT_STEPS: WizardStep[] = ['auth', 'location', 'done'];
 
 const FIELD_CLASSES = {
   sectionTitle: 'text-sm font-semibold text-gray-900',
@@ -35,12 +37,16 @@ const EMPTY_VALUES: GitPatFieldValues = {
   path: 'images',
 };
 
-interface ConnectionWizardProps {
+export interface ConnectionWizardProps {
   manifests: StoragePluginManifest[];
   t: (key: string) => string;
   onCancel: () => void;
   onComplete: () => void;
   discovery?: StorageProviderDiscovery;
+  /** 传入时为编辑已有连接：跳过「选服务」，预填仓库与令牌 */
+  editSourceId?: string | null;
+  initialPluginId?: GitPluginId | null;
+  initialValues?: GitPatFieldValues | null;
 }
 
 function stepLabelKey(step: WizardStep): string {
@@ -61,13 +67,22 @@ function supportsPat(manifest: StoragePluginManifest | undefined): boolean {
   return modes.includes('pat');
 }
 
+function isGitPluginId(id: string | null | undefined): id is GitPluginId {
+  return id === 'github' || id === 'gitee';
+}
+
 export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   manifests,
   t,
   onCancel,
   onComplete,
   discovery,
+  editSourceId = null,
+  initialPluginId = null,
+  initialValues = null,
 }) => {
+  const isEdit = Boolean(editSourceId && isGitPluginId(initialPluginId));
+  const startWithPlugin = !isEdit && isGitPluginId(initialPluginId);
   const prepareNewSource = useUIStore(state => state.prepareNewSource);
   const openSyncDirectionModal = useUIStore(
     state => state.openSyncDirectionModal,
@@ -75,19 +90,28 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   const closeSettingsModal = useUIStore(state => state.closeSettingsModal);
   const { handleSaveConfig } = useConfigManagement();
 
-  const [step, setStep] = useState<WizardStep>('service');
-  const [pluginId, setPluginId] = useState<'github' | 'gitee' | null>(null);
+  const steps = isEdit ? EDIT_STEPS : STEPS;
+  const [step, setStep] = useState<WizardStep>(
+    isEdit || startWithPlugin ? 'auth' : 'service',
+  );
+  const [pluginId, setPluginId] = useState<GitPluginId | null>(
+    isGitPluginId(initialPluginId) ? initialPluginId : null,
+  );
   const [purpose, setPurpose] = useState<ConnectionPurpose>('defaultSync');
-  const [values, setValues] = useState<GitPatFieldValues>(EMPTY_VALUES);
-  const [tokenOk, setTokenOk] = useState(false);
-  const [patMounted, setPatMounted] = useState(false);
+  const [values, setValues] = useState<GitPatFieldValues>(
+    initialValues ?? EMPTY_VALUES,
+  );
+  const [tokenOk, setTokenOk] = useState(
+    isEdit && Boolean(initialValues?.token?.trim()),
+  );
+  const [patMounted, setPatMounted] = useState(isEdit || startWithPlugin);
 
   const manifest = useMemo(
     () => manifests.find(item => item.id === pluginId),
     [manifests, pluginId],
   );
   const patAvailable = supportsPat(manifest);
-  const stepIndex = STEPS.indexOf(step);
+  const stepIndex = steps.indexOf(step);
   const locationReady = Boolean(
     values.owner.trim() &&
       values.repo.trim() &&
@@ -103,8 +127,12 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
 
   const finish = (syncNow: boolean) => {
     if (!pluginId) return;
-    prepareNewSource(pluginId, purpose);
-    handleSaveConfig(values, null);
+    if (isEdit && editSourceId) {
+      handleSaveConfig(values, editSourceId);
+    } else {
+      prepareNewSource(pluginId, purpose);
+      handleSaveConfig(values, null);
+    }
     showSuccess(t('messages.configSaved'));
     onComplete();
     if (syncNow) {
@@ -117,7 +145,9 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
     <div className="pix-panel-soft mt-4 rounded-lg p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-900">
-          {t('settings.wizardShellTitle')}
+          {isEdit
+            ? t('settings.wizardEditTitle')
+            : t('settings.wizardShellTitle')}
         </p>
         <button
           type="button"
@@ -129,8 +159,14 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
         </button>
       </div>
 
+      {isEdit && pluginId ? (
+        <p className="mb-3 text-xs text-gray-500">
+          {manifest?.name ?? pluginId}
+        </p>
+      ) : null}
+
       <ol className="mb-4 flex flex-wrap gap-2 text-xs text-gray-500">
-        {STEPS.map((item, index) => (
+        {steps.map((item, index) => (
           <li
             key={item}
             className={
@@ -150,7 +186,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
               key={item.id}
               type="button"
               onClick={() => {
-                if (item.id !== 'github' && item.id !== 'gitee') return;
+                if (!isGitPluginId(item.id)) return;
                 setPluginId(item.id);
                 setValues(EMPTY_VALUES);
                 setTokenOk(false);
@@ -253,7 +289,9 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
             {manifest?.name} · {values.owner}/{values.repo} · {values.branch}
           </p>
           <p className="text-xs text-gray-500">
-            {t('settings.wizardDoneHint')}
+            {isEdit
+              ? t('settings.wizardEditDoneHint')
+              : t('settings.wizardDoneHint')}
           </p>
         </div>
       ) : null}
@@ -264,7 +302,11 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
             type="button"
             className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-white"
             onClick={() => {
-              const prev = STEPS[stepIndex - 1];
+              if (step === 'auth' && isEdit) {
+                onCancel();
+                return;
+              }
+              const prev = steps[stepIndex - 1];
               if (prev) setStep(prev);
             }}
           >
