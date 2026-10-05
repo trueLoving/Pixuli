@@ -445,6 +445,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const notifyCopyLinkResult = useCallback(
     (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
       if (!result.ok) {
+        if (result.offerConnection) {
+          showErrorWithAction(
+            t(result.reasonKey),
+            t('image.copyLink.goConnection'),
+            () => useUIStore.getState().openSettingsModalForAddSource(),
+          );
+          return;
+        }
         if (result.offerSync) {
           showErrorWithAction(
             t(result.reasonKey),

@@ -23,12 +23,12 @@ export const AssetLibraryContextMenu: React.FC<
   onDeleteImage,
   hasRemoteConnection,
 }) => {
-  const canCopy = getCopyablePublicUrl(menu.file) !== null;
-  const copyTitle = canCopy
-    ? t('image.actions.copyUrl')
-    : hasRemoteConnection === false
-      ? t('image.copyLink.needConnection')
-      : t('image.copyLink.needSync');
+  const copyTitle =
+    getCopyablePublicUrl(menu.file) !== null
+      ? t('image.actions.copyUrl')
+      : hasRemoteConnection === false
+        ? t('image.copyLink.needConnection')
+        : t('image.copyLink.needSync');
 
   return (
     <>
@@ -49,10 +49,9 @@ export const AssetLibraryContextMenu: React.FC<
         <button
           type="button"
           role="menuitem"
-          disabled={!canCopy}
           title={copyTitle}
           onClick={() => {
-            if (!canCopy) return;
+            // 无公网链时仍触发回调，由上层 toast「去连接 / 去同步」
             onCopyLink?.(menu.file);
             onClose();
           }}

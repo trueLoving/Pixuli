@@ -23,12 +23,13 @@
       "dismissMenu": "关闭菜单"
     },
     "copyLink": {
-      "needSync": "该文件尚未同步，无法复制公网链接。请先同步。",
+      "needSync": "该文件仅在本机，尚无公网链接。请先同步到已连接仓库，再复制链接。",
       "needSelect": "请先选择文件",
-      "needConnection": "请先在设置中添加远端连接，再同步后复制链接。",
+      "needConnection": "还没有远端连接。请先添加 GitHub 或 Gitee，同步后再复制链接。",
       "unavailable": "当前无法复制公网链接",
       "copiedMany": "已复制 {count} 个链接到剪贴板",
       "goSync": "去同步",
+      "goConnection": "去连接",
       "privateRepoNote": "外人可能无法打开，请在 GitHub/Gitee 调整仓库可见性。"
     },
     "inspector": {

@@ -1,5 +1,6 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import type { SyncStatusSummary, WorkspaceMode } from '@pixuli/core/vault';
+import type { WorkspaceReconnectHint } from '@/features/workspace/fsaReconnect';
 import type { SyncRunOutcome } from '@/features/workspace/syncOutcome';
 
 export interface WorkspaceState {
@@ -16,6 +17,8 @@ export interface WorkspaceState {
   error: string | null;
   syncMessage: string | null;
   syncOutcome: SyncRunOutcome | null;
+  /** Web FSA：刷新后需用户手势重新授权 / 重选文件夹 */
+  reconnect: WorkspaceReconnectHint | null;
   isLocalActive: () => boolean;
   needsWorkspaceSetup: () => boolean;
   initialize: () => Promise<void>;
@@ -23,6 +26,8 @@ export interface WorkspaceState {
     pullAfter?: boolean;
     backend?: 'opfs' | 'fsa';
   }) => Promise<boolean>;
+  /** 用户点击后恢复已保存的本机文件夹工作区 */
+  reconnectWorkspace: () => Promise<boolean>;
   clearWorkspace: () => Promise<void>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;

@@ -105,6 +105,43 @@ describe('buildBatchSelectionActions tools switch', () => {
   });
 });
 
+describe('buildBatchSelectionActions copy-link guidance', () => {
+  const t = (key: string) => key;
+
+  it('keeps copy clickable when local-only so toast can offer sync', () => {
+    const onCopyLinks = vi.fn();
+    const actions = buildBatchSelectionActions(
+      [image],
+      t,
+      {
+        onCopyLinks,
+        onBatchDelete: vi.fn(),
+      },
+      { hasRemoteConnection: true },
+    );
+    const copy = actions.grid.find(action => action.id === 'copy-links');
+    expect(copy?.disabled).toBeFalsy();
+    expect(copy?.title).toBe('image.copyLink.needSync');
+    copy?.onClick();
+    expect(onCopyLinks).toHaveBeenCalled();
+  });
+
+  it('titles needConnection when no remote', () => {
+    const actions = buildBatchSelectionActions(
+      [image],
+      t,
+      {
+        onCopyLinks: vi.fn(),
+        onBatchDelete: vi.fn(),
+      },
+      { hasRemoteConnection: false },
+    );
+    const copy = actions.grid.find(action => action.id === 'copy-links');
+    expect(copy?.title).toBe('image.copyLink.needConnection');
+    expect(copy?.disabled).toBeFalsy();
+  });
+});
+
 describe('buildSingleSelectionActions tools switch', () => {
   const t = (key: string) => key;
 
@@ -146,5 +183,26 @@ describe('buildSingleSelectionActions tools switch', () => {
     const compress = actions.grid.find(action => action.id === 'compress');
     expect(compress?.disabled).toBe(true);
     expect(compress?.title).toBe('image.inspector.toolImageOnly');
+  });
+
+  it('keeps copy clickable when no public url', () => {
+    const onCopy = vi.fn();
+    const actions = buildSingleSelectionActions(
+      'image',
+      t,
+      { onCopy, onDelete: vi.fn() },
+      {
+        canEdit: false,
+        canShare: false,
+        canDelete: true,
+        canCopy: false,
+        copyDisabledTitle: 'image.copyLink.needSync',
+      },
+    );
+    const copy = actions.grid.find(action => action.id === 'copy');
+    expect(copy?.disabled).toBeFalsy();
+    expect(copy?.title).toBe('image.copyLink.needSync');
+    copy?.onClick();
+    expect(onCopy).toHaveBeenCalled();
   });
 });

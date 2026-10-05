@@ -23,12 +23,13 @@
       "dismissMenu": "Close menu"
     },
     "copyLink": {
-      "needSync": "This file is not synced yet. Sync first to copy a public link.",
+      "needSync": "This file is local only — no public link yet. Sync to your connected repo, then copy the link.",
       "needSelect": "Select one or more files first",
-      "needConnection": "Add a remote connection in Settings, then sync before copying a link.",
+      "needConnection": "No remote connection yet. Add GitHub or Gitee, sync, then copy the link.",
       "unavailable": "No public link available to copy",
       "copiedMany": "Copied {count} links to clipboard",
       "goSync": "Sync now",
+      "goConnection": "Add connection",
       "privateRepoNote": "Outsiders may not open this link; change the repo visibility on GitHub/Gitee."
     },
     "inspector": {

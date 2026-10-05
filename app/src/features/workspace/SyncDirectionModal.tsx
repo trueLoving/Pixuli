@@ -18,6 +18,9 @@ export const SyncDirectionModal: React.FC = () => {
   const isOpen = useUIStore(state => state.showSyncDirectionModal);
   const close = useUIStore(state => state.closeSyncDirectionModal);
   const syncing = useWorkspaceStore(state => state.syncing);
+  const pendingPush = useWorkspaceStore(
+    state => state.syncStatus?.pendingPush ?? 0,
+  );
   const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
@@ -28,6 +31,7 @@ export const SyncDirectionModal: React.FC = () => {
   const [activeDirection, setActiveDirection] =
     useState<SyncDirectionChoice | null>(null);
   const [targetId, setTargetId] = useState('');
+  const preferPush = pendingPush > 0;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -118,7 +122,9 @@ export const SyncDirectionModal: React.FC = () => {
 
         <div className="space-y-3 px-5 py-5">
           <p className="text-sm text-gray-500">
-            {t('workspace.syncChooseHint')}
+            {preferPush
+              ? t('workspace.syncChooseHintPending', { count: pendingPush })
+              : t('workspace.syncChooseHint')}
           </p>
 
           {sources.length > 1 ? (
@@ -139,47 +145,51 @@ export const SyncDirectionModal: React.FC = () => {
             </label>
           ) : null}
 
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void handleChoose('pull')}
-            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
-          >
-            <CloudDownload
-              size={22}
-              className="mt-0.5 shrink-0 pix-icon-accent"
-              aria-hidden
-            />
-            <span>
-              <span className="block text-sm font-medium text-gray-900">
-                {t('workspace.syncPullOption')}
-              </span>
-              <span className="mt-0.5 block text-xs text-gray-500">
-                {t('workspace.syncPullHint')}
-              </span>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => void handleChoose('push')}
-            className="flex w-full items-start gap-3 rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50"
-          >
-            <CloudUpload
-              size={22}
-              className="mt-0.5 shrink-0 pix-icon-accent"
-              aria-hidden
-            />
-            <span>
-              <span className="block text-sm font-medium text-gray-900">
-                {t('workspace.syncPushOption')}
-              </span>
-              <span className="mt-0.5 block text-xs text-gray-500">
-                {t('workspace.syncPushHint')}
-              </span>
-            </span>
-          </button>
+          {(preferPush
+            ? (['push', 'pull'] as const)
+            : (['pull', 'push'] as const)
+          ).map(direction => {
+            const isPush = direction === 'push';
+            return (
+              <button
+                key={direction}
+                type="button"
+                disabled={busy}
+                onClick={() => void handleChoose(direction)}
+                className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left transition-colors pix-hover-card disabled:opacity-50 ${
+                  preferPush && isPush
+                    ? 'border-[var(--pix-violet,#7c6cf0)] bg-[var(--pix-violet-soft,#ede9fe)]/40'
+                    : 'border-gray-200'
+                }`}
+              >
+                {isPush ? (
+                  <CloudUpload
+                    size={22}
+                    className="mt-0.5 shrink-0 pix-icon-accent"
+                    aria-hidden
+                  />
+                ) : (
+                  <CloudDownload
+                    size={22}
+                    className="mt-0.5 shrink-0 pix-icon-accent"
+                    aria-hidden
+                  />
+                )}
+                <span>
+                  <span className="block text-sm font-medium text-gray-900">
+                    {isPush
+                      ? t('workspace.syncPushOption')
+                      : t('workspace.syncPullOption')}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-gray-500">
+                    {isPush
+                      ? t('workspace.syncPushHint')
+                      : t('workspace.syncPullHint')}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
