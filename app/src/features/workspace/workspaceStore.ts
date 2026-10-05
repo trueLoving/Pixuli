@@ -3,6 +3,7 @@ import {
   clearWorkspace,
   initializeWorkspace,
   pickWorkspace,
+  reconnectWorkspace,
   resumeLocalWorkspace,
   syncBindingsFromSources,
 } from '@/features/workspace/workspaceSetupService';
@@ -43,6 +44,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   error: null,
   syncMessage: null,
   syncOutcome: null,
+  reconnect: null,
 
   isLocalActive: () => isWorkspaceAvailable() && get().mode === 'local',
 
@@ -55,6 +57,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   syncBindingsFromSources: () => syncBindingsFromSources(get),
 
   pickWorkspace: options => pickWorkspace(get, set, options),
+
+  reconnectWorkspace: () => reconnectWorkspace(get, set),
 
   clearWorkspace: () => clearWorkspace(get, set),
 

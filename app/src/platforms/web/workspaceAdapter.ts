@@ -106,6 +106,40 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
     return handle;
   }
 
+  /** 用户手势下重新申请已保存文件夹的读写权限 */
+  async restoreFsaPermission(): Promise<boolean> {
+    if (this.backend !== 'fsa' && !parseFsaRootPath(this.rootPath ?? '')) {
+      return false;
+    }
+    if (!this.workspaceId && this.rootPath) {
+      this.setRootPath(this.rootPath);
+    }
+    try {
+      await this.requireFsaHandle();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 重新选择本机文件夹，并绑定到已有 FSA workspaceId（刷新后句柄丢失时用）。
+   */
+  async rebindFsaRoot(workspaceId: string): Promise<boolean> {
+    const handle = await pickFsaDirectory();
+    if (!handle) {
+      return false;
+    }
+    await storeFsaDirectoryHandle(workspaceId, handle);
+    await fsaEnsureWorkspace(handle);
+    this.backend = 'fsa';
+    this.workspaceId = workspaceId;
+    this.fsaHandle = handle;
+    this.folderLabel = handle.name;
+    this.rootPath = formatFsaRootPath(workspaceId);
+    return true;
+  }
+
   /** OPFS 虚拟工作区 */
   async pickRoot(): Promise<boolean> {
     if (!isOpfsSupported()) {

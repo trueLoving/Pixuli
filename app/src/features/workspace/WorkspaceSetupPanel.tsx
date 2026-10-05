@@ -8,6 +8,7 @@ import {
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
 import { useImageStore } from '@/features/library/imageStore';
+import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import './workspace-setup.css';
 
@@ -16,17 +17,29 @@ export interface WorkspaceSetupPanelProps {
   className?: string;
 }
 
+function formatSetupError(
+  error: string | null,
+  t: (key: string) => string,
+): string | null {
+  if (!error) return null;
+  if (error.startsWith('workspace.')) {
+    return t(error);
+  }
+  return error;
+}
+
 export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
   onOpened,
   className = '',
 }) => {
   const { t } = useI18n();
-  const { pickWorkspace, loading, error } = useWorkspaceStore();
+  const { pickWorkspace, loading, error, reconnect } = useWorkspaceStore();
   const loadImages = useImageStore(state => state.loadImages);
   const isWebWorkspace = isWebWorkspaceActive();
   const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
+  const displayError = reconnect ? null : formatSetupError(error, t);
 
   const handlePick = async (backend?: 'opfs' | 'fsa') => {
     const ok = await pickWorkspace(backend ? { backend } : undefined);
@@ -38,12 +51,20 @@ export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
 
   return (
     <div className={`workspace-setup-panel ${className}`.trim()}>
+      {reconnect ? (
+        <WorkspaceReconnectCard
+          onReconnected={onOpened}
+          className="workspace-setup-reconnect"
+        />
+      ) : null}
       <p className="workspace-setup-panel-hint">
-        {isMobileWorkspace
-          ? t('workspace.setupHintMobile')
-          : isWebWorkspace
-            ? t('workspace.setupHintWebLocal')
-            : t('workspace.setupHint')}
+        {reconnect
+          ? t('workspace.reconnectOrPickOther')
+          : isMobileWorkspace
+            ? t('workspace.setupHintMobile')
+            : isWebWorkspace
+              ? t('workspace.setupHintWebLocal')
+              : t('workspace.setupHint')}
       </p>
       <div className="workspace-setup-panel-actions">
         {isMobileWorkspace && (
@@ -97,9 +118,9 @@ export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
           </button>
         )}
       </div>
-      {error ? (
+      {displayError ? (
         <p className="workspace-setup-error" role="alert">
-          {error}
+          {displayError}
         </p>
       ) : null}
     </div>
