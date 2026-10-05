@@ -34,7 +34,7 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
     });
   });
 
-  it('needConnection when no remote and not copyable', () => {
+  it('needConnection with offerConnection when no remote and not copyable', () => {
     const local = makeImage({
       id: '1',
       localPath: 'a.png',
@@ -45,6 +45,7 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
     ).toEqual({
       ok: false,
       reasonKey: 'image.copyLink.needConnection',
+      offerConnection: true,
     });
   });
 

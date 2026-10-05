@@ -1,8 +1,9 @@
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 import { Edit, Github, Plus, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
 import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
+import type { GitPatFieldValues } from '@/features/settings/git-connection/GitPatConnectionFields';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
@@ -26,11 +27,22 @@ function renderSourceTypeIcon(type: SidebarSource['type']) {
 export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const [addingSource, setAddingSource] = useState(false);
   const settingsSyncAddOpen = useUIStore(state => state.settingsSyncAddOpen);
+  const settingsSyncPrefillPluginId = useUIStore(
+    state => state.settingsSyncPrefillPluginId,
+  );
   const clearSettingsSyncAddOpen = useUIStore(
     state => state.clearSettingsSyncAddOpen,
   );
   const openConfigModalForEdit = useUIStore(
     state => state.openConfigModalForEdit,
+  );
+  const closeConfigModal = useUIStore(state => state.closeConfigModal);
+  const editingSourceId = useUIStore(state => state.editingSourceId);
+  const editingSourcePluginId = useUIStore(
+    state => state.editingSourcePluginId,
+  );
+  const editingSourceRepoConfig = useUIStore(
+    state => state.editingSourceRepoConfig,
   );
   const {
     sidebarSources,
@@ -44,18 +56,61 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const activeSyncSourceId = selectedSource?.id ?? null;
   const syncStatus = useWorkspaceStore(state => state.syncStatus);
 
+  const isEditing = Boolean(
+    editingSourceId &&
+      (editingSourcePluginId === 'github' ||
+        editingSourcePluginId === 'gitee') &&
+      editingSourceRepoConfig,
+  );
+  const wizardOpen = isEditing || addingSource;
+
+  const editInitialValues = useMemo((): GitPatFieldValues | null => {
+    if (!editingSourceRepoConfig) return null;
+    return {
+      owner: editingSourceRepoConfig.owner,
+      repo: editingSourceRepoConfig.repo,
+      branch: editingSourceRepoConfig.branch,
+      token: editingSourceRepoConfig.token,
+      path: editingSourceRepoConfig.path,
+    };
+  }, [editingSourceRepoConfig]);
+
+  const [addPrefillPluginId, setAddPrefillPluginId] = useState<
+    'github' | 'gitee' | null
+  >(null);
+
   useEffect(() => {
     if (settingsSyncAddOpen) {
+      closeConfigModal();
+      setAddPrefillPluginId(settingsSyncPrefillPluginId);
       setAddingSource(true);
       clearSettingsSyncAddOpen();
     }
-  }, [settingsSyncAddOpen, clearSettingsSyncAddOpen]);
+  }, [
+    settingsSyncAddOpen,
+    settingsSyncPrefillPluginId,
+    clearSettingsSyncAddOpen,
+    closeConfigModal,
+  ]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setAddingSource(false);
+    }
+  }, [isEditing]);
 
   const handleEdit = (sourceId: string) => {
     const id = handleEditSource(sourceId);
     if (id) {
+      setAddingSource(false);
       openConfigModalForEdit(id);
     }
+  };
+
+  const closeWizard = () => {
+    setAddingSource(false);
+    setAddPrefillPluginId(null);
+    closeConfigModal();
   };
 
   return (
@@ -73,10 +128,14 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
               {t('settings.syncOnClickHint')}
             </p>
           </div>
-          {!addingSource ? (
+          {!wizardOpen ? (
             <button
               type="button"
-              onClick={() => setAddingSource(true)}
+              onClick={() => {
+                closeConfigModal();
+                setAddPrefillPluginId(null);
+                setAddingSource(true);
+              }}
               className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
             >
               <Plus size={16} />
@@ -85,16 +144,30 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
           ) : null}
         </div>
 
-        {addingSource ? (
+        {wizardOpen ? (
           <ConnectionWizard
+            key={
+              isEditing
+                ? `edit:${editingSourceId}`
+                : `add:${addPrefillPluginId ?? 'pick'}`
+            }
             manifests={manifests}
             t={t}
-            onCancel={() => setAddingSource(false)}
-            onComplete={() => setAddingSource(false)}
+            onCancel={closeWizard}
+            onComplete={closeWizard}
+            editSourceId={isEditing ? editingSourceId : null}
+            initialPluginId={
+              isEditing &&
+              (editingSourcePluginId === 'github' ||
+                editingSourcePluginId === 'gitee')
+                ? editingSourcePluginId
+                : addPrefillPluginId
+            }
+            initialValues={isEditing ? editInitialValues : null}
           />
         ) : null}
 
-        {!addingSource && sidebarSources.length === 0 ? (
+        {!wizardOpen && sidebarSources.length === 0 ? (
           <p className="mt-4 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
             {t('settings.sourcesEmpty')}
           </p>
@@ -152,7 +225,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                     <div className="flex shrink-0 items-center gap-1">
                       <button
                         type="button"
-                        disabled={unavailable}
+                        disabled={unavailable || wizardOpen}
                         onClick={() => handleEdit(source.id)}
                         className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
                         title={t('sidebar.editSource')}

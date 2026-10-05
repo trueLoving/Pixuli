@@ -2,6 +2,7 @@ export { WorkspaceMigrationWizard } from './WorkspaceMigrationWizard';
 export { WorkspaceManagePanel } from './WorkspaceManagePanel';
 export { WorkspacePhotosEmptyState } from './WorkspacePhotosEmptyState';
 export { WorkspaceSetupPanel } from './WorkspaceSetupPanel';
+export { WorkspaceReconnectCard } from './WorkspaceReconnectCard';
 export { WorkspaceFolderTree } from './WorkspaceFolderTree';
 export { WorkspaceModal } from './WorkspaceModal';
 export { SyncDirectionModal } from './SyncDirectionModal';

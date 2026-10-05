@@ -16,7 +16,6 @@ export const ROUTES = {
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
 
 interface AppRoutesProps {
-  onOpenConfigModal: () => void;
   isFullscreenMode: boolean;
   setIsFullscreenMode: (isFullscreen: boolean) => void;
 }
@@ -33,10 +32,10 @@ const RouteSuspense = ({ children }: { children: React.ReactNode }) => (
   </Suspense>
 );
 
-export const AppRoutes: React.FC<AppRoutesProps> = ({ onOpenConfigModal }) => {
+export const AppRoutes: React.FC<AppRoutesProps> = () => {
   const libraryElement = (
     <RouteSuspense>
-      <LibraryRoute onOpenConfigModal={onOpenConfigModal} />
+      <LibraryRoute />
     </RouteSuspense>
   );
 

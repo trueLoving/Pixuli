@@ -11,6 +11,7 @@ import {
 import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
+import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatWorkspaceTitle } from '@/features/workspace/workspacePathDisplay';
 import { formatSyncOutcome } from './syncOutcome';
@@ -47,6 +48,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     clearWorkspace,
     clearError,
     isLocalActive,
+    reconnect,
   } = useWorkspaceStore();
   const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
@@ -57,6 +59,12 @@ export const WorkspaceManagePanel: React.FC = () => {
   const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
+  const setupError =
+    reconnect || !error
+      ? null
+      : error.startsWith('workspace.')
+        ? t(error)
+        : error;
 
   if (!isWorkspaceAvailable()) {
     return (
@@ -93,16 +101,19 @@ export const WorkspaceManagePanel: React.FC = () => {
   if (!localActive) {
     return (
       <div className="space-y-4">
+        {reconnect ? <WorkspaceReconnectCard /> : null}
         <div>
           <h3 className="text-sm font-semibold text-gray-900">
             {t('workspace.setupTitle')}
           </h3>
           <p className="mt-1 text-xs text-gray-500">
-            {isMobileWorkspace
-              ? t('workspace.setupHintMobile')
-              : isWebWorkspace
-                ? t('workspace.setupHintWebLocal')
-                : t('workspace.setupHint')}
+            {reconnect
+              ? t('workspace.reconnectOrPickOther')
+              : isMobileWorkspace
+                ? t('workspace.setupHintMobile')
+                : isWebWorkspace
+                  ? t('workspace.setupHintWebLocal')
+                  : t('workspace.setupHint')}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -157,9 +168,9 @@ export const WorkspaceManagePanel: React.FC = () => {
             </button>
           )}
         </div>
-        {error && (
+        {setupError && (
           <p className="text-sm text-red-600" role="alert">
-            {error}
+            {setupError}
           </p>
         )}
       </div>

@@ -50,12 +50,24 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     });
   });
 
-  it('选中 Gitee 源后编辑应快照 StoredSourceEntry.config 到弹窗状态', () => {
+  it('openSettingsModalForAddSource 可预填服务并打开同步向导', () => {
+    useUIStore.getState().openSettingsModalForAddSource('github');
+    const ui = useUIStore.getState();
+    expect(ui.showSettingsModal).toBe(true);
+    expect(ui.settingsSection).toBe('sync');
+    expect(ui.settingsSyncAddOpen).toBe(true);
+    expect(ui.settingsSyncPrefillPluginId).toBe('github');
+    expect(ui.showConfigModal).toBe(false);
+  });
+
+  it('选中 Gitee 源后编辑应打开设置同步向导并快照 config', () => {
     const ok = useUIStore.getState().openConfigModalForEdit('gt-edit-1');
     expect(ok).toBe(true);
 
     const ui = useUIStore.getState();
-    expect(ui.showConfigModal).toBe(true);
+    expect(ui.showConfigModal).toBe(false);
+    expect(ui.showSettingsModal).toBe(true);
+    expect(ui.settingsSection).toBe('sync');
     expect(ui.editingSourceId).toBe('gt-edit-1');
     expect(ui.editingSourcePluginId).toBe('gitee');
     expect(ui.editingSourceRepoConfig).toMatchObject({

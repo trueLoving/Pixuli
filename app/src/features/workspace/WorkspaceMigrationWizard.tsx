@@ -8,6 +8,7 @@ import {
 } from '@/platforms/workspacePlatform';
 import { useImageStore } from '@/features/library/imageStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
+import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { runSyncWithFeedback } from './syncFeedback';
@@ -22,13 +23,19 @@ export const WorkspaceMigrationWizard: React.FC<
 > = ({ onComplete, embedded = false }) => {
   const { t } = useI18n();
   const sourceCount = useSourceStore(state => state.sources.length);
-  const { pickWorkspace, loading, error } = useWorkspaceStore();
+  const { pickWorkspace, loading, error, reconnect } = useWorkspaceStore();
   const loadImages = useImageStore(state => state.loadImages);
   const [pullAfter, setPullAfter] = useState(false);
   const isWebWorkspace = isWebWorkspaceActive();
   const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
   const canCreateOpfs = isWebWorkspace && isOpfsSupported();
+  const displayError =
+    reconnect || !error
+      ? null
+      : error.startsWith('workspace.')
+        ? t(error)
+        : error;
 
   const finish = async () => {
     await loadImages();
@@ -66,6 +73,13 @@ export const WorkspaceMigrationWizard: React.FC<
               ? t('workspace.migrationHintWebLocal', { count: sourceCount })
               : t('workspace.migrationHint', { count: sourceCount })}
         </p>
+
+        {reconnect ? (
+          <WorkspaceReconnectCard
+            onReconnected={() => void finish()}
+            className="mb-4"
+          />
+        ) : null}
 
         <div className="rounded-lg border border-gray-200 p-4">
           <div className="flex items-start gap-3">
@@ -154,9 +168,9 @@ export const WorkspaceMigrationWizard: React.FC<
           </div>
         </div>
 
-        {error && (
+        {displayError && (
           <p className="mt-4 text-sm text-red-600" role="alert">
-            {error}
+            {displayError}
           </p>
         )}
       </div>

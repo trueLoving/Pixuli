@@ -28,6 +28,7 @@ import {
   deleteFsaDirectoryHandle,
   parseFsaRootPath,
 } from '@/platforms/web/fsaWorkspaceFs';
+import { buildReconnectHint } from '@/features/workspace/fsaReconnect';
 import {
   storedSourcesToWorkspaceBindings,
   type LocalVault,
@@ -133,7 +134,7 @@ export async function initializeWorkspace(
     return;
   }
 
-  set({ loading: true, error: null });
+  set({ loading: true, error: null, reconnect: null });
   try {
     const vault = await openVaultWithRoot(persisted.rootPath);
     const config = vault.getConfig();
@@ -146,6 +147,7 @@ export async function initializeWorkspace(
       rootPath: persisted.rootPath,
       displayName: folderLabel ?? config.displayName,
       loading: false,
+      reconnect: null,
     });
     await refreshAndPersistRootDisplayPath(
       persisted.rootPath,
@@ -155,10 +157,16 @@ export async function initializeWorkspace(
     await get().refreshLocalImages();
     await get().refreshSyncStatus();
   } catch (error) {
+    const message = error instanceof Error ? error.message : '工作区初始化失败';
     set({
       mode: 'unset',
       loading: false,
-      error: error instanceof Error ? error.message : '工作区初始化失败',
+      error: message,
+      reconnect: buildReconnectHint(
+        persisted.rootPath,
+        persisted.folderLabel,
+        message,
+      ),
     });
   }
 }
@@ -176,7 +184,7 @@ export async function resumeLocalWorkspace(
     return false;
   }
 
-  set({ loading: true, error: null });
+  set({ loading: true, error: null, reconnect: null });
   try {
     resetWorkspaceRuntime();
     const vault = await openVaultWithRoot(persisted.rootPath);
@@ -191,6 +199,7 @@ export async function resumeLocalWorkspace(
       loading: false,
       syncMessage: null,
       syncOutcome: null,
+      reconnect: null,
     });
     await refreshAndPersistRootDisplayPath(
       persisted.rootPath,
@@ -201,10 +210,103 @@ export async function resumeLocalWorkspace(
     await get().refreshSyncStatus();
     return true;
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : '恢复本地工作区失败';
     set({
       mode: 'unset',
       loading: false,
-      error: error instanceof Error ? error.message : '恢复本地工作区失败',
+      error: message,
+      reconnect: buildReconnectHint(
+        persisted.rootPath,
+        persisted.folderLabel,
+        message,
+      ),
+    });
+    return false;
+  }
+}
+
+/**
+ * 用户手势下恢复 FSA 工作区：先重新授权已保存句柄，失败则请用户再选同一文件夹。
+ */
+export async function reconnectWorkspace(
+  get: WorkspaceStoreGet,
+  set: WorkspaceStoreSet,
+): Promise<boolean> {
+  if (!isWorkspaceAvailable() || !isWebWorkspaceActive()) {
+    return false;
+  }
+  const persisted = loadPersistedWorkspace();
+  const hint = get().reconnect;
+  const rootPath = hint?.rootPath ?? persisted?.rootPath ?? null;
+  const workspaceId = rootPath ? parseFsaRootPath(rootPath) : null;
+  if (!rootPath || !workspaceId || !persisted) {
+    return false;
+  }
+
+  set({ loading: true, error: null });
+  try {
+    resetWorkspaceRuntime();
+    const adapter = getAdapter();
+    if (!isWebWorkspaceAdapter(adapter)) {
+      set({ loading: false });
+      return false;
+    }
+
+    adapter.setRootPath(rootPath);
+    let restored = await adapter.restoreFsaPermission();
+    if (!restored) {
+      restored = await adapter.rebindFsaRoot(workspaceId);
+    }
+    if (!restored || !adapter.getRootPath()) {
+      set({
+        loading: false,
+        error: 'workspace.reconnectFailed',
+        reconnect: buildReconnectHint(
+          rootPath,
+          hint?.folderLabel ?? persisted.folderLabel,
+          'Folder permission denied',
+        ),
+      });
+      return false;
+    }
+
+    const nextRoot = adapter.getRootPath()!;
+    const folderLabel =
+      readFolderLabel(adapter) ?? persisted.folderLabel ?? undefined;
+    const vault = await openVaultWithRoot(nextRoot);
+    const config = vault.getConfig();
+    savePersistedWorkspace(nextRoot, config.workspaceId, folderLabel);
+    saveWorkspaceModePref('local');
+    set({
+      mode: 'local',
+      rootPath: nextRoot,
+      displayName: folderLabel ?? config.displayName,
+      loading: false,
+      error: null,
+      reconnect: null,
+      syncMessage: null,
+      syncOutcome: null,
+    });
+    await refreshAndPersistRootDisplayPath(nextRoot, rootDisplayPath =>
+      set({ rootDisplayPath }),
+    );
+    await get().syncBindingsFromSources();
+    await get().refreshLocalImages();
+    await get().refreshSyncStatus();
+    return true;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'workspace.reconnectFailed';
+    set({
+      mode: 'unset',
+      loading: false,
+      error: message,
+      reconnect: buildReconnectHint(
+        rootPath,
+        hint?.folderLabel ?? persisted.folderLabel,
+        message,
+      ),
     });
     return false;
   }
@@ -237,7 +339,7 @@ export async function pickWorkspace(
   const previousDisplayName = get().displayName;
   const hadLocal = get().mode === 'local' && Boolean(previousRootPath);
 
-  set({ loading: true, error: null });
+  set({ loading: true, error: null, reconnect: null });
   try {
     resetWorkspaceRuntime();
     const adapter = getAdapter();
@@ -277,6 +379,7 @@ export async function pickWorkspace(
       loading: false,
       syncMessage: null,
       syncOutcome: null,
+      reconnect: null,
     });
     await refreshAndPersistRootDisplayPath(rootPath, rootDisplayPath =>
       set({ rootDisplayPath }),
@@ -319,6 +422,7 @@ export async function clearWorkspace(
     error: null,
     syncMessage: null,
     syncOutcome: null,
+    reconnect: null,
   });
   notifyWorkspaceCleared();
 }

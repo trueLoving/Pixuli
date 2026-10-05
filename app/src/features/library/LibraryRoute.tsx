@@ -2,14 +2,8 @@ import { LibraryWorkbench } from '@/features/library/LibraryWorkbench';
 import { useLibraryRoute } from '@/features/library/useLibraryRoute';
 import React from 'react';
 
-interface LibraryRouteProps {
-  onOpenConfigModal: () => void;
-}
-
 /** `/library` 路由视图：接线 `useLibraryRoute` 与 `LibraryWorkbench` */
-export const LibraryRoute: React.FC<LibraryRouteProps> = ({
-  onOpenConfigModal,
-}) => {
+export const LibraryRoute: React.FC = () => {
   const {
     t,
     hasConfig,
@@ -37,7 +31,6 @@ export const LibraryRoute: React.FC<LibraryRouteProps> = ({
           onDeleteMultipleImages={handleDeleteMultipleImages}
           onUpdateImage={handleUpdateImage}
           onBatchUpdateMetadata={handleBatchUpdateMetadata}
-          onOpenConfigModal={onOpenConfigModal}
           search={search}
           t={t}
         />

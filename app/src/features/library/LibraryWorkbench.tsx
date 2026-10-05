@@ -27,6 +27,7 @@ import {
 import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import { getAssetKind } from '@/features/library/utils/assetKind';
+import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
 import {
   showError,
   showErrorWithAction,
@@ -68,7 +69,6 @@ export interface LibraryWorkbenchProps {
     imageIds: string[],
     patch: BatchMetadataPatch,
   ) => Promise<{ updated: number; failed: number }>;
-  onOpenConfigModal: () => void;
   t: (key: string, options?: Record<string, unknown>) => string;
   search?: LibrarySearchConfig;
 }
@@ -97,7 +97,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   onDeleteMultipleImages,
   onUpdateImage,
   onBatchUpdateMetadata,
-  onOpenConfigModal,
   t,
   search,
 }) => {
@@ -300,6 +299,16 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     setMultiSelectMode(false);
   }, []);
 
+  const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
+  const folderPathForSelectionRef = useRef<string | null>(null);
+  useEffect(() => {
+    const previous = folderPathForSelectionRef.current;
+    if (shouldResetOnFolderChange(previous, selectedFolderPath)) {
+      handleClearSelection();
+    }
+    folderPathForSelectionRef.current = selectedFolderPath;
+  }, [handleClearSelection, selectedFolderPath]);
+
   const handleBatchDelete = useCallback(async () => {
     if (selectedImages.length === 0) return;
     if (
@@ -436,6 +445,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const notifyCopyLinkResult = useCallback(
     (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
       if (!result.ok) {
+        if (result.offerConnection) {
+          showErrorWithAction(
+            t(result.reasonKey),
+            t('image.copyLink.goConnection'),
+            () => useUIStore.getState().openSettingsModalForAddSource(),
+          );
+          return;
+        }
         if (result.offerSync) {
           showErrorWithAction(
             t(result.reasonKey),
@@ -565,12 +582,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
         <EmptyState
           onAddGitHub={() => {
-            useImageStore.setState({ storageType: 'github' });
-            onOpenConfigModal();
+            useUIStore.getState().openSettingsModalForAddSource('github');
           }}
           onAddGitee={() => {
-            useImageStore.setState({ storageType: 'gitee' });
-            onOpenConfigModal();
+            useUIStore.getState().openSettingsModalForAddSource('gitee');
           }}
           t={t}
         />

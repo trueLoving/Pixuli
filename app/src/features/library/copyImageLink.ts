@@ -15,6 +15,8 @@ export type CopyImageLinkResult =
       reasonKey: string;
       /** 仅本地且已有连接时可引导跳转同步 */
       offerSync?: boolean;
+      /** 无远端连接时可引导去添加连接 */
+      offerConnection?: boolean;
     };
 
 export function resolveCopyLinkFailure(
@@ -33,7 +35,11 @@ export function resolveCopyLinkFailure(
     };
   }
   if (options?.hasRemoteConnection === false) {
-    return { ok: false, reasonKey: 'image.copyLink.needConnection' };
+    return {
+      ok: false,
+      reasonKey: 'image.copyLink.needConnection',
+      offerConnection: true,
+    };
   }
   const hasLocalOnly = images.some(
     item => item.localPath && !getCopyablePublicUrl(item),
