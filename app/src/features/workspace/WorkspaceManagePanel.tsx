@@ -93,7 +93,9 @@ export const WorkspaceManagePanel: React.FC = () => {
       return;
     }
     void clearWorkspace().then(() => {
-      useUIStore.getState().setSelectedFolderPath('');
+      const ui = useUIStore.getState();
+      ui.setSelectedFolderPath('');
+      ui.closeWorkspaceModal();
       return loadImages();
     });
   };

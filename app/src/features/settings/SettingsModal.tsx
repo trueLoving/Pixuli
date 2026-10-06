@@ -5,7 +5,6 @@ import {
   FolderOpen,
   Globe,
   Info,
-  Keyboard,
   RefreshCw,
   ScrollText,
   Settings,
@@ -14,7 +13,6 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { SettingsKeyboardPanel } from './SettingsKeyboardPanel';
 import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
@@ -29,6 +27,9 @@ interface SettingsModalProps {
   t: (key: string) => string;
   versionInfo: VersionInfo;
 }
+
+/** 主路径打磨期暂隐设置 → 快捷键；代码与类型仍保留便于恢复 */
+const HIDDEN_SETTINGS_SECTIONS = new Set<SettingsSection>(['keyboard']);
 
 const GENERAL_ITEMS: Array<{
   id: SettingsSection;
@@ -45,11 +46,7 @@ const GENERAL_ITEMS: Array<{
     labelKey: 'settings.menuLanguage',
     icon: <Globe size={18} />,
   },
-  {
-    id: 'keyboard',
-    labelKey: 'settings.menuKeyboard',
-    icon: <Keyboard size={18} />,
-  },
+  // keyboard：HIDDEN_SETTINGS_SECTIONS
   {
     id: 'operationLog',
     labelKey: 'settings.menuOperationLog',
@@ -67,6 +64,10 @@ const GENERAL_ITEMS: Array<{
   },
 ];
 
+function resolveVisibleSection(section: SettingsSection): SettingsSection {
+  return HIDDEN_SETTINGS_SECTIONS.has(section) ? 'workspace' : section;
+}
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -75,12 +76,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const settingsSection = useUIStore(state => state.settingsSection);
   const isMobile = useMobileViewport();
-  const [activeSection, setActiveSection] =
-    useState<SettingsSection>(settingsSection);
+  const [activeSection, setActiveSection] = useState<SettingsSection>(() =>
+    resolveVisibleSection(settingsSection),
+  );
 
   useEffect(() => {
     if (isOpen) {
-      setActiveSection(settingsSection);
+      setActiveSection(resolveVisibleSection(settingsSection));
     }
   }, [isOpen, settingsSection]);
 
@@ -211,7 +213,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {activeSection === 'workspace' && <SettingsWorkspacePanel t={t} />}
             {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
             {activeSection === 'language' && <SettingsLanguagePanel t={t} />}
-            {activeSection === 'keyboard' && <SettingsKeyboardPanel t={t} />}
             {activeSection === 'version' && (
               <SettingsVersionPanel t={t} versionInfo={versionInfo} />
             )}
