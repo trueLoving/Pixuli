@@ -1,11 +1,4 @@
-import {
-  HelpCircle,
-  Info,
-  Keyboard,
-  Plus,
-  RefreshCw,
-  Settings,
-} from 'lucide-react';
+import { HelpCircle, Info, Plus, RefreshCw, Settings } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 import { SidebarSourceSection } from '@/features/settings/sidebar/SidebarSourceSection';
 import { defaultTranslate } from '@/i18n/locales';
@@ -321,18 +314,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   className="sidebar-collapsed-item"
                   onClick={() => {
-                    window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
-                  }}
-                  title={translate('sidebar.keyboardShortcuts')}
-                >
-                  <Keyboard size={28} />
-                  <span className="sidebar-collapsed-tooltip">
-                    {translate('sidebar.keyboardShortcuts')}
-                  </span>
-                </button>
-                <button
-                  className="sidebar-collapsed-item"
-                  onClick={() => {
                     window.dispatchEvent(new CustomEvent('openVersionInfo'));
                   }}
                   title={translate('sidebar.versionInfo')}
@@ -470,13 +451,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
                   '_blank',
                 );
-              }}
-            />
-            <SidebarNavItem
-              icon={<Keyboard size={20} />}
-              label={translate('sidebar.keyboardShortcuts')}
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('openKeyboardHelp'));
               }}
             />
             <SidebarNavItem

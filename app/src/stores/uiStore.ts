@@ -229,14 +229,10 @@ export const useUIStore = create<UIState>(set => ({
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
     }),
-  openKeyboardHelp: () =>
-    set({
-      showSettingsModal: true,
-      settingsSection: 'keyboard',
-      settingsSyncAddOpen: false,
-      settingsSyncPrefillPluginId: null,
-      activeMenu: 'settings',
-    }),
+  /** 设置 → 快捷键暂隐期间：F1 / 侧栏入口不打开空分区 */
+  openKeyboardHelp: () => {
+    // no-op until settings keyboard section is restored
+  },
   openVersionInfo: () =>
     set({
       showSettingsModal: true,
