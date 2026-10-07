@@ -1,5 +1,6 @@
 import { formatFileSize } from '@pixuli/core/utils';
 import React from 'react';
+import { getLibraryScaleTipKey } from '@/features/library/utils/libraryScale';
 
 export interface AssetLibraryStatusBarProps {
   filesCount: number;
@@ -31,6 +32,9 @@ export const AssetLibraryStatusBar: React.FC<AssetLibraryStatusBarProps> = ({
     .replace('{total}', String(totalCount))
     .replace('{size}', sizeLabel);
 
+  // 以当前列表条数为准（虚拟窗口滚动的那批）
+  const scaleTipKey = getLibraryScaleTipKey(filesCount);
+
   return (
     <div className="asset-library-status-bar" aria-live="polite">
       {loading ? (
@@ -40,7 +44,17 @@ export const AssetLibraryStatusBar: React.FC<AssetLibraryStatusBarProps> = ({
         </span>
       ) : (
         <>
-          <span className="asset-library-status-bar-summary">{summary}</span>
+          <div className="asset-library-status-bar-main">
+            <span className="asset-library-status-bar-summary">{summary}</span>
+            {scaleTipKey ? (
+              <span
+                className="asset-library-status-bar-scale-tip"
+                role="status"
+              >
+                {t(scaleTipKey)}
+              </span>
+            ) : null}
+          </div>
           {selectedCount > 0 ? (
             <span className="asset-library-status-bar-selected">
               {t('image.library.statusBar.selected').replace(

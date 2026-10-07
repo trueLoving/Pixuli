@@ -36,6 +36,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   displayName: null,
   rootDisplayPath: null,
   localImages: [],
+  indexPaths: [],
   localFolders: [],
   loading: false,
   pushing: false,

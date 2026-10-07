@@ -67,6 +67,16 @@ export interface LocalListOptions {
   bindingId?: string;
   includeDeleted?: boolean;
   search?: string;
+  /**
+   * 仅返回该目录下的条目（`dir/` 前缀）。
+   * 空/未传表示不限目录。
+   */
+  pathPrefix?: string;
+  /**
+   * 与 pathPrefix 联用：为 true 时只含直接子文件（不含子文件夹内文件）。
+   * pathPrefix 未传时忽略。
+   */
+  shallow?: boolean;
 }
 
 export interface LocalVault {

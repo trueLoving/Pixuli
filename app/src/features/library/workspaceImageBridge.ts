@@ -1,4 +1,5 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
 
 /** workspace → library：工作区变更时重置资源库列表 */
 export type LibraryImageReset = () => void;
@@ -6,7 +7,7 @@ export type LibraryImageReset = () => void;
 /** library → workspace：本地工作区 CRUD 端口（避免 imageStore 直接依赖 workspaceStore） */
 export interface WorkspaceLibraryPort {
   isLocalActive(): boolean;
-  refreshLocalImages(options?: { quiet?: boolean }): Promise<void>;
+  refreshLocalImages(options?: LibraryListScope): Promise<void>;
   getLocalImages(): ImageItem[];
   importLocalImage(uploadData: ImageUploadData): Promise<ImageItem | null>;
   softDeleteLocal(relativePath: string): Promise<void>;

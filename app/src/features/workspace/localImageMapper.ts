@@ -14,6 +14,16 @@ export function clearLocalPreviewCache(): void {
   previewUrlCache.clear();
 }
 
+/** 仅保留 keepPaths 中的预览，释放其余 blob URL（文件夹切换时用） */
+export function pruneLocalPreviewCache(keepPaths: Iterable<string>): void {
+  const keep = new Set(keepPaths);
+  for (const [path, url] of previewUrlCache) {
+    if (keep.has(path)) continue;
+    URL.revokeObjectURL(url);
+    previewUrlCache.delete(path);
+  }
+}
+
 export async function resolveLocalPreviewUrl(
   relativePath: string,
   mimeType: string,
@@ -61,16 +71,25 @@ export function localEntryToImageItem(
   };
 }
 
+export type MapEntriesOptions = {
+  /**
+   * true：不立刻读盘建 blob（默认）。缩略/预览在可见时再 resolveLocalPreviewUrl。
+   * false：兼容旧行为，立即为每条创建预览 URL。
+   */
+  deferPreview?: boolean;
+};
+
 export async function mapEntriesToImageItems(
   entries: LocalImageIndexEntry[],
   provider?: { getRawUrl: (path: string) => string } | null,
+  options?: MapEntriesOptions,
 ): Promise<ImageItem[]> {
+  const deferPreview = options?.deferPreview !== false;
   const items: ImageItem[] = [];
   for (const entry of entries) {
-    const previewUrl = await resolveLocalPreviewUrl(
-      entry.relativePath,
-      entry.mimeType,
-    );
+    const previewUrl = deferPreview
+      ? ''
+      : await resolveLocalPreviewUrl(entry.relativePath, entry.mimeType);
     const publicUrl =
       entry.remotePath && provider
         ? provider.getRawUrl(entry.remotePath)

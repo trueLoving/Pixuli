@@ -77,6 +77,30 @@ describe('createLocalVault', () => {
     expect((await vault.list({ includeDeleted: true })).length).toBe(1);
   });
 
+  it('list supports pathPrefix and shallow', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.importFile(
+      new File([new Uint8Array([1])], 'a.jpg', { type: 'image/jpeg' }),
+      'images/a.jpg',
+    );
+    await vault.importFile(
+      new File([new Uint8Array([2])], 'b.jpg', { type: 'image/jpeg' }),
+      'images/trip/b.jpg',
+    );
+
+    const shallow = await vault.list({ pathPrefix: 'images', shallow: true });
+    expect(shallow.map(e => e.relativePath)).toEqual(['images/a.jpg']);
+
+    const deep = await vault.list({ pathPrefix: 'images', shallow: false });
+    expect(deep.map(e => e.relativePath).sort()).toEqual([
+      'images/a.jpg',
+      'images/trip/b.jpg',
+    ]);
+  });
+
   it('updateSyncMeta updates sync fields', async () => {
     const adapter = new MemoryWorkspaceAdapter();
     const vault = createLocalVault(adapter);

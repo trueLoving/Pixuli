@@ -8,6 +8,7 @@ import type {
   WorkspaceBinding,
   WorkspaceConfig,
 } from './types';
+import { matchesListPathPrefix } from './listFilter';
 import {
   basename,
   createIndexEntry,
@@ -136,11 +137,21 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
     },
 
     async list(options?: LocalListOptions) {
+      const shallow = options?.shallow === true;
       let entries = index.filter(entry => {
         if (!options?.includeDeleted && entry.deletedAt) {
           return false;
         }
         if (options?.bindingId && entry.bindingId !== options.bindingId) {
+          return false;
+        }
+        if (
+          !matchesListPathPrefix(
+            entry.relativePath,
+            options?.pathPrefix,
+            shallow,
+          )
+        ) {
           return false;
         }
         if (options?.search) {

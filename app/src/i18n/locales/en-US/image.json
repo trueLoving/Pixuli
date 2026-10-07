@@ -214,6 +214,8 @@
         "selected": "{selected} selected",
         "loading": "Loading files..."
       },
+      "scaleTipLarge": "Large library: virtual list and thumbnail throttling are on; only visible rows render while scrolling.",
+      "scaleTipHuge": "Very large library: narrow the folder or use search; the list still throttles rendering to stay smooth.",
       "loading": "Loading files...",
       "emptyTitle": "No files yet",
       "emptyDescription": "Add images, PDFs, or videos to this folder (local only)",

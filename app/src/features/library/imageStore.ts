@@ -34,6 +34,7 @@ import {
   shouldSkipRemoteListLoad,
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
 import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
 import { registerSourceSelectionPort } from '@/features/library/sourceSelectionPort';
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
@@ -66,7 +67,7 @@ interface ImageState {
   setGiteeConfig: (config: GiteeConfig) => void;
   clearGiteeConfig: () => void;
   initializeStorage: () => void;
-  loadImages: () => Promise<void>;
+  loadImages: (options?: LibraryListScope) => Promise<void>;
   uploadImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
   uploadMultipleImages: (
     uploadData: MultiImageUploadData,
@@ -177,13 +178,13 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
-    loadImages: async () => {
+    loadImages: async (options?: LibraryListScope) => {
       if (shouldSkipRemoteListLoad()) {
         return;
       }
 
       if (isLocalListMode()) {
-        await refreshLocalImageList(set);
+        await refreshLocalImageList(set, options);
         return;
       }
 
