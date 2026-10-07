@@ -1,5 +1,13 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
-import { mapEntriesToImageItems } from '@/features/workspace/localImageMapper';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
+import {
+  readDefaultLibraryListScope,
+  toLocalListOptions,
+} from '@/features/library/libraryListScope';
+import {
+  mapEntriesToImageItems,
+  pruneLocalPreviewCache,
+} from '@/features/workspace/localImageMapper';
 import {
   enqueuePendingPushForFolder,
   importImageToLocalVault,
@@ -28,23 +36,39 @@ export async function refreshRootDisplayPath(
 export async function refreshLocalImages(
   get: WorkspaceStoreGet,
   set: WorkspaceStoreSet,
-  options?: { quiet?: boolean },
+  options?: LibraryListScope,
 ): Promise<void> {
   if (get().mode !== 'local') {
     return;
   }
 
-  const quiet = options?.quiet === true;
+  const scope = {
+    ...readDefaultLibraryListScope(),
+    ...options,
+  };
+  const quiet = scope.quiet === true;
   if (!quiet) {
     set({ loading: true, error: null });
   }
   try {
     const vault = getWorkspaceVault();
-    const entries = await vault.list();
+    const allEntries = await vault.list();
+    const indexPaths = allEntries.map(entry => entry.relativePath);
+    const scopedEntries = await vault.list(toLocalListOptions(scope));
     const provider = resolveSelectedProvider();
-    const images = await mapEntriesToImageItems(entries, provider);
+    const images = await mapEntriesToImageItems(scopedEntries, provider, {
+      deferPreview: true,
+    });
+    pruneLocalPreviewCache(
+      images.map(image => image.localPath).filter(Boolean),
+    );
     const localFolders = await vault.listFolders();
-    set({ localImages: images, localFolders, loading: false });
+    set({
+      localImages: images,
+      indexPaths,
+      localFolders,
+      loading: false,
+    });
   } catch (error) {
     set({
       loading: false,

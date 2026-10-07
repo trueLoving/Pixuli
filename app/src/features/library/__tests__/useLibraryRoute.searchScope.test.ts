@@ -1,67 +1,47 @@
 import { describe, expect, it } from 'vitest';
-import type { ImageItem } from '@pixuli/core/types';
-import { filterImagesByFolder } from '@/features/workspace/folderTree';
+import { toLocalListOptions } from '@/features/library/libraryListScope';
 
 /**
- * 与 useLibraryRoute 中 visibleImages 选择逻辑一致：
- * 仅在「有查询 + 工作区范围 + 当前在文件夹内」时忽略树过滤。
+ * 与 useLibraryRoute 一致：仅在「有查询 + 工作区范围 + 当前在文件夹内」时扩大为全库搜索。
  */
-function resolveVisibleImages(
-  images: ImageItem[],
+function resolveListScope(
   selectedFolderPath: string | null | undefined,
   searchScope: 'folder' | 'workspace',
   searchQuery: string,
-): ImageItem[] {
+) {
   const searchAllWorkspace =
     searchScope === 'workspace' &&
     Boolean(searchQuery.trim()) &&
     Boolean(selectedFolderPath);
-  return searchAllWorkspace
-    ? images
-    : filterImagesByFolder(images, selectedFolderPath);
+  return toLocalListOptions({
+    folderPath: selectedFolderPath ?? '',
+    searchAll: searchAllWorkspace,
+    searchQuery: searchQuery.trim() || undefined,
+  });
 }
 
-const items = [
-  {
-    id: '1',
-    name: 'a.jpg',
-    localPath: 'photos/a.jpg',
-    url: '',
-    size: 1,
-    width: 1,
-    height: 1,
-    type: 'image/jpeg',
-  },
-  {
-    id: '2',
-    name: 'b.jpg',
-    localPath: 'docs/b.jpg',
-    url: '',
-    size: 1,
-    width: 1,
-    height: 1,
-    type: 'image/jpeg',
-  },
-] as ImageItem[];
-
-describe('library search scope (REF-612)', () => {
-  it('keeps folder filter when scope is folder', () => {
-    const visible = resolveVisibleImages(items, 'photos', 'folder', 'jpg');
-    expect(visible.map(item => item.id)).toEqual(['1']);
+describe('library search scope → vault list (REF-603 lazy store)', () => {
+  it('keeps folder shallow list when scope is folder', () => {
+    expect(resolveListScope('photos', 'folder', 'jpg')).toEqual({
+      pathPrefix: 'photos',
+      shallow: true,
+    });
   });
 
-  it('expands to whole workspace when scope is workspace', () => {
-    const visible = resolveVisibleImages(items, 'photos', 'workspace', 'jpg');
-    expect(visible.map(item => item.id)).toEqual(['1', '2']);
+  it('expands to vault search when scope is workspace', () => {
+    expect(resolveListScope('photos', 'workspace', 'jpg')).toEqual({
+      search: 'jpg',
+    });
   });
 
   it('does not expand without a committed query', () => {
-    const visible = resolveVisibleImages(items, 'photos', 'workspace', '');
-    expect(visible.map(item => item.id)).toEqual(['1']);
+    expect(resolveListScope('photos', 'workspace', '')).toEqual({
+      pathPrefix: 'photos',
+      shallow: true,
+    });
   });
 
-  it('does not expand when already at workspace root', () => {
-    const visible = resolveVisibleImages(items, '', 'workspace', 'jpg');
-    expect(visible).toHaveLength(2);
+  it('lists root without prefix when already at workspace root', () => {
+    expect(resolveListScope('', 'workspace', 'jpg')).toEqual({});
   });
 });

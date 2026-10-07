@@ -2,6 +2,7 @@ export * from './types';
 export * from './paths';
 export * from './bindings';
 export * from './syncPath';
+export { matchesListPathPrefix } from './listFilter';
 export { MemoryWorkspaceAdapter } from './memoryAdapter';
 export { createLocalVault } from './localVault';
 export { createSyncEngine, providerSupportsSync } from './syncEngine';

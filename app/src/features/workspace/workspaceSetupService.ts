@@ -414,6 +414,7 @@ export async function clearWorkspace(
     displayName: null,
     rootDisplayPath: null,
     localImages: [],
+    indexPaths: [],
     localFolders: [],
     loading: false,
     pushing: false,

@@ -1,5 +1,6 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
 import type { SyncStatusSummary, WorkspaceMode } from '@pixuli/core/vault';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
 import type { WorkspaceReconnectHint } from '@/features/workspace/fsaReconnect';
 import type { SyncRunOutcome } from '@/features/workspace/syncOutcome';
 
@@ -8,7 +9,10 @@ export interface WorkspaceState {
   rootPath: string | null;
   displayName: string | null;
   rootDisplayPath: string | null;
+  /** 当前范围下的资源（可无预览 blob；见 deferPreview） */
   localImages: ImageItem[];
+  /** 全库 relativePath，仅供文件夹树计数（无 blob） */
+  indexPaths: string[];
   localFolders: string[];
   loading: boolean;
   pushing: boolean;
@@ -31,7 +35,7 @@ export interface WorkspaceState {
   clearWorkspace: () => Promise<void>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;
-  refreshLocalImages: (options?: { quiet?: boolean }) => Promise<void>;
+  refreshLocalImages: (options?: LibraryListScope) => Promise<void>;
   refreshRootDisplayPath: () => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
