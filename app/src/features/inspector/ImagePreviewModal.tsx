@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@/i18n/locales';
 import { ImageItem } from '@pixuli/core/types';
+import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 import './ImagePreviewModal.css';
 
 interface ImagePreviewModalProps {
@@ -26,6 +27,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   t,
 }) => {
   const translate = t || defaultTranslate;
+  const src = useResolvedAssetUrl(image);
 
   const handlePrevious = useCallback(() => {
     if (onNavigate && images.length > 1) {
@@ -114,11 +116,13 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             </button>
           )}
 
-          <img
-            src={image.url}
-            alt={image.name}
-            className="image-preview-modal-image"
-          />
+          {src ? (
+            <img
+              src={src}
+              alt={image.name}
+              className="image-preview-modal-image"
+            />
+          ) : null}
         </div>
 
         <div className="image-preview-modal-info">
