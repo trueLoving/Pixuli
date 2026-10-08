@@ -9,6 +9,7 @@ export interface WorkspaceLibraryPort {
   isLocalActive(): boolean;
   refreshLocalImages(options?: LibraryListScope): Promise<void>;
   getLocalImages(): ImageItem[];
+  getScopedTotal(): number;
   importLocalImage(uploadData: ImageUploadData): Promise<ImageItem | null>;
   softDeleteLocal(relativePath: string): Promise<void>;
   moveLocalFile(relativePath: string, targetDir: string): Promise<void>;
@@ -26,6 +27,7 @@ const inactivePort: WorkspaceLibraryPort = {
   isLocalActive: () => false,
   refreshLocalImages: async () => undefined,
   getLocalImages: () => [],
+  getScopedTotal: () => 0,
   importLocalImage: async () => null,
   softDeleteLocal: async () => undefined,
   moveLocalFile: async () => undefined,

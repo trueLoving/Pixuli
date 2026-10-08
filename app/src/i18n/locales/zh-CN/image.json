@@ -216,6 +216,7 @@
       },
       "scaleTipLarge": "资源较多：已启用虚拟列表与缩略限流，滚动时仅渲染可见行。",
       "scaleTipHuge": "资源很多：建议缩小文件夹范围或使用搜索；列表仍限流渲染以保持流畅。",
+      "scaleTipTruncated": "仅显示最近更新的 {shown} 项（共 {total}）。进入文件夹或收窄搜索可查看其余。",
       "loading": "正在加载文件...",
       "emptyTitle": "还没有文件",
       "emptyDescription": "添加图片、PDF 或视频到当前文件夹（仅本机）",

@@ -54,9 +54,9 @@ export async function refreshLocalImages(
     const vault = getWorkspaceVault();
     const allEntries = await vault.list();
     const indexPaths = allEntries.map(entry => entry.relativePath);
-    const scopedEntries = await vault.list(toLocalListOptions(scope));
+    const page = await vault.listPage(toLocalListOptions(scope));
     const provider = resolveSelectedProvider();
-    const images = await mapEntriesToImageItems(scopedEntries, provider, {
+    const images = await mapEntriesToImageItems(page.entries, provider, {
       deferPreview: true,
     });
     pruneLocalPreviewCache(
@@ -65,6 +65,7 @@ export async function refreshLocalImages(
     const localFolders = await vault.listFolders();
     set({
       localImages: images,
+      scopedTotal: page.total,
       indexPaths,
       localFolders,
       loading: false,

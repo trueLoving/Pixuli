@@ -77,6 +77,19 @@ export interface LocalListOptions {
    * pathPrefix 未传时忽略。
    */
   shallow?: boolean;
+  /** 排序后跳过的条数（默认 0） */
+  offset?: number;
+  /**
+   * 排序后最多返回的条数。
+   * 未传表示不截断。总数见 `listPage().total`。
+   */
+  limit?: number;
+}
+
+export interface LocalListPage {
+  entries: LocalImageIndexEntry[];
+  /** 截断前的匹配总数 */
+  total: number;
 }
 
 export interface LocalVault {
@@ -84,6 +97,8 @@ export interface LocalVault {
   open(): Promise<void>;
   getConfig(): WorkspaceConfig;
   list(options?: LocalListOptions): Promise<LocalImageIndexEntry[]>;
+  /** 与 list 相同过滤，额外返回截断前总数 */
+  listPage(options?: LocalListOptions): Promise<LocalListPage>;
   getByPath(relativePath: string): Promise<LocalImageIndexEntry | null>;
   importFile(
     source: File | string,

@@ -69,6 +69,7 @@
 | 选文件夹清多选 + 清已生效查询（P1-3）   | ✅   |
 | 大库状态栏提示（>500 / >5000，REF-603） | ✅   |
 | Store/索引按文件夹懒载入 + deferPreview | ✅   |
+| 根「全部」/全库搜索最多 5000 条进列表   | ✅   |
 
 ### 3.3 连接与同步
 
@@ -123,8 +124,9 @@
 | P1-5       | 连接向导壳 + PAT                                              | ✅（OAuth 可选未做）    |
 | P1-6～P1-8 | 网格切换、任务抽屉、shareLink 设置                            | 延后                    |
 
-排期中：**Sprint D** [#132](https://github.com/trueLoving/Pixuli/issues/132)
-REF-603 — 文档 1.4 + 虚拟窗口 + 大库提示 + **Store/索引懒载入**；见
+**Sprint D** [#132](https://github.com/trueLoving/Pixuli/issues/132)
+REF-603已关（#258）。后续：根视图/全库搜索
+**5000 上限**（文档 1.5）；单文件夹游标、持久缩略、远端分页仍为 backlog。见
 [02-performance.md](docs/02-system-design/02-performance.md)。
 
 ---
@@ -151,8 +153,8 @@ REF-603 — 文档 1.4 + 虚拟窗口 + 大库提示 + **Store/索引懒载入**
 
 ## 8. 建议下一刀
 
-1. 合入本轮 #132（含 Store 懒载入）后，评估是否 **关闭 #132**（其余记 backlog）
-2. **J0 自测**；摩擦按条修
+1. **J0 自测**；摩擦按条修
+2. 性能 backlog（不挡主路径）：单文件夹游标、持久缩略、远端分页
 3. **暂缓**：#126、#88/#89、#127/#138
 
 续做任务请同步 [PLANS.md](./PLANS.md) 与 GitHub Issues。

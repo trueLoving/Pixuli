@@ -9,6 +9,9 @@ export interface AssetLibraryStatusBarProps {
   selectedCount: number;
   loading?: boolean;
   isFiltered?: boolean;
+  /** 根视图 / 全库搜索已按上限截断 */
+  listTruncated?: boolean;
+  matchedTotal?: number;
   t: (key: string) => string;
 }
 
@@ -19,6 +22,8 @@ export const AssetLibraryStatusBar: React.FC<AssetLibraryStatusBarProps> = ({
   selectedCount,
   loading = false,
   isFiltered = false,
+  listTruncated = false,
+  matchedTotal,
   t,
 }) => {
   const sizeLabel = formatFileSize(totalSize);
@@ -32,8 +37,10 @@ export const AssetLibraryStatusBar: React.FC<AssetLibraryStatusBarProps> = ({
     .replace('{total}', String(totalCount))
     .replace('{size}', sizeLabel);
 
-  // 以当前列表条数为准（虚拟窗口滚动的那批）
-  const scaleTipKey = getLibraryScaleTipKey(filesCount);
+  const scaleTipKey = listTruncated
+    ? 'image.library.scaleTipTruncated'
+    : getLibraryScaleTipKey(filesCount);
+  const scaleTotal = matchedTotal ?? totalCount;
 
   return (
     <div className="asset-library-status-bar" aria-live="polite">
@@ -51,7 +58,9 @@ export const AssetLibraryStatusBar: React.FC<AssetLibraryStatusBarProps> = ({
                 className="asset-library-status-bar-scale-tip"
                 role="status"
               >
-                {t(scaleTipKey)}
+                {t(scaleTipKey)
+                  .replace('{shown}', String(filesCount))
+                  .replace('{total}', String(scaleTotal))}
               </span>
             ) : null}
           </div>
