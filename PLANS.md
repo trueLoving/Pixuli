@@ -1,9 +1,8 @@
 # PLANS
 
 > **工作进度 SSOT** · 与 GitHub Issues **对齐**  
-> **最近同步**：2026-10-07（远程 OPEN **6**；Sprint A～C
-> ✅；主路径打磨 #254/#255/#257 ✅；#132 REF-603：大库提示 + 性能文档 1.4 +
-> Store/索引按文件夹懒载入）  
+> **最近同步**：2026-10-08（远程 OPEN **5**；Sprint A～D ✅；#132
+> REF-603 已关 #258；根视图 5000 上限见性能文档 1.5）  
 > **状态**：执行中 · **主路径冻结**（添加 → 同步 → 复制链接）
 
 本文件是仓库**唯一的任务与进度汇总表**。新增任务、更新进度、关闭项，都在这里维护，并与远程 Issue 保持一致。
@@ -42,23 +41,20 @@ closed 查阅。
 > / 网格 / 任务抽屉。  
 > 官方连接近期只保 GitHub + Gitee。对照 SSOT §十一 P0/P1。
 
-| Sprint | 窗口（建议）   | 目标                 | Issue                                                                                                                                                                                                                             | 退出标准                                                           | 状态      |
-| ------ | -------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------- |
-| **A**  | —              | 主路径口径与文档对齐 | [#241](https://github.com/trueLoving/Pixuli/issues/241) REF-609                                                                                                                                                                   | README/PRS 与 v3.7 一致；无用户向「发布」；J0 文案可走通           | ✅        |
-| **A′** | 贯穿（非编码） | J0 自测摩擦记录      | （摩擦点再开子 Issue）                                                                                                                                                                                                            | 添加→同步公开仓→复制 raw 可贴 Markdown；记下 3～5 个真实摩擦       | ⏳        |
-| **B**  | —              | 连接统一向导壳       | [#242](https://github.com/trueLoving/Pixuli/issues/242) REF-610                                                                                                                                                                   | 统一添加连接壳；PAT 可连可同步；无空壳 OAuth                       | ✅        |
-| **C**  | —              | 库内效率三件套       | [#243](https://github.com/trueLoving/Pixuli/issues/243) REF-611 · [#244](https://github.com/trueLoving/Pixuli/issues/244) REF-612 · [#245](https://github.com/trueLoving/Pixuli/issues/245) REF-613                               | 批量移动仅本机；全部中搜索；压缩开关+发送到压缩                    | ✅        |
-| **D**  | **当前**       | 性能边界收尾         | [#132](https://github.com/trueLoving/Pixuli/issues/132) REF-603                                                                                                                                                                   | 文档 1.4 + 虚拟窗口 + 大库提示 + Store 懒载入；根游标/持久缩略另开 | ⏳→收口中 |
-| **E**  | D 后           | 插件体系演进         | [#126](https://github.com/trueLoving/Pixuli/issues/126) REF-411                                                                                                                                                                   | manifest/lifecycle 设计落地（不挡主路径）                          | ⬜        |
-| **P2** | 穿插 / 有余力  | 平台与工程           | [#88](https://github.com/trueLoving/Pixuli/issues/88) · [#89](https://github.com/trueLoving/Pixuli/issues/89) · [#127](https://github.com/trueLoving/Pixuli/issues/127) · [#138](https://github.com/trueLoving/Pixuli/issues/138) | 不阻塞主路径 / D                                                   | ⬜        |
+| Sprint | 窗口（建议）   | 目标                 | Issue                                                                                                                                                                                                                             | 退出标准                                                                                          | 状态 |
+| ------ | -------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---- |
+| **A**  | —              | 主路径口径与文档对齐 | [#241](https://github.com/trueLoving/Pixuli/issues/241) REF-609                                                                                                                                                                   | README/PRS 与 v3.7 一致；无用户向「发布」；J0 文案可走通                                          | ✅   |
+| **A′** | 贯穿（非编码） | J0 自测摩擦记录      | （摩擦点再开子 Issue）                                                                                                                                                                                                            | 添加→同步公开仓→复制 raw 可贴 Markdown；记下 3～5 个真实摩擦                                      | ⏳   |
+| **B**  | —              | 连接统一向导壳       | [#242](https://github.com/trueLoving/Pixuli/issues/242) REF-610                                                                                                                                                                   | 统一添加连接壳；PAT 可连可同步；无空壳 OAuth                                                      | ✅   |
+| **C**  | —              | 库内效率三件套       | [#243](https://github.com/trueLoving/Pixuli/issues/243) REF-611 · [#244](https://github.com/trueLoving/Pixuli/issues/244) REF-612 · [#245](https://github.com/trueLoving/Pixuli/issues/245) REF-613                               | 批量移动仅本机；全部中搜索；压缩开关+发送到压缩                                                   | ✅   |
+| **D**  | —              | 性能边界收尾         | [#132](https://github.com/trueLoving/Pixuli/issues/132) REF-603                                                                                                                                                                   | 文档 1.5 + 虚拟窗口 + 大库提示 + Store 懒载入 + 根视图 5000 上限；单文件夹游标/持久缩略为 backlog | ✅   |
+| **E**  | D 后           | 插件体系演进         | [#126](https://github.com/trueLoving/Pixuli/issues/126) REF-411                                                                                                                                                                   | manifest/lifecycle 设计落地（不挡主路径）                                                         | ⬜   |
+| **P2** | 穿插 / 有余力  | 平台与工程           | [#88](https://github.com/trueLoving/Pixuli/issues/88) · [#89](https://github.com/trueLoving/Pixuli/issues/89) · [#127](https://github.com/trueLoving/Pixuli/issues/127) · [#138](https://github.com/trueLoving/Pixuli/issues/138) | 不阻塞主路径 / D                                                                                  | ⬜   |
 
 ### 当前应开工
 
-1. **[#132](https://github.com/trueLoving/Pixuli/issues/132) REF-603** — Sprint
-   D（本轮）  
-   已有：性能文档 1.1、文件表虚拟窗口、状态栏大库提示（500 /
-   5 000）、listImages 调研结论。  
-   剩余可选：持久缩略缓存、远端真分页、1k 压测 fixture（不挡本轮验收时可关 Issue 并记 backlog）。
+1. 性能 backlog（无新 Issue，不挡主路径）：单文件夹游标、持久缩略、远端真分页、1k
+   fixture
 2. 并行：**J0 自测**（A′；不建 Issue，除非出现可修缺陷）
 3. **勿抢跑** [#126](https://github.com/trueLoving/Pixuli/issues/126)（Sprint
    E）与 Desktop P2（#88/#89）
@@ -119,15 +115,15 @@ closed 查阅。
 
 ### 排期内（优先）
 
-| ID      | 标题                     | GitHub                                                  | Sprint | 状态                                                     |
-| ------- | ------------------------ | ------------------------------------------------------- | ------ | -------------------------------------------------------- |
-| REF-609 | 对外叙事对齐：README/PRS | [#241](https://github.com/trueLoving/Pixuli/issues/241) | A      | ✅ [#246](https://github.com/trueLoving/Pixuli/pull/246) |
-| REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ✅ [#247](https://github.com/trueLoving/Pixuli/pull/247) |
-| REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ✅ [#248](https://github.com/trueLoving/Pixuli/pull/248) |
-| REF-612 | 在全部中搜索             | [#244](https://github.com/trueLoving/Pixuli/issues/244) | C      | ✅ [#251](https://github.com/trueLoving/Pixuli/pull/251) |
-| REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ✅ [#252](https://github.com/trueLoving/Pixuli/pull/252) |
-| REF-603 | 大数据 / 性能边界        | [#132](https://github.com/trueLoving/Pixuli/issues/132) | D      | ⏳ 大库提示+文档 1.4+Store 懒载入（合入后可评估关闭）    |
-| REF-411 | 插件体系重设计           | [#126](https://github.com/trueLoving/Pixuli/issues/126) | E      | ⬜                                                       |
+| ID      | 标题                     | GitHub                                                  | Sprint | 状态                                                                           |
+| ------- | ------------------------ | ------------------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
+| REF-609 | 对外叙事对齐：README/PRS | [#241](https://github.com/trueLoving/Pixuli/issues/241) | A      | ✅ [#246](https://github.com/trueLoving/Pixuli/pull/246)                       |
+| REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ✅ [#247](https://github.com/trueLoving/Pixuli/pull/247)                       |
+| REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ✅ [#248](https://github.com/trueLoving/Pixuli/pull/248)                       |
+| REF-612 | 在全部中搜索             | [#244](https://github.com/trueLoving/Pixuli/issues/244) | C      | ✅ [#251](https://github.com/trueLoving/Pixuli/pull/251)                       |
+| REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ✅ [#252](https://github.com/trueLoving/Pixuli/pull/252)                       |
+| REF-603 | 大数据 / 性能边界        | [#132](https://github.com/trueLoving/Pixuli/issues/132) | D      | ✅ [#258](https://github.com/trueLoving/Pixuli/pull/258)；根视图上限见文档 1.5 |
+| REF-411 | 插件体系重设计           | [#126](https://github.com/trueLoving/Pixuli/issues/126) | E      | ⬜                                                                             |
 
 ### P2（有余力 · 不挡 Sprint D）
 
@@ -138,8 +134,8 @@ closed 查阅。
 | REF-412 | 集成测试体系              | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
 | REF-415 | 文档中/英策略             | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
 
-**OPEN 合计**：**6** 条（2026-10-07 与 `gh issue list --state open` 一致：#132 ·
-#126 · #127 · #138 · #88 · #89）。
+**OPEN 合计**：**5** 条（2026-10-08 与 `gh issue list --state open` 一致：#126 ·
+#127 · #138 · #88 · #89）。
 
 ---
 
@@ -158,6 +154,7 @@ closed 查阅。
 | [#128](https://github.com/trueLoving/Pixuli/issues/128)                                                                                                                                                                               | REF-413 冒烟 / CI ✅                   |
 | [#241](https://github.com/trueLoving/Pixuli/issues/241)～[#245](https://github.com/trueLoving/Pixuli/issues/245)                                                                                                                      | Sprint A～C（REF-609～613）✅          |
 | [#254](https://github.com/trueLoving/Pixuli/pull/254) / [#255](https://github.com/trueLoving/Pixuli/pull/255) / [#257](https://github.com/trueLoving/Pixuli/pull/257)                                                                 | 主路径打磨（无独立 Issue）✅           |
+| [#132](https://github.com/trueLoving/Pixuli/issues/132) / [#258](https://github.com/trueLoving/Pixuli/pull/258)                                                                                                                       | REF-603 性能边界 ✅                    |
 
 ---
 

@@ -137,8 +137,13 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
     },
 
     async list(options?: LocalListOptions) {
+      const page = await this.listPage(options);
+      return page.entries;
+    },
+
+    async listPage(options?: LocalListOptions) {
       const shallow = options?.shallow === true;
-      let entries = index.filter(entry => {
+      const matched = index.filter(entry => {
         if (!options?.includeDeleted && entry.deletedAt) {
           return false;
         }
@@ -169,7 +174,14 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
         }
         return true;
       });
-      return entries.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      matched.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+      const offset = Math.max(0, options?.offset ?? 0);
+      const limit = options?.limit;
+      const entries =
+        limit == null
+          ? matched.slice(offset)
+          : matched.slice(offset, offset + Math.max(0, limit));
+      return { entries, total: matched.length };
     },
 
     async getByPath(relativePath) {

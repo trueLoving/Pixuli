@@ -10,6 +10,8 @@ import { getWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge
 
 export type AssetListPatch = {
   images?: ImageItem[];
+  /** 当前范围匹配总数；未截断时等于 images.length */
+  libraryTotal?: number;
   loading?: boolean;
   error?: string | null;
 };
@@ -50,6 +52,7 @@ export async function refreshLocalImageList(
     await workspace.refreshLocalImages(options);
     set({
       images: workspace.getLocalImages(),
+      libraryTotal: workspace.getScopedTotal(),
       loading: false,
     });
   } catch (error) {

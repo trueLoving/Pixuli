@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toLocalListOptions } from '@/features/library/libraryListScope';
+import { LIBRARY_ROOT_LIST_CAP } from '@/features/library/utils/libraryScale';
 
 /**
  * 与 useLibraryRoute 一致：仅在「有查询 + 工作区范围 + 当前在文件夹内」时扩大为全库搜索。
@@ -31,6 +32,7 @@ describe('library search scope → vault list (REF-603 lazy store)', () => {
   it('expands to vault search when scope is workspace', () => {
     expect(resolveListScope('photos', 'workspace', 'jpg')).toEqual({
       search: 'jpg',
+      limit: LIBRARY_ROOT_LIST_CAP,
     });
   });
 
@@ -41,7 +43,9 @@ describe('library search scope → vault list (REF-603 lazy store)', () => {
     });
   });
 
-  it('lists root without prefix when already at workspace root', () => {
-    expect(resolveListScope('', 'workspace', 'jpg')).toEqual({});
+  it('caps root list when already at workspace root', () => {
+    expect(resolveListScope('', 'workspace', 'jpg')).toEqual({
+      limit: LIBRARY_ROOT_LIST_CAP,
+    });
   });
 });

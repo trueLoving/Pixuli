@@ -1,7 +1,7 @@
 # 性能边界与列表策略
 
-- **文档版本**：1.4
-- **日期**：2026-10-07
+- **文档版本**：1.5
+- **日期**：2026-10-08
 - **关联**：REF-603 · [#132](https://github.com/trueLoving/Pixuli/issues/132) ·
   [PLANS.md](../../PLANS.md)
 - **产品约束**：本地工作区为 SSOT；远端可选同步；主路径为「添加 → 同步 → 复制链接」
@@ -210,26 +210,27 @@ Mobile **与 Web 共享**列表/缩略策略；**差异**在适配器 IO 与 Web
 
 ### 4.1 共性能力
 
-| 能力                       | 状态 | 代码位置                                                                                               | 说明                                                                  |
-| -------------------------- | ---- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| 本地索引 / vault           | ✅   | `packages/core/src/vault/`（`localVault.ts`、`paths.ts` → `.pixuli/index.json`）                       | 列表热路径读本地，非远端全量                                          |
-| 刷新本地列表进 store       | ✅   | `refreshLocalImages(LibraryListScope)` → 范围元数据；`indexPaths` 供树；`deferPreview` 默认不建 blob   | 切文件夹 /「在全部中搜索」重载；根「全部」仍可为全库元数据（无 blob） |
-| Store / 索引按文件夹懒载入 | ✅   | `libraryListScope.ts` + `vault.list({ pathPrefix, shallow })`；`useLibraryRoute` 订阅 scope            | P0；游标分页仍未做                                                    |
-| 预览按需 blob              | ✅   | `localImageMapper.resolveLocalPreviewUrl`；`AssetThumb` 可见时再读盘；`pruneLocalPreviewCache`         | 切范围释放多余 blob                                                   |
-| 文件表虚拟窗口             | ✅   | `app/src/features/library/utils/virtualWindow.ts`；`AssetLibrary.tsx` 调用（行高 44，默认 overscan 8） | 只挂载可见行 ± overscan                                               |
-| 虚拟窗口单测               | ✅   | `utils/__tests__/virtualWindow.test.ts`                                                                | CI                                                                    |
-| 文件夹范围过滤             | ✅   | 列表侧由 vault `pathPrefix`+`shallow` 承担；`filterImagesByFolder` 仍可用于兼容路径                    | 缩小工作集                                                            |
-| 选文件夹清已生效查询       | ✅   | `folderScopeReset.ts`；`useLibraryRoute` / `LibraryWorkbench`                                          | P1-3                                                                  |
-| 在全部中搜索               | ✅   | `SearchContext` + 空态 CTA（#244）；scope → `vault.list({ search })`                                   | 显式扩大范围                                                          |
-| 大库阈值 + 状态栏提示      | ✅   | `libraryScale.ts`（500 / 5000）；`AssetLibraryStatusBar`                                               | 有单测                                                                |
-| 图片 `loading="lazy"`      | ✅   | `AssetThumb.tsx`                                                                                       | 配合窗口内挂载 + deferPreview                                         |
-| 视频缩略取帧               | ✅   | `assetThumbnail.captureVideoThumbnail`                                                                 | 失败可空                                                              |
-| PDF 首页缩略               | ✅   | `assetThumbnail.capturePdfThumbnail`（pdf.js workerSrc）                                               | Worker **仅 PDF 脚本**，非通用解码 Worker                             |
-| 缩略内存 LRU ≤ 120         | ✅   | `assetThumbnail.ts` `CACHE_LIMIT`                                                                      | 进程内 Map，刷新即丢                                                  |
-| 缩略并发 ≤ 3               | ✅   | `assetThumbnail.ts` `MAX_CONCURRENT` + `withConcurrency`                                               |                                                                       |
-| 显式同步 / 待推送 N        | ✅   | `workspaceStore` + `SyncEngine` `pendingPush`；活动栏角标                                              |                                                                       |
-| 同步不锁库浏览             | ✅   | sync 状态与列表分离；`requestSync` 开方向弹层                                                          | 产品层已兑现                                                          |
-| 大库提示 i18n              | ✅   | `image.library.scaleTipLarge` / `scaleTipHuge`（zh/en）                                                |                                                                       |
+| 能力                       | 状态 | 代码位置                                                                                               | 说明                                                                |
+| -------------------------- | ---- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 本地索引 / vault           | ✅   | `packages/core/src/vault/`（`localVault.ts`、`paths.ts` → `.pixuli/index.json`）                       | 列表热路径读本地，非远端全量                                        |
+| 刷新本地列表进 store       | ✅   | `refreshLocalImages(LibraryListScope)` → 范围元数据；`indexPaths` 供树；`deferPreview` 默认不建 blob   | 切文件夹重载；根「全部」与全库搜索超过上限时只进一页                |
+| Store / 索引按文件夹懒载入 | ✅   | `libraryListScope.ts` + `vault.list({ pathPrefix, shallow })`；`useLibraryRoute` 订阅 scope            | P0                                                                  |
+| 根「全部」/ 全库搜索上限   | ✅   | `LIBRARY_ROOT_LIST_CAP`（5000）+ `vault.listPage`；`scaleTipTruncated`                                 | 按更新时间截断进 store；文件夹浅列表不截断；树仍用全量 `indexPaths` |
+| 预览按需 blob              | ✅   | `localImageMapper.resolveLocalPreviewUrl`；`AssetThumb` 可见时再读盘；`pruneLocalPreviewCache`         | 切范围释放多余 blob                                                 |
+| 文件表虚拟窗口             | ✅   | `app/src/features/library/utils/virtualWindow.ts`；`AssetLibrary.tsx` 调用（行高 44，默认 overscan 8） | 只挂载可见行 ± overscan                                             |
+| 虚拟窗口单测               | ✅   | `utils/__tests__/virtualWindow.test.ts`                                                                | CI                                                                  |
+| 文件夹范围过滤             | ✅   | 列表侧由 vault `pathPrefix`+`shallow` 承担；`filterImagesByFolder` 仍可用于兼容路径                    | 缩小工作集                                                          |
+| 选文件夹清已生效查询       | ✅   | `folderScopeReset.ts`；`useLibraryRoute` / `LibraryWorkbench`                                          | P1-3                                                                |
+| 在全部中搜索               | ✅   | `SearchContext` + 空态 CTA（#244）；scope → `vault.list({ search })`                                   | 显式扩大范围                                                        |
+| 大库阈值 + 状态栏提示      | ✅   | `libraryScale.ts`（500 / 5000）；`AssetLibraryStatusBar`                                               | 有单测                                                              |
+| 图片 `loading="lazy"`      | ✅   | `AssetThumb.tsx`                                                                                       | 配合窗口内挂载 + deferPreview                                       |
+| 视频缩略取帧               | ✅   | `assetThumbnail.captureVideoThumbnail`                                                                 | 失败可空                                                            |
+| PDF 首页缩略               | ✅   | `assetThumbnail.capturePdfThumbnail`（pdf.js workerSrc）                                               | Worker **仅 PDF 脚本**，非通用解码 Worker                           |
+| 缩略内存 LRU ≤ 120         | ✅   | `assetThumbnail.ts` `CACHE_LIMIT`                                                                      | 进程内 Map，刷新即丢                                                |
+| 缩略并发 ≤ 3               | ✅   | `assetThumbnail.ts` `MAX_CONCURRENT` + `withConcurrency`                                               |                                                                     |
+| 显式同步 / 待推送 N        | ✅   | `workspaceStore` + `SyncEngine` `pendingPush`；活动栏角标                                              |                                                                     |
+| 同步不锁库浏览             | ✅   | sync 状态与列表分离；`requestSync` 开方向弹层                                                          | 产品层已兑现                                                        |
+| 大库提示 i18n              | ✅   | `image.library.scaleTipLarge` / `scaleTipHuge`（zh/en）                                                |                                                                     |
 
 ### 4.2 Web 专属
 
@@ -289,36 +290,38 @@ Mobile **与 Web 共享**列表/缩略策略；**差异**在适配器 IO 与 Web
 
 ### 4.8 阈值表（与代码常量一致）
 
-| 规模       | 预期                          | 用户提示        | 常量                        |
-| ---------- | ----------------------------- | --------------- | --------------------------- |
-| ≤ 500      | 虚拟窗口足够                  | 无              | —                           |
-| 500～5 000 | 窗口 + 缩略限流               | `scaleTipLarge` | `LIBRARY_SCALE_LARGE = 500` |
-| \> 5 000   | 建议缩小范围；仍靠窗口 + 限流 | `scaleTipHuge`  | `LIBRARY_SCALE_HUGE = 5000` |
+| 规模       | 预期                                                           | 用户提示                             | 常量                                                |
+| ---------- | -------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- |
+| ≤ 500      | 虚拟窗口足够                                                   | 无                                   | —                                                   |
+| 500～5 000 | 窗口 + 缩略限流                                                | `scaleTipLarge`                      | `LIBRARY_SCALE_LARGE = 500`                         |
+| \> 5 000   | 根视图/全库搜索截断为最近 5000；单文件夹不截断，仍提示缩小范围 | `scaleTipTruncated` / `scaleTipHuge` | `LIBRARY_ROOT_LIST_CAP = LIBRARY_SCALE_HUGE = 5000` |
 
 文件：`app/src/features/library/utils/libraryScale.ts`。
 
 ### 4.9 一句话差距
 
 > **已做到**：DOM 虚拟化 + 缩略限流 + 本地索引主路径 +
-> **按文件夹懒载入 store** + 预览 defer blob + 大库提示 + 同步不锁库。  
-> **仍缺**：根「全部」视图仍可装入全库**元数据**（无 blob）；远端 `listImages`
-> **未真分页**；缩略 **无磁盘持久缓存**；**无 1k 压测 fixture**；无游标分页。  
-> 超大库下一步优先：**根视图游标/分页** 或默认引导进文件夹，而不是再加 DOM 技巧。
+> **按文件夹懒载入 store** + **根视图/全库搜索 5000 上限** + 预览 defer
+> blob + 大库提示 + 同步不锁库。  
+> **仍缺**：单文件夹超过上限仍整表进 store；远端 `listImages` **未真分页**；缩略
+> **无磁盘持久缓存**；**无 1k 压测 fixture**。  
+> 超大库下一步优先：**单文件夹游标** 或持久缩略缓存，而不是再加 DOM 技巧。
 
 ---
 
 ## 五、后续 backlog（按优先级）
 
-| 优先级 | 项                                | 对应缺口        | 主要端           |
-| ------ | --------------------------------- | --------------- | ---------------- |
-| P0 ✅  | Store / 索引按文件夹懒载入        | §4.1 已落地     | 三端共享         |
-| P1     | 根「全部」游标分页 / 默认进文件夹 | §4.9 元数据全量 | 三端共享         |
-| P1     | 持久缩略磁盘缓存                  | §4.1 刷新丢 LRU | Desktop/Web 优先 |
-| P1     | 远端 `listImages` 真分页          | §4.5 ❌         | 同步路径         |
-| P2     | 1k fixture + 记录表               | §4.6 ❌         | 工程             |
-| P2     | 通用解码 Worker / 多进程          | §4.2 / §4.3 ❌  | Web/Desktop      |
-| P2     | Desktop 离线队列 #88              | §4.3 ❌         | Desktop          |
-| 延后   | 网格虚拟滚动                      | §4.7 ⏸         | UI               |
+| 优先级 | 项                            | 对应缺口                     | 主要端           |
+| ------ | ----------------------------- | ---------------------------- | ---------------- |
+| P0 ✅  | Store / 索引按文件夹懒载入    | §4.1 已落地                  | 三端共享         |
+| P1 ✅  | 根「全部」/ 全库搜索上限 5000 | §4.1 `LIBRARY_ROOT_LIST_CAP` | 三端共享         |
+| P1     | 单文件夹内游标分页            | §4.9 超大单目录              | 三端共享         |
+| P1     | 持久缩略磁盘缓存              | §4.1 刷新丢 LRU              | Desktop/Web 优先 |
+| P1     | 远端 `listImages` 真分页      | §4.5 ❌                      | 同步路径         |
+| P2     | 1k fixture + 记录表           | §4.6 ❌                      | 工程             |
+| P2     | 通用解码 Worker / 多进程      | §4.2 / §4.3 ❌               | Web/Desktop      |
+| P2     | Desktop 离线队列 #88          | §4.3 ❌                      | Desktop          |
+| 延后   | 网格虚拟滚动                  | §4.7 ⏸                      | UI               |
 
 ---
 
@@ -326,6 +329,7 @@ Mobile **与 Web 共享**列表/缩略策略；**差异**在适配器 IO 与 Web
 
 | 版本 | 日期       | 说明                                                      |
 | ---- | ---------- | --------------------------------------------------------- |
+| 1.5  | 2026-10-08 | 根「全部」与全库搜索 list 上限 5000 + 截断提示            |
 | 1.4  | 2026-10-07 | Store/索引按文件夹懒载入 + deferPreview；更新 §4.1 / 缺口 |
 | 1.3  | 2026-10-07 | 新增 §四代码实现盘点（✅/🟡/❌）与结构性缺口结论          |
 | 1.2  | 2026-10-07 | 补齐：分端关注点、共性、手段、测量验证闭环                |

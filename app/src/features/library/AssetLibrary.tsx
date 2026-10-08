@@ -7,6 +7,7 @@ import {
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
 import type { NativeImagePickers } from './image-upload/nativePickers';
+import { useImageStore } from '@/features/library/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -421,6 +422,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => observer.disconnect();
   }, [showEmpty, loading, files.length]);
 
+  const libraryTotal = useImageStore(state => state.libraryTotal);
+  const matchedTotal = Math.max(libraryTotal, images.length);
+  const listTruncated = matchedTotal > images.length;
   const listedTotalSize = useMemo(() => sumListedFileSize(files), [files]);
   const isFilteredList =
     Boolean(search?.searchQuery) && files.length !== images.length;
@@ -554,11 +558,15 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         {showStatusBar ? (
           <AssetLibraryStatusBar
             filesCount={files.length}
-            totalCount={images.length}
+            totalCount={
+              listTruncated && !isFilteredList ? matchedTotal : images.length
+            }
             totalSize={listedTotalSize}
             selectedCount={selectedIds.length}
             loading={loading}
-            isFiltered={isFilteredList}
+            isFiltered={isFilteredList || listTruncated}
+            listTruncated={listTruncated}
+            matchedTotal={matchedTotal}
             t={t}
           />
         ) : null}

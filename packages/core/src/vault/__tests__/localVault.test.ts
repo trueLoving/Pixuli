@@ -101,6 +101,36 @@ describe('createLocalVault', () => {
     ]);
   });
 
+  it('listPage reports total and applies limit', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.importFile(
+      new File([new Uint8Array([1])], 'a.jpg', { type: 'image/jpeg' }),
+      'images/a.jpg',
+    );
+    await vault.importFile(
+      new File([new Uint8Array([2])], 'b.jpg', { type: 'image/jpeg' }),
+      'images/b.jpg',
+    );
+    await vault.importFile(
+      new File([new Uint8Array([3])], 'c.jpg', { type: 'image/jpeg' }),
+      'docs/c.jpg',
+    );
+
+    const page = await vault.listPage({ limit: 2 });
+    expect(page.total).toBe(3);
+    expect(page.entries).toHaveLength(2);
+
+    const folder = await vault.listPage({
+      pathPrefix: 'images',
+      shallow: true,
+    });
+    expect(folder.total).toBe(2);
+    expect(folder.entries).toHaveLength(2);
+  });
+
   it('updateSyncMeta updates sync fields', async () => {
     const adapter = new MemoryWorkspaceAdapter();
     const vault = createLocalVault(adapter);

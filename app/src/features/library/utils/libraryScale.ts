@@ -6,6 +6,12 @@ export const LIBRARY_SCALE_LARGE = 500;
 /** 超过该数量：建议缩小文件夹范围 */
 export const LIBRARY_SCALE_HUGE = 5000;
 
+/**
+ * 根「全部」与全库搜索写入 store 的上限（按 updatedAt 新到旧）。
+ * 文件夹浅列表不截断。
+ */
+export const LIBRARY_ROOT_LIST_CAP = LIBRARY_SCALE_HUGE;
+
 export type LibraryScaleLevel = 'normal' | 'large' | 'huge';
 
 export function getLibraryScaleLevel(count: number): LibraryScaleLevel {
