@@ -53,8 +53,8 @@ closed 查阅。
 
 ### 当前应开工
 
-1. 性能 backlog（无新 Issue，不挡主路径）：单文件夹游标、持久缩略、远端真分页、1k
-   fixture
+1. 性能 backlog（无新 Issue，不挡主路径）：单文件夹游标、持久缩略、远端真分页；1k 内存基准见
+   `pnpm benchmark`
 2. 并行：**J0 自测**（A′；不建 Issue，除非出现可修缺陷）
 3. **勿抢跑** [#126](https://github.com/trueLoving/Pixuli/issues/126)（Sprint
    E）与 Desktop P2（#88/#89）
