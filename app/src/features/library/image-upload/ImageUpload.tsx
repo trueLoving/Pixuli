@@ -4,7 +4,6 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageItem,
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
@@ -29,7 +28,6 @@ interface ImageUploadProps {
   defaultFolder?: string;
   initialFiles?: File[];
   onInitialFilesConsumed?: () => void;
-  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = props => {
@@ -59,6 +57,7 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
         }
         onCompressionConfigChange={flow.handleCompressionConfigChange}
         loading={flow.loading}
+        destinationFolder={flow.destinationFolder}
         translate={flow.translate}
         tagInputRef={flow.tagInputRef}
         onSubmit={
@@ -66,9 +65,6 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
         }
         onCancel={flow.handleCancel}
         onFieldChange={flow.handleFormFieldChange}
-        editAfterAdd={flow.editAfterAdd}
-        onEditAfterAddChange={flow.setEditAfterAdd}
-        showEditAfterAddOption={flow.showEditAfterAddOption}
       />
     );
   }

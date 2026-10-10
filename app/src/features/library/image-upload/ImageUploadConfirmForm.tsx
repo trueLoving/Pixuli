@@ -28,6 +28,7 @@ export interface ImageUploadConfirmFormProps
   enableCrop?: boolean;
   enableCompression?: boolean;
   loading: boolean;
+  destinationFolder: string;
   translate: (key: string) => string;
   tagInputRef: RefObject<HTMLInputElement | null>;
   onSubmit: (e: React.FormEvent) => void;
@@ -36,9 +37,6 @@ export interface ImageUploadConfirmFormProps
     field: keyof UploadFormData,
     value: string | string[],
   ) => void;
-  editAfterAdd?: boolean;
-  onEditAfterAddChange?: (value: boolean) => void;
-  showEditAfterAddOption?: boolean;
 }
 
 export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
@@ -50,14 +48,12 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
   enableCrop = false,
   enableCompression = false,
   loading,
+  destinationFolder,
   translate,
   tagInputRef,
   onSubmit,
   onCancel,
   onFieldChange,
-  editAfterAdd = false,
-  onEditAfterAddChange,
-  showEditAfterAddOption = false,
   ...compressionProps
 }) => {
   const richConfirm = files.length > 0 && needsRichConfirm(files);
@@ -137,6 +133,11 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
           enableCompression={enableCompression}
           {...compressionProps}
         />
+
+        <p className="image-upload-destination">
+          {translate('image.upload.folder')}
+          <span>{destinationFolder}</span>
+        </p>
 
         <div className="image-upload-form-group">
           <label className="image-upload-form-label">
@@ -238,17 +239,6 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
             className="image-upload-form-input"
           />
         </div>
-
-        {showEditAfterAddOption ? (
-          <label className="image-upload-edit-after">
-            <input
-              type="checkbox"
-              checked={editAfterAdd}
-              onChange={event => onEditAfterAddChange?.(event.target.checked)}
-            />
-            <span>{translate('image.upload.editAfterAdd')}</span>
-          </label>
-        ) : null}
 
         <div className="image-upload-button-group">
           <button

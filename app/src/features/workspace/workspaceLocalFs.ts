@@ -11,17 +11,17 @@ export function sanitizeWorkspaceFileName(name: string): string {
   return name.replace(/[/\\?%*:|"<>]/g, '_');
 }
 
-export async function resolveImportTargetDir(
-  uploadData: ImageUploadData,
-): Promise<string> {
+/** 上传目录只跟当前选中文件夹走；「全部」时落到 images。 */
+export function importDirForSelectedFolder(selectedFolderPath: string): string {
+  if (!selectedFolderPath || selectedFolderPath === '__root__') {
+    return 'images';
+  }
+  return selectedFolderPath.replace(/\/+$/, '');
+}
+
+export async function resolveImportTargetDir(): Promise<string> {
   const { useUIStore } = await import('@/stores/uiStore');
-  const selectedFolderPath = useUIStore.getState().selectedFolderPath;
-  const fromForm = uploadData.targetFolder?.replace(/\/+$/, '');
-  const fromTree =
-    selectedFolderPath && selectedFolderPath !== '__root__'
-      ? selectedFolderPath
-      : '';
-  return fromForm || fromTree || 'images';
+  return importDirForSelectedFolder(useUIStore.getState().selectedFolderPath);
 }
 
 export async function importImageToLocalVault(
@@ -30,7 +30,7 @@ export async function importImageToLocalVault(
   const fileName = sanitizeWorkspaceFileName(
     getUploadFileName(uploadData.file, uploadData.name),
   );
-  const targetDir = await resolveImportTargetDir(uploadData);
+  const targetDir = await resolveImportTargetDir();
   const targetPath = `${targetDir.replace(/\/+$/, '')}/${Date.now()}-${fileName}`;
   const vault = getWorkspaceVault();
   const mimeType =
