@@ -74,7 +74,6 @@ interface AssetLibraryProps {
   showSelectionActionBar?: boolean;
   selectionActions?: { grid: CompactAction[]; danger: CompactAction | null };
   onClearSelection?: () => void;
-  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
@@ -103,7 +102,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   showSelectionActionBar = false,
   selectionActions = { grid: [], danger: null },
   onClearSelection,
-  onUploadComplete,
 }) => {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -458,7 +456,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         uploadButtonRef={uploadButtonRef}
         multiSelectMode={multiSelectMode}
         onToggleSelectMode={handleToggleSelectMode}
-        onUploadComplete={onUploadComplete}
       />
 
       {search?.searchQuery && search.canSearchInAll ? (

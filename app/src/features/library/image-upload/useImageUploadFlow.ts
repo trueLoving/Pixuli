@@ -4,7 +4,6 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageItem,
   ImageUploadData,
   MultiImageUploadData,
   WebImageUploadData,
@@ -38,7 +37,6 @@ export interface UseImageUploadFlowOptions {
   defaultFolder?: string;
   initialFiles?: File[];
   onInitialFilesConsumed?: () => void;
-  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 export function useImageUploadFlow({
@@ -55,7 +53,6 @@ export function useImageUploadFlow({
   defaultFolder,
   initialFiles,
   onInitialFilesConsumed,
-  onUploadComplete,
 }: UseImageUploadFlowOptions) {
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -76,7 +73,6 @@ export function useImageUploadFlow({
   const [fileDimensions, setFileDimensions] = useState<
     Record<string, { width: number; height: number }>
   >({});
-  const [editAfterAdd, setEditAfterAdd] = useState(false);
   const [userWantsCrop, setUserWantsCrop] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,25 +145,6 @@ export function useImageUploadFlow({
     [fileDimensions],
   );
 
-  const fileCount = isMultiple
-    ? (multiUploadData?.files.length ?? 0)
-    : uploadData
-      ? 1
-      : 0;
-
-  useEffect(() => {
-    if (!showForm || fileCount === 0) return;
-    setEditAfterAdd(fileCount <= 3);
-  }, [showForm, fileCount]);
-
-  const notifyUploadComplete = useCallback(
-    (items: ImageItem[]) => {
-      if (!editAfterAdd || items.length === 0) return;
-      onUploadComplete?.(items);
-    },
-    [editAfterAdd, onUploadComplete],
-  );
-
   const performSingleUpload = useCallback(
     async (finalFile: File, meta: WebImageUploadData) => {
       const fileName = finalFile.name;
@@ -175,14 +152,14 @@ export function useImageUploadFlow({
         `${translate('image.upload.uploadingSingle')} "${fileName}"...`,
       );
       try {
-        const created = (await onUploadImage({
+        await onUploadImage({
           file: finalFile,
           name: fileName,
           description: meta.description || '',
           tags: meta.tags || [],
           targetFolder: resolveDefaultFolder(defaultFolder),
           captureMetadata: getCaptureMetadata(finalFile),
-        })) as ImageItem | null;
+        });
         updateLoadingToSuccess(
           loadingToast,
           translate('image.upload.successToastSingle')
@@ -193,9 +170,6 @@ export function useImageUploadFlow({
           setUploadData(null);
           setShowForm(false);
           clearSingleDimensions(meta.file.name, finalFile.name);
-        }
-        if (created) {
-          notifyUploadComplete([created]);
         }
       } catch (error) {
         updateLoadingToError(
@@ -211,8 +185,6 @@ export function useImageUploadFlow({
       getCaptureMetadata,
       dimensionsTextFor,
       clearSingleDimensions,
-      notifyUploadComplete,
-      editAfterAdd,
     ],
   );
 
@@ -222,14 +194,14 @@ export function useImageUploadFlow({
         `${translate('image.upload.uploadingMultiple')} ${processedFiles.length} ${translate('image.upload.file')}...`,
       );
       try {
-        const created = (await onUploadMultipleImages({
+        await onUploadMultipleImages({
           files: processedFiles,
           name: '',
           description: meta.description || '',
           tags: meta.tags || [],
           targetFolder: resolveDefaultFolder(defaultFolder),
           captureMetadataList: buildCaptureMetadataList(processedFiles),
-        })) as ImageItem[];
+        });
         updateLoadingToSuccess(
           loadingToast,
           translate('image.upload.successToastMultiple').replace(
@@ -241,9 +213,6 @@ export function useImageUploadFlow({
           setMultiUploadData(null);
           setShowForm(false);
           setIsMultiple(false);
-        }
-        if (created.length > 0) {
-          notifyUploadComplete(created);
         }
       } catch (error) {
         updateLoadingToError(
@@ -257,8 +226,6 @@ export function useImageUploadFlow({
       translate,
       defaultFolder,
       buildCaptureMetadataList,
-      notifyUploadComplete,
-      editAfterAdd,
     ],
   );
 
@@ -663,8 +630,6 @@ export function useImageUploadFlow({
     handleCropCancel,
     handleNativePick,
     handleFormFieldChange,
-    editAfterAdd,
-    setEditAfterAdd,
-    showEditAfterAddOption: fileCount > 3,
+    destinationFolder: resolveDefaultFolder(defaultFolder),
   };
 }
