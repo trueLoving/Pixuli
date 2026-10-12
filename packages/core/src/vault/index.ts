@@ -6,6 +6,7 @@ export { matchesListPathPrefix } from './listFilter';
 export { MemoryWorkspaceAdapter } from './memoryAdapter';
 export { createLocalVault } from './localVault';
 export { createSyncEngine, providerSupportsSync } from './syncEngine';
+export { commitSyncPush, listRepoImageBlobs } from './gitDataBatch';
 export type { CreateSyncEngineOptions, SyncEngineBinding } from './syncEngine';
 export {
   basename,

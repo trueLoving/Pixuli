@@ -654,4 +654,76 @@ describe('GiteeStorageProvider', () => {
       ).resolves.toEqual(['master', 'dev']);
     });
   });
+
+  describe('sync transport', () => {
+    function routeGit(url: string, method: string) {
+      if (url.includes('/contents/') && url.includes('manifest.json')) {
+        return createMockResponse(false, { message: 'Not Found' }, 404);
+      }
+      if (url.includes('/git/refs/heads/') && method === 'GET') {
+        return createMockResponse(true, { object: { sha: 'commit-1' } });
+      }
+      if (url.includes('/git/commits/commit-1')) {
+        return createMockResponse(true, { tree: { sha: 'tree-1' } });
+      }
+      if (url.includes('/git/blobs')) {
+        return createMockResponse(true, { sha: 'blob-1' });
+      }
+      if (url.includes('/git/trees') && method === 'POST') {
+        return createMockResponse(true, { sha: 'tree-2' });
+      }
+      if (url.includes('/git/trees/') && method === 'GET') {
+        return createMockResponse(true, {
+          truncated: false,
+          tree: [
+            {
+              path: 'images/photo.jpg',
+              type: 'blob',
+              sha: 'sha-photo',
+              size: 8,
+            },
+          ],
+        });
+      }
+      if (url.includes('/git/commits') && method === 'POST') {
+        return createMockResponse(true, { sha: 'commit-2' });
+      }
+      if (method === 'PATCH') {
+        return createMockResponse(true, { object: { sha: 'commit-2' } });
+      }
+      return createMockResponse(
+        false,
+        { message: `unexpected ${method} ${url}` },
+        500,
+      );
+    }
+
+    it('syncPush writes the batch as one commit', async () => {
+      global.fetch = vi.fn(
+        async (input: RequestInfo | URL, init?: RequestInit) =>
+          routeGit(String(input), init?.method ?? 'GET'),
+      );
+      await provider.syncPush([
+        {
+          localRelativePath: 'images/a.jpg',
+          remotePath: 'a.jpg',
+          action: 'metadata',
+          metadata: { name: 'a.jpg', description: 'hello' },
+        },
+      ]);
+      const urls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(
+        call =>
+          `${(call[1] as RequestInit | undefined)?.method ?? 'GET'} ${String(call[0])}`,
+      );
+      expect(
+        urls.some(
+          url => url.startsWith('PATCH ') && url.includes('/git/refs/'),
+        ),
+      ).toBe(true);
+      expect(urls.some(url => url.includes('/git/blobs'))).toBe(true);
+      expect(
+        urls.some(url => url.includes('/contents/') && url.includes('/a.jpg')),
+      ).toBe(false);
+    });
+  });
 });
