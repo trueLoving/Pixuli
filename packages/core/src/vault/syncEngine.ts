@@ -13,6 +13,9 @@ import {
   applySyncPull,
   assertSyncProvider,
   buildSyncPushItems,
+  intentFromEntry,
+  mergePushIntent,
+  type SyncPushIntent,
 } from './syncApply';
 import { isSyncExcludedPath } from './syncPath';
 import type {
@@ -40,8 +43,9 @@ export interface CreateSyncEngineOptions {
 }
 
 /**
- * SyncEngine MVP（REF-607 P3）：持久化 push 队列、单向 pull、游标。
- * 方向策略：push 以本地为准覆盖远端；pull 以远端为准覆盖本地。
+ * SyncEngine（REF-607 P3）：持久化 push 队列、单向 pull、游标。
+ * 普通 push 只发送本地变更，同一路径多次入队合并成一次；
+ * `overwriteRemote` 才整库覆盖远端。pull 仍以远端为准覆盖本地。
  */
 export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
   const {
@@ -144,7 +148,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             provider,
             readFileBytes,
             memoryQueue,
-            { overwriteRemote: true },
+            { overwriteRemote: runOptions?.overwriteRemote === true },
           );
         } catch (error) {
           result.errors.push({
@@ -160,9 +164,8 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             vault.adapter,
             binding.bindingId,
           );
-          const fullPull = direction === 'pull' || direction === 'both';
           const pullResult = await provider.syncPull({
-            since: fullPull ? undefined : (bindingState.cursor ?? undefined),
+            since: bindingState.cursor ?? undefined,
           });
           const applied = await applySyncPull(
             vault,
@@ -207,69 +210,59 @@ async function flushPushQueue(
 ): Promise<number> {
   const persisted = await readPushQueue(vault.adapter);
   const queue = [...persisted, ...toQueued(memoryQueue, binding.bindingId)];
+  const overwriteRemote = options?.overwriteRemote === true;
+  const intents = new Map<string, SyncPushIntent>();
 
   const entries = await vault.list({ includeDeleted: true });
-  const pendingPaths = new Set<string>();
-  if (options?.overwriteRemote) {
-    for (const entry of entries) {
-      if (isSyncExcludedPath(entry.relativePath)) {
-        continue;
-      }
-      if (entry.deletedAt) {
-        // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
-        if (!entry.remotePath) {
-          await vault.removeEntry(entry.relativePath);
-          continue;
-        }
-        pendingPaths.add(entry.relativePath);
-        continue;
-      }
-      pendingPaths.add(entry.relativePath);
+  for (const entry of entries) {
+    if (entry.deletedAt && !entry.remotePath) {
+      // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
+      await vault.removeEntry(entry.relativePath);
+      continue;
     }
-  } else {
-    for (const entry of entries) {
-      if (isSyncExcludedPath(entry.relativePath)) {
-        continue;
-      }
-      if (entry.deletedAt) {
-        if (!entry.remotePath) {
-          await vault.removeEntry(entry.relativePath);
-          continue;
-        }
-        pendingPaths.add(entry.relativePath);
-        continue;
-      }
-      if (
-        entry.syncState === 'local-only' ||
-        entry.syncState === 'pending-push'
-      ) {
-        pendingPaths.add(entry.relativePath);
-      }
+    const intent = intentFromEntry(entry, overwriteRemote);
+    if (!intent) {
+      continue;
     }
+    intents.set(
+      entry.relativePath,
+      mergePushIntent(intents.get(entry.relativePath), intent),
+    );
   }
   for (const op of queue) {
     const entry = await vault.getByPath(op.relativePath);
-    if (!entry) {
-      continue;
-    }
-    if (isSyncExcludedPath(entry.relativePath)) {
+    if (!entry || isSyncExcludedPath(entry.relativePath)) {
       continue;
     }
     if (entry.deletedAt && !entry.remotePath) {
       await vault.removeEntry(op.relativePath);
       continue;
     }
-    pendingPaths.add(op.relativePath);
+    const queuedIntent: SyncPushIntent =
+      op.type === 'delete'
+        ? 'delete'
+        : op.type === 'metadata' && !overwriteRemote
+          ? 'metadata'
+          : 'upload';
+    intents.set(
+      entry.relativePath,
+      mergePushIntent(intents.get(entry.relativePath), queuedIntent),
+    );
   }
 
-  if (pendingPaths.size === 0) {
+  if (intents.size === 0) {
+    await writePushQueue(vault.adapter, []);
+    memoryQueue.length = 0;
     return 0;
   }
 
   const built = await buildSyncPushItems(
     vault,
     binding.bindingId,
-    [...pendingPaths],
+    [...intents.entries()].map(([relativePath, intent]) => ({
+      relativePath,
+      intent,
+    })),
     readFileBytes,
   );
 

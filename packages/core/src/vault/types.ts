@@ -173,6 +173,8 @@ export interface SyncStatusSummary {
 export interface SyncRunOptions {
   bindingId?: string;
   direction?: SyncDirection;
+  /** 为 true 时推送全部未删除条目并覆盖远端。默认只推本地变更。 */
+  overwriteRemote?: boolean;
 }
 
 export interface SyncRunResult {

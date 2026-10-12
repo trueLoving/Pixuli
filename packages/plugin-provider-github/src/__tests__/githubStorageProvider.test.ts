@@ -842,4 +842,119 @@ describe('GitHubStorageProvider', () => {
       ).resolves.toEqual(['main', 'develop']);
     });
   });
+
+  describe('sync transport', () => {
+    function routeGit(url: string, method: string, body?: string) {
+      if (url.includes('/contents/') && url.includes('manifest.json')) {
+        return createMockResponse(false, { message: 'Not Found' }, 404);
+      }
+      if (url.includes('/git/refs/heads/') && method === 'GET') {
+        return createMockResponse(true, { object: { sha: 'commit-1' } });
+      }
+      if (url.includes('/git/commits/commit-1')) {
+        return createMockResponse(true, { tree: { sha: 'tree-1' } });
+      }
+      if (url.includes('/git/blobs')) {
+        return createMockResponse(true, { sha: `blob-${method}` });
+      }
+      if (url.includes('/git/trees') && method === 'POST') {
+        return createMockResponse(true, { sha: 'tree-2', echo: body });
+      }
+      if (url.includes('/git/trees/') && method === 'GET') {
+        return createMockResponse(true, {
+          truncated: false,
+          tree: [
+            {
+              path: 'images/photo.jpg',
+              type: 'blob',
+              sha: 'sha-photo',
+              size: 8,
+            },
+          ],
+        });
+      }
+      if (url.includes('/git/commits') && method === 'POST') {
+        return createMockResponse(true, { sha: 'commit-2' });
+      }
+      if (method === 'PATCH') {
+        return createMockResponse(true, { object: { sha: 'commit-2' } });
+      }
+      return createMockResponse(
+        false,
+        { message: `unexpected ${method} ${url}` },
+        500,
+      );
+    }
+
+    it('syncPush writes the batch as one commit', async () => {
+      const bodies: string[] = [];
+      global.fetch = vi.fn(
+        async (input: RequestInfo | URL, init?: RequestInit) => {
+          const method = init?.method ?? 'GET';
+          if (
+            typeof init?.body === 'string' &&
+            method === 'POST' &&
+            String(input).includes('/git/trees')
+          ) {
+            bodies.push(init.body);
+          }
+          return routeGit(
+            String(input),
+            method,
+            typeof init?.body === 'string' ? init.body : undefined,
+          );
+        },
+      );
+
+      await provider.syncPush([
+        {
+          localRelativePath: 'images/a.jpg',
+          remotePath: 'a.jpg',
+          action: 'upload',
+          file: new Uint8Array([1, 2]),
+          metadata: { name: 'a.jpg', description: 'hello' },
+        },
+        {
+          localRelativePath: 'images/b.jpg',
+          remotePath: 'b.jpg',
+          action: 'upload',
+          file: new Uint8Array([3]),
+          metadata: { name: 'b.jpg' },
+        },
+      ]);
+
+      const urls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(
+        call => String(call[0]),
+      );
+      expect(urls.some(url => url.includes('/git/refs/heads/main'))).toBe(true);
+      expect(
+        urls.filter(
+          url => url.includes('/contents/') && !url.includes('manifest.json'),
+        ),
+      ).toEqual([]);
+      const tree = JSON.parse(bodies[0] ?? '{}') as {
+        tree: Array<{ path: string }>;
+      };
+      expect(tree.tree.map(entry => entry.path).sort()).toEqual([
+        'images/.metadata/manifest.json',
+        'images/a.jpg',
+        'images/b.jpg',
+      ]);
+    });
+
+    it('recursive listImages reads one git tree', async () => {
+      global.fetch = vi.fn(
+        async (input: RequestInfo | URL, init?: RequestInit) =>
+          routeGit(String(input), init?.method ?? 'GET'),
+      );
+      const images = await provider.listImages({ recursive: true });
+      expect(images.map(image => image.storagePath)).toEqual(['photo.jpg']);
+      const urls = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.map(
+        call => String(call[0]),
+      );
+      expect(
+        urls.some(url => url.includes('/git/trees/tree-1?recursive=1')),
+      ).toBe(true);
+    });
+  });
 });
