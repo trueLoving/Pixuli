@@ -67,6 +67,29 @@ export interface LocalListOptions {
   bindingId?: string;
   includeDeleted?: boolean;
   search?: string;
+  /**
+   * 仅返回该目录下的条目（`dir/` 前缀）。
+   * 空/未传表示不限目录。
+   */
+  pathPrefix?: string;
+  /**
+   * 与 pathPrefix 联用：为 true 时只含直接子文件（不含子文件夹内文件）。
+   * pathPrefix 未传时忽略。
+   */
+  shallow?: boolean;
+  /** 排序后跳过的条数（默认 0） */
+  offset?: number;
+  /**
+   * 排序后最多返回的条数。
+   * 未传表示不截断。总数见 `listPage().total`。
+   */
+  limit?: number;
+}
+
+export interface LocalListPage {
+  entries: LocalImageIndexEntry[];
+  /** 截断前的匹配总数 */
+  total: number;
 }
 
 export interface LocalVault {
@@ -74,6 +97,8 @@ export interface LocalVault {
   open(): Promise<void>;
   getConfig(): WorkspaceConfig;
   list(options?: LocalListOptions): Promise<LocalImageIndexEntry[]>;
+  /** 与 list 相同过滤，额外返回截断前总数 */
+  listPage(options?: LocalListOptions): Promise<LocalListPage>;
   getByPath(relativePath: string): Promise<LocalImageIndexEntry | null>;
   importFile(
     source: File | string,
@@ -148,6 +173,8 @@ export interface SyncStatusSummary {
 export interface SyncRunOptions {
   bindingId?: string;
   direction?: SyncDirection;
+  /** 为 true 时推送全部未删除条目并覆盖远端。默认只推本地变更。 */
+  overwriteRemote?: boolean;
 }
 
 export interface SyncRunResult {

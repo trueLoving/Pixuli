@@ -7,7 +7,11 @@ import type {
 } from '../plugins/types';
 import { hasStorageProviderSync } from '../plugins/types';
 import type { LocalImageIndexEntry, LocalVault, SyncConflict } from './types';
-import { resolveLocalPathForPull, resolveRemotePathForPush } from './syncPath';
+import {
+  isSyncExcludedPath,
+  resolveLocalPathForPull,
+  resolveRemotePathForPush,
+} from './syncPath';
 import { basename, nowIso } from './utils';
 
 export {
@@ -254,14 +258,85 @@ export async function applySyncPull(
   return { pulled, conflicts: [] };
 }
 
+export type SyncPushIntent = 'upload' | 'metadata' | 'delete';
+
+export interface SyncPushPlan {
+  relativePath: string;
+  intent: SyncPushIntent;
+}
+
+const PUSH_INTENT_RANK: Record<SyncPushIntent, number> = {
+  metadata: 0,
+  upload: 1,
+  delete: 2,
+};
+
+/** 同一路径多次入队时保留更强的动作：删除 > 上传内容 > 只改元数据。 */
+export function mergePushIntent(
+  current: SyncPushIntent | undefined,
+  next: SyncPushIntent,
+): SyncPushIntent {
+  if (!current || PUSH_INTENT_RANK[next] > PUSH_INTENT_RANK[current]) {
+    return next;
+  }
+  return current;
+}
+
+function normalizeSyncPath(path: string): string {
+  return path.replace(/\\/g, '/').replace(/^\/+/, '');
+}
+
+/**
+ * 普通同步只推本地变更。
+ * 已同步且路径未变的条目不推；只改过说明/标签的条目走 metadata，不重传字节。
+ */
+export function intentFromEntry(
+  entry: LocalImageIndexEntry,
+  overwriteRemote: boolean,
+): SyncPushIntent | null {
+  if (isSyncExcludedPath(entry.relativePath)) {
+    return null;
+  }
+  if (entry.deletedAt) {
+    return entry.remotePath ? 'delete' : null;
+  }
+  if (overwriteRemote || entry.syncState !== 'synced') {
+    if (entry.syncState === 'pending-push' && !overwriteRemote) {
+      if (
+        entry.remotePath &&
+        normalizeSyncPath(entry.remotePath) ===
+          normalizeSyncPath(entry.relativePath)
+      ) {
+        return 'metadata';
+      }
+    }
+    return 'upload';
+  }
+  return null;
+}
+
+function pushMetadata(entry: LocalImageIndexEntry): SyncPushItem['metadata'] {
+  return {
+    name: entry.name,
+    tags: entry.tags,
+    description: entry.description,
+    width: entry.width,
+    height: entry.height,
+    size: entry.size,
+    type: entry.mimeType,
+  };
+}
+
 export function buildSyncPushItems(
   vault: LocalVault,
   bindingId: string,
-  relativePaths: string[],
+  plans: SyncPushPlan[],
   readBytes: (relativePath: string) => Promise<Uint8Array>,
 ): Promise<SyncPushItem[]> {
+  void bindingId;
   return Promise.all(
-    relativePaths.map(async relativePath => {
+    plans.map(async plan => {
+      const { relativePath, intent } = plan;
       const entry = await vault.getByPath(relativePath);
       if (!entry) {
         throw new Error(`Missing local entry: ${relativePath}`);
@@ -270,11 +345,19 @@ export function buildSyncPushItems(
       if (!remotePath) {
         throw new Error(`Path is not syncable: ${relativePath}`);
       }
-      if (entry.deletedAt) {
+      if (intent === 'delete' || entry.deletedAt) {
         return {
           localRelativePath: relativePath,
           remotePath,
           action: 'delete' as const,
+        };
+      }
+      if (intent === 'metadata') {
+        return {
+          localRelativePath: relativePath,
+          remotePath,
+          action: 'metadata' as const,
+          metadata: pushMetadata(entry),
         };
       }
       const bytes = await readBytes(relativePath);
@@ -283,15 +366,7 @@ export function buildSyncPushItems(
         remotePath,
         action: 'upload' as const,
         file: bytes,
-        metadata: {
-          name: entry.name,
-          tags: entry.tags,
-          description: entry.description,
-          width: entry.width,
-          height: entry.height,
-          size: entry.size,
-          type: entry.mimeType,
-        },
+        metadata: pushMetadata(entry),
       };
     }),
   );

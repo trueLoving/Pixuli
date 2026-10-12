@@ -8,6 +8,7 @@ import {
 } from '@/ui/feedback/toast';
 import './ImageEditModal.css';
 import { folderFromLocalPath } from './inspectorUtils';
+import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 interface ImageEditModalProps {
   image: ImageItem;
@@ -38,6 +39,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   getImageDimensionsFromUrl,
   t,
 }) => {
+  const previewSrc = useResolvedAssetUrl(image);
   const translate = t;
   const [formData, setFormData] = useState<ImageEditData>({
     id: image.id,
@@ -139,10 +141,11 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
     if (
       isOpen &&
       image &&
+      previewSrc &&
       getImageDimensionsFromUrl &&
       (image.width === 0 || image.height === 0)
     ) {
-      getImageDimensionsFromUrl(image.url)
+      getImageDimensionsFromUrl(previewSrc)
         .then(dimensions => {
           setImageDimensions(dimensions);
         })
@@ -150,7 +153,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
           console.warn(`Failed to get dimensions for ${image.name}:`, error);
         });
     }
-  }, [isOpen, image, getImageDimensionsFromUrl]);
+  }, [isOpen, image, previewSrc, getImageDimensionsFromUrl]);
 
   if (!isOpen) return null;
 
@@ -169,11 +172,13 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
         <form onSubmit={handleSubmit}>
           {/* 图片预览 */}
           <div className="image-edit-file-info">
-            <img
-              src={image.url}
-              alt={image.name}
-              className="image-edit-file-thumbnail"
-            />
+            {previewSrc ? (
+              <img
+                src={previewSrc}
+                alt={image.name}
+                className="image-edit-file-thumbnail"
+              />
+            ) : null}
             <div className="image-edit-file-details">
               <p className="image-edit-file-name">{image.name}</p>
               <p className="image-edit-file-size">

@@ -146,9 +146,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const [batchEditOpen, setBatchEditOpen] = useState(false);
   const [batchMoveOpen, setBatchMoveOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [reviewIds, setReviewIds] = useState<string[]>([]);
-  const [reviewIndex, setReviewIndex] = useState(0);
-  const [editNonce, setEditNonce] = useState(0);
 
   const selectedImages = useMemo(
     () =>
@@ -233,47 +230,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [uploadMultipleImages],
   );
 
-  const startMetadataReview = useCallback(
-    (items: ImageItem[]) => {
-      const ids = items.map(item => item.id).filter(Boolean);
-      if (ids.length === 0) return;
-      setReviewIds(ids);
-      setReviewIndex(0);
-      setEditNonce(nonce => nonce + 1);
-      handleSelectedIdsChange([ids[0]], [items[0]]);
-    },
-    [handleSelectedIdsChange],
-  );
-
-  const handleReviewPrev = useCallback(() => {
-    setReviewIndex(index => {
-      const next = Math.max(0, index - 1);
-      const id = reviewIds[next];
-      if (id) {
-        handleSelectedIdsChange([id]);
-        setEditNonce(nonce => nonce + 1);
-      }
-      return next;
-    });
-  }, [handleSelectedIdsChange, reviewIds]);
-
-  const handleReviewNext = useCallback(() => {
-    setReviewIndex(index => {
-      const next = Math.min(reviewIds.length - 1, index + 1);
-      const id = reviewIds[next];
-      if (id) {
-        handleSelectedIdsChange([id]);
-        setEditNonce(nonce => nonce + 1);
-      }
-      return next;
-    });
-  }, [handleSelectedIdsChange, reviewIds]);
-
-  const handleReviewDone = useCallback(() => {
-    setReviewIds([]);
-    setReviewIndex(0);
-  }, []);
-
   const handleSelectImage = useCallback(
     (id: string) => {
       setMultiSelectMode(false);
@@ -281,21 +237,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         imagesRef.current.find(image => image.id === id) ??
         selectedItems.find(image => image.id === id);
       handleSelectedIdsChange([id], item ? [item] : undefined);
-      const reviewPos = reviewIds.indexOf(id);
-      if (reviewPos >= 0) {
-        setReviewIndex(reviewPos);
-        setEditNonce(nonce => nonce + 1);
-      }
     },
-    [handleSelectedIdsChange, reviewIds, selectedItems],
+    [handleSelectedIdsChange, selectedItems],
   );
 
   const handleClearSelection = useCallback(() => {
     setSheetOpen(false);
     setSelectedIds([]);
     setSelectedItems([]);
-    setReviewIds([]);
-    setReviewIndex(0);
     setMultiSelectMode(false);
   }, []);
 
@@ -593,18 +542,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     );
   }
 
-  const metadataReview =
-    reviewIds.length > 0
-      ? {
-          ids: reviewIds,
-          index: reviewIndex,
-          onPrev: handleReviewPrev,
-          onNext: handleReviewNext,
-          onDone: handleReviewDone,
-          openEditNonce: editNonce,
-        }
-      : null;
-
   const inspector = (
     <AssetInspector
       key={
@@ -642,7 +579,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onSelectImage={handleSelectImage}
       enableFolderMove={localActive}
       folderOptions={localFolders}
-      metadataReview={metadataReview}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
@@ -683,7 +619,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           showSelectionActionBar={showMobileSelectionBar}
           selectionActions={batchSelectionActions}
           onClearSelection={handleClearSelection}
-          onUploadComplete={startMetadataReview}
         />
       </div>
       {showDockedInspector ? inspector : null}

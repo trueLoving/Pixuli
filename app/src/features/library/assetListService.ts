@@ -5,10 +5,13 @@ import {
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import type { ImageItem } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
 import { getWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge';
 
 export type AssetListPatch = {
   images?: ImageItem[];
+  /** 当前范围匹配总数；未截断时等于 images.length */
+  libraryTotal?: number;
   loading?: boolean;
   error?: string | null;
 };
@@ -38,7 +41,7 @@ export function dedupeImagesById(images: ImageItem[]): ImageItem[] {
 
 export async function refreshLocalImageList(
   set: (partial: AssetListPatch) => void,
-  options?: { quiet?: boolean },
+  options?: LibraryListScope,
 ): Promise<void> {
   const workspace = getWorkspaceLibraryPort();
   const quiet = options?.quiet === true;
@@ -46,9 +49,10 @@ export async function refreshLocalImageList(
     set({ loading: true, error: null });
   }
   try {
-    await workspace.refreshLocalImages(quiet ? { quiet: true } : undefined);
+    await workspace.refreshLocalImages(options);
     set({
       images: workspace.getLocalImages(),
+      libraryTotal: workspace.getScopedTotal(),
       loading: false,
     });
   } catch (error) {

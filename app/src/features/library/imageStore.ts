@@ -34,6 +34,7 @@ import {
   shouldSkipRemoteListLoad,
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
+import type { LibraryListScope } from '@/features/library/libraryListScope';
 import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
 import { registerSourceSelectionPort } from '@/features/library/sourceSelectionPort';
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
@@ -51,6 +52,8 @@ import { create } from 'zustand';
 
 interface ImageState {
   images: ImageItem[];
+  /** 当前范围匹配总数；根视图截断时大于 images.length */
+  libraryTotal: number;
   loading: boolean;
   error: string | null;
   githubConfig: GitHubConfig | null;
@@ -66,7 +69,7 @@ interface ImageState {
   setGiteeConfig: (config: GiteeConfig) => void;
   clearGiteeConfig: () => void;
   initializeStorage: () => void;
-  loadImages: () => Promise<void>;
+  loadImages: (options?: LibraryListScope) => Promise<void>;
   uploadImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
   uploadMultipleImages: (
     uploadData: MultiImageUploadData,
@@ -94,6 +97,7 @@ export const useImageStore = create<ImageState>((set, get) => {
 
   return {
     images: [],
+    libraryTotal: 0,
     loading: false,
     error: null,
     githubConfig: initialSession.githubConfig,
@@ -177,13 +181,13 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
-    loadImages: async () => {
+    loadImages: async (options?: LibraryListScope) => {
       if (shouldSkipRemoteListLoad()) {
         return;
       }
 
       if (isLocalListMode()) {
-        await refreshLocalImageList(set);
+        await refreshLocalImageList(set, options);
         return;
       }
 
@@ -199,7 +203,11 @@ export const useImageStore = create<ImageState>((set, get) => {
       set({ loading: true, error: null });
       try {
         const uniqueImages = await loadRemoteImageList(storageProvider);
-        set({ images: uniqueImages, loading: false });
+        set({
+          images: uniqueImages,
+          libraryTotal: uniqueImages.length,
+          loading: false,
+        });
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : '加载图片失败';
@@ -312,7 +320,12 @@ export const useImageStore = create<ImageState>((set, get) => {
 });
 
 registerLibraryImageReset(() => {
-  useImageStore.setState({ images: [], loading: false, error: null });
+  useImageStore.setState({
+    images: [],
+    libraryTotal: 0,
+    loading: false,
+    error: null,
+  });
 });
 
 registerSourceSelectionPort({

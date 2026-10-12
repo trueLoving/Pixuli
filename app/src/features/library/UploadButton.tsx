@@ -5,7 +5,6 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageItem,
   ImageUploadData,
   MultiImageUploadData,
 } from '@pixuli/core/types';
@@ -40,7 +39,6 @@ export interface UploadButtonProps {
   defaultFolder?: string;
   /** 仅显示图标（与资源库工具栏其他按钮一致） */
   iconOnly?: boolean;
-  onUploadComplete?: (items: ImageItem[]) => void;
 }
 
 export interface UploadButtonHandle {
@@ -63,7 +61,6 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
       nativePickers,
       defaultFolder,
       iconOnly = false,
-      onUploadComplete,
     },
     ref,
   ) => {
@@ -140,7 +137,6 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
             defaultFolder={defaultFolder}
             initialFiles={seedFiles ?? undefined}
             onInitialFilesConsumed={() => setSeedFiles(null)}
-            onUploadComplete={onUploadComplete}
           />
         )}
       </>

@@ -83,7 +83,12 @@ describe('syncApply (configRoot 1:1)', () => {
     const items = await buildSyncPushItems(
       vault,
       'binding-1',
-      ['images/1787193114444-Readuli.png'],
+      [
+        {
+          relativePath: 'images/1787193114444-Readuli.png',
+          intent: 'upload',
+        },
+      ],
       async () => new Uint8Array([1, 2]),
     );
 

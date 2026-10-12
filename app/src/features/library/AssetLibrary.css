@@ -238,6 +238,19 @@
   color: #6b7280;
 }
 
+.asset-library-status-bar-main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.asset-library-status-bar-scale-tip {
+  color: #92400e;
+  line-height: 1.35;
+}
+
 .asset-library-status-bar-loading {
   display: inline-flex;
   align-items: center;

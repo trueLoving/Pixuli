@@ -3,7 +3,6 @@ import { useImageOperations } from '@/features/library/useImageOperations';
 import { useImageStore } from '@/features/library/imageStore';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { filterImagesByFolder } from '@/features/workspace/folderTree';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -18,6 +17,7 @@ export function useLibraryRoute() {
   const { t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
   const images = useImageStore(state => state.images);
+  const loadImages = useImageStore(state => state.loadImages);
   const loading = useImageStore(state => state.loading);
   const error = useImageStore(state => state.error);
   const clearError = useImageStore(state => state.clearError);
@@ -35,18 +35,14 @@ export function useLibraryRoute() {
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
   const searchScope = searchContext?.searchScope ?? 'folder';
+  const searchQuery = searchContext?.searchQuery ?? '';
   const searchAllWorkspace =
     searchScope === 'workspace' &&
-    Boolean(searchContext?.searchQuery?.trim()) &&
+    Boolean(searchQuery.trim()) &&
     Boolean(selectedFolderPath);
 
-  const visibleImages = useMemo(
-    () =>
-      searchAllWorkspace
-        ? images
-        : filterImagesByFolder(images, selectedFolderPath),
-    [images, searchAllWorkspace, selectedFolderPath],
-  );
+  // store 已按文件夹 / 全库搜索范围懒载入，此处直接使用
+  const visibleImages = images;
 
   const clearCommittedSearch = searchContext?.clearCommittedSearch;
   const folderPathForSearchRef = useRef<string | null>(null);
@@ -57,6 +53,23 @@ export function useLibraryRoute() {
     }
     folderPathForSearchRef.current = selectedFolderPath;
   }, [selectedFolderPath, clearCommittedSearch]);
+
+  useEffect(() => {
+    if (!localActive) {
+      return;
+    }
+    void loadImages({
+      folderPath: selectedFolderPath,
+      searchAll: searchAllWorkspace,
+      searchQuery: searchQuery.trim() || undefined,
+    });
+  }, [
+    localActive,
+    loadImages,
+    selectedFolderPath,
+    searchAllWorkspace,
+    searchQuery,
+  ]);
 
   const search = useMemo<LibrarySearchConfig | undefined>(() => {
     if (!searchContext) {

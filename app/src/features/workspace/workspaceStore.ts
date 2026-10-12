@@ -36,6 +36,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   displayName: null,
   rootDisplayPath: null,
   localImages: [],
+  scopedTotal: 0,
+  indexPaths: [],
   localFolders: [],
   loading: false,
   pushing: false,
@@ -108,6 +110,7 @@ registerWorkspaceLibraryPort({
   refreshLocalImages: options =>
     useWorkspaceStore.getState().refreshLocalImages(options),
   getLocalImages: () => useWorkspaceStore.getState().localImages,
+  getScopedTotal: () => useWorkspaceStore.getState().scopedTotal,
   importLocalImage: uploadData =>
     useWorkspaceStore.getState().importLocalImage(uploadData),
   softDeleteLocal: relativePath =>

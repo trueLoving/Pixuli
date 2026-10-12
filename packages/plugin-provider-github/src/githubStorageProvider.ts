@@ -15,7 +15,12 @@ import {
 } from '@pixuli/core/utils';
 import { buildProviderSidecarPayload } from '@pixuli/core/utils';
 import type { GitHubConfig } from '@pixuli/core/types';
-import { joinConfigRoot, SYNC_EXCLUDED_DIR } from '@pixuli/core/vault';
+import {
+  commitSyncPush,
+  joinConfigRoot,
+  listRepoImageBlobs,
+  SYNC_EXCLUDED_DIR,
+} from '@pixuli/core/vault';
 import type {
   ImageListOptions,
   ImageMetadataLoadOptions,
@@ -707,7 +712,7 @@ export class GitHubStorageProvider
       let imageEntries: Array<{ remotePath: string; item: any }>;
 
       if (recursive) {
-        imageEntries = await this.collectImageFiles('');
+        imageEntries = await this.collectImageFilesFromTree();
       } else {
         const response = await this.makeGitHubRequest(
           `/repos/${this.config.owner}/${this.config.repo}/contents/${this.joinRemotePath('')}?ref=${this.config.branch}`,
@@ -914,13 +919,89 @@ export class GitHubStorageProvider
           },
         };
       })
-      .filter(item => !since || (item.metadata.updatedAt ?? '') > since);
+      .filter(item => {
+        if (!since) {
+          return true;
+        }
+        const updatedAt = item.metadata.updatedAt;
+        if (!updatedAt) {
+          return true;
+        }
+        return updatedAt > since;
+      });
 
     this.syncCursor = new Date().toISOString();
     return { items, nextCursor: this.syncCursor };
   }
 
+  private gitTransport() {
+    return {
+      request: (req: {
+        method: 'GET' | 'POST' | 'PATCH';
+        path: string;
+        body?: unknown;
+      }) =>
+        this.makeGitHubRequest(req.path, {
+          method: req.method,
+          body: req.body === undefined ? undefined : JSON.stringify(req.body),
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    };
+  }
+
+  private async collectImageFilesFromTree(): Promise<
+    Array<{ remotePath: string; item: any }>
+  > {
+    const blobs = await listRepoImageBlobs(
+      this.gitTransport(),
+      {
+        owner: this.config.owner,
+        repo: this.config.repo,
+        branch: this.config.branch,
+        configRoot: this.config.path,
+      },
+      name => this.isImageFile(name),
+    );
+    if (blobs === null) {
+      return this.collectImageFiles('');
+    }
+    return blobs.map(blob => ({
+      remotePath: blob.workspacePath,
+      item: {
+        sha: blob.sha,
+        size: blob.size,
+        name: basenameRelative(blob.workspacePath),
+        type: 'file',
+        download_url: this.getRawUrl(blob.workspacePath),
+        html_url: `https://github.com/${this.config.owner}/${this.config.repo}/blob/${this.config.branch}/${this.joinRemotePath(blob.workspacePath)}`,
+      },
+    }));
+  }
+
   async syncPush(items: SyncPushItem[]): Promise<void> {
+    if (items.length === 0) {
+      return;
+    }
+    const committed = await commitSyncPush(
+      this.gitTransport(),
+      {
+        owner: this.config.owner,
+        repo: this.config.repo,
+        branch: this.config.branch,
+      },
+      items,
+      {
+        toRepoPath: path => this.joinRemotePath(path),
+        readManifest: dir => this.loadDirManifest(dir),
+      },
+    );
+    if (committed) {
+      return;
+    }
+    await this.syncPushSequential(items);
+  }
+
+  private async syncPushSequential(items: SyncPushItem[]): Promise<void> {
     for (const item of items) {
       if (item.action === 'delete') {
         await this.deleteImage(item.remotePath);

@@ -83,17 +83,116 @@ describe('createSyncEngine', () => {
     expect(entry?.syncState).toBe('synced');
   });
 
-  it('run push overwrites remote for already synced local entries', async () => {
+  it('run push leaves already synced entries on the remote', async () => {
     const { engine, vault, syncPush } = await createTestContext();
     await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
       syncState: 'synced',
-      remotePath: 'a.jpg',
+      remotePath: 'images/a.jpg',
       bindingId: 'binding-1',
+    });
+    await vault.importFile(new Uint8Array([4]), 'images/new.jpg', {
+      syncState: 'local-only',
     });
 
     const result = await engine.run({ direction: 'push' });
     expect(result.pushed).toBe(1);
     expect(syncPush).toHaveBeenCalledOnce();
+    const pushedItems = syncPush.mock.calls[0]?.[0] as Array<{
+      remotePath: string;
+    }>;
+    expect(pushedItems.map(item => item.remotePath)).toEqual([
+      'images/new.jpg',
+    ]);
+  });
+
+  it('run push can still overwrite the whole remote library', async () => {
+    const { engine, vault, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'images/a.jpg',
+      bindingId: 'binding-1',
+    });
+
+    const result = await engine.run({
+      direction: 'push',
+      overwriteRemote: true,
+    });
+    expect(result.pushed).toBe(1);
+    expect(syncPush).toHaveBeenCalledOnce();
+  });
+
+  it('run push sends metadata without rereading file bytes', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const syncPush = vi.fn(async () => undefined);
+    const readFileBytes = vi.fn(async () => {
+      throw new Error('should not read bytes');
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [
+        {
+          bindingId: 'binding-1',
+          provider: createMockSyncProvider({ syncPush }),
+        },
+      ],
+      readFileBytes,
+    });
+    await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'images/a.jpg',
+      bindingId: 'binding-1',
+    });
+    await vault.updateMetadata('images/a.jpg', { description: 'hello' });
+    await engine.enqueuePush({
+      type: 'metadata',
+      relativePath: 'images/a.jpg',
+    });
+    await engine.enqueuePush({
+      type: 'metadata',
+      relativePath: 'images/a.jpg',
+    });
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.errors).toHaveLength(0);
+    expect(result.pushed).toBe(1);
+    expect(readFileBytes).not.toHaveBeenCalled();
+    const pushedItems = syncPush.mock.calls[0]?.[0] as Array<{
+      action: string;
+      file?: Uint8Array;
+      metadata?: { description?: string };
+    }>;
+    expect(pushedItems).toEqual([
+      expect.objectContaining({
+        action: 'metadata',
+        metadata: expect.objectContaining({ description: 'hello' }),
+      }),
+    ]);
+    expect(pushedItems[0]?.file).toBeUndefined();
+    expect((await vault.getByPath('images/a.jpg'))?.syncState).toBe('synced');
+  });
+
+  it('run push collapses repeated edits of one file into a single upload', async () => {
+    const { engine, vault, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1]), 'images/a.jpg', {
+      syncState: 'local-only',
+    });
+    await engine.enqueuePush({ type: 'upload', relativePath: 'images/a.jpg' });
+    await engine.enqueuePush({
+      type: 'metadata',
+      relativePath: 'images/a.jpg',
+    });
+    await engine.enqueuePush({ type: 'upload', relativePath: 'images/a.jpg' });
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.pushed).toBe(1);
+    const pushedItems = syncPush.mock.calls[0]?.[0] as Array<{
+      action: string;
+    }>;
+    expect(pushedItems).toHaveLength(1);
+    expect(pushedItems[0]?.action).toBe('upload');
   });
 
   it('run pull applies remote items and updates cursor', async () => {
@@ -145,6 +244,28 @@ describe('createSyncEngine', () => {
     const status = await engine.getStatus();
     expect(status.bindings['binding-1']?.cursor).toBe('cursor-2');
     expect(status.lastSyncAt).toBeTruthy();
+  });
+
+  it('run pull sends the stored cursor on the next sync', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const seen: Array<string | undefined> = [];
+    const provider = createMockSyncProvider({
+      syncPull: async options => {
+        seen.push(options?.since);
+        return { items: [], nextCursor: 'cursor-2' };
+      },
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    await engine.run({ direction: 'pull' });
+    await engine.run({ direction: 'both' });
+    expect(seen).toEqual([undefined, 'cursor-2']);
   });
 
   it('run reports pull errors without silent failure', async () => {

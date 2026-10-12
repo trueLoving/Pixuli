@@ -15,7 +15,6 @@ import {
   EXPLORER_WIDTH_MIN,
   usePanelResize,
 } from '@/hooks/usePanelResize';
-import { useImageStore } from '@/features/library/imageStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatWorkspaceTitle } from '@/features/workspace/workspacePathDisplay';
@@ -127,13 +126,13 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   overlay = false,
 }) => {
   const { t } = useI18n();
-  const images = useImageStore(state => state.images);
   const displayName = useWorkspaceStore(state => state.displayName);
   const rootPath = useWorkspaceStore(state => state.rootPath);
   const rootDisplayPath = useWorkspaceStore(state => state.rootDisplayPath);
   const refreshRootDisplayPath = useWorkspaceStore(
     state => state.refreshRootDisplayPath,
   );
+  const indexPaths = useWorkspaceStore(state => state.indexPaths);
   const localFolders = useWorkspaceStore(state => state.localFolders);
   const createLocalFolder = useWorkspaceStore(state => state.createLocalFolder);
   const renameLocalFolder = useWorkspaceStore(state => state.renameLocalFolder);
@@ -168,11 +167,8 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   });
 
   const tree = useMemo(() => {
-    const paths = images
-      .map(image => image.localPath)
-      .filter((path): path is string => Boolean(path));
-    return buildWorkspaceFolderTree(paths, localFolders);
-  }, [images, localFolders]);
+    return buildWorkspaceFolderTree(indexPaths, localFolders);
+  }, [indexPaths, localFolders]);
 
   const toggleExpanded = (path: string) => {
     setExpandedPaths(prev => {
