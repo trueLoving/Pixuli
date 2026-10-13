@@ -56,9 +56,11 @@ export function getManifestDescription(
   return manifest.name;
 }
 
-/** 已知内置插件 id，用于图标等 UI 分支（M3 P0 仅 github / gitee）。 */
+/** 已知内置插件 id。 */
 export function isKnownBuiltinPluginId(
   pluginId: string,
-): pluginId is 'github' | 'gitee' {
-  return pluginId === 'github' || pluginId === 'gitee';
+): pluginId is 'github' | 'gitee' | 'onedrive' {
+  return (
+    pluginId === 'github' || pluginId === 'gitee' || pluginId === 'onedrive'
+  );
 }

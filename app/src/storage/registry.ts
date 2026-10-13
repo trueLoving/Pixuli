@@ -4,6 +4,7 @@ import {
   type StoragePluginManifest,
 } from '@pixuli/core/plugins';
 import { registerGitHubProvider } from '@pixuli/provider-github/register';
+import { registerOneDriveProvider } from '@pixuli/provider-onedrive/register';
 import { registerPixuliGiteeProvider } from './registerGiteeProvider';
 
 export const storageRegistry = createStoragePluginRegistry();
@@ -16,6 +17,7 @@ export function bootstrapStorageProviders(): void {
   }
   registerGitHubProvider(storageRegistry);
   registerPixuliGiteeProvider(storageRegistry);
+  registerOneDriveProvider(storageRegistry);
   bootstrapped = true;
 }
 

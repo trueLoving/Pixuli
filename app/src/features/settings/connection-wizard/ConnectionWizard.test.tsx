@@ -32,6 +32,20 @@ vi.mock('@/ui/feedback/toast', () => ({
   showSuccess: vi.fn(),
 }));
 
+const { addSource, setSelectedSourceId } = vi.hoisted(() => ({
+  addSource: vi.fn(() => ({ id: 'od-1' })),
+  setSelectedSourceId: vi.fn(),
+}));
+
+vi.mock('@/features/settings/sourceStore', () => ({
+  useSourceStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({
+      addSource,
+      updateSource: vi.fn(),
+      setSelectedSourceId,
+    }),
+}));
+
 vi.mock('@/storage/registry', () => ({
   listStoragePluginManifests: () => [
     {
@@ -139,7 +153,7 @@ describe('ConnectionWizard', () => {
 
     expect(screen.getByText('添加连接')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /oauth/i })).toBeNull();
-    expect(screen.getByText('OneDrive')).toBeInTheDocument();
+    expect(screen.getByText('Google Cloud')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'OneDrive' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /GitHub/ }));
@@ -243,5 +257,45 @@ describe('ConnectionWizard', () => {
       'src-1',
     );
     expect(onComplete).toHaveBeenCalled();
+  });
+
+  it('opens Microsoft login for OneDrive instead of a token form', () => {
+    render(
+      <ConnectionWizard
+        manifests={[
+          ...manifests,
+          {
+            id: 'onedrive',
+            name: 'OneDrive',
+            version: '1.0.0',
+            capabilities: {
+              list: true,
+              upload: true,
+              delete: true,
+              updateMetadata: true,
+              sync: true,
+            },
+            auth: { modes: ['oauthBrowser'] },
+          },
+        ]}
+        t={makeModalTranslate({
+          ...copy,
+          'settings.onedrive.login': '使用 Microsoft 账号登录',
+          'settings.onedrive.loginHint': '打开 Microsoft 登录',
+        })}
+        onCancel={vi.fn()}
+        onComplete={onComplete}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /OneDrive/ }));
+    fireEvent.click(screen.getByRole('button', { name: '继续' }));
+
+    expect(
+      screen.getByRole('button', { name: '使用 Microsoft 账号登录' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('EwA...')).toBeNull();
+    expect(screen.queryByText('Azure 应用 ID')).toBeNull();
+    expect(handleSaveConfig).not.toHaveBeenCalled();
   });
 });

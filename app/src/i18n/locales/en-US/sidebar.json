@@ -20,7 +20,7 @@
     "selectSourceType": "Select Repository Type",
     "githubDescription": "Connect and sync with a GitHub repository",
     "giteeDescription": "Connect and sync with a Gitee repository",
-    "onedriveDescription": "Connect an OneDrive folder (coming soon)",
+    "onedriveDescription": "Sync a OneDrive folder with a Microsoft account",
     "gcsDescription": "Connect Google Cloud Storage (coming soon)",
     "noStoragePlugins": "No storage plugins available",
     "pluginUnavailable": "Plugin not installed or unavailable",

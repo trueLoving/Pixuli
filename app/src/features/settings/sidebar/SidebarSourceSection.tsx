@@ -118,6 +118,8 @@ export const SidebarSourceSection: React.FC<SidebarSourceSectionProps> = ({
             >
               {source.type === 'github' ? (
                 <Github size={26} />
+              ) : source.type === 'onedrive' ? (
+                <div className="gitee-icon-small">云</div>
               ) : (
                 <div className="gitee-icon-small">码</div>
               )}
@@ -204,6 +206,8 @@ export const SidebarSourceSection: React.FC<SidebarSourceSectionProps> = ({
                   <div className="sidebar-source-icon">
                     {source.type === 'github' ? (
                       <Github size={16} />
+                    ) : source.type === 'onedrive' ? (
+                      <div className="gitee-icon">云</div>
                     ) : (
                       <div className="gitee-icon">码</div>
                     )}

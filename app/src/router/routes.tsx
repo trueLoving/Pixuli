@@ -1,5 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { OneDriveOAuthCallback } from '@/features/settings/connection-wizard/OneDriveOAuthCallback';
+import { ONEDRIVE_CALLBACK_PATH } from '@/features/settings/connection-wizard/onedriveOAuth';
 import { WorkspaceRouteRedirect } from './WorkspaceRouteRedirect';
 
 const LibraryRoute = lazy(() =>
@@ -78,6 +80,10 @@ export const AppRoutes: React.FC<AppRoutesProps> = () => {
       <Route
         path="/generate"
         element={<Navigate to={ROUTES.LIBRARY} replace />}
+      />
+      <Route
+        path={ONEDRIVE_CALLBACK_PATH}
+        element={<OneDriveOAuthCallback />}
       />
       <Route path="/" element={<Navigate to={ROUTES.LIBRARY} replace />} />
       <Route path="*" element={<Navigate to={ROUTES.LIBRARY} replace />} />

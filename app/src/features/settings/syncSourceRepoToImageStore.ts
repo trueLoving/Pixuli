@@ -27,6 +27,9 @@ export function syncRepoConfigToImageStore(
 
 /** 选中/编辑源时同步 storageType 与仓库配置 */
 export function syncSourceEntryToImageStore(source: StoredSourceEntry): void {
+  if (source.pluginId === 'onedrive') {
+    return;
+  }
   const legacyType = pluginIdToLegacyType(source.pluginId);
   const port = getSourceSelectionPort();
   port.setStorageType(legacyType);
