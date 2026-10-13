@@ -12,7 +12,7 @@
     "sourcesTitle": "Remote repositories",
     "singleSyncHint": "Only one repository can sync at a time. Pick the active target in the table.",
     "addRemote": "Add remote",
-    "sourcesEmpty": "No remote repositories yet. Use the button above to add GitHub or Gitee.",
+    "sourcesEmpty": "No remote connections yet. Use the button above to add GitHub, Gitee, or OneDrive.",
     "tableName": "Name",
     "tableRepo": "Repository",
     "tableSyncTarget": "Sync target",
@@ -67,6 +67,11 @@
       "pickBranch": "Choose a branch",
       "advancedPath": "Mount path (advanced)",
       "pathHint": "Sync root inside the repository. The default is usually fine."
+    },
+    "onedrive": {
+      "login": "Sign in with Microsoft",
+      "loginHint": "Microsoft sign-in opens in the browser. After you approve access, Pixuli receives the token automatically.",
+      "missingClient": "This build has no OneDrive app configured, so sign-in cannot start."
     },
     "menuWorkspace": "Workspace",
     "workspaceCurrentTitle": "Current workspace",

@@ -33,6 +33,17 @@ export function useSelectedSourceSync(
         return;
       }
 
+      if (selectedSource.pluginId === 'onedrive') {
+        lastSyncedSourceIdRef.current = selectedSource.id;
+        isInitialMountRef.current = false;
+        if (onConfigSynced) {
+          setTimeout(() => {
+            onConfigSynced();
+          }, 100);
+        }
+        return;
+      }
+
       const sourceConfig = getRepoConfigFromSource(selectedSource);
       const port = getSourceSelectionPort();
       if (selectedSource.pluginId === 'github') {

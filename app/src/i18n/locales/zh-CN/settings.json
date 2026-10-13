@@ -12,7 +12,7 @@
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",
     "addRemote": "添加远端仓库",
-    "sourcesEmpty": "尚未添加远端仓库，点击上方按钮添加 GitHub 或 Gitee 源。",
+    "sourcesEmpty": "尚未添加远端连接，点击上方按钮添加 GitHub、Gitee 或 OneDrive。",
     "tableName": "名称",
     "tableRepo": "仓库",
     "tableSyncTarget": "同步目标",
@@ -67,6 +67,11 @@
       "pickBranch": "选择分支",
       "advancedPath": "挂载路径（高级）",
       "pathHint": "仓库内同步根目录，一般保持默认即可。"
+    },
+    "onedrive": {
+      "login": "使用 Microsoft 账号登录",
+      "loginHint": "打开 Microsoft 登录并同意授权后，会自动回到这里并取得访问权限。不需要填写应用 ID 或令牌。",
+      "missingClient": "当前安装还没有配置 OneDrive 应用，暂时不能打开登录页。"
     },
     "menuWorkspace": "工作区",
     "workspaceCurrentTitle": "当前工作区",

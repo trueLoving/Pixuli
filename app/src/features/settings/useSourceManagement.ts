@@ -27,13 +27,17 @@ export function useSourceManagement() {
     return sources.map(source => {
       const repo = getRepoConfigFromSource(source);
       const { legacyType } = resolveSourceDisplay(source.pluginId);
+      const isOneDrive = source.pluginId === 'onedrive';
+      const folder = String(source.config.path ?? 'Pixuli');
       return {
         id: source.id,
-        name: source.label || `${repo.owner}/${repo.repo}`,
-        type: legacyType,
-        owner: repo.owner,
-        repo: repo.repo,
-        path: repo.path,
+        name:
+          source.label ||
+          (isOneDrive ? 'OneDrive' : `${repo.owner}/${repo.repo}`),
+        type: isOneDrive ? 'onedrive' : legacyType,
+        owner: isOneDrive ? 'OneDrive' : repo.owner,
+        repo: isOneDrive ? folder : repo.repo,
+        path: isOneDrive ? folder : repo.path,
         active: selectedSourceId === source.id,
         available: isStoragePluginRegistered(source.pluginId),
       };

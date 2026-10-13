@@ -40,6 +40,7 @@ describe('manifestUi', () => {
 
   it('isKnownBuiltinPluginId', () => {
     expect(isKnownBuiltinPluginId('github')).toBe(true);
+    expect(isKnownBuiltinPluginId('onedrive')).toBe(true);
     expect(isKnownBuiltinPluginId('custom')).toBe(false);
   });
 

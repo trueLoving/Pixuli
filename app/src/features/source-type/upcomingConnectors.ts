@@ -19,16 +19,6 @@ const baseCaps = {
 
 export const UPCOMING_CONNECTORS: UpcomingConnector[] = [
   {
-    id: 'onedrive',
-    name: 'OneDrive',
-    capabilities: {
-      ...baseCaps,
-      sync: true,
-      shareLink: true,
-      timedAccess: true,
-    },
-  },
-  {
     id: 'gcs',
     name: 'Google Cloud',
     capabilities: {

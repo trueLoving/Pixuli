@@ -9,6 +9,7 @@ describe('storage registry (REF-310 / W3)', () => {
     const ids = listStoragePluginManifests().map(m => m.id);
     expect(ids).toContain('github');
     expect(ids).toContain('gitee');
+    expect(ids).toContain('onedrive');
     expect(isStoragePluginRegistered('github')).toBe(true);
     expect(isStoragePluginRegistered('gitee')).toBe(true);
   });

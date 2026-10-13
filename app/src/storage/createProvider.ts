@@ -1,4 +1,8 @@
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
+import type {
+  GiteeConfig,
+  GitHubConfig,
+  OneDriveConfig,
+} from '@pixuli/core/types';
 import type {
   StorageProvider,
   StorageProviderConfig,
@@ -13,7 +17,7 @@ import {
 import { isWeb } from '@/platforms/platform';
 import { storageRegistry } from './registry';
 
-export type StoragePluginId = 'github' | 'gitee';
+export type StoragePluginId = 'github' | 'gitee' | 'onedrive';
 
 export function getAppPlatform(): 'web' | 'desktop' {
   return isWeb() ? 'web' : 'desktop';
@@ -21,7 +25,7 @@ export function getAppPlatform(): 'web' | 'desktop' {
 
 export function createConfiguredStorageProvider(
   pluginId: string,
-  config: GitHubConfig | GiteeConfig,
+  config: GitHubConfig | GiteeConfig | OneDriveConfig,
 ): StorageProvider {
   if (!isKnownBuiltinPluginId(pluginId)) {
     throw new Error(`Unsupported storage plugin: ${pluginId}`);

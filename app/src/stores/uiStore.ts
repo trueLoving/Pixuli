@@ -203,8 +203,11 @@ export const useUIStore = create<UIState>(set => ({
     if (!source || !isStoragePluginRegistered(source.pluginId)) {
       return false;
     }
-    const repoConfig = getRepoConfigFromSource(source);
-    syncRepoConfigToImageStore(source.pluginId, repoConfig);
+    const repoConfig =
+      source.pluginId === 'onedrive' ? null : getRepoConfigFromSource(source);
+    if (repoConfig) {
+      syncRepoConfigToImageStore(source.pluginId, repoConfig);
+    }
     set({
       editingSourceId: sourceId,
       editingSourcePluginId: source.pluginId,
@@ -301,9 +304,11 @@ export const useUIStore = create<UIState>(set => ({
       settingsSyncPrefillPluginId: null,
     }),
   prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
-    useImageStore.setState({
-      storageType: resolveSourceDisplay(pluginId).legacyType,
-    });
+    if (pluginId !== 'onedrive') {
+      useImageStore.setState({
+        storageType: resolveSourceDisplay(pluginId).legacyType,
+      });
+    }
     set({
       editingSourceId: null,
       editingSourcePluginId: null,
