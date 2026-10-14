@@ -23,8 +23,13 @@ export function bootstrapStorageProviders(): void {
 
 bootstrapStorageProviders();
 
+/** 暂时不在「添加连接」里展示。插件仍注册，已保存的源可以继续同步。 */
+const HIDDEN_CONNECTION_PLUGIN_IDS = new Set(['onedrive']);
+
 export function listStoragePluginManifests(): StoragePluginManifest[] {
-  return storageRegistry.listManifests();
+  return storageRegistry
+    .listManifests()
+    .filter(manifest => !HIDDEN_CONNECTION_PLUGIN_IDS.has(manifest.id));
 }
 
 export function isStoragePluginRegistered(pluginId: string): boolean {
