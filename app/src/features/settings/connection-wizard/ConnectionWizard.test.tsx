@@ -111,8 +111,6 @@ const copy = {
   'settings.wizardEditDoneHint': '保存后更新当前连接。不会自动开始同步。',
   'settings.purposeDefaultSync': '默认同步',
   'settings.purposeBackup': '仅备份同步',
-  'settings.upcomingTitle': '即将支持',
-  'settings.comingSoon': '即将支持',
   'common.cancel': '取消',
 };
 
@@ -153,7 +151,8 @@ describe('ConnectionWizard', () => {
 
     expect(screen.getByText('添加连接')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /oauth/i })).toBeNull();
-    expect(screen.getByText('Google Cloud')).toBeInTheDocument();
+    expect(screen.queryByText('Google Cloud')).toBeNull();
+    expect(screen.queryByText('即将支持')).toBeNull();
     expect(screen.queryByRole('button', { name: 'OneDrive' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /GitHub/ }));
@@ -259,7 +258,7 @@ describe('ConnectionWizard', () => {
     expect(onComplete).toHaveBeenCalled();
   });
 
-  it('opens Microsoft login for OneDrive instead of a token form', () => {
+  it('hides OneDrive from the service list', () => {
     render(
       <ConnectionWizard
         manifests={[
@@ -278,24 +277,15 @@ describe('ConnectionWizard', () => {
             auth: { modes: ['oauthBrowser'] },
           },
         ]}
-        t={makeModalTranslate({
-          ...copy,
-          'settings.onedrive.login': '使用 Microsoft 账号登录',
-          'settings.onedrive.loginHint': '打开 Microsoft 登录',
-        })}
+        t={makeModalTranslate(copy)}
         onCancel={vi.fn()}
         onComplete={onComplete}
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /OneDrive/ }));
-    fireEvent.click(screen.getByRole('button', { name: '继续' }));
-
+    expect(screen.queryByRole('button', { name: /OneDrive/ })).toBeNull();
     expect(
-      screen.getByRole('button', { name: '使用 Microsoft 账号登录' }),
-    ).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('EwA...')).toBeNull();
-    expect(screen.queryByText('Azure 应用 ID')).toBeNull();
-    expect(handleSaveConfig).not.toHaveBeenCalled();
+      screen.queryByRole('button', { name: '使用 Microsoft 账号登录' }),
+    ).toBeNull();
   });
 });

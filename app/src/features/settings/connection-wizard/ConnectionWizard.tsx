@@ -13,7 +13,6 @@ import {
 } from '@/features/settings/connection-wizard/OneDriveConnectionFields';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
-import { UPCOMING_CONNECTORS } from '@/features/source-type/upcomingConnectors';
 import { showSuccess } from '@/ui/feedback/toast';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -248,36 +247,38 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
 
       {step === 'service' ? (
         <div className="space-y-3">
-          {manifests.map(item => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => {
-                if (!isWizardPluginId(item.id)) return;
-                setPluginId(item.id);
-                setValues(EMPTY_VALUES);
-                setOneDrive(EMPTY_ONEDRIVE);
-                setTokenOk(false);
-                setPatMounted(false);
-              }}
-              className={`flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left ${
-                pluginId === item.id
-                  ? 'border-[var(--pix-violet)]'
-                  : 'border-gray-200'
-              }`}
-            >
-              {item.id === 'github' ? (
-                <Github size={18} />
-              ) : item.id === 'onedrive' ? (
-                <span className="text-xs font-bold text-sky-700">云</span>
-              ) : (
-                <span className="text-xs font-bold text-red-600">码</span>
-              )}
-              <span className="text-sm font-semibold text-gray-900">
-                {item.name}
-              </span>
-            </button>
-          ))}
+          {manifests
+            .filter(item => item.id !== 'onedrive')
+            .map(item => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  if (!isWizardPluginId(item.id)) return;
+                  setPluginId(item.id);
+                  setValues(EMPTY_VALUES);
+                  setOneDrive(EMPTY_ONEDRIVE);
+                  setTokenOk(false);
+                  setPatMounted(false);
+                }}
+                className={`flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left ${
+                  pluginId === item.id
+                    ? 'border-[var(--pix-violet)]'
+                    : 'border-gray-200'
+                }`}
+              >
+                {item.id === 'github' ? (
+                  <Github size={18} />
+                ) : item.id === 'onedrive' ? (
+                  <span className="text-xs font-bold text-sky-700">云</span>
+                ) : (
+                  <span className="text-xs font-bold text-red-600">码</span>
+                )}
+                <span className="text-sm font-semibold text-gray-900">
+                  {item.name}
+                </span>
+              </button>
+            ))}
           {pluginId ? (
             <div className="space-y-2">
               <label className="flex items-start gap-2 text-sm">
@@ -300,20 +301,6 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
               </label>
             </div>
           ) : null}
-          <p className="pt-1 text-xs font-medium text-gray-500">
-            {t('settings.upcomingTitle')}
-          </p>
-          {UPCOMING_CONNECTORS.map(item => (
-            <div
-              key={item.id}
-              className="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500"
-            >
-              {item.name}
-              <span className="ml-2 text-[10px]">
-                {t('settings.comingSoon')}
-              </span>
-            </div>
-          ))}
           <div className="flex justify-end">
             <button
               type="button"

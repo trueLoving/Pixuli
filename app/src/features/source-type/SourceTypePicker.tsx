@@ -6,7 +6,6 @@ import { Github, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { CapabilityChips } from './CapabilityChips';
 import type { ConnectionPurpose } from './connectionPurpose';
-import { UPCOMING_CONNECTORS } from './upcomingConnectors';
 
 interface SourceTypePickerProps {
   manifests: StoragePluginManifest[];
@@ -163,29 +162,6 @@ export const SourceTypePicker: React.FC<SourceTypePickerProps> = ({
               </button>
             ))
           )}
-          <p className="pt-2 text-xs font-medium text-gray-500">
-            {t('settings.upcomingTitle')}
-          </p>
-          {UPCOMING_CONNECTORS.map(item => (
-            <div
-              key={item.id}
-              className="flex w-full items-center gap-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 opacity-70"
-            >
-              <PluginTypeIcon pluginId={item.id} name={item.name} />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-gray-700">
-                  {item.name}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {t(`sidebar.${item.id}Description`)}
-                </div>
-                <CapabilityChips capabilities={item.capabilities} t={t} muted />
-              </div>
-              <span className="shrink-0 rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
-                {t('settings.comingSoon')}
-              </span>
-            </div>
-          ))}
         </div>
       )}
     </div>
