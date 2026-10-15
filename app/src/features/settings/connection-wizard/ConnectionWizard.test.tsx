@@ -11,7 +11,6 @@ import {
 
 const handleSaveConfig = vi.fn();
 const prepareNewSource = vi.fn();
-const openSyncDirectionModal = vi.fn();
 const closeSettingsModal = vi.fn();
 const onComplete = vi.fn();
 
@@ -23,13 +22,26 @@ vi.mock('@/stores/uiStore', () => ({
   useUIStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       prepareNewSource,
-      openSyncDirectionModal,
       closeSettingsModal,
     }),
 }));
 
 vi.mock('@/ui/feedback/toast', () => ({
   showSuccess: vi.fn(),
+}));
+
+const { addSource, setSelectedSourceId } = vi.hoisted(() => ({
+  addSource: vi.fn(() => ({ id: 'od-1' })),
+  setSelectedSourceId: vi.fn(),
+}));
+
+vi.mock('@/features/settings/sourceStore', () => ({
+  useSourceStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({
+      addSource,
+      updateSource: vi.fn(),
+      setSelectedSourceId,
+    }),
 }));
 
 vi.mock('@/storage/registry', () => ({
@@ -97,8 +109,6 @@ const copy = {
   'settings.wizardEditDoneHint': '保存后更新当前连接。不会自动开始同步。',
   'settings.purposeDefaultSync': '默认同步',
   'settings.purposeBackup': '仅备份同步',
-  'settings.upcomingTitle': '即将支持',
-  'settings.comingSoon': '即将支持',
   'common.cancel': '取消',
 };
 
@@ -108,7 +118,6 @@ describe('ConnectionWizard', () => {
   beforeEach(() => {
     handleSaveConfig.mockReset();
     prepareNewSource.mockReset();
-    openSyncDirectionModal.mockReset();
     closeSettingsModal.mockReset();
     onComplete.mockReset();
     discovery = {
@@ -139,7 +148,8 @@ describe('ConnectionWizard', () => {
 
     expect(screen.getByText('添加连接')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /oauth/i })).toBeNull();
-    expect(screen.getByText('OneDrive')).toBeInTheDocument();
+    expect(screen.queryByText('Google Cloud')).toBeNull();
+    expect(screen.queryByText('即将支持')).toBeNull();
     expect(screen.queryByRole('button', { name: 'OneDrive' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /GitHub/ }));
@@ -180,7 +190,6 @@ describe('ConnectionWizard', () => {
       null,
     );
     expect(onComplete).toHaveBeenCalled();
-    expect(openSyncDirectionModal).not.toHaveBeenCalled();
   });
 
   it('opens add wizard on auth when a service is prefilled', () => {
@@ -243,5 +252,36 @@ describe('ConnectionWizard', () => {
       'src-1',
     );
     expect(onComplete).toHaveBeenCalled();
+  });
+
+  it('hides OneDrive from the service list', () => {
+    render(
+      <ConnectionWizard
+        manifests={[
+          ...manifests,
+          {
+            id: 'onedrive',
+            name: 'OneDrive',
+            version: '1.0.0',
+            capabilities: {
+              list: true,
+              upload: true,
+              delete: true,
+              updateMetadata: true,
+              sync: true,
+            },
+            auth: { modes: ['oauthBrowser'] },
+          },
+        ]}
+        t={makeModalTranslate(copy)}
+        onCancel={vi.fn()}
+        onComplete={onComplete}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: /OneDrive/ })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: '使用 Microsoft 账号登录' }),
+    ).toBeNull();
   });
 });

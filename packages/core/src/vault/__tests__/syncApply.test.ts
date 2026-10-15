@@ -334,6 +334,49 @@ describe('syncApply (configRoot 1:1)', () => {
     expect(entry?.name).toBe('Vacation Photo');
   });
 
+  it('pull downloads when the file is synced to a different binding', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+
+    await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
+      name: 'a.jpg',
+      syncState: 'synced',
+      remotePath: 'images/a.jpg',
+      bindingId: 'repo-a',
+      updatedAt: '2026-08-20T10:00:00.000Z',
+    });
+
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      arrayBuffer: async () => new Uint8Array([9, 9]).buffer,
+    })) as unknown as typeof fetch;
+
+    const result = await applySyncPull(
+      vault,
+      'repo-b',
+      {
+        items: [
+          {
+            remotePath: 'images/a.jpg',
+            action: 'update',
+            metadata: {
+              name: 'a.jpg',
+              updatedAt: '2026-08-20T02:00:00.000Z',
+            },
+          },
+        ],
+      },
+      createMockProvider(),
+      { fetchFn },
+    );
+
+    expect(result.pulled).toBe(1);
+    expect(fetchFn).toHaveBeenCalledOnce();
+    expect((await vault.getByPath('images/a.jpg'))?.bindingId).toBe('repo-b');
+  });
+
   it('pull merges remote display name without re-downloading file bytes', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();

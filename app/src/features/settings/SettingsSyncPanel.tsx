@@ -5,6 +5,8 @@ import { CapabilityChips } from '@/features/source-type/CapabilityChips';
 import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
 import type { GitPatFieldValues } from '@/features/settings/git-connection/GitPatConnectionFields';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
+import { useSourceStore } from '@/features/settings/sourceStore';
+import type { OneDriveFieldValues } from '@/features/settings/connection-wizard/OneDriveConnectionFields';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -16,6 +18,13 @@ interface SettingsSyncPanelProps {
 function renderSourceTypeIcon(type: SidebarSource['type']) {
   if (type === 'github') {
     return <Github size={14} className="shrink-0 text-gray-700" />;
+  }
+  if (type === 'onedrive') {
+    return (
+      <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-sky-600 text-[9px] font-bold text-white">
+        云
+      </span>
+    );
   }
   return (
     <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-red-500 text-[9px] font-bold text-white">
@@ -52,16 +61,39 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
     handleDeleteSource,
   } = useSourceManagement();
 
+  const sources = useSourceStore(state => state.sources);
   const manifests = listStoragePluginManifests();
   const activeSyncSourceId = selectedSource?.id ?? null;
   const syncStatus = useWorkspaceStore(state => state.syncStatus);
 
-  const isEditing = Boolean(
+  const editingOneDrive = useMemo((): OneDriveFieldValues | null => {
+    if (editingSourcePluginId !== 'onedrive' || !editingSourceId) return null;
+    const source = sources.find(item => item.id === editingSourceId);
+    if (!source) return null;
+    const config = source.config;
+    return {
+      clientId: typeof config.clientId === 'string' ? config.clientId : '',
+      accessToken:
+        typeof config.accessToken === 'string' ? config.accessToken : '',
+      refreshToken:
+        typeof config.refreshToken === 'string' ? config.refreshToken : '',
+      path: typeof config.path === 'string' ? config.path : 'Pixuli',
+      ...(typeof config.expiresAt === 'number'
+        ? { expiresAt: config.expiresAt }
+        : {}),
+    };
+  }, [sources, editingSourceId, editingSourcePluginId]);
+
+  const isGitEditing = Boolean(
     editingSourceId &&
       (editingSourcePluginId === 'github' ||
         editingSourcePluginId === 'gitee') &&
       editingSourceRepoConfig,
   );
+  const isOneDriveEditing = Boolean(
+    editingSourceId && editingSourcePluginId === 'onedrive',
+  );
+  const isEditing = isGitEditing || isOneDriveEditing;
   const wizardOpen = isEditing || addingSource;
 
   const editInitialValues = useMemo((): GitPatFieldValues | null => {
@@ -159,11 +191,13 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             initialPluginId={
               isEditing &&
               (editingSourcePluginId === 'github' ||
-                editingSourcePluginId === 'gitee')
+                editingSourcePluginId === 'gitee' ||
+                editingSourcePluginId === 'onedrive')
                 ? editingSourcePluginId
                 : addPrefillPluginId
             }
-            initialValues={isEditing ? editInitialValues : null}
+            initialValues={isGitEditing ? editInitialValues : null}
+            initialOneDrive={isOneDriveEditing ? editingOneDrive : null}
           />
         ) : null}
 
@@ -175,8 +209,12 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
           <div className="mt-4 grid gap-3 sm:grid-cols-1">
             {sidebarSources.map((source: SidebarSource) => {
               const unavailable = source.available === false;
+              const isEditingThis = Boolean(
+                isEditing && editingSourceId === source.id,
+              );
               const isSyncTarget =
                 !unavailable && activeSyncSourceId === source.id;
+              const highlighted = isEditing ? isEditingThis : isSyncTarget;
               const health = syncStatus?.bindings[source.id];
               const lastSync = health?.lastSyncAt
                 ? new Date(health.lastSyncAt).toLocaleString()
@@ -185,8 +223,9 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
               return (
                 <article
                   key={source.id}
+                  aria-current={isEditingThis ? 'true' : undefined}
                   className={`rounded-lg border p-4 ${
-                    isSyncTarget
+                    highlighted
                       ? 'border-[var(--pix-violet)] bg-[var(--pix-violet-soft)]'
                       : 'border-gray-200 bg-white'
                   }`}
@@ -225,9 +264,14 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                     <div className="flex shrink-0 items-center gap-1">
                       <button
                         type="button"
-                        disabled={unavailable || wizardOpen}
+                        disabled={unavailable}
                         onClick={() => handleEdit(source.id)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-pressed={isEditingThis}
+                        className={`rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-40 ${
+                          isEditingThis
+                            ? 'bg-[var(--pix-violet)] text-white'
+                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                        }`}
                         title={t('sidebar.editSource')}
                         aria-label={t('sidebar.editSource')}
                       >
@@ -245,8 +289,19 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {isEditingThis ? (
+                      <span className="inline-flex items-center rounded-full bg-[var(--pix-violet)] px-2 py-0.5 text-xs font-medium text-white">
+                        {t('settings.editingSource')}
+                      </span>
+                    ) : null}
                     {isSyncTarget ? (
-                      <span className="inline-flex items-center rounded-full pix-badge-brand px-2 py-0.5 text-xs font-medium">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          isEditing && !isEditingThis
+                            ? 'border border-gray-300 bg-white text-gray-600'
+                            : 'pix-badge-brand'
+                        }`}
+                      >
                         {t('settings.currentSyncTarget')}
                       </span>
                     ) : (

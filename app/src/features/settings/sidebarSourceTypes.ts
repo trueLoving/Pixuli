@@ -4,7 +4,7 @@ import type { LegacyStorageType } from '@pixuli/core/sources';
 export type SidebarSourceItem = {
   id: string;
   name: string;
-  type: LegacyStorageType;
+  type: LegacyStorageType | 'onedrive';
   owner: string;
   repo: string;
   path: string;

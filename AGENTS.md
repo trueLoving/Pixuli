@@ -23,6 +23,7 @@ app/          Web + Desktop + Mobile/Capacitor（Vite + React + electron/ + andr
 packages/core/        @pixuli/core — types, StoragePluginRegistry, platform
 packages/plugin-provider-github/   @pixuli/provider-github
 packages/plugin-provider-gitee/    @pixuli/provider-gitee
+packages/plugin-provider-onedrive/ @pixuli/provider-onedrive
 ```
 
 **常用命令**（根目录）：`pnpm test` · `pnpm ci` · `pnpm dev:web` ·
@@ -36,12 +37,12 @@ APK；debug 用 `build:android:debug`）
 
 ## 存储插件（M3 已落地）
 
-| 步骤         | 位置                                                                          |
-| ------------ | ----------------------------------------------------------------------------- |
-| 注册表单例   | `app/src/storage/registry.ts`                                                 |
-| 创建实例     | `createConfiguredStorageProvider()` → `storageRegistry.create(pluginId, ctx)` |
-| 注册官方插件 | `registerGitHubProvider` · `registerGiteeProvider`（各包 `/register` 子路径） |
-| 契约定义     | `@pixuli/core/plugins` — `StorageProvider`、`StoragePluginRegistry`           |
+| 步骤         | 位置                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| 注册表单例   | `app/src/storage/registry.ts`                                                                              |
+| 创建实例     | `createConfiguredStorageProvider()` → `storageRegistry.create(pluginId, ctx)`                              |
+| 注册官方插件 | `registerGitHubProvider` · `registerGiteeProvider` · `registerOneDriveProvider`（各包 `/register` 子路径） |
+| 契约定义     | `@pixuli/core/plugins` — `StorageProvider`、`StoragePluginRegistry`                                        |
 
 详细设计：[docs/02-system-design/03-plugin-system.md](docs/02-system-design/03-plugin-system.md)
 

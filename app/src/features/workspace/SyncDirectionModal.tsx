@@ -1,5 +1,5 @@
 import { CloudDownload, CloudUpload, Loader2, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
 import { useImageStore } from '@/features/library/imageStore';
@@ -7,11 +7,13 @@ import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { runSyncWithFeedback } from './syncFeedback';
+import { formatSyncTargetLabel } from './syncTargetLabel';
 
 export type SyncDirectionChoice = 'pull' | 'push';
 
 /**
- * 点击「同步」后选择方向：远端→本地 / 本地→远端
+ * 点击「同步」后选择方向：远端→本地 / 本地→远端。
+ * 仓库用设置里的当前同步目标，这里只说明，不切换。
  */
 export const SyncDirectionModal: React.FC = () => {
   const { t } = useI18n();
@@ -24,20 +26,17 @@ export const SyncDirectionModal: React.FC = () => {
   const loadImages = useImageStore(state => state.loadImages);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
-  const setSelectedSourceId = useSourceStore(
-    state => state.setSelectedSourceId,
-  );
   const [running, setRunning] = useState(false);
   const [activeDirection, setActiveDirection] =
     useState<SyncDirectionChoice | null>(null);
-  const [targetId, setTargetId] = useState('');
   const preferPush = pendingPush > 0;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setTargetId(selectedSourceId ?? sources[0]?.id ?? '');
-    setActiveDirection(null);
-  }, [isOpen, selectedSourceId, sources]);
+  const activeSource = selectedSourceId
+    ? sources.find(item => item.id === selectedSourceId)
+    : sources[0];
+  const targetLabel = formatSyncTargetLabel(
+    activeSource,
+    t('settings.noSyncTarget'),
+  );
 
   useEscapeKey(() => {
     if (isOpen && !running && !syncing) close();
@@ -58,9 +57,6 @@ export const SyncDirectionModal: React.FC = () => {
     setRunning(true);
     setActiveDirection(direction);
     try {
-      if (targetId && targetId !== selectedSourceId) {
-        setSelectedSourceId(targetId);
-      }
       await runSyncWithFeedback(direction, t);
       await loadImages();
       close();
@@ -82,7 +78,7 @@ export const SyncDirectionModal: React.FC = () => {
     >
       <div
         className="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-xl"
-        onClick={e => e.stopPropagation()}
+        onClick={event => event.stopPropagation()}
       >
         {busy ? (
           <div
@@ -126,24 +122,9 @@ export const SyncDirectionModal: React.FC = () => {
               ? t('workspace.syncChooseHintPending', { count: pendingPush })
               : t('workspace.syncChooseHint')}
           </p>
-
-          {sources.length > 1 ? (
-            <label className="block text-sm text-gray-700">
-              {t('workspace.syncTargetLabel')}
-              <select
-                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                value={targetId}
-                disabled={busy}
-                onChange={event => setTargetId(event.target.value)}
-              >
-                {sources.map(source => (
-                  <option key={source.id} value={source.id}>
-                    {source.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
+          <p className="text-sm text-gray-800">
+            {t('workspace.syncTo', { target: targetLabel })}
+          </p>
 
           {(preferPush
             ? (['push', 'pull'] as const)

@@ -5,7 +5,3 @@ export {
   isPublishChannel,
   type ConnectionPurpose,
 } from './connectionPurpose';
-export {
-  UPCOMING_CONNECTORS,
-  type UpcomingConnector,
-} from './upcomingConnectors';

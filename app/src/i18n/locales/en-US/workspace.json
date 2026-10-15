@@ -44,6 +44,7 @@
     "pullManual": "Pull from remote",
     "pulling": "Pulling…",
     "syncBoth": "Sync both ways",
+    "syncTo": "Sync to {{target}}",
     "syncing": "Syncing…",
     "syncingShort": "Sync",
     "syncNeedsLocal": "Choose a local workspace first",
