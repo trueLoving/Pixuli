@@ -39,7 +39,6 @@ const SyncDirectionModal = lazy(() =>
     default: m.SyncDirectionModal,
   })),
 );
-
 interface MainLayoutModalsProps {
   showGlobalLoading: boolean;
   onSaveConfig: AppMainLayoutModalsConfigProps['onSaveConfig'];

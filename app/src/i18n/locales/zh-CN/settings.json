@@ -18,6 +18,7 @@
     "tableSyncTarget": "同步目标",
     "tableActions": "操作",
     "currentSyncTarget": "当前同步",
+    "editingSource": "正在编辑",
     "setSyncTarget": "设为同步目标",
     "noSyncTarget": "未选择仓库",
     "tableCapabilities": "能力",

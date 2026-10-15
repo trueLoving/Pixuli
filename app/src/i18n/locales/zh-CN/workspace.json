@@ -44,6 +44,7 @@
     "pullManual": "从远端拉取",
     "pulling": "拉取中…",
     "syncBoth": "双向同步",
+    "syncTo": "同步到 {{target}}",
     "syncing": "同步中…",
     "syncingShort": "同步中",
     "syncNeedsLocal": "请先选择本地工作区",

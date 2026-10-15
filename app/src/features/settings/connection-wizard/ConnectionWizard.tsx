@@ -13,6 +13,7 @@ import {
 } from '@/features/settings/connection-wizard/OneDriveConnectionFields';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
+import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { showSuccess } from '@/ui/feedback/toast';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -102,9 +103,6 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   const isEdit = Boolean(editSourceId && isWizardPluginId(initialPluginId));
   const startWithPlugin = !isEdit && isWizardPluginId(initialPluginId);
   const prepareNewSource = useUIStore(state => state.prepareNewSource);
-  const openSyncDirectionModal = useUIStore(
-    state => state.openSyncDirectionModal,
-  );
   const closeSettingsModal = useUIStore(state => state.closeSettingsModal);
   const { handleSaveConfig } = useConfigManagement();
   const addSource = useSourceStore(state => state.addSource);
@@ -139,6 +137,10 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
     () => manifests.find(item => item.id === pluginId),
     [manifests, pluginId],
   );
+  const editTargetLabel =
+    pluginId === 'onedrive'
+      ? oneDrive.path.trim()
+      : [values.owner.trim(), values.repo.trim()].filter(Boolean).join('/');
   const patAvailable = supportsPat(manifest);
   const stepIndex = steps.indexOf(step);
   const locationReady =
@@ -189,7 +191,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
       onComplete();
       if (syncNow) {
         closeSettingsModal();
-        openSyncDirectionModal();
+        requestWorkspaceSync();
       }
       return;
     }
@@ -203,7 +205,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
     onComplete();
     if (syncNow) {
       closeSettingsModal();
-      openSyncDirectionModal();
+      requestWorkspaceSync();
     }
   };
 
@@ -228,6 +230,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
       {isEdit && pluginId ? (
         <p className="mb-3 text-xs text-gray-500">
           {manifest?.name ?? pluginId}
+          {editTargetLabel ? ` · ${editTargetLabel}` : ''}
         </p>
       ) : null}
 

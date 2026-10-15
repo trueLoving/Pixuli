@@ -1,10 +1,12 @@
 import toast from 'react-hot-toast';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import {
   showInfo,
   showLoading,
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
+import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { formatSyncOutcome, type SyncRunOutcome } from './syncOutcome';
 
@@ -41,6 +43,16 @@ export function notifySyncOutcome(
   }
 
   updateLoadingToSuccess(id, message);
+}
+
+/** 打开同步方向。仓库用设置里的当前目标；没有远端时去添加。 */
+export function requestWorkspaceSync(): void {
+  const { sources } = useSourceStore.getState();
+  if (sources.length === 0) {
+    useUIStore.getState().openSettingsModalForAddSource();
+    return;
+  }
+  useUIStore.getState().openSyncDirectionModal();
 }
 
 export async function runSyncWithFeedback(

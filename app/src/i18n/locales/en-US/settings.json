@@ -18,6 +18,7 @@
     "tableSyncTarget": "Sync target",
     "tableActions": "Actions",
     "currentSyncTarget": "Active",
+    "editingSource": "Editing",
     "setSyncTarget": "Set as target",
     "noSyncTarget": "No repository",
     "tableCapabilities": "Capabilities",
