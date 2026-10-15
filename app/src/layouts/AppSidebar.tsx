@@ -1,16 +1,14 @@
 import { Sidebar as CommonSidebar, type SidebarMenuItem } from './sidebar';
-import {
-  getRepoConfigFromSource,
-  resolveSourceDisplay,
-} from '@pixuli/core/sources';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
-import { useMobileViewport } from '@/hooks/useMobileViewport';
-import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
+import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
+import { formatSyncTargetLabel } from '@/features/workspace/syncTargetLabel';
 import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
+import { ROUTES } from '@/router/routes';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -53,7 +51,6 @@ export const AppSidebar: React.FC<SidebarProps> = ({
     setCurrentUtilityTool,
     setActiveMenu,
     openSettingsModal,
-    requestSync,
   } = useUIStore();
 
   const syncBusy = pushing || syncing || workspaceLoading;
@@ -66,14 +63,10 @@ export const AppSidebar: React.FC<SidebarProps> = ({
     return sources[0] ?? null;
   }, [sources, selectedSourceId]);
 
-  const syncRemoteLabel = useMemo(() => {
-    if (!activeSyncSource) {
-      return t('settings.noSyncTarget');
-    }
-    const repo = getRepoConfigFromSource(activeSyncSource);
-    const { typeLabel } = resolveSourceDisplay(activeSyncSource.pluginId);
-    return `${typeLabel} ${repo.owner}/${repo.repo}`;
-  }, [activeSyncSource, t]);
+  const syncRemoteLabel = useMemo(
+    () => formatSyncTargetLabel(activeSyncSource, t('settings.noSyncTarget')),
+    [activeSyncSource, t],
+  );
 
   useEffect(() => {
     if (!isMobile && mobileSidebarOpen) {
@@ -131,9 +124,9 @@ export const AppSidebar: React.FC<SidebarProps> = ({
 
   const handleSyncClick = useCallback(() => {
     if (syncBusy) return;
-    requestSync();
+    requestWorkspaceSync();
     closeDrawerIfMobile();
-  }, [syncBusy, requestSync, closeDrawerIfMobile]);
+  }, [syncBusy, closeDrawerIfMobile]);
 
   if (isFullscreenMode) {
     return null;

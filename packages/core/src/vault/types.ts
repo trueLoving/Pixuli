@@ -186,7 +186,7 @@ export interface SyncRunResult {
 
 export interface SyncEngine {
   enqueuePush(op: SyncPushOperation): Promise<void>;
-  getStatus(): Promise<SyncStatusSummary>;
+  getStatus(bindingId?: string): Promise<SyncStatusSummary>;
   run(options?: SyncRunOptions): Promise<SyncRunResult>;
 }
 

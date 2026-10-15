@@ -34,7 +34,7 @@ interface UIState {
   // 模态框状态
   showConfigModal: boolean;
   showSettingsModal: boolean;
-  /** 同步方向选择（远端→本地 / 本地→远端） */
+  /** 同步方向：本地到远程 / 远程到本地 */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
   /** 设置弹窗左侧默认选中的分区 */
@@ -117,8 +117,6 @@ interface UIState {
   closeSettingsModal: () => void;
   openSyncDirectionModal: () => void;
   closeSyncDirectionModal: () => void;
-  /** 无远端配置则打开设置「同步」；已配置则选择同步方向 */
-  requestSync: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') => void;
@@ -271,19 +269,6 @@ export const useUIStore = create<UIState>(set => ({
     }),
   openSyncDirectionModal: () => set({ showSyncDirectionModal: true }),
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
-  requestSync: () => {
-    const { sources } = useSourceStore.getState();
-    if (sources.length === 0) {
-      set({
-        showSettingsModal: true,
-        settingsSection: 'sync',
-        settingsSyncAddOpen: true,
-        activeMenu: 'settings',
-      });
-      return;
-    }
-    set({ showSyncDirectionModal: true });
-  },
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') =>

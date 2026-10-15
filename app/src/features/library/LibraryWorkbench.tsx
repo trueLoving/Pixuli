@@ -25,6 +25,7 @@ import {
   loadAssetsAsFiles,
 } from '@/features/library/assetDownloadService';
 import { copyImagePublicLinks } from '@/features/library/copyImageLink';
+import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
@@ -127,7 +128,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const onShareImage = useNativeShareImage();
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
-  const requestSync = useUIStore(state => state.requestSync);
+  const requestSync = useCallback(() => {
+    requestWorkspaceSync();
+  }, []);
   const inspectorCollapsed = useUIStore(state => state.inspectorCollapsed);
   const setInspectorCollapsed = useUIStore(
     state => state.setInspectorCollapsed,

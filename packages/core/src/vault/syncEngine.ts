@@ -19,6 +19,7 @@ import {
 } from './syncApply';
 import { isSyncExcludedPath } from './syncPath';
 import type {
+  LocalImageIndexEntry,
   LocalVault,
   SyncEngine,
   SyncPushOperation,
@@ -73,18 +74,6 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     return bindings[0];
   };
 
-  const countPendingPush = async (): Promise<number> => {
-    const persisted = await readPushQueue(vault.adapter);
-    const entries = await vault.list();
-    const pendingEntries = entries.filter(
-      entry =>
-        !entry.deletedAt &&
-        (entry.syncState === 'local-only' ||
-          entry.syncState === 'pending-push'),
-    ).length;
-    return persisted.length + memoryQueue.length + pendingEntries;
-  };
-
   return {
     async enqueuePush(op) {
       memoryQueue.push(op);
@@ -92,24 +81,28 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       await onEnqueue?.(op);
     },
 
-    async getStatus(): Promise<SyncStatusSummary> {
+    async getStatus(focusBindingId?: string): Promise<SyncStatusSummary> {
       const bindings = getBindings();
       const stateBindings: SyncStatusSummary['bindings'] = {};
       let lastSyncAt: string | null = null;
+      const entries = await vault.list({ includeDeleted: true });
+      const queue = await readPushQueue(vault.adapter);
+      const fallbackBindingId = focusBindingId ?? bindings[0]?.bindingId ?? '';
 
       for (const binding of bindings) {
         const record = await getBindingSyncState(
           vault.adapter,
           binding.bindingId,
         );
-        const queue = await readPushQueue(vault.adapter);
-        const pendingForBinding = queue.filter(
-          item => !item.bindingId || item.bindingId === binding.bindingId,
-        ).length;
         stateBindings[binding.bindingId] = {
           cursor: record.cursor,
           lastSyncAt: record.lastSyncAt,
-          pendingPush: pendingForBinding,
+          pendingPush: pendingPathsForBinding(
+            entries,
+            queue,
+            binding.bindingId,
+            fallbackBindingId,
+          ).size,
         };
         if (
           record.lastSyncAt &&
@@ -120,10 +113,24 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       }
 
       const conflicts = await readConflicts(vault.adapter);
+      const pendingPush = focusBindingId
+        ? (stateBindings[focusBindingId]?.pendingPush ??
+          pendingPathsForBinding(entries, queue, focusBindingId, focusBindingId)
+            .size)
+        : new Set(
+            bindings.flatMap(binding => [
+              ...pendingPathsForBinding(
+                entries,
+                queue,
+                binding.bindingId,
+                fallbackBindingId,
+              ),
+            ]),
+          ).size;
 
       return {
         lastSyncAt,
-        pendingPush: await countPendingPush(),
+        pendingPush,
         conflicts: conflicts.length,
         bindings: stateBindings,
       };
@@ -209,18 +216,38 @@ async function flushPushQueue(
   options?: { overwriteRemote?: boolean },
 ): Promise<number> {
   const persisted = await readPushQueue(vault.adapter);
-  const queue = [...persisted, ...toQueued(memoryQueue, binding.bindingId)];
+  const entries = await vault.list({ includeDeleted: true });
+  const activeQueue: QueuedPushOperation[] = [];
+  const keptQueue: QueuedPushOperation[] = [];
+  for (const op of persisted) {
+    const entry = entries.find(item => item.relativePath === op.relativePath);
+    const owner = queuedBindingId(op, entry, binding.bindingId);
+    if (owner === binding.bindingId) {
+      activeQueue.push(op);
+    } else {
+      keptQueue.push({ ...op, bindingId: owner });
+    }
+  }
+  const queue = [...activeQueue];
+  for (const op of memoryQueue) {
+    const entry = entries.find(item => item.relativePath === op.relativePath);
+    const queued = { ...op, enqueuedAt: nowIso() };
+    if (
+      queuedBindingId(queued, entry, binding.bindingId) === binding.bindingId
+    ) {
+      queue.push(queued);
+    }
+  }
   const overwriteRemote = options?.overwriteRemote === true;
   const intents = new Map<string, SyncPushIntent>();
 
-  const entries = await vault.list({ includeDeleted: true });
   for (const entry of entries) {
     if (entry.deletedAt && !entry.remotePath) {
       // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
       await vault.removeEntry(entry.relativePath);
       continue;
     }
-    const intent = intentFromEntry(entry, overwriteRemote);
+    const intent = intentFromEntry(entry, overwriteRemote, binding.bindingId);
     if (!intent) {
       continue;
     }
@@ -251,7 +278,7 @@ async function flushPushQueue(
   }
 
   if (intents.size === 0) {
-    await writePushQueue(vault.adapter, []);
+    await writePushQueue(vault.adapter, keptQueue);
     memoryQueue.length = 0;
     return 0;
   }
@@ -282,7 +309,7 @@ async function flushPushQueue(
   }
 
   if (items.length === 0) {
-    await writePushQueue(vault.adapter, []);
+    await writePushQueue(vault.adapter, keptQueue);
     memoryQueue.length = 0;
     return 0;
   }
@@ -305,20 +332,41 @@ async function flushPushQueue(
     pushed += 1;
   }
 
-  await writePushQueue(vault.adapter, []);
+  await writePushQueue(vault.adapter, keptQueue);
   memoryQueue.length = 0;
   return pushed;
 }
 
-function toQueued(
-  ops: SyncPushOperation[],
+function queuedBindingId(
+  op: QueuedPushOperation,
+  entry: LocalImageIndexEntry | undefined,
+  fallbackBindingId: string,
+): string {
+  return op.bindingId || entry?.bindingId || fallbackBindingId;
+}
+
+function pendingPathsForBinding(
+  entries: LocalImageIndexEntry[],
+  queue: QueuedPushOperation[],
   bindingId: string,
-): QueuedPushOperation[] {
-  return ops.map(op => ({
-    ...op,
-    bindingId,
-    enqueuedAt: nowIso(),
-  }));
+  fallbackBindingId: string,
+): Set<string> {
+  const paths = new Set<string>();
+  for (const entry of entries) {
+    if (entry.deletedAt && !entry.remotePath) {
+      continue;
+    }
+    if (intentFromEntry(entry, false, bindingId)) {
+      paths.add(entry.relativePath);
+    }
+  }
+  for (const op of queue) {
+    const entry = entries.find(item => item.relativePath === op.relativePath);
+    if (queuedBindingId(op, entry, fallbackBindingId) === bindingId) {
+      paths.add(op.relativePath);
+    }
+  }
+  return paths;
 }
 
 export function providerSupportsSync(

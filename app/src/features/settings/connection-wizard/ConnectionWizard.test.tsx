@@ -11,7 +11,6 @@ import {
 
 const handleSaveConfig = vi.fn();
 const prepareNewSource = vi.fn();
-const openSyncDirectionModal = vi.fn();
 const closeSettingsModal = vi.fn();
 const onComplete = vi.fn();
 
@@ -23,7 +22,6 @@ vi.mock('@/stores/uiStore', () => ({
   useUIStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       prepareNewSource,
-      openSyncDirectionModal,
       closeSettingsModal,
     }),
 }));
@@ -120,7 +118,6 @@ describe('ConnectionWizard', () => {
   beforeEach(() => {
     handleSaveConfig.mockReset();
     prepareNewSource.mockReset();
-    openSyncDirectionModal.mockReset();
     closeSettingsModal.mockReset();
     onComplete.mockReset();
     discovery = {
@@ -193,7 +190,6 @@ describe('ConnectionWizard', () => {
       null,
     );
     expect(onComplete).toHaveBeenCalled();
-    expect(openSyncDirectionModal).not.toHaveBeenCalled();
   });
 
   it('opens add wizard on auth when a service is prefilled', () => {

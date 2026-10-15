@@ -338,4 +338,79 @@ describe('createSyncEngine', () => {
     ]);
     expect(await vault.list({ includeDeleted: true })).toHaveLength(0);
   });
+
+  it('run push uploads files synced to another binding', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const syncPushA = vi.fn(async () => undefined);
+    const syncPushB = vi.fn(async () => undefined);
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [
+        {
+          bindingId: 'repo-a',
+          provider: createMockSyncProvider({ syncPush: syncPushA }),
+        },
+        {
+          bindingId: 'repo-b',
+          provider: createMockSyncProvider({ syncPush: syncPushB }),
+        },
+      ],
+    });
+    await vault.importFile(new Uint8Array([1, 2, 3]), 'images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'images/a.jpg',
+      bindingId: 'repo-a',
+    });
+
+    const toA = await engine.run({ direction: 'push', bindingId: 'repo-a' });
+    expect(toA.pushed).toBe(0);
+    expect(syncPushA).not.toHaveBeenCalled();
+
+    const toB = await engine.run({ direction: 'push', bindingId: 'repo-b' });
+    expect(toB.pushed).toBe(1);
+    expect(syncPushB).toHaveBeenCalledOnce();
+    const pushed = syncPushB.mock.calls[0]?.[0] as Array<{
+      remotePath: string;
+    }>;
+    expect(pushed.map(item => item.remotePath)).toEqual(['images/a.jpg']);
+    expect((await vault.getByPath('images/a.jpg'))?.bindingId).toBe('repo-b');
+
+    const status = await engine.getStatus('repo-a');
+    expect(status.pendingPush).toBe(1);
+    expect(status.bindings['repo-b']?.pendingPush).toBe(0);
+  });
+
+  it('run push keeps another binding queue item', async () => {
+    const { engine, vault, adapter, syncPush } = await createTestContext();
+    await vault.importFile(new Uint8Array([1]), 'images/a.jpg', {
+      syncState: 'synced',
+      remotePath: 'images/a.jpg',
+      bindingId: 'binding-1',
+    });
+    await adapter.writeFile(
+      '.pixuli/sync/queue.jsonl',
+      new TextEncoder().encode(
+        `${JSON.stringify({
+          type: 'metadata',
+          relativePath: 'images/a.jpg',
+          bindingId: 'repo-b',
+          enqueuedAt: '2026-01-01T00:00:00.000Z',
+        })}\n`,
+      ),
+    );
+
+    const result = await engine.run({
+      direction: 'push',
+      bindingId: 'binding-1',
+    });
+    expect(result.pushed).toBe(0);
+    expect(syncPush).not.toHaveBeenCalled();
+    const raw = new TextDecoder().decode(
+      await adapter.readFile('.pixuli/sync/queue.jsonl'),
+    );
+    expect(raw).toContain('"bindingId":"repo-b"');
+  });
 });

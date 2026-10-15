@@ -129,13 +129,21 @@ function metadataPatchFromPull(
   return Object.keys(patch).length > 0 ? patch : null;
 }
 
+function isSyncedToBinding(
+  entry: LocalImageIndexEntry,
+  bindingId: string,
+): boolean {
+  return entry.syncState === 'synced' && entry.bindingId === bindingId;
+}
+
 function isRemoteUpToDate(
   existing: LocalImageIndexEntry,
+  bindingId: string,
   remotePath: string,
   remoteUpdatedAt: string,
   meta: Partial<ImageItem>,
 ): boolean {
-  if (existing.syncState !== 'synced') {
+  if (!isSyncedToBinding(existing, bindingId)) {
     return false;
   }
   if (
@@ -202,7 +210,13 @@ export async function applySyncPull(
     if (
       existing &&
       !existing.deletedAt &&
-      isRemoteUpToDate(existing, item.remotePath, remoteUpdatedAt, meta)
+      isRemoteUpToDate(
+        existing,
+        bindingId,
+        item.remotePath,
+        remoteUpdatedAt,
+        meta,
+      )
     ) {
       continue;
     }
@@ -210,7 +224,7 @@ export async function applySyncPull(
     if (
       existing &&
       !existing.deletedAt &&
-      existing.syncState === 'synced' &&
+      isSyncedToBinding(existing, bindingId) &&
       existing.updatedAt >= remoteUpdatedAt
     ) {
       const patch = metadataPatchFromPull(existing, meta, item.remotePath);
@@ -287,21 +301,30 @@ function normalizeSyncPath(path: string): string {
 }
 
 /**
- * 普通同步只推本地变更。
- * 已同步且路径未变的条目不推；只改过说明/标签的条目走 metadata，不重传字节。
+ * 普通同步只推当前仓库还没有的本地变更。
+ * 已同步只对 `entry.bindingId === bindingId` 成立；换仓库后整批上传。
+ * 只改过说明/标签、且仍是当前仓库的条目走 metadata，不重传字节。
  */
 export function intentFromEntry(
   entry: LocalImageIndexEntry,
   overwriteRemote: boolean,
+  bindingId: string,
 ): SyncPushIntent | null {
   if (isSyncExcludedPath(entry.relativePath)) {
     return null;
   }
   if (entry.deletedAt) {
+    if (entry.bindingId && entry.bindingId !== bindingId) {
+      return null;
+    }
     return entry.remotePath ? 'delete' : null;
   }
-  if (overwriteRemote || entry.syncState !== 'synced') {
-    if (entry.syncState === 'pending-push' && !overwriteRemote) {
+  if (overwriteRemote || !isSyncedToBinding(entry, bindingId)) {
+    if (
+      entry.syncState === 'pending-push' &&
+      !overwriteRemote &&
+      entry.bindingId === bindingId
+    ) {
       if (
         entry.remotePath &&
         normalizeSyncPath(entry.remotePath) ===

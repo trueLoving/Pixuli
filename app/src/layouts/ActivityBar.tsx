@@ -1,6 +1,9 @@
 import { LayoutGrid, RefreshCw, Settings } from 'lucide-react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSourceStore } from '@/features/settings/sourceStore';
+import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
+import { formatSyncTargetLabel } from '@/features/workspace/syncTargetLabel';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { useUIStore } from '@/stores/uiStore';
@@ -21,7 +24,8 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     state => state.setCurrentUtilityTool,
   );
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
-  const requestSync = useUIStore(state => state.requestSync);
+  const sources = useSourceStore(state => state.sources);
+  const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const pushing = useWorkspaceStore(state => state.pushing);
   const syncing = useWorkspaceStore(state => state.syncing);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
@@ -29,6 +33,15 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     state => state.syncStatus?.pendingPush ?? 0,
   );
   const syncBusy = pushing || syncing || workspaceLoading;
+  const syncTargetLabel = useMemo(() => {
+    const source = selectedSourceId
+      ? sources.find(item => item.id === selectedSourceId)
+      : sources[0];
+    return formatSyncTargetLabel(source, '');
+  }, [selectedSourceId, sources]);
+  const syncLabel = syncTargetLabel
+    ? t('workspace.syncTo', { target: syncTargetLabel })
+    : t('sidebar.sync');
 
   const navigateToLibrary = useCallback(() => {
     setActiveMenu('library');
@@ -46,9 +59,10 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     },
     {
       id: 'sync',
-      label: t('sidebar.sync'),
+      label: syncTargetLabel || t('sidebar.sync'),
+      title: syncLabel,
       icon: RefreshCw,
-      onClick: () => requestSync(),
+      onClick: () => requestWorkspaceSync(),
     },
   ];
 
@@ -58,6 +72,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
       | {
           id: string;
           label: string;
+          title?: string;
           icon: typeof Settings;
           onClick: () => void;
         },
@@ -68,6 +83,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     const isActive =
       !isSettings && item.id !== 'sync' && activeMenu === item.id;
     const isBusy = item.id === 'sync' && syncBusy;
+    const caption = 'title' in item && item.title ? item.title : item.label;
     return (
       <button
         key={item.id}
@@ -80,8 +96,8 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
         ]
           .filter(Boolean)
           .join(' ')}
-        title={isBusy ? t('workspace.syncing') : item.label}
-        aria-label={isBusy ? t('workspace.syncing') : item.label}
+        title={isBusy ? t('workspace.syncing') : caption}
+        aria-label={isBusy ? t('workspace.syncing') : caption}
         aria-pressed={isActive}
         aria-busy={isBusy || undefined}
         onClick={item.onClick}

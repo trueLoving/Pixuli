@@ -2,6 +2,7 @@ import {
   buildSyncResultOutcome,
   type SyncRunOutcome,
 } from '@/features/workspace/syncOutcome';
+import { useSourceStore } from '@/features/settings/sourceStore';
 import {
   getWorkspaceSyncEngine,
   getWorkspaceVault,
@@ -20,7 +21,9 @@ export async function refreshSyncStatus(
     return;
   }
   try {
-    const status = await getWorkspaceSyncEngine().getStatus();
+    const status = await getWorkspaceSyncEngine().getStatus(
+      useSourceStore.getState().selectedSourceId ?? undefined,
+    );
     set({ syncStatus: status });
   } catch {
     // ignore status refresh errors
@@ -59,7 +62,8 @@ export async function runWorkspaceSync(
           entry.deletedAt &&
           (entry.remotePath || entry.syncState === 'pending-push'),
       );
-    const status = await getWorkspaceSyncEngine().getStatus();
+    const bindingId = useSourceStore.getState().selectedSourceId ?? undefined;
+    const status = await getWorkspaceSyncEngine().getStatus(bindingId);
     if (!hasPushable && status.pendingPush === 0) {
       const outcome: SyncRunOutcome = {
         kind: 'info',
@@ -79,7 +83,10 @@ export async function runWorkspaceSync(
   });
 
   try {
-    const result = await getWorkspaceSyncEngine().run({ direction });
+    const result = await getWorkspaceSyncEngine().run({
+      direction,
+      bindingId: useSourceStore.getState().selectedSourceId ?? undefined,
+    });
     await get().refreshLocalImages();
     await get().refreshSyncStatus();
 
