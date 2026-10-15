@@ -1,9 +1,14 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
+import { exportJsonFile } from '@/features/settings/exportJsonFile';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
+
+vi.mock('@/features/settings/exportJsonFile', () => ({
+  exportJsonFile: vi.fn(async () => 'file'),
+}));
 
 const githubSource = {
   id: 'gh-1',
@@ -96,5 +101,59 @@ describe('SettingsSyncPanel edit', () => {
     expect(syncCard).not.toHaveAttribute('aria-current');
     expect(syncCard.className).not.toContain('border-[var(--pix-violet)]');
     expect(syncCard).toHaveTextContent('settings.currentSyncTarget');
+  });
+
+  it('exports the current sources and replaces them on import', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const inputs: HTMLInputElement[] = [];
+    const createElement = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation(
+      (tagName, options) => {
+        const element = createElement(tagName, options);
+        if (tagName === 'input') {
+          inputs.push(element as HTMLInputElement);
+        }
+        return element;
+      },
+    );
+
+    render(<SettingsSyncPanel t={key => key} />);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'settings.exportConfig' }),
+    );
+    await waitFor(() => {
+      expect(exportJsonFile).toHaveBeenCalledWith(
+        'pixuli-settings.json',
+        expect.stringContaining('"kind": "pixuli-settings"'),
+      );
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'settings.importConfig' }),
+    );
+    const input = inputs.at(-1);
+    expect(input).toBeDefined();
+    const file = new File(
+      [
+        JSON.stringify({
+          version: '1.0',
+          kind: 'pixuli-settings',
+          selectedSourceId: 'gt-9',
+          sources: [{ ...giteeSource, id: 'gt-9', label: 'gamma/repo' }],
+        }),
+      ],
+      'pixuli-settings.json',
+      { type: 'application/json' },
+    );
+    Object.defineProperty(input, 'files', { value: [file] });
+    fireEvent.change(input!);
+
+    await waitFor(() => {
+      expect(
+        useSourceStore.getState().sources.map(source => source.id),
+      ).toEqual(['gt-9']);
+    });
+    expect(useSourceStore.getState().selectedSourceId).toBe('gt-9');
+    expect(confirm).toHaveBeenCalled();
   });
 });

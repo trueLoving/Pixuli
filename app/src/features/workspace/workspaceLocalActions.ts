@@ -60,7 +60,7 @@ export async function refreshLocalImages(
       deferPreview: true,
     });
     pruneLocalPreviewCache(
-      images.map(image => image.localPath).filter(Boolean),
+      images.flatMap(image => (image.localPath ? [image.localPath] : [])),
     );
     const localFolders = await vault.listFolders();
     set({

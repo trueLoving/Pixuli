@@ -1,6 +1,6 @@
 import type { StorageProviderConfig } from '../plugins/types';
 import type { StoredSourceEntry } from '../plugins/types';
-import { pickRepoConfig } from './importExportHelpers';
+import { pickStoredSourceConfig } from './importExportHelpers';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -31,6 +31,9 @@ function inferLabel(
   if (typeof owner === 'string' && typeof repo === 'string') {
     return `${owner}/${repo}`;
   }
+  if (typeof config.path === 'string' && config.path.length > 0) {
+    return config.path;
+  }
   return '未命名源';
 }
 
@@ -44,19 +47,26 @@ export function normalizeStoredSourceEntry(
     return null;
   }
 
-  const pluginId = inferPluginId(raw);
-  if (!pluginId) {
-    return null;
-  }
+  let pluginId = inferPluginId(raw);
 
   let config: StorageProviderConfig | null = null;
   if (isRecord(raw.config)) {
-    config = pickRepoConfig(raw.config);
+    config = pickStoredSourceConfig(raw.config);
   }
   if (!config) {
-    config = pickRepoConfig(raw);
+    config = pickStoredSourceConfig(raw);
   }
   if (!config) {
+    return null;
+  }
+  if (
+    !pluginId &&
+    typeof config.accessToken === 'string' &&
+    typeof config.owner !== 'string'
+  ) {
+    pluginId = 'onedrive';
+  }
+  if (!pluginId) {
     return null;
   }
 

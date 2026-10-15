@@ -709,7 +709,7 @@ export class GiteeStorageProvider
 
   private async persistImageMetadata(
     storagePath: string,
-    metadata: Partial<ImageItem> & Record<string, unknown>,
+    metadata: Partial<ImageItem>,
   ): Promise<void> {
     const dirPath = dirnameRelative(storagePath);
     const fileName = basenameRelative(storagePath);
@@ -948,13 +948,31 @@ export class GiteeStorageProvider
           if (metadata) {
             return {
               ...img,
-              size: metadata.size || img.size || 0,
-              width: metadata.width || img.width || 0,
-              height: metadata.height || img.height || 0,
-              tags: metadata.tags || img.tags || [],
-              description: metadata.description || img.description || '',
-              updatedAt: metadata.updatedAt || img.updatedAt,
-              createdAt: metadata.createdAt || img.createdAt,
+              size:
+                typeof metadata.size === 'number' ? metadata.size : img.size,
+              width:
+                typeof metadata.width === 'number' ? metadata.width : img.width,
+              height:
+                typeof metadata.height === 'number'
+                  ? metadata.height
+                  : img.height,
+              tags: Array.isArray(metadata.tags)
+                ? metadata.tags.filter(
+                    (tag): tag is string => typeof tag === 'string',
+                  )
+                : img.tags,
+              description:
+                typeof metadata.description === 'string'
+                  ? metadata.description
+                  : img.description,
+              updatedAt:
+                typeof metadata.updatedAt === 'string'
+                  ? metadata.updatedAt
+                  : img.updatedAt,
+              createdAt:
+                typeof metadata.createdAt === 'string'
+                  ? metadata.createdAt
+                  : img.createdAt,
             };
           }
           return img;

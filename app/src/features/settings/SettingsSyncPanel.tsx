@@ -1,5 +1,5 @@
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
-import { Edit, Github, Plus, Trash2 } from 'lucide-react';
+import { Download, Edit, Github, Plus, Trash2, Upload } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
 import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
@@ -10,6 +10,11 @@ import type { OneDriveFieldValues } from '@/features/settings/connection-wizard/
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import {
+  exportSettingsConfig,
+  importSettingsConfigText,
+} from '@/features/settings/settingsConfigTransfer';
+import { showError, showSuccess } from '@/ui/feedback/toast';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;
@@ -145,6 +150,49 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
     closeConfigModal();
   };
 
+  const handleExportConfig = async () => {
+    const mode = await exportSettingsConfig();
+    if (mode === 'empty') {
+      showError(t('settings.exportEmpty'));
+      return;
+    }
+    showSuccess(
+      mode === 'clipboard'
+        ? t('settings.exportCopied')
+        : t('settings.exportDone'),
+    );
+  };
+
+  const handleImportConfig = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result !== 'string') {
+          showError(t('settings.importFailed'));
+          return;
+        }
+        if (!window.confirm(t('settings.importConfirm'))) {
+          return;
+        }
+        const imported = importSettingsConfigText(reader.result);
+        if (!imported) {
+          showError(t('settings.importFailed'));
+          return;
+        }
+        showSuccess(
+          t('settings.importDone').replace('{count}', String(imported.count)),
+        );
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   return (
     <div className="space-y-8">
       <section>
@@ -161,18 +209,39 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             </p>
           </div>
           {!wizardOpen ? (
-            <button
-              type="button"
-              onClick={() => {
-                closeConfigModal();
-                setAddPrefillPluginId(null);
-                setAddingSource(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
-            >
-              <Plus size={16} />
-              {t('settings.addRemote')}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  void handleExportConfig();
+                }}
+                disabled={sources.length === 0}
+                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download size={16} />
+                {t('settings.exportConfig')}
+              </button>
+              <button
+                type="button"
+                onClick={handleImportConfig}
+                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+              >
+                <Upload size={16} />
+                {t('settings.importConfig')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  closeConfigModal();
+                  setAddPrefillPluginId(null);
+                  setAddingSource(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+              >
+                <Plus size={16} />
+                {t('settings.addRemote')}
+              </button>
+            </div>
           ) : null}
         </div>
 
