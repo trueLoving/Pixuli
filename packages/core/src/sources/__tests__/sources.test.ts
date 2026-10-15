@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildPluginConfigExport,
+  buildSettingsExport,
   createStoredSourceEntry,
   getRepoConfigFromSource,
   isStoredSourcePrivate,
   normalizeStoredSourceEntry,
   normalizeStoredSources,
   parsePluginConfigImport,
+  parseSettingsImport,
   resolveSourceDisplay,
 } from '../index';
 
@@ -168,6 +170,73 @@ describe('isStoredSourcePrivate / private in config', () => {
     expect(entry?.config.private).toBe(true);
     expect(isStoredSourcePrivate(entry!)).toBe(true);
     expect(getRepoConfigFromSource(entry!).private).toBe(true);
+  });
+});
+
+describe('settings import and export', () => {
+  const github = {
+    id: 'gh-1',
+    label: 'alpha/repo',
+    pluginId: 'github',
+    config: {
+      owner: 'alpha',
+      repo: 'repo',
+      token: 'token-alpha',
+      branch: 'main',
+    },
+    createdAt: 1,
+    updatedAt: 1,
+  };
+  const onedrive = {
+    id: 'od-1',
+    label: 'Pixuli',
+    pluginId: 'onedrive',
+    config: {
+      accessToken: 'graph-token',
+      refreshToken: 'refresh',
+      path: 'Pixuli',
+    },
+    createdAt: 2,
+    updatedAt: 2,
+  };
+
+  it('round-trips sources and the selected id', () => {
+    const payload = buildSettingsExport({
+      sources: [github, onedrive],
+      selectedSourceId: 'od-1',
+    });
+    const parsed = parseSettingsImport(payload);
+    expect(parsed?.sources.map(source => source.id)).toEqual(['gh-1', 'od-1']);
+    expect(parsed?.sources[1]?.config.accessToken).toBe('graph-token');
+    expect(parsed?.selectedSourceId).toBe('od-1');
+  });
+
+  it('accepts a stored OneDrive entry', () => {
+    const entry = normalizeStoredSourceEntry(onedrive);
+    expect(entry?.pluginId).toBe('onedrive');
+    expect(entry?.config.refreshToken).toBe('refresh');
+  });
+
+  it('wraps a legacy single-plugin export as one source', () => {
+    const parsed = parseSettingsImport(
+      buildPluginConfigExport({
+        pluginId: 'gitee',
+        config: { owner: 'o', repo: 'r', token: 't' },
+      }),
+    );
+    expect(parsed?.sources).toHaveLength(1);
+    expect(parsed?.sources[0]?.pluginId).toBe('gitee');
+    expect(parsed?.sources[0]?.label).toBe('o/r');
+  });
+
+  it('rejects a bundle whose sources are all invalid', () => {
+    expect(
+      parseSettingsImport({
+        version: '1.0',
+        kind: 'pixuli-settings',
+        sources: [{ id: 'x' }],
+      }),
+    ).toBeNull();
   });
 });
 

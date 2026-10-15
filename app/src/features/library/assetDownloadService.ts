@@ -61,7 +61,7 @@ export async function loadAssetsAsFiles(items: ImageItem[]): Promise<File[]> {
     try {
       const bytes = await readAssetBytes(item);
       const mime = guessImageMime(item.name, item.type);
-      files.push(new File([bytes], item.name, { type: mime }));
+      files.push(new File([bytes.slice()], item.name, { type: mime }));
     } catch {
       // 单文件失败跳过，其余继续
     }
