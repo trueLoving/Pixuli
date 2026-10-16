@@ -1,0 +1,152 @@
+name: Release
+
+# 手动选择 Web / Desktop / Android 发版。Desktop 与 Android 复用各自的 workflow。
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer without prefix (e.g. 2.0.0). Empty = app/package.json'
+        required: false
+        default: ''
+      target:
+        description: 'Which app to release'
+        required: true
+        type: choice
+        options:
+          - web
+          - desktop
+          - android
+          - all
+        default: all
+      platform:
+        description: 'Desktop targets (used when target is desktop or all)'
+        required: true
+        type: choice
+        options:
+          - win
+          - mac-x64
+          - mac-arm64
+          - all
+        default: all
+      build-type:
+        description: 'Android build type (used when target is android or all)'
+        required: true
+        type: choice
+        options:
+          - release
+          - debug
+        default: release
+      is-publish:
+        description: 'Create/upload GitHub Release (Android debug builds are not published)'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  web:
+    name: Web static site
+    if: inputs.target == 'web' || inputs.target == 'all'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          PKG_VERSION=$(node -p "require('./app/package.json').version")
+          VERSION="${{ inputs.version }}"
+          if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
+          {
+            echo "VERSION=$VERSION"
+            echo "TAG=v${VERSION}-web"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Bump app version
+        run: |
+          cd app
+          TARGET="${{ steps.version.outputs.VERSION }}"
+          CURRENT=$(node -p "require('./package.json').version")
+          if [[ "$CURRENT" != "$TARGET" ]]; then
+            pnpm version "$TARGET" --no-git-tag-version
+          fi
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build static site
+        run: pnpm build:web
+
+      - name: Pack static site
+        run: |
+          set -euo pipefail
+          ARCHIVE="pixuli-web-v${{ steps.version.outputs.VERSION }}.zip"
+          (cd app/dist && zip -r "$GITHUB_WORKSPACE/$ARCHIVE" .)
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixuli-web-v${{ steps.version.outputs.VERSION }}
+          path: pixuli-web-v${{ steps.version.outputs.VERSION }}.zip
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: inputs.is-publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.TAG }}"
+          VER="${{ steps.version.outputs.VERSION }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists"
+          else
+            gh release create "$TAG" \
+              --title "Pixuli Web v${VER}" \
+              --notes "$(cat <<EOF
+          ## Pixuli Web v${VER}
+
+          Static site (\`index.html\`, CSS, JS, and other built assets) from \`${GITHUB_SHA}\`.
+          Unzip and host the files as a static site.
+          See CHANGELOG and docs/02-system-design/05-release-versioning.md.
+          EOF
+          )"
+          fi
+          gh release upload "$TAG" "$ARCHIVE" --clobber
+
+  desktop:
+    name: Desktop
+    if: inputs.target == 'desktop' || inputs.target == 'all'
+    uses: ./.github/workflows/release-desktop.yml
+    with:
+      version: ${{ inputs.version }}
+      platform: ${{ inputs.platform }}
+      is-publish: ${{ inputs.is-publish }}
+    secrets: inherit
+
+  android:
+    name: Android
+    if: inputs.target == 'android' || inputs.target == 'all'
+    uses: ./.github/workflows/release-android.yml
+    with:
+      version: ${{ inputs.version }}
+      build-type: ${{ inputs.build-type }}
+      is-publish: ${{ inputs.is-publish }}
+    secrets: inherit
