@@ -175,26 +175,64 @@ jobs:
           TAG="${{ needs.detect.outputs.tag }}"
           VER="${{ needs.detect.outputs.version }}"
           SHA="${{ needs.detect.outputs.ref }}"
+          TITLE="Pixuli v${VER}"
+          CHANNEL="稳定版。可以按日常使用。"
+          PRERELEASE_ARGS=()
+          if [[ "$VER" == *alpha* ]]; then
+            TITLE="Pixuli v${VER}（alpha 测试版）"
+            CHANNEL="**alpha 测试版**。用来试用三端安装包和当前主路径，不建议当作稳定版依赖。正式版发布前，界面和同步行为还可能调整。"
+            PRERELEASE_ARGS=(--prerelease)
+          elif [[ "$VER" == *beta* ]]; then
+            TITLE="Pixuli v${VER}（beta 测试版）"
+            CHANNEL="**beta 测试版**。功能已基本可用，正式版发布前仍可能调整。"
+            PRERELEASE_ARGS=(--prerelease)
+          elif [[ "$VER" == *rc* ]]; then
+            TITLE="Pixuli v${VER}（候选版）"
+            CHANNEL="**候选版**。接近正式版，请优先反馈阻塞问题。"
+            PRERELEASE_ARGS=(--prerelease)
+          elif [[ "$VER" == *-* ]]; then
+            TITLE="Pixuli v${VER}（预发布）"
+            CHANNEL="**预发布版本**。正式版发布前仍可能调整。"
+            PRERELEASE_ARGS=(--prerelease)
+          fi
+          NOTES="$(cat <<EOF
+          ## ${TITLE}
+
+          ${CHANNEL}
+
+          本地工作区是数据源，没有官方服务器。令牌和文件都留在你自己的环境里。
+
+          ### 这版附带的文件
+
+          - **Web**：静态站点 zip，解压后即可托管（含 \`index.html\`、CSS、JS）
+          - **Desktop**：Windows exe、macOS dmg
+          - **Android**：已签名的 release APK
+
+          构建提交：\`${SHA}\`
+
+          ### 目前已经能用
+
+          - 打开本地工作区，按文件夹浏览、搜索和预览资源
+          - 上传图片，并做压缩、裁剪和格式转换
+          - 配置多个 GitHub / Gitee 仓库；同一时间只同步其中一个
+          - 同步方向可选：本地到远程，或远程到本地
+          - 同步后复制公网链接（仓库需公开，链接能否打开取决于仓库策略）
+          - 在设置中导入、导出远端仓库配置
+
+          ### 试用前请看
+
+          - 从 1.x 升级前先读 [CHANGELOG](https://github.com/trueLoving/Pixuli/blob/develop/CHANGELOG.md)：幻灯片、时间线、照片墙和旧的 Mobile 应用已移除
+          - 用法见 [使用手册](https://github.com/trueLoving/Pixuli/blob/develop/docs/01-product/02-product-user-manual.md)
+          EOF
+          )"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG exists"
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" "${PRERELEASE_ARGS[@]}"
           else
             gh release create "$TAG" \
               --target "$SHA" \
-              --title "Pixuli v${VER}" \
-              --notes "$(cat <<EOF
-          ## Pixuli v${VER}
-
-          One release for Web, Desktop, and Android.
-
-          - **Tag:** \`${TAG}\`
-          - **Commit:** \`${SHA}\`
-          - **Web:** static site zip (\`index.html\`, CSS, JS)
-          - **Desktop:** Windows exe / macOS dmg
-          - **Android:** release APK
-
-          See CHANGELOG and docs/02-system-design/05-release-versioning.md.
-          EOF
-          )"
+              --title "$TITLE" \
+              --notes "$NOTES" \
+              "${PRERELEASE_ARGS[@]}"
           fi
           shopt -s nullglob
           files=(
