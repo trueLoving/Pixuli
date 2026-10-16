@@ -1,8 +1,8 @@
 # 版本发布制度
 
-- **文档版本**：2.0
+- **文档版本**：2.2
 - **计划**：REF-409 · [#113](https://github.com/trueLoving/Pixuli/issues/113)
-- **最后核对**：2026-08-25
+- **最后核对**：2026-10-16
 
 发版时按 **§四 检查清单** 执行。
 
@@ -20,12 +20,11 @@
   无 version。
 - **分端 tag**（同一 `{semver}`）：
 
-| 端      | Tag                 | 产物                      |
-| ------- | ------------------- | ------------------------- |
-| Desktop | `v{semver}-desktop` | exe / dmg                 |
-| Android | `v{semver}-android` | APK                       |
-
-> Web 不单独打 release tag；演示/自建部署不走本仓库 Actions release。
+| 端      | Tag                 | 产物                                       |
+| ------- | ------------------- | ------------------------------------------ |
+| Web     | `v{semver}-web`     | 静态站点 zip（html / css / js 等构建产物） |
+| Desktop | `v{semver}-desktop` | exe / dmg                                  |
+| Android | `v{semver}-android` | APK                                        |
 
 - CHANGELOG：Keep a Changelog；单一版本节 `## [x.y.z]`，下分端差异。
 - 1.x 历史 tag（`v*-desktop` /
@@ -41,19 +40,20 @@
 
 ## 三、CI / Workflow
 
-| 用途          | Workflow                                                                |
-| ------------- | ----------------------------------------------------------------------- |
-| main 推送门禁 | `.github/workflows/ci.yml` → `pnpm ci`（仅 `push` 到 `main`）           |
-| Desktop 发版  | `.github/workflows/release-desktop.yml`（**仅** `workflow_dispatch`）   |
-| Android 发版  | `.github/workflows/release-android.yml`（**仅** `workflow_dispatch`）   |
+| 用途          | Workflow                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| main 推送门禁 | `.github/workflows/ci.yml` → `pnpm ci`（仅 `push` 到 `main`）                                     |
+| 三端发版      | `.github/workflows/release.yml`（**仅** `workflow_dispatch`；可选 web / desktop / android / all） |
+| Desktop 发版  | `.github/workflows/release-desktop.yml`（可单独触发，也可由 `release.yml` 调用）                  |
+| Android 发版  | `.github/workflows/release-android.yml`（可单独触发，也可由 `release.yml` 调用）                  |
 
-构建顺序概念：`pnpm ci` 绿 → 再打 Desktop / Android release 产物 / tag。  
-Web 不设独立 release workflow（本地/自建部署即可）。
+构建顺序概念：`pnpm ci` 绿 → 再通过 `release.yml`
+选择端、版本号，以及是否创建 GitHub Release。
 
 **Secrets（按需）**
 
-| Secret | 用途 |
-| ------ | ---- |
+| Secret                       | 用途                 |
+| ---------------------------- | -------------------- |
 | `ANDROID_KEYSTORE_BASE64` 等 | Android release 签名 |
 
 ---
@@ -63,7 +63,7 @@ Web 不设独立 release workflow（本地/自建部署即可）。
 - [ ] `app/package.json` 版本已 bump；三端将共用该 semver
 - [ ] CHANGELOG：`[Unreleased]` 整理为 `## [x.y.z]`
 - [ ] `pnpm ci` 绿
-- [ ] 打齐需要的 tag：`v{x.y.z}-desktop` / `-android`
+- [ ] 打齐需要的 tag：`v{x.y.z}-web` / `-desktop` / `-android`
 - [ ] GitHub Release 附安装包或部署说明
 - [ ] 应用内版本信息与 tag 一致
 
@@ -73,8 +73,9 @@ Breaking 另见 REF-404 / Issue #83。
 
 ## 五、修订
 
-| 版本 | 日期       | 说明               |
-| ---- | ---------- | ------------------ |
-| 2.0  | 2026-08-25 | 瘦身：制度 + 清单  |
+| 版本 | 日期       | 说明                                                                                      |
+| ---- | ---------- | ----------------------------------------------------------------------------------------- |
+| 2.2  | 2026-10-16 | 增加 `release.yml`：可选 Web / Desktop / Android，Web 以静态站点 zip 发 Release           |
 | 2.1  | 2026-09-12 | 对齐 workflows：`ci`（仅 main push）/ Desktop·Android release（仅手动）；去掉 Web release |
-| 1.3  | 2026-08-25 | 自 01-product 迁入 |
+| 2.0  | 2026-08-25 | 瘦身：制度 + 清单                                                                         |
+| 1.3  | 2026-08-25 | 自 01-product 迁入                                                                        |

@@ -22,6 +22,22 @@ on:
           - release
           - debug
         default: release
+  workflow_call:
+    inputs:
+      version:
+        description: 'SemVer without prefix. Empty = app/package.json'
+        required: false
+        type: string
+        default: ''
+      build-type:
+        description: 'release or debug'
+        required: true
+        type: string
+      is-publish:
+        description: 'Create/upload GitHub Release (release builds only)'
+        required: false
+        type: boolean
+        default: true
 
 concurrency:
   group: release-android-${{ github.ref }}
@@ -57,11 +73,11 @@ jobs:
         run: |
           set -euo pipefail
           PKG_VERSION=$(node -p "require('./app/package.json').version")
-          VERSION="${{ github.event.inputs.version }}"
+          VERSION="${{ inputs.version }}"
           if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
           TAG="v${VERSION}-android"
-          BUILD_TYPE="${{ github.event.inputs.build-type }}"
-          IS_PUBLISH="${{ github.event.inputs.is-publish }}"
+          BUILD_TYPE="${{ inputs.build-type }}"
+          IS_PUBLISH="${{ inputs.is-publish }}"
           {
             echo "VERSION=$VERSION"
             echo "TAG=$TAG"
@@ -84,7 +100,7 @@ jobs:
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/android/release.keystore
           {
-            echo "storeFile=release.keystore"
+            echo "storeFile=../release.keystore"
             echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
             echo "keyAlias=$ANDROID_KEY_ALIAS"
             echo "keyPassword=$ANDROID_KEY_PASSWORD"

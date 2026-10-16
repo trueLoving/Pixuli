@@ -24,6 +24,22 @@ on:
         required: false
         default: true
         type: boolean
+  workflow_call:
+    inputs:
+      version:
+        description: 'SemVer without prefix. Empty = app/package.json'
+        required: false
+        type: string
+        default: ''
+      platform:
+        description: 'win, mac-x64, mac-arm64, or all'
+        required: true
+        type: string
+      is-publish:
+        description: 'Create/upload GitHub Release'
+        required: false
+        type: boolean
+        default: true
 
 concurrency:
   group: release-desktop-${{ github.ref }}
@@ -53,11 +69,11 @@ jobs:
         run: |
           set -euo pipefail
           PKG_VERSION=$(node -p "require('./app/package.json').version")
-          VERSION="${{ github.event.inputs.version }}"
+          VERSION="${{ inputs.version }}"
           if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
           TAG="v${VERSION}-desktop"
-          PLATFORM="${{ github.event.inputs.platform }}"
-          IS_PUBLISH="${{ github.event.inputs.is-publish }}"
+          PLATFORM="${{ inputs.platform }}"
+          IS_PUBLISH="${{ inputs.is-publish }}"
 
           DO_WIN=false
           DO_MAC_X64=false
