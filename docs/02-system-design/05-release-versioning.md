@@ -18,11 +18,13 @@
 
 - **统一产品 semver**：以 `app/package.json` 为 SSOT；根 `package.json`
   无 version。
-- **分端 tag**（同一 `{semver}`）：
+- **统一 Release**（`release.yml`）：一份 tag
+  `v{semver}`，附件同时包含 Web 静态站点 zip、Desktop 安装包、Android APK。
+- 单独触发 Desktop / Android workflow 时仍使用分端 tag：
 
 | 端      | Tag                 | 产物                                       |
 | ------- | ------------------- | ------------------------------------------ |
-| Web     | `v{semver}-web`     | 静态站点 zip（html / css / js 等构建产物） |
+| Web     | `v{semver}`         | 静态站点 zip（html / css / js 等构建产物） |
 | Desktop | `v{semver}-desktop` | exe / dmg                                  |
 | Android | `v{semver}-android` | APK                                        |
 
@@ -63,7 +65,7 @@
 - [ ] `app/package.json` 版本已 bump；三端将共用该 semver
 - [ ] CHANGELOG：`[Unreleased]` 整理为 `## [x.y.z]`
 - [ ] `pnpm ci` 绿
-- [ ] 打齐需要的 tag：`v{x.y.z}-web` / `-desktop` / `-android`
+- [ ] `release.yml` 打一份 tag：`v{x.y.z}`，附件含三端产物
 - [ ] GitHub Release 附安装包或部署说明
 - [ ] 应用内版本信息与 tag 一致
 
@@ -75,7 +77,7 @@ Breaking 另见 REF-404 / Issue #83。
 
 | 版本 | 日期       | 说明                                                                                      |
 | ---- | ---------- | ----------------------------------------------------------------------------------------- |
-| 2.2  | 2026-10-16 | 增加 `release.yml`：可选 Web / Desktop / Android，Web 以静态站点 zip 发 Release           |
+| 2.2  | 2026-10-16 | 增加 `release.yml`：一份 `v{semver}` Release，附件含 Web、Desktop、Android                |
 | 2.1  | 2026-09-12 | 对齐 workflows：`ci`（仅 main push）/ Desktop·Android release（仅手动）；去掉 Web release |
 | 2.0  | 2026-08-25 | 瘦身：制度 + 清单                                                                         |
 | 1.3  | 2026-08-25 | 自 01-product 迁入                                                                        |

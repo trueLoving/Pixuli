@@ -1,6 +1,6 @@
 name: Release
 
-# 手动选择 Web / Desktop / Android 发版。Desktop 与 Android 复用各自的 workflow。
+# 手动选择 Web / Desktop / Android 构建。发布时只创建一份 GitHub Release，附上本次构建的三端产物。
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ on:
           - debug
         default: release
       is-publish:
-        description: 'Create/upload GitHub Release (Android debug builds are not published)'
+        description: 'Create one GitHub Release and upload every built asset (Android debug APKs are omitted)'
         required: false
         default: true
         type: boolean
@@ -51,8 +51,32 @@ permissions:
   contents: write
 
 jobs:
+  detect:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set.outputs.version }}
+      tag: ${{ steps.set.outputs.tag }}
+      ref: ${{ steps.set.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse
+        id: set
+        run: |
+          set -euo pipefail
+          PKG_VERSION=$(node -p "require('./app/package.json').version")
+          VERSION="${{ inputs.version }}"
+          if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
+          {
+            echo "version=$VERSION"
+            echo "tag=v${VERSION}"
+            echo "ref=${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
+
   web:
     name: Web static site
+    needs: detect
     if: inputs.target == 'web' || inputs.target == 'all'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -68,22 +92,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
-      - name: Resolve version
-        id: version
-        run: |
-          set -euo pipefail
-          PKG_VERSION=$(node -p "require('./app/package.json').version")
-          VERSION="${{ inputs.version }}"
-          if [[ -z "$VERSION" ]]; then VERSION="$PKG_VERSION"; fi
-          {
-            echo "VERSION=$VERSION"
-            echo "TAG=v${VERSION}-web"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Bump app version
         run: |
           cd app
-          TARGET="${{ steps.version.outputs.VERSION }}"
+          TARGET="${{ needs.detect.outputs.version }}"
           CURRENT=$(node -p "require('./package.json').version")
           if [[ "$CURRENT" != "$TARGET" ]]; then
             pnpm version "$TARGET" --no-git-tag-version
@@ -97,56 +109,106 @@ jobs:
       - name: Pack static site
         run: |
           set -euo pipefail
-          ARCHIVE="pixuli-web-v${{ steps.version.outputs.VERSION }}.zip"
+          ARCHIVE="pixuli-web-v${{ needs.detect.outputs.version }}.zip"
           (cd app/dist && zip -r "$GITHUB_WORKSPACE/$ARCHIVE" .)
           echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pixuli-web-v${{ steps.version.outputs.VERSION }}
-          path: pixuli-web-v${{ steps.version.outputs.VERSION }}.zip
+          name: pixuli-web-v${{ needs.detect.outputs.version }}
+          path: pixuli-web-v${{ needs.detect.outputs.version }}.zip
           retention-days: 30
-
-      - name: Create GitHub Release
-        if: inputs.is-publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          TAG="${{ steps.version.outputs.TAG }}"
-          VER="${{ steps.version.outputs.VERSION }}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG exists"
-          else
-            gh release create "$TAG" \
-              --title "Pixuli Web v${VER}" \
-              --notes "$(cat <<EOF
-          ## Pixuli Web v${VER}
-
-          Static site (\`index.html\`, CSS, JS, and other built assets) from \`${GITHUB_SHA}\`.
-          Unzip and host the files as a static site.
-          See CHANGELOG and docs/02-system-design/05-release-versioning.md.
-          EOF
-          )"
-          fi
-          gh release upload "$TAG" "$ARCHIVE" --clobber
 
   desktop:
     name: Desktop
+    needs: detect
     if: inputs.target == 'desktop' || inputs.target == 'all'
     uses: ./.github/workflows/release-desktop.yml
     with:
-      version: ${{ inputs.version }}
+      version: ${{ needs.detect.outputs.version }}
       platform: ${{ inputs.platform }}
-      is-publish: ${{ inputs.is-publish }}
+      is-publish: false
     secrets: inherit
 
   android:
     name: Android
+    needs: detect
     if: inputs.target == 'android' || inputs.target == 'all'
     uses: ./.github/workflows/release-android.yml
     with:
-      version: ${{ inputs.version }}
+      version: ${{ needs.detect.outputs.version }}
       build-type: ${{ inputs.build-type }}
-      is-publish: ${{ inputs.is-publish }}
+      is-publish: false
     secrets: inherit
+
+  publish:
+    name: GitHub Release
+    needs: [detect, web, desktop, android]
+    if: |
+      always() &&
+      inputs.is-publish &&
+      needs.detect.result == 'success' &&
+      (needs.web.result == 'success' || needs.web.result == 'skipped') &&
+      (needs.desktop.result == 'success' || needs.desktop.result == 'skipped') &&
+      (needs.android.result == 'success' || needs.android.result == 'skipped') &&
+      (
+        needs.web.result == 'success' ||
+        needs.desktop.result == 'success' ||
+        (needs.android.result == 'success' && inputs.build-type == 'release')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detect.outputs.ref }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create one release and upload assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAG="${{ needs.detect.outputs.tag }}"
+          VER="${{ needs.detect.outputs.version }}"
+          SHA="${{ needs.detect.outputs.ref }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists"
+          else
+            gh release create "$TAG" \
+              --target "$SHA" \
+              --title "Pixuli v${VER}" \
+              --notes "$(cat <<EOF
+          ## Pixuli v${VER}
+
+          One release for Web, Desktop, and Android.
+
+          - **Tag:** \`${TAG}\`
+          - **Commit:** \`${SHA}\`
+          - **Web:** static site zip (\`index.html\`, CSS, JS)
+          - **Desktop:** Windows exe / macOS dmg
+          - **Android:** release APK
+
+          See CHANGELOG and docs/02-system-design/05-release-versioning.md.
+          EOF
+          )"
+          fi
+          shopt -s nullglob
+          files=(
+            artifacts/pixuli-web-v${VER}/*.zip
+            artifacts/pixuli-desktop-win-v${VER}/*.exe
+            artifacts/pixuli-desktop-mac-x64-v${VER}/*.dmg
+            artifacts/pixuli-desktop-mac-arm64-v${VER}/*.dmg
+            artifacts/pixuli-android-release-v${VER}/*.apk
+          )
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "No release assets found"
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            echo "Uploading $f"
+            gh release upload "$TAG" "$f" --clobber
+          done

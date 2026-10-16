@@ -95,16 +95,68 @@ jobs:
           fi
           sed -i "s/versionName \".*\"/versionName \"$TARGET\"/" android/app/build.gradle
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Configure release keystore
         if: ${{ env.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > app/android/release.keystore
-          {
-            echo "storeFile=../release.keystore"
-            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
-            echo "keyAlias=$ANDROID_KEY_ALIAS"
-            echo "keyPassword=$ANDROID_KEY_PASSWORD"
-          } > app/android/keystore.properties
+          set -euo pipefail
+          KS="app/android/release.keystore"
+          if [[ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ]]; then
+            echo "ANDROID_KEYSTORE_PASSWORD is empty."
+            exit 1
+          fi
+          if ! printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$KS"; then
+            echo "ANDROID_KEYSTORE_BASE64 is not valid base64. Encode the keystore file once, with no extra quotes."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$KS" -storepass "$ANDROID_KEYSTORE_PASSWORD" > /tmp/keystore-list.txt; then
+            echo "Cannot open release.keystore. The store password does not match, or the base64 secret is not that keystore."
+            exit 1
+          fi
+          mapfile -t ALIASES < <(sed -n 's/,.*PrivateKeyEntry.*//p' /tmp/keystore-list.txt)
+          rm -f /tmp/keystore-list.txt
+          ALIAS="${ANDROID_KEY_ALIAS:-}"
+          if [[ -z "$ALIAS" ]]; then
+            if [[ ${#ALIASES[@]} -eq 1 ]]; then
+              ALIAS="${ALIASES[0]}"
+              echo "ANDROID_KEY_ALIAS is empty; using the only key alias."
+            else
+              echo "ANDROID_KEY_ALIAS is empty. Set it to one of: ${ALIASES[*]:-none}"
+              exit 1
+            fi
+          fi
+          KEY_PASS="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+          if ! keytool -importkeystore \
+            -srckeystore "$KS" -destkeystore /tmp/pixuli-key-check.p12 \
+            -srcstorepass "$ANDROID_KEYSTORE_PASSWORD" -deststorepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -srcalias "$ALIAS" -srckeypass "$KEY_PASS" -noprompt >/dev/null; then
+            echo "Cannot read alias '$ALIAS'. Check ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD."
+            echo "Aliases in this keystore: ${ALIASES[*]:-none}"
+            exit 1
+          fi
+          rm -f /tmp/pixuli-key-check.p12
+          python3 - "$ALIAS" "$KEY_PASS" <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          alias, key_pass = sys.argv[1], sys.argv[2]
+
+          def esc(value: str) -> str:
+              return value.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r")
+
+          lines = [
+              "storeFile=../release.keystore",
+              "storePassword=" + esc(os.environ["ANDROID_KEYSTORE_PASSWORD"]),
+              "keyAlias=" + esc(alias),
+              "keyPassword=" + esc(key_pass),
+          ]
+          Path("app/android/keystore.properties").write_text("\n".join(lines) + "\n")
+          PY
 
       - name: Fallback debug keystore
         if: ${{ env.ANDROID_KEYSTORE_BASE64 == '' }}
@@ -117,11 +169,6 @@ jobs:
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Android Debug,O=Android,C=US"
           fi
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
 
       - uses: android-actions/setup-android@v4
         with:
