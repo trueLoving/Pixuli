@@ -48,6 +48,24 @@ describe('libraryQuery', () => {
     ]);
   });
 
+  it('filters by an exact tag and requires every tag', () => {
+    const items = [
+      { name: 'a.jpg', type: 'image/jpeg', size: 10, tags: ['旅行', '风景'] },
+      { name: 'b.jpg', type: 'image/jpeg', size: 10, tags: ['旅行'] },
+      { name: 'c.jpg', type: 'image/jpeg', size: 10, tags: ['风景日记'] },
+    ];
+
+    expect(
+      filterByLibraryQuery(items, 'tag:旅行').map(item => item.name),
+    ).toEqual(['a.jpg', 'b.jpg']);
+    expect(
+      filterByLibraryQuery(items, 'tag:旅行 tag:风景').map(item => item.name),
+    ).toEqual(['a.jpg']);
+    expect(
+      filterByLibraryQuery(items, 'tag:风景日记').map(item => item.name),
+    ).toEqual(['c.jpg']);
+  });
+
   it('treats multiple kinds as OR', () => {
     const items = [
       { name: 'a.jpg', type: 'image/jpeg', size: 10 },

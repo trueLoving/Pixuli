@@ -176,6 +176,10 @@ const Search: React.FC<SearchProps> = ({
           <span>{translate('search.help.descSize')}</span>
         </li>
         <li>
+          <code>{translate('search.help.exTag')}</code>
+          <span>{translate('search.help.descTag')}</span>
+        </li>
+        <li>
           <code>{translate('search.help.exCombo')}</code>
           <span>{translate('search.help.descCombo')}</span>
         </li>
