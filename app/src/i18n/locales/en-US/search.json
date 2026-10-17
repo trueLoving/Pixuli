@@ -18,6 +18,8 @@
       "descKind": "Kind: image / video / pdf / other (alias: type:)",
       "exSize": "size:>1mb",
       "descSize": "Size ops: > >= < <= = ; units: b / kb / mb / gb",
+      "exTag": "tag:trip",
+      "descTag": "Exact tag match. Multiple tag: terms are all required (alias: tags:)",
       "exCombo": "kind:image size:<500kb trip",
       "descCombo": "Combine: images under 500KB whose name contains “trip”"
     },
