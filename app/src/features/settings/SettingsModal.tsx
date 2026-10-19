@@ -139,8 +139,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-[60] flex bg-black/40 ${
-        isMobile ? 'items-stretch p-0' : 'items-center justify-center p-4'
+      className={`fixed inset-0 z-[60] flex items-center justify-center bg-black/40 ${
+        isMobile
+          ? 'px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]'
+          : 'p-4'
       }`}
       role="dialog"
       aria-modal="true"
@@ -148,11 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`flex w-full flex-col overflow-hidden bg-white shadow-xl ${
-          isMobile
-            ? 'h-full max-h-full max-w-none rounded-none'
-            : 'h-[min(90vh,720px)] max-h-[min(90vh,720px)] max-w-4xl rounded-xl'
-        }`}
+        className="flex h-[min(90dvh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
@@ -210,7 +208,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'overflow-y-auto'
             }`}
           >
-            {activeSection === 'workspace' && <SettingsWorkspacePanel t={t} />}
+            {activeSection === 'workspace' && <SettingsWorkspacePanel />}
             {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
             {activeSection === 'language' && <SettingsLanguagePanel t={t} />}
             {activeSection === 'version' && (
@@ -221,15 +219,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end border-t border-gray-200 px-5 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md pix-btn-primary px-4 py-2 text-sm"
-          >
-            {t('settings.close')}
-          </button>
-        </div>
+        {isMobile ? null : (
+          <div className="flex justify-end border-t border-gray-200 px-5 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md pix-btn-primary px-4 py-2 text-sm"
+            >
+              {t('settings.close')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

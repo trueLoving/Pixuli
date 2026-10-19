@@ -63,13 +63,22 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="image-upload-modal-overlay" onClick={onClose}>
+    <div
+      className="image-upload-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="image-upload-modal-title"
+      onClick={onClose}
+    >
       <div
         className="image-upload-modal-content"
         onClick={e => e.stopPropagation()}
       >
         <div className="image-upload-modal-header">
-          <h2 className="image-upload-modal-title">
+          <h2
+            id="image-upload-modal-title"
+            className="image-upload-modal-title"
+          >
             {t?.('image.upload.addNewImage') ||
               t?.('header.upload') ||
               '添加到工作区'}

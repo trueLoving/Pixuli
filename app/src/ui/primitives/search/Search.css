@@ -149,19 +149,11 @@
   }
 
   .search-help-button {
-    min-width: 2.75rem;
-    min-height: 2.75rem;
-  }
-
-  .search-help-panel {
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    top: auto;
-    bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
-    width: auto;
-    max-height: min(70vh, 28rem);
-    overflow-y: auto;
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0;
   }
 }
 
