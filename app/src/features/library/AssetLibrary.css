@@ -678,41 +678,58 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 2.25rem) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    justify-content: start;
     align-items: center;
+    column-gap: 0.375rem;
+    row-gap: 0.5rem;
     margin-bottom: 0.75rem;
     padding: 0.5rem 0.75rem;
     background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(8px);
     border-bottom: 1px solid #f3f4f6;
   }
 
   .asset-library-folders-btn {
+    grid-area: 2 / 3;
     display: inline-flex;
   }
 
-  .asset-library-search {
-    order: 1;
-    flex: 1 1 auto;
-    min-width: 0;
+  .asset-library-toolbar .asset-library-search.search-wrapper--header {
+    display: contents;
     max-width: none;
   }
 
-  .asset-library-search.search-wrapper--header {
-    max-width: none;
+  .asset-library-toolbar .search-bar-wrapper {
+    grid-area: 1 / 1 / 2 / -1;
+    width: auto;
+    min-width: 0;
+  }
+
+  .asset-library-toolbar .search-help-wrapper {
+    grid-area: 2 / 1;
+  }
+
+  .asset-library-toolbar .search-help-button {
+    width: 2.25rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0;
+    border-radius: 0.375rem;
   }
 
   .asset-library-controls {
-    order: 2;
-    margin-left: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    display: contents;
   }
 
-  .asset-library-controls::-webkit-scrollbar {
-    display: none;
+  .asset-library-select-btn {
+    grid-area: 2 / 2;
+  }
+
+  .asset-library-upload-btn {
+    grid-area: 2 / 4;
   }
 
   .asset-library-col-type,

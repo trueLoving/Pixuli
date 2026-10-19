@@ -1,5 +1,6 @@
 import { CircleHelp, Search as SearchIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { defaultTranslate } from '@/i18n/locales';
 import SearchBar from './SearchBar';
 import './SearchBar.css';
@@ -86,6 +87,7 @@ const Search: React.FC<SearchProps> = ({
   const [helpStyle, setHelpStyle] = useState<React.CSSProperties | undefined>();
   const helpRef = useRef<HTMLDivElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
+  const helpPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (inputValue.trim()) setSearchExpanded(true);
@@ -99,21 +101,49 @@ const Search: React.FC<SearchProps> = ({
     const update = () => {
       const button = helpButtonRef.current;
       if (!button) return;
+      const rect = button.getBoundingClientRect();
       const narrow =
         typeof window.matchMedia === 'function' &&
         window.matchMedia('(max-width: 767px)').matches;
-      if (narrow) {
-        setHelpStyle(undefined);
-        return;
-      }
-      const rect = button.getBoundingClientRect();
-      setHelpStyle({
-        position: 'fixed',
-        top: rect.bottom + 8,
-        right: Math.max(8, window.innerWidth - rect.right),
-        left: 'auto',
-        zIndex: 1100,
-      });
+      const margin = 8;
+      const bottomReserve = narrow ? 64 : margin;
+      const safeTop = margin;
+      const spaceBelow =
+        window.innerHeight - rect.bottom - margin - bottomReserve;
+      const spaceAbove = rect.top - margin - safeTop;
+      const placeBelow = spaceBelow >= 180 || spaceBelow >= spaceAbove;
+      const maxHeight = Math.min(
+        28 * 16,
+        Math.max(140, placeBelow ? spaceBelow : spaceAbove),
+      );
+      const top = placeBelow
+        ? rect.bottom + margin
+        : Math.max(safeTop, rect.top - margin - maxHeight);
+      setHelpStyle(
+        narrow
+          ? {
+              position: 'fixed',
+              top,
+              left: 12,
+              right: 12,
+              bottom: 'auto',
+              width: 'auto',
+              maxHeight,
+              overflowY: 'auto',
+              zIndex: 1100,
+            }
+          : {
+              position: 'fixed',
+              top,
+              right: Math.max(margin, window.innerWidth - rect.right),
+              left: 'auto',
+              bottom: 'auto',
+              width: 'min(22rem, calc(100vw - 1rem))',
+              maxHeight,
+              overflowY: 'auto',
+              zIndex: 1100,
+            },
+      );
     };
     update();
     window.addEventListener('resize', update);
@@ -127,9 +157,14 @@ const Search: React.FC<SearchProps> = ({
   useEffect(() => {
     if (!showHelp) return;
     const onPointerDown = (event: MouseEvent) => {
-      if (helpRef.current && !helpRef.current.contains(event.target as Node)) {
-        setShowHelp(false);
+      const target = event.target as Node;
+      if (
+        helpRef.current?.contains(target) ||
+        helpPanelRef.current?.contains(target)
+      ) {
+        return;
       }
+      setShowHelp(false);
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
@@ -148,44 +183,53 @@ const Search: React.FC<SearchProps> = ({
     return translate('search.placeholder') || 'Search...';
   };
 
-  const helpPanel = showHelp ? (
-    <div
-      className="search-help-panel"
-      style={helpStyle}
-      role="dialog"
-      aria-label={translate('search.help.title')}
-    >
-      {' '}
-      <div className="search-help-title">{translate('search.help.title')}</div>
-      <p className="search-help-intro">{translate('search.help.intro')}</p>
-      <ul className="search-help-list">
-        <li>
-          <code>{translate('search.help.exBare')}</code>
-          <span>{translate('search.help.descBare')}</span>
-        </li>
-        <li>
-          <code>{translate('search.help.exName')}</code>
-          <span>{translate('search.help.descName')}</span>
-        </li>
-        <li>
-          <code>{translate('search.help.exKind')}</code>
-          <span>{translate('search.help.descKind')}</span>
-        </li>
-        <li>
-          <code>{translate('search.help.exSize')}</code>
-          <span>{translate('search.help.descSize')}</span>
-        </li>
-        <li>
-          <code>{translate('search.help.exTag')}</code>
-          <span>{translate('search.help.descTag')}</span>
-        </li>
-        <li>
-          <code>{translate('search.help.exCombo')}</code>
-          <span>{translate('search.help.descCombo')}</span>
-        </li>
-      </ul>
-    </div>
-  ) : null;
+  const helpPanel =
+    showHelp && helpStyle && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            ref={helpPanelRef}
+            className="search-help-panel"
+            style={helpStyle}
+            role="dialog"
+            aria-label={translate('search.help.title')}
+          >
+            {' '}
+            <div className="search-help-title">
+              {translate('search.help.title')}
+            </div>
+            <p className="search-help-intro">
+              {translate('search.help.intro')}
+            </p>
+            <ul className="search-help-list">
+              <li>
+                <code>{translate('search.help.exBare')}</code>
+                <span>{translate('search.help.descBare')}</span>
+              </li>
+              <li>
+                <code>{translate('search.help.exName')}</code>
+                <span>{translate('search.help.descName')}</span>
+              </li>
+              <li>
+                <code>{translate('search.help.exKind')}</code>
+                <span>{translate('search.help.descKind')}</span>
+              </li>
+              <li>
+                <code>{translate('search.help.exSize')}</code>
+                <span>{translate('search.help.descSize')}</span>
+              </li>
+              <li>
+                <code>{translate('search.help.exTag')}</code>
+                <span>{translate('search.help.descTag')}</span>
+              </li>
+              <li>
+                <code>{translate('search.help.exCombo')}</code>
+                <span>{translate('search.help.descCombo')}</span>
+              </li>
+            </ul>
+          </div>,
+          document.body,
+        )
+      : null;
 
   if (variant === 'basic') {
     return (
