@@ -170,6 +170,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
+          ANDROID_RESULT: ${{ needs.android.result }}
+          BUILD_TYPE: ${{ inputs.build-type }}
         run: |
           set -euo pipefail
           TAG="${{ needs.detect.outputs.tag }}"
@@ -234,14 +236,22 @@ jobs:
               --notes "$NOTES" \
               "${PRERELEASE_ARGS[@]}"
           fi
-          shopt -s nullglob
+          shopt -s nullglob globstar
           files=(
             artifacts/pixuli-web-v${VER}/*.zip
             artifacts/pixuli-desktop-win-v${VER}/*.exe
             artifacts/pixuli-desktop-mac-x64-v${VER}/*.dmg
             artifacts/pixuli-desktop-mac-arm64-v${VER}/*.dmg
-            artifacts/pixuli-android-release-v${VER}/*.apk
           )
+          apks=(artifacts/pixuli-android-release-v${VER}/**/*.apk)
+          if [[ ${#apks[@]} -gt 0 ]]; then
+            cp "${apks[0]}" "pixuli-android-release-v${VER}.apk"
+            files+=("pixuli-android-release-v${VER}.apk")
+          elif [[ "$ANDROID_RESULT" == "success" && "$BUILD_TYPE" == "release" ]]; then
+            echo "Android release succeeded but no APK was found to upload"
+            find artifacts -type f || true
+            exit 1
+          fi
           if [[ ${#files[@]} -eq 0 ]]; then
             echo "No release assets found"
             exit 1

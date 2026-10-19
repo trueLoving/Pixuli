@@ -184,14 +184,31 @@ jobs:
             pnpm run build:android
           fi
 
+      - name: Stage APK
+        run: |
+          set -euo pipefail
+          TYPE="${{ steps.version.outputs.BUILD_TYPE }}"
+          VER="${{ steps.version.outputs.VERSION }}"
+          if [[ "$TYPE" == "debug" ]]; then
+            DIR="app/android/app/build/outputs/apk/debug"
+          else
+            DIR="app/android/app/build/outputs/apk/release"
+          fi
+          SRC="$(find "$DIR" -type f -name '*.apk' ! -name '*unsigned*' | head -n 1)"
+          if [[ -z "$SRC" ]]; then
+            echo "No signed APK under $DIR"
+            find "$DIR" -type f || true
+            exit 1
+          fi
+          cp "$SRC" "pixuli-android-${TYPE}-v${VER}.apk"
+          echo "Staged $SRC as pixuli-android-${TYPE}-v${VER}.apk"
+
       - uses: actions/upload-artifact@v4
         with:
           name: pixuli-android-${{ steps.version.outputs.BUILD_TYPE }}-v${{ steps.version.outputs.VERSION }}
-          path: |
-            app/android/app/build/outputs/apk/release/app-release.apk
-            app/android/app/build/outputs/apk/debug/app-debug.apk
+          path: pixuli-android-${{ steps.version.outputs.BUILD_TYPE }}-v${{ steps.version.outputs.VERSION }}.apk
           retention-days: 30
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Create GitHub Release
         if: ${{ steps.version.outputs.IS_PUBLISH == 'true' && steps.version.outputs.BUILD_TYPE == 'release' }}
@@ -210,5 +227,5 @@ jobs:
           Capacitor APK from \`${GITHUB_SHA}\`. See CHANGELOG and docs/02-system-design/05-release-versioning.md."
           fi
           gh release upload "$TAG" \
-            app/android/app/build/outputs/apk/release/app-release.apk \
+            "pixuli-android-release-v${VER}.apk" \
             --clobber
