@@ -216,15 +216,38 @@ images/
 
 ---
 
+## 五（附）、文件夹协商缓存（HTTP 缓存类比）
+
+远端「变化标志」与载荷分离；**不**同步整份 `.pixuli/`。
+
+| 远端文件                                | 作用                                   |
+| --------------------------------------- | -------------------------------------- |
+| `{configRoot}/.metadata/sync-tree.json` | 整库 + 每文件夹 `revision`（轻量协商） |
+| `{dir}/.metadata/manifest.json`         | 该层文件清单（变化的数据）             |
+
+本地对照：`.pixuli/sync/state.json` → binding 下 `treeRevision` +
+`folders[key].{ revision, dirty }`。
+
+流程：
+
+1. 显式 pull：只先读 `sync-tree.json`；与本地 stamp 相同 → 跳过（无传输）。
+2. 有差异 → 标脏文件夹；立刻浅拉**当前打开层**；其余进夹再
+   `syncFolder(pathPrefix, shallow)`。
+3. Push：按文件夹归组 pending；有变则覆盖该层文件 + 更新 sync-tree 对应 revision；成功后写本地 stamp。
+
+---
+
 ## 六、实现状态与建议顺序
 
-### 6.1 已落地（2026-08-31）
+### 6.1 已落地（2026-08-31 / 2026-10-20）
 
 - [x] **D3 configRoot**：工作区相对路径 ↔ 远端 1:1；`.pixuli/` 排除同步。
 - [x] **metadata manifest**：各目录 `{dir}/.metadata/manifest.json`（GitHub /
       Gitee Provider）。
 - [x] Provider：`joinConfigRoot(config.path, relativePath)`；递归 list；跳过
       `.pixuli`。
+- [x] **文件夹协商缓存**：`sync-tree.json` + 本地 per-folder stamp；
+      `syncPull({ pathPrefix, shallow })`；进夹懒加载。
 
 ### 6.2 待实现 / 可选
 
@@ -236,7 +259,7 @@ images/
 - `.pixuli/` 永不上云（AGENTS / 产品底线）。
 - Core 与 Provider 不依赖 UI。
 - 同步仍为用户显式触发（见
-  [04-local-workspace-sync](./04-local-workspace-sync.md)）。
+  [04-local-workspace-sync](./04-local-workspace-sync.md)）；后台不全库静默pull。
 
 ---
 
@@ -244,4 +267,5 @@ images/
 
 | 版本 | 日期       | 说明                                                           |
 | ---- | ---------- | -------------------------------------------------------------- |
+| 1.1  | 2026-10-20 | 文件夹协商缓存：sync-tree、懒加载、本地 stamp                  |
 | 1.0  | 2026-08-31 | 初始：configRoot、同步边界、manifest metadata、UI shallow 共识 |

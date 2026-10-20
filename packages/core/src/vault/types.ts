@@ -161,6 +161,8 @@ export interface SyncBindingStatus {
   cursor: string | null;
   lastSyncAt: string | null;
   pendingPush: number;
+  treeRevision: string | null;
+  dirtyFolders: string[];
 }
 
 export interface SyncStatusSummary {
@@ -175,6 +177,11 @@ export interface SyncRunOptions {
   direction?: SyncDirection;
   /** 为 true 时推送全部未删除条目并覆盖远端。默认只推本地变更。 */
   overwriteRemote?: boolean;
+  /**
+   * pull 协商后立刻拉取的文件夹（工作区相对路径；`""` 为根层）。
+   * 未传时默认拉根层；其余脏夹留给 syncFolder 懒加载。
+   */
+  pathPrefix?: string;
 }
 
 export interface SyncRunResult {
@@ -182,12 +189,21 @@ export interface SyncRunResult {
   pulled: number;
   conflicts: SyncConflict[];
   errors: Array<{ path: string; message: string }>;
+  /** 协商后仍脏、待进夹再拉的目录 */
+  dirtyFolders?: string[];
+  skipped?: boolean;
 }
 
 export interface SyncEngine {
   enqueuePush(op: SyncPushOperation): Promise<void>;
   getStatus(bindingId?: string): Promise<SyncStatusSummary>;
   run(options?: SyncRunOptions): Promise<SyncRunResult>;
+  /** 拉取或推送单个文件夹（懒加载 / 局部同步） */
+  syncFolder(
+    folderPath: string,
+    options?: { bindingId?: string; direction?: 'pull' | 'push' },
+  ): Promise<SyncRunResult>;
+  listDirtyFolders(bindingId?: string): Promise<string[]>;
 }
 
 export type WorkspaceMode = 'unset' | 'local';

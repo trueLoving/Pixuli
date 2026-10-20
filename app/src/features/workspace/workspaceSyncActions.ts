@@ -8,6 +8,7 @@ import {
   getWorkspaceVault,
   resolveSelectedProvider,
 } from '@/features/workspace/workspaceRuntime';
+import { useUIStore } from '@/stores/uiStore';
 import type {
   WorkspaceStoreGet,
   WorkspaceStoreSet,
@@ -83,10 +84,14 @@ export async function runWorkspaceSync(
   });
 
   try {
+    const selectedFolder =
+      useUIStore.getState().selectedFolderPath?.trim() ?? '';
     const result = await getWorkspaceSyncEngine().run({
       direction,
       bindingId: useSourceStore.getState().selectedSourceId ?? undefined,
+      pathPrefix: selectedFolder,
     });
+    await get().refreshLocalFolders();
     await get().refreshLocalImages();
     await get().refreshSyncStatus();
 
@@ -127,5 +132,43 @@ export async function runWorkspaceSync(
       syncOutcome: outcome,
     });
     return outcome;
+  }
+}
+
+/** 进入文件夹时：若该层 stamp 为脏则浅拉取一层 */
+export async function pullDirtyFolderIfNeeded(
+  get: WorkspaceStoreGet,
+  set: WorkspaceStoreSet,
+  folderPath: string | null | undefined,
+): Promise<void> {
+  if (get().mode !== 'local') {
+    return;
+  }
+  if (resolveSelectedProvider() === null) {
+    return;
+  }
+  const folderKey = (folderPath ?? '').replace(/^\/+|\/+$/g, '');
+  try {
+    const engine = getWorkspaceSyncEngine();
+    const bindingId = useSourceStore.getState().selectedSourceId ?? undefined;
+    const dirty = await engine.listDirtyFolders(bindingId);
+    if (!dirty.includes(folderKey)) {
+      return;
+    }
+    const result = await engine.syncFolder(folderKey, {
+      bindingId,
+      direction: 'pull',
+    });
+    if (result.errors.length > 0) {
+      set({
+        error: result.errors.map(item => item.message).join('；'),
+      });
+      return;
+    }
+    await get().refreshLocalFolders();
+    await get().refreshLocalImages();
+    await get().refreshSyncStatus();
+  } catch {
+    // 懒加载失败不阻断浏览；显式 pull 仍可重试
   }
 }

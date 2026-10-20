@@ -22,6 +22,7 @@ import {
   updateLocalMetadata,
 } from '@/features/workspace/workspaceLocalActions';
 import {
+  pullDirtyFolderIfNeeded,
   refreshSyncStatus,
   runWorkspaceSync,
 } from '@/features/workspace/workspaceSyncActions';
@@ -97,6 +98,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   pullFromRemote: () => runWorkspaceSync(get, set, 'pull'),
 
   runSync: direction => runWorkspaceSync(get, set, direction),
+
+  pullDirtyFolderIfNeeded: folderPath =>
+    pullDirtyFolderIfNeeded(get, set, folderPath),
 
   softDeleteLocal: relativePath => softDeleteLocal(get, set, relativePath),
 

@@ -49,6 +49,10 @@ export interface WorkspaceState {
   pushPendingToRemote: () => Promise<SyncRunOutcome>;
   pullFromRemote: () => Promise<SyncRunOutcome>;
   runSync: (direction?: 'push' | 'pull' | 'both') => Promise<SyncRunOutcome>;
+  /** 进夹时若 stamp 脏则浅拉该层 */
+  pullDirtyFolderIfNeeded: (
+    folderPath: string | null | undefined,
+  ) => Promise<void>;
   softDeleteLocal: (relativePath: string) => Promise<void>;
   refreshLocalFolders: () => Promise<void>;
   createLocalFolder: (relativeDir: string) => Promise<void>;

@@ -20,9 +20,12 @@ import {
 } from '@pixuli/core/utils';
 import {
   commitSyncPush,
+  isSyncableAssetName,
   joinConfigRoot,
   listRepoImageBlobs,
+  parseSyncTree,
   SYNC_EXCLUDED_DIR,
+  SYNC_TREE_RELATIVE_PATH,
 } from '@pixuli/core/vault';
 import type {
   ImageListOptions,
@@ -30,6 +33,7 @@ import type {
   LinkKind,
   ProviderContext,
   RemoteRepositoryRef,
+  RemoteSyncTreeFile,
   StorageProviderConfig,
   StorageProviderDiscovery,
   StorageProviderWithMetadata,
@@ -260,6 +264,27 @@ export class GiteeStorageProvider
 
   getRawUrl(path: string): string {
     return this.buildPublicUrl(path);
+  }
+
+  /** pull 用带 access_token 的 API，避免公网 raw 对私有仓失败 */
+  async downloadRemoteFile(remotePath: string): Promise<Uint8Array> {
+    this.assertConfigured();
+    const filePath = this.joinRemotePath(remotePath);
+    const encodedPath = filePath
+      .split('/')
+      .map(segment => encodeURIComponent(segment))
+      .join('/');
+    const endpoint = `/repos/${this.config.owner}/${this.config.repo}/raw/${encodedPath}?ref=${encodeURIComponent(this.config.branch)}&access_token=${encodeURIComponent(this.config.token)}`;
+    const response = await this.fetchFn(`${this.baseUrl}${endpoint}`, {
+      method: 'GET',
+    });
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(
+        `Failed to download ${remotePath}: ${response.status} ${errorText}`,
+      );
+    }
+    return new Uint8Array(await response.arrayBuffer());
   }
 
   buildPublicUrl(remotePath: string): string {
@@ -994,8 +1019,44 @@ export class GiteeStorageProvider
     return this.syncCursor;
   }
 
+  async readSyncTree(): Promise<RemoteSyncTreeFile | null> {
+    this.assertConfigured();
+    const file = await this.readRepoJsonFile(SYNC_TREE_RELATIVE_PATH);
+    if (!file) {
+      return null;
+    }
+    return parseSyncTree(file.data);
+  }
+
+  async writeSyncTree(tree: RemoteSyncTreeFile): Promise<void> {
+    this.assertConfigured();
+    const existing = await this.readRepoJsonFile(SYNC_TREE_RELATIVE_PATH);
+    await this.writeRepoJsonFile(
+      SYNC_TREE_RELATIVE_PATH,
+      tree,
+      existing
+        ? `Update sync-tree (${tree.revision})`
+        : `Create sync-tree (${tree.revision})`,
+      existing?.sha,
+    );
+  }
+
   async syncPull(options?: SyncPullOptions): Promise<SyncPullResult> {
-    const images = await this.listImages({ recursive: true });
+    const pathPrefix = (options?.pathPrefix ?? '').replace(/^\/+|\/+$/g, '');
+    const shallow = options?.shallow === true;
+    let images: ImageItem[];
+    let folderKeys: string[] = [];
+
+    if (shallow) {
+      const listed = await this.listShallowLayer(pathPrefix);
+      images = listed.images;
+      folderKeys = listed.folderKeys;
+    } else if (pathPrefix) {
+      images = await this.listImages({ path: pathPrefix, recursive: true });
+    } else {
+      images = await this.listImages({ recursive: true });
+    }
+
     const since = options?.since;
     const items = images
       .map(img => {
@@ -1019,6 +1080,15 @@ export class GiteeStorageProvider
         };
       })
       .filter(item => {
+        if (pathPrefix) {
+          const remotePath = item.remotePath.replace(/^\/+/, '');
+          if (
+            remotePath !== pathPrefix &&
+            !remotePath.startsWith(`${pathPrefix}/`)
+          ) {
+            return false;
+          }
+        }
         if (!since) {
           return true;
         }
@@ -1030,7 +1100,77 @@ export class GiteeStorageProvider
       });
 
     this.syncCursor = new Date().toISOString();
-    return { items, nextCursor: this.syncCursor };
+    return { items, nextCursor: this.syncCursor, folderKeys };
+  }
+
+  private async listShallowLayer(dirRelative: string): Promise<{
+    images: ImageItem[];
+    folderKeys: string[];
+  }> {
+    this.assertConfigured();
+    const dirPath = this.joinRemotePath(dirRelative);
+    let response: unknown;
+    try {
+      const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${encodeURIComponent(dirPath)}?ref=${this.config.branch}`;
+      response = await this.makeGiteeRequest(endpoint, { method: 'GET' });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('404') ||
+        message.includes('Not Found') ||
+        message.includes('does not exist')
+      ) {
+        return { images: [], folderKeys: [] };
+      }
+      throw error;
+    }
+    if (!Array.isArray(response)) {
+      return { images: [], folderKeys: [] };
+    }
+
+    const folderKeys: string[] = [];
+    const fileEntries: Array<{ remotePath: string; item: any }> = [];
+    for (const entry of response) {
+      if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
+        continue;
+      }
+      if (entry.type === 'dir') {
+        const sub = dirRelative ? `${dirRelative}/${entry.name}` : entry.name;
+        folderKeys.push(sub);
+        continue;
+      }
+      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+        const remotePath = dirRelative
+          ? `${dirRelative}/${entry.name}`
+          : entry.name;
+        fileEntries.push({ remotePath, item: entry });
+      }
+    }
+
+    const manifest = await this.loadDirManifest(dirRelative);
+    const defaultDate = new Date().toISOString();
+    const images: ImageItem[] = fileEntries.map(({ remotePath, item }) => {
+      const fileName = basenameRelative(remotePath);
+      const entry = getManifestEntry(manifest, fileName);
+      const metadata = entry ? manifestEntryToRecord(entry) : null;
+      return {
+        id: (metadata?.id as string | undefined) || item.sha,
+        name: (metadata?.name as string | undefined) || fileName,
+        storagePath: remotePath,
+        url: item.download_url || '',
+        giteeUrl: item.html_url || '',
+        size: (metadata?.size as number | undefined) || item.size || 0,
+        width: (metadata?.width as number | undefined) || 0,
+        height: (metadata?.height as number | undefined) || 0,
+        type: this.getMimeType(fileName),
+        tags: (metadata?.tags as string[] | undefined) || [],
+        description: (metadata?.description as string | undefined) || '',
+        createdAt: (metadata?.createdAt as string | undefined) || defaultDate,
+        updatedAt: (metadata?.updatedAt as string | undefined) || defaultDate,
+      };
+    });
+
+    return { images, folderKeys };
   }
 
   private gitTransport() {
@@ -1125,21 +1265,8 @@ export class GiteeStorageProvider
     }
   }
 
-  // 辅助方法：判断是否为图片文件
   private isImageFile(fileName: string): boolean {
-    const imageExtensions = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.gif',
-      '.bmp',
-      '.webp',
-      '.svg',
-    ];
-    const extension = fileName
-      .toLowerCase()
-      .substring(fileName.lastIndexOf('.'));
-    return imageExtensions.includes(extension);
+    return isSyncableAssetName(fileName);
   }
 
   // 辅助方法：获取 MIME 类型
@@ -1155,7 +1282,13 @@ export class GiteeStorageProvider
       '.bmp': 'image/bmp',
       '.webp': 'image/webp',
       '.svg': 'image/svg+xml',
+      '.pdf': 'application/pdf',
+      '.mp4': 'video/mp4',
+      '.webm': 'video/webm',
+      '.mov': 'video/quicktime',
+      '.mkv': 'video/x-matroska',
+      '.avi': 'video/x-msvideo',
     };
-    return mimeTypes[extension] || 'image/jpeg';
+    return mimeTypes[extension] || 'application/octet-stream';
   }
 }

@@ -6,16 +6,45 @@ import type {
 } from './types';
 import { decodeJson, encodeJson, nowIso } from './utils';
 
-const SYNC_SCHEMA_VERSION = 1;
+const SYNC_SCHEMA_VERSION = 2;
+
+export interface LocalFolderSyncStamp {
+  revision: string | null;
+  /** 协商后待进夹再拉 */
+  dirty?: boolean;
+}
 
 export interface BindingSyncStateRecord {
   cursor: string | null;
   lastSyncAt: string | null;
+  /** 上次成功协商的远端 sync-tree revision */
+  treeRevision: string | null;
+  folders: Record<string, LocalFolderSyncStamp>;
 }
 
 export interface SyncStateFile {
   schemaVersion: number;
   bindings: Record<string, BindingSyncStateRecord>;
+}
+
+function emptyBindingState(): BindingSyncStateRecord {
+  return {
+    cursor: null,
+    lastSyncAt: null,
+    treeRevision: null,
+    folders: {},
+  };
+}
+
+function normalizeBindingState(
+  raw: Partial<BindingSyncStateRecord> | undefined,
+): BindingSyncStateRecord {
+  return {
+    cursor: raw?.cursor ?? null,
+    lastSyncAt: raw?.lastSyncAt ?? null,
+    treeRevision: raw?.treeRevision ?? null,
+    folders: raw?.folders ?? {},
+  };
 }
 
 export interface SyncConflictsFile {
@@ -36,9 +65,13 @@ export async function readSyncState(
   }
   const raw = await adapter.readFile(WORKSPACE_PATHS.syncState);
   const parsed = decodeJson<SyncStateFile>(raw);
+  const bindings: Record<string, BindingSyncStateRecord> = {};
+  for (const [id, record] of Object.entries(parsed.bindings ?? {})) {
+    bindings[id] = normalizeBindingState(record);
+  }
   return {
     schemaVersion: SYNC_SCHEMA_VERSION,
-    bindings: parsed.bindings ?? {},
+    bindings,
   };
 }
 
@@ -57,12 +90,7 @@ export async function getBindingSyncState(
   bindingId: string,
 ): Promise<BindingSyncStateRecord> {
   const state = await readSyncState(adapter);
-  return (
-    state.bindings[bindingId] ?? {
-      cursor: null,
-      lastSyncAt: null,
-    }
-  );
+  return normalizeBindingState(state.bindings[bindingId]);
 }
 
 export async function updateBindingSyncState(
@@ -71,13 +99,56 @@ export async function updateBindingSyncState(
   patch: Partial<BindingSyncStateRecord>,
 ): Promise<void> {
   const state = await readSyncState(adapter);
-  const current = state.bindings[bindingId] ?? {
-    cursor: null,
-    lastSyncAt: null,
+  const current = normalizeBindingState(state.bindings[bindingId]);
+  state.bindings[bindingId] = {
+    ...current,
+    ...patch,
+    folders: patch.folders ?? current.folders,
   };
-  state.bindings[bindingId] = { ...current, ...patch };
   await writeSyncState(adapter, state);
 }
+
+export async function markFoldersDirty(
+  adapter: WorkspaceAdapter,
+  bindingId: string,
+  folderKeys: string[],
+  treeRevision?: string | null,
+): Promise<void> {
+  const state = await readSyncState(adapter);
+  const current = normalizeBindingState(state.bindings[bindingId]);
+  const folders = { ...current.folders };
+  for (const key of folderKeys) {
+    const prev = folders[key] ?? { revision: null };
+    folders[key] = { ...prev, dirty: true };
+  }
+  state.bindings[bindingId] = {
+    ...current,
+    treeRevision:
+      treeRevision === undefined ? current.treeRevision : treeRevision,
+    folders,
+  };
+  await writeSyncState(adapter, state);
+}
+
+export async function clearFolderDirty(
+  adapter: WorkspaceAdapter,
+  bindingId: string,
+  folderKey: string,
+  revision: string,
+): Promise<void> {
+  const state = await readSyncState(adapter);
+  const current = normalizeBindingState(state.bindings[bindingId]);
+  state.bindings[bindingId] = {
+    ...current,
+    folders: {
+      ...current.folders,
+      [folderKey]: { revision, dirty: false },
+    },
+  };
+  await writeSyncState(adapter, state);
+}
+
+export { emptyBindingState };
 
 export async function readPushQueue(
   adapter: WorkspaceAdapter,

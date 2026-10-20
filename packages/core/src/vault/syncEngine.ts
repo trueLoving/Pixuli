@@ -1,12 +1,19 @@
-import type { StorageProvider, StorageProviderSync } from '../plugins/types';
+import type {
+  RemoteSyncTreeFile,
+  StorageProvider,
+  StorageProviderSync,
+} from '../plugins/types';
 import { hasStorageProviderSync } from '../plugins/types';
 import {
   appendPushQueue,
+  clearFolderDirty,
   getBindingSyncState,
+  markFoldersDirty,
   readConflicts,
   readPushQueue,
   updateBindingSyncState,
   writePushQueue,
+  type BindingSyncStateRecord,
   type QueuedPushOperation,
 } from './syncPersistence';
 import {
@@ -18,6 +25,16 @@ import {
   type SyncPushIntent,
 } from './syncApply';
 import { isSyncExcludedPath } from './syncPath';
+import {
+  buildSyncTreeFromPaths,
+  createEmptySyncTree,
+  folderKeyFromFilePath,
+  listDirtyFolderKeys,
+  normalizeFolderKey,
+  parseSyncTree,
+  touchFolderInTree,
+  type SyncTreeFile,
+} from './syncTree';
 import type {
   LocalImageIndexEntry,
   LocalVault,
@@ -44,9 +61,9 @@ export interface CreateSyncEngineOptions {
 }
 
 /**
- * SyncEngine（REF-607 P3）：持久化 push 队列、单向 pull、游标。
- * 普通 push 只发送本地变更，同一路径多次入队合并成一次；
- * `overwriteRemote` 才整库覆盖远端。pull 仍以远端为准覆盖本地。
+ * SyncEngine：文件夹协商缓存同步。
+ * 先拉 sync-tree 比对 revision；未变跳过；脏夹进目录再拉文件。
+ * `.pixuli` 仅本机；远端只写 sync-tree + 各层 manifest。
  */
 export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
   const {
@@ -74,6 +91,236 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     return bindings[0];
   };
 
+  const emptyResult = (): SyncRunResult => ({
+    pushed: 0,
+    pulled: 0,
+    conflicts: [],
+    errors: [],
+  });
+
+  async function pullFolderLayer(
+    binding: SyncEngineBinding,
+    provider: StorageProvider & StorageProviderSync,
+    folderKey: string,
+    remoteRevision: string | null,
+  ): Promise<{ pulled: number; conflicts: SyncRunResult['conflicts'] }> {
+    const pullResult = await provider.syncPull({
+      pathPrefix: folderKey,
+      shallow: true,
+    });
+    await ensureLocalFolders(vault, [
+      ...(pullResult.folderKeys ?? []),
+      folderKey,
+    ]);
+    const applied = await applySyncPull(
+      vault,
+      binding.bindingId,
+      pullResult,
+      provider,
+      { fetchFn },
+    );
+    const stampRevision = remoteRevision ?? pullResult.nextCursor ?? nowIso();
+    await clearFolderDirty(
+      vault.adapter,
+      binding.bindingId,
+      folderKey,
+      stampRevision,
+    );
+    return applied;
+  }
+
+  async function negotiatePull(
+    binding: SyncEngineBinding,
+    provider: StorageProvider & StorageProviderSync,
+    pathPrefix?: string,
+  ): Promise<SyncRunResult> {
+    const result = emptyResult();
+    const bindingState = await getBindingSyncState(
+      vault.adapter,
+      binding.bindingId,
+    );
+    const immediateKey = normalizeFolderKey(pathPrefix ?? '');
+
+    const remoteTree = await fetchRemoteSyncTree(provider);
+    if (!remoteTree) {
+      return legacyFullPull(binding, provider, bindingState, result);
+    }
+
+    const dirty = listDirtyFolderKeys(
+      remoteTree,
+      bindingState.folders,
+      bindingState.treeRevision,
+    );
+
+    await ensureLocalFolders(vault, Object.keys(remoteTree.folders));
+
+    if (dirty.length === 0) {
+      await updateBindingSyncState(vault.adapter, binding.bindingId, {
+        cursor: remoteTree.revision,
+        treeRevision: remoteTree.revision,
+        lastSyncAt: nowIso(),
+      });
+      return {
+        ...result,
+        skipped: true,
+        dirtyFolders: [],
+      };
+    }
+
+    await markFoldersDirty(
+      vault.adapter,
+      binding.bindingId,
+      dirty,
+      remoteTree.revision,
+    );
+
+    const remaining = dirty.filter(key => key !== immediateKey);
+    if (dirty.includes(immediateKey)) {
+      const folderRev = remoteTree.folders[immediateKey]?.revision ?? null;
+      const applied = await pullFolderLayer(
+        binding,
+        provider,
+        immediateKey,
+        folderRev,
+      );
+      result.pulled += applied.pulled;
+      result.conflicts.push(...applied.conflicts);
+    }
+
+    await updateBindingSyncState(vault.adapter, binding.bindingId, {
+      cursor: remoteTree.revision,
+      treeRevision: remoteTree.revision,
+      lastSyncAt: nowIso(),
+    });
+
+    result.dirtyFolders = remaining;
+    return result;
+  }
+
+  async function legacyFullPull(
+    binding: SyncEngineBinding,
+    provider: StorageProvider & StorageProviderSync,
+    bindingState: BindingSyncStateRecord,
+    result: SyncRunResult,
+  ): Promise<SyncRunResult> {
+    const pullResult = await provider.syncPull({
+      since: bindingState.cursor ?? undefined,
+    });
+    const applied = await applySyncPull(
+      vault,
+      binding.bindingId,
+      pullResult,
+      provider,
+      { fetchFn },
+    );
+    result.pulled += applied.pulled;
+    result.conflicts.push(...applied.conflicts);
+
+    const tree = buildSyncTreeFromPaths(
+      pullResult.items.map(item => item.remotePath),
+      pullResult.folderKeys ?? [],
+    );
+    if (typeof provider.writeSyncTree === 'function') {
+      try {
+        await provider.writeSyncTree(toRemoteTree(tree));
+      } catch {
+        // 旧仓无写权限时忽略；本地仍记 stamp
+      }
+    }
+    await updateBindingSyncState(vault.adapter, binding.bindingId, {
+      cursor: pullResult.nextCursor ?? tree.revision,
+      treeRevision: tree.revision,
+      lastSyncAt: nowIso(),
+      folders: Object.fromEntries(
+        Object.entries(tree.folders).map(([key, stamp]) => [
+          key,
+          { revision: stamp.revision, dirty: false },
+        ]),
+      ),
+    });
+    return result;
+  }
+
+  async function pushWithTree(
+    binding: SyncEngineBinding,
+    provider: StorageProvider & StorageProviderSync,
+    overwriteRemote: boolean,
+  ): Promise<number> {
+    const beforeEntries = await vault.list({ includeDeleted: true });
+    const pendingFolders = new Set<string>();
+    for (const entry of beforeEntries) {
+      if (intentFromEntry(entry, overwriteRemote, binding.bindingId)) {
+        pendingFolders.add(folderKeyFromFilePath(entry.relativePath));
+      }
+    }
+    const queue = await readPushQueue(vault.adapter);
+    for (const op of queue) {
+      pendingFolders.add(folderKeyFromFilePath(op.relativePath));
+    }
+    for (const op of memoryQueue) {
+      pendingFolders.add(folderKeyFromFilePath(op.relativePath));
+    }
+
+    if (pendingFolders.size === 0 && !overwriteRemote) {
+      return 0;
+    }
+
+    const pushed = await flushPushQueue(
+      vault,
+      binding,
+      provider,
+      readFileBytes,
+      memoryQueue,
+      { overwriteRemote },
+    );
+
+    if (pushed === 0 && !overwriteRemote) {
+      return 0;
+    }
+
+    const at = nowIso();
+    let tree = (await fetchRemoteSyncTree(provider)) ?? createEmptySyncTree(at);
+    const entries = await vault.list({ includeDeleted: true });
+    const localFolders = await vault.listFolders();
+    if (overwriteRemote || !tree.folders['']) {
+      tree = buildSyncTreeFromPaths(
+        entries.filter(e => !e.deletedAt).map(e => e.relativePath),
+        localFolders,
+        at,
+      );
+    } else {
+      for (const key of pendingFolders) {
+        tree = touchFolderInTree(tree, key, at);
+      }
+      for (const key of localFolders) {
+        if (!tree.folders[normalizeFolderKey(key)]) {
+          tree = touchFolderInTree(tree, key, at);
+        }
+      }
+    }
+
+    if (typeof provider.writeSyncTree === 'function') {
+      await provider.writeSyncTree(toRemoteTree(tree));
+    }
+
+    const folders: BindingSyncStateRecord['folders'] = {
+      ...(await getBindingSyncState(vault.adapter, binding.bindingId)).folders,
+    };
+    for (const [key, stamp] of Object.entries(tree.folders)) {
+      if (pendingFolders.has(key) || overwriteRemote) {
+        folders[key] = { revision: stamp.revision, dirty: false };
+      }
+    }
+    await updateBindingSyncState(vault.adapter, binding.bindingId, {
+      cursor: tree.revision,
+      treeRevision: tree.revision,
+      lastSyncAt: at,
+      folders,
+    });
+
+    return pushed;
+  }
+
   return {
     async enqueuePush(op) {
       memoryQueue.push(op);
@@ -94,6 +341,10 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
           vault.adapter,
           binding.bindingId,
         );
+        const dirtyFolders = Object.entries(record.folders)
+          .filter(([, stamp]) => stamp.dirty)
+          .map(([key]) => key)
+          .sort();
         stateBindings[binding.bindingId] = {
           cursor: record.cursor,
           lastSyncAt: record.lastSyncAt,
@@ -103,6 +354,8 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             binding.bindingId,
             fallbackBindingId,
           ).size,
+          treeRevision: record.treeRevision,
+          dirtyFolders,
         };
         if (
           record.lastSyncAt &&
@@ -136,26 +389,96 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       };
     },
 
+    async listDirtyFolders(bindingId?: string): Promise<string[]> {
+      const binding = resolveBinding(bindingId);
+      const record = await getBindingSyncState(
+        vault.adapter,
+        binding.bindingId,
+      );
+      return Object.entries(record.folders)
+        .filter(([, stamp]) => stamp.dirty)
+        .map(([key]) => key)
+        .sort();
+    },
+
+    async syncFolder(
+      folderPath: string,
+      folderOptions?: { bindingId?: string; direction?: 'pull' | 'push' },
+    ): Promise<SyncRunResult> {
+      const direction = folderOptions?.direction ?? 'pull';
+      const binding = resolveBinding(folderOptions?.bindingId);
+      const provider = assertSyncProvider(binding.provider);
+      const result = emptyResult();
+      const folderKey = normalizeFolderKey(folderPath);
+
+      if (direction === 'push') {
+        try {
+          result.pushed += await pushWithTree(binding, provider, false);
+        } catch (error) {
+          result.errors.push({
+            path: folderKey || 'push',
+            message: error instanceof Error ? error.message : 'Push failed',
+          });
+        }
+        return result;
+      }
+
+      try {
+        const bindingState = await getBindingSyncState(
+          vault.adapter,
+          binding.bindingId,
+        );
+        const stamp = bindingState.folders[folderKey];
+        if (stamp && !stamp.dirty) {
+          return { ...result, skipped: true, dirtyFolders: [] };
+        }
+
+        const remoteTree = await fetchRemoteSyncTree(provider);
+        const folderRev = remoteTree?.folders[folderKey]?.revision ?? null;
+        const applied = await pullFolderLayer(
+          binding,
+          provider,
+          folderKey,
+          folderRev,
+        );
+        result.pulled += applied.pulled;
+        result.conflicts.push(...applied.conflicts);
+        if (remoteTree) {
+          await updateBindingSyncState(vault.adapter, binding.bindingId, {
+            cursor: remoteTree.revision,
+            treeRevision: remoteTree.revision,
+            lastSyncAt: nowIso(),
+          });
+        } else {
+          await updateBindingSyncState(vault.adapter, binding.bindingId, {
+            lastSyncAt: nowIso(),
+          });
+        }
+        result.dirtyFolders = await listDirtyFoldersRemaining(
+          vault,
+          binding.bindingId,
+        );
+      } catch (error) {
+        result.errors.push({
+          path: folderKey || 'pull',
+          message: error instanceof Error ? error.message : 'Pull failed',
+        });
+      }
+      return result;
+    },
+
     async run(runOptions?: SyncRunOptions): Promise<SyncRunResult> {
       const direction = runOptions?.direction ?? 'both';
       const binding = resolveBinding(runOptions?.bindingId);
       const provider = assertSyncProvider(binding.provider);
-      const result: SyncRunResult = {
-        pushed: 0,
-        pulled: 0,
-        conflicts: [],
-        errors: [],
-      };
+      const result = emptyResult();
 
       if (direction === 'push' || direction === 'both') {
         try {
-          result.pushed += await flushPushQueue(
-            vault,
+          result.pushed += await pushWithTree(
             binding,
             provider,
-            readFileBytes,
-            memoryQueue,
-            { overwriteRemote: runOptions?.overwriteRemote === true },
+            runOptions?.overwriteRemote === true,
           );
         } catch (error) {
           result.errors.push({
@@ -167,27 +490,16 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
 
       if (direction === 'pull' || direction === 'both') {
         try {
-          const bindingState = await getBindingSyncState(
-            vault.adapter,
-            binding.bindingId,
-          );
-          const pullResult = await provider.syncPull({
-            since: bindingState.cursor ?? undefined,
-          });
-          const applied = await applySyncPull(
-            vault,
-            binding.bindingId,
-            pullResult,
+          const negotiated = await negotiatePull(
+            binding,
             provider,
-            { fetchFn },
+            runOptions?.pathPrefix,
           );
-          result.pulled += applied.pulled;
-          result.conflicts.push(...applied.conflicts);
-
-          await updateBindingSyncState(vault.adapter, binding.bindingId, {
-            cursor: pullResult.nextCursor ?? nowIso(),
-            lastSyncAt: nowIso(),
-          });
+          result.pulled += negotiated.pulled;
+          result.conflicts.push(...negotiated.conflicts);
+          result.dirtyFolders = negotiated.dirtyFolders;
+          result.skipped = negotiated.skipped;
+          result.errors.push(...negotiated.errors);
         } catch (error) {
           result.errors.push({
             path: 'pull',
@@ -205,6 +517,51 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       return result;
     },
   };
+}
+
+async function fetchRemoteSyncTree(
+  provider: StorageProvider & StorageProviderSync,
+): Promise<SyncTreeFile | null> {
+  if (typeof provider.readSyncTree !== 'function') {
+    return null;
+  }
+  const raw = await provider.readSyncTree();
+  return parseSyncTree(raw);
+}
+
+function toRemoteTree(tree: SyncTreeFile): RemoteSyncTreeFile {
+  return {
+    version: 1,
+    revision: tree.revision,
+    updatedAt: tree.updatedAt,
+    folders: tree.folders,
+  };
+}
+
+async function ensureLocalFolders(
+  vault: LocalVault,
+  folderKeys: string[],
+): Promise<void> {
+  const existing = new Set(await vault.listFolders());
+  for (const key of folderKeys) {
+    const normalized = normalizeFolderKey(key);
+    if (!normalized || existing.has(normalized)) {
+      continue;
+    }
+    await vault.createFolder(normalized);
+    existing.add(normalized);
+  }
+}
+
+async function listDirtyFoldersRemaining(
+  vault: LocalVault,
+  bindingId: string,
+): Promise<string[]> {
+  const record = await getBindingSyncState(vault.adapter, bindingId);
+  return Object.entries(record.folders)
+    .filter(([, stamp]) => stamp.dirty)
+    .map(([key]) => key)
+    .sort();
 }
 
 async function flushPushQueue(
@@ -243,7 +600,6 @@ async function flushPushQueue(
 
   for (const entry of entries) {
     if (entry.deletedAt && !entry.remotePath) {
-      // 从未成功上云的 tombstone：只清本地，勿对远端 DELETE（易 404 拖垮整批）
       await vault.removeEntry(entry.relativePath);
       continue;
     }
@@ -293,7 +649,6 @@ async function flushPushQueue(
     readFileBytes,
   );
 
-  // 队列里可能仍指向已无 remotePath 的 delete：再滤一遍
   const items: Awaited<ReturnType<typeof buildSyncPushItems>> = [];
   for (const item of built) {
     if (item.action === 'delete') {

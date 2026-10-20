@@ -43,3 +43,28 @@ export function resolveRemotePathForPush(entry: {
 export function resolveLocalPathForPull(remotePath: string): string {
   return remotePath.replace(/^\/+/, '').replace(/\\/g, '/');
 }
+
+const SYNCABLE_ASSET_EXTENSIONS = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.bmp',
+  '.webp',
+  '.svg',
+  '.pdf',
+  '.mp4',
+  '.webm',
+  '.mov',
+  '.mkv',
+  '.avi',
+]);
+
+/** Git 树列举时是否纳入同步（图片 / PDF / 常见视频） */
+export function isSyncableAssetName(fileName: string): boolean {
+  const dot = fileName.lastIndexOf('.');
+  if (dot < 0) {
+    return false;
+  }
+  return SYNCABLE_ASSET_EXTENSIONS.has(fileName.slice(dot).toLowerCase());
+}
