@@ -54,18 +54,33 @@ export function useLibraryRoute() {
     folderPathForSearchRef.current = selectedFolderPath;
   }, [selectedFolderPath, clearCommittedSearch]);
 
+  const pullDirtyFolderIfNeeded = useWorkspaceStore(
+    state => state.pullDirtyFolderIfNeeded,
+  );
+
   useEffect(() => {
     if (!localActive) {
       return;
     }
-    void loadImages({
-      folderPath: selectedFolderPath,
-      searchAll: searchAllWorkspace,
-      searchQuery: searchQuery.trim() || undefined,
-    });
+    let cancelled = false;
+    void (async () => {
+      await pullDirtyFolderIfNeeded(selectedFolderPath);
+      if (cancelled) {
+        return;
+      }
+      await loadImages({
+        folderPath: selectedFolderPath,
+        searchAll: searchAllWorkspace,
+        searchQuery: searchQuery.trim() || undefined,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [
     localActive,
     loadImages,
+    pullDirtyFolderIfNeeded,
     selectedFolderPath,
     searchAllWorkspace,
     searchQuery,

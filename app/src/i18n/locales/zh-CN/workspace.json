@@ -53,6 +53,7 @@
     "syncNothingToPush": "没有待推送的本地项",
     "syncPushed": "已推送 {{count}} 项",
     "syncPulled": "已拉取 {{count}} 项",
+    "syncFoldersPending": "{{count}} 个文件夹待进入后再拉取",
     "syncConflicts": "{{count}} 项冲突需手动处理",
     "syncMessageJoin": "；",
     "advancedTitle": "高级",

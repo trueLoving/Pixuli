@@ -98,6 +98,11 @@ export interface StorageProvider {
     metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>>,
   ): Promise<ImageItem>;
   getRawUrl(path: string): string;
+  /**
+   * 带鉴权下载远端文件字节（pull 优先使用，避免公网 raw 无令牌 / CORS 失败）。
+   * 未实现时回退为 fetch(getRawUrl / metadata.url)。
+   */
+  downloadRemoteFile?(remotePath: string): Promise<Uint8Array>;
 }
 
 /**
@@ -113,7 +118,10 @@ export interface StorageProviderWithMetadata extends StorageProvider {
 /** REF-607：远端同步拉取 */
 export interface SyncPullOptions {
   since?: string;
+  /** 工作区相对目录；与 shallow 联用只拉该层 */
   pathPrefix?: string;
+  /** 为 true 时只含 pathPrefix 本层文件（不含子目录） */
+  shallow?: boolean;
 }
 
 export interface SyncPullResult {
@@ -124,6 +132,8 @@ export interface SyncPullResult {
     metadata?: Partial<ImageItem>;
   }>;
   nextCursor?: string;
+  /** 列举时顺带发现的子目录（相对工作区） */
+  folderKeys?: string[];
 }
 
 export interface SyncPushItem {
@@ -134,10 +144,20 @@ export interface SyncPushItem {
   metadata?: Partial<ImageItem>;
 }
 
+/** 远端文件夹协商摘要（与 vault/syncTree 对齐） */
+export interface RemoteSyncTreeFile {
+  version: 1;
+  revision: string;
+  updatedAt: string;
+  folders: Record<string, { revision: string; updatedAt: string }>;
+}
+
 export interface StorageProviderSync {
   syncPull(options?: SyncPullOptions): Promise<SyncPullResult>;
   syncPush(items: SyncPushItem[]): Promise<void>;
   getSyncCursor(): Promise<string | null>;
+  readSyncTree?(): Promise<RemoteSyncTreeFile | null>;
+  writeSyncTree?(tree: RemoteSyncTreeFile): Promise<void>;
 }
 
 export type { LinkKind };
