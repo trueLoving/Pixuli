@@ -56,17 +56,7 @@ export function normalizeStoredSourceEntry(
   if (!config) {
     config = pickStoredSourceConfig(raw);
   }
-  if (!config) {
-    return null;
-  }
-  if (
-    !pluginId &&
-    typeof config.accessToken === 'string' &&
-    typeof config.owner !== 'string'
-  ) {
-    pluginId = 'onedrive';
-  }
-  if (!pluginId) {
+  if (!config || !pluginId || pluginId === 'onedrive') {
     return null;
   }
 

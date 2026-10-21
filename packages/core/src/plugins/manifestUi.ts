@@ -59,8 +59,6 @@ export function getManifestDescription(
 /** 已知内置插件 id。 */
 export function isKnownBuiltinPluginId(
   pluginId: string,
-): pluginId is 'github' | 'gitee' | 'onedrive' {
-  return (
-    pluginId === 'github' || pluginId === 'gitee' || pluginId === 'onedrive'
-  );
+): pluginId is 'github' | 'gitee' {
+  return pluginId === 'github' || pluginId === 'gitee';
 }

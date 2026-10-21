@@ -150,8 +150,6 @@ describe('ConnectionWizard', () => {
     expect(screen.queryByRole('button', { name: /oauth/i })).toBeNull();
     expect(screen.queryByText('Google Cloud')).toBeNull();
     expect(screen.queryByText('即将支持')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'OneDrive' })).toBeNull();
-
     fireEvent.click(screen.getByRole('button', { name: /GitHub/ }));
     fireEvent.click(screen.getByRole('button', { name: '继续' }));
 
@@ -252,36 +250,5 @@ describe('ConnectionWizard', () => {
       'src-1',
     );
     expect(onComplete).toHaveBeenCalled();
-  });
-
-  it('hides OneDrive from the service list', () => {
-    render(
-      <ConnectionWizard
-        manifests={[
-          ...manifests,
-          {
-            id: 'onedrive',
-            name: 'OneDrive',
-            version: '1.0.0',
-            capabilities: {
-              list: true,
-              upload: true,
-              delete: true,
-              updateMetadata: true,
-              sync: true,
-            },
-            auth: { modes: ['oauthBrowser'] },
-          },
-        ]}
-        t={makeModalTranslate(copy)}
-        onCancel={vi.fn()}
-        onComplete={onComplete}
-      />,
-    );
-
-    expect(screen.queryByRole('button', { name: /OneDrive/ })).toBeNull();
-    expect(
-      screen.queryByRole('button', { name: '使用 Microsoft 账号登录' }),
-    ).toBeNull();
   });
 });

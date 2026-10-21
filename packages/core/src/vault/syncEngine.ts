@@ -28,6 +28,7 @@ import { isSyncExcludedPath } from './syncPath';
 import {
   buildSyncTreeFromPaths,
   createEmptySyncTree,
+  folderKeyAndAncestors,
   folderKeyFromFilePath,
   listDirtyFolderKeys,
   normalizeFolderKey,
@@ -108,10 +109,10 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       pathPrefix: folderKey,
       shallow: true,
     });
-    await ensureLocalFolders(vault, [
-      ...(pullResult.folderKeys ?? []),
-      folderKey,
-    ]);
+    const discovered = [...(pullResult.folderKeys ?? []), folderKey].map(
+      normalizeFolderKey,
+    );
+    await ensureLocalFolders(vault, discovered);
     const applied = await applySyncPull(
       vault,
       binding.bindingId,
@@ -126,6 +127,21 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       folderKey,
       stampRevision,
     );
+    const state = await getBindingSyncState(vault.adapter, binding.bindingId);
+    const unmarkedChildren = discovered.filter(key => {
+      if (!key || key === folderKey) {
+        return false;
+      }
+      const stamp = state.folders[key];
+      return !stamp || stamp.dirty || !stamp.revision;
+    });
+    if (unmarkedChildren.length > 0) {
+      await markFoldersDirty(
+        vault.adapter,
+        binding.bindingId,
+        unmarkedChildren,
+      );
+    }
     return applied;
   }
 
@@ -174,7 +190,6 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       remoteTree.revision,
     );
 
-    const remaining = dirty.filter(key => key !== immediateKey);
     if (dirty.includes(immediateKey)) {
       const folderRev = remoteTree.folders[immediateKey]?.revision ?? null;
       const applied = await pullFolderLayer(
@@ -193,7 +208,10 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       lastSyncAt: nowIso(),
     });
 
-    result.dirtyFolders = remaining;
+    result.dirtyFolders = await listDirtyFoldersRemaining(
+      vault,
+      binding.bindingId,
+    );
     return result;
   }
 
@@ -248,17 +266,24 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
   ): Promise<number> {
     const beforeEntries = await vault.list({ includeDeleted: true });
     const pendingFolders = new Set<string>();
+    const rememberPending = (relativePath: string) => {
+      for (const key of folderKeyAndAncestors(
+        folderKeyFromFilePath(relativePath),
+      )) {
+        pendingFolders.add(key);
+      }
+    };
     for (const entry of beforeEntries) {
       if (intentFromEntry(entry, overwriteRemote, binding.bindingId)) {
-        pendingFolders.add(folderKeyFromFilePath(entry.relativePath));
+        rememberPending(entry.relativePath);
       }
     }
     const queue = await readPushQueue(vault.adapter);
     for (const op of queue) {
-      pendingFolders.add(folderKeyFromFilePath(op.relativePath));
+      rememberPending(op.relativePath);
     }
     for (const op of memoryQueue) {
-      pendingFolders.add(folderKeyFromFilePath(op.relativePath));
+      rememberPending(op.relativePath);
     }
 
     if (pendingFolders.size === 0 && !overwriteRemote) {
@@ -293,8 +318,12 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
         tree = touchFolderInTree(tree, key, at);
       }
       for (const key of localFolders) {
-        if (!tree.folders[normalizeFolderKey(key)]) {
-          tree = touchFolderInTree(tree, key, at);
+        const normalized = normalizeFolderKey(key);
+        if (!tree.folders[normalized]) {
+          for (const ancestor of folderKeyAndAncestors(normalized)) {
+            pendingFolders.add(ancestor);
+          }
+          tree = touchFolderInTree(tree, normalized, at);
         }
       }
     }

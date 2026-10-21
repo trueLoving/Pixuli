@@ -31,6 +31,25 @@ export function folderKeyFromFilePath(relativePath: string): string {
   return slash < 0 ? '' : normalized.slice(0, slash);
 }
 
+/**
+ * 该目录以及每一层祖先，含根 `""`。
+ * `images/trip` → `images/trip`、`images`、`""`。
+ * 只含子文件夹的中间层也必须有戳，否则进父目录不会拉这一层，子文件夹对不上。
+ */
+export function folderKeyAndAncestors(folderKey: string): string[] {
+  const key = normalizeFolderKey(folderKey);
+  if (!key) {
+    return [''];
+  }
+  const parts = key.split('/');
+  const keys: string[] = [];
+  for (let index = parts.length; index >= 1; index -= 1) {
+    keys.push(parts.slice(0, index).join('/'));
+  }
+  keys.push('');
+  return keys;
+}
+
 export function createEmptySyncTree(updatedAt = nowIso()): SyncTreeFile {
   return {
     version: SYNC_TREE_VERSION,
@@ -104,10 +123,14 @@ export function buildSyncTreeFromPaths(
 ): SyncTreeFile {
   const folders = new Set<string>(['']);
   for (const path of filePaths) {
-    folders.add(folderKeyFromFilePath(path));
+    for (const key of folderKeyAndAncestors(folderKeyFromFilePath(path))) {
+      folders.add(key);
+    }
   }
   for (const key of folderKeys) {
-    folders.add(normalizeFolderKey(key));
+    for (const ancestor of folderKeyAndAncestors(key)) {
+      folders.add(ancestor);
+    }
   }
   const tree = createEmptySyncTree(at);
   tree.revision = at;
@@ -124,17 +147,16 @@ export function listDirtyFolderKeys(
   localFolders: Record<string, { revision: string | null; dirty?: boolean }>,
   localTreeRevision: string | null,
 ): string[] {
-  if (localTreeRevision && localTreeRevision === remote.revision) {
-    const forced = Object.entries(localFolders)
-      .filter(([, stamp]) => stamp.dirty)
-      .map(([key]) => key);
-    return forced;
-  }
   const dirty = new Set<string>();
-  for (const [key, remoteStamp] of Object.entries(remote.folders)) {
-    const local = localFolders[key];
-    if (!local || local.dirty || local.revision !== remoteStamp.revision) {
-      dirty.add(key);
+  const treeMatches = Boolean(
+    localTreeRevision && localTreeRevision === remote.revision,
+  );
+  if (!treeMatches) {
+    for (const [key, remoteStamp] of Object.entries(remote.folders)) {
+      const local = localFolders[key];
+      if (!local || local.dirty || local.revision !== remoteStamp.revision) {
+        dirty.add(key);
+      }
     }
   }
   for (const [key, local] of Object.entries(localFolders)) {
@@ -142,7 +164,30 @@ export function listDirtyFolderKeys(
       dirty.add(key);
     }
   }
+  for (const key of missingAncestorKeys(remote, localFolders)) {
+    dirty.add(key);
+  }
   return [...dirty].sort();
+}
+
+/** 远端树缺中间层时，本地还没有干净戳的祖先也要拉一次，才能列出子文件夹。 */
+function missingAncestorKeys(
+  remote: SyncTreeFile,
+  localFolders: Record<string, { revision: string | null; dirty?: boolean }>,
+): string[] {
+  const missing: string[] = [];
+  for (const key of Object.keys(remote.folders)) {
+    for (const ancestor of folderKeyAndAncestors(key)) {
+      if (remote.folders[ancestor]) {
+        continue;
+      }
+      const local = localFolders[ancestor];
+      if (!local || local.dirty || !local.revision) {
+        missing.push(ancestor);
+      }
+    }
+  }
+  return missing;
 }
 
 export function touchFolderInTree(
@@ -150,14 +195,14 @@ export function touchFolderInTree(
   folderKey: string,
   at = nowIso(),
 ): SyncTreeFile {
-  const key = normalizeFolderKey(folderKey);
+  const folders = { ...tree.folders };
+  for (const key of folderKeyAndAncestors(folderKey)) {
+    folders[key] = { revision: at, updatedAt: at };
+  }
   return {
     ...tree,
     revision: at,
     updatedAt: at,
-    folders: {
-      ...tree.folders,
-      [key]: { revision: at, updatedAt: at },
-    },
+    folders,
   };
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSyncTreeFromPaths,
   createEmptySyncTree,
+  folderKeyAndAncestors,
   folderKeyFromFilePath,
   listDirtyFolderKeys,
   normalizeFolderKey,
@@ -63,11 +64,43 @@ describe('syncTree', () => {
     expect(forced).toEqual(['images']);
   });
 
-  it('touchFolderInTree bumps root and folder revision', () => {
+  it('includes ancestor folders when a file only lives in a nested folder', () => {
+    const remote = buildSyncTreeFromPaths(
+      ['images/trip/a.jpg'],
+      [],
+      'rev-nested',
+    );
+    expect(Object.keys(remote.folders).sort()).toEqual([
+      '',
+      'images',
+      'images/trip',
+    ]);
+  });
+
+  it('marks a missing ancestor dirty so the parent layer can be listed', () => {
+    const remote = buildSyncTreeFromPaths(
+      ['images/trip/a.jpg'],
+      [],
+      'rev-nested',
+    );
+    delete remote.folders.images;
+    const dirty = listDirtyFolderKeys(
+      remote,
+      {
+        '': { revision: 'rev-nested' },
+        'images/trip': { revision: 'rev-nested' },
+      },
+      'rev-nested',
+    );
+    expect(dirty).toEqual(['images']);
+  });
+
+  it('touchFolderInTree bumps the folder and its ancestors', () => {
     const base = createEmptySyncTree('t0');
-    const next = touchFolderInTree(base, 'images', 't1');
+    const next = touchFolderInTree(base, 'images/trip', 't1');
     expect(next.revision).toBe('t1');
+    expect(next.folders['images/trip']?.revision).toBe('t1');
     expect(next.folders.images?.revision).toBe('t1');
-    expect(next.folders['']?.revision).toBe('t0');
+    expect(next.folders['']?.revision).toBe('t1');
   });
 });

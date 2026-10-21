@@ -508,4 +508,85 @@ describe('createSyncEngine', () => {
     expect((await vault.getByPath('images/a.jpg'))?.syncState).toBe('synced');
     expect(await engine.listDirtyFolders()).not.toContain('images');
   });
+
+  it('keeps a nested file on the child layer and pulls the parent first', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const remoteBytes = new Uint8Array([4, 5, 6]);
+    const pullCalls: string[] = [];
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-nested',
+      updatedAt: '2026-01-03T00:00:00.000Z',
+      folders: {
+        '': { revision: 'r0', updatedAt: '2026-01-03T00:00:00.000Z' },
+        images: { revision: 'r1', updatedAt: '2026-01-03T00:00:00.000Z' },
+        'images/trip': {
+          revision: 'r2',
+          updatedAt: '2026-01-03T00:00:00.000Z',
+        },
+      },
+    };
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => tree,
+      syncPull: async options => {
+        pullCalls.push(options?.pathPrefix ?? '');
+        if (options?.pathPrefix === 'images/trip') {
+          return {
+            items: [
+              {
+                remotePath: 'images/trip/a.jpg',
+                action: 'add' as const,
+                metadata: {
+                  name: 'a.jpg',
+                  updatedAt: '2026-01-03T00:00:00.000Z',
+                  url: 'https://example.test/images/trip/a.jpg',
+                },
+              },
+            ],
+            folderKeys: [],
+          };
+        }
+        if (options?.pathPrefix === 'images') {
+          return { items: [], folderKeys: ['images/trip'] };
+        }
+        return { items: [], folderKeys: ['images'] };
+      },
+      downloadRemoteFile: async () => remoteBytes,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    const negotiated = await engine.run({
+      direction: 'pull',
+      pathPrefix: '',
+    });
+    expect(negotiated.dirtyFolders).toEqual(
+      expect.arrayContaining(['images', 'images/trip']),
+    );
+    expect(await vault.listFolders()).toEqual(
+      expect.arrayContaining(['images']),
+    );
+    expect(await vault.getByPath('images/trip/a.jpg')).toBeNull();
+
+    const parent = await engine.syncFolder('images', { direction: 'pull' });
+    expect(parent.pulled).toBe(0);
+    expect(await vault.listFolders()).toEqual(
+      expect.arrayContaining(['images', 'images/trip']),
+    );
+    expect(await vault.getByPath('images/trip/a.jpg')).toBeNull();
+    expect(await engine.listDirtyFolders()).toContain('images/trip');
+    expect(await engine.listDirtyFolders()).not.toContain('images');
+
+    const child = await engine.syncFolder('images/trip', { direction: 'pull' });
+    expect(child.pulled).toBe(1);
+    expect((await vault.getByPath('images/trip/a.jpg'))?.syncState).toBe(
+      'synced',
+    );
+    expect(pullCalls).toEqual(['', 'images', 'images/trip']);
+  });
 });

@@ -16,7 +16,7 @@
 
 ```text
 app/src/storage/registry.ts
-  bootstrap → registerGitHubProvider / registerGiteeProvider / registerOneDriveProvider
+  bootstrap → registerGitHubProvider / registerGiteeProvider
   createConfiguredStorageProvider(pluginId, config)
         │
         ▼
@@ -26,11 +26,10 @@ StoragePluginRegistry.create(pluginId, ctx)
 @pixuli/provider-*  implements StorageProvider
 ```
 
-| 包                          | pluginId   | 注册                       |
-| --------------------------- | ---------- | -------------------------- |
-| `@pixuli/provider-github`   | `github`   | `registerGitHubProvider`   |
-| `@pixuli/provider-gitee`    | `gitee`    | `registerGiteeProvider`    |
-| `@pixuli/provider-onedrive` | `onedrive` | `registerOneDriveProvider` |
+| 包                        | pluginId | 注册                     |
+| ------------------------- | -------- | ------------------------ |
+| `@pixuli/provider-github` | `github` | `registerGitHubProvider` |
+| `@pixuli/provider-gitee`  | `gitee`  | `registerGiteeProvider`  |
 
 `exports` 直指 `src`（含 `./register`）；Vite / vitest 直接编译，无需先
 `build:packages`。

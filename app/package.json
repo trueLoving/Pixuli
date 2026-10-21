@@ -47,7 +47,6 @@
     "@pixuli/core": "workspace:*",
     "@pixuli/provider-gitee": "workspace:*",
     "@pixuli/provider-github": "workspace:*",
-    "@pixuli/provider-onedrive": "workspace:*",
     "exifr": "^7.1.3",
     "fflate": "^0.8.2",
     "i18next": "^25.6.0",

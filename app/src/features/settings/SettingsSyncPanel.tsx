@@ -6,7 +6,6 @@ import { ConnectionWizard } from '@/features/settings/connection-wizard/Connecti
 import type { GitPatFieldValues } from '@/features/settings/git-connection/GitPatConnectionFields';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import type { OneDriveFieldValues } from '@/features/settings/connection-wizard/OneDriveConnectionFields';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -23,13 +22,6 @@ interface SettingsSyncPanelProps {
 function renderSourceTypeIcon(type: SidebarSource['type']) {
   if (type === 'github') {
     return <Github size={14} className="shrink-0 text-gray-700" />;
-  }
-  if (type === 'onedrive') {
-    return (
-      <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-sky-600 text-[9px] font-bold text-white">
-        云
-      </span>
-    );
   }
   return (
     <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-red-500 text-[9px] font-bold text-white">
@@ -71,34 +63,13 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const activeSyncSourceId = selectedSource?.id ?? null;
   const syncStatus = useWorkspaceStore(state => state.syncStatus);
 
-  const editingOneDrive = useMemo((): OneDriveFieldValues | null => {
-    if (editingSourcePluginId !== 'onedrive' || !editingSourceId) return null;
-    const source = sources.find(item => item.id === editingSourceId);
-    if (!source) return null;
-    const config = source.config;
-    return {
-      clientId: typeof config.clientId === 'string' ? config.clientId : '',
-      accessToken:
-        typeof config.accessToken === 'string' ? config.accessToken : '',
-      refreshToken:
-        typeof config.refreshToken === 'string' ? config.refreshToken : '',
-      path: typeof config.path === 'string' ? config.path : 'Pixuli',
-      ...(typeof config.expiresAt === 'number'
-        ? { expiresAt: config.expiresAt }
-        : {}),
-    };
-  }, [sources, editingSourceId, editingSourcePluginId]);
-
   const isGitEditing = Boolean(
     editingSourceId &&
       (editingSourcePluginId === 'github' ||
         editingSourcePluginId === 'gitee') &&
       editingSourceRepoConfig,
   );
-  const isOneDriveEditing = Boolean(
-    editingSourceId && editingSourcePluginId === 'onedrive',
-  );
-  const isEditing = isGitEditing || isOneDriveEditing;
+  const isEditing = isGitEditing;
   const wizardOpen = isEditing || addingSource;
 
   const editInitialValues = useMemo((): GitPatFieldValues | null => {
@@ -260,13 +231,11 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             initialPluginId={
               isEditing &&
               (editingSourcePluginId === 'github' ||
-                editingSourcePluginId === 'gitee' ||
-                editingSourcePluginId === 'onedrive')
+                editingSourcePluginId === 'gitee')
                 ? editingSourcePluginId
                 : addPrefillPluginId
             }
             initialValues={isGitEditing ? editInitialValues : null}
-            initialOneDrive={isOneDriveEditing ? editingOneDrive : null}
           />
         ) : null}
 

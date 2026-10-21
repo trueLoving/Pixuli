@@ -75,11 +75,6 @@
       "advancedPath": "挂载路径（高级）",
       "pathHint": "仓库内同步根目录，一般保持默认即可。"
     },
-    "onedrive": {
-      "login": "使用 Microsoft 账号登录",
-      "loginHint": "打开 Microsoft 登录并同意授权后，会自动回到这里并取得访问权限。不需要填写应用 ID 或令牌。",
-      "missingClient": "当前安装还没有配置 OneDrive 应用，暂时不能打开登录页。"
-    },
     "menuWorkspace": "工作区",
     "workspaceCurrentTitle": "当前工作区",
     "workspaceUnavailable": "当前平台不支持本地工作区。",

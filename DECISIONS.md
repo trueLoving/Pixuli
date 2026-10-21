@@ -68,7 +68,7 @@
 
 ## D3 · 同步路径（configRoot）与元数据 manifest
 
-> 详设：[docs/02-system-design/06-sync-path-and-metadata-design.md](docs/02-system-design/06-sync-path-and-metadata-design.md)  
+> 详设：[docs/02-system-design/04-local-workspace-sync.md](docs/02-system-design/04-local-workspace-sync.md)  
 > 日期：2026-08-31
 > · **无旧数据兼容**（产品尚未正式使用）
 
