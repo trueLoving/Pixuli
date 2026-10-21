@@ -75,11 +75,6 @@
       "advancedPath": "Mount path (advanced)",
       "pathHint": "Sync root inside the repository. The default is usually fine."
     },
-    "onedrive": {
-      "login": "Sign in with Microsoft",
-      "loginHint": "Microsoft sign-in opens in the browser. After you approve access, Pixuli receives the token automatically.",
-      "missingClient": "This build has no OneDrive app configured, so sign-in cannot start."
-    },
     "menuWorkspace": "Workspace",
     "workspaceCurrentTitle": "Current workspace",
     "workspaceUnavailable": "Local workspace is not supported on this platform.",

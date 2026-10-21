@@ -1,8 +1,4 @@
 /// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_ONEDRIVE_CLIENT_ID?: string;
-}
 /// <reference path="./types/service-worker.d.ts" />
 
 declare module 'virtual:pwa-register/react' {

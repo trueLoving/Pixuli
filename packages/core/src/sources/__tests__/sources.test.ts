@@ -187,34 +187,30 @@ describe('settings import and export', () => {
     createdAt: 1,
     updatedAt: 1,
   };
-  const onedrive = {
-    id: 'od-1',
-    label: 'Pixuli',
-    pluginId: 'onedrive',
-    config: {
-      accessToken: 'graph-token',
-      refreshToken: 'refresh',
-      path: 'Pixuli',
-    },
-    createdAt: 2,
-    updatedAt: 2,
-  };
-
   it('round-trips sources and the selected id', () => {
     const payload = buildSettingsExport({
-      sources: [github, onedrive],
-      selectedSourceId: 'od-1',
+      sources: [github],
+      selectedSourceId: 'gh-1',
     });
     const parsed = parseSettingsImport(payload);
-    expect(parsed?.sources.map(source => source.id)).toEqual(['gh-1', 'od-1']);
-    expect(parsed?.sources[1]?.config.accessToken).toBe('graph-token');
-    expect(parsed?.selectedSourceId).toBe('od-1');
+    expect(parsed?.sources.map(source => source.id)).toEqual(['gh-1']);
+    expect(parsed?.selectedSourceId).toBe('gh-1');
   });
 
-  it('accepts a stored OneDrive entry', () => {
-    const entry = normalizeStoredSourceEntry(onedrive);
-    expect(entry?.pluginId).toBe('onedrive');
-    expect(entry?.config.refreshToken).toBe('refresh');
+  it('drops a stored OneDrive entry', () => {
+    const entry = normalizeStoredSourceEntry({
+      id: 'od-1',
+      label: 'Pixuli',
+      pluginId: 'onedrive',
+      config: {
+        accessToken: 'graph-token',
+        refreshToken: 'refresh',
+        path: 'Pixuli',
+      },
+      createdAt: 2,
+      updatedAt: 2,
+    });
+    expect(entry).toBeNull();
   });
 
   it('wraps a legacy single-plugin export as one source', () => {

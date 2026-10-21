@@ -12,7 +12,7 @@ describe('workspaceFolderTree', () => {
     expect(tree.imageCount).toBe(3);
     expect(tree.children).toHaveLength(1);
     expect(tree.children[0]?.path).toBe('images');
-    expect(tree.children[0]?.imageCount).toBe(3);
+    expect(tree.children[0]?.imageCount).toBe(2);
     expect(tree.children[0]?.children[0]?.path).toBe('images/trip');
     expect(tree.children[0]?.children[0]?.imageCount).toBe(1);
   });

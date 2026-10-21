@@ -89,7 +89,7 @@
 | ------------------------------------------------------- | --------------------------------------------------------------- |
 | [02-performance](./02-performance.md)                   | 列表/缩略性能边界                                               |
 | [03-plugin-system](./03-plugin-system.md)               | Provider 契约与开发                                             |
-| [04-local-workspace-sync](./04-local-workspace-sync.md) | Vault + SyncEngine                                              |
+| [04-local-workspace-sync](./04-local-workspace-sync.md) | 工作区、同步路径、准入与流程                                    |
 | [05 发版](./05-release-versioning.md)                   | SemVer / tag / 检查清单                                         |
 | 三端工程入口                                            | [app/README.md](../../app/README.md)                            |
 | 决策 / 进度                                             | [DECISIONS.md](../../DECISIONS.md) · [PLANS.md](../../PLANS.md) |
@@ -100,5 +100,6 @@
 
 | 日期       | 说明                            |
 | ---------- | ------------------------------- |
+| 2026-10-21 | 文档地图：同步并入 04           |
 | 2026-08-25 | 瘦身：只保留现行架构总览        |
 | 2026-08-13 | 对齐 M3 / Capacitor / 无 Server |

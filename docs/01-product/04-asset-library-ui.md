@@ -13,9 +13,7 @@
   - [03-plugin-system.md](../02-system-design/03-plugin-system.md) —
     Provider 能力位
   - [04-local-workspace-sync.md](../02-system-design/04-local-workspace-sync.md)
-    — 同步引擎、内部账本
-  - [06-sync-path-and-metadata-design.md](../02-system-design/06-sync-path-and-metadata-design.md)
-    — configRoot、manifest（实现向）
+    — 同步引擎、configRoot、manifest
   - [PLANS.md](../../PLANS.md) — Issue 进度
 
 > **一句话**：本地文件库 + 显式同步 +
