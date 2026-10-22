@@ -449,6 +449,11 @@ describe('createSyncEngine', () => {
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
     await vault.open();
+    await vault.importFile(
+      new File([new Uint8Array([9])], 'keep.jpg', { type: 'image/jpeg' }),
+      'keep.jpg',
+      { syncState: 'synced' },
+    );
     const remoteBytes = new Uint8Array([1, 2, 3]);
     const pullCalls: Array<{ pathPrefix?: string; shallow?: boolean }> = [];
     const tree = {
@@ -498,7 +503,9 @@ describe('createSyncEngine', () => {
     });
     expect(negotiated.dirtyFolders).toContain('images');
     expect(await vault.listFolders()).toContain('images');
-    expect((await vault.list()).length).toBe(0);
+    expect((await vault.list()).map(entry => entry.relativePath)).toEqual([
+      'keep.jpg',
+    ]);
 
     const lazy = await engine.syncFolder('images', { direction: 'pull' });
     expect(lazy.pulled).toBe(1);
@@ -509,7 +516,7 @@ describe('createSyncEngine', () => {
     expect(await engine.listDirtyFolders()).not.toContain('images');
   });
 
-  it('keeps a nested file on the child layer and pulls the parent first', async () => {
+  it('downloads nested folder files when the workspace is empty', async () => {
     const adapter = new MemoryWorkspaceAdapter('desktop');
     await adapter.pickRoot();
     const vault = createLocalVault(adapter);
@@ -565,25 +572,11 @@ describe('createSyncEngine', () => {
       direction: 'pull',
       pathPrefix: '',
     });
-    expect(negotiated.dirtyFolders).toEqual(
-      expect.arrayContaining(['images', 'images/trip']),
-    );
-    expect(await vault.listFolders()).toEqual(
-      expect.arrayContaining(['images']),
-    );
-    expect(await vault.getByPath('images/trip/a.jpg')).toBeNull();
-
-    const parent = await engine.syncFolder('images', { direction: 'pull' });
-    expect(parent.pulled).toBe(0);
+    expect(negotiated.pulled).toBe(1);
+    expect(negotiated.dirtyFolders).toEqual([]);
     expect(await vault.listFolders()).toEqual(
       expect.arrayContaining(['images', 'images/trip']),
     );
-    expect(await vault.getByPath('images/trip/a.jpg')).toBeNull();
-    expect(await engine.listDirtyFolders()).toContain('images/trip');
-    expect(await engine.listDirtyFolders()).not.toContain('images');
-
-    const child = await engine.syncFolder('images/trip', { direction: 'pull' });
-    expect(child.pulled).toBe(1);
     expect((await vault.getByPath('images/trip/a.jpg'))?.syncState).toBe(
       'synced',
     );

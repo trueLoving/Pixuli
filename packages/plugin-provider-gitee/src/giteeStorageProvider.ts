@@ -20,6 +20,7 @@ import {
 } from '@pixuli/core/utils';
 import {
   commitSyncPush,
+  isPullableSyncFile,
   isSyncableAssetName,
   joinConfigRoot,
   listRepoImageBlobs,
@@ -769,6 +770,7 @@ export class GiteeStorageProvider
       return [];
     }
 
+    const manifest = await this.loadDirManifest(dirRelative);
     const results: Array<{ remotePath: string; item: any }> = [];
     for (const entry of response) {
       if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
@@ -781,7 +783,12 @@ export class GiteeStorageProvider
         results.push(...(await this.collectImageFiles(subDir)));
         continue;
       }
-      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
         const remotePath = dirRelative
           ? `${dirRelative}/${entry.name}`
           : entry.name;
@@ -1130,6 +1137,7 @@ export class GiteeStorageProvider
 
     const folderKeys: string[] = [];
     const fileEntries: Array<{ remotePath: string; item: any }> = [];
+    const manifest = await this.loadDirManifest(dirRelative);
     for (const entry of response) {
       if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
         continue;
@@ -1139,7 +1147,12 @@ export class GiteeStorageProvider
         folderKeys.push(sub);
         continue;
       }
-      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
         const remotePath = dirRelative
           ? `${dirRelative}/${entry.name}`
           : entry.name;
@@ -1147,7 +1160,6 @@ export class GiteeStorageProvider
       }
     }
 
-    const manifest = await this.loadDirManifest(dirRelative);
     const defaultDate = new Date().toISOString();
     const images: ImageItem[] = fileEntries.map(({ remotePath, item }) => {
       const fileName = basenameRelative(remotePath);

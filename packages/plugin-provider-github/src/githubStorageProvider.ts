@@ -17,6 +17,7 @@ import { buildProviderSidecarPayload } from '@pixuli/core/utils';
 import type { GitHubConfig } from '@pixuli/core/types';
 import {
   commitSyncPush,
+  isPullableSyncFile,
   isSyncableAssetName,
   joinConfigRoot,
   listRepoImageBlobs,
@@ -710,6 +711,7 @@ export class GitHubStorageProvider
       return [];
     }
 
+    const manifest = await this.loadDirManifest(dirRelative);
     const results: Array<{ remotePath: string; item: any }> = [];
     for (const entry of response) {
       if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
@@ -722,7 +724,12 @@ export class GitHubStorageProvider
         results.push(...(await this.collectImageFiles(subDir)));
         continue;
       }
-      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
         const remotePath = dirRelative
           ? `${dirRelative}/${entry.name}`
           : entry.name;
@@ -1054,6 +1061,7 @@ export class GitHubStorageProvider
 
     const folderKeys: string[] = [];
     const fileEntries: Array<{ remotePath: string; item: any }> = [];
+    const manifest = await this.loadDirManifest(dirRelative);
     for (const entry of response) {
       if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
         continue;
@@ -1063,7 +1071,12 @@ export class GitHubStorageProvider
         folderKeys.push(sub);
         continue;
       }
-      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
         const remotePath = dirRelative
           ? `${dirRelative}/${entry.name}`
           : entry.name;
@@ -1071,7 +1084,6 @@ export class GitHubStorageProvider
       }
     }
 
-    const manifest = await this.loadDirManifest(dirRelative);
     const images: ImageItem[] = fileEntries.map(({ remotePath, item }) => {
       const fileName = basenameRelative(remotePath);
       const entry = getManifestEntry(manifest, fileName);
