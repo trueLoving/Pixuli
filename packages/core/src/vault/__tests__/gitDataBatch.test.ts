@@ -175,6 +175,18 @@ describe('gitDataBatch', () => {
               size: 2,
             },
             { path: 'root/notes.txt', type: 'blob', sha: 'sha-t', size: 1 },
+            {
+              path: 'root/images/text/.metadata/manifest.json',
+              type: 'blob',
+              sha: 'sha-tm',
+              size: 2,
+            },
+            {
+              path: 'root/images/text/sentences.txt',
+              type: 'blob',
+              sha: 'sha-txt',
+              size: 8,
+            },
           ],
         };
       },
@@ -186,6 +198,11 @@ describe('gitDataBatch', () => {
     );
     expect(listed).toEqual([
       { workspacePath: 'images/a.jpg', sha: 'sha-a', size: 4 },
+      {
+        workspacePath: 'images/text/sentences.txt',
+        sha: 'sha-txt',
+        size: 8,
+      },
     ]);
   });
 });

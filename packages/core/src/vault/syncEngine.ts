@@ -190,7 +190,34 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       remoteTree.revision,
     );
 
-    if (dirty.includes(immediateKey)) {
+    const localFiles = await vault.list();
+    if (localFiles.length === 0) {
+      const pending = new Set(dirty);
+      const pulledKeys = new Set<string>();
+      while (pending.size > 0) {
+        const key = [...pending].sort()[0] ?? '';
+        pending.delete(key);
+        if (pulledKeys.has(key)) {
+          continue;
+        }
+        pulledKeys.add(key);
+        const folderRev = remoteTree.folders[key]?.revision ?? null;
+        const applied = await pullFolderLayer(
+          binding,
+          provider,
+          key,
+          folderRev,
+        );
+        result.pulled += applied.pulled;
+        result.conflicts.push(...applied.conflicts);
+        const still = await listDirtyFoldersRemaining(vault, binding.bindingId);
+        for (const next of still) {
+          if (!pulledKeys.has(next)) {
+            pending.add(next);
+          }
+        }
+      }
+    } else if (dirty.includes(immediateKey)) {
       const folderRev = remoteTree.folders[immediateKey]?.revision ?? null;
       const applied = await pullFolderLayer(
         binding,

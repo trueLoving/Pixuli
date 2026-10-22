@@ -355,6 +355,21 @@ export async function listRepoImageBlobs(
     return null;
   }
   const tree = Array.isArray(record?.tree) ? record.tree : [];
+  const manifestDirs = new Set<string>();
+  for (const node of tree) {
+    const entry = asRecord(node);
+    if (!entry || entry.type !== 'blob' || typeof entry.path !== 'string') {
+      continue;
+    }
+    const workspacePath = workspacePathFromRepoPath(
+      repo.configRoot,
+      entry.path,
+    );
+    const manifestDir = manifestDirectoryFromPath(workspacePath);
+    if (manifestDir !== null) {
+      manifestDirs.add(manifestDir);
+    }
+  }
   const images: RepoImageBlob[] = [];
   for (const node of tree) {
     const entry = asRecord(node);
@@ -372,7 +387,11 @@ export async function listRepoImageBlobs(
       continue;
     }
     const name = basenameRelative(workspacePath);
-    if (!isImageName(name)) {
+    const parent = folderKeyFromWorkspacePath(workspacePath);
+    if (
+      !isImageName(name) &&
+      !(manifestDirs.has(parent) && !name.startsWith('.'))
+    ) {
       continue;
     }
     const sha = typeof entry.sha === 'string' ? entry.sha : '';
@@ -386,4 +405,26 @@ export async function listRepoImageBlobs(
     });
   }
   return images;
+}
+
+function folderKeyFromWorkspacePath(workspacePath: string): string {
+  const slash = workspacePath.lastIndexOf('/');
+  return slash < 0 ? '' : workspacePath.slice(0, slash);
+}
+
+/** `images/text/.metadata/manifest.json` → `images/text`；不是清单则返回 null。 */
+function manifestDirectoryFromPath(
+  workspacePath: string | null,
+): string | null {
+  if (!workspacePath) {
+    return null;
+  }
+  const marker = '/.metadata/manifest.json';
+  if (workspacePath === '.metadata/manifest.json') {
+    return '';
+  }
+  if (!workspacePath.endsWith(marker)) {
+    return null;
+  }
+  return workspacePath.slice(0, -marker.length);
 }

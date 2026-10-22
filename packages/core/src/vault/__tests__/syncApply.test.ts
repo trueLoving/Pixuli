@@ -9,7 +9,11 @@ import {
   resolvePullDisplayName,
   resolveRemotePathForPush,
 } from '../syncApply';
-import { isSyncExcludedPath, isSyncableAssetName } from '../syncPath';
+import {
+  isPullableSyncFile,
+  isSyncExcludedPath,
+  isSyncableAssetName,
+} from '../syncPath';
 import type { StorageProvider } from '../../plugins/types';
 
 function createMockProvider(
@@ -44,6 +48,13 @@ describe('syncPath', () => {
     expect(isSyncableAssetName('doc.pdf')).toBe(true);
     expect(isSyncableAssetName('clip.mp4')).toBe(true);
     expect(isSyncableAssetName('notes.txt')).toBe(false);
+    expect(isPullableSyncFile('notes.txt')).toBe(false);
+    expect(
+      isPullableSyncFile('sentences.txt', { listedInManifest: true }),
+    ).toBe(true);
+    expect(isPullableSyncFile('.DS_Store', { listedInManifest: true })).toBe(
+      false,
+    );
   });
 });
 

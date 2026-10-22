@@ -68,3 +68,20 @@ export function isSyncableAssetName(fileName: string): boolean {
   }
   return SYNCABLE_ASSET_EXTENSIONS.has(fileName.slice(dot).toLowerCase());
 }
+
+/**
+ * 本层要拉取的文件。媒体扩展名始终纳入；
+ * 写进该目录 manifest 的其它文件（例如 .txt）也要纳入，否则子文件夹会拉成空的。
+ */
+export function isPullableSyncFile(
+  fileName: string,
+  options?: { listedInManifest?: boolean },
+): boolean {
+  if (!fileName || fileName.startsWith('.')) {
+    return false;
+  }
+  if (isSyncableAssetName(fileName)) {
+    return true;
+  }
+  return options?.listedInManifest === true;
+}
