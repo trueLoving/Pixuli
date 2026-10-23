@@ -118,13 +118,13 @@ export const WorkspaceManagePanel: React.FC = () => {
                   : t('workspace.setupHint')}
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <div className="flex flex-col gap-2 md:flex-row md:flex-wrap">
           {isMobileWorkspace && (
             <button
               type="button"
               onClick={() => void handlePick()}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60 md:w-auto"
             >
               <FolderOpen size={16} />
               {loading
@@ -137,7 +137,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick('fsa')}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60 md:w-auto"
             >
               <FolderSync size={16} />
               {loading ? t('workspace.picking') : t('workspace.connectFolder')}
@@ -148,7 +148,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick('opfs')}
               disabled={loading}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm disabled:opacity-60 ${
+              className={`inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 py-2 text-sm disabled:opacity-60 md:w-auto ${
                 canPickFolder ? 'pix-btn-secondary' : 'pix-btn-primary'
               }`}
             >
@@ -163,7 +163,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handlePick()}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 pix-btn-primary px-4 py-2 text-sm disabled:opacity-60 md:w-auto"
             >
               <FolderOpen size={16} />
               {loading ? t('workspace.picking') : t('workspace.pickFolder')}
@@ -275,13 +275,13 @@ export const WorkspaceManagePanel: React.FC = () => {
         <p className="mt-1 text-xs text-gray-500">
           {t('workspace.manageHint')}
         </p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-col gap-2 md:flex-row md:flex-wrap">
           {canPickFolder && (
             <button
               type="button"
               onClick={() => void handleSwitchWorkspace('fsa')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
             >
               <FolderSync size={16} />
               {loading ? t('workspace.picking') : t('workspace.switchFolder')}
@@ -292,7 +292,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handleSwitchWorkspace('opfs')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
             >
               <FolderOpen size={16} />
               {loading ? t('workspace.picking') : t('workspace.switchOpfs')}
@@ -303,7 +303,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handleSwitchWorkspace()}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
             >
               <FolderOpen size={16} />
               {loading
@@ -316,7 +316,7 @@ export const WorkspaceManagePanel: React.FC = () => {
               type="button"
               onClick={() => void handleSwitchWorkspace()}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
             >
               <FolderOpen size={16} />
               {loading ? t('workspace.picking') : t('workspace.switchFolder')}
@@ -326,7 +326,7 @@ export const WorkspaceManagePanel: React.FC = () => {
             type="button"
             onClick={handleClearWorkspace}
             disabled={busy}
-            className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-red-200 bg-white px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
           >
             {t('workspace.clearWorkspace')}
           </button>

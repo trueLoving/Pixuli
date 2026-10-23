@@ -1,6 +1,7 @@
 {
   "settings": {
     "title": "设置",
+    "back": "返回",
     "close": "关闭",
     "navLabel": "设置分类",
     "groupGeneral": "通用",

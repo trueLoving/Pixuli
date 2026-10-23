@@ -13,6 +13,7 @@ import {
   Clock,
 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { useI18n } from '@/i18n/useI18n';
 import { operationLogLocales } from '@/i18n/locales';
 
@@ -28,6 +29,7 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
   onClose,
   embedded = false,
 }) => {
+  const isMobile = useMobileViewport();
   const { t: i18nT, getCurrentLanguage } = useI18n();
   const currentLang = getCurrentLanguage();
   const locales =
@@ -175,9 +177,15 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
 
   const toolbar = (
     <div
-      className={`flex items-center justify-between border-b ${embedded ? 'pb-3' : 'p-4 pt-[max(1rem,env(safe-area-inset-top))]'}`}
+      className={`flex items-center border-b ${
+        embedded && isMobile
+          ? 'justify-start px-1 py-1'
+          : embedded
+            ? 'justify-between px-3 py-2'
+            : 'justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]'
+      }`}
     >
-      {!embedded ? (
+      {embedded && isMobile ? null : !embedded ? (
         <h2 className="text-lg font-semibold md:text-xl">{t('title')}</h2>
       ) : (
         <h3 className="text-base font-semibold text-gray-900">{t('title')}</h3>
@@ -351,7 +359,7 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
       )}
 
       {/* Logs List */}
-      <div className="flex-1 overflow-auto">
+      <div className={isMobile && embedded ? '' : 'flex-1 overflow-auto'}>
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500">Loading...</div>
@@ -362,43 +370,79 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
           </div>
         ) : (
           <div className="p-4">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100 sticky top-0">
-                <tr>
-                  <th className="p-2 text-left">{t('time')}</th>
-                  <th className="p-2 text-left">{t('action')}</th>
-                  <th className="p-2 text-left">{t('status')}</th>
-                  <th className="p-2 text-left">{t('imageName')}</th>
-                  <th className="p-2 text-left">{t('duration')}</th>
-                  <th className="p-2 text-left">{t('error')}</th>
-                </tr>
-              </thead>
-              <tbody>
+            {isMobile ? (
+              <ul className="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-200">
                 {logs.map(log => (
-                  <tr key={log.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2">{formatTime(log.timestamp)}</td>
-                    <td className="p-2">{getActionLabel(log.action)}</td>
-                    <td className="p-2">
-                      <div className="flex items-center gap-1">
+                  <li key={log.id} className="bg-white px-3 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium text-gray-900">
+                        {getActionLabel(log.action)}
+                      </p>
+                      <span className="inline-flex shrink-0 items-center gap-1 text-xs text-gray-600">
                         {getStatusIcon(log.status)}
-                        <span>
-                          {log.status === LogStatus.SUCCESS
-                            ? t('success')
-                            : log.status === LogStatus.FAILED
-                              ? t('failed')
-                              : t('pending')}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-2">{log.imageName || '-'}</td>
-                    <td className="p-2">
-                      {log.duration ? `${log.duration}ms` : '-'}
-                    </td>
-                    <td className="p-2 text-red-600">{log.error || '-'}</td>
-                  </tr>
+                        {log.status === LogStatus.SUCCESS
+                          ? t('success')
+                          : log.status === LogStatus.FAILED
+                            ? t('failed')
+                            : t('pending')}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {formatTime(log.timestamp)}
+                      {log.duration ? ` · ${log.duration}ms` : ''}
+                    </p>
+                    {log.imageName ? (
+                      <p className="mt-1 break-all text-sm text-gray-800">
+                        {log.imageName}
+                      </p>
+                    ) : null}
+                    {log.error ? (
+                      <p className="mt-1 break-words text-xs text-red-600">
+                        {log.error}
+                      </p>
+                    ) : null}
+                  </li>
                 ))}
-              </tbody>
-            </table>
+              </ul>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-gray-100">
+                  <tr>
+                    <th className="p-2 text-left">{t('time')}</th>
+                    <th className="p-2 text-left">{t('action')}</th>
+                    <th className="p-2 text-left">{t('status')}</th>
+                    <th className="p-2 text-left">{t('imageName')}</th>
+                    <th className="p-2 text-left">{t('duration')}</th>
+                    <th className="p-2 text-left">{t('error')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map(log => (
+                    <tr key={log.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2">{formatTime(log.timestamp)}</td>
+                      <td className="p-2">{getActionLabel(log.action)}</td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-1">
+                          {getStatusIcon(log.status)}
+                          <span>
+                            {log.status === LogStatus.SUCCESS
+                              ? t('success')
+                              : log.status === LogStatus.FAILED
+                                ? t('failed')
+                                : t('pending')}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2">{log.imageName || '-'}</td>
+                      <td className="p-2">
+                        {log.duration ? `${log.duration}ms` : '-'}
+                      </td>
+                      <td className="p-2 text-red-600">{log.error || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         )}
       </div>
@@ -407,7 +451,9 @@ const OperationLogModal: React.FC<OperationLogModalProps> = ({
 
   if (embedded) {
     return (
-      <div className="operation-log-embedded flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div
+        className={`operation-log-embedded flex min-h-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white ${isMobile ? '' : 'flex-1'}`}
+      >
         {body}
       </div>
     );

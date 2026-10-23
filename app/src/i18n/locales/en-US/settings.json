@@ -1,6 +1,7 @@
 {
   "settings": {
     "title": "Settings",
+    "back": "Back",
     "close": "Close",
     "navLabel": "Settings sections",
     "groupGeneral": "General",
