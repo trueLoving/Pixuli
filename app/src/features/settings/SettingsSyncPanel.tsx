@@ -167,7 +167,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   return (
     <div className="space-y-8">
       <section>
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
               {t('settings.sourcesTitle')}
@@ -180,14 +180,14 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             </p>
           </div>
           {!wizardOpen ? (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
               <button
                 type="button"
                 onClick={() => {
                   void handleExportConfig();
                 }}
                 disabled={sources.length === 0}
-                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
               >
                 <Download size={16} />
                 {t('settings.exportConfig')}
@@ -195,7 +195,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
               <button
                 type="button"
                 onClick={handleImportConfig}
-                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 md:min-h-0 md:w-auto md:py-1.5"
               >
                 <Upload size={16} />
                 {t('settings.importConfig')}
@@ -207,7 +207,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                   setAddPrefillPluginId(null);
                   setAddingSource(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 md:min-h-0 md:w-auto md:py-1.5"
               >
                 <Plus size={16} />
                 {t('settings.addRemote')}
@@ -270,9 +270,9 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         {renderSourceTypeIcon(source.type)}
-                        <h3 className="truncate text-sm font-semibold text-gray-900">
+                        <h3 className="min-w-0 truncate text-sm font-semibold text-gray-900">
                           {source.name}
                         </h3>
                         {unavailable ? (
@@ -281,10 +281,14 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 font-mono text-xs text-gray-600">
+                      <p className="mt-1 truncate font-mono text-xs text-gray-600">
                         {source.owner}/{source.repo}
-                        {source.path ? ` · ${source.path}` : ''}
                       </p>
+                      {source.path && source.path !== '/' ? (
+                        <p className="truncate font-mono text-xs text-gray-500">
+                          {source.path}
+                        </p>
+                      ) : null}
                       <div className="mt-2">
                         <CapabilityChips
                           manifest={manifests.find(
@@ -293,9 +297,10 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                           t={t}
                         />
                       </div>
-                      <p className="mt-2 text-xs text-gray-600">
+                      <p className="mt-2 text-xs leading-5 text-gray-600">
                         {t('settings.healthLastSync')}: {lastSync}
-                        {' · '}
+                      </p>
+                      <p className="text-xs leading-5 text-gray-600">
                         {t('settings.healthPending')}: {pending}
                       </p>
                     </div>
@@ -305,7 +310,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                         disabled={unavailable}
                         onClick={() => handleEdit(source.id)}
                         aria-pressed={isEditingThis}
-                        className={`rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-40 ${
+                        className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-40 ${
                           isEditingThis
                             ? 'bg-[var(--pix-violet)] text-white'
                             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
@@ -318,7 +323,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                       <button
                         type="button"
                         onClick={() => handleDeleteSource(source.id, t)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-gray-500 hover:bg-red-50 hover:text-red-600"
                         title={t('sidebar.deleteSource')}
                         aria-label={t('sidebar.deleteSource')}
                       >
@@ -347,7 +352,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                         type="button"
                         disabled={unavailable}
                         onClick={() => handleSourceSelect(source.id)}
-                        className="pix-link text-xs disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                        className="pix-link inline-flex min-h-11 items-center text-sm disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline md:min-h-0 md:text-xs"
                       >
                         {t('settings.setSyncTarget')}
                       </button>
