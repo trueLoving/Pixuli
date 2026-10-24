@@ -3,7 +3,7 @@
   flex-direction: column;
   flex-shrink: 0;
   width: 3rem;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--pix-border);
   background: var(--pix-surface, #faf8ff);
 }
 
@@ -21,8 +21,8 @@
   padding: 0;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   border-right: none;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid var(--pix-border);
+  background: var(--pix-bg-elevated);
   box-sizing: border-box;
 }
 
@@ -42,7 +42,7 @@
 
 .activity-bar-footer {
   margin-top: auto;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--pix-border);
 }
 
 .activity-bar--mobile .activity-bar-footer {
@@ -62,7 +62,7 @@
   border: none;
   border-radius: 0.5rem;
   background: transparent;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   font-size: inherit;
   font-weight: inherit;
   font-family: inherit;
@@ -121,8 +121,8 @@
 }
 
 .activity-bar-item:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg-secondary);
 }
 
 /* 选中：紫底 + 指示条（紫=导航；勿用青） */
@@ -145,7 +145,7 @@
 .activity-bar--mobile .activity-bar-item:hover:not(:disabled),
 .activity-bar--mobile .activity-bar-item--settings:hover:not(:disabled) {
   background: transparent;
-  color: #374151;
+  color: var(--pix-fg-secondary);
 }
 
 .activity-bar--mobile .activity-bar-item--active,
@@ -167,28 +167,40 @@
 
 /* 设置：保持中性，即使可点按也不抢同步青/选中紫 */
 .activity-bar-item--settings {
-  color: #6b7280;
+  color: var(--pix-fg-muted);
 }
 
 .activity-bar-item--settings:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg-secondary);
 }
 
 /* 同步中：青图标 + 青徽章（系统在动） */
 .activity-bar-item--busy {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 16%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy:hover:not(:disabled) {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 24%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 24%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy.activity-bar-item--active {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 16%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy.activity-bar-item--active::before {

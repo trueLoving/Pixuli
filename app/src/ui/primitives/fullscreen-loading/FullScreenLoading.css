@@ -60,12 +60,10 @@ body.fullscreen-loading-active {
   text-align: center;
 }
 
-@media (prefers-color-scheme: dark) {
-  .fullscreen-loading {
-    background: color-mix(in srgb, var(--pix-ink, #1e1b4b) 90%, transparent);
-  }
+html.dark .fullscreen-loading {
+  background: color-mix(in srgb, var(--pix-ink, #1e1b4b) 90%, transparent);
+}
 
-  .fullscreen-loading-text {
-    color: #c4b5fd;
-  }
+html.dark .fullscreen-loading-text {
+  color: var(--pix-violet-deep);
 }

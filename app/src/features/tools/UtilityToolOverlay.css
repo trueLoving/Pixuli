@@ -15,8 +15,8 @@
   gap: 0.75rem;
   flex-shrink: 0;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  border-bottom: 1px solid var(--pix-border);
+  background: var(--pix-bg-elevated);
 }
 
 .utility-tool-overlay__title {
@@ -35,13 +35,13 @@
   border: none;
   border-radius: 0.375rem;
   background: transparent;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   cursor: pointer;
 }
 
 .utility-tool-overlay__close:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg);
 }
 
 .utility-tool-overlay__body {
@@ -54,26 +54,24 @@
   height: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  .utility-tool-overlay {
-    background: #1e1b4b;
-  }
+html.dark .utility-tool-overlay {
+  background: var(--pix-bg);
+}
 
-  .utility-tool-overlay__header {
-    background: #312e81;
-    border-bottom-color: #4338ca;
-  }
+html.dark .utility-tool-overlay__header {
+  background: var(--pix-bg-elevated);
+  border-bottom-color: var(--pix-border);
+}
 
-  .utility-tool-overlay__title {
-    color: #f5f3ff;
-  }
+html.dark .utility-tool-overlay__title {
+  color: var(--pix-fg);
+}
 
-  .utility-tool-overlay__close {
-    color: #c4b5fd;
-  }
+html.dark .utility-tool-overlay__close {
+  color: var(--pix-violet-deep);
+}
 
-  .utility-tool-overlay__close:hover {
-    background: #4338ca;
-    color: #f5f3ff;
-  }
+html.dark .utility-tool-overlay__close:hover {
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg);
 }

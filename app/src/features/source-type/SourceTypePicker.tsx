@@ -23,7 +23,7 @@ function PluginTypeIcon({
 }) {
   if (pluginId === 'github') {
     return (
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-900">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#111827]">
         <Github size={20} className="text-white" />
       </div>
     );
@@ -36,7 +36,7 @@ function PluginTypeIcon({
     );
   }
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-500">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#6b7280]">
       <span className="text-sm font-semibold text-white">
         {name.slice(0, 1).toUpperCase()}
       </span>

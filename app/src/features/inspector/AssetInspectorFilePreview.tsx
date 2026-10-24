@@ -29,23 +29,7 @@ export function AssetInspectorFilePreview({
     );
   }
 
-  if (kind === 'pdf') {
-    return (
-      <div className="asset-inspector-preview asset-inspector-preview--media">
-        <iframe title={image.name} src={src} />
-        <a
-          className="asset-inspector-open-external"
-          href={src}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t('image.inspector.openExternal')}
-        </a>
-      </div>
-    );
-  }
-
-  if (kind === 'other') {
+  if (kind === 'pdf' || kind === 'other') {
     return (
       <div className="asset-inspector-preview asset-inspector-preview--file">
         <a
