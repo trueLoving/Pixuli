@@ -1,8 +1,16 @@
+@import './ui/brand/theme.css';
 @import './ui/brand/pix-ui.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  button {
+    background-color: transparent;
+    color: inherit;
+  }
+}
 
 :root {
   --pix-violet: #7c6cf0;
@@ -25,9 +33,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: var(--pix-fg);
+  background-color: var(--pix-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -66,7 +74,6 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -79,7 +86,7 @@ button:focus-visible {
 }
 
 code {
-  background-color: #1a1a1a;
+  background-color: var(--pix-bg-subtle);
   padding: 2px 4px;
   margin: 0 4px;
   border-radius: 4px;
@@ -93,20 +100,4 @@ code {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-  code {
-    background-color: #f9f9f9;
-  }
 }

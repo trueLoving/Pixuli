@@ -5,8 +5,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderOpen,
-  Globe,
   Info,
+  Palette,
   RefreshCw,
   ScrollText,
   Settings,
@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { SettingsLanguagePanel } from './SettingsLanguagePanel';
 import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
+import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsToolsPanel } from './SettingsToolsPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
@@ -45,8 +45,8 @@ const GENERAL_ITEMS: Array<{
   },
   {
     id: 'language',
-    labelKey: 'settings.menuLanguage',
-    icon: <Globe size={18} />,
+    labelKey: 'settings.menuPreferences',
+    icon: <Palette size={18} />,
   },
   // keyboard：HIDDEN_SETTINGS_SECTIONS
   {
@@ -117,9 +117,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     },
   ];
 
+  const navSection =
+    activeSection === 'appearance' ? 'language' : activeSection;
   const activeItem = groups
     .flatMap(group => group.items)
-    .find(item => item.id === activeSection);
+    .find(item => item.id === navSection);
   const showingMobileDetail = isMobile && !showMobileMenu;
   const headerTitle =
     showingMobileDetail && activeItem
@@ -137,7 +139,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       type="button"
       onClick={() => openSection(item.id)}
       className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm transition-colors ${
-        activeSection === item.id
+        navSection === item.id
           ? 'border-r-2 border-[color:var(--pix-violet)] bg-white font-medium pix-text-brand'
           : 'text-gray-700 hover:bg-gray-100'
       }`}
@@ -151,7 +153,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <>
       {activeSection === 'workspace' && <SettingsWorkspacePanel />}
       {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
-      {activeSection === 'language' && <SettingsLanguagePanel t={t} />}
+      {(activeSection === 'language' || activeSection === 'appearance') && (
+        <SettingsPreferencesPanel t={t} />
+      )}
       {activeSection === 'version' && (
         <SettingsVersionPanel t={t} versionInfo={versionInfo} />
       )}

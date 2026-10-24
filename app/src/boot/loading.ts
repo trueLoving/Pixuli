@@ -187,22 +187,20 @@ function useLoading() {
     }
   }
 
-  @media (prefers-color-scheme: dark) {
-    .${className} {
-      background: color-mix(in srgb, #1e1b4b 92%, #000);
-    }
+  html.dark .${className} {
+    background: color-mix(in srgb, #1e1b4b 92%, #000);
+  }
 
-    .loading-text {
-      color: #f5f3ff;
-    }
+  html.dark .loading-text {
+    color: #f5f3ff;
+  }
 
-    .loading-subtitle {
-      color: #c4b5fd;
-    }
+  html.dark .loading-subtitle {
+    color: #c4b5fd;
+  }
 
-    .progress-container {
-      background: rgba(196, 181, 253, 0.2);
-    }
+  html.dark .progress-container {
+    background: rgba(196, 181, 253, 0.2);
   }
 
   @media (prefers-reduced-motion: reduce) {

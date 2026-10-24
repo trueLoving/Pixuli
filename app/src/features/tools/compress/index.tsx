@@ -116,11 +116,11 @@ export const CompressToolPanel: React.FC = () => {
   return (
     <div className="utility-tool-panel utility-tool-panel--compress h-full w-full overflow-auto p-4 sm:p-6">
       <div className="mx-auto max-w-4xl">
-        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mb-4 text-xs text-gray-500">
           {t('tools.compress.localOnlyNote')}
         </p>
         <div
-          className="mb-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center dark:border-gray-600 dark:bg-gray-800/50"
+          className="mb-6 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center"
           onDrop={onDrop}
           onDragOver={onDragOver}
         >
@@ -134,7 +134,7 @@ export const CompressToolPanel: React.FC = () => {
           />
           <label
             htmlFor="compress-file-input"
-            className="cursor-pointer text-gray-600 dark:text-gray-400"
+            className="cursor-pointer text-gray-600"
           >
             <ImageIcon className="mx-auto mb-2 h-12 w-12" />
             <p>{t('tools.compress.dropHint')}</p>
@@ -146,10 +146,8 @@ export const CompressToolPanel: React.FC = () => {
           </label>
         </div>
 
-        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-          <h2 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-            选项
-          </h2>
+        <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+          <h2 className="mb-3 text-sm font-medium text-gray-700">选项</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block text-xs text-gray-500">
@@ -179,7 +177,7 @@ export const CompressToolPanel: React.FC = () => {
                     e.target.value === '' ? '' : Number(e.target.value),
                   )
                 }
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
               />
             </div>
             <div>
@@ -196,7 +194,7 @@ export const CompressToolPanel: React.FC = () => {
                     e.target.value === '' ? '' : Number(e.target.value),
                   )
                 }
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
               />
             </div>
             <div>
@@ -210,7 +208,7 @@ export const CompressToolPanel: React.FC = () => {
                     e.target.value as 'image/jpeg' | 'image/png' | 'image/webp',
                   )
                 }
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
               >
                 <option value="image/jpeg">JPEG</option>
                 <option value="image/png">PNG</option>
@@ -231,7 +229,7 @@ export const CompressToolPanel: React.FC = () => {
                     e.target.value === '' ? '' : Number(e.target.value),
                   )
                 }
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
               />
             </div>
             <div className="flex items-center gap-2 pt-6">
@@ -242,10 +240,7 @@ export const CompressToolPanel: React.FC = () => {
                 onChange={e => setKeepAspectRatio(e.target.checked)}
                 className="rounded"
               />
-              <label
-                htmlFor="keep-aspect"
-                className="text-sm text-gray-600 dark:text-gray-400"
-              >
+              <label htmlFor="keep-aspect" className="text-sm text-gray-600">
                 {t('tools.compress.keepAspectRatio')}
               </label>
             </div>
@@ -271,7 +266,7 @@ export const CompressToolPanel: React.FC = () => {
           <button
             type="button"
             onClick={handleClear}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100"
           >
             <Trash2 className="h-4 w-4" />
             {t('tools.compress.clear')}
@@ -286,14 +281,12 @@ export const CompressToolPanel: React.FC = () => {
 
         {results.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              结果
-            </h2>
+            <h2 className="text-sm font-medium text-gray-700">结果</h2>
             <ul className="space-y-3">
               {results.map((item, i) => (
                 <li
                   key={i}
-                  className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50"
+                  className="flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
                 >
                   <img
                     src={item.result.uri}
@@ -301,7 +294,7 @@ export const CompressToolPanel: React.FC = () => {
                     className="h-20 w-20 rounded object-cover"
                   />
                   <div className="min-w-0 flex-1 text-sm">
-                    <p className="truncate font-medium text-gray-800 dark:text-gray-200">
+                    <p className="truncate font-medium text-gray-800">
                       {item.result.file.name}
                     </p>
                     <p className="text-gray-500">
@@ -320,7 +313,7 @@ export const CompressToolPanel: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleDownload(item)}
-                    className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
+                    className="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
                   >
                     <Download className="h-4 w-4" />
                     {t('tools.compress.download')}

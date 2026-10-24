@@ -9,7 +9,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -20,8 +20,8 @@
 }
 
 .language-switcher__trigger:hover {
-  color: #111827;
-  background-color: #f3f4f6;
+  color: var(--pix-fg);
+  background-color: var(--pix-bg-subtle);
 }
 
 .language-switcher__trigger:focus {
@@ -57,12 +57,12 @@
   top: 100%;
   margin-top: 4px;
   width: 192px;
-  background: white;
+  background: var(--pix-bg-elevated);
   border-radius: 8px;
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--pix-border);
   z-index: 20;
 }
 
@@ -74,7 +74,7 @@
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
@@ -87,7 +87,7 @@
   justify-content: space-between;
   padding: 8px 12px;
   font-size: 14px;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -96,7 +96,7 @@
 }
 
 .language-switcher__option:hover {
-  background-color: #f3f4f6;
+  background-color: var(--pix-bg-subtle);
 }
 
 .language-switcher__option:focus {

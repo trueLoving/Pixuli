@@ -13,7 +13,7 @@
 }
 
 .image-edit-modal-content {
-  background-color: white;
+  background-color: var(--pix-bg-elevated);
   border-radius: 0.5rem;
   padding: 1.5rem;
   width: 100%;
@@ -31,11 +31,11 @@
 .image-edit-modal-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--pix-fg);
 }
 
 .image-edit-modal-close {
-  color: #9ca3af;
+  color: var(--pix-fg-faint);
   transition: color 0.2s ease-in-out;
   padding: 0.25rem;
   border-radius: 0.5rem;
@@ -45,7 +45,7 @@
 }
 
 .image-edit-modal-close:hover {
-  color: #6b7280;
+  color: var(--pix-fg-muted);
 }
 
 .image-edit-modal-close-icon {
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background-color: #f9fafb;
+  background-color: var(--pix-bg-muted);
   border-radius: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -78,7 +78,7 @@
 .image-edit-file-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--pix-fg);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -86,7 +86,7 @@
 
 .image-edit-file-size {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
 }
 
 .image-edit-form-group {
@@ -97,19 +97,19 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   margin-bottom: 0.25rem;
 }
 
 .image-edit-form-optional {
-  color: #9ca3af;
+  color: var(--pix-fg-faint);
   font-size: 0.75rem;
 }
 
 .image-edit-form-input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--pix-border-strong);
   border-radius: 0.375rem;
   outline: none;
   transition: all 0.2s ease-in-out;
@@ -124,7 +124,7 @@
 .image-edit-form-textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--pix-border-strong);
   border-radius: 0.375rem;
   outline: none;
   transition: all 0.2s ease-in-out;
@@ -139,7 +139,7 @@
 
 .image-edit-form-description {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   margin-top: 0.25rem;
 }
 
@@ -151,9 +151,9 @@
   margin-bottom: 0.5rem;
   padding: 0.5rem;
   min-height: 2.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--pix-border);
   border-radius: 0.375rem;
-  background-color: #f9fafb;
+  background-color: var(--pix-bg-muted);
 }
 
 .image-edit-tag {
@@ -214,13 +214,13 @@
 }
 
 .image-edit-button-secondary {
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid var(--pix-border-strong);
+  color: var(--pix-fg-secondary);
   background-color: transparent;
 }
 
 .image-edit-button-secondary:hover {
-  background-color: #f9fafb;
+  background-color: var(--pix-bg-muted);
 }
 
 .image-edit-button-primary {
