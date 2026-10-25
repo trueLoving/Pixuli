@@ -1,6 +1,13 @@
 import React from 'react';
 import type { ImageItem } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
+import {
+  downloadAssetLabelKey,
+  downloadAssetOnPlatform,
+  isOpenCancelled,
+} from '@/platforms/openAsset';
+import { getPlatform } from '@/platforms/platform';
+import { showError, showSuccess } from '@/ui/feedback/toast';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 export function AssetInspectorFilePreview({
@@ -30,15 +37,32 @@ export function AssetInspectorFilePreview({
   }
 
   if (kind === 'pdf' || kind === 'other') {
+    const platform = getPlatform();
+    const download = () => {
+      void downloadAssetOnPlatform(platform, {
+        name: image.name,
+        url: src,
+        localPath: image.localPath,
+      })
+        .then(result => {
+          if (result === 'mobile') {
+            showSuccess(t('image.inspector.downloadSaved'));
+          }
+        })
+        .catch(error => {
+          if (isOpenCancelled(error)) return;
+          showError(t('image.inspector.downloadFailed'));
+        });
+    };
     return (
       <div className="asset-inspector-preview asset-inspector-preview--file">
-        <a
+        <button
+          type="button"
           className="asset-inspector-open-external"
-          href={src}
-          download={image.name}
+          onClick={download}
         >
-          {t('image.inspector.openExternal')}
-        </a>
+          {t(downloadAssetLabelKey())}
+        </button>
       </div>
     );
   }
