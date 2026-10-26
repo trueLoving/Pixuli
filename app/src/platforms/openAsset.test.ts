@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { downloadInBrowser, resolveDownloadAssetAction } from './openAsset';
+import {
+  downloadInBrowser,
+  resolveDownloadAssetAction,
+  sanitizeDownloadFileName,
+} from './openAsset';
 
 const file = {
   name: 'notes.pdf',
@@ -37,6 +41,16 @@ describe('resolveDownloadAssetAction', () => {
     expect(
       resolveDownloadAssetAction('web', { name: 'notes.pdf', url: '  ' }),
     ).toBeNull();
+  });
+});
+
+describe('sanitizeDownloadFileName', () => {
+  it('keeps a readable name and strips path characters', () => {
+    expect(sanitizeDownloadFileName('《乌合之众》古斯塔夫·勒庞.pdf')).toBe(
+      '《乌合之众》古斯塔夫·勒庞.pdf',
+    );
+    expect(sanitizeDownloadFileName('docs/notes.pdf')).toBe('docs_notes.pdf');
+    expect(sanitizeDownloadFileName('   ')).toMatch(/^file-/);
   });
 });
 
