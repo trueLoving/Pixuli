@@ -2,6 +2,7 @@ packages:
   - app
   - packages/*
   - docs
+  - website
 
 onlyBuiltDependencies:
   - electron

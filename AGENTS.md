@@ -20,13 +20,15 @@
 
 ```text
 app/          Web + Desktop + Mobile/Capacitor（Vite + React + electron/ + android/）
+website/      官网，产品介绍（`pnpm dev:website` → http://localhost:5510）
 packages/core/        @pixuli/core — types, StoragePluginRegistry, platform
 packages/plugin-provider-github/   @pixuli/provider-github
 packages/plugin-provider-gitee/    @pixuli/provider-gitee
 ```
 
 **常用命令**（根目录）：`pnpm test` · `pnpm ci` · `pnpm dev:web` ·
-`pnpm dev:desktop` · `pnpm build:web` · `pnpm build:desktop` ·
+`pnpm dev:desktop` · `pnpm dev:website` · `pnpm build:web` ·
+`pnpm build:desktop` · `pnpm build:website` ·
 `pnpm dev:android`（模拟器一键联调 + Live Reload）·
 `pnpm run:android`（server 已起时重连）· `pnpm build:android`（已签名 release
 APK；debug 用 `build:android:debug`）

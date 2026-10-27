@@ -1,0 +1,15 @@
+{
+  "name": "pixuli-website",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Pixuli 官网：产品介绍",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}

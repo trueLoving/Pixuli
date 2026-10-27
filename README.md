@@ -72,6 +72,7 @@
 ```text
 Pixuli/
 ├── app/                    # Web + Desktop + Mobile
+├── website/                # 官网（产品介绍）
 ├── packages/
 │   ├── core/               # @pixuli/core
 │   ├── plugin-provider-github/
