@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN" data-lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixuli — 本地优先的资源工作区</title>
+    <meta
+      name="description"
+      content="Pixuli 把图片、PDF 和视频放在本机工作区。需要对齐 GitHub 或 Gitee 时再同步，需要给人看时再复制链接。没有官方服务器。"
+    />
+    <meta name="theme-color" content="#7c6cf0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="Pixuli — 本地优先的资源工作区" />
+    <meta
+      property="og:description"
+      content="本机整理文件，同步到 GitHub 或 Gitee，再复制链接。"
+    />
+    <meta property="og:image" content="/icon.png" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script>
+      (function () {
+        try {
+          var lang = localStorage.getItem('pixuli-site-lang');
+          if (lang !== 'zh' && lang !== 'en') {
+            lang =
+              navigator.language &&
+              navigator.language.toLowerCase().indexOf('zh') === 0
+                ? 'zh'
+                : 'en';
+          }
+          document.documentElement.dataset.lang = lang;
+          document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+          document.title =
+            lang === 'en'
+              ? 'Pixuli — A local-first workspace for your files'
+              : 'Pixuli — 本地优先的资源工作区';
+
+          var stored = localStorage.getItem('pixuli-site-theme');
+          var mode =
+            stored === 'light' || stored === 'dark' || stored === 'system'
+              ? stored
+              : 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', dark ? '#1e1b4b' : '#7c6cf0');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      <span class="zh">跳到内容</span>
+      <span class="en">Skip to content</span>
+    </a>
+    <header class="site-header">
+      <a class="brand" href="#top">
+        <img src="/icon.png" width="32" height="32" alt="" />
+        <span>Pixuli</span>
+      </a>
+      <nav class="site-nav" aria-label="Pixuli">
+        <a href="#rules">
+          <span class="zh">怎么用</span>
+          <span class="en">How it works</span>
+        </a>
+        <a href="#library">
+          <span class="zh">工作区</span>
+          <span class="en">Workspace</span>
+        </a>
+        <a href="#platforms">
+          <span class="zh">三端</span>
+          <span class="en">Platforms</span>
+        </a>
+        <a href="#start">
+          <span class="zh">开始</span>
+          <span class="en">Start</span>
+        </a>
+      </nav>
+      <div class="header-actions">
+        <button type="button" id="lang-toggle" class="text-button">
+          <span class="zh">EN</span>
+          <span class="en">中文</span>
+        </button>
+        <button type="button" id="theme-toggle" class="text-button">
+          <span class="when-light zh">深色</span>
+          <span class="when-light en">Dark</span>
+          <span class="when-dark zh">浅色</span>
+          <span class="when-dark en">Light</span>
+        </button>
+        <a class="button" href="https://pixuli-web.vercel.app/">
+          <span class="zh">打开网页版</span>
+          <span class="en">Open the app</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="kicker">
+            <span class="zh">资源工作区</span>
+            <span class="en">File workspace</span>
+          </p>
+          <h1>
+            <span class="zh">文件留在本机。<br />链接等你需要时再出现。</span>
+            <span class="en"
+              >Files stay on your machine.<br />Links appear when you ask.</span
+            >
+          </h1>
+          <p class="lead">
+            <span class="zh">
+              Pixuli 用来整理图片、PDF
+              和视频。浏览、搜索和预览都读本机工作区。要对齐 GitHub 或
+              Gitee，再点同步。要贴进文章或网站，再复制链接。
+            </span>
+            <span class="en">
+              Pixuli keeps images, PDFs, and video in one folder. Browsing,
+              search, and preview read that folder. Sync to GitHub or Gitee when
+              the remote should match. Copy a link when a page needs it.
+            </span>
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="https://pixuli-web.vercel.app/">
+              <span class="zh">打开网页版</span>
+              <span class="en">Open the app</span>
+            </a>
+            <a
+              class="button button-quiet"
+              href="https://github.com/trueLoving/Pixuli/releases"
+            >
+              <span class="zh">下载桌面版</span>
+              <span class="en">Download desktop</span>
+            </a>
+          </div>
+          <p class="aside">
+            <span class="zh">没有官方服务器。访问令牌只留在你的设备上。</span>
+            <span class="en"
+              >No Pixuli server. Access tokens stay on your device.</span
+            >
+          </p>
+        </div>
+
+        <div class="stage" aria-hidden="true">
+          <div class="app-frame">
+            <div class="rail">
+              <img src="/icon.png" width="28" height="28" alt="" />
+              <span class="rail-sync"></span>
+            </div>
+            <div class="side">
+              <p class="side-label">
+                <span class="zh">资源库</span>
+                <span class="en">Library</span>
+              </p>
+              <p class="folder is-current">
+                <span class="zh">全部</span><span class="en">All</span>
+                <em>12</em>
+              </p>
+              <p class="folder">
+                <span class="zh">图片</span><span class="en">Images</span>
+                <em>8</em>
+              </p>
+              <p class="folder">PDF <em>3</em></p>
+              <p class="folder">
+                <span class="zh">笔记</span><span class="en">Notes</span>
+                <em>1</em>
+              </p>
+            </div>
+            <div class="list">
+              <div class="search">
+                <span class="zh">搜索文件</span>
+                <span class="en">Search files</span>
+              </div>
+              <div class="cols">
+                <span class="zh">名称</span><span class="en">Name</span>
+                <span class="zh">类型</span><span class="en">Type</span>
+                <span class="zh">大小</span><span class="en">Size</span>
+              </div>
+              <div class="file">
+                <span>cover.png</span><span>PNG</span><span>1.2 MB</span>
+              </div>
+              <div class="file is-selected">
+                <span>notes.pdf</span><span>PDF</span><span>240 KB</span>
+              </div>
+              <div class="file">
+                <span>README.md</span><span>MD</span><span>4 KB</span>
+              </div>
+            </div>
+            <aside class="inspector">
+              <p class="inspector-kicker">
+                <span class="zh">文件</span><span class="en">File</span>
+              </p>
+              <p class="inspector-name">notes.pdf</p>
+              <p class="inspector-meta">PDF · 240 KB</p>
+              <p class="status">
+                <i></i>
+                <span class="zh">已同步</span>
+                <span class="en">Synced</span>
+              </p>
+              <p class="copy-link">
+                <span class="zh">复制链接</span>
+                <span class="en">Copy link</span>
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="rules" id="rules">
+        <div class="section-head">
+          <h2>
+            <span class="zh">使用时只记三句</span>
+            <span class="en">Three rules</span>
+          </h2>
+          <p>
+            <span class="zh">
+              远程不是另一套网盘，只是你自己的 GitHub 或 Gitee 仓库。Pixuli
+              不提供一键发布。
+            </span>
+            <span class="en">
+              The remote is your own GitHub or Gitee repository, not another
+              drive. Pixuli does not publish files for you.
+            </span>
+          </p>
+        </div>
+        <ol>
+          <li>
+            <span class="index">01</span>
+            <div>
+              <h3>
+                <span class="zh">改库，只动本机</span>
+                <span class="en">Edit on this machine</span>
+              </h3>
+              <p>
+                <span class="zh">添加、删除和移动都不会自动上传。</span>
+                <span class="en"
+                  >Adding, deleting, or moving a file does not upload it.</span
+                >
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="index">02</span>
+            <div>
+              <h3>
+                <span class="zh">要远端一样，点同步</span>
+                <span class="en">Sync when you want a match</span>
+              </h3>
+              <p>
+                <span class="zh">拉取和推送都由你发起，库不会因此被锁住。</span>
+                <span class="en"
+                  >You start every pull and push. The library stays
+                  usable.</span
+                >
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="index">03</span>
+            <div>
+              <h3>
+                <span class="zh">要给人看，复制链接</span>
+                <span class="en">Copy a link to share</span>
+              </h3>
+              <p>
+                <span class="zh">
+                  还只在本机的文件需要先同步。别人能否打开，取决于仓库是不是公开的。
+                </span>
+                <span class="en">
+                  A local-only file has to be synced first. Whether the link
+                  opens depends on the repository being public.
+                </span>
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="library" id="library">
+        <div class="section-head">
+          <h2>
+            <span class="zh">工作区里做这些事</span>
+            <span class="en">What the workspace does</span>
+          </h2>
+        </div>
+        <dl>
+          <div>
+            <dt>
+              <span class="zh">资源库</span>
+              <span class="en">Library</span>
+            </dt>
+            <dd>
+              <span class="zh">
+                文件夹、搜索、列表和详情在同一页。角标只区分「仅本地」和「已同步」。
+              </span>
+              <span class="en">
+                Folders, search, the list, and the inspector share one page. A
+                badge says local-only or synced.
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <span class="zh">同步</span>
+              <span class="en">Sync</span>
+            </dt>
+            <dd>
+              <span class="zh"
+                >活动栏显示还有多少文件待推送。同步进行时仍可继续浏览。</span
+              >
+              <span class="en"
+                >The activity bar shows how many files are waiting to push. You
+                can keep browsing.</span
+              >
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <span class="zh">外链</span>
+              <span class="en">Links</span>
+            </dt>
+            <dd>
+              <span class="zh">
+                没有连接、文件仍在本地，或仓库是私有的，都会直接说明，而不是给一个打不开的地址。
+              </span>
+              <span class="en">
+                If there is no connection, the file is still local, or the
+                repository is private, Pixuli says so instead of handing out a
+                dead link.
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <span class="zh">连接</span>
+              <span class="en">Connections</span>
+            </dt>
+            <dd>
+              <span class="zh"
+                >在设置里添加 GitHub 或 Gitee，使用个人访问令牌。</span
+              >
+              <span class="en"
+                >Add GitHub or Gitee in Settings with a personal access
+                token.</span
+              >
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <span class="zh">工具</span>
+              <span class="en">Tools</span>
+            </dt>
+            <dd>
+              <span class="zh"
+                >压缩和格式转换的结果写回本机，不会顺便推到远端。</span
+              >
+              <span class="en"
+                >Compress and convert write back to the local folder. They do
+                not push.</span
+              >
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <span class="zh">外观</span>
+              <span class="en">Appearance</span>
+            </dt>
+            <dd>
+              <span class="zh"
+                >跟随系统，或自己选浅色与深色。网页、桌面和手机用同一套界面。</span
+              >
+              <span class="en"
+                >Follow the system, or pick light or dark. Web, desktop, and
+                Android share the interface.</span
+              >
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="platforms" id="platforms">
+        <div class="section-head">
+          <h2>
+            <span class="zh">三端同一套界面</span>
+            <span class="en">One interface, three places</span>
+          </h2>
+        </div>
+        <ul>
+          <li>
+            <span>Web</span>
+            <p>
+              <span class="zh">在浏览器里打开，也可以安装到桌面。</span>
+              <span class="en"
+                >Use it in the browser, or install it on the desktop.</span
+              >
+            </p>
+          </li>
+          <li>
+            <span>Desktop</span>
+            <p>
+              <span class="zh"
+                >macOS 与 Windows。选择本机文件夹作为工作区。</span
+              >
+              <span class="en"
+                >macOS and Windows. Pick a local folder as the workspace.</span
+              >
+            </p>
+          </li>
+          <li>
+            <span>Android</span>
+            <p>
+              <span class="zh">手机上继续浏览同一个库，安装包在发布页。</span>
+              <span class="en"
+                >Browse the same library on a phone. The package is on the
+                releases page.</span
+              >
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="start" id="start">
+        <div>
+          <h2>
+            <span class="zh">从网页版看一眼，或装到自己的电脑上</span>
+            <span class="en">Try it in the browser, or install it</span>
+          </h2>
+          <p>
+            <span class="zh">
+              网页版无需安装。桌面版和 Android 安装包按版本放在 GitHub
+              Releases。
+            </span>
+            <span class="en">
+              The web app needs no install. Desktop and Android builds are on
+              GitHub Releases.
+            </span>
+          </p>
+        </div>
+        <div class="start-actions">
+          <a class="button" href="https://pixuli-web.vercel.app/">
+            <span class="zh">打开网页版</span>
+            <span class="en">Open the app</span>
+          </a>
+          <a
+            class="button button-quiet"
+            href="https://github.com/trueLoving/Pixuli/releases"
+          >
+            <span class="zh">GitHub Releases</span>
+            <span class="en">GitHub Releases</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Pixuli · MIT</p>
+      <nav aria-label="Pixuli">
+        <a href="https://github.com/trueLoving/Pixuli">GitHub</a>
+        <a href="https://github.com/trueLoving/Pixuli/wiki">
+          <span class="zh">使用说明</span>
+          <span class="en">Guide</span>
+        </a>
+        <a href="https://github.com/trueLoving/Pixuli">
+          <span class="zh">源码</span>
+          <span class="en">Source</span>
+        </a>
+      </nav>
+    </footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
