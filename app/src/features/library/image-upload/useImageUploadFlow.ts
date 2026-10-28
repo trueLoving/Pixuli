@@ -253,8 +253,11 @@ export function useImageUploadFlow({
     [compressFileIfNeeded, transferCaptureMetadata],
   );
 
-  const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
+  const selectFiles = useCallback(
+    async (
+      acceptedFiles: File[],
+      meta?: { description: string; tags: string[] },
+    ) => {
       if (acceptedFiles.length === 0) return;
 
       const dimensionsMap: Record<string, { width: number; height: number }> =
@@ -267,41 +270,85 @@ export function useImageUploadFlow({
         }
       }
 
-      setFileDimensions(dimensionsMap);
-      resetCompressionState();
-      setUserWantsCrop(false);
+      const description = meta?.description ?? '';
+      const tags = meta?.tags ?? [];
+      const targetFolder = resolveDefaultFolder(defaultFolder);
+      if (!meta) {
+        setFileDimensions(dimensionsMap);
+        resetCompressionState();
+        setUserWantsCrop(false);
+      } else {
+        setFileDimensions(current => ({ ...current, ...dimensionsMap }));
+      }
 
       if (acceptedFiles.length === 1) {
         const file = acceptedFiles[0];
+        setMultiUploadData(null);
         setUploadData({
           file,
           name: file.name,
-          description: '',
-          tags: [],
-          targetFolder: resolveDefaultFolder(defaultFolder),
+          description,
+          tags,
+          targetFolder,
         });
         setIsMultiple(false);
-        setShowForm(true);
-        showInfo(`${translate('image.upload.selectedSingle')}: ${file.name}`);
       } else {
+        setUploadData(null);
         setMultiUploadData({
           files: acceptedFiles,
           name: '',
-          description: '',
-          tags: [],
-          targetFolder: resolveDefaultFolder(defaultFolder),
+          description,
+          tags,
+          targetFolder,
         });
         setIsMultiple(true);
-        setShowForm(true);
-        showInfo(
-          translate('image.upload.selectedCount').replace(
-            '{count}',
-            String(acceptedFiles.length),
-          ),
-        );
       }
+      setShowForm(true);
     },
-    [translate, defaultFolder, resetCompressionState],
+    [defaultFolder, resetCompressionState],
+  );
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => selectFiles(acceptedFiles),
+    [selectFiles],
+  );
+
+  const appendFiles = useCallback(
+    (incoming: File[]) => {
+      if (incoming.length === 0) return;
+      const existing = uploadData
+        ? [uploadData.file]
+        : (multiUploadData?.files ?? []);
+      return selectFiles([...existing, ...incoming], {
+        description:
+          uploadData?.description ?? multiUploadData?.description ?? '',
+        tags: uploadData?.tags ?? multiUploadData?.tags ?? [],
+      });
+    },
+    [uploadData, multiUploadData, selectFiles],
+  );
+
+  const removeFileAt = useCallback(
+    (index: number) => {
+      const existing = uploadData
+        ? [uploadData.file]
+        : (multiUploadData?.files ?? []);
+      const next = existing.filter((_, fileIndex) => fileIndex !== index);
+      if (next.length === 0) {
+        resetCompressionState();
+        setUploadData(null);
+        setMultiUploadData(null);
+        setShowForm(false);
+        setIsMultiple(false);
+        return;
+      }
+      void selectFiles(next, {
+        description:
+          uploadData?.description ?? multiUploadData?.description ?? '',
+        tags: uploadData?.tags ?? multiUploadData?.tags ?? [],
+      });
+    },
+    [uploadData, multiUploadData, resetCompressionState, selectFiles],
   );
 
   useEffect(() => {
@@ -426,7 +473,6 @@ export function useImageUploadFlow({
   };
 
   const handleCancel = useCallback(() => {
-    showInfo(translate('image.upload.cancelled'));
     resetCompressionState();
     setUploadData(null);
     setMultiUploadData(null);
@@ -435,7 +481,7 @@ export function useImageUploadFlow({
     setShowCropModal(false);
     setCropFile(null);
     setCropFileIndex(-1);
-  }, [translate, resetCompressionState]);
+  }, [resetCompressionState]);
 
   const closeCropModal = useCallback(() => {
     setShowCropModal(false);
@@ -625,6 +671,8 @@ export function useImageUploadFlow({
     handleSubmit,
     handleMultiSubmit,
     handleCancel,
+    appendFiles,
+    removeFileAt,
     handleCropComplete,
     handleSkipCrop,
     handleCropCancel,

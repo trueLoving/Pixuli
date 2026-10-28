@@ -64,6 +64,10 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
           flow.isMultipleUpload ? flow.handleMultiSubmit : flow.handleSubmit
         }
         onCancel={flow.handleCancel}
+        onRemoveFile={flow.removeFileAt}
+        onAppendFiles={files => {
+          void flow.appendFiles(files);
+        }}
         onFieldChange={flow.handleFormFieldChange}
       />
     );

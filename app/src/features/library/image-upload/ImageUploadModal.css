@@ -57,11 +57,18 @@
 }
 
 .image-upload-modal-body {
+  display: flex;
   min-height: 0;
   flex: 1;
-  overflow-y: auto;
-  padding: 1.25rem 1.5rem;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 1.25rem 1.5rem 0;
   background: var(--pix-bg-elevated);
+}
+
+.image-upload-modal-body:not(:has(.image-upload-form)) {
+  overflow: auto;
+  padding-bottom: 1.25rem;
 }
 
 @media (max-width: 767px) {
@@ -73,7 +80,11 @@
   }
 
   .image-upload-modal-body {
-    padding: 1rem 1.25rem 1.25rem;
+    padding: 1rem 1.25rem 0;
+  }
+
+  .image-upload-modal-body:not(:has(.image-upload-form)) {
+    padding-bottom: 1.25rem;
   }
 }
 
