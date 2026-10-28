@@ -25,75 +25,55 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
 }) => (
   <div
     {...getRootProps()}
-    className={`image-upload-dropzone ${isDragActive ? 'active' : 'inactive'}`}
+    className={`image-upload-dropzone${isDragActive ? ' is-active' : ''}`}
   >
     <input {...getInputProps({})} />
     <div className="image-upload-content">
-      <div
-        className={`image-upload-icon-container ${isDragActive ? 'active' : 'inactive'}`}
-      >
+      <div className="image-upload-icon-container" aria-hidden>
         {enableCrop ? (
-          <Crop
-            className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
-          />
+          <Crop className="image-upload-icon" />
         ) : (
-          <Upload
-            className={`image-upload-icon ${isDragActive ? 'active' : 'inactive'}`}
-          />
+          <Upload className="image-upload-icon" />
         )}
       </div>
-      <div style={{ width: '100%' }}>
-        <p
-          className={`image-upload-text ${isDragActive ? 'active' : 'inactive'}`}
-        >
+      <div className="image-upload-copy">
+        <p className="image-upload-text">
           {isDragActive
-            ? translate('image.upload.dragActive') || '松开鼠标上传图片'
-            : enableCrop
-              ? translate('image.upload.dragInactiveWithCrop') ||
-                '拖拽图片到此处或点击选择'
-              : translate('image.upload.dragInactive') ||
-                '拖拽图片到此处或点击选择'}
+            ? translate('image.upload.dragActive')
+            : translate('image.upload.dragInactive')}
         </p>
         <p className="image-upload-description">
-          {translate('image.upload.supportedFormats') ||
-            '支持 JPG, PNG, GIF, BMP, WebP, SVG 等主流图片格式'}
+          {translate('image.upload.supportedFormats')}
           {enableCrop ? (
             <span className="image-upload-crop-hint">
               {' · '}
-              {translate('image.upload.cropHint') || '支持裁剪'}
+              {translate('image.upload.cropHint')}
             </span>
           ) : null}
         </p>
-        <div className="image-upload-formats">
-          {['JPG', 'PNG', 'GIF', 'BMP', 'WebP', 'SVG'].map(format => (
-            <span key={format} className="image-upload-format-tag">
-              {format}
-            </span>
-          ))}
-        </div>
         {nativePickers ? (
           <div className="image-upload-native-actions">
             <button
               type="button"
               className="image-upload-native-button"
-              onClick={e => {
-                e.stopPropagation();
+              onClick={event => {
+                event.stopPropagation();
                 onNativePick('camera');
               }}
             >
               <Camera className="image-upload-native-icon" />
-              <span>{translate('image.upload.pickFromCamera') || '拍照'}</span>
+              <span>{translate('image.upload.pickFromCamera')}</span>
             </button>
             <button
               type="button"
               className="image-upload-native-button"
-              onClick={e => {
-                e.stopPropagation();
+              onClick={event => {
+                event.stopPropagation();
                 onNativePick('gallery');
               }}
             >
               <Images className="image-upload-native-icon" />
-              <span>{translate('image.upload.pickFromGallery') || '相册'}</span>
+              <span>{translate('image.upload.pickFromGallery')}</span>
             </button>
           </div>
         ) : null}

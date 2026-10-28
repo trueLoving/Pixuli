@@ -190,9 +190,9 @@
 }
 
 .asset-library-content.is-drag-over {
-  outline: 2px dashed #6366f1;
+  outline: 2px dashed var(--pix-violet);
   outline-offset: -6px;
-  background: rgba(99, 102, 241, 0.04);
+  background: color-mix(in srgb, var(--pix-violet) 8%, transparent);
 }
 
 .asset-library-drop-hint {
@@ -205,8 +205,8 @@
   pointer-events: none;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #4338ca;
-  background: rgba(238, 242, 255, 0.72);
+  color: var(--pix-fg);
+  background: color-mix(in srgb, var(--pix-bg) 84%, transparent);
 }
 
 .asset-library-table-wrap {

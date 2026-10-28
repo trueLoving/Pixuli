@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type {
   BatchUploadProgress,
   ImageCompressionOptions,
@@ -60,34 +60,52 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   initialFiles,
   onInitialFilesConsumed,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    dialogRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
+
+  const title =
+    t?.('image.upload.addNewImage') || t?.('header.upload') || '添加到工作区';
 
   return (
     <div
       className="image-upload-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="image-upload-modal-title"
+      role="presentation"
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="image-upload-modal-content"
-        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="image-upload-modal-title"
+        tabIndex={-1}
+        onClick={event => event.stopPropagation()}
       >
         <div className="image-upload-modal-header">
           <h2
             id="image-upload-modal-title"
             className="image-upload-modal-title"
           >
-            {t?.('image.upload.addNewImage') ||
-              t?.('header.upload') ||
-              '添加到工作区'}
+            {title}
           </h2>
           <button
             onClick={onClose}
             className="image-upload-modal-close"
             type="button"
-            aria-label="关闭"
+            aria-label={t?.('image.upload.close') || '关闭'}
           >
             <X size={20} />
           </button>
