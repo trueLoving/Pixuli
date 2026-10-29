@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { parentLibraryFolderPath } from '@/features/library/libraryNavigation';
 import { useUIStore } from '../stores/uiStore';
 import { isNativeMobile } from '@/platforms/platform';
 
@@ -62,6 +63,14 @@ export function useCapacitorBackButton(): void {
           return;
         }
         if (dismissDomOverlay()) return;
+        if (
+          document.querySelector(
+            '.library-path-sheet, .library-folder-sheet, .library-folder-menu',
+          )
+        ) {
+          window.dispatchEvent(new CustomEvent('pixuli:closeLibrarySheets'));
+          return;
+        }
         if (dismissFilterPanel()) return;
         if (document.querySelector('.asset-inspector--sheet')) {
           window.dispatchEvent(new CustomEvent('pixuli:closeInspectorSheet'));
@@ -77,6 +86,11 @@ export function useCapacitorBackButton(): void {
         }
         if (ui.mobileSidebarOpen) {
           ui.closeMobileSidebar();
+          return;
+        }
+        const parentFolder = parentLibraryFolderPath(ui.selectedFolderPath);
+        if (ui.selectedFolderPath && parentFolder !== ui.selectedFolderPath) {
+          ui.setSelectedFolderPath(parentFolder);
           return;
         }
         if (canGoBack) {

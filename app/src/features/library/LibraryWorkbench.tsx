@@ -148,6 +148,11 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [batchEditOpen, setBatchEditOpen] = useState(false);
   const [batchMoveOpen, setBatchMoveOpen] = useState(false);
+  const [moveOverride, setMoveOverride] = useState<ImageItem[] | null>(null);
+  const [previewRequest, setPreviewRequest] = useState<{
+    id: string;
+    nonce: number;
+  } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const selectedImages = useMemo(
@@ -341,9 +346,11 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [loadImages, onBatchUpdateMetadata, selectedIds],
   );
 
+  const movingImages = moveOverride ?? selectedImages;
+
   const handleBatchMoveSubmit = useCallback(
     async (targetDir: string) => {
-      const paths = selectedImages
+      const paths = (moveOverride ?? selectedImages)
         .map(item => item.localPath)
         .filter((path): path is string => Boolean(path));
       if (paths.length === 0) {
@@ -366,10 +373,11 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
             ),
       );
       setBatchMoveOpen(false);
+      setMoveOverride(null);
       handleClearSelection();
       await loadImages();
     },
-    [handleClearSelection, loadImages, selectedImages, t],
+    [handleClearSelection, loadImages, moveOverride, selectedImages, t],
   );
 
   const toolsEnabled = useUtilityToolsStore(state => state.enabled);
@@ -464,7 +472,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
               : undefined,
           onBatchMove:
             localActive && selectedImages.length > 0
-              ? () => setBatchMoveOpen(true)
+              ? () => {
+                  setMoveOverride(null);
+                  setBatchMoveOpen(true);
+                }
               : undefined,
           onBatchDownload: handleBatchDownload,
           onSync: () => requestSync(),
@@ -585,6 +596,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
+      openPreviewRequest={previewRequest}
     />
   );
 
@@ -615,7 +627,19 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           onSelectedIdsChange={handleSelectedIdsChange}
           onDeleteImage={onDeleteImage}
           onCopyLink={image => void handleCopyLinkForImage(image)}
-          onSync={() => requestSync()}
+          onMoveImage={
+            localActive
+              ? image => {
+                  setMoveOverride([image]);
+                  setBatchMoveOpen(true);
+                  handleSelectedIdsChange([image.id], [image]);
+                }
+              : undefined
+          }
+          onOpenFile={image => {
+            handleSelectedIdsChange([image.id], [image]);
+            setPreviewRequest({ id: image.id, nonce: Date.now() });
+          }}
           hasRemoteConnection={hasRemoteConnection}
           multiSelectMode={multiSelectMode}
           onMultiSelectModeChange={handleMultiSelectModeChange}
@@ -636,10 +660,13 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       />
       <AssetLibraryBatchMoveModal
         isOpen={batchMoveOpen}
-        selectedCount={selectedIds.length}
+        selectedCount={movingImages.length}
         folders={localFolders}
         t={t}
-        onClose={() => setBatchMoveOpen(false)}
+        onClose={() => {
+          setBatchMoveOpen(false);
+          setMoveOverride(null);
+        }}
         onSubmit={handleBatchMoveSubmit}
       />
       <UtilityToolOverlay />

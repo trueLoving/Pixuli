@@ -28,6 +28,9 @@ import { AssetLibraryContextMenu } from './AssetLibraryContextMenu';
 import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
+import { LibraryFolderNav } from './LibraryFolderNav';
+import { libraryChildFolders } from './libraryNavigation';
+import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { resolveNewFolderParent } from '@/features/workspace/WorkspaceFolderTree';
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import type {
@@ -67,7 +70,8 @@ interface AssetLibraryProps {
   onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   onCopyLink?: (image: ImageItem) => void;
-  onSync?: () => void;
+  onMoveImage?: (image: ImageItem) => void;
+  onOpenFile?: (image: ImageItem) => void;
   hasRemoteConnection?: boolean;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
@@ -95,7 +99,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   onSelectedIdsChange,
   onDeleteImage,
   onCopyLink,
-  onSync,
+  onMoveImage,
+  onOpenFile,
   hasRemoteConnection,
   multiSelectMode = false,
   onMultiSelectModeChange,
@@ -118,6 +123,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [libraryDragOver, setLibraryDragOver] = useState(false);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(480);
+  const [activeFolderPath, setActiveFolderPath] = useState<string | null>(null);
+  const isMobile = useMobileViewport();
 
   const setMultiSelectActive = useCallback(
     (active: boolean) => {
@@ -176,6 +183,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       range: boolean,
       enterMulti = false,
     ) => {
+      setActiveFolderPath(null);
       if (enterMulti) setMultiSelectActive(true);
       const next = nextSelectedIds({
         visibleIds,
@@ -360,6 +368,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const setSelectedFolderPath = useUIStore(
     state => state.setSelectedFolderPath,
   );
+  const indexPaths = useWorkspaceStore(state => state.indexPaths);
+  const localFolders = useWorkspaceStore(state => state.localFolders);
   const createLocalFolder = useWorkspaceStore(state => state.createLocalFolder);
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const localWorkspaceActive =
@@ -379,8 +389,54 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     setSelectedFolderPath(target);
   }, [createLocalFolder, selectedFolderPath, setSelectedFolderPath, t]);
 
-  const showEmpty = !loading && files.length === 0;
+  const childFolders = useMemo(
+    () => libraryChildFolders(indexPaths, localFolders, selectedFolderPath),
+    [indexPaths, localFolders, selectedFolderPath],
+  );
+  const searchActive = Boolean(search?.searchQuery?.trim());
+  const showFolders = !loading && !searchActive && childFolders.length > 0;
+  const showEmpty = !loading && files.length === 0 && !showFolders;
   const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
+
+  useEffect(() => {
+    setActiveFolderPath(null);
+  }, [selectedFolderPath]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter') return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (
+        target.closest(
+          'input, textarea, select, button, a, [contenteditable="true"], [role="dialog"]',
+        )
+      ) {
+        return;
+      }
+      if (activeFolderPath) {
+        event.preventDefault();
+        setSelectedFolderPath(activeFolderPath);
+        return;
+      }
+      if (selectedIds.length !== 1 || multiSelectMode) return;
+      const file = files.find(item => item.id === selectedIds[0]);
+      if (!file) return;
+      event.preventDefault();
+      onOpenFile?.(file);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [
+    activeFolderPath,
+    files,
+    isMobile,
+    multiSelectMode,
+    onOpenFile,
+    selectedIds,
+    setSelectedFolderPath,
+  ]);
   const isFolderEmpty =
     showEmpty && !isFilteredEmpty && Boolean(selectedFolderPath);
   const tableWindow = useMemo(
@@ -482,7 +538,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       ) : null}
 
       <div
-        className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}${showStatusBar ? ' has-status-bar' : ''}`}
+        className={`asset-library-content${libraryDragOver ? ' is-drag-over' : ''}${showStatusBar ? ' has-status-bar' : ''}${showFolders && files.length > 0 ? ' has-folders' : ''}`}
         onDragEnter={handleLibraryDragEnter}
         onDragOver={handleLibraryDragOver}
         onDragLeave={handleLibraryDragLeave}
@@ -493,7 +549,22 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             {t('image.upload.dragActive')}
           </div>
         ) : null}
-        {loading && files.length === 0 ? (
+        <LibraryFolderNav
+          currentPath={selectedFolderPath}
+          folders={childFolders}
+          showFolders={showFolders}
+          solo={showFolders && files.length === 0}
+          isMobile={isMobile}
+          canMutate={localWorkspaceActive}
+          t={t}
+          highlightedPath={activeFolderPath}
+          onHighlightFolder={path => {
+            setActiveFolderPath(path);
+            onSelectedIdsChange([]);
+          }}
+          onOpenFolder={setSelectedFolderPath}
+        />
+        {loading && files.length === 0 && !showFolders ? (
           <div className="asset-library-loading" aria-busy="true">
             <BrandPixelMark variant="loading" size={72} />
             <p className="mt-3 text-sm text-gray-500">
@@ -517,7 +588,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
                 : undefined
             }
           />
-        ) : (
+        ) : files.length === 0 ? null : (
           <AssetLibraryTable
             visibleFiles={visibleFiles}
             tableWindow={tableWindow}
@@ -550,6 +621,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             }}
             onTouchPointerEnd={clearLongPress}
             longPressFiredRef={longPressFiredRef}
+            onOpenFile={onOpenFile}
           />
         )}
         {showStatusBar ? (
@@ -585,7 +657,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           t={t}
           onClose={() => setContextMenu(null)}
           onCopyLink={onCopyLink}
-          onSync={onSync}
+          onMoveImage={onMoveImage}
           onDeleteImage={onDeleteImage}
           hasRemoteConnection={hasRemoteConnection}
         />
