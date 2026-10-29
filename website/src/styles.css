@@ -189,6 +189,7 @@ html.dark .button:hover {
 
 .hero,
 .rules,
+.scenes,
 .library,
 .platforms,
 .start,
@@ -241,6 +242,7 @@ h1 {
 .lead,
 .section-head p,
 .library dd,
+.scenes dd,
 .platforms p,
 .start p,
 .rules li p {
@@ -418,6 +420,7 @@ h1 {
 }
 
 .rules,
+.scenes,
 .library,
 .platforms {
   padding: 4.5rem 0 0;
@@ -471,10 +474,12 @@ h1 {
 
 .rules li p,
 .library dd,
+.scenes dd,
 .platforms p {
   margin: 0.35rem 0 0;
 }
 
+.scenes dl,
 .library dl {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -483,17 +488,20 @@ h1 {
   border-top: 1px solid var(--pix-border);
 }
 
+.scenes dl > div,
 .library dl > div {
   padding: 1.35rem 1.4rem 1.45rem 0;
   border-bottom: 1px solid var(--pix-border);
 }
 
+.scenes dl > div:nth-child(2n),
 .library dl > div:nth-child(2n) {
   padding-right: 0;
   padding-left: 1.4rem;
   border-left: 1px solid var(--pix-border);
 }
 
+.scenes dt,
 .library dt {
   font-weight: 650;
 }
@@ -579,6 +587,7 @@ h1 {
 
   .hero,
   .rules ol,
+  .scenes dl,
   .library dl,
   .start {
     grid-template-columns: 1fr;
@@ -588,6 +597,8 @@ h1 {
     padding-top: 2.4rem;
   }
 
+  .scenes dl > div,
+  .scenes dl > div:nth-child(2n),
   .library dl > div,
   .library dl > div:nth-child(2n) {
     padding: 1.15rem 0;
@@ -615,6 +626,7 @@ h1 {
 @media (max-width: 640px) {
   .hero,
   .rules,
+  .scenes,
   .library,
   .platforms,
   .start,
