@@ -80,9 +80,13 @@ button {
 button:hover {
   border-color: #646cff;
 }
-button:focus,
+button:focus {
+  outline: none;
+}
+
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--pix-violet, #7c6cf0);
+  outline-offset: 2px;
 }
 
 code {

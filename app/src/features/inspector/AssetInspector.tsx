@@ -73,6 +73,8 @@ interface AssetInspectorProps {
   ) => Promise<{ width: number; height: number }>;
   t: (key: string) => string;
   variant?: 'dock' | 'sheet';
+  /** 桌面双击 / Enter 打开预览 */
+  openPreviewRequest?: { id: string; nonce: number } | null;
 }
 
 export const AssetInspector: React.FC<AssetInspectorProps> = ({
@@ -100,6 +102,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   getImageDimensionsFromUrl,
   t,
   variant = 'dock',
+  openPreviewRequest = null,
 }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -110,6 +113,17 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       image ?? (selectedImages.length === 1 ? selectedImages[0] : null),
     );
   }, [image, selectedImages]);
+
+  const seenPreviewNonce = useRef(0);
+  useEffect(() => {
+    const nonce = openPreviewRequest?.nonce ?? 0;
+    if (nonce <= 0 || nonce === seenPreviewNonce.current) return;
+    const current =
+      image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
+    if (current?.id !== openPreviewRequest?.id) return;
+    seenPreviewNonce.current = nonce;
+    setShowPreview(true);
+  }, [image, openPreviewRequest, selectedImages]);
 
   useEffect(() => {
     if (!metadataReview || !onUpdateImage) {
