@@ -29,7 +29,6 @@ import React, {
   useState,
 } from 'react';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
-import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { useUIStore } from '@/stores/uiStore';
 import type { ImageEditData, ImageItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
@@ -54,7 +53,6 @@ interface AssetInspectorProps {
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
   onShareImage?: (image: ImageItem) => Promise<void>;
   onSync?: () => void;
-  onSendCompress?: () => void;
   onSendConvert?: () => void;
   onBatchEdit?: () => void;
   onBatchDownload?: () => void;
@@ -75,6 +73,8 @@ interface AssetInspectorProps {
   variant?: 'dock' | 'sheet';
   /** 桌面双击 / Enter 打开预览 */
   openPreviewRequest?: { id: string; nonce: number } | null;
+  /** 本地工作区里按文件类型打开处理弹窗 */
+  convertInLibrary?: boolean;
 }
 
 export const AssetInspector: React.FC<AssetInspectorProps> = ({
@@ -88,7 +88,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onCopyUrl,
   onShareImage,
   onSync,
-  onSendCompress,
   onSendConvert,
   onBatchEdit,
   onBatchDownload,
@@ -103,6 +102,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   t,
   variant = 'dock',
   openPreviewRequest = null,
+  convertInLibrary = false,
 }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -135,7 +135,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     setShowEdit(true);
   }, [metadataReview?.openEditNonce, onUpdateImage]);
 
-  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const sheetDragRef = useRef<{ y: number; moved: boolean } | null>(null);
@@ -327,7 +326,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
                 void handleShare();
               }
             : undefined,
-          onSendCompress,
           onSendConvert,
           onDelete: () => {
             void handleDelete();
@@ -342,23 +340,22 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
             hasRemoteConnection === false
               ? t('image.copyLink.needConnection')
               : t('image.copyLink.needSync'),
-          toolsEnabled,
+          convertInLibrary,
         },
       ),
     [
       activeImage,
+      convertInLibrary,
       handleCopy,
       handleDelete,
       handleShare,
       hasRemoteConnection,
       kind,
       onDeleteImage,
-      onSendCompress,
       onSendConvert,
       onShareImage,
       onUpdateImage,
       t,
-      toolsEnabled,
     ],
   );
 
@@ -372,26 +369,24 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           onBatchDownload,
           onSync,
           onCopyLinks,
-          onSendCompress,
           onSendConvert,
           onBatchDelete: () => {
             void handleBatchDelete();
           },
         },
-        { hasRemoteConnection, toolsEnabled },
+        { hasRemoteConnection, convertInLibrary },
       ),
     [
+      convertInLibrary,
       handleBatchDelete,
       hasRemoteConnection,
       onBatchDownload,
       onBatchEdit,
       onCopyLinks,
-      onSendCompress,
       onSendConvert,
       onSync,
       selectedImages,
       t,
-      toolsEnabled,
     ],
   );
 

@@ -6,16 +6,13 @@ import { useSourceStore } from '@/features/settings/sourceStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { openUtilityTool } from '@/features/tools/utilityToolPort';
 import { useUIStore } from '@/stores/uiStore';
 import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
 import { useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
 
-/** `/library` 路由：store 接线、文件夹过滤、搜索适配、工具深链 */
+/** `/library` 路由：store 接线、文件夹过滤、搜索适配 */
 export function useLibraryRoute() {
   const { t } = useI18n();
-  const [searchParams, setSearchParams] = useSearchParams();
   const images = useImageStore(state => state.images);
   const loadImages = useImageStore(state => state.loadImages);
   const loading = useImageStore(state => state.loading);
@@ -111,17 +108,6 @@ export function useLibraryRoute() {
       onSearchInFolder: () => searchContext.setSearchScope('folder'),
     };
   }, [searchContext, selectedFolderPath]);
-
-  useEffect(() => {
-    const tool = searchParams.get('tool');
-    if (tool !== 'compress' && tool !== 'convert') {
-      return;
-    }
-    openUtilityTool(tool);
-    const next = new URLSearchParams(searchParams);
-    next.delete('tool');
-    setSearchParams(next, { replace: true });
-  }, [searchParams, setSearchParams]);
 
   return {
     t,

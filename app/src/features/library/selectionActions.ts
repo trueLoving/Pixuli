@@ -1,5 +1,6 @@
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
+import { libraryProcessModes } from '@/features/library/libraryProcess';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import type { ImageItem } from '@pixuli/core/types';
 import {
@@ -8,7 +9,6 @@ import {
   Link,
   RefreshCw,
   Share2,
-  SlidersHorizontal,
   Sparkles,
   SquarePen,
   Trash2,
@@ -24,7 +24,6 @@ export interface BatchSelectionActionHandlers {
   onBatchDownload?: () => void;
   onSync?: () => void;
   onCopyLinks?: () => void;
-  onSendCompress?: () => void;
   onSendConvert?: () => void;
   onBatchDelete: () => void;
 }
@@ -33,48 +32,31 @@ export interface SingleSelectionActionHandlers {
   onEdit?: () => void;
   onCopy: () => void;
   onShare?: () => void;
-  onSendCompress?: () => void;
   onSendConvert?: () => void;
   onDelete: () => void;
 }
 
-function imageToolTitles(
-  selectedImages: ImageItem[],
-  t: (key: string) => string,
-  compressLabel: string,
-  convertLabel: string,
-): { compressTitle: string; convertTitle: string; imageCount: number } {
-  const imageCount = selectedImages.filter(
-    item => getAssetKind(item) === 'image',
+function processableCount(selectedImages: ImageItem[]): number {
+  return selectedImages.filter(
+    item => libraryProcessModes(getAssetKind(item)).length > 0,
   ).length;
-  const compressTitle =
-    imageCount === 0
-      ? t('image.inspector.toolImageOnly')
-      : imageCount < selectedImages.length
-        ? `${compressLabel} (${imageCount}/${selectedImages.length})`
-        : compressLabel;
-  const convertTitle =
-    imageCount === 0 ? t('image.inspector.toolImageOnly') : convertLabel;
-  return { compressTitle, convertTitle, imageCount };
 }
 
 export function buildBatchSelectionActions(
   selectedImages: ImageItem[],
   t: (key: string) => string,
   handlers: BatchSelectionActionHandlers,
-  options?: { hasRemoteConnection?: boolean; toolsEnabled?: boolean },
+  options?: {
+    hasRemoteConnection?: boolean;
+    convertInLibrary?: boolean;
+  },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   if (selectedImages.length === 0) {
     return { grid: [], danger: null };
   }
 
-  const toolsEnabled = options?.toolsEnabled === true;
-  const { compressTitle, convertTitle, imageCount } = imageToolTitles(
-    selectedImages,
-    t,
-    t('image.inspector.sendCompress'),
-    t('image.inspector.sendConvert'),
-  );
+  const convertInLibrary = options?.convertInLibrary === true;
+  const imageCount = processableCount(selectedImages);
 
   const grid: CompactAction[] = [];
 
@@ -136,23 +118,11 @@ export function buildBatchSelectionActions(
     });
   }
 
-  if (toolsEnabled) {
-    grid.push({
-      id: 'compress',
-      label: t('image.inspector.actionCompress'),
-      title: compressTitle,
-      icon: SlidersHorizontal,
-      disabled: imageCount === 0 || !handlers.onSendCompress,
-      onClick: () => {
-        if (imageCount === 0) return;
-        handlers.onSendCompress?.();
-      },
-    });
-
+  if (convertInLibrary && imageCount > 0) {
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
-      title: convertTitle,
+      title: t('image.inspector.sendConvert'),
       icon: Wand2,
       disabled: imageCount === 0 || !handlers.onSendConvert,
       onClick: () => {
@@ -185,11 +155,13 @@ export function buildSingleSelectionActions(
     canCopy?: boolean;
     /** 复制禁用时的原因文案（title） */
     copyDisabledTitle?: string;
-    toolsEnabled?: boolean;
+    /** 本地工作区里按文件类型打开处理弹窗 */
+    convertInLibrary?: boolean;
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   const grid: CompactAction[] = [];
-  const toolsEnabled = options.toolsEnabled === true;
+  const convertInLibrary = options.convertInLibrary === true;
+  const canProcess = libraryProcessModes(kind).length > 0;
 
   if (options.canEdit && handlers.onEdit) {
     grid.push({
@@ -223,33 +195,14 @@ export function buildSingleSelectionActions(
     });
   }
 
-  if (toolsEnabled) {
-    grid.push({
-      id: 'compress',
-      label: t('image.inspector.actionCompress'),
-      title:
-        kind === 'image'
-          ? t('image.inspector.sendCompress')
-          : t('image.inspector.toolImageOnly'),
-      icon: SlidersHorizontal,
-      disabled: kind !== 'image' || !handlers.onSendCompress,
-      onClick: () => {
-        if (kind !== 'image') return;
-        handlers.onSendCompress?.();
-      },
-    });
-
+  if (convertInLibrary && canProcess) {
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
-      title:
-        kind === 'image'
-          ? t('image.inspector.sendConvert')
-          : t('image.inspector.toolImageOnly'),
+      title: t('image.inspector.sendConvert'),
       icon: Wand2,
-      disabled: kind !== 'image' || !handlers.onSendConvert,
+      disabled: !handlers.onSendConvert,
       onClick: () => {
-        if (kind !== 'image') return;
         handlers.onSendConvert?.();
       },
     });

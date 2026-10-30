@@ -6,12 +6,7 @@ export type { SidebarSource };
 export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
 
 export type SidebarFilter = 'all' | 'tags' | 'favorites';
-export type SidebarUtilityTool = 'compress' | 'convert';
-
-export type SidebarMenuItem =
-  | { type: 'library' }
-  | { type: 'workspace' }
-  | { type: 'utility'; tool: SidebarUtilityTool };
+export type SidebarMenuItem = { type: 'library' } | { type: 'workspace' };
 
 export interface SidebarProps {
   onMenuClick?: (menuItem: SidebarMenuItem) => void;
@@ -37,7 +32,6 @@ export interface SidebarProps {
   syncDisabledTitle?: string;
   syncStrategyLabel?: string;
   syncRemoteLabel?: string;
-  hideUtilityTools?: boolean;
   hideHelpFooter?: boolean;
   showWorkspaceNav?: boolean;
   t?: (key: string) => string;

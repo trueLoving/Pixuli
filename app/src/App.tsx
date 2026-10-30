@@ -1,5 +1,4 @@
 import './App.css';
-import '@/features/tools/registerUtilityToolPort';
 import { SearchProvider } from '@/features/library/SearchContext';
 import { ThemeSync } from '@/features/theme/ThemeSync';
 import { useAppOrchestration } from '@/hooks/useAppOrchestration';

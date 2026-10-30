@@ -132,6 +132,16 @@
   cursor: not-allowed;
 }
 
+.asset-library-chrome-btn--accent {
+  border-color: var(--pix-violet-deep, #6d28d9);
+  background: var(--pix-violet, #7c6cf0);
+  color: #fff;
+}
+
+.asset-library-chrome-btn--accent:hover:not(:disabled) {
+  background: var(--pix-violet-deep, #6d28d9);
+}
+
 .asset-library-chrome-btn--busy svg {
   animation: asset-library-spin 1s linear infinite;
 }

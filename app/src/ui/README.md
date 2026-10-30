@@ -13,12 +13,12 @@
 | 资源库工作区 / 上传 / EmptyState / SearchContext | `features/library`（`LibraryWorkbench`）     |
 | 编辑 / 预览 Modal                                | `features/inspector`                         |
 | GitHub/Gitee 配置、版本信息、源管理 hooks        | `features/settings`                          |
-| 压缩 / 转换 overlay、`imageProcessor`            | `features/tools`（`UtilityToolOverlay`）     |
+| 图片处理引擎 `imageProcessor`                    | `features/tools`                             |
 | 工作区 / folderTree                              | `features/workspace`                         |
 | 启动 splash                                      | `boot/loading`（文案来自 `i18n/brand.json`） |
 | 侧栏呈现 / 容器                                  | `layouts/sidebar` · `layouts/AppSidebar`     |
 
-壳层与路由见 [../README.md](../README.md)（`/library`、工具非页面）。
+壳层与路由见 [../README.md](../README.md)（`/library`）。
 
 文案 SSOT：`app/src/i18n/locales`（域 JSON）；preloading 等壳层用 `brand`
 domain。
