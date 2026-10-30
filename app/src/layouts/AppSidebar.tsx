@@ -5,8 +5,6 @@ import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { formatSyncTargetLabel } from '@/features/workspace/syncTargetLabel';
-import { openUtilityTool } from '@/features/tools/utilityToolPort';
-import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { ROUTES } from '@/router/routes';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -48,13 +46,11 @@ export const AppSidebar: React.FC<SidebarProps> = ({
     toggleSidebar,
     closeMobileSidebar,
     setCurrentView,
-    setCurrentUtilityTool,
     setActiveMenu,
     openSettingsModal,
   } = useUIStore();
 
   const syncBusy = pushing || syncing || workspaceLoading;
-  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
 
   const activeSyncSource = useMemo(() => {
     if (selectedSourceId) {
@@ -91,17 +87,12 @@ export const AppSidebar: React.FC<SidebarProps> = ({
   const handleMenuClick = (menuItem: SidebarMenuItem) => {
     if (menuItem.type === 'library') {
       setCurrentView('library');
-      setCurrentUtilityTool(null);
       setActiveMenu('library');
       navigate(ROUTES.LIBRARY);
     } else if (menuItem.type === 'workspace') {
       setCurrentView('workspace');
-      setCurrentUtilityTool(null);
       setActiveMenu('workspace');
       navigate(ROUTES.WORKSPACE);
-    } else if (menuItem.type === 'utility') {
-      openUtilityTool(menuItem.tool);
-      navigate(ROUTES.LIBRARY);
     }
     closeDrawerIfMobile();
   };
@@ -150,7 +141,6 @@ export const AppSidebar: React.FC<SidebarProps> = ({
           syncBusy={syncBusy}
           syncDisabled={syncBusy}
           syncRemoteLabel={syncRemoteLabel}
-          hideUtilityTools={!toolsEnabled}
           hideHelpFooter
           showWorkspaceNav={isWorkspaceAvailable()}
           hideSources

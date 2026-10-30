@@ -1,7 +1,6 @@
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import { EmptyState } from '@/features/library/empty-state';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
-import { UtilityToolOverlay } from '@/features/tools/UtilityToolOverlay';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type {
   ImageEditData,
@@ -20,13 +19,14 @@ import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
 import { AssetLibraryBatchMoveModal } from './AssetLibraryBatchMoveModal';
-import {
-  downloadAssetsAsZip,
-  loadAssetsAsFiles,
-} from '@/features/library/assetDownloadService';
+import { AssetLibraryConvertModal } from './AssetLibraryConvertModal';
+import { convertLibraryImages, cropLibraryImage } from './convertLibraryImages';
+import type { ImageConvertRequest, ImageCropRect } from './imageConvertTarget';
+import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
 import { copyImagePublicLinks } from '@/features/library/copyImageLink';
 import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
+import { libraryProcessModes } from '@/features/library/libraryProcess';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
 import {
@@ -45,9 +45,6 @@ import {
   useNativeShareImage,
 } from '@/features/library/useNativeImageActions';
 import { useImageStore } from '@/features/library/imageStore';
-import { openUtilityTool } from '@/features/tools/utilityToolPort';
-import { setUtilityToolSeedFiles } from '@/features/tools/utilityToolSeed';
-import { useUtilityToolsStore } from '@/features/tools/utilityToolsConfig';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -141,8 +138,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
-  const currentUtilityTool = useUIStore(state => state.currentUtilityTool);
-
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
@@ -153,6 +148,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     id: string;
     nonce: number;
   } | null>(null);
+  const [convertTargets, setConvertTargets] = useState<ImageItem[] | null>(
+    null,
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const selectedImages = useMemo(
@@ -380,27 +378,72 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     [handleClearSelection, loadImages, moveOverride, selectedImages, t],
   );
 
-  const toolsEnabled = useUtilityToolsStore(state => state.enabled);
-
-  const handleSendCompress = useCallback(async () => {
-    if (!toolsEnabled) return;
+  const handleSendConvert = useCallback(() => {
+    if (!localActive) return;
     const images = selectedImages.filter(
-      item => getAssetKind(item) === 'image',
+      item => libraryProcessModes(getAssetKind(item)).length > 0,
     );
-    const files = await loadAssetsAsFiles(images);
-    setUtilityToolSeedFiles(files);
-    openUtilityTool('compress');
-  }, [selectedImages, toolsEnabled]);
+    if (images.length === 0) return;
+    setConvertTargets(images);
+  }, [localActive, selectedImages]);
 
-  const handleSendConvert = useCallback(async () => {
-    if (!toolsEnabled) return;
-    const images = selectedImages.filter(
-      item => getAssetKind(item) === 'image',
-    );
-    const files = await loadAssetsAsFiles(images);
-    setUtilityToolSeedFiles(files);
-    openUtilityTool('convert');
-  }, [selectedImages, toolsEnabled]);
+  const handleConvertSubmit = useCallback(
+    async (request: ImageConvertRequest) => {
+      const targets = convertTargets ?? [];
+      if (targets.length === 0) return;
+      const loadingToast = showLoading(t('image.library.convertSaving'));
+      try {
+        const result = await convertLibraryImages(targets, request);
+        await loadImages();
+        setConvertTargets(null);
+        if (result.saved === 0) {
+          updateLoadingToError(loadingToast, t('image.library.convertFailed'));
+          return;
+        }
+        if (result.failed.length > 0) {
+          updateLoadingToSuccess(
+            loadingToast,
+            t('image.library.convertPartial')
+              .replace('{saved}', String(result.saved))
+              .replace('{failed}', String(result.failed.length)),
+          );
+          return;
+        }
+        updateLoadingToSuccess(
+          loadingToast,
+          t('image.library.convertSuccess').replace(
+            '{count}',
+            String(result.saved),
+          ),
+        );
+      } catch {
+        updateLoadingToError(loadingToast, t('image.library.convertFailed'));
+      }
+    },
+    [convertTargets, loadImages, t],
+  );
+
+  const handleCropSubmit = useCallback(
+    async (item: ImageItem, crop: ImageCropRect) => {
+      const loadingToast = showLoading(t('image.library.cropSaving'));
+      try {
+        const result = await cropLibraryImage(item, crop);
+        await loadImages();
+        updateLoadingToSuccess(
+          loadingToast,
+          t('image.library.convertSuccess').replace(
+            '{count}',
+            String(result.saved),
+          ),
+        );
+        return result;
+      } catch {
+        updateLoadingToError(loadingToast, t('image.library.cropFailed'));
+        return { saved: 0 };
+      }
+    },
+    [loadImages, t],
+  );
 
   const notifyCopyLinkResult = useCallback(
     (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
@@ -483,30 +526,25 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
             selectedImages.length > 0
               ? () => void handleCopyLinks()
               : undefined,
-          onSendCompress: () => {
-            void handleSendCompress();
-          },
           onSendConvert: () => {
-            void handleSendConvert();
+            handleSendConvert();
           },
           onBatchDelete: () => {
             void handleBatchDelete();
           },
         },
-        { hasRemoteConnection, toolsEnabled },
+        { hasRemoteConnection, convertInLibrary: localActive },
       ),
     [
       handleBatchDelete,
       handleBatchDownload,
       handleCopyLinks,
-      handleSendCompress,
       handleSendConvert,
       hasRemoteConnection,
       localActive,
       requestSync,
       selectedImages,
       t,
-      toolsEnabled,
     ],
   );
 
@@ -573,11 +611,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onCopyUrl={onCopyUrl}
       onShareImage={onShareImage}
       onSync={() => requestSync()}
-      onSendCompress={() => {
-        void handleSendCompress();
-      }}
       onSendConvert={() => {
-        void handleSendConvert();
+        handleSendConvert();
       }}
       onBatchEdit={
         selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined
@@ -597,15 +632,13 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
       openPreviewRequest={previewRequest}
+      convertInLibrary={localActive}
     />
   );
 
   return (
     <div className="library-workbench">
-      <div
-        className="library-workbench__main"
-        aria-hidden={currentUtilityTool ? true : undefined}
-      >
+      <div className="library-workbench__main">
         <AssetLibrary
           t={t}
           images={images}
@@ -669,7 +702,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         }}
         onSubmit={handleBatchMoveSubmit}
       />
-      <UtilityToolOverlay />
+      <AssetLibraryConvertModal
+        isOpen={convertTargets !== null}
+        items={convertTargets ?? []}
+        t={t}
+        onClose={() => setConvertTargets(null)}
+        onConvert={handleConvertSubmit}
+        onCrop={handleCropSubmit}
+      />
     </div>
   );
 };

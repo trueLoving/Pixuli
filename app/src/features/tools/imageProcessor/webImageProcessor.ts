@@ -40,6 +40,7 @@ function processImageWithCanvas(
     maxWidth?: number;
     maxHeight?: number;
     maintainAspectRatio: boolean;
+    allowUpscale?: boolean;
   },
 ): Promise<{
   blob: Blob;
@@ -57,7 +58,7 @@ function processImageWithCanvas(
         const originalWidth = img.naturalWidth || img.width;
         const originalHeight = img.naturalHeight || img.height;
 
-        const { width: targetWidth, height: targetHeight } =
+        const fitted =
           options.maxWidth || options.maxHeight
             ? calculateDisplayDimensions(
                 originalWidth,
@@ -67,6 +68,14 @@ function processImageWithCanvas(
                 options.maintainAspectRatio,
               )
             : { width: originalWidth, height: originalHeight };
+        const targetWidth =
+          options.allowUpscale === false && fitted.width > originalWidth
+            ? originalWidth
+            : fitted.width;
+        const targetHeight =
+          options.allowUpscale === false && fitted.height > originalHeight
+            ? originalHeight
+            : fitted.height;
 
         const canvas = document.createElement('canvas');
         canvas.width = targetWidth;
@@ -232,6 +241,7 @@ export class WebImageProcessorService {
       maxWidth,
       maxHeight,
       maintainAspectRatio = true,
+      allowUpscale = true,
     } = options;
 
     const { blob, originalWidth, originalHeight, width, height } =
@@ -241,6 +251,7 @@ export class WebImageProcessorService {
         maxWidth,
         maxHeight,
         maintainAspectRatio,
+        allowUpscale,
       });
 
     return buildResult(

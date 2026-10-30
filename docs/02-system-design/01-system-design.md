@@ -64,7 +64,7 @@
 | 状态     | Zustand（imageStore / workspaceStore / sourceStore 等）      |
 | 语言     | TypeScript strict（见 [DECISIONS](../../DECISIONS.md) D2.6） |
 | 存储插件 | `@pixuli/core/plugins` + `@pixuli/provider-*`                |
-| 图片工具 | Canvas（Web/Desktop）；Mobile 可用原生能力                   |
+| 图片处理 | 资源库处理弹窗 + Canvas（Web/Desktop）；Mobile 可用原生能力  |
 
 工程脚本与目录：见 [app/README.md](../../app/README.md) 与根目录
 `package.json`。

@@ -14,7 +14,7 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 | 路径                     | 职责                                                                             |
 | ------------------------ | -------------------------------------------------------------------------------- |
 | `features/library`       | 资源库 SSOT：`LibraryRoute`、`useLibraryRoute`、`LibraryWorkbench`、`imageStore` |
-| `features/tools`         | 增强工具：`imageProcessor`、压缩/转换 Panel、`UtilityToolOverlay`                |
+| `features/tools`         | 图片处理引擎：`imageProcessor`（Canvas）                                         |
 | `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                    |
 | `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                         |
 | `features/operation-log` | 操作日志 UI + store + service（域内聚）                                          |
@@ -25,10 +25,8 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 
 ## 路由
 
-- **主界面**：`/library`（资源库工作区）
-- **增强工具**：无独立路由；`uiStore.currentUtilityTool` + `UtilityToolOverlay`
+- **主界面**：`/library`（资源库工作区）。图片处理在资源库的处理弹窗里，按文件类型给出操作。
 - **Legacy**：`/photos`、`/compress`、`/convert` 等 → redirect `/library`
-- **深链**：`/library?tool=compress|convert`（读后清除 query）
 
 ## Store 放置规则
 

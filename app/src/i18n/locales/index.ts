@@ -4,7 +4,6 @@ import zhAccess from './zh-CN/access.json';
 import zhApp from './zh-CN/app.json';
 import zhBrand from './zh-CN/brand.json';
 import zhCommon from './zh-CN/common.json';
-import zhTools from './zh-CN/tools.json';
 import zhEmptyState from './zh-CN/emptyState.json';
 import zhErrors from './zh-CN/errors.json';
 import zhGitee from './zh-CN/gitee.json';
@@ -29,7 +28,6 @@ import enAccess from './en-US/access.json';
 import enApp from './en-US/app.json';
 import enBrand from './en-US/brand.json';
 import enCommon from './en-US/common.json';
-import enTools from './en-US/tools.json';
 import enEmptyState from './en-US/emptyState.json';
 import enErrors from './en-US/errors.json';
 import enGitee from './en-US/gitee.json';
@@ -76,7 +74,6 @@ const zhParts = [
   zhWorkspace,
   zhAccess,
   zhSettings,
-  zhTools,
   zhPwa,
   zhOperationLog,
 ] as Record<string, unknown>[];
@@ -103,7 +100,6 @@ const enParts = [
   enWorkspace,
   enAccess,
   enSettings,
-  enTools,
   enPwa,
   enOperationLog,
 ] as Record<string, unknown>[];

@@ -5,5 +5,4 @@ export type SettingsSection =
   | 'appearance'
   | 'keyboard'
   | 'version'
-  | 'sync'
-  | 'tools';
+  | 'sync';

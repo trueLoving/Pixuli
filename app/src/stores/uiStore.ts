@@ -62,7 +62,6 @@ interface UIState {
 
   // 视图状态
   currentView: string;
-  currentUtilityTool: 'compress' | 'convert' | null;
   /** 工作区资源管理器当前选中的文件夹（空 = 全部） */
   selectedFolderPath: string;
   /** 窄屏是否展开文件夹面板 */
@@ -94,7 +93,6 @@ interface UIState {
 
   // Actions - 视图
   setCurrentView: (view: string) => void;
-  setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) => void;
   setSelectedFolderPath: (path: string) => void;
   setWorkspaceExplorerOpen: (open: boolean) => void;
   toggleWorkspaceExplorer: () => void;
@@ -142,7 +140,6 @@ export const useUIStore = create<UIState>(set => ({
   activeMenu: 'library',
   isFullscreenMode: false,
   currentView: 'library',
-  currentUtilityTool: null,
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
   workspaceExplorerWidth: EXPLORER_WIDTH_DEFAULT,
@@ -170,8 +167,6 @@ export const useUIStore = create<UIState>(set => ({
     set({ isFullscreenMode: isFullscreen }),
 
   setCurrentView: (view: string) => set({ currentView: view }),
-  setCurrentUtilityTool: (tool: 'compress' | 'convert' | null) =>
-    set({ currentUtilityTool: tool }),
   setSelectedFolderPath: (path: string) => set({ selectedFolderPath: path }),
   setWorkspaceExplorerOpen: (open: boolean) =>
     set({ workspaceExplorerOpen: open }),
