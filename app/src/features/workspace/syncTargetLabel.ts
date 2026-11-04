@@ -12,10 +12,6 @@ export function formatSyncTargetLabel(
   if (!source) {
     return emptyLabel;
   }
-  if (source.pluginId === 'onedrive') {
-    const folder = String(source.config.path ?? 'Pixuli');
-    return `OneDrive ${folder}`;
-  }
   const repo = getRepoConfigFromSource(source);
   const { typeLabel } = resolveSourceDisplay(source.pluginId);
   if (!repo.owner && !repo.repo) {

@@ -175,4 +175,6 @@ export interface ImageConversionOptions {
   maxHeight?: number;
   /** 是否保持宽高比，默认 true */
   maintainAspectRatio?: boolean;
+  /** 为 false 时，最大边长不会把图片放大 */
+  allowUpscale?: boolean;
 }

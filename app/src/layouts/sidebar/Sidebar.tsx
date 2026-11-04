@@ -7,7 +7,6 @@ import { SidebarMobileOverlay } from './SidebarSourceContextMenu';
 import {
   buildLibraryNavItem,
   buildPrimaryNavItems,
-  buildUtilityNavItems,
   buildWorkspaceNavItem,
   cloneNavIcon,
 } from './sidebarNavItems';
@@ -16,7 +15,6 @@ import type { SidebarProps } from './types';
 export type {
   SidebarView,
   SidebarFilter,
-  SidebarUtilityTool,
   SidebarMenuItem,
   SidebarSource,
 } from './types';
@@ -47,7 +45,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   syncDisabledTitle,
   syncStrategyLabel,
   syncRemoteLabel,
-  hideUtilityTools = false,
   hideHelpFooter = false,
   showWorkspaceNav = false,
   t,
@@ -63,8 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sidebarRef = useRef<HTMLElement>(null);
   const libraryNavItem = buildLibraryNavItem(translate);
   const workspaceNavItem = buildWorkspaceNavItem(translate);
-  const utilityNavItems = buildUtilityNavItems(translate, hideUtilityTools);
-  const primaryNavItems = buildPrimaryNavItems(translate, hideUtilityTools);
+  const primaryNavItems = buildPrimaryNavItems(translate);
 
   // 性能优化：动画开始前设置 will-change，动画结束后移除
   useEffect(() => {
@@ -300,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   className="sidebar-collapsed-item"
                   onClick={() => {
                     window.open(
-                      'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                      'https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md',
                       '_blank',
                     );
                   }}
@@ -365,20 +361,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <nav className="sidebar-nav">
               {renderExpandedNavItems([libraryNavItem])}
-            </nav>
-          </div>
-        )}
-
-        {/* 工具 */}
-        {onMenuClick && utilityNavItems.length > 0 && (
-          <div className="sidebar-section">
-            <div className="sidebar-section-header">
-              <span className="sidebar-section-title">
-                {translate('sidebar.utilityTools')}
-              </span>
-            </div>
-            <nav className="sidebar-nav">
-              {renderExpandedNavItems(utilityNavItems)}
             </nav>
           </div>
         )}
@@ -448,7 +430,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               label={translate('sidebar.docs')}
               onClick={() => {
                 window.open(
-                  'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                  'https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md',
                   '_blank',
                 );
               }}

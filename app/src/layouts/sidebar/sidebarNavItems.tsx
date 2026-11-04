@@ -1,4 +1,4 @@
-import { FileImage, FileText, FolderOpen, Zap } from 'lucide-react';
+import { FileText, FolderOpen } from 'lucide-react';
 import React from 'react';
 import type {
   SidebarMenuItem,
@@ -28,37 +28,10 @@ export function buildWorkspaceNavItem(
   };
 }
 
-export function buildUtilityNavItems(
-  translate: (key: string) => string,
-  hideUtilityTools: boolean,
-): SidebarPrimaryNavItem[] {
-  if (hideUtilityTools) {
-    return [];
-  }
-  return [
-    {
-      menuKey: 'compress',
-      icon: <Zap size={20} />,
-      label: translate('sidebar.imageCompress'),
-      menuItem: { type: 'utility', tool: 'compress' },
-    },
-    {
-      menuKey: 'convert',
-      icon: <FileImage size={20} />,
-      label: translate('sidebar.imageConvert'),
-      menuItem: { type: 'utility', tool: 'convert' },
-    },
-  ];
-}
-
 export function buildPrimaryNavItems(
   translate: (key: string) => string,
-  hideUtilityTools: boolean,
 ): SidebarPrimaryNavItem[] {
-  return [
-    buildLibraryNavItem(translate),
-    ...buildUtilityNavItems(translate, hideUtilityTools),
-  ];
+  return [buildLibraryNavItem(translate)];
 }
 
 export function cloneNavIcon(

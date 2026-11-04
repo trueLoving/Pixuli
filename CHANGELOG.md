@@ -9,12 +9,13 @@
 
 ## [Unreleased]
 
-> **M1 减负与归档**（REF-101～REF-112，2025–2026）。详细 backlog：[docs/04-backlog.md](docs/04-backlog.md)。重构追踪：[PLANS.md](PLANS.md)。
+> **M1 减负与归档**（REF-101～REF-112，2025–2026）。延后/不做见
+> [PLANS.md](PLANS.md) 与 [docs/product.md](docs/product.md)。
 
 适用于重构分支 `main` 上的
 **Web**、**Desktop**、**Mobile**。**基线产品版本：2.0.0**（三端统一 semver，相对 1.x 为 MAJOR）。下次打 tag 预计为
-`v2.0.0-desktop`、`v2.0.0-android`、`v2.0.0-web`。见
-[05-release-versioning.md](docs/02-system-design/05-release-versioning.md)（REF-409）。
+`v2.0.0-desktop`、`v2.0.0-android`、`v2.0.0-web`。发版要点见
+[docs/architecture.md](docs/architecture.md)。
 
 ### ⚠️ 破坏性变更
 
@@ -57,7 +58,7 @@
 
 | 若你曾使用…                                | 现在…                                                           |
 | ------------------------------------------ | --------------------------------------------------------------- |
-| 幻灯片 / 时间线 / 照片墙                   | 使用 `/photos` 网格/列表；见 [backlog](docs/04-backlog.md)      |
+| 幻灯片 / 时间线 / 照片墙                   | 使用资源库列表；见 [docs/product.md](docs/product.md)           |
 | Desktop WASM / Rust AI                     | Canvas 处理；历史 WASM 已从仓库移除                             |
 | 官方 NestJS Server                         | 自定义 `StorageProvider` 或社区自建                             |
 | Expo RN `apps/mobile`                      | 使用 Capacitor Android APK                                      |
@@ -177,7 +178,7 @@
 
 > **发布说明：** Git tag `v1.0.0-desktop` 对应本条目；GitHub
 > Release 页面于 2025-11-12 发布但**无**安装包。见
-> [05-release-versioning.md](docs/02-system-design/05-release-versioning.md)。
+> [docs/architecture.md](docs/architecture.md)。
 
 #### ✨ 新增
 

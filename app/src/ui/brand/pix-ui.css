@@ -35,7 +35,7 @@
   gap: 0.5rem;
   border: 1px solid var(--pix-lilac);
   border-radius: 0.5rem;
-  background: #fff;
+  background: var(--pix-bg-elevated);
   color: var(--pix-violet-deep);
   font-size: 0.875rem;
   font-weight: 500;
@@ -78,8 +78,13 @@
 }
 
 .pix-panel-soft {
-  border: 1px solid color-mix(in srgb, var(--pix-lilac) 65%, white);
-  background: color-mix(in srgb, var(--pix-violet-soft) 45%, white);
+  border: 1px solid
+    color-mix(in srgb, var(--pix-lilac) 65%, var(--pix-bg-elevated));
+  background: color-mix(
+    in srgb,
+    var(--pix-violet-soft) 45%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .pix-nav-active {
@@ -102,7 +107,7 @@
 }
 
 .pix-link:disabled {
-  color: #9ca3af;
+  color: var(--pix-fg-faint);
   cursor: not-allowed;
   text-decoration: none;
 }
@@ -129,8 +134,9 @@
 }
 
 .pix-sync-banner {
-  border-bottom: 1px solid color-mix(in srgb, var(--pix-cyan-deep) 28%, white);
-  background: color-mix(in srgb, var(--pix-cyan) 14%, white);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--pix-cyan-deep) 28%, var(--pix-bg-elevated));
+  background: color-mix(in srgb, var(--pix-cyan) 14%, var(--pix-bg-elevated));
 }
 
 .pix-sync-banner-text {

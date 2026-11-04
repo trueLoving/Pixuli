@@ -18,14 +18,14 @@
 }
 
 .git-pat-link {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #374151;
+  border: 1px solid var(--pix-border-strong);
+  background: var(--pix-bg-elevated);
+  color: var(--pix-fg-secondary);
   text-decoration: none;
 }
 
 .git-pat-link:hover {
-  background: #f9fafb;
+  background: var(--pix-bg-muted);
 }
 
 .git-pat-validate {
@@ -64,7 +64,7 @@
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--pix-fg-secondary);
 }
 
 .git-pat-advanced-body {

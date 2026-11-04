@@ -4,11 +4,16 @@ import { MemoryWorkspaceAdapter } from '../memoryAdapter';
 import {
   applySyncPull,
   buildSyncPushItems,
+  downloadRemoteBytes,
   resolveLocalPathForPull,
   resolvePullDisplayName,
   resolveRemotePathForPush,
 } from '../syncApply';
-import { isSyncExcludedPath } from '../syncPath';
+import {
+  isPullableSyncFile,
+  isSyncExcludedPath,
+  isSyncableAssetName,
+} from '../syncPath';
 import type { StorageProvider } from '../../plugins/types';
 
 function createMockProvider(
@@ -36,6 +41,40 @@ describe('syncPath', () => {
   it('excludes .pixuli paths from sync', () => {
     expect(isSyncExcludedPath('.pixuli/config.json')).toBe(true);
     expect(isSyncExcludedPath('images/a.jpg')).toBe(false);
+  });
+
+  it('recognizes image pdf and video names for sync listing', () => {
+    expect(isSyncableAssetName('a.jpg')).toBe(true);
+    expect(isSyncableAssetName('doc.pdf')).toBe(true);
+    expect(isSyncableAssetName('clip.mp4')).toBe(true);
+    expect(isSyncableAssetName('notes.txt')).toBe(false);
+    expect(isPullableSyncFile('notes.txt')).toBe(false);
+    expect(
+      isPullableSyncFile('sentences.txt', { listedInManifest: true }),
+    ).toBe(true);
+    expect(isPullableSyncFile('.DS_Store', { listedInManifest: true })).toBe(
+      false,
+    );
+  });
+});
+
+describe('downloadRemoteBytes', () => {
+  it('prefers provider.downloadRemoteFile over public raw fetch', async () => {
+    const bytes = new Uint8Array([9, 8, 7]);
+    const downloadRemoteFile = vi.fn(async () => bytes);
+    const fetchFn = vi.fn();
+    const provider = createMockProvider({ downloadRemoteFile });
+
+    await expect(
+      downloadRemoteBytes(
+        provider,
+        'images/a.jpg',
+        'https://example.test/ignored',
+        fetchFn as unknown as typeof fetch,
+      ),
+    ).resolves.toEqual(bytes);
+    expect(downloadRemoteFile).toHaveBeenCalledWith('images/a.jpg');
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 });
 

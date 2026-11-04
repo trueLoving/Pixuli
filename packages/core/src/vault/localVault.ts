@@ -267,8 +267,17 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
       if (!dir) {
         throw new Error('Folder path is required');
       }
-      if (!folders.includes(dir)) {
-        folders.push(dir);
+      const parts = dir.split('/');
+      let accumulated = '';
+      let changed = false;
+      for (const part of parts) {
+        accumulated = accumulated ? `${accumulated}/${part}` : part;
+        if (!folders.includes(accumulated)) {
+          folders.push(accumulated);
+          changed = true;
+        }
+      }
+      if (changed) {
         await persistFolders();
       }
       // 占位文件，确保部分 adapter 能列出空目录

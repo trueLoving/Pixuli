@@ -1,0 +1,88 @@
+/**
+ * 浅色 / 深色表面色。`html.dark` 由主题偏好写入（跟随系统或手动）。
+ * Tailwind `gray-*` 读这些 RGB 通道，所以现有 gray 工具类会一起变。
+ */
+
+:root {
+  --pix-bg: #faf8ff;
+  --pix-bg-elevated: #ffffff;
+  --pix-bg-muted: #f9fafb;
+  --pix-bg-subtle: #f3f4f6;
+  --pix-fg: #111827;
+  --pix-fg-secondary: #374151;
+  --pix-fg-muted: #6b7280;
+  --pix-fg-faint: #9ca3af;
+  --pix-border: #e5e7eb;
+  --pix-border-strong: #d1d5db;
+  --pix-tooltip-bg: #111827;
+  --pix-tooltip-fg: #ffffff;
+  --app-theme-background-primary: var(--pix-bg);
+  --sidebar-bg: var(--pix-bg);
+  --border-color: var(--pix-border);
+  --text-primary: var(--pix-fg);
+  --text-secondary: var(--pix-fg-muted);
+  --text-muted: var(--pix-fg-faint);
+  --hover-bg: var(--pix-bg-subtle);
+  --active-bg: var(--pix-bg-subtle);
+  --button-bg: var(--pix-bg-elevated);
+  --card-bg: var(--pix-bg-elevated);
+  --secondary-bg: var(--pix-bg-subtle);
+  --bg-secondary: var(--pix-bg-muted);
+  --search-bg: var(--pix-bg-subtle);
+  --search-bg-focused: var(--pix-bg-elevated);
+  --search-bg-disabled: var(--pix-bg-muted);
+  --kbd-bg: var(--pix-bg-elevated);
+  --gray-50: 249 250 251;
+  --gray-100: 243 244 246;
+  --gray-200: 229 231 235;
+  --gray-300: 209 213 219;
+  --gray-400: 156 163 175;
+  --gray-500: 107 114 128;
+  --gray-600: 75 85 99;
+  --gray-700: 55 65 81;
+  --gray-800: 31 41 55;
+  --gray-900: 17 24 39;
+  --gray-950: 3 7 18;
+}
+
+html.dark {
+  --pix-bg: #1e1b4b;
+  --pix-bg-elevated: #322c58;
+  --pix-bg-muted: #282450;
+  --pix-bg-subtle: #363068;
+  --pix-fg: #f5f3ff;
+  --pix-fg-secondary: #dcd6f5;
+  --pix-fg-muted: #bab4d6;
+  --pix-fg-faint: #a49ec4;
+  --pix-border: #4a4282;
+  --pix-border-strong: #6258a0;
+  --pix-violet-soft: #3c3480;
+  --pix-violet-deep: #d4ccff;
+  --pix-surface: #1e1b4b;
+  --pix-tooltip-bg: #f5f3ff;
+  --pix-tooltip-fg: #1e1b4b;
+  --gray-50: 40 36 80;
+  --gray-100: 54 48 104;
+  --gray-200: 74 66 130;
+  --gray-300: 98 90 156;
+  --gray-400: 164 158 196;
+  --gray-500: 186 180 214;
+  --gray-600: 206 200 230;
+  --gray-700: 220 214 240;
+  --gray-800: 234 230 248;
+  --gray-900: 245 243 255;
+  --gray-950: 250 248 255;
+  color-scheme: dark;
+}
+
+html.dark .bg-white {
+  background-color: var(--pix-bg-elevated);
+}
+
+html.dark .hover\:bg-white:hover {
+  background-color: var(--pix-bg-subtle);
+}
+
+html.dark .bg-white\/85 {
+  background-color: color-mix(in srgb, var(--pix-bg-elevated) 85%, transparent);
+}

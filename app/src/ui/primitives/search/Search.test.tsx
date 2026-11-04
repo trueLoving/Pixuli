@@ -20,6 +20,8 @@ vi.mock('@/i18n/locales', () => ({
       'search.help.descKind': '类型',
       'search.help.exSize': 'size:>1mb',
       'search.help.descSize': '大小',
+      'search.help.exTag': 'tag:旅行',
+      'search.help.descTag': '标签完整匹配',
       'search.help.exCombo': 'kind:image size:<500kb',
       'search.help.descCombo': '组合',
       'search.image.placeholder': '搜索图片',

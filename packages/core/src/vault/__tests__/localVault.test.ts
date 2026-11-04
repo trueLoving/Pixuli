@@ -263,7 +263,9 @@ describe('createLocalVault', () => {
     await vault.open();
 
     await vault.createFolder('images/album');
-    expect(await vault.listFolders()).toContain('images/album');
+    expect(await vault.listFolders()).toEqual(
+      expect.arrayContaining(['images', 'images/album']),
+    );
 
     const file = new File([new Uint8Array([1, 2])], 'a.jpg', {
       type: 'image/jpeg',

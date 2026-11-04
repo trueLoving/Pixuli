@@ -34,6 +34,7 @@ export interface AssetLibraryTableProps {
   onTouchPointerDown: (fileId: string) => void;
   onTouchPointerEnd: () => void;
   longPressFiredRef: RefObject<boolean>;
+  onOpenFile?: (file: ImageItem) => void;
 }
 
 export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
@@ -54,7 +55,9 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
   onTouchPointerDown,
   onTouchPointerEnd,
   longPressFiredRef,
+  onOpenFile,
 }) => {
+  const pointerTypeRef = React.useRef<string>('mouse');
   const colSpan = multiSelectMode ? 5 : 4;
 
   return (
@@ -134,8 +137,13 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                     multiSelectMode,
                   );
                 }}
+                onDoubleClick={() => {
+                  if (pointerTypeRef.current === 'touch') return;
+                  onOpenFile?.(file);
+                }}
                 onContextMenu={event => onContextMenu(event, file)}
                 onPointerDown={event => {
+                  pointerTypeRef.current = event.pointerType;
                   if (event.pointerType !== 'touch') return;
                   onTouchPointerDown(file.id);
                 }}

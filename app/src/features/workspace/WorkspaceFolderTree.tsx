@@ -240,10 +240,9 @@ export const WorkspaceFolderTree: React.FC<{ overlay?: boolean }> = ({
   const handleDelete = async (path: string) => {
     setMenu(null);
     if (!path) return;
-    const count = images.filter(image => {
-      const local = image.localPath;
-      return local === path || (local?.startsWith(`${path}/`) ?? false);
-    }).length;
+    const count = indexPaths.filter(
+      local => local === path || local.startsWith(`${path}/`),
+    ).length;
     const message = t('image.library.confirmDeleteFolder')
       .replace('{name}', path.split('/').pop() || path)
       .replace('{count}', String(count));

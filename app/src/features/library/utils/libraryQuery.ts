@@ -10,6 +10,8 @@ export interface LibraryQuery {
   kinds: AssetKind[];
   /** size: 条件；多项为 AND */
   sizeRules: Array<{ op: SizeCompare; bytes: number }>;
+  /** tag: 条件；多项为 AND，大小写不敏感的完整标签 */
+  tags: string[];
 }
 
 const KIND_VALUES = new Set<AssetKind>(['image', 'video', 'pdf', 'other']);
@@ -86,6 +88,7 @@ function parseKindValue(value: string): AssetKind | null {
  * - 裸词 / name:xxx → 文件名包含
  * - kind:image|video|pdf|other → 类型
  * - size:>1mb / size:<=500kb → 大小
+ * - tag:旅行 → 标签完整匹配（多项 AND）
  * 多个条件默认 AND；多个 kind 为 OR。
  */
 export function parseLibraryQuery(input: string): LibraryQuery {
@@ -93,6 +96,7 @@ export function parseLibraryQuery(input: string): LibraryQuery {
     nameTerms: [],
     kinds: [],
     sizeRules: [],
+    tags: [],
   };
 
   for (const token of tokenizeLibraryQuery(input)) {
@@ -125,6 +129,17 @@ export function parseLibraryQuery(input: string): LibraryQuery {
       continue;
     }
 
+    if (key === 'tag' || key === 'tags') {
+      const tag = value.trim();
+      if (
+        tag &&
+        !query.tags.some(item => item.toLowerCase() === tag.toLowerCase())
+      ) {
+        query.tags.push(tag);
+      }
+      continue;
+    }
+
     // 未知 key:value 当作文件名子串，避免静默丢弃用户输入
     query.nameTerms.push(token);
   }
@@ -151,8 +166,13 @@ function matchSize(
   }
 }
 
+function hasTag(tags: string[] | undefined, expected: string): boolean {
+  const needle = expected.toLowerCase();
+  return (tags ?? []).some(tag => tag.trim().toLowerCase() === needle);
+}
+
 export function matchesLibraryQuery(
-  item: Pick<ImageItem, 'name' | 'type' | 'size'>,
+  item: Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
   query: LibraryQuery,
 ): boolean {
   for (const term of query.nameTerms) {
@@ -170,11 +190,15 @@ export function matchesLibraryQuery(
     if (!matchSize(item.size ?? 0, rule)) return false;
   }
 
+  for (const tag of query.tags) {
+    if (!hasTag(item.tags, tag)) return false;
+  }
+
   return true;
 }
 
 export function filterByLibraryQuery<
-  T extends Pick<ImageItem, 'name' | 'type' | 'size'>,
+  T extends Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
 >(items: T[], input: string): T[] {
   const trimmed = input.trim();
   if (!trimmed) return items;
@@ -182,7 +206,8 @@ export function filterByLibraryQuery<
   if (
     query.nameTerms.length === 0 &&
     query.kinds.length === 0 &&
-    query.sizeRules.length === 0
+    query.sizeRules.length === 0 &&
+    query.tags.length === 0
   ) {
     return items;
   }

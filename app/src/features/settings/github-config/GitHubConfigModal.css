@@ -23,7 +23,7 @@
 }
 
 .github-config-modal-content {
-  background-color: #ffffff;
+  background-color: var(--pix-bg-elevated);
   border-radius: 0.5rem;
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--pix-border);
 }
 
 .github-config-modal-title {
@@ -51,25 +51,25 @@
 .github-config-modal-title-icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
 }
 
 .github-config-modal-title-text {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--pix-fg);
 }
 
 .github-config-modal-close {
-  color: #9ca3af;
+  color: var(--pix-fg-faint);
   transition: all 0.2s ease-in-out;
   padding: 0.25rem;
   border-radius: 9999px;
 }
 
 .github-config-modal-close:hover {
-  color: #6b7280;
-  background-color: #f3f4f6;
+  color: var(--pix-fg-muted);
+  background-color: var(--pix-bg-subtle);
 }
 
 .github-config-modal-close-icon {
@@ -82,8 +82,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--pix-bg-muted);
+  border-bottom: 1px solid var(--pix-border);
 }
 
 .github-config-modal-actions-left,
@@ -98,10 +98,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background-color: white;
-  border: 1px solid #d1d5db;
+  background-color: var(--pix-bg-elevated);
+  border: 1px solid var(--pix-border-strong);
   border-radius: 0.375rem;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -109,8 +109,8 @@
 }
 
 .github-config-modal-action-button:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: var(--pix-bg-muted);
+  border-color: var(--pix-fg-faint);
 }
 
 .github-config-modal-action-button-danger {
@@ -142,9 +142,9 @@
 .github-config-form-section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--pix-border);
 }
 
 .github-config-form-row {
@@ -162,7 +162,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   margin-bottom: 0.25rem;
 }
 
@@ -173,7 +173,7 @@
 .github-config-form-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--pix-border-strong);
   border-radius: 0.375rem;
   font-size: 0.875rem;
   transition: all 0.2s ease-in-out;
@@ -187,7 +187,7 @@
 
 .github-config-form-description {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   margin-top: 0.25rem;
 }
 
@@ -272,13 +272,13 @@
 }
 
 .github-config-button-secondary {
-  background-color: white;
-  color: #374151;
-  border-color: #d1d5db;
+  background-color: var(--pix-bg-elevated);
+  color: var(--pix-fg-secondary);
+  border-color: var(--pix-border-strong);
 }
 
 .github-config-button-secondary:hover {
-  background-color: #f9fafb;
+  background-color: var(--pix-bg-muted);
 }
 
 .github-config-button-secondary:focus {
@@ -286,7 +286,7 @@
 }
 
 .github-config-button-success {
-  background-color: white;
+  background-color: var(--pix-bg-elevated);
   color: #059669;
   border-color: #86efac;
 }
@@ -300,7 +300,7 @@
 }
 
 .github-config-button-info {
-  background-color: white;
+  background-color: var(--pix-bg-elevated);
   color: var(--pix-violet-deep);
   border-color: var(--pix-lilac);
 }
@@ -314,7 +314,7 @@
 }
 
 .github-config-button-danger {
-  background-color: white;
+  background-color: var(--pix-bg-elevated);
   color: #dc2626;
   border-color: #fca5a5;
 }
@@ -418,15 +418,15 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--pix-border);
 }
 
 .github-config-form-cancel-button {
   padding: 0.5rem 1rem;
   background-color: transparent;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--pix-border-strong);
   border-radius: 0.375rem;
-  color: #374151;
+  color: var(--pix-fg-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -434,8 +434,8 @@
 }
 
 .github-config-form-cancel-button:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
+  background-color: var(--pix-bg-muted);
+  border-color: var(--pix-fg-faint);
 }
 
 .github-config-form-save-button {

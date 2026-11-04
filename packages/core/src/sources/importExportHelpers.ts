@@ -32,3 +32,10 @@ export function pickRepoConfig(
   }
   return config;
 }
+
+/** 仓库源的可持久化配置；无法识别时返回 null。 */
+export function pickStoredSourceConfig(
+  raw: Record<string, unknown>,
+): StorageProviderConfig | null {
+  return pickRepoConfig(raw);
+}

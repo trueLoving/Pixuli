@@ -23,6 +23,10 @@ type SourceState = {
   removeSource: (id: string) => void;
   getSourceById: (id: string) => SourceConfig | undefined;
   setSelectedSourceId: (id: string | null) => void;
+  replaceSources: (
+    sources: SourceConfig[],
+    selectedSourceId: string | null,
+  ) => void;
 };
 
 const STORAGE_KEY = 'pixuli.sources.v3';
@@ -131,6 +135,16 @@ export const useSourceStore = create<SourceState>((set, get) => {
     setSelectedSourceId: id => {
       set({ selectedSourceId: id });
       saveSelectedSourceId(id);
+    },
+    replaceSources: (sources, selectedSourceId) => {
+      const selected =
+        selectedSourceId &&
+        sources.some(source => source.id === selectedSourceId)
+          ? selectedSourceId
+          : (sources[0]?.id ?? null);
+      set({ sources, selectedSourceId: selected });
+      saveSources(sources);
+      saveSelectedSourceId(selected);
     },
   };
 });

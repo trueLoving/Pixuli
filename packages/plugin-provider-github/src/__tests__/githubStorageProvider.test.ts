@@ -957,4 +957,34 @@ describe('GitHubStorageProvider', () => {
       ).toBe(true);
     });
   });
+
+  describe('downloadRemoteFile', () => {
+    it('downloads via authenticated GitHub contents raw API', async () => {
+      const payload = new Uint8Array([1, 2, 3, 4]);
+      global.fetch = vi.fn(
+        async (input: RequestInfo | URL, init?: RequestInit) => {
+          expect(String(input)).toContain(
+            '/repos/test-owner/test-repo/contents/images/a.jpg',
+          );
+          expect(String(input)).toContain('ref=main');
+          const headers = new Headers(init?.headers);
+          expect(headers.get('Authorization')).toBe('token test-token');
+          expect(headers.get('Accept')).toBe('application/vnd.github.raw');
+          return {
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            arrayBuffer: async () => payload.buffer,
+            text: async () => '',
+            json: async () => ({}),
+            headers: new Headers(),
+          };
+        },
+      );
+
+      await expect(provider.downloadRemoteFile('a.jpg')).resolves.toEqual(
+        payload,
+      );
+    });
+  });
 });

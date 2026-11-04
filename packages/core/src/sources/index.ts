@@ -13,8 +13,14 @@ export {
 } from './normalize';
 export {
   buildPluginConfigExport,
+  buildSettingsExport,
   parsePluginConfigImport,
+  parseSettingsImport,
   PLUGIN_CONFIG_EXPORT_VERSION,
-  type PluginConfigExportPayload,
+  SETTINGS_EXPORT_KIND,
+  SETTINGS_EXPORT_VERSION,
   type ParsedPluginConfigImport,
+  type ParsedSettingsImport,
+  type PluginConfigExportPayload,
+  type SettingsExportPayload,
 } from './importExport';

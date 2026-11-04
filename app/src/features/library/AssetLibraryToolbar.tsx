@@ -43,6 +43,18 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   onToggleSelectMode,
 }) => (
   <div className="asset-library-toolbar">
+    {onOpenFolders ? (
+      <button
+        type="button"
+        className="asset-library-icon-btn asset-library-folders-btn"
+        onClick={onOpenFolders}
+        aria-label={t('workspace.explorer')}
+        title={t('workspace.explorer')}
+      >
+        <Folder size={18} aria-hidden />
+      </button>
+    ) : null}
+
     {search ? (
       <Search
         variant="header"
@@ -73,18 +85,6 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
           title={t('image.library.selectMode')}
         >
           <ListChecks size={18} aria-hidden />
-        </button>
-      ) : null}
-
-      {onOpenFolders ? (
-        <button
-          type="button"
-          className="asset-library-icon-btn asset-library-folders-btn"
-          onClick={onOpenFolders}
-          aria-label={t('workspace.explorer')}
-          title={t('workspace.explorer')}
-        >
-          <Folder size={18} aria-hidden />
         </button>
       ) : null}
 

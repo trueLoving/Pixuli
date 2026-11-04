@@ -17,15 +17,20 @@ import { buildProviderSidecarPayload } from '@pixuli/core/utils';
 import type { GitHubConfig } from '@pixuli/core/types';
 import {
   commitSyncPush,
+  isPullableSyncFile,
+  isSyncableAssetName,
   joinConfigRoot,
   listRepoImageBlobs,
+  parseSyncTree,
   SYNC_EXCLUDED_DIR,
+  SYNC_TREE_RELATIVE_PATH,
 } from '@pixuli/core/vault';
 import type {
   ImageListOptions,
   ImageMetadataLoadOptions,
   ProviderContext,
   RemoteRepositoryRef,
+  RemoteSyncTreeFile,
   StorageProviderConfig,
   StorageProviderDiscovery,
   StorageProviderWithMetadata,
@@ -125,6 +130,30 @@ export class GitHubStorageProvider
   getRawUrl(path: string): string {
     this.assertConfigured();
     return `https://raw.githubusercontent.com/${this.config.owner}/${this.config.repo}/refs/heads/${this.config.branch}/${this.joinRemotePath(path)}`;
+  }
+
+  /** pull 用带令牌的 Contents API，避免公网 raw 对私有仓 / WebView CORS 失败 */
+  async downloadRemoteFile(remotePath: string): Promise<Uint8Array> {
+    this.assertConfigured();
+    const filePath = this.joinRemotePath(remotePath);
+    const endpoint = `/repos/${this.config.owner}/${this.config.repo}/contents/${filePath}?ref=${encodeURIComponent(this.config.branch)}`;
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await this.fetchFn(url, {
+      headers: {
+        Authorization: `token ${this.config.token}`,
+        Accept: 'application/vnd.github.raw',
+        'User-Agent': 'Pixuli',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(
+        await this.readGithubError(
+          response,
+          `Failed to download ${remotePath}: ${response.status}`,
+        ),
+      );
+    }
+    return new Uint8Array(await response.arrayBuffer());
   }
 
   private async requestWithToken(
@@ -646,7 +675,7 @@ export class GitHubStorageProvider
 
   private async persistImageMetadata(
     storagePath: string,
-    metadata: Partial<ImageItem> & Record<string, unknown>,
+    metadata: Partial<ImageItem>,
   ): Promise<void> {
     const dirPath = dirnameRelative(storagePath);
     const fileName = basenameRelative(storagePath);
@@ -682,6 +711,7 @@ export class GitHubStorageProvider
       return [];
     }
 
+    const manifest = await this.loadDirManifest(dirRelative);
     const results: Array<{ remotePath: string; item: any }> = [];
     for (const entry of response) {
       if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
@@ -694,7 +724,12 @@ export class GitHubStorageProvider
         results.push(...(await this.collectImageFiles(subDir)));
         continue;
       }
-      if (entry.type === 'file' && this.isImageFile(entry.name)) {
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
         const remotePath = dirRelative
           ? `${dirRelative}/${entry.name}`
           : entry.name;
@@ -867,13 +902,31 @@ export class GitHubStorageProvider
           if (metadata) {
             return {
               ...img,
-              size: metadata.size || img.size || 0,
-              width: metadata.width || img.width || 0,
-              height: metadata.height || img.height || 0,
-              tags: metadata.tags || img.tags || [],
-              description: metadata.description || img.description || '',
-              updatedAt: metadata.updatedAt || img.updatedAt,
-              createdAt: metadata.createdAt || img.createdAt,
+              size:
+                typeof metadata.size === 'number' ? metadata.size : img.size,
+              width:
+                typeof metadata.width === 'number' ? metadata.width : img.width,
+              height:
+                typeof metadata.height === 'number'
+                  ? metadata.height
+                  : img.height,
+              tags: Array.isArray(metadata.tags)
+                ? metadata.tags.filter(
+                    (tag): tag is string => typeof tag === 'string',
+                  )
+                : img.tags,
+              description:
+                typeof metadata.description === 'string'
+                  ? metadata.description
+                  : img.description,
+              updatedAt:
+                typeof metadata.updatedAt === 'string'
+                  ? metadata.updatedAt
+                  : img.updatedAt,
+              createdAt:
+                typeof metadata.createdAt === 'string'
+                  ? metadata.createdAt
+                  : img.createdAt,
             };
           }
           return img;
@@ -895,8 +948,44 @@ export class GitHubStorageProvider
     return this.syncCursor;
   }
 
+  async readSyncTree(): Promise<RemoteSyncTreeFile | null> {
+    this.assertConfigured();
+    const file = await this.readRepoJsonFile(SYNC_TREE_RELATIVE_PATH);
+    if (!file) {
+      return null;
+    }
+    return parseSyncTree(file.data);
+  }
+
+  async writeSyncTree(tree: RemoteSyncTreeFile): Promise<void> {
+    this.assertConfigured();
+    const existing = await this.readRepoJsonFile(SYNC_TREE_RELATIVE_PATH);
+    await this.writeRepoJsonFile(
+      SYNC_TREE_RELATIVE_PATH,
+      tree,
+      existing
+        ? `Update sync-tree (${tree.revision})`
+        : `Create sync-tree (${tree.revision})`,
+      existing?.sha,
+    );
+  }
+
   async syncPull(options?: SyncPullOptions): Promise<SyncPullResult> {
-    const images = await this.listImages({ recursive: true });
+    const pathPrefix = (options?.pathPrefix ?? '').replace(/^\/+|\/+$/g, '');
+    const shallow = options?.shallow === true;
+    let images: ImageItem[];
+    let folderKeys: string[] = [];
+
+    if (shallow) {
+      const listed = await this.listShallowLayer(pathPrefix);
+      images = listed.images;
+      folderKeys = listed.folderKeys;
+    } else if (pathPrefix) {
+      images = await this.listImages({ path: pathPrefix, recursive: true });
+    } else {
+      images = await this.listImages({ recursive: true });
+    }
+
     const since = options?.since;
     const items = images
       .map(img => {
@@ -920,6 +1009,15 @@ export class GitHubStorageProvider
         };
       })
       .filter(item => {
+        if (pathPrefix) {
+          const remotePath = item.remotePath.replace(/^\/+/, '');
+          if (
+            remotePath !== pathPrefix &&
+            !remotePath.startsWith(`${pathPrefix}/`)
+          ) {
+            return false;
+          }
+        }
         if (!since) {
           return true;
         }
@@ -931,7 +1029,87 @@ export class GitHubStorageProvider
       });
 
     this.syncCursor = new Date().toISOString();
-    return { items, nextCursor: this.syncCursor };
+    return { items, nextCursor: this.syncCursor, folderKeys };
+  }
+
+  /** 列举一层：本层可同步文件 + 直接子目录 */
+  private async listShallowLayer(dirRelative: string): Promise<{
+    images: ImageItem[];
+    folderKeys: string[];
+  }> {
+    this.assertConfigured();
+    const dirPath = this.joinRemotePath(dirRelative);
+    let response: unknown;
+    try {
+      response = await this.makeGitHubRequest(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${dirPath}?ref=${this.config.branch}`,
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('404') ||
+        message.includes('Not Found') ||
+        message.includes('does not exist')
+      ) {
+        return { images: [], folderKeys: [] };
+      }
+      throw error;
+    }
+    if (!Array.isArray(response)) {
+      return { images: [], folderKeys: [] };
+    }
+
+    const folderKeys: string[] = [];
+    const fileEntries: Array<{ remotePath: string; item: any }> = [];
+    const manifest = await this.loadDirManifest(dirRelative);
+    for (const entry of response) {
+      if (entry.name === '.metadata' || entry.name === SYNC_EXCLUDED_DIR) {
+        continue;
+      }
+      if (entry.type === 'dir') {
+        const sub = dirRelative ? `${dirRelative}/${entry.name}` : entry.name;
+        folderKeys.push(sub);
+        continue;
+      }
+      if (
+        entry.type === 'file' &&
+        isPullableSyncFile(entry.name, {
+          listedInManifest: Boolean(getManifestEntry(manifest, entry.name)),
+        })
+      ) {
+        const remotePath = dirRelative
+          ? `${dirRelative}/${entry.name}`
+          : entry.name;
+        fileEntries.push({ remotePath, item: entry });
+      }
+    }
+
+    const images: ImageItem[] = fileEntries.map(({ remotePath, item }) => {
+      const fileName = basenameRelative(remotePath);
+      const entry = getManifestEntry(manifest, fileName);
+      const metadata = entry ? manifestEntryToRecord(entry) : null;
+      return {
+        id: (metadata?.id as string | undefined) || item.sha,
+        name: (metadata?.name as string | undefined) || fileName,
+        storagePath: remotePath,
+        url: item.download_url || '',
+        githubUrl: item.html_url || '',
+        size: (metadata?.size as number | undefined) || item.size || 0,
+        width: (metadata?.width as number | undefined) || 0,
+        height: (metadata?.height as number | undefined) || 0,
+        type: this.getMimeType(fileName),
+        tags: (metadata?.tags as string[] | undefined) || [],
+        description: (metadata?.description as string | undefined) || '',
+        createdAt:
+          (metadata?.createdAt as string | undefined) ||
+          new Date().toISOString(),
+        updatedAt:
+          (metadata?.updatedAt as string | undefined) ||
+          new Date().toISOString(),
+      };
+    });
+
+    return { images, folderKeys };
   }
 
   private gitTransport() {
@@ -1027,21 +1205,8 @@ export class GitHubStorageProvider
     }
   }
 
-  // 辅助方法：判断是否为图片文件
   private isImageFile(fileName: string): boolean {
-    const imageExtensions = [
-      '.jpg',
-      '.jpeg',
-      '.png',
-      '.gif',
-      '.bmp',
-      '.webp',
-      '.svg',
-    ];
-    const extension = fileName
-      .toLowerCase()
-      .substring(fileName.lastIndexOf('.'));
-    return imageExtensions.includes(extension);
+    return isSyncableAssetName(fileName);
   }
 
   // 辅助方法：获取 MIME 类型
@@ -1057,7 +1222,13 @@ export class GitHubStorageProvider
       '.bmp': 'image/bmp',
       '.webp': 'image/webp',
       '.svg': 'image/svg+xml',
+      '.pdf': 'application/pdf',
+      '.mp4': 'video/mp4',
+      '.webm': 'video/webm',
+      '.mov': 'video/quicktime',
+      '.mkv': 'video/x-matroska',
+      '.avi': 'video/x-msvideo',
     };
-    return mimeTypes[extension] || 'image/jpeg';
+    return mimeTypes[extension] || 'application/octet-stream';
   }
 }

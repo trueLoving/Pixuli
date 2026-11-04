@@ -3,7 +3,7 @@
   flex-direction: column;
   flex-shrink: 0;
   width: 3rem;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--pix-border);
   background: var(--pix-surface, #faf8ff);
 }
 
@@ -13,13 +13,17 @@
   right: 0;
   bottom: 0;
   z-index: 30;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   width: 100%;
-  height: 3.75rem;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  height: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+  padding: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   border-right: none;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid var(--pix-border);
+  background: var(--pix-bg-elevated);
+  box-sizing: border-box;
 }
 
 .activity-bar-main,
@@ -33,15 +37,12 @@
 
 .activity-bar--mobile .activity-bar-main,
 .activity-bar--mobile .activity-bar-footer {
-  flex-direction: row;
-  flex: 1;
-  justify-content: space-around;
-  padding: 0;
+  display: contents;
 }
 
 .activity-bar-footer {
   margin-top: auto;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--pix-border);
 }
 
 .activity-bar--mobile .activity-bar-footer {
@@ -61,7 +62,7 @@
   border: none;
   border-radius: 0.5rem;
   background: transparent;
-  color: #6b7280;
+  color: var(--pix-fg-muted);
   font-size: inherit;
   font-weight: inherit;
   font-family: inherit;
@@ -89,15 +90,23 @@
 }
 
 .activity-bar--mobile .activity-bar-item {
-  width: auto;
-  min-width: 2.75rem;
-  height: auto;
-  min-height: 2.75rem;
-  padding: 0.25rem 0.5rem;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  padding: 0.3rem 0.25rem 0.2rem;
+  border-radius: 0;
+  gap: 0.2rem;
 }
 
 .activity-bar--mobile .activity-bar-item-label {
   display: block;
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1.15;
 }
 
 .activity-bar-item svg,
@@ -112,8 +121,8 @@
 }
 
 .activity-bar-item:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg-secondary);
 }
 
 /* 选中：紫底 + 指示条（紫=导航；勿用青） */
@@ -133,40 +142,65 @@
   background: var(--pix-violet, #7c6cf0);
 }
 
+.activity-bar--mobile .activity-bar-item:hover:not(:disabled),
+.activity-bar--mobile .activity-bar-item--settings:hover:not(:disabled) {
+  background: transparent;
+  color: var(--pix-fg-secondary);
+}
+
+.activity-bar--mobile .activity-bar-item--active,
+.activity-bar--mobile .activity-bar-item--active:hover:not(:disabled) {
+  background: transparent;
+  color: var(--pix-violet-deep, #5b4fe0);
+}
+
 .activity-bar--mobile .activity-bar-item--active::before {
-  left: 0.55rem;
-  right: 0.55rem;
+  left: 50%;
+  right: auto;
   top: 0;
   bottom: auto;
-  width: auto;
+  width: 1.5rem;
   height: 3px;
   border-radius: 0 0 2px 2px;
+  transform: translateX(-50%);
 }
 
 /* 设置：保持中性，即使可点按也不抢同步青/选中紫 */
 .activity-bar-item--settings {
-  color: #6b7280;
+  color: var(--pix-fg-muted);
 }
 
 .activity-bar-item--settings:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg-secondary);
 }
 
 /* 同步中：青图标 + 青徽章（系统在动） */
 .activity-bar-item--busy {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 16%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy:hover:not(:disabled) {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 24%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 24%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy.activity-bar-item--active {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 16%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .activity-bar-item--busy.activity-bar-item--active::before {
@@ -193,9 +227,10 @@
 }
 
 .activity-bar--mobile .activity-bar-badge {
-  top: 0.05rem;
-  right: 0.15rem;
-  max-width: 3.25rem;
+  top: 0.28rem;
+  right: auto;
+  left: calc(50% + 0.45rem);
+  max-width: 2.5rem;
   font-size: 0.5625rem;
 }
 

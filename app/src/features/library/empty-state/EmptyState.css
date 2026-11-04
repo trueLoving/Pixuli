@@ -69,18 +69,18 @@
 .empty-state-button.secondary {
   background: var(--secondary-bg, #f3f4f6);
   color: var(--text-primary, #111827);
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--pix-border));
 }
 
 .empty-state-button.secondary:hover {
   background: var(--hover-bg, #e5e7eb);
-  border-color: var(--border-color-dark, #d1d5db);
+  border-color: var(--border-color-dark, var(--pix-border-strong));
 }
 
 .empty-state-guide {
   text-align: left;
   background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  border: 1px solid var(--border-color, var(--pix-border));
   border-radius: 12px;
   padding: 2rem;
   margin-bottom: 2rem;

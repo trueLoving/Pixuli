@@ -18,6 +18,8 @@
       "descKind": "类型：image / video / pdf / other（也可用 type:）",
       "exSize": "size:>1mb",
       "descSize": "大小：> >= < <= =，单位 b / kb / mb / gb",
+      "exTag": "tag:旅行",
+      "descTag": "标签完整匹配；多个 tag: 需同时具备（也可用 tags:）",
       "exCombo": "kind:image size:<500kb 旅行",
       "descCombo": "组合：图片且小于 500KB 且文件名含「旅行」"
     },

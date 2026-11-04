@@ -15,6 +15,25 @@
       content="Pixuli — 本地优先的资源工作区（Web / Desktop / Mobile）"
     />
     <meta name="theme-color" content="#7c6cf0" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('pixuli-theme');
+          var mode =
+            stored === 'light' || stored === 'dark' || stored === 'system'
+              ? stored
+              : 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', dark ? '#1e1b4b' : '#7c6cf0');
+        } catch (e) {}
+      })();
+    </script>
     <!-- Content Security Policy -->
     <!-- 开发模式：允许 Vite dev server 和 HMR -->
     <!-- 生产模式：严格的安全策略（通过 Electron session.webRequest 动态设置） -->

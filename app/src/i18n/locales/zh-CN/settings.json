@@ -1,6 +1,7 @@
 {
   "settings": {
     "title": "设置",
+    "back": "返回",
     "close": "关闭",
     "navLabel": "设置分类",
     "groupGeneral": "通用",
@@ -12,6 +13,14 @@
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",
     "addRemote": "添加远端仓库",
+    "exportConfig": "导出配置",
+    "importConfig": "导入配置",
+    "exportDone": "配置已导出",
+    "exportCopied": "配置已复制到剪贴板",
+    "exportEmpty": "没有可导出的远端仓库",
+    "importConfirm": "导入将替换当前全部远端仓库，是否继续？",
+    "importDone": "已导入 {count} 个远端仓库",
+    "importFailed": "配置文件无法识别",
     "sourcesEmpty": "尚未添加远端连接，点击上方按钮添加 GitHub 或 Gitee。",
     "tableName": "名称",
     "tableRepo": "仓库",
@@ -67,11 +76,6 @@
       "advancedPath": "挂载路径（高级）",
       "pathHint": "仓库内同步根目录，一般保持默认即可。"
     },
-    "onedrive": {
-      "login": "使用 Microsoft 账号登录",
-      "loginHint": "打开 Microsoft 登录并同意授权后，会自动回到这里并取得访问权限。不需要填写应用 ID 或令牌。",
-      "missingClient": "当前安装还没有配置 OneDrive 应用，暂时不能打开登录页。"
-    },
     "menuWorkspace": "工作区",
     "workspaceCurrentTitle": "当前工作区",
     "workspaceUnavailable": "当前平台不支持本地工作区。",
@@ -79,15 +83,15 @@
     "workspacePhotosEmptyHint": "请先在侧栏打开「工作区」创建或连接本地工作区，再浏览与管理图片。",
     "openWorkspaceSettings": "打开工作区设置",
     "menuOperationLog": "操作日志",
+    "menuPreferences": "语言与外观",
     "menuLanguage": "语言",
+    "menuAppearance": "外观",
+    "appearanceTitle": "外观",
+    "appearanceHint": "选择界面配色。跟随系统会随操作系统的浅色或深色一起切换。",
+    "appearanceSystem": "跟随系统",
+    "appearanceLight": "浅色",
+    "appearanceDark": "深色",
     "menuKeyboard": "快捷键",
-    "menuVersion": "版本信息",
-    "menuTools": "图片工具",
-    "toolsCompressTitle": "压缩与转换",
-    "toolsCompressHint": "控制侧栏与检查器中的图片压缩 / 转换入口。",
-    "toolsCompressEnable": "启用图片工具",
-    "toolsCompressOffDetail": "关闭时隐藏入口，避免误用未需要的工具。",
-    "toolsCompressOnDetail": "打开后可在检查器将图片发送到压缩；产物仅本机。",
-    "toolsLocalOnlyNote": "压缩 / 转换只改本机文件，不会自动同步远端。"
+    "menuVersion": "版本信息"
   }
 }

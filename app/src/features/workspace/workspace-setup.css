@@ -6,7 +6,7 @@
   margin: 0 0 1rem;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--pix-fg-secondary);
 }
 
 .workspace-setup-panel-actions {
@@ -41,7 +41,7 @@
 
 .workspace-setup-secondary-btn {
   border: 1px solid var(--pix-lilac, #c4b5fd);
-  background: #fff;
+  background: var(--pix-bg-elevated);
   color: var(--pix-violet-deep, #5b4fe0);
 }
 

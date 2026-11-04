@@ -5,7 +5,7 @@
   max-width: 240px;
   height: 100vh;
   background: var(--sidebar-bg, #fafafa);
-  border-right: 1px solid var(--border-color, #e5e7eb);
+  border-right: 1px solid var(--border-color, var(--pix-border));
   display: flex;
   flex-direction: column;
   position: relative;
@@ -69,7 +69,7 @@
   padding: 0.75rem 0;
   display: flex;
   justify-content: center;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, var(--pix-border));
   margin-bottom: 0.5rem;
   /* 性能优化：限制重排范围 */
   contain: layout;
@@ -174,7 +174,7 @@
   top: 4px;
   right: 4px;
   color: var(--warning-color, #f59e0b);
-  background: white;
+  background: var(--pix-bg-elevated);
   border-radius: 50%;
   padding: 2px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -187,8 +187,8 @@
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%) scale(0);
-  background: var(--text-primary, #111827);
-  color: white;
+  background: var(--pix-tooltip-bg, #111827);
+  color: var(--pix-tooltip-fg, #fff);
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -207,7 +207,7 @@
   top: 50%;
   transform: translateY(-50%);
   border: 6px solid transparent;
-  border-right-color: var(--text-primary, #111827);
+  border-right-color: var(--pix-tooltip-bg, #111827);
 }
 
 .sidebar-collapsed-item:hover .sidebar-collapsed-tooltip,
@@ -223,8 +223,8 @@
   flex-direction: column;
   gap: 0.25rem;
   padding: 0.5rem 0;
-  border-top: 1px solid var(--border-color, #e5e7eb);
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--pix-border));
+  border-bottom: 1px solid var(--border-color, var(--pix-border));
   margin: 0.5rem 0;
 }
 
@@ -327,13 +327,13 @@
 .sidebar-collapsed-filters {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--pix-border));
 }
 
 /* 折叠状态 - 底部操作 */
 .sidebar-collapsed-footer {
   padding: 0.5rem 0;
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--pix-border));
   display: flex;
   justify-content: center;
   margin-top: auto;
@@ -362,7 +362,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, var(--pix-border));
 }
 
 .sidebar-logo-container {
@@ -424,7 +424,7 @@
 /* 侧边栏区域 */
 .sidebar-section {
   padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  border-bottom: 1px solid var(--border-color, var(--pix-border));
 }
 
 .sidebar-section:last-child {
@@ -471,7 +471,11 @@
 .sidebar-nav-item.syncing,
 .sidebar-collapsed-item.syncing {
   color: var(--pix-cyan-deep, #22d3ee);
-  background: color-mix(in srgb, var(--pix-cyan, #5ee1f7) 16%, #fff);
+  background: color-mix(
+    in srgb,
+    var(--pix-cyan, #5ee1f7) 16%,
+    var(--pix-bg-elevated)
+  );
 }
 
 .sidebar-nav-item.disabled {
@@ -552,7 +556,7 @@
 
 /* 仓库源区域 */
 .sidebar-sources {
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--pix-border));
   padding: 0.5rem 0;
 }
 
@@ -604,7 +608,7 @@
 .sidebar-empty-state {
   padding: 1.5rem 1rem;
   text-align: center;
-  border: 2px dashed var(--border-color, #e5e7eb);
+  border: 2px dashed var(--border-color, var(--pix-border));
   border-radius: 8px;
   margin: 0 1rem;
   background: var(--card-bg, #f9f9f9);
@@ -766,14 +770,14 @@
 
 /* 底部操作 */
 .sidebar-footer {
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 1px solid var(--border-color, var(--pix-border));
   padding: 0.5rem 0;
 }
 
 /* 右键菜单 */
 .sidebar-context-menu {
-  background: white;
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--pix-bg-elevated);
+  border: 1px solid var(--border-color, var(--pix-border));
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 160px;

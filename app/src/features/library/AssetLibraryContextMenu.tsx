@@ -7,7 +7,7 @@ export interface AssetLibraryContextMenuProps {
   t: (key: string) => string;
   onClose: () => void;
   onCopyLink?: (image: ImageItem) => void;
-  onSync?: () => void;
+  onMoveImage?: (image: ImageItem) => void;
   onDeleteImage?: (id: string, name: string) => Promise<void>;
   hasRemoteConnection?: boolean;
 }
@@ -19,7 +19,7 @@ export const AssetLibraryContextMenu: React.FC<
   t,
   onClose,
   onCopyLink,
-  onSync,
+  onMoveImage,
   onDeleteImage,
   hasRemoteConnection,
 }) => {
@@ -58,16 +58,18 @@ export const AssetLibraryContextMenu: React.FC<
         >
           {t('image.actions.copyUrl')}
         </button>
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            onSync?.();
-            onClose();
-          }}
-        >
-          {t('image.toolbar.sync')}
-        </button>
+        {onMoveImage ? (
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              onMoveImage(menu.file);
+              onClose();
+            }}
+          >
+            {t('image.library.moveTo')}
+          </button>
+        ) : null}
         <button
           type="button"
           role="menuitem"

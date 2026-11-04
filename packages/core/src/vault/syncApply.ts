@@ -29,6 +29,9 @@ export async function downloadRemoteBytes(
   downloadUrl?: string,
   fetchFn: typeof fetch = globalThis.fetch,
 ): Promise<Uint8Array> {
+  if (typeof provider.downloadRemoteFile === 'function') {
+    return provider.downloadRemoteFile(remotePath);
+  }
   const url = downloadUrl || provider.getRawUrl(remotePath);
   const response = await fetchFn(url);
   if (!response.ok) {

@@ -1,6 +1,6 @@
 // TODO: 裁剪有问题，矩阵无法拖动宽高。但是不影响上传流程。
 import { Check, Crop as CropIcon, RotateCcw, X } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactCrop, {
   type Crop,
   type PixelCrop,
@@ -46,6 +46,11 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   const [rotation, setRotation] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    overlayRef.current?.focus();
+  }, []);
 
   // 图片加载完成时，设置默认裁剪区域
   const onImageLoad = useCallback(
@@ -217,7 +222,17 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
   };
 
   return (
-    <div className="image-crop-modal-overlay">
+    <div
+      ref={overlayRef}
+      className="image-crop-modal-overlay"
+      tabIndex={-1}
+      onKeyDown={event => {
+        if (event.key !== 'Escape') return;
+        event.stopPropagation();
+        event.preventDefault();
+        onCancel();
+      }}
+    >
       <div className="image-crop-modal-content">
         <div className="image-crop-modal-header">
           <h2 className="image-crop-modal-title">

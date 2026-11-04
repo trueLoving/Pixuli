@@ -413,4 +413,173 @@ describe('createSyncEngine', () => {
     );
     expect(raw).toContain('"bindingId":"repo-b"');
   });
+
+  it('run pull skips when remote sync-tree revision matches local', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const syncPull = vi.fn(async () => ({ items: [] }));
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-1',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      folders: {
+        '': { revision: 'tree-1', updatedAt: '2026-01-01T00:00:00.000Z' },
+      },
+    };
+    const provider = createMockSyncProvider({
+      syncPull,
+      readSyncTree: async () => tree,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+    await engine.run({ direction: 'pull' });
+    const second = await engine.run({ direction: 'pull' });
+    expect(second.skipped).toBe(true);
+    expect(second.pulled).toBe(0);
+    // 第二次协商命中后不应再 shallow pull
+    expect(syncPull).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks dirty folders and lazy-pulls on syncFolder', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(
+      new File([new Uint8Array([9])], 'keep.jpg', { type: 'image/jpeg' }),
+      'keep.jpg',
+      { syncState: 'synced' },
+    );
+    const remoteBytes = new Uint8Array([1, 2, 3]);
+    const pullCalls: Array<{ pathPrefix?: string; shallow?: boolean }> = [];
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-2',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+      folders: {
+        '': { revision: 'r0', updatedAt: '2026-01-02T00:00:00.000Z' },
+        images: { revision: 'r1', updatedAt: '2026-01-02T00:00:00.000Z' },
+      },
+    };
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => tree,
+      syncPull: async options => {
+        pullCalls.push({
+          pathPrefix: options?.pathPrefix,
+          shallow: options?.shallow,
+        });
+        if (options?.pathPrefix === 'images') {
+          return {
+            items: [
+              {
+                remotePath: 'images/a.jpg',
+                action: 'add' as const,
+                metadata: {
+                  name: 'a.jpg',
+                  updatedAt: '2026-01-02T00:00:00.000Z',
+                  url: 'https://example.test/images/a.jpg',
+                },
+              },
+            ],
+            folderKeys: [],
+          };
+        }
+        return { items: [], folderKeys: ['images'] };
+      },
+      downloadRemoteFile: async () => remoteBytes,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    const negotiated = await engine.run({
+      direction: 'pull',
+      pathPrefix: '',
+    });
+    expect(negotiated.dirtyFolders).toContain('images');
+    expect(await vault.listFolders()).toContain('images');
+    expect((await vault.list()).map(entry => entry.relativePath)).toEqual([
+      'keep.jpg',
+    ]);
+
+    const lazy = await engine.syncFolder('images', { direction: 'pull' });
+    expect(lazy.pulled).toBe(1);
+    expect(pullCalls.some(c => c.pathPrefix === 'images' && c.shallow)).toBe(
+      true,
+    );
+    expect((await vault.getByPath('images/a.jpg'))?.syncState).toBe('synced');
+    expect(await engine.listDirtyFolders()).not.toContain('images');
+  });
+
+  it('downloads nested folder files when the workspace is empty', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    const remoteBytes = new Uint8Array([4, 5, 6]);
+    const pullCalls: string[] = [];
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-nested',
+      updatedAt: '2026-01-03T00:00:00.000Z',
+      folders: {
+        '': { revision: 'r0', updatedAt: '2026-01-03T00:00:00.000Z' },
+        images: { revision: 'r1', updatedAt: '2026-01-03T00:00:00.000Z' },
+        'images/trip': {
+          revision: 'r2',
+          updatedAt: '2026-01-03T00:00:00.000Z',
+        },
+      },
+    };
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => tree,
+      syncPull: async options => {
+        pullCalls.push(options?.pathPrefix ?? '');
+        if (options?.pathPrefix === 'images/trip') {
+          return {
+            items: [
+              {
+                remotePath: 'images/trip/a.jpg',
+                action: 'add' as const,
+                metadata: {
+                  name: 'a.jpg',
+                  updatedAt: '2026-01-03T00:00:00.000Z',
+                  url: 'https://example.test/images/trip/a.jpg',
+                },
+              },
+            ],
+            folderKeys: [],
+          };
+        }
+        if (options?.pathPrefix === 'images') {
+          return { items: [], folderKeys: ['images/trip'] };
+        }
+        return { items: [], folderKeys: ['images'] };
+      },
+      downloadRemoteFile: async () => remoteBytes,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    const negotiated = await engine.run({
+      direction: 'pull',
+      pathPrefix: '',
+    });
+    expect(negotiated.pulled).toBe(1);
+    expect(negotiated.dirtyFolders).toEqual([]);
+    expect(await vault.listFolders()).toEqual(
+      expect.arrayContaining(['images', 'images/trip']),
+    );
+    expect((await vault.getByPath('images/trip/a.jpg'))?.syncState).toBe(
+      'synced',
+    );
+    expect(pullCalls).toEqual(['', 'images', 'images/trip']);
+  });
 });

@@ -1,15 +1,19 @@
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
-import { Edit, Github, Plus, Trash2 } from 'lucide-react';
+import { Download, Edit, Github, Plus, Trash2, Upload } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
 import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
 import type { GitPatFieldValues } from '@/features/settings/git-connection/GitPatConnectionFields';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import type { OneDriveFieldValues } from '@/features/settings/connection-wizard/OneDriveConnectionFields';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import {
+  exportSettingsConfig,
+  importSettingsConfigText,
+} from '@/features/settings/settingsConfigTransfer';
+import { showError, showSuccess } from '@/ui/feedback/toast';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;
@@ -18,13 +22,6 @@ interface SettingsSyncPanelProps {
 function renderSourceTypeIcon(type: SidebarSource['type']) {
   if (type === 'github') {
     return <Github size={14} className="shrink-0 text-gray-700" />;
-  }
-  if (type === 'onedrive') {
-    return (
-      <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-sky-600 text-[9px] font-bold text-white">
-        云
-      </span>
-    );
   }
   return (
     <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-red-500 text-[9px] font-bold text-white">
@@ -66,34 +63,13 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
   const activeSyncSourceId = selectedSource?.id ?? null;
   const syncStatus = useWorkspaceStore(state => state.syncStatus);
 
-  const editingOneDrive = useMemo((): OneDriveFieldValues | null => {
-    if (editingSourcePluginId !== 'onedrive' || !editingSourceId) return null;
-    const source = sources.find(item => item.id === editingSourceId);
-    if (!source) return null;
-    const config = source.config;
-    return {
-      clientId: typeof config.clientId === 'string' ? config.clientId : '',
-      accessToken:
-        typeof config.accessToken === 'string' ? config.accessToken : '',
-      refreshToken:
-        typeof config.refreshToken === 'string' ? config.refreshToken : '',
-      path: typeof config.path === 'string' ? config.path : 'Pixuli',
-      ...(typeof config.expiresAt === 'number'
-        ? { expiresAt: config.expiresAt }
-        : {}),
-    };
-  }, [sources, editingSourceId, editingSourcePluginId]);
-
   const isGitEditing = Boolean(
     editingSourceId &&
       (editingSourcePluginId === 'github' ||
         editingSourcePluginId === 'gitee') &&
       editingSourceRepoConfig,
   );
-  const isOneDriveEditing = Boolean(
-    editingSourceId && editingSourcePluginId === 'onedrive',
-  );
-  const isEditing = isGitEditing || isOneDriveEditing;
+  const isEditing = isGitEditing;
   const wizardOpen = isEditing || addingSource;
 
   const editInitialValues = useMemo((): GitPatFieldValues | null => {
@@ -145,10 +121,53 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
     closeConfigModal();
   };
 
+  const handleExportConfig = async () => {
+    const mode = await exportSettingsConfig();
+    if (mode === 'empty') {
+      showError(t('settings.exportEmpty'));
+      return;
+    }
+    showSuccess(
+      mode === 'clipboard'
+        ? t('settings.exportCopied')
+        : t('settings.exportDone'),
+    );
+  };
+
+  const handleImportConfig = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result !== 'string') {
+          showError(t('settings.importFailed'));
+          return;
+        }
+        if (!window.confirm(t('settings.importConfirm'))) {
+          return;
+        }
+        const imported = importSettingsConfigText(reader.result);
+        if (!imported) {
+          showError(t('settings.importFailed'));
+          return;
+        }
+        showSuccess(
+          t('settings.importDone').replace('{count}', String(imported.count)),
+        );
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   return (
     <div className="space-y-8">
       <section>
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:justify-between">
           <div>
             <h3 className="text-sm font-semibold text-gray-900">
               {t('settings.sourcesTitle')}
@@ -161,18 +180,39 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             </p>
           </div>
           {!wizardOpen ? (
-            <button
-              type="button"
-              onClick={() => {
-                closeConfigModal();
-                setAddPrefillPluginId(null);
-                setAddingSource(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50"
-            >
-              <Plus size={16} />
-              {t('settings.addRemote')}
-            </button>
+            <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  void handleExportConfig();
+                }}
+                disabled={sources.length === 0}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0 md:w-auto md:py-1.5"
+              >
+                <Download size={16} />
+                {t('settings.exportConfig')}
+              </button>
+              <button
+                type="button"
+                onClick={handleImportConfig}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 md:min-h-0 md:w-auto md:py-1.5"
+              >
+                <Upload size={16} />
+                {t('settings.importConfig')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  closeConfigModal();
+                  setAddPrefillPluginId(null);
+                  setAddingSource(true);
+                }}
+                className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 md:min-h-0 md:w-auto md:py-1.5"
+              >
+                <Plus size={16} />
+                {t('settings.addRemote')}
+              </button>
+            </div>
           ) : null}
         </div>
 
@@ -191,13 +231,11 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             initialPluginId={
               isEditing &&
               (editingSourcePluginId === 'github' ||
-                editingSourcePluginId === 'gitee' ||
-                editingSourcePluginId === 'onedrive')
+                editingSourcePluginId === 'gitee')
                 ? editingSourcePluginId
                 : addPrefillPluginId
             }
             initialValues={isGitEditing ? editInitialValues : null}
-            initialOneDrive={isOneDriveEditing ? editingOneDrive : null}
           />
         ) : null}
 
@@ -232,9 +270,9 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         {renderSourceTypeIcon(source.type)}
-                        <h3 className="truncate text-sm font-semibold text-gray-900">
+                        <h3 className="min-w-0 truncate text-sm font-semibold text-gray-900">
                           {source.name}
                         </h3>
                         {unavailable ? (
@@ -243,10 +281,14 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 font-mono text-xs text-gray-600">
+                      <p className="mt-1 truncate font-mono text-xs text-gray-600">
                         {source.owner}/{source.repo}
-                        {source.path ? ` · ${source.path}` : ''}
                       </p>
+                      {source.path && source.path !== '/' ? (
+                        <p className="truncate font-mono text-xs text-gray-500">
+                          {source.path}
+                        </p>
+                      ) : null}
                       <div className="mt-2">
                         <CapabilityChips
                           manifest={manifests.find(
@@ -255,9 +297,10 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                           t={t}
                         />
                       </div>
-                      <p className="mt-2 text-xs text-gray-600">
+                      <p className="mt-2 text-xs leading-5 text-gray-600">
                         {t('settings.healthLastSync')}: {lastSync}
-                        {' · '}
+                      </p>
+                      <p className="text-xs leading-5 text-gray-600">
                         {t('settings.healthPending')}: {pending}
                       </p>
                     </div>
@@ -267,7 +310,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                         disabled={unavailable}
                         onClick={() => handleEdit(source.id)}
                         aria-pressed={isEditingThis}
-                        className={`rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-40 ${
+                        className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-40 ${
                           isEditingThis
                             ? 'bg-[var(--pix-violet)] text-white'
                             : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
@@ -280,7 +323,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                       <button
                         type="button"
                         onClick={() => handleDeleteSource(source.id, t)}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-gray-500 hover:bg-red-50 hover:text-red-600"
                         title={t('sidebar.deleteSource')}
                         aria-label={t('sidebar.deleteSource')}
                       >
@@ -309,7 +352,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                         type="button"
                         disabled={unavailable}
                         onClick={() => handleSourceSelect(source.id)}
-                        className="pix-link text-xs disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                        className="pix-link inline-flex min-h-11 items-center text-sm disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline md:min-h-0 md:text-xs"
                       >
                         {t('settings.setSyncTarget')}
                       </button>

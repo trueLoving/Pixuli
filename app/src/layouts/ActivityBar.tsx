@@ -20,9 +20,6 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const activeMenu = useUIStore(state => state.activeMenu);
   const setActiveMenu = useUIStore(state => state.setActiveMenu);
   const setCurrentView = useUIStore(state => state.setCurrentView);
-  const setCurrentUtilityTool = useUIStore(
-    state => state.setCurrentUtilityTool,
-  );
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
@@ -46,9 +43,8 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const navigateToLibrary = useCallback(() => {
     setActiveMenu('library');
     setCurrentView('library');
-    setCurrentUtilityTool(null);
     navigate(ROUTES.LIBRARY);
-  }, [navigate, setActiveMenu, setCurrentUtilityTool, setCurrentView]);
+  }, [navigate, setActiveMenu, setCurrentView]);
 
   const primary = [
     {

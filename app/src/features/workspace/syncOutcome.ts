@@ -33,7 +33,18 @@ export function buildSyncResultOutcome(result: {
   pushed: number;
   pulled: number;
   conflicts: { length: number };
+  skipped?: boolean;
+  dirtyFolders?: string[];
 }): SyncRunOutcome {
+  if (
+    result.skipped &&
+    result.pushed === 0 &&
+    result.pulled === 0 &&
+    !(result.dirtyFolders && result.dirtyFolders.length > 0)
+  ) {
+    return { kind: 'info', parts: [{ key: 'workspace.syncNoChanges' }] };
+  }
+
   const parts: SyncOutcomePart[] = [];
   if (result.pushed > 0) {
     parts.push({
@@ -45,6 +56,12 @@ export function buildSyncResultOutcome(result: {
     parts.push({
       key: 'workspace.syncPulled',
       params: { count: result.pulled },
+    });
+  }
+  if (result.dirtyFolders && result.dirtyFolders.length > 0) {
+    parts.push({
+      key: 'workspace.syncFoldersPending',
+      params: { count: result.dirtyFolders.length },
     });
   }
   if (result.conflicts.length > 0) {

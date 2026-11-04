@@ -48,7 +48,7 @@
 }
 
 .content-feedback-button--retry {
-  background-color: #ffffff;
+  background-color: var(--pix-bg-elevated);
   border-color: #fca5a5;
   color: #b91c1c;
 }

@@ -53,6 +53,7 @@
     "syncNothingToPush": "Nothing pending to push",
     "syncPushed": "Pushed {{count}} item(s)",
     "syncPulled": "Pulled {{count}} item(s)",
+    "syncFoldersPending": "{{count}} folder(s) will load when opened",
     "syncConflicts": "{{count}} conflict(s) need manual resolution",
     "syncMessageJoin": " · ",
     "advancedTitle": "Advanced",

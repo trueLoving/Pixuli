@@ -56,10 +56,13 @@ export function buildWorkspaceFolderTree(
     let current = root;
     let accumulated = '';
 
-    for (const segment of segments) {
+    for (let index = 0; index < segments.length; index += 1) {
+      const segment = segments[index] ?? '';
       accumulated = accumulated ? `${accumulated}/${segment}` : segment;
       current = ensureChild(current, accumulated, segment);
-      current.imageCount += 1;
+      if (index === segments.length - 1) {
+        current.imageCount += 1;
+      }
     }
   }
 

@@ -20,8 +20,8 @@ pnpm -F pixuli-app sync:brand
 | `android-icon-background.png` | Android 自适应图标背景                       |
 | `android-icon-monochrome.png` | Android 13+ 单色图标（可选）                 |
 
-视觉 token、empty / loading 建议见
-[05-brand-visual-ui.md](../../../docs/01-product/05-brand-visual-ui.md)。
+视觉 token 以实现与 `app/src/ui` 品牌组件为准；产品口径见
+[docs/product.md](../../../docs/product.md)。
 
 ## 生成产物
 

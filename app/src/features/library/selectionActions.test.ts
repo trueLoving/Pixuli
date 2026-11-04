@@ -52,56 +52,51 @@ describe('buildBatchSelectionActions move', () => {
   });
 });
 
-describe('buildBatchSelectionActions tools switch', () => {
+describe('buildBatchSelectionActions process', () => {
   const t = (key: string) => key;
 
-  it('hides compress/convert when tools are off', () => {
+  it('hides process outside the local library', () => {
     const actions = buildBatchSelectionActions(
       [image],
       t,
       {
-        onSendCompress: vi.fn(),
         onSendConvert: vi.fn(),
         onBatchDelete: vi.fn(),
       },
-      { toolsEnabled: false },
+      { convertInLibrary: false },
     );
-    expect(actions.grid.some(action => action.id === 'compress')).toBe(false);
     expect(actions.grid.some(action => action.id === 'convert')).toBe(false);
+    expect(actions.grid.some(action => action.id === 'compress')).toBe(false);
   });
 
-  it('shows compress for images when tools are on', () => {
-    const onSendCompress = vi.fn();
+  it('shows process for images in the local library', () => {
+    const onSendConvert = vi.fn();
     const actions = buildBatchSelectionActions(
       [image],
       t,
       {
-        onSendCompress,
-        onSendConvert: vi.fn(),
+        onSendConvert,
         onBatchDelete: vi.fn(),
       },
-      { toolsEnabled: true },
+      { convertInLibrary: true },
     );
-    const compress = actions.grid.find(action => action.id === 'compress');
-    expect(compress?.disabled).toBe(false);
-    compress?.onClick();
-    expect(onSendCompress).toHaveBeenCalled();
+    const convert = actions.grid.find(action => action.id === 'convert');
+    expect(convert?.disabled).toBe(false);
+    convert?.onClick();
+    expect(onSendConvert).toHaveBeenCalled();
   });
 
-  it('disables compress for non-images with a reason when tools are on', () => {
+  it('hides process when the selection has no processable files', () => {
     const actions = buildBatchSelectionActions(
       [pdf],
       t,
       {
-        onSendCompress: vi.fn(),
         onSendConvert: vi.fn(),
         onBatchDelete: vi.fn(),
       },
-      { toolsEnabled: true },
+      { convertInLibrary: true },
     );
-    const compress = actions.grid.find(action => action.id === 'compress');
-    expect(compress?.disabled).toBe(true);
-    expect(compress?.title).toBe('image.inspector.toolImageOnly');
+    expect(actions.grid.some(action => action.id === 'convert')).toBe(false);
   });
 });
 
@@ -142,47 +137,68 @@ describe('buildBatchSelectionActions copy-link guidance', () => {
   });
 });
 
-describe('buildSingleSelectionActions tools switch', () => {
+describe('buildSingleSelectionActions process', () => {
   const t = (key: string) => key;
 
-  it('hides compress when tools are off', () => {
+  it('hides process outside the local library', () => {
     const actions = buildSingleSelectionActions(
       'image',
       t,
       {
         onCopy: vi.fn(),
-        onSendCompress: vi.fn(),
         onDelete: vi.fn(),
       },
       {
         canEdit: false,
         canShare: false,
         canDelete: true,
-        toolsEnabled: false,
+        convertInLibrary: false,
       },
     );
     expect(actions.grid.some(action => action.id === 'compress')).toBe(false);
+    expect(actions.grid.some(action => action.id === 'convert')).toBe(false);
   });
 
-  it('disables compress for pdf when tools are on', () => {
+  it('shows process for an image in the local library', () => {
+    const onSendConvert = vi.fn();
+    const actions = buildSingleSelectionActions(
+      'image',
+      t,
+      {
+        onCopy: vi.fn(),
+        onSendConvert,
+        onDelete: vi.fn(),
+      },
+      {
+        canEdit: false,
+        canShare: false,
+        canDelete: true,
+        convertInLibrary: true,
+      },
+    );
+    const convert = actions.grid.find(action => action.id === 'convert');
+    expect(convert?.disabled).toBe(false);
+    convert?.onClick();
+    expect(onSendConvert).toHaveBeenCalled();
+  });
+
+  it('hides process for a pdf', () => {
     const actions = buildSingleSelectionActions(
       'pdf',
       t,
       {
         onCopy: vi.fn(),
-        onSendCompress: vi.fn(),
+        onSendConvert: vi.fn(),
         onDelete: vi.fn(),
       },
       {
         canEdit: false,
         canShare: false,
         canDelete: true,
-        toolsEnabled: true,
+        convertInLibrary: true,
       },
     );
-    const compress = actions.grid.find(action => action.id === 'compress');
-    expect(compress?.disabled).toBe(true);
-    expect(compress?.title).toBe('image.inspector.toolImageOnly');
+    expect(actions.grid.some(action => action.id === 'convert')).toBe(false);
   });
 
   it('keeps copy clickable when no public url', () => {
