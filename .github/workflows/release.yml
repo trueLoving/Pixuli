@@ -224,7 +224,7 @@ jobs:
           ### 试用前请看
 
           - 从 1.x 升级前先读 [CHANGELOG](https://github.com/trueLoving/Pixuli/blob/develop/CHANGELOG.md)：幻灯片、时间线、照片墙和旧的 Mobile 应用已移除
-          - 用法见 [使用手册](https://github.com/trueLoving/Pixuli/blob/develop/docs/01-product/02-product-user-manual.md)
+          - 用法见 [使用指南](https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md)
           EOF
           )"
           if gh release view "$TAG" >/dev/null 2>&1; then

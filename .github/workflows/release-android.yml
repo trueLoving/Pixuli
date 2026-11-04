@@ -224,7 +224,7 @@ jobs:
               --title "Pixuli Android v${VER}" \
               --notes "## Pixuli Android v${VER}
 
-          Capacitor APK from \`${GITHUB_SHA}\`. See CHANGELOG and docs/02-system-design/05-release-versioning.md."
+          Capacitor APK from \`${GITHUB_SHA}\`. See CHANGELOG and docs/architecture.md."
           fi
           gh release upload "$TAG" \
             "pixuli-android-release-v${VER}.apk" \
