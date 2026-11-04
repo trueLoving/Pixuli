@@ -1,203 +1,61 @@
 # PLANS
 
-> **工作进度 SSOT** · 与 GitHub Issues **对齐**
-> **最近同步**：2026-10-08（远程 OPEN **5**；Sprint A～D ✅；#132
-> REF-603 已关 #258；根视图 5000 上限见性能文档 1.5） **状态**：执行中 ·
-> **主路径冻结**（添加 → 同步 → 复制链接）
-
-本文件是仓库**唯一的任务与进度汇总表**。新增任务、更新进度、关闭项，都在这里维护，并与远程 Issue 保持一致。
-
-| 操作         | 做法                                                               |
-| ------------ | ------------------------------------------------------------------ |
-| **加任务**   | 先 `gh issue create`（或网页开 Issue）→ 把编号与标题写入下方对应表 |
-| **改进度**   | 改本表「状态」列；Issue 有实质推进时同步评论 / 改 label            |
-| **关任务**   | PR 用 `Fixes #n` 关 Issue → 本表标 ✅ 或移出「进行中」             |
-| **拉齐远程** | 见文末同步命令                                                     |
-
-历史里程碑（M1～M3 等）已完成项不再展开；需要时可在 GitHub 按 milestone /
-closed 查阅。
+> **进度以 [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
+> 为准**。  
+> 本文只做薄索引，避免与远程双份长表。  
+> **最近同步**：2026-11-04
 
 ---
 
-## 一、产品底线（不变）
+## 产品底线
 
-| 项         | 约定                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------- |
-| **三端**   | Web（PWA）+ Desktop（Electron）+ Mobile（Capacitor Android）；单工程 `app`               |
-| **存储**   | GitHub / Gitee 经 `StorageProvider`；**无官方 NestJS Server**                            |
-| **本地库** | 本地工作区为 SSOT；远端可选同步（REF-607 ✅）                                            |
-| **外链**   | 同步 ≠ 外网可访问；主路径为**复制链接**（无用户向「发布」）                              |
-| **包边界** | `@pixuli/core` + `@pixuli/provider-*`；UI 在 `app/src/ui`；core/provider **禁止**依赖 UI |
-
-2.0 定位与相对 1.0 的差异见 [2.0.md](./2.0.md)；**为什么**见
-[DECISIONS.md](./DECISIONS.md)。资源库 UI SSOT：
-[04-asset-library-ui.md](docs/01-product/04-asset-library-ui.md)（v3.7）。
+三端维护 · 本地工作区 SSOT · GitHub/Gitee 插件同步 · 复制链接（无「发布」）·
+core/provider ↛ UI。  
+细则：[docs/product.md](docs/product.md) · [DECISIONS.md](./DECISIONS.md)
 
 ---
 
-## 二、排期（按 Sprint）
+## 当前 OPEN（远程）
 
-> **纪律**：未完成 Sprint A 前，不半接入 Drive / 全员 OAuth / AI
-> / 网格 / 任务抽屉。官方连接近期只保 GitHub + Gitee。对照 SSOT §十一 P0/P1。
+| Issue                                                   | 标题                          | 备注                       |
+| ------------------------------------------------------- | ----------------------------- | -------------------------- |
+| [#126](https://github.com/trueLoving/Pixuli/issues/126) | 插件体系重设计（Obsidian 式） | P1；勿抢跑挡主路径         |
+| [#127](https://github.com/trueLoving/Pixuli/issues/127) | 集成测试体系                  | P2；基线稳后薄做           |
+| [#138](https://github.com/trueLoving/Pixuli/issues/138) | 文档中/英策略                 | P2；本次 docs 简化未做英译 |
+| [#88](https://github.com/trueLoving/Pixuli/issues/88)   | Desktop 离线同步队列          | P2                         |
+| [#89](https://github.com/trueLoving/Pixuli/issues/89)   | Desktop 自动更新              | P2                         |
 
-| Sprint | 窗口（建议）   | 目标                 | Issue                                                                                                                                                                                                                             | 退出标准                                                                                          | 状态 |
-| ------ | -------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---- |
-| **A**  | —              | 主路径口径与文档对齐 | [#241](https://github.com/trueLoving/Pixuli/issues/241) REF-609                                                                                                                                                                   | README/PRS 与 v3.7 一致；无用户向「发布」；J0 文案可走通                                          | ✅   |
-| **A′** | 贯穿（非编码） | J0 自测摩擦记录      | （摩擦点再开子 Issue）                                                                                                                                                                                                            | 添加→同步公开仓→复制 raw 可贴 Markdown；记下 3～5 个真实摩擦                                      | ⏳   |
-| **B**  | —              | 连接统一向导壳       | [#242](https://github.com/trueLoving/Pixuli/issues/242) REF-610                                                                                                                                                                   | 统一添加连接壳；PAT 可连可同步；无空壳 OAuth                                                      | ✅   |
-| **C**  | —              | 库内效率三件套       | [#243](https://github.com/trueLoving/Pixuli/issues/243) REF-611 · [#244](https://github.com/trueLoving/Pixuli/issues/244) REF-612 · [#245](https://github.com/trueLoving/Pixuli/issues/245) REF-613                               | 批量移动仅本机；全部中搜索；压缩开关+发送到压缩                                                   | ✅   |
-| **D**  | —              | 性能边界收尾         | [#132](https://github.com/trueLoving/Pixuli/issues/132) REF-603                                                                                                                                                                   | 文档 1.5 + 虚拟窗口 + 大库提示 + Store 懒载入 + 根视图 5000 上限；单文件夹游标/持久缩略为 backlog | ✅   |
-| **E**  | D 后           | 插件体系演进         | [#126](https://github.com/trueLoving/Pixuli/issues/126) REF-411                                                                                                                                                                   | manifest/lifecycle 设计落地（不挡主路径）                                                         | ⬜   |
-| **P2** | 穿插 / 有余力  | 平台与工程           | [#88](https://github.com/trueLoving/Pixuli/issues/88) · [#89](https://github.com/trueLoving/Pixuli/issues/89) · [#127](https://github.com/trueLoving/Pixuli/issues/127) · [#138](https://github.com/trueLoving/Pixuli/issues/138) | 不阻塞主路径 / D                                                                                  | ⬜   |
-
-### 当前应开工
-
-1. 性能 backlog（无新 Issue，不挡主路径）：单文件夹游标、持久缩略、远端真分页；1k 内存基准见
-   `pnpm benchmark`
-2. 并行：**J0 自测**（A′；不建 Issue，除非出现可修缺陷）
-3. **勿抢跑** [#126](https://github.com/trueLoving/Pixuli/issues/126)（Sprint
-   E）与 Desktop P2（#88/#89）
-
-### 主路径打磨（无独立 Issue · 已合 develop）
-
-| PR                                                    | 内容                                     |
-| ----------------------------------------------------- | ---------------------------------------- |
-| [#254](https://github.com/trueLoving/Pixuli/pull/254) | 连接入口统一向导 + 文件夹范围清查询      |
-| [#255](https://github.com/trueLoving/Pixuli/pull/255) | FSA 重连 + 同步/复制链接引导             |
-| [#257](https://github.com/trueLoving/Pixuli/pull/257) | 快捷键/离线横幅暂隐 + 断开工作区关弹窗   |
-| [#256](https://github.com/trueLoving/Pixuli/pull/256) | `develop`→`main`（merge commit；已对齐） |
-
-> 注：`origin/develop` 较 `origin/main` 超前 **#257**；下次合 main 请继续用
-> **merge commit**。
-
-### 资源库 UI P0（已完成）
-
-| 项                                       | 状态                                                              |
-| ---------------------------------------- | ----------------------------------------------------------------- |
-| P0-1～P0-7                               | ✅                                                                |
-| P0-8 PAT 连接去手工                      | ✅ [#239](https://github.com/trueLoving/Pixuli/pull/239)          |
-| P0-9 复制链接三态 + 清除「发布」用户文案 | ✅ [#240](https://github.com/trueLoving/Pixuli/pull/240)          |
-| REF-608                                  | ✅ [#218](https://github.com/trueLoving/Pixuli/issues/218) CLOSED |
+已关近期主路径相关：Sprint
+A～D（#241～#245、#132）、资源库文件夹浏览与处理弹窗等（见 Releases
+/ 合并 PR）。
 
 ---
 
-## 三、Issue 调整记录（2026-09-12）
+## 建议焦点（非 Issue 编号顺序）
 
-### 已关闭（近期不做，保留历史）
-
-| Issue                                                   | 标题             | 说明                            |
-| ------------------------------------------------------- | ---------------- | ------------------------------- |
-| [#133](https://github.com/trueLoving/Pixuli/issues/133) | 标签与描述 + AI  | 主路径冻结；未接模型前不做      |
-| [#140](https://github.com/trueLoving/Pixuli/issues/140) | 回收站           | 非北极星刚需                    |
-| [#134](https://github.com/trueLoving/Pixuli/issues/134) | 宽范围图片批处理 | 已部分落地；拆到 #243/#244/#245 |
-| [#102](https://github.com/trueLoving/Pixuli/issues/102) | 插件热加载       | 依赖 #126；暂无第三方安装需求   |
-
-### 新建
-
-| Issue                                                   | REF     | 标题                              | Sprint |
-| ------------------------------------------------------- | ------- | --------------------------------- | ------ |
-| [#241](https://github.com/trueLoving/Pixuli/issues/241) | REF-609 | 对外叙事对齐：README/PRS          | **A**  |
-| [#242](https://github.com/trueLoving/Pixuli/issues/242) | REF-610 | 连接统一向导壳（PAT；OAuth 可选） | **B**  |
-| [#243](https://github.com/trueLoving/Pixuli/issues/243) | REF-611 | 批量移动 / 库内拖放               | **C**  |
-| [#244](https://github.com/trueLoving/Pixuli/issues/244) | REF-612 | 在全部中搜索                      | **C**  |
-| [#245](https://github.com/trueLoving/Pixuli/issues/245) | REF-613 | 压缩总开关 + 发送到压缩           | **C**  |
-
-### 明确延后（不建 Issue）
-
-网格/列表（P1-6）、同步任务抽屉（P1-7）、shareLink 设置入口（P1-8）、Drive、全员强制 OAuth。
+1. J0 自测：添加 → 同步公开仓 → 复制链接；记下摩擦再开小 Issue
+2. 图片压缩写回处理弹窗（若需要）
+3. 集成测试薄切片（#127）
+4. 暂缓：#126 全量、#88/#89
 
 ---
 
-## 四、进行中 Issue（与 GitHub OPEN 对齐）
+## Won't Do / 延后
 
-**状态约定**：⬜ 未开工 · ⏳ 进行中/部分完成 · ✅ 已关闭
+**不做：**
+官方 Server；用户向发布；恢复幻灯片/时间线/照片墙；取消任一端；默认 Gitee
+Host 代理。
 
-### 排期内（优先）
-
-| ID      | 标题                     | GitHub                                                  | Sprint | 状态                                                                           |
-| ------- | ------------------------ | ------------------------------------------------------- | ------ | ------------------------------------------------------------------------------ |
-| REF-609 | 对外叙事对齐：README/PRS | [#241](https://github.com/trueLoving/Pixuli/issues/241) | A      | ✅ [#246](https://github.com/trueLoving/Pixuli/pull/246)                       |
-| REF-610 | 连接统一向导壳           | [#242](https://github.com/trueLoving/Pixuli/issues/242) | B      | ✅ [#247](https://github.com/trueLoving/Pixuli/pull/247)                       |
-| REF-611 | 批量移动 / 库内拖放      | [#243](https://github.com/trueLoving/Pixuli/issues/243) | C      | ✅ [#248](https://github.com/trueLoving/Pixuli/pull/248)                       |
-| REF-612 | 在全部中搜索             | [#244](https://github.com/trueLoving/Pixuli/issues/244) | C      | ✅ [#251](https://github.com/trueLoving/Pixuli/pull/251)                       |
-| REF-613 | 压缩总开关 + 发送到压缩  | [#245](https://github.com/trueLoving/Pixuli/issues/245) | C      | ✅ [#252](https://github.com/trueLoving/Pixuli/pull/252)                       |
-| REF-603 | 大数据 / 性能边界        | [#132](https://github.com/trueLoving/Pixuli/issues/132) | D      | ✅ [#258](https://github.com/trueLoving/Pixuli/pull/258)；根视图上限见文档 1.5 |
-| REF-411 | 插件体系重设计           | [#126](https://github.com/trueLoving/Pixuli/issues/126) | E      | ⬜                                                                             |
-
-### P2（有余力 · 不挡 Sprint D）
-
-| ID      | 标题                      | GitHub                                                  | 状态 |
-| ------- | ------------------------- | ------------------------------------------------------- | ---- |
-| REF-503 | Desktop 离线同步/上传队列 | [#88](https://github.com/trueLoving/Pixuli/issues/88)   | ⬜   |
-| REF-504 | Desktop 自动更新          | [#89](https://github.com/trueLoving/Pixuli/issues/89)   | ⬜   |
-| REF-412 | 集成测试体系              | [#127](https://github.com/trueLoving/Pixuli/issues/127) | ⬜   |
-| REF-415 | 文档中/英策略             | [#138](https://github.com/trueLoving/Pixuli/issues/138) | ⬜   |
-
-**OPEN 合计**：**5** 条（2026-10-08 与 `gh issue list --state open` 一致：#126 ·
-#127 · #138 · #88 · #89）。
+**延后：**
+Drive、全员 OAuth、任务抽屉、网格切换、回收站、AI、局域网临时共享、文档全英镜像。
 
 ---
 
-## 五、近期已关闭（便于对照，不维护全量）
-
-| Issue                                                                                                                                                                                                                                 | 说明                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| [#133](https://github.com/trueLoving/Pixuli/issues/133) / [#134](https://github.com/trueLoving/Pixuli/issues/134) / [#140](https://github.com/trueLoving/Pixuli/issues/140) / [#102](https://github.com/trueLoving/Pixuli/issues/102) | 2026-09-12 主路径冻结期关闭 / 拆分     |
-| [#218](https://github.com/trueLoving/Pixuli/issues/218)                                                                                                                                                                               | REF-608 资源库 UI 主路径 / 外链收敛 ✅ |
-| [#240](https://github.com/trueLoving/Pixuli/pull/240)                                                                                                                                                                                 | P0-9 复制链接三态                      |
-| [#239](https://github.com/trueLoving/Pixuli/pull/239)                                                                                                                                                                                 | P0-8 PAT 去手工                        |
-| [#131](https://github.com/trueLoving/Pixuli/issues/131)                                                                                                                                                                               | REF-602 UI 优化 ✅                     |
-| [#146](https://github.com/trueLoving/Pixuli/issues/146)                                                                                                                                                                               | REF-416 workspace exports ✅           |
-| [#144](https://github.com/trueLoving/Pixuli/issues/144)                                                                                                                                                                               | REF-607 本地工作区 ✅                  |
-| [#163](https://github.com/trueLoving/Pixuli/issues/163)                                                                                                                                                                               | REF-516 三端融合 ✅                    |
-| [#128](https://github.com/trueLoving/Pixuli/issues/128)                                                                                                                                                                               | REF-413 冒烟 / CI ✅                   |
-| [#241](https://github.com/trueLoving/Pixuli/issues/241)～[#245](https://github.com/trueLoving/Pixuli/issues/245)                                                                                                                      | Sprint A～C（REF-609～613）✅          |
-| [#254](https://github.com/trueLoving/Pixuli/pull/254) / [#255](https://github.com/trueLoving/Pixuli/pull/255) / [#257](https://github.com/trueLoving/Pixuli/pull/257)                                                                 | 主路径打磨（无独立 Issue）✅           |
-| [#132](https://github.com/trueLoving/Pixuli/issues/132) / [#258](https://github.com/trueLoving/Pixuli/pull/258)                                                                                                                       | REF-603 性能边界 ✅                    |
-
----
-
-## 六、不在范围（Won't Do）
-
-| 项                                                 | 说明              |
-| -------------------------------------------------- | ----------------- |
-| 恢复 Slideshow / Timeline / PhotoWall / 3D Gallery | 已从产品移除      |
-| 删除 Mobile 或 Desktop **产品能力**                | 三端为底线        |
-| 主仓库恢复 Server / WASM 为必需构建                | 已移除            |
-| 恢复 Gitee Host 图片代理为默认路径                 | REF-607 P7 已退役 |
-| 用户向「发布」流程 / 假发布态                      | v3.3+ 已废止      |
-| 主路径冻结期内上 OneDrive / 全员强制 OAuth         | SSOT 明确延后     |
-
-详见 [docs/04-backlog.md](docs/04-backlog.md)。
-
----
-
-## 七、同步与协作
+## 协作
 
 ```bash
-gh issue list --state open --json number,title,milestone,labels
-gh issue view 241 --json number,state,title,milestone
-gh issue list --label refactor --state open
+gh issue list --state open
 ```
 
-1. **开 PR**：标题或分支含 `REF-xxx`；完整关闭时用 `Fixes #n`
-2. **合并后**：更新本文件对应行；必要时改「最近同步」日期
-3. **Label / Milestone**：与 GitHub 保持一致
-
-Skill：[ref-issue-pr](.cursor/skills/ref-issue-pr/SKILL.md)。
-
----
-
-## 八、相关文档
-
-| 主题      | 文档                                                                                                                 |
-| --------- | -------------------------------------------------------------------------------------------------------------------- |
-| 2.0 定位  | [2.0.md](./2.0.md)                                                                                                   |
-| 决策      | [DECISIONS.md](./DECISIONS.md)                                                                                       |
-| 需求      | [docs/01-product/01-product-requirements-specification.md](docs/01-product/01-product-requirements-specification.md) |
-| 资源库 UI | [docs/01-product/04-asset-library-ui.md](docs/01-product/04-asset-library-ui.md)                                     |
-| 架构      | [docs/02-system-design/01-system-design.md](docs/02-system-design/01-system-design.md)                               |
-| 工程      | [app/README.md](app/README.md)                                                                                       |
-| 插件      | [docs/02-system-design/03-plugin-system.md](docs/02-system-design/03-plugin-system.md)                               |
-| 同步      | [docs/02-system-design/04-local-workspace-sync.md](docs/02-system-design/04-local-workspace-sync.md)                 |
-| Agent     | [AGENTS.md](AGENTS.md)                                                                                               |
+开 PR：完整关闭 Issue 用
+`Fixes #n`；合并后以 GitHub 状态为准更新本表 OPEN 列表即可。

@@ -296,7 +296,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   className="sidebar-collapsed-item"
                   onClick={() => {
                     window.open(
-                      'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                      'https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md',
                       '_blank',
                     );
                   }}
@@ -430,7 +430,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               label={translate('sidebar.docs')}
               onClick={() => {
                 window.open(
-                  'https://github.com/trueLoving/Pixuli/wiki/Pixuli-Usage-Tutorial',
+                  'https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md',
                   '_blank',
                 );
               }}

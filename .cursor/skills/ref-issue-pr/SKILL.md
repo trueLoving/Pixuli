@@ -47,8 +47,8 @@ Fixes #<issue> # only if PR fully closes the issue Related: REF-<id>
 2. Update [PLANS.md](../../PLANS.md)：对应行 **状态** → ✅，或从「进行中」表移除
 3. 更新 Plans 文首 **最近同步** 日期；必要时跑 `gh issue list --state open`
    核对 OPEN 条数
-4. User-facing docs → `docs/01-product`；Agent/Skill → `AGENTS.md` /
-   `.cursor/`（仅架构边界变更时）
+4. User-facing docs → `docs/guide.md` / `docs/product.md`；Agent/Skill →
+   `AGENTS.md` / `.cursor/`（仅架构边界变更时）
 
 ## Add a new task
 

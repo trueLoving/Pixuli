@@ -33,7 +33,7 @@ pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:deb
   **`v{版本}-android`** Release 中的 APK（维护者通过
   [release-android.yml](../../.github/workflows/release-android.yml)
   手动发版）。
-- 详细安装与升级说明：[产品使用手册 §4.3](../../docs/01-product/02-product-user-manual.md#43-移动端mobile--capacitor-android)。
+- 使用说明：[docs/guide.md](../../docs/guide.md)。
 - Expo RN 已退役；当前 Mobile 交付路径仅为 Capacitor Android。
 
 ---

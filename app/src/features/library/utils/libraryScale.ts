@@ -1,4 +1,4 @@
-/** 与 docs/02-system-design/02-performance.md 阈值对齐（REF-603） */
+/** 与 docs/architecture.md 性能边界阈值对齐（REF-603） */
 
 /** 超过该数量：提示已启用虚拟列表与缩略限流 */
 export const LIBRARY_SCALE_LARGE = 500;

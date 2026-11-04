@@ -272,7 +272,7 @@ jobs:
 
           - **Tag:** \`${TAG}\`
           - **Commit:** \`${SHA}\`
-          - See [CHANGELOG](./CHANGELOG.md) and [release versioning](./docs/02-system-design/05-release-versioning.md).
+          - See [CHANGELOG](./CHANGELOG.md) and [architecture / release](./docs/architecture.md).
           EOF
           )"
           fi
