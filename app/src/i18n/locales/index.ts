@@ -1,6 +1,5 @@
 import { deepMerge } from '@pixuli/core/locales';
 
-import zhAccess from './zh-CN/access.json';
 import zhApp from './zh-CN/app.json';
 import zhBrand from './zh-CN/brand.json';
 import zhCommon from './zh-CN/common.json';
@@ -15,7 +14,6 @@ import zhLanguage from './zh-CN/language.json';
 import zhMessages from './zh-CN/messages.json';
 import zhNavigation from './zh-CN/navigation.json';
 import zhOperationLog from './zh-CN/operationLog.json';
-import zhPwa from './zh-CN/pwa.json';
 import zhSearch from './zh-CN/search.json';
 import zhSettings from './zh-CN/settings.json';
 import zhSidebar from './zh-CN/sidebar.json';
@@ -24,7 +22,6 @@ import zhStorage from './zh-CN/storage.json';
 import zhVersion from './zh-CN/version.json';
 import zhWorkspace from './zh-CN/workspace.json';
 
-import enAccess from './en-US/access.json';
 import enApp from './en-US/app.json';
 import enBrand from './en-US/brand.json';
 import enCommon from './en-US/common.json';
@@ -39,7 +36,6 @@ import enLanguage from './en-US/language.json';
 import enMessages from './en-US/messages.json';
 import enNavigation from './en-US/navigation.json';
 import enOperationLog from './en-US/operationLog.json';
-import enPwa from './en-US/pwa.json';
 import enSearch from './en-US/search.json';
 import enSettings from './en-US/settings.json';
 import enSidebar from './en-US/sidebar.json';
@@ -72,9 +68,7 @@ const zhParts = [
   zhVersion,
   zhSourceManager,
   zhWorkspace,
-  zhAccess,
   zhSettings,
-  zhPwa,
   zhOperationLog,
 ] as Record<string, unknown>[];
 
@@ -98,9 +92,7 @@ const enParts = [
   enVersion,
   enSourceManager,
   enWorkspace,
-  enAccess,
   enSettings,
-  enPwa,
   enOperationLog,
 ] as Record<string, unknown>[];
 
@@ -128,11 +120,6 @@ export const defaultTranslate = (
 export const operationLogLocales = {
   'zh-CN': zhOperationLog,
   'en-US': enOperationLog,
-};
-
-export const pwaLocales = {
-  'zh-CN': zhPwa,
-  'en-US': enPwa,
 };
 
 export { deepMerge };

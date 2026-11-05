@@ -32,8 +32,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onSourceDelete,
   hasConfig,
   onAddSource,
-  onSaveConfig,
-  onClearConfig,
 }) => {
   const { t } = useI18n();
   const { loading } = useSourceSelection();
@@ -51,8 +49,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const modals = (
     <MainLayoutModals
       showGlobalLoading={showGlobalLoading}
-      onSaveConfig={onSaveConfig}
-      onClearConfig={onClearConfig}
       versionInfo={__VERSION_INFO__}
     />
   );

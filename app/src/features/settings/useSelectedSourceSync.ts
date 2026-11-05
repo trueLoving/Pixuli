@@ -19,9 +19,9 @@ export function useSelectedSourceSync(
   const isInitialMountRef = useRef(true);
 
   useEffect(() => {
-    const { showConfigModal, editingSourceId } = useUIStore.getState();
-    // 正在编辑某源时，不要用「当前选中源」覆盖 imageStore（避免 Gitee 编辑弹窗拿到 GitHub 配置）
-    if (showConfigModal && editingSourceId) {
+    const { editingSourceId, showSettingsModal } = useUIStore.getState();
+    // 正在设置向导中编辑某源时，不要用「当前选中源」覆盖 imageStore
+    if (showSettingsModal && editingSourceId) {
       return;
     }
 

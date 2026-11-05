@@ -30,7 +30,6 @@ const giteeSource = {
 describe('uiStore.openConfigModalForEdit (REF-312)', () => {
   beforeEach(() => {
     useUIStore.setState({
-      showConfigModal: false,
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
@@ -57,7 +56,6 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     expect(ui.settingsSection).toBe('sync');
     expect(ui.settingsSyncAddOpen).toBe(true);
     expect(ui.settingsSyncPrefillPluginId).toBe('github');
-    expect(ui.showConfigModal).toBe(false);
   });
 
   it('选中 Gitee 源后编辑应打开设置同步向导并快照 config', () => {
@@ -65,7 +63,6 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     expect(ok).toBe(true);
 
     const ui = useUIStore.getState();
-    expect(ui.showConfigModal).toBe(false);
     expect(ui.showSettingsModal).toBe(true);
     expect(ui.settingsSection).toBe('sync');
     expect(ui.editingSourceId).toBe('gt-edit-1');

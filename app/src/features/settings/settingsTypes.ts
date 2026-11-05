@@ -3,6 +3,5 @@ export type SettingsSection =
   | 'operationLog'
   | 'language'
   | 'appearance'
-  | 'keyboard'
   | 'version'
   | 'sync';

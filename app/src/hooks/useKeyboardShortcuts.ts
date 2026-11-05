@@ -7,11 +7,8 @@ import { createKeyboardShortcuts } from './keyboardShortcuts';
  */
 export function useKeyboardShortcuts(
   t: (key: string) => string,
-  showConfigModal: boolean,
   showSettingsModal: boolean,
-  handleCloseConfigModal: () => void,
   handleCloseSettingsModal: () => void,
-  handleOpenKeyboardHelp: () => void,
   handleOpenOperationLog: () => void,
   handleLoadImages: () => Promise<void>,
   handleOpenConfigModal: () => void,
@@ -21,17 +18,14 @@ export function useKeyboardShortcuts(
     keyboardManager.registerBatch(shortcuts);
 
     const handleCloseModals = () => {
-      if (showConfigModal) handleCloseConfigModal();
-      else if (showSettingsModal) handleCloseSettingsModal();
+      if (showSettingsModal) handleCloseSettingsModal();
     };
 
-    const handleOpenKeyboardHelpEvent = () => handleOpenKeyboardHelp();
     const handleOpenOperationLogEvent = () => handleOpenOperationLog();
     const handleRefreshImages = () => handleLoadImages();
     const handleOpenConfig = () => handleOpenConfigModal();
 
     window.addEventListener('closeModals', handleCloseModals);
-    window.addEventListener('openKeyboardHelp', handleOpenKeyboardHelpEvent);
     window.addEventListener('openOperationLog', handleOpenOperationLogEvent);
     window.addEventListener('refreshImages', handleRefreshImages);
     window.addEventListener('openConfig', handleOpenConfig);
@@ -39,10 +33,6 @@ export function useKeyboardShortcuts(
     return () => {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
       window.removeEventListener('closeModals', handleCloseModals);
-      window.removeEventListener(
-        'openKeyboardHelp',
-        handleOpenKeyboardHelpEvent,
-      );
       window.removeEventListener(
         'openOperationLog',
         handleOpenOperationLogEvent,
@@ -52,11 +42,8 @@ export function useKeyboardShortcuts(
     };
   }, [
     t,
-    showConfigModal,
     showSettingsModal,
-    handleCloseConfigModal,
     handleCloseSettingsModal,
-    handleOpenKeyboardHelp,
     handleOpenOperationLog,
     handleLoadImages,
     handleOpenConfigModal,

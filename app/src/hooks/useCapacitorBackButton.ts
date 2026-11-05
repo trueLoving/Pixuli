@@ -46,10 +46,6 @@ export function useCapacitorBackButton(): void {
       handle = await App.addListener('backButton', ({ canGoBack }) => {
         const ui = useUIStore.getState();
 
-        if (ui.showConfigModal) {
-          ui.closeConfigModal();
-          return;
-        }
         if (ui.showSyncDirectionModal) {
           ui.closeSyncDirectionModal();
           return;

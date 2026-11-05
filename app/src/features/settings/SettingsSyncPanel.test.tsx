@@ -67,7 +67,6 @@ describe('SettingsSyncPanel edit', () => {
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: false,
       settingsSyncAddOpen: false,
     });
   });

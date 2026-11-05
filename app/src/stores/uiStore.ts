@@ -32,7 +32,6 @@ export type EditingSourceRepoConfig = Pick<
 
 interface UIState {
   // 模态框状态
-  showConfigModal: boolean;
   showSettingsModal: boolean;
   /** 同步方向：本地到远程 / 远程到本地 */
   showSyncDirectionModal: boolean;
@@ -74,7 +73,6 @@ interface UIState {
   inspectorCollapsed: boolean;
 
   // Actions - 模态框
-  setShowConfigModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
 
   // Actions - 编辑
@@ -104,11 +102,11 @@ interface UIState {
   setShowWorkspaceModal: (show: boolean) => void;
 
   // Helper actions
-  /** 编辑连接：打开设置 · 同步分区内的统一向导（不再走分云旧表单） */
+  /** 编辑连接：打开设置 · 同步分区内的统一向导 */
   openConfigModalForEdit: (sourceId: string) => boolean;
   openConfigModal: () => void;
+  /** 结束同步向导编辑态（清除 editingSource*） */
   closeConfigModal: () => void;
-  openKeyboardHelp: () => void;
   openVersionInfo: () => void;
   openOperationLog: () => void;
   openSettingsModal: (section?: SettingsSection) => void;
@@ -125,7 +123,6 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>(set => ({
-  showConfigModal: false,
   showSettingsModal: false,
   showSyncDirectionModal: false,
   settingsSection: 'workspace',
@@ -147,7 +144,6 @@ export const useUIStore = create<UIState>(set => ({
   inspectorCollapsed: false,
   showWorkspaceModal: false,
 
-  setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
   setShowWorkspaceModal: (show: boolean) => set({ showWorkspaceModal: show }),
 
@@ -204,7 +200,6 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: sourceId,
       editingSourcePluginId: source.pluginId,
       editingSourceRepoConfig: repoConfig,
-      showConfigModal: false,
       showSettingsModal: true,
       settingsSection: 'sync',
       settingsSyncAddOpen: false,
@@ -219,15 +214,10 @@ export const useUIStore = create<UIState>(set => ({
   },
   closeConfigModal: () =>
     set({
-      showConfigModal: false,
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
     }),
-  /** 设置 → 快捷键暂隐期间：F1 / 侧栏入口不打开空分区 */
-  openKeyboardHelp: () => {
-    // no-op until settings keyboard section is restored
-  },
   openVersionInfo: () =>
     set({
       showSettingsModal: true,
@@ -274,7 +264,6 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: false,
       activeMenu: 'settings',
     }),
   clearSettingsSyncAddOpen: () =>
@@ -290,7 +279,6 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: false,
       pendingConnectionPurpose: purpose ?? 'defaultSync',
     });
   },
