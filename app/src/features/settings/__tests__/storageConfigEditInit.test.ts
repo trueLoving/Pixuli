@@ -5,7 +5,7 @@ import {
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
 
-/** Web/Desktop GiteeConfigModal 与 Mobile StorageConfigModal 编辑态共用 */
+/** 编辑远端连接时从 source 快照解析表单字段 */
 function resolveEditFormFromSource(
   sources: StoredSourceEntry[],
   sourceId: string,

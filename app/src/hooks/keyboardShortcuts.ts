@@ -13,15 +13,6 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     category: SHORTCUT_CATEGORIES.GENERAL,
   },
   {
-    key: COMMON_SHORTCUTS.F1,
-    description: t('keyboard.shortcuts.showHelp'),
-    action: () => {
-      const event = new CustomEvent('openKeyboardHelp');
-      window.dispatchEvent(event);
-    },
-    category: SHORTCUT_CATEGORIES.HELP,
-  },
-  {
     key: COMMON_SHORTCUTS.F5,
     description: t('keyboard.shortcuts.refresh'),
     action: () => {

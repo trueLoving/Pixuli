@@ -1,4 +1,3 @@
-import { RefreshCw } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceMigrationWizard } from '@/features/workspace/WorkspaceMigrationWizard';
@@ -7,6 +6,7 @@ import { useI18n } from '@/i18n/useI18n';
 import { ROUTES } from '@/router/routes';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
+import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import './WorkspaceWelcomeScreen.css';
 
 export const WorkspaceWelcomeScreen: React.FC = () => {
@@ -22,42 +22,43 @@ export const WorkspaceWelcomeScreen: React.FC = () => {
 
   return (
     <div className="workspace-welcome">
-      <div className="workspace-welcome-card">
-        <div className="workspace-welcome-brand">
-          <div className="workspace-welcome-mark">
-            <img
-              src="/icon.png"
-              alt=""
-              className="workspace-welcome-logo"
-              width={72}
-              height={72}
-            />
-            <span className="workspace-welcome-pedestal" aria-hidden />
-          </div>
+      <div className="workspace-welcome-atmosphere" aria-hidden />
+      <div className="workspace-welcome-shell">
+        <header className="workspace-welcome-brand">
+          <BrandPixelMark
+            variant="welcome"
+            size={112}
+            className="workspace-welcome-mark"
+          />
+          <p className="workspace-welcome-name">Pixuli</p>
           <h1 className="workspace-welcome-title">
             {t('workspace.welcomeTitle')}
           </h1>
           <p className="workspace-welcome-subtitle">
             {t('workspace.welcomeSubtitle')}
           </p>
-        </div>
+        </header>
 
-        {showMigration ? (
-          <WorkspaceMigrationWizard embedded onComplete={handleOpened} />
-        ) : (
-          <WorkspaceSetupPanel onOpened={handleOpened} />
-        )}
+        <section
+          className="workspace-welcome-action"
+          aria-label={t('workspace.welcomeTitle')}
+        >
+          {showMigration ? (
+            <WorkspaceMigrationWizard embedded onComplete={handleOpened} />
+          ) : (
+            <WorkspaceSetupPanel onOpened={handleOpened} />
+          )}
+        </section>
 
-        <div className="workspace-welcome-footer">
+        <footer className="workspace-welcome-footer">
           <button
             type="button"
-            className="workspace-welcome-settings-btn"
+            className="workspace-welcome-secondary-link"
             onClick={() => openSettingsModal('sync')}
           >
-            <RefreshCw size={16} aria-hidden />
             {t('workspace.welcomeOpenConnections')}
           </button>
-        </div>
+        </footer>
       </div>
     </div>
   );

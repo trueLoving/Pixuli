@@ -12,12 +12,7 @@ import {
 } from './sidebarNavItems';
 import type { SidebarProps } from './types';
 
-export type {
-  SidebarView,
-  SidebarFilter,
-  SidebarMenuItem,
-  SidebarSource,
-} from './types';
+export type { SidebarMenuItem, SidebarSource } from './types';
 
 import './Sidebar.css';
 

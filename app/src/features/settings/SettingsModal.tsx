@@ -28,9 +28,6 @@ interface SettingsModalProps {
   versionInfo: VersionInfo;
 }
 
-/** 主路径打磨期暂隐设置 → 快捷键；代码与类型仍保留便于恢复 */
-const HIDDEN_SETTINGS_SECTIONS = new Set<SettingsSection>(['keyboard']);
-
 const GENERAL_ITEMS: Array<{
   id: SettingsSection;
   labelKey: string;
@@ -46,7 +43,6 @@ const GENERAL_ITEMS: Array<{
     labelKey: 'settings.menuPreferences',
     icon: <Palette size={18} />,
   },
-  // keyboard：HIDDEN_SETTINGS_SECTIONS
   {
     id: 'operationLog',
     labelKey: 'settings.menuOperationLog',
@@ -59,10 +55,6 @@ const GENERAL_ITEMS: Array<{
   },
 ];
 
-function resolveVisibleSection(section: SettingsSection): SettingsSection {
-  return HIDDEN_SETTINGS_SECTIONS.has(section) ? 'workspace' : section;
-}
-
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -71,16 +63,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const settingsSection = useUIStore(state => state.settingsSection);
   const isMobile = useMobileViewport();
-  const [activeSection, setActiveSection] = useState<SettingsSection>(() =>
-    resolveVisibleSection(settingsSection),
-  );
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>(settingsSection);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
 
   useEffect(() => {
     if (!isOpen) return;
-    const section = resolveVisibleSection(settingsSection);
-    setActiveSection(section);
-    setShowMobileMenu(section === 'workspace');
+    setActiveSection(settingsSection);
+    setShowMobileMenu(settingsSection === 'workspace');
   }, [isOpen, settingsSection]);
 
   useEscapeKey(() => {

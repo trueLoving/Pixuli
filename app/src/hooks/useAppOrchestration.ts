@@ -1,5 +1,4 @@
 import { useImageStore } from '@/features/library/imageStore';
-import { useConfigManagement } from '@/features/settings/useConfigManagement';
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useSelectedSourceSync } from '@/features/settings/useSelectedSourceSync';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
@@ -16,15 +15,6 @@ import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useUIStore } from '@/stores/uiStore';
 import { useCallback, useEffect, useMemo } from 'react';
 
-type RepoConfigForm = {
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  name?: string;
-};
-
 export type AppMainLayoutProps = {
   sidebarSources: SidebarSourceItem[];
   selectedSourceId: string | null;
@@ -33,8 +23,6 @@ export type AppMainLayoutProps = {
   onSourceDelete: (sourceId: string) => void;
   hasConfig: boolean;
   onAddSource: () => void;
-  onSaveConfig: (config: RepoConfigForm) => void;
-  onClearConfig: () => void;
 };
 
 export type AppRoutesOrchestrationProps = {
@@ -65,14 +53,10 @@ export function useAppOrchestration(): {
   }, [initializeWorkspace, loadImages]);
 
   const {
-    showConfigModal,
-    editingSourceId,
     showSettingsModal,
     isFullscreenMode,
     setIsFullscreenMode,
     openConfigModal,
-    closeConfigModal,
-    openKeyboardHelp,
     closeSettingsModal,
     openSettingsModalForAddSource,
     openConfigModalForEdit,
@@ -87,7 +71,6 @@ export function useAppOrchestration(): {
     handleSourceSelect,
   } = sourceManagement;
 
-  const { handleSaveConfig, handleClearConfig } = useConfigManagement();
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
   const handleLoadImages = useCallback(async () => {
@@ -97,22 +80,6 @@ export function useAppOrchestration(): {
       console.error('Failed to load images:', error);
     }
   }, [loadImages]);
-
-  const handleSaveConfigWithId = useMemo(
-    () => (config: RepoConfigForm) => {
-      handleSaveConfig(config, editingSourceId);
-      closeConfigModal();
-    },
-    [handleSaveConfig, editingSourceId, closeConfigModal],
-  );
-
-  const handleClearConfigWithId = useMemo(
-    () => () => {
-      handleClearConfig(editingSourceId);
-      closeConfigModal();
-    },
-    [handleClearConfig, editingSourceId, closeConfigModal],
-  );
 
   const handleEditSourceWithId = useMemo(
     () => (sourceId: string) => {
@@ -142,11 +109,8 @@ export function useAppOrchestration(): {
   useCapacitorBackButton();
   useKeyboardShortcuts(
     t,
-    showConfigModal,
     showSettingsModal,
-    closeConfigModal,
     closeSettingsModal,
-    openKeyboardHelp,
     openOperationLog,
     handleLoadImages,
     openConfigModal,
@@ -161,8 +125,6 @@ export function useAppOrchestration(): {
       onSourceDelete: handleDeleteSourceWithT,
       hasConfig,
       onAddSource: openSettingsModalForAddSource,
-      onSaveConfig: handleSaveConfigWithId,
-      onClearConfig: handleClearConfigWithId,
     },
     routesProps: {
       isFullscreenMode,

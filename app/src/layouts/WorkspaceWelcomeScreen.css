@@ -1,99 +1,164 @@
 .workspace-welcome {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
-  background: linear-gradient(
-    180deg,
-    var(--pix-surface, #faf8ff) 0%,
-    #f5f3ff 48%,
-    #eef2ff 100%
-  );
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  overflow: auto;
+  background: var(--pix-bg, #ffffff);
 }
 
-html.dark .workspace-welcome {
-  background: linear-gradient(
-    180deg,
-    var(--pix-bg) 0%,
-    var(--pix-bg-muted) 100%
-  );
+.workspace-welcome-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 80% at 50% -10%,
+      color-mix(in srgb, var(--pix-cyan, #5ee1f7) 18%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      90% 60% at 100% 100%,
+      color-mix(in srgb, var(--pix-lilac, #c4b5fd) 16%, transparent) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      70% 50% at 0% 80%,
+      color-mix(in srgb, var(--pix-violet-soft, #ede9fe) 55%, transparent) 0%,
+      transparent 45%
+    );
+  opacity: 0.9;
 }
 
-.workspace-welcome-card {
+html.dark .workspace-welcome-atmosphere {
+  opacity: 0.55;
+}
+
+.workspace-welcome-shell {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 40rem;
-  padding: 2rem;
-  border: 1px solid var(--pix-border);
-  border-radius: 1rem;
-  background: var(--pix-bg-elevated);
-  box-shadow: 0 20px 45px rgba(30, 27, 75, 0.08);
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  animation: workspace-welcome-enter 480ms ease-out both;
 }
 
 .workspace-welcome-brand {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: var(--pix-violet, #7c6cf0);
-}
-
-.workspace-welcome-mark {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  margin: 0 auto;
 }
 
-.workspace-welcome-logo {
-  display: block;
-  width: 4.5rem;
-  height: 4.5rem;
-  filter: drop-shadow(0 8px 18px rgba(124, 108, 240, 0.28));
+.workspace-welcome-mark {
+  margin-bottom: 0.75rem;
+  animation: workspace-welcome-mark 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.workspace-welcome-pedestal {
-  width: 3.25rem;
-  height: 0;
-  border-top: 1.5px dashed var(--pix-lilac, #c4b5fd);
-  opacity: 0.85;
+.workspace-welcome-name {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--pix-fg, #111827);
 }
 
 .workspace-welcome-title {
-  margin: 0.75rem 0 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--pix-fg);
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--pix-fg, #111827);
 }
 
 .workspace-welcome-subtitle {
-  margin: 0.5rem 0 0;
+  margin: 0.4rem 0 0;
+  max-width: 22rem;
   font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--pix-fg-muted);
+  line-height: 1.55;
+  color: var(--pix-fg-muted, #6b7280);
+}
+
+.workspace-welcome-action {
+  animation: workspace-welcome-enter 520ms ease-out 80ms both;
+}
+
+.workspace-welcome-action .workspace-setup-panel-hint {
+  text-align: center;
 }
 
 .workspace-welcome-footer {
   display: flex;
   justify-content: center;
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--pix-border);
+  animation: workspace-welcome-enter 560ms ease-out 140ms both;
 }
 
-.workspace-welcome-settings-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.875rem;
-  border: 1px solid var(--pix-border);
-  border-radius: 0.5rem;
-  background: var(--pix-bg-elevated);
-  color: var(--pix-fg-secondary);
-  font-size: 0.875rem;
+.workspace-welcome-secondary-link {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  color: var(--pix-fg-secondary, #6b7280);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--pix-fg-secondary, #6b7280) 40%,
+    transparent
+  );
+  text-underline-offset: 0.18em;
   cursor: pointer;
 }
 
-.workspace-welcome-settings-btn:hover {
-  background: var(--pix-bg-muted);
+.workspace-welcome-secondary-link:hover {
+  color: var(--pix-violet-deep, #5b4fe0);
+  text-decoration-color: currentColor;
+}
+
+@keyframes workspace-welcome-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes workspace-welcome-mark {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-welcome-shell,
+  .workspace-welcome-mark,
+  .workspace-welcome-action,
+  .workspace-welcome-footer {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .workspace-welcome {
+    align-items: flex-start;
+    padding-top: clamp(2rem, 12vh, 4rem);
+  }
+
+  .workspace-welcome-shell {
+    gap: 1.5rem;
+  }
 }
