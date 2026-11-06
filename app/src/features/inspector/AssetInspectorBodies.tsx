@@ -60,12 +60,10 @@ export function AssetInspectorBatchBody({
 export function AssetInspectorSingleBody({
   activeImage,
   dimensions,
-  onPreview,
   t,
 }: {
   activeImage: ImageItem;
   dimensions: string;
-  onPreview: () => void;
   t: (key: string) => string;
 }) {
   const kind = getAssetKind(activeImage);
@@ -74,11 +72,7 @@ export function AssetInspectorSingleBody({
     <>
       <section className="asset-inspector-section">
         <h3>{t('image.inspector.sectionContent')}</h3>
-        <AssetInspectorFilePreview
-          image={activeImage}
-          onPreview={onPreview}
-          t={t}
-        />
+        <AssetInspectorFilePreview image={activeImage} t={t} />
       </section>
 
       <section className="asset-inspector-section">

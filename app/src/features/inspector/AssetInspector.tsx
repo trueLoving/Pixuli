@@ -404,7 +404,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     <AssetInspectorSingleBody
       activeImage={activeImage}
       dimensions={dimensions}
-      onPreview={() => setShowPreview(true)}
       t={t}
     />
   ) : selectedFolderPath ? (

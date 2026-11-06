@@ -75,6 +75,7 @@ function setupContentSecurityPolicy() {
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
+    "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
     "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; " +
     "frame-src 'self'; " +
@@ -88,6 +89,7 @@ function setupContentSecurityPolicy() {
     "script-src 'self'; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
+    "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
     "connect-src 'self' https: http://*; " +
     "frame-src 'self'; " +

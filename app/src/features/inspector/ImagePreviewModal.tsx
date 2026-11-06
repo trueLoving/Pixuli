@@ -1,6 +1,14 @@
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@/i18n/locales';
+import { getAssetKind } from '@/features/library/utils/assetKind';
+import {
+  downloadAssetLabelKey,
+  downloadAssetOnPlatform,
+  isOpenCancelled,
+} from '@/platforms/openAsset';
+import { getPlatform } from '@/platforms/platform';
+import { showError, showSuccess } from '@/ui/feedback/toast';
 import { ImageItem } from '@pixuli/core/types';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 import './ImagePreviewModal.css';
@@ -28,6 +36,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 }) => {
   const translate = t || defaultTranslate;
   const src = useResolvedAssetUrl(image);
+  const kind = image ? getAssetKind(image) : 'other';
 
   const handlePrevious = useCallback(() => {
     if (onNavigate && images.length > 1) {
@@ -84,6 +93,64 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     return translate('image.grid.dimensionsUnknown');
   };
 
+  const handleDownload = () => {
+    if (!src) return;
+    const platform = getPlatform();
+    void downloadAssetOnPlatform(platform, {
+      name: image.name,
+      url: src,
+      localPath: image.localPath,
+    })
+      .then(result => {
+        if (result === 'mobile') {
+          showSuccess(translate('image.inspector.downloadSaved'));
+        }
+      })
+      .catch(error => {
+        if (isOpenCancelled(error)) return;
+        showError(translate('image.inspector.downloadFailed'));
+      });
+  };
+
+  const renderMedia = () => {
+    if (!src) return null;
+
+    if (kind === 'video') {
+      return (
+        <video
+          key={src}
+          src={src}
+          controls
+          playsInline
+          preload="metadata"
+          className="image-preview-modal-media"
+        >
+          {translate('image.inspector.openExternal')}
+        </video>
+      );
+    }
+
+    if (kind === 'pdf' || kind === 'other') {
+      return (
+        <div className="image-preview-modal-file">
+          <FileText size={48} aria-hidden />
+          <p className="image-preview-modal-file-name">{image.name}</p>
+          <button
+            type="button"
+            className="image-preview-modal-download"
+            onClick={handleDownload}
+          >
+            {translate(downloadAssetLabelKey())}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <img src={src} alt={image.name} className="image-preview-modal-image" />
+    );
+  };
+
   return (
     <div className="image-preview-modal-overlay">
       <div className="image-preview-modal-container">
@@ -100,7 +167,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <button
               onClick={handlePrevious}
               className="image-preview-modal-nav image-preview-modal-nav-left"
-              title="上一张图片 (←)"
+              title="←"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
@@ -110,19 +177,13 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
             <button
               onClick={handleNext}
               className="image-preview-modal-nav image-preview-modal-nav-right"
-              title="下一张图片 (→)"
+              title="→"
             >
               <ChevronRight className="w-8 h-8" />
             </button>
           )}
 
-          {src ? (
-            <img
-              src={src}
-              alt={image.name}
-              className="image-preview-modal-image"
-            />
-          ) : null}
+          {renderMedia()}
         </div>
 
         <div className="image-preview-modal-info">
@@ -141,9 +202,11 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           )}
 
           <div className="image-preview-modal-details">
-            <div className="image-preview-modal-detail-item">
-              <span>{getImageDimensions()}</span>
-            </div>
+            {kind === 'image' ? (
+              <div className="image-preview-modal-detail-item">
+                <span>{getImageDimensions()}</span>
+              </div>
+            ) : null}
             {image.size > 0 && (
               <div className="image-preview-modal-detail-item">
                 <span>{formatFileSize(image.size)}</span>
