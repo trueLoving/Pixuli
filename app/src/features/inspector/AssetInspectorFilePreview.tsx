@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { ImageItem } from '@pixuli/core/types';
+import { FileVideo } from 'lucide-react';
 import { getAssetKind } from '@/features/library/utils/assetKind';
+import { resolveAssetThumbnail } from '@/features/library/utils/assetThumbnail';
 import {
   downloadAssetLabelKey,
   downloadAssetOnPlatform,
@@ -12,26 +14,58 @@ import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 export function AssetInspectorFilePreview({
   image,
-  onPreview,
   t,
 }: {
   image: ImageItem;
-  onPreview: () => void;
   t: (key: string) => string;
 }) {
   const kind = getAssetKind(image);
   const src = useResolvedAssetUrl(image);
+  const [videoThumb, setVideoThumb] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (kind !== 'video' || !src) {
+      setVideoThumb(null);
+      return;
+    }
+
+    let cancelled = false;
+    setVideoThumb(null);
+    void resolveAssetThumbnail({
+      id: image.id,
+      url: src,
+      name: image.name,
+      type: image.type,
+    }).then(thumb => {
+      if (!cancelled) setVideoThumb(thumb);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [kind, src, image.id, image.name, image.type]);
 
   if (!src) {
     return <div className="asset-inspector-preview" aria-hidden />;
   }
 
   if (kind === 'video') {
+    if (videoThumb) {
+      return (
+        <div className="asset-inspector-preview asset-inspector-preview--video">
+          <img src={videoThumb} alt={image.name} />
+          <span className="asset-inspector-preview-badge" aria-hidden>
+            ▶
+          </span>
+        </div>
+      );
+    }
     return (
-      <div className="asset-inspector-preview asset-inspector-preview--media">
-        <video src={src} controls playsInline preload="metadata">
-          {t('image.inspector.openExternal')}
-        </video>
+      <div
+        className="asset-inspector-preview asset-inspector-preview--video-fallback"
+        aria-hidden
+      >
+        <FileVideo size={36} />
       </div>
     );
   }
@@ -68,13 +102,8 @@ export function AssetInspectorFilePreview({
   }
 
   return (
-    <button
-      type="button"
-      className="asset-inspector-preview"
-      onClick={onPreview}
-      aria-label={t('image.inspector.previewHint')}
-    >
+    <div className="asset-inspector-preview">
       <img src={src} alt={image.name} />
-    </button>
+    </div>
   );
 }
