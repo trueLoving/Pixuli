@@ -1,4 +1,3 @@
-export { default as OperationLogModal } from './OperationLogModal';
 export { useLogStore } from './logStore';
 export { getLogService } from './logService';
 export type {

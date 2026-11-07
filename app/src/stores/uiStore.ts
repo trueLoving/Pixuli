@@ -229,7 +229,7 @@ export const useUIStore = create<UIState>(set => ({
   openOperationLog: () =>
     set({
       showSettingsModal: true,
-      settingsSection: 'operationLog',
+      settingsSection: 'version',
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',

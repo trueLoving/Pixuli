@@ -122,8 +122,8 @@ describe('SettingsSyncPanel edit', () => {
     );
     await waitFor(() => {
       expect(exportJsonFile).toHaveBeenCalledWith(
-        'pixuli-settings.json',
-        expect.stringContaining('"kind": "pixuli-settings"'),
+        'pixuli-user-config.json',
+        expect.stringContaining('"kind": "pixuli-user-config"'),
       );
     });
 
