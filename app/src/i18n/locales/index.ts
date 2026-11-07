@@ -13,7 +13,6 @@ import zhKeyboard from './zh-CN/keyboard.json';
 import zhLanguage from './zh-CN/language.json';
 import zhMessages from './zh-CN/messages.json';
 import zhNavigation from './zh-CN/navigation.json';
-import zhOperationLog from './zh-CN/operationLog.json';
 import zhSearch from './zh-CN/search.json';
 import zhSettings from './zh-CN/settings.json';
 import zhSidebar from './zh-CN/sidebar.json';
@@ -35,7 +34,6 @@ import enKeyboard from './en-US/keyboard.json';
 import enLanguage from './en-US/language.json';
 import enMessages from './en-US/messages.json';
 import enNavigation from './en-US/navigation.json';
-import enOperationLog from './en-US/operationLog.json';
 import enSearch from './en-US/search.json';
 import enSettings from './en-US/settings.json';
 import enSidebar from './en-US/sidebar.json';
@@ -44,10 +42,7 @@ import enStorage from './en-US/storage.json';
 import enVersion from './en-US/version.json';
 import enWorkspace from './en-US/workspace.json';
 
-/**
- * 应用文案 SSOT：按顶层 key 拆分的 domain JSON。
- * operationLog 为历史扁平根 key（供 OperationLogModal 直读），须最后 merge。
- */
+/** 应用文案 SSOT：按顶层 key 拆分的 domain JSON。 */
 const zhParts = [
   zhCommon,
   zhBrand,
@@ -69,7 +64,6 @@ const zhParts = [
   zhSourceManager,
   zhWorkspace,
   zhSettings,
-  zhOperationLog,
 ] as Record<string, unknown>[];
 
 const enParts = [
@@ -93,7 +87,6 @@ const enParts = [
   enSourceManager,
   enWorkspace,
   enSettings,
-  enOperationLog,
 ] as Record<string, unknown>[];
 
 export const appLocales = {
@@ -114,12 +107,6 @@ export const defaultTranslate = (
     value = (value as Record<string, unknown>)?.[k];
   }
   return (typeof value === 'string' ? value : undefined) || key;
-};
-
-/** OperationLogModal 直读用（扁平根 key，行为与旧 features/operation-log/locales 一致） */
-export const operationLogLocales = {
-  'zh-CN': zhOperationLog,
-  'en-US': enOperationLog,
 };
 
 export { deepMerge };

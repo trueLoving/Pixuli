@@ -2,21 +2,21 @@ import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from './version-info';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import {
+  Archive,
   ChevronLeft,
   ChevronRight,
   FolderOpen,
   Info,
   Palette,
   RefreshCw,
-  ScrollText,
   Settings,
   X,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
+import { SettingsUserConfigPanel } from './SettingsUserConfigPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
 import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
@@ -44,14 +44,14 @@ const GENERAL_ITEMS: Array<{
     icon: <Palette size={18} />,
   },
   {
-    id: 'operationLog',
-    labelKey: 'settings.menuOperationLog',
-    icon: <ScrollText size={18} />,
-  },
-  {
     id: 'version',
     labelKey: 'settings.menuVersion',
     icon: <Info size={18} />,
+  },
+  {
+    id: 'userConfig',
+    labelKey: 'settings.menuUserConfig',
+    icon: <Archive size={18} />,
   },
 ];
 
@@ -135,13 +135,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const sectionBody = (
     <>
       {activeSection === 'workspace' && <SettingsWorkspacePanel />}
-      {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
       {(activeSection === 'language' || activeSection === 'appearance') && (
         <SettingsPreferencesPanel t={t} />
       )}
       {activeSection === 'version' && (
         <SettingsVersionPanel t={t} versionInfo={versionInfo} />
       )}
+      {activeSection === 'userConfig' && <SettingsUserConfigPanel t={t} />}
       {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
     </>
   );
@@ -253,11 +253,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
 
             <div
-              className={`min-w-0 flex-1 ${isMobile ? 'px-4 py-4' : 'px-6 py-5'} ${
-                activeSection === 'operationLog' && !isMobile
-                  ? 'flex flex-col overflow-hidden'
-                  : 'overflow-y-auto'
-              }`}
+              className={`min-w-0 flex-1 overflow-y-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-5'}`}
             >
               {sectionBody}
             </div>

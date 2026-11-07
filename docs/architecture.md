@@ -54,6 +54,11 @@ UI 分层：L1 `features/`+`stores/` · L2 薄 `src/ui` · L3
 
 Token 与连接配置仅存客户端。
 
+**个人配置文件**（`pixuli-user-config`，`@pixuli/core/user-config`）：同一信封、
+`blocks` 分块（现为 `preferences` /
+`sources`）。导入按块覆盖、未知块跳过。设置 ·「个人配置备份」为整包入口（可选勾选远端）；设置 · 同步只读写
+`sources` 块。旧 `pixuli-settings` / 单插件 JSON 仍可导入。
+
 ---
 
 ## 4. 存储插件
