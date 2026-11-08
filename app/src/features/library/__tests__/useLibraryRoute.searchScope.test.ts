@@ -43,8 +43,13 @@ describe('library search scope → vault list (REF-603 lazy store)', () => {
     });
   });
 
-  it('caps root list when already at workspace root', () => {
+  it('searches the whole library from root when a query is set', () => {
     expect(resolveListScope('', 'workspace', 'jpg')).toEqual({
+      search: 'jpg',
+      limit: LIBRARY_ROOT_LIST_CAP,
+    });
+    expect(resolveListScope('', 'folder', '')).toEqual({
+      shallow: true,
       limit: LIBRARY_ROOT_LIST_CAP,
     });
   });

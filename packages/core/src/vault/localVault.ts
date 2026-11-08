@@ -311,7 +311,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
             await adapter.deleteFile(entry.relativePath);
           }
           entry.relativePath = nextPath;
-          entry.name = basename(nextPath);
+          // 保留展示名：磁盘路径可能含上传时间戳前缀
           entry.updatedAt = nowIso();
           entry.syncState = 'pending-push';
           moved += 1;
@@ -378,7 +378,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
         await adapter.deleteFile(entry.relativePath);
       }
       entry.relativePath = nextPath;
-      entry.name = fileName;
+      // 保留展示名：磁盘文件名可能是「时间戳-原名」，与 name 字段不必一致
       entry.updatedAt = nowIso();
       entry.syncState = 'pending-push';
       await persistIndex();

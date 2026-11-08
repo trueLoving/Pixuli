@@ -1,5 +1,6 @@
+/** 根「/」/未选 → 工作区根（空字符串），与 importDirForSelectedFolder 一致。 */
 export function resolveDefaultFolder(folder?: string): string {
-  if (!folder || folder === '__root__') return 'images';
+  if (!folder || folder === '__root__') return '';
   return folder.replace(/\/+$/, '');
 }
 

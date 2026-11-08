@@ -61,7 +61,7 @@ interface UIState {
 
   // 视图状态
   currentView: string;
-  /** 工作区资源管理器当前选中的文件夹（空 = 全部） */
+  /** 工作区资源管理器当前选中的文件夹（空 = 根 `/`） */
   selectedFolderPath: string;
   /** 窄屏是否展开文件夹面板 */
   workspaceExplorerOpen: boolean;

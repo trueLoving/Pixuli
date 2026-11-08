@@ -73,8 +73,8 @@ export interface LocalListOptions {
    */
   pathPrefix?: string;
   /**
-   * 与 pathPrefix 联用：为 true 时只含直接子文件（不含子文件夹内文件）。
-   * pathPrefix 未传时忽略。
+   * 为 true 时只含直接子文件（不含子文件夹内文件）。
+   * pathPrefix 未传时表示工作区根本层；未设 shallow 则不限深度。
    */
   shallow?: boolean;
   /** 排序后跳过的条数（默认 0） */

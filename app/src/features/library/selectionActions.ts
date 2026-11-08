@@ -110,10 +110,10 @@ export function buildBatchSelectionActions(
         : t('image.copyLink.needSync');
     grid.push({
       id: 'copy-links',
-      label: t('image.actions.copyUrl'),
+      label: t('image.inspector.actionCopy'),
       // 无公网链时仍可点：由 copyImageLink 弹出「去连接 / 去同步」
       title: copyTitle,
-      icon: Link,
+      icon: Share2,
       onClick: handlers.onCopyLinks,
     });
   }
@@ -181,7 +181,7 @@ export function buildSingleSelectionActions(
     title: hasPublicUrl
       ? t('image.actions.copyUrl')
       : (options.copyDisabledTitle ?? t('image.copyLink.needSync')),
-    icon: Link,
+    icon: Share2,
     onClick: handlers.onCopy,
   });
 
@@ -190,7 +190,7 @@ export function buildSingleSelectionActions(
       id: 'share',
       label: t('image.inspector.actionShare'),
       title: t('image.actions.share'),
-      icon: Share2,
+      icon: Link,
       onClick: handlers.onShare,
     });
   }

@@ -19,16 +19,16 @@ describe('workspaceFolderTree', () => {
 
   it('filters images by selected folder (shallow by default)', () => {
     const images = [
+      { id: '0', localPath: 'root.jpg' },
       { id: '1', localPath: 'images/a.jpg' },
       { id: '2', localPath: 'images/trip/b.jpg' },
       { id: '3', localPath: 'images/trip/c.jpg' },
     ];
 
-    expect(filterImagesByFolder(images, '').map(i => i.id)).toEqual([
-      '1',
-      '2',
-      '3',
-    ]);
+    expect(filterImagesByFolder(images, '').map(i => i.id)).toEqual(['0']);
+    expect(
+      filterImagesByFolder(images, '', { shallow: false }).map(i => i.id),
+    ).toEqual(['0', '1', '2', '3']);
     expect(filterImagesByFolder(images, 'images').map(i => i.id)).toEqual([
       '1',
     ]);

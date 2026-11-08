@@ -177,7 +177,9 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
 
           <p className="image-upload-destination">
             {translate('image.upload.folder')}
-            <span>{destinationFolder}</span>
+            <span>
+              {destinationFolder || translate('image.library.rootFolder')}
+            </span>
           </p>
 
           <details className="image-upload-extra">
