@@ -89,7 +89,7 @@
     "welcomeOpenConnections": "Optional: connect remote sync later",
     "explorer": "Explorer",
     "activityBar": "Main menu",
-    "allImages": "All",
+    "allImages": "/",
     "manageExplorer": "Manage workspace…",
     "closeExplorer": "Close folder panel",
     "resizeExplorer": "Drag to resize explorer",

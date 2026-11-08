@@ -170,9 +170,12 @@ export const LibraryFolderNav: React.FC<LibraryFolderNavProps> = ({
         ) : (
           segments.map((segment, index) => {
             const isCurrent = index === segments.length - 1;
+            // 根标签已是 `/` 时不再前置分隔符，避免 `/ /images/...`
+            const showSep =
+              index > 0 && !(index === 1 && segments[0]?.name === '/');
             return (
               <React.Fragment key={segment.path || 'root'}>
-                {index > 0 ? (
+                {showSep ? (
                   <span className="library-crumb-sep" aria-hidden>
                     /
                   </span>

@@ -11,10 +11,10 @@ export function sanitizeWorkspaceFileName(name: string): string {
   return name.replace(/[/\\?%*:|"<>]/g, '_');
 }
 
-/** 上传目录只跟当前选中文件夹走；「全部」时落到 images。 */
+/** 上传目录只跟当前选中文件夹走；根「/」= 工作区根（空路径）。 */
 export function importDirForSelectedFolder(selectedFolderPath: string): string {
   if (!selectedFolderPath || selectedFolderPath === '__root__') {
-    return 'images';
+    return '';
   }
   return selectedFolderPath.replace(/\/+$/, '');
 }
@@ -30,8 +30,12 @@ export async function importImageToLocalVault(
   const fileName = sanitizeWorkspaceFileName(
     getUploadFileName(uploadData.file, uploadData.name),
   );
-  const targetDir = await resolveImportTargetDir();
-  const targetPath = `${targetDir.replace(/\/+$/, '')}/${Date.now()}-${fileName}`;
+  const targetDir =
+    uploadData.targetFolder !== undefined
+      ? importDirForSelectedFolder(uploadData.targetFolder)
+      : await resolveImportTargetDir();
+  const stamped = `${Date.now()}-${fileName}`;
+  const targetPath = targetDir ? `${targetDir}/${stamped}` : stamped;
   const vault = getWorkspaceVault();
   const mimeType =
     typeof uploadData.file === 'string'

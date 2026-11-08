@@ -7,10 +7,14 @@ export function matchesListPathPrefix(
 ): boolean {
   const prefix =
     pathPrefix?.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '') ?? '';
-  if (!prefix) {
-    return true;
-  }
   const normalized = relativePath.replace(/\\/g, '/');
+  if (!prefix) {
+    // 工作区根：shallow 时仅本层文件（路径不含 /）
+    if (!shallow) {
+      return true;
+    }
+    return normalized.length > 0 && !normalized.includes('/');
+  }
   const withSlash = `${prefix}/`;
   if (!normalized.startsWith(withSlash)) {
     return false;

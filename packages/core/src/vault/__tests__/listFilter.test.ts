@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { matchesListPathPrefix } from '../listFilter';
 
 describe('matchesListPathPrefix', () => {
-  it('allows all paths when prefix is empty', () => {
-    expect(matchesListPathPrefix('images/a.jpg', undefined, true)).toBe(true);
+  it('root shallow only includes files without a slash', () => {
+    expect(matchesListPathPrefix('a.jpg', undefined, true)).toBe(true);
+    expect(matchesListPathPrefix('images/a.jpg', undefined, true)).toBe(false);
     expect(matchesListPathPrefix('images/trip/b.jpg', '', false)).toBe(true);
   });
 

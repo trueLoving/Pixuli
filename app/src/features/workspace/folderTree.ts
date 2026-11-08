@@ -1,5 +1,5 @@
 export interface WorkspaceFolderNode {
-  /** 相对目录路径；空字符串表示全部图片 */
+  /** 相对目录路径；空字符串表示工作区根 `/` */
   path: string;
   name: string;
   imageCount: number;
@@ -90,17 +90,23 @@ export function buildWorkspaceFolderTree(
 
 /**
  * 按文件夹范围过滤。默认仅本层文件（不含子文件夹内文件）；
- * folderPath 为空表示「全部」。
+ * folderPath 为空表示工作区根（浅层）或整库（shallow: false）。
  */
 export function filterImagesByFolder<T extends { localPath?: string }>(
   images: T[],
   folderPath: string,
   options?: { shallow?: boolean },
 ): T[] {
-  if (!folderPath) {
-    return images;
-  }
   const shallow = options?.shallow !== false;
+  if (!folderPath) {
+    if (!shallow) {
+      return images;
+    }
+    return images.filter(image => {
+      const path = image.localPath;
+      return Boolean(path && path.length > 0 && !path.includes('/'));
+    });
+  }
   const prefix = `${folderPath}/`;
   return images.filter(image => {
     const path = image.localPath;

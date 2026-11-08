@@ -17,8 +17,8 @@ describe('libraryNavigation', () => {
     expect(parentLibraryFolderPath('')).toBe('');
     expect(parentLibraryFolderPath('photos')).toBe('');
     expect(parentLibraryFolderPath('photos/covers')).toBe('photos');
-    expect(libraryBreadcrumbSegments('photos/covers', '全部')).toEqual([
-      { name: '全部', path: '' },
+    expect(libraryBreadcrumbSegments('photos/covers', '/')).toEqual([
+      { name: '/', path: '' },
       { name: 'photos', path: 'photos' },
       { name: 'covers', path: 'photos/covers' },
     ]);

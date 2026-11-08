@@ -206,7 +206,10 @@ export async function updateAssetImage(
       if (editData.targetFolder !== undefined && relativePath) {
         const slash = relativePath.lastIndexOf('/');
         const currentFolder = slash === -1 ? '' : relativePath.slice(0, slash);
-        const nextFolder = editData.targetFolder || 'images';
+        const nextFolder =
+          !editData.targetFolder || editData.targetFolder === '__root__'
+            ? ''
+            : editData.targetFolder.replace(/\/+$/, '');
         if (nextFolder !== currentFolder) {
           await workspace.moveLocalFile(relativePath, nextFolder);
           const fileName = relativePath.slice(slash + 1);

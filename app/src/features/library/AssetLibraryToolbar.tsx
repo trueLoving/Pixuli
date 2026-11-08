@@ -98,7 +98,7 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
           t={t}
           className="asset-library-upload-btn asset-library-icon-btn asset-library-icon-btn--accent"
           nativePickers={nativePickers}
-          defaultFolder={selectedFolderPath || 'images'}
+          defaultFolder={selectedFolderPath}
           iconOnly
         />
       ) : null}

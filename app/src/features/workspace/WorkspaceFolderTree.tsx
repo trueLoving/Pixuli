@@ -25,7 +25,7 @@ import {
 } from './folderTree';
 import './WorkspaceFolderTree.css';
 
-/** 新建子文件夹的父路径：根（全部）→ 工作区顶层；否则用当前选中目录 */
+/** 新建子文件夹的父路径：根（`/`）→ 工作区顶层；否则用当前选中目录 */
 export function resolveNewFolderParent(selectedOrMenuPath: string): string {
   const path = selectedOrMenuPath.trim();
   if (!path || path === '__root__') {
