@@ -1,5 +1,9 @@
 import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
-import type { SyncStatusSummary, WorkspaceMode } from '@pixuli/core/vault';
+import type {
+  SyncCheckpointMeta,
+  SyncStatusSummary,
+  WorkspaceMode,
+} from '@pixuli/core/vault';
 import type { LibraryListScope } from '@/features/library/libraryListScope';
 import type { WorkspaceReconnectHint } from '@/features/workspace/fsaReconnect';
 import type { SyncRunOutcome } from '@/features/workspace/syncOutcome';
@@ -49,6 +53,12 @@ export interface WorkspaceState {
   pushPendingToRemote: () => Promise<SyncRunOutcome>;
   pullFromRemote: () => Promise<SyncRunOutcome>;
   runSync: (direction?: 'push' | 'pull' | 'both') => Promise<SyncRunOutcome>;
+  /** 最近一次同步检查点元数据 */
+  getLatestCheckpointMeta: () => Promise<SyncCheckpointMeta | null>;
+  /** 恢复到最近一次同步检查点 */
+  restoreCheckpoint: () => Promise<SyncRunOutcome>;
+  /** 删除本地检查点 */
+  clearCheckpoint: () => Promise<void>;
   /** 进夹时若 stamp 脏则浅拉该层 */
   pullDirtyFolderIfNeeded: (
     folderPath: string | null | undefined,

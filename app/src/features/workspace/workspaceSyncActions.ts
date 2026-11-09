@@ -13,6 +13,13 @@ import type {
   WorkspaceStoreGet,
   WorkspaceStoreSet,
 } from '@/features/workspace/workspaceStoreTypes';
+import {
+  deleteLatestSyncCheckpoint,
+  readLatestCheckpointMeta,
+  restoreLatestSyncCheckpoint,
+  writeLatestSyncCheckpoint,
+  type SyncCheckpointMeta,
+} from '@pixuli/core/vault';
 
 export async function refreshSyncStatus(
   get: WorkspaceStoreGet,
@@ -95,6 +102,20 @@ export async function runWorkspaceSync(
     await get().refreshLocalImages();
     await get().refreshSyncStatus();
 
+    if (result.remoteAhead) {
+      const outcome: SyncRunOutcome = {
+        kind: 'error',
+        parts: [{ key: 'workspace.syncRemoteAhead' }],
+      };
+      set({
+        syncing: false,
+        pushing: false,
+        error: null,
+        syncOutcome: outcome,
+      });
+      return outcome;
+    }
+
     if (result.errors.length > 0) {
       const outcome: SyncRunOutcome = {
         kind: 'error',
@@ -108,6 +129,22 @@ export async function runWorkspaceSync(
         syncOutcome: outcome,
       });
       return outcome;
+    }
+
+    try {
+      const bindingId = useSourceStore.getState().selectedSourceId ?? undefined;
+      const status = await getWorkspaceSyncEngine().getStatus(bindingId);
+      const treeRevision = bindingId
+        ? (status.bindings[bindingId]?.treeRevision ?? null)
+        : status.lastSyncAt
+          ? (Object.values(status.bindings)[0]?.treeRevision ?? null)
+          : null;
+      await writeLatestSyncCheckpoint(getWorkspaceVault(), {
+        bindingId,
+        treeRevision,
+      });
+    } catch {
+      // 检查点失败不阻断同步成功反馈
     }
 
     const outcome = buildSyncResultOutcome(result);
@@ -133,6 +170,86 @@ export async function runWorkspaceSync(
     });
     return outcome;
   }
+}
+
+export async function getLatestCheckpointMeta(): Promise<SyncCheckpointMeta | null> {
+  try {
+    return await readLatestCheckpointMeta(getWorkspaceVault().adapter);
+  } catch {
+    return null;
+  }
+}
+
+/** 恢复到最近一次同步成功时的本地检查点 */
+export async function restoreWorkspaceCheckpoint(
+  get: WorkspaceStoreGet,
+  set: WorkspaceStoreSet,
+): Promise<SyncRunOutcome> {
+  if (get().mode !== 'local') {
+    const outcome: SyncRunOutcome = {
+      kind: 'error',
+      parts: [{ key: 'workspace.syncNeedsLocal' }],
+    };
+    set({ error: null, syncOutcome: outcome, syncMessage: null });
+    return outcome;
+  }
+
+  set({
+    syncing: true,
+    pushing: false,
+    error: null,
+    syncMessage: null,
+    syncOutcome: null,
+  });
+
+  try {
+    const result = await restoreLatestSyncCheckpoint(getWorkspaceVault());
+    await get().refreshLocalFolders();
+    await get().refreshLocalImages();
+    await get().refreshSyncStatus();
+    const checkpointOutcome: SyncRunOutcome = {
+      kind: 'success',
+      parts: [
+        {
+          key: 'workspace.checkpointRestoreDone',
+          params: {
+            restored: result.restored,
+            removed: result.removed,
+          },
+        },
+      ],
+    };
+    set({
+      syncing: false,
+      syncOutcome: checkpointOutcome,
+      error: null,
+    });
+    return checkpointOutcome;
+  } catch (error) {
+    const rawMessage = error instanceof Error ? error.message : undefined;
+    const outcome: SyncRunOutcome = {
+      kind: 'error',
+      parts: [{ key: 'workspace.checkpointRestoreFailed' }],
+      rawMessage,
+    };
+    set({
+      syncing: false,
+      error: rawMessage ?? null,
+      syncOutcome: outcome,
+    });
+    return outcome;
+  }
+}
+
+export async function clearWorkspaceCheckpoint(
+  get: WorkspaceStoreGet,
+  set: WorkspaceStoreSet,
+): Promise<void> {
+  if (get().mode !== 'local') {
+    return;
+  }
+  await deleteLatestSyncCheckpoint(getWorkspaceVault().adapter);
+  set({ error: null });
 }
 
 /** 进入文件夹时：若该层 stamp 为脏则浅拉取一层 */

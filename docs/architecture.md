@@ -49,8 +49,12 @@ UI 分层：L1 `features/`+`stores/` · L2 薄 `src/ui` · L3
 1. **浏览**：读本地 Vault 索引 → 当前文件夹浅层列表（虚拟窗口）。
 2. **库内增删改 / 处理**：只写本地；`syncState: local-only` 等，不自动 enqueue
    push。
-3. **同步**：用户触发 SyncEngine → Provider pull / push；不锁库。
-4. **外链**：已同步资源用 `publicUrl` / `buildPublicUrl`；与同步分离。
+3. **同步**：用户触发 SyncEngine → Provider pull /
+   push；不锁库。推送前若远端 sync-tree
+   revision 相对本地已前进，则拒绝推送并要求先拉取。
+4. **本地检查点**：同步成功后写入
+   `.pixuli/checkpoints/latest`（永不同步，只留最近一次）；设置中可恢复整库到该时间点。
+5. **外链**：已同步资源用 `publicUrl` / `buildPublicUrl`；与同步分离。
 
 Token 与连接配置仅存客户端。
 
@@ -85,6 +89,7 @@ Token 与连接配置仅存客户端。
 - `.pixuli/` **永不同步**；各目录 `.metadata/manifest.json`
   描述本层文件并参与同步。
 - UI：含根「/」在内，选中目录只看本层文件 + 子文件夹入口；进子夹再看里面（可懒拉取脏层）。整库摊平仅用于「在全部中搜索」。
+- 设置 ·「同步检查点」可恢复到最近一次同步成功时的本机快照。
 - 无历史路径迁移负担（产品路径已按现行模型）。
 
 ---

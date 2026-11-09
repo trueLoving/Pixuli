@@ -80,3 +80,30 @@ export async function runSyncWithFeedback(
     };
   }
 }
+
+export async function runRestoreCheckpointWithFeedback(
+  t: TranslateFn,
+): Promise<SyncRunOutcome> {
+  const loadingKey = 'workspace.checkpointRestoring';
+  const toastId = showLoading(t(loadingKey), {
+    messageKey: loadingKey,
+    getMessage: () => t(loadingKey),
+  });
+
+  try {
+    const outcome = await useWorkspaceStore.getState().restoreCheckpoint();
+    notifySyncOutcome(toastId, outcome, t);
+    return outcome;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : t('workspace.checkpointRestoreFailed');
+    updateLoadingToError(String(toastId), message);
+    return {
+      kind: 'error',
+      parts: [{ key: 'workspace.checkpointRestoreFailed' }],
+      rawMessage: message,
+    };
+  }
+}

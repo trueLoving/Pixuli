@@ -22,8 +22,11 @@ import {
   updateLocalMetadata,
 } from '@/features/workspace/workspaceLocalActions';
 import {
+  clearWorkspaceCheckpoint,
+  getLatestCheckpointMeta,
   pullDirtyFolderIfNeeded,
   refreshSyncStatus,
+  restoreWorkspaceCheckpoint,
   runWorkspaceSync,
 } from '@/features/workspace/workspaceSyncActions';
 import type { WorkspaceState } from '@/features/workspace/workspaceStoreTypes';
@@ -98,6 +101,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   pullFromRemote: () => runWorkspaceSync(get, set, 'pull'),
 
   runSync: direction => runWorkspaceSync(get, set, direction),
+
+  getLatestCheckpointMeta: () => getLatestCheckpointMeta(),
+
+  restoreCheckpoint: () => restoreWorkspaceCheckpoint(get, set),
+
+  clearCheckpoint: () => clearWorkspaceCheckpoint(get, set),
 
   pullDirtyFolderIfNeeded: folderPath =>
     pullDirtyFolderIfNeeded(get, set, folderPath),

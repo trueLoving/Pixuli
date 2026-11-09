@@ -4,4 +4,5 @@ export type SettingsSection =
   | 'appearance'
   | 'version'
   | 'userConfig'
-  | 'sync';
+  | 'sync'
+  | 'checkpoint';

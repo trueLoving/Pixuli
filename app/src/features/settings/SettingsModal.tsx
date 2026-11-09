@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderOpen,
+  History,
   Info,
   Palette,
   RefreshCw,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
+import { SettingsCheckpointPanel } from './SettingsCheckpointPanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsUserConfigPanel } from './SettingsUserConfigPanel';
@@ -96,6 +98,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           labelKey: 'settings.menuSync',
           icon: <RefreshCw size={18} />,
         },
+        {
+          id: 'checkpoint',
+          labelKey: 'settings.menuCheckpoint',
+          icon: <History size={18} />,
+        },
       ],
     },
   ];
@@ -143,6 +150,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       )}
       {activeSection === 'userConfig' && <SettingsUserConfigPanel t={t} />}
       {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
+      {activeSection === 'checkpoint' && <SettingsCheckpointPanel t={t} />}
     </>
   );
 

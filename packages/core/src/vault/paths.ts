@@ -10,6 +10,11 @@ export const WORKSPACE_PATHS = {
   imagesDir: 'images',
   /** 显式空文件夹列表（相对路径），用于树中显示无文件目录 */
   folders: '.pixuli/folders.json',
+  /** 最近一次同步成功后的本地检查点（永不同步） */
+  checkpointLatest: '.pixuli/checkpoints/latest',
+  checkpointLatestMeta: '.pixuli/checkpoints/latest/meta.json',
+  checkpointLatestIndex: '.pixuli/checkpoints/latest/index.json',
+  checkpointLatestFiles: '.pixuli/checkpoints/latest/files',
 } as const;
 
 export const WORKSPACE_SCHEMA_VERSION = 1;
