@@ -14,6 +14,7 @@ export type SyncDirectionChoice = 'pull' | 'push';
 /**
  * 点击「同步」后选择方向：远端→本地 / 本地→远端。
  * 仓库用设置里的当前同步目标，这里只说明，不切换。
+ * 恢复检查点在设置中管理。
  */
 export const SyncDirectionModal: React.FC = () => {
   const { t } = useI18n();

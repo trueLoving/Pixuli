@@ -582,4 +582,190 @@ describe('createSyncEngine', () => {
     );
     expect(pullCalls).toEqual(['', 'images', 'images/trip']);
   });
+
+  it('run push refuses when remote sync-tree revision moved ahead', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(new Uint8Array([1]), 'a.jpg', {
+      syncState: 'local-only',
+    });
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-remote',
+      updatedAt: '2026-01-05T00:00:00.000Z',
+      folders: {
+        '': { revision: 'r0', updatedAt: '2026-01-05T00:00:00.000Z' },
+      },
+    };
+    const syncPush = vi.fn(async () => undefined);
+    const provider = createMockSyncProvider({
+      syncPush,
+      readSyncTree: async () => tree,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+    // Seed local as having synced an older revision
+    const { updateBindingSyncState } = await import('../syncPersistence');
+    await updateBindingSyncState(adapter, 'binding-1', {
+      treeRevision: 'tree-local-old',
+      cursor: 'tree-local-old',
+      lastSyncAt: '2026-01-01T00:00:00.000Z',
+      folders: {},
+    });
+
+    const result = await engine.run({ direction: 'push' });
+    expect(result.remoteAhead).toBe(true);
+    expect(result.pushed).toBe(0);
+    expect(syncPush).not.toHaveBeenCalled();
+  });
+
+  it('resetToRemote removes local-only files and clears the push queue', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(new Uint8Array([1]), 'images/keep.jpg', {
+      syncState: 'synced',
+      remotePath: 'images/keep.jpg',
+      bindingId: 'binding-1',
+    });
+    await vault.importFile(new Uint8Array([2]), 'images/local-only.jpg', {
+      syncState: 'local-only',
+    });
+    const remoteBytes = new Uint8Array([9, 9, 9]);
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-reset',
+      updatedAt: '2026-01-03T00:00:00.000Z',
+      folders: {
+        '': { revision: 'r0', updatedAt: '2026-01-03T00:00:00.000Z' },
+        images: { revision: 'r1', updatedAt: '2026-01-03T00:00:00.000Z' },
+      },
+    };
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => tree,
+      syncPull: async options => {
+        if (options?.pathPrefix === 'images') {
+          return {
+            items: [
+              {
+                remotePath: 'images/keep.jpg',
+                action: 'add' as const,
+                metadata: {
+                  name: 'keep.jpg',
+                  updatedAt: '2026-01-03T00:00:00.000Z',
+                  url: 'https://example.test/images/keep.jpg',
+                },
+              },
+            ],
+            folderKeys: [],
+          };
+        }
+        return { items: [], folderKeys: ['images'] };
+      },
+      downloadRemoteFile: async () => remoteBytes,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+    await engine.enqueuePush({
+      type: 'upload',
+      relativePath: 'images/local-only.jpg',
+    });
+
+    const result = await engine.resetToRemote();
+    expect(result.errors).toHaveLength(0);
+    expect(result.removed).toBeGreaterThanOrEqual(1);
+    expect(
+      (await vault.list()).map(entry => entry.relativePath).sort(),
+    ).toEqual(['images/keep.jpg']);
+    expect(await vault.getByPath('images/local-only.jpg')).toBeNull();
+    const status = await engine.getStatus();
+    expect(status.pendingPush).toBe(0);
+    expect(status.conflicts).toBe(0);
+  });
+
+  it('resetToRemote overwrites pending-push local changes', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(new Uint8Array([1, 1, 1]), 'images/a.jpg', {
+      syncState: 'pending-push',
+      remotePath: 'images/a.jpg',
+      bindingId: 'binding-1',
+      name: 'local-name',
+    });
+    const remoteBytes = new Uint8Array([7, 7, 7]);
+    const tree = {
+      version: 1 as const,
+      revision: 'tree-ow',
+      updatedAt: '2026-01-04T00:00:00.000Z',
+      folders: {
+        images: { revision: 'r1', updatedAt: '2026-01-04T00:00:00.000Z' },
+      },
+    };
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => tree,
+      syncPull: async options => {
+        if (options?.pathPrefix === 'images') {
+          return {
+            items: [
+              {
+                remotePath: 'images/a.jpg',
+                action: 'add' as const,
+                metadata: {
+                  name: 'remote-name',
+                  updatedAt: '2026-01-01T00:00:00.000Z',
+                  url: 'https://example.test/images/a.jpg',
+                },
+              },
+            ],
+            folderKeys: [],
+          };
+        }
+        return { items: [], folderKeys: ['images'] };
+      },
+      downloadRemoteFile: async () => remoteBytes,
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    const result = await engine.resetToRemote();
+    expect(result.errors).toHaveLength(0);
+    const entry = await vault.getByPath('images/a.jpg');
+    expect(entry?.syncState).toBe('synced');
+    expect(entry?.name).toBe('remote-name');
+    expect(await adapter.readFile('images/a.jpg')).toEqual(remoteBytes);
+  });
+
+  it('resetToRemote does not prune when pull fails', async () => {
+    const adapter = new MemoryWorkspaceAdapter('desktop');
+    await adapter.pickRoot();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.importFile(new Uint8Array([1]), 'solo.jpg', {
+      syncState: 'local-only',
+    });
+    const provider = createMockSyncProvider({
+      readSyncTree: async () => {
+        throw new Error('network down');
+      },
+    });
+    const engine = createSyncEngine({
+      vault,
+      getBindings: () => [{ bindingId: 'binding-1', provider }],
+    });
+
+    const result = await engine.resetToRemote();
+    expect(result.errors.length).toBeGreaterThan(0);
+    expect(await vault.getByPath('solo.jpg')).not.toBeNull();
+  });
 });

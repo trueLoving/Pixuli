@@ -12,6 +12,7 @@ import {
   readConflicts,
   readPushQueue,
   updateBindingSyncState,
+  writeConflicts,
   writePushQueue,
   type BindingSyncStateRecord,
   type QueuedPushOperation,
@@ -22,6 +23,7 @@ import {
   buildSyncPushItems,
   intentFromEntry,
   mergePushIntent,
+  resolveLocalPathForPull,
   type SyncPushIntent,
 } from './syncApply';
 import { isSyncExcludedPath } from './syncPath';
@@ -104,7 +106,12 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     provider: StorageProvider & StorageProviderSync,
     folderKey: string,
     remoteRevision: string | null,
-  ): Promise<{ pulled: number; conflicts: SyncRunResult['conflicts'] }> {
+    layerOptions?: { overwriteLocal?: boolean },
+  ): Promise<{
+    pulled: number;
+    conflicts: SyncRunResult['conflicts'];
+    remotePaths: string[];
+  }> {
     const pullResult = await provider.syncPull({
       pathPrefix: folderKey,
       shallow: true,
@@ -118,7 +125,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       binding.bindingId,
       pullResult,
       provider,
-      { fetchFn },
+      { fetchFn, overwriteLocal: layerOptions?.overwriteLocal === true },
     );
     const stampRevision = remoteRevision ?? pullResult.nextCursor ?? nowIso();
     await clearFolderDirty(
@@ -142,7 +149,10 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
         unmarkedChildren,
       );
     }
-    return applied;
+    const remotePaths = pullResult.items
+      .filter(item => item.action !== 'delete')
+      .map(item => resolveLocalPathForPull(item.remotePath));
+    return { ...applied, remotePaths };
   }
 
   async function negotiatePull(
@@ -531,6 +541,23 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
 
       if (direction === 'push' || direction === 'both') {
         try {
+          const remoteTree = await fetchRemoteSyncTree(provider);
+          const localState = await getBindingSyncState(
+            vault.adapter,
+            binding.bindingId,
+          );
+          if (
+            remoteTree &&
+            localState.treeRevision &&
+            remoteTree.revision !== localState.treeRevision
+          ) {
+            result.remoteAhead = true;
+            result.errors.push({
+              path: 'push',
+              message: 'Remote has changed since last sync; pull first',
+            });
+            return result;
+          }
           result.pushed += await pushWithTree(
             binding,
             provider,
@@ -570,6 +597,187 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
         });
       }
 
+      return result;
+    },
+
+    async resetToRemote(resetOptions?: {
+      bindingId?: string;
+    }): Promise<SyncRunResult> {
+      const binding = resolveBinding(resetOptions?.bindingId);
+      const provider = assertSyncProvider(binding.provider);
+      const result = emptyResult();
+      result.removed = 0;
+
+      await updateBindingSyncState(vault.adapter, binding.bindingId, {
+        cursor: null,
+        treeRevision: null,
+        folders: {},
+      });
+
+      const softDeleted = await vault.list({ includeDeleted: true });
+      for (const entry of softDeleted) {
+        if (entry.deletedAt) {
+          await vault.removeEntry(entry.relativePath);
+        }
+      }
+
+      const remotePaths = new Set<string>();
+      const remoteFolders = new Set<string>();
+
+      try {
+        const remoteTree = await fetchRemoteSyncTree(provider);
+        if (!remoteTree) {
+          const pullResult = await provider.syncPull({});
+          const applied = await applySyncPull(
+            vault,
+            binding.bindingId,
+            pullResult,
+            provider,
+            { fetchFn, overwriteLocal: true },
+          );
+          result.pulled += applied.pulled;
+          result.conflicts.push(...applied.conflicts);
+          for (const item of pullResult.items) {
+            if (item.action === 'delete') continue;
+            remotePaths.add(resolveLocalPathForPull(item.remotePath));
+          }
+          for (const key of pullResult.folderKeys ?? []) {
+            remoteFolders.add(normalizeFolderKey(key));
+          }
+          const tree = buildSyncTreeFromPaths(
+            pullResult.items.map(item => item.remotePath),
+            pullResult.folderKeys ?? [],
+          );
+          if (typeof provider.writeSyncTree === 'function') {
+            try {
+              await provider.writeSyncTree(toRemoteTree(tree));
+            } catch {
+              // 旧仓无写权限时忽略
+            }
+          }
+          await updateBindingSyncState(vault.adapter, binding.bindingId, {
+            cursor: pullResult.nextCursor ?? tree.revision,
+            treeRevision: tree.revision,
+            lastSyncAt: nowIso(),
+            folders: Object.fromEntries(
+              Object.entries(tree.folders).map(([key, stamp]) => [
+                key,
+                { revision: stamp.revision, dirty: false },
+              ]),
+            ),
+          });
+        } else {
+          const dirty = listDirtyFolderKeys(remoteTree, {}, null);
+          await ensureLocalFolders(vault, Object.keys(remoteTree.folders));
+          for (const key of Object.keys(remoteTree.folders)) {
+            remoteFolders.add(normalizeFolderKey(key));
+          }
+          await markFoldersDirty(
+            vault.adapter,
+            binding.bindingId,
+            dirty.length > 0 ? dirty : Object.keys(remoteTree.folders),
+            remoteTree.revision,
+          );
+
+          const pending = new Set(
+            dirty.length > 0 ? dirty : Object.keys(remoteTree.folders),
+          );
+          if (pending.size === 0) {
+            pending.add('');
+          }
+          const pulledKeys = new Set<string>();
+          while (pending.size > 0) {
+            const key = [...pending].sort()[0] ?? '';
+            pending.delete(key);
+            if (pulledKeys.has(key)) {
+              continue;
+            }
+            pulledKeys.add(key);
+            const folderRev = remoteTree.folders[key]?.revision ?? null;
+            const applied = await pullFolderLayer(
+              binding,
+              provider,
+              key,
+              folderRev,
+              { overwriteLocal: true },
+            );
+            result.pulled += applied.pulled;
+            result.conflicts.push(...applied.conflicts);
+            for (const path of applied.remotePaths) {
+              remotePaths.add(path);
+            }
+            const still = await listDirtyFoldersRemaining(
+              vault,
+              binding.bindingId,
+            );
+            for (const next of still) {
+              if (!pulledKeys.has(next)) {
+                pending.add(next);
+              }
+            }
+          }
+
+          await updateBindingSyncState(vault.adapter, binding.bindingId, {
+            cursor: remoteTree.revision,
+            treeRevision: remoteTree.revision,
+            lastSyncAt: nowIso(),
+          });
+        }
+      } catch (error) {
+        result.errors.push({
+          path: 'reset',
+          message:
+            error instanceof Error ? error.message : 'Reset to remote failed',
+        });
+        return result;
+      }
+
+      const localEntries = await vault.list({ includeDeleted: true });
+      for (const entry of localEntries) {
+        if (remotePaths.has(entry.relativePath)) {
+          continue;
+        }
+        if (
+          entry.remotePath &&
+          remotePaths.has(resolveLocalPathForPull(entry.remotePath))
+        ) {
+          continue;
+        }
+        await vault.removeEntry(entry.relativePath);
+        result.removed = (result.removed ?? 0) + 1;
+      }
+
+      const remaining = await vault.list({ includeDeleted: true });
+      const foldersNeededByFiles = new Set<string>();
+      for (const entry of remaining) {
+        const parts = entry.relativePath.replace(/\\/g, '/').split('/');
+        let accumulated = '';
+        for (let index = 0; index < parts.length - 1; index += 1) {
+          const segment = parts[index];
+          if (!segment) continue;
+          accumulated = accumulated ? `${accumulated}/${segment}` : segment;
+          foldersNeededByFiles.add(accumulated);
+        }
+      }
+
+      const localFolders = await vault.listFolders();
+      const extraFolders = localFolders
+        .filter(folder => {
+          const key = normalizeFolderKey(folder);
+          if (remoteFolders.has(key)) return false;
+          if (foldersNeededByFiles.has(key)) return false;
+          return true;
+        })
+        .sort((a, b) => b.length - a.length);
+      for (const folder of extraFolders) {
+        await vault.deleteFolder(folder);
+      }
+
+      await writePushQueue(vault.adapter, []);
+      memoryQueue.length = 0;
+      await writeConflicts(vault.adapter, []);
+
+      result.dirtyFolders = [];
       return result;
     },
   };

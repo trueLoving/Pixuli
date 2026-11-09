@@ -209,6 +209,13 @@ export async function appendConflict(
 ): Promise<void> {
   const conflicts = await readConflicts(adapter);
   conflicts.push(conflict);
+  await writeConflicts(adapter, conflicts);
+}
+
+export async function writeConflicts(
+  adapter: WorkspaceAdapter,
+  conflicts: SyncConflict[],
+): Promise<void> {
   await adapter.writeFile(
     WORKSPACE_PATHS.syncConflicts,
     encodeJson({ schemaVersion: SYNC_SCHEMA_VERSION, conflicts }),

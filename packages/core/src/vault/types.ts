@@ -192,6 +192,13 @@ export interface SyncRunResult {
   /** 协商后仍脏、待进夹再拉的目录 */
   dirtyFolders?: string[];
   skipped?: boolean;
+  /** resetToRemote 时清除的本地独有条目数 */
+  removed?: number;
+  /**
+   * 推送前发现远端 sync-tree 已相对本地上次同步前进。
+   * 为 true 时不应推送，需先拉取。
+   */
+  remoteAhead?: boolean;
 }
 
 export interface SyncEngine {
@@ -204,6 +211,11 @@ export interface SyncEngine {
     options?: { bindingId?: string; direction?: 'pull' | 'push' },
   ): Promise<SyncRunResult>;
   listDirtyFolders(bindingId?: string): Promise<string[]>;
+  /**
+   * 整库恢复到与远端一致（远端为检查点）。
+   * 强制全量拉取并覆盖本地，删除远端没有的本地条目，清空推送队列与冲突。
+   */
+  resetToRemote(options?: { bindingId?: string }): Promise<SyncRunResult>;
 }
 
 export type WorkspaceMode = 'unset' | 'local';

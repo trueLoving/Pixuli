@@ -186,9 +186,12 @@ export async function applySyncPull(
     fetchFn?: typeof fetch;
     /** @deprecated 方向性 pull 不再登记冲突，远端始终覆盖本地 */
     onConflict?: (conflict: SyncConflict) => void | Promise<void>;
+    /** 恢复检查点：强制用远端覆盖本地较新 / pending-push 条目 */
+    overwriteLocal?: boolean;
   },
 ): Promise<{ pulled: number; conflicts: SyncConflict[] }> {
   const fetchFn = options?.fetchFn ?? globalThis.fetch;
+  const overwriteLocal = options?.overwriteLocal === true;
   let pulled = 0;
 
   for (const item of pullResult.items) {
@@ -202,7 +205,11 @@ export async function applySyncPull(
 
     if (item.action === 'delete') {
       if (existing && !existing.deletedAt) {
-        await vault.softDelete(existing.relativePath);
+        if (overwriteLocal) {
+          await vault.removeEntry(existing.relativePath);
+        } else {
+          await vault.softDelete(existing.relativePath);
+        }
         pulled += 1;
       }
       continue;
@@ -211,6 +218,7 @@ export async function applySyncPull(
     const meta = pickImageMetadata(item.metadata);
 
     if (
+      !overwriteLocal &&
       existing &&
       !existing.deletedAt &&
       isRemoteUpToDate(
@@ -225,6 +233,7 @@ export async function applySyncPull(
     }
 
     if (
+      !overwriteLocal &&
       existing &&
       !existing.deletedAt &&
       isSyncedToBinding(existing, bindingId) &&
