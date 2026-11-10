@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { notifyWorkspaceCleared } from '@/features/library/workspaceImageBridge';
 import {
@@ -29,10 +30,20 @@ import {
   parseFsaRootPath,
 } from '@/platforms/web/fsaWorkspaceFs';
 import { buildReconnectHint } from '@/features/workspace/fsaReconnect';
+import { useUIStore } from '@/stores/uiStore';
 import {
   storedSourcesToWorkspaceBindings,
   type LocalVault,
 } from '@pixuli/core/vault';
+
+/** 关设置/工作区弹窗并同步提交绘制，避免系统选夹对话框背后仍叠着设置页 */
+function dismissOverlaysBeforeNativePicker(): void {
+  flushSync(() => {
+    const ui = useUIStore.getState();
+    if (ui.showSettingsModal) ui.closeSettingsModal();
+    if (ui.showWorkspaceModal) ui.closeWorkspaceModal();
+  });
+}
 
 function getAdapter() {
   return getWorkspaceAdapter();
@@ -339,6 +350,7 @@ export async function pickWorkspace(
   const previousDisplayName = get().displayName;
   const hadLocal = get().mode === 'local' && Boolean(previousRootPath);
 
+  dismissOverlaysBeforeNativePicker();
   set({ loading: true, error: null, reconnect: null });
   try {
     resetWorkspaceRuntime();

@@ -28,10 +28,6 @@ export const routeConfig: Record<string, RouteMeta> = {
   },
 };
 
-export function getRouteMeta(path: string): RouteMeta | undefined {
-  return routeConfig[path];
-}
-
 export function getMenuKeyByPath(path: string): string | undefined {
   return routeConfig[path]?.menuKey;
 }

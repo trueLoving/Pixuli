@@ -5,12 +5,13 @@
 
 import type { AppMainLayoutProps } from '@/hooks/useAppOrchestration';
 import type { VersionInfo } from '@/features/settings/version-info';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouteSync } from '@/hooks/useRouteSync';
 import { useI18n } from '@/i18n/useI18n';
 import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { useUIStore } from '@/stores/uiStore';
 import { MainLayoutModals } from './MainLayoutModals';
 import { AppMain } from './AppMain';
 import { AppSidebar } from './AppSidebar';
@@ -46,6 +47,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   useRouteSync();
 
+  // 含选文件夹过程中的 loading：勿切到侧栏布局，否则系统选夹对话框背后会闪出设置/资源库
+  const awaitingWorkspaceSetup = workspacePlatform && needsWorkspaceSetup();
+
+  // 欢迎页阶段不应叠着工作区设置/管理工作区弹窗
+  useEffect(() => {
+    if (!awaitingWorkspaceSetup) return;
+    const ui = useUIStore.getState();
+    if (ui.showSettingsModal) ui.closeSettingsModal();
+    if (ui.showWorkspaceModal) ui.closeWorkspaceModal();
+  }, [awaitingWorkspaceSetup]);
+
   const modals = (
     <MainLayoutModals
       showGlobalLoading={showGlobalLoading}
@@ -53,7 +65,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     />
   );
 
-  if (workspacePlatform && needsWorkspaceSetup() && !workspaceLoading) {
+  if (awaitingWorkspaceSetup) {
     return (
       <div
         className="flex overflow-hidden min-h-0 h-screen max-h-screen flex-col"

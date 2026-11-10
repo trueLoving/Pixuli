@@ -234,7 +234,7 @@ export const useUIStore = create<UIState>(set => ({
       settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
-  openSettingsModal: (section = 'workspace') =>
+  openSettingsModal: (section = 'language') =>
     set({
       showSettingsModal: true,
       settingsSection: section,

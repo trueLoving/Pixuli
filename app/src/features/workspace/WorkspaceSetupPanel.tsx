@@ -10,6 +10,7 @@ import {
 import { useImageStore } from '@/features/library/imageStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { useUIStore } from '@/stores/uiStore';
 import './workspace-setup.css';
 
 export interface WorkspaceSetupPanelProps {
@@ -42,6 +43,8 @@ export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
   const displayError = reconnect ? null : formatSetupError(error, t);
 
   const handlePick = async (backend?: 'opfs' | 'fsa') => {
+    useUIStore.getState().closeSettingsModal();
+    useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
       await loadImages();

@@ -109,5 +109,4 @@ export const defaultTranslate = (
   return (typeof value === 'string' ? value : undefined) || key;
 };
 
-export { deepMerge };
 export default appLocales;

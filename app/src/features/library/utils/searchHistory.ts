@@ -82,18 +82,3 @@ export function clearSearchHistory(): void {
     console.error('Failed to clear search history:', error);
   }
 }
-
-/**
- * 根据关键词过滤历史记录（用于搜索建议）
- */
-export function filterSearchHistory(keyword: string): SearchHistoryItem[] {
-  if (!keyword || keyword.trim().length === 0) {
-    return getSearchHistory();
-  }
-
-  const history = getSearchHistory();
-  const lowerKeyword = keyword.toLowerCase();
-  return history.filter(item =>
-    item.query.toLowerCase().includes(lowerKeyword),
-  );
-}

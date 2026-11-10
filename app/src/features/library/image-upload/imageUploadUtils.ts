@@ -8,12 +8,6 @@ export function isPreviewableMedia(file: File): boolean {
   return file.type.startsWith('image/') || file.type.startsWith('video/');
 }
 
-export function needsRichConfirm(files: File[]): boolean {
-  return files.some(
-    file => file.type.startsWith('image/') || file.type.startsWith('video/'),
-  );
-}
-
 export function fileTypeLabel(
   file: File,
   translate: (key: string) => string,
