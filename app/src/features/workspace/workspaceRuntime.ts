@@ -23,10 +23,6 @@ let vaultInstance: LocalVault | null = null;
 let syncEngineInstance: SyncEngine | null = null;
 let readWorkspaceMode: () => WorkspaceMode = () => 'unset';
 
-export function getWorkspaceVaultInstance(): LocalVault | null {
-  return vaultInstance;
-}
-
 export function registerWorkspaceModeReader(reader: () => WorkspaceMode): void {
   readWorkspaceMode = reader;
 }

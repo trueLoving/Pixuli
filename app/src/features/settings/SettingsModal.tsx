@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { SettingsCheckpointPanel } from './SettingsCheckpointPanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
@@ -64,6 +66,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   versionInfo,
 }) => {
   const settingsSection = useUIStore(state => state.settingsSection);
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const workspaceLocalActive =
+    isWorkspaceAvailable() && workspaceMode === 'local';
   const isMobile = useMobileViewport();
   const [activeSection, setActiveSection] =
     useState<SettingsSection>(settingsSection);
@@ -71,15 +76,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    setActiveSection(settingsSection);
-    setShowMobileMenu(settingsSection === 'workspace');
-  }, [isOpen, settingsSection]);
+    // 无本地工作区时不展示「工作区」设置（开库已由欢迎页负责）
+    const nextSection =
+      !workspaceLocalActive && settingsSection === 'workspace'
+        ? 'language'
+        : settingsSection;
+    setActiveSection(nextSection);
+    // 移动端打开设置先看菜单；桌面侧栏常显，不受此项影响
+    setShowMobileMenu(isMobile);
+  }, [isOpen, settingsSection, workspaceLocalActive, isMobile]);
+
+  useEffect(() => {
+    if (!isOpen || workspaceLocalActive) return;
+    if (activeSection === 'workspace' || activeSection === 'checkpoint') {
+      setActiveSection('language');
+    }
+  }, [isOpen, workspaceLocalActive, activeSection]);
 
   useEscapeKey(() => {
     if (isOpen) onClose();
   }, isOpen);
 
   if (!isOpen) return null;
+
+  const generalItems = workspaceLocalActive
+    ? GENERAL_ITEMS
+    : GENERAL_ITEMS.filter(item => item.id !== 'workspace');
 
   const groups: Array<{
     labelKey: string;
@@ -89,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       icon: React.ReactNode;
     }>;
   }> = [
-    { labelKey: 'settings.groupGeneral', items: GENERAL_ITEMS },
+    { labelKey: 'settings.groupGeneral', items: generalItems },
     {
       labelKey: 'settings.groupSync',
       items: [
@@ -98,11 +120,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           labelKey: 'settings.menuSync',
           icon: <RefreshCw size={18} />,
         },
-        {
-          id: 'checkpoint',
-          labelKey: 'settings.menuCheckpoint',
-          icon: <History size={18} />,
-        },
+        ...(workspaceLocalActive
+          ? [
+              {
+                id: 'checkpoint' as const,
+                labelKey: 'settings.menuCheckpoint',
+                icon: <History size={18} />,
+              },
+            ]
+          : []),
       ],
     },
   ];

@@ -12,7 +12,7 @@ import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import {
   exportSettingsConfig,
   importSettingsConfigText,
-} from '@/features/settings/settingsConfigTransfer';
+} from '@/features/settings/userConfigTransfer';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 
 interface SettingsSyncPanelProps {

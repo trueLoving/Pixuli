@@ -1,6 +1,7 @@
 import type { VersionInfo } from '@/features/settings/version-info';
 import React, { Suspense, lazy } from 'react';
 import { FullScreenLoading, Toaster } from '@/ui';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { useUIStore } from '@/stores/uiStore';
 import { WebBrowserChrome } from '@/platforms';
@@ -40,19 +41,25 @@ export const MainLayoutModals: React.FC<MainLayoutModalsProps> = ({
     closeSettingsModal,
     closeWorkspaceModal,
   } = useUIStore();
+  // 欢迎页选夹时强制不渲染设置/工作区弹窗，避免系统对话框背后残留
+  const suppressOverlays = useWorkspaceStore(
+    state => state.loading && state.mode === 'unset',
+  );
+  const settingsOpen = showSettingsModal && !suppressOverlays;
+  const workspaceOpen = showWorkspaceModal && !suppressOverlays;
 
   return (
     <>
       <Suspense fallback={<ModalFallback />}>
         <SettingsModal
-          isOpen={showSettingsModal}
+          isOpen={settingsOpen}
           onClose={closeSettingsModal}
           t={t}
           versionInfo={versionInfo}
         />
 
         <WorkspaceModal
-          isOpen={showWorkspaceModal}
+          isOpen={workspaceOpen}
           onClose={closeWorkspaceModal}
           t={t}
         />

@@ -11,6 +11,7 @@ import { useSourceStore } from '@/features/settings/sourceStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
+import { useUIStore } from '@/stores/uiStore';
 import { runSyncWithFeedback } from './syncFeedback';
 
 interface WorkspaceMigrationWizardProps {
@@ -43,6 +44,8 @@ export const WorkspaceMigrationWizard: React.FC<
   };
 
   const handlePickLocal = async (backend?: 'opfs' | 'fsa') => {
+    useUIStore.getState().closeSettingsModal();
+    useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
       if (pullAfter) {

@@ -2,12 +2,6 @@ import type { GiteeConfig } from '@pixuli/core/types';
 
 const GITEE_CONFIG_KEY = 'pixuli-gitee-config';
 
-// 默认 Gitee 配置
-export const DEFAULT_GITEE_CONFIG: Partial<GiteeConfig> = {
-  branch: 'main',
-  path: 'images',
-};
-
 // 从本地存储加载配置
 export const loadGiteeConfig = (): GiteeConfig | null => {
   try {
