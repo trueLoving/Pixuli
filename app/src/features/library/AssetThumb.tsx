@@ -106,6 +106,11 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
       aria-hidden
     >
       <Icon size={16} />
+      {kind === 'markdown' ? (
+        <span className="asset-library-thumb-badge asset-library-thumb-badge--md">
+          MD
+        </span>
+      ) : null}
     </span>
   );
 };

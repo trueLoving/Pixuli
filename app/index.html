@@ -40,7 +40,7 @@
     <!-- img-src 允许 HTTP 协议以支持图片加载 -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; font-src 'self' data:; connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; font-src 'self' data:; connect-src 'self' blob: http://localhost:* ws://localhost:* wss://* https://* http://*; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
     <!-- PWA：Web 构建时 vite-plugin-pwa 会注入 manifest，此处仅补充 iOS 图标 -->
     <link rel="apple-touch-icon" href="/pwa/icon-192x192.png" />

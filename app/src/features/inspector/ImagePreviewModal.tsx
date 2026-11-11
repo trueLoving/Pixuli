@@ -10,6 +10,7 @@ import {
 import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { ImageItem } from '@pixuli/core/types';
+import { MarkdownDocumentView } from './MarkdownDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 import './ImagePreviewModal.css';
 
@@ -127,6 +128,18 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         >
           {translate('image.inspector.openExternal')}
         </video>
+      );
+    }
+
+    if (kind === 'markdown') {
+      return (
+        <MarkdownDocumentView
+          src={src}
+          localPath={image.localPath}
+          variant="modal"
+          loadingLabel={translate('image.markdown.loading')}
+          errorLabel={translate('image.markdown.loadFailed')}
+        />
       );
     }
 

@@ -517,6 +517,7 @@
 }
 
 .asset-library-thumb-icon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -536,6 +537,11 @@
   background: var(--pix-violet-soft, #ede9fe);
 }
 
+.asset-library-thumb-icon--markdown {
+  color: var(--pix-violet-deep, #5b4fe0);
+  background: var(--pix-violet-soft, #ede9fe);
+}
+
 .asset-library-thumb-badge {
   position: absolute;
   right: 1px;
@@ -550,7 +556,8 @@
   pointer-events: none;
 }
 
-.asset-library-thumb-badge--pdf {
+.asset-library-thumb-badge--pdf,
+.asset-library-thumb-badge--md {
   background: color-mix(in srgb, var(--pix-violet-deep, #5b4fe0) 88%, #000);
   letter-spacing: -0.02em;
 }

@@ -24,6 +24,14 @@ describe('getAssetKind', () => {
     );
   });
 
+  it('classifies markdown by mime or extension', () => {
+    expect(getAssetKind({ name: 'readme.md', type: '' })).toBe('markdown');
+    expect(getAssetKind({ name: 'guide.markdown', type: '' })).toBe('markdown');
+    expect(getAssetKind({ name: 'doc.bin', type: 'text/markdown' })).toBe(
+      'markdown',
+    );
+  });
+
   it('classifies images by mime or extension', () => {
     expect(getAssetKind({ name: 'photo.jpg', type: 'image/jpeg' })).toBe(
       'image',

@@ -215,6 +215,10 @@
   color: var(--pix-fg-muted, #6b7280);
 }
 
+.asset-inspector-preview--markdown {
+  overflow: hidden;
+}
+
 .asset-inspector-open-external {
   display: block;
   width: 100%;

@@ -5,6 +5,7 @@ export function kindLabel(item: ImageItem, t: (key: string) => string): string {
   const kind = getAssetKind(item);
   if (kind === 'video') return t('image.kind.video');
   if (kind === 'pdf') return t('image.kind.pdf');
+  if (kind === 'markdown') return t('image.kind.markdown');
   if (kind === 'other') return t('image.kind.other');
   return t('image.kind.image');
 }
