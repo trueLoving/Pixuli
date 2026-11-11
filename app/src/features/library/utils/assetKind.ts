@@ -20,6 +20,14 @@ export function getAssetKind(
     return 'pdf';
   }
   if (
+    mime === 'text/markdown' ||
+    mime === 'text/x-markdown' ||
+    ext === 'md' ||
+    ext === 'markdown'
+  ) {
+    return 'markdown';
+  }
+  if (
     mime.startsWith('video/') ||
     ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)
   ) {

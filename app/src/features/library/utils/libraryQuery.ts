@@ -14,7 +14,13 @@ export interface LibraryQuery {
   tags: string[];
 }
 
-const KIND_VALUES = new Set<AssetKind>(['image', 'video', 'pdf', 'other']);
+const KIND_VALUES = new Set<AssetKind>([
+  'image',
+  'video',
+  'pdf',
+  'markdown',
+  'other',
+]);
 
 const UNIT_BYTES: Record<string, number> = {
   b: 1,
@@ -79,6 +85,7 @@ function parseKindValue(value: string): AssetKind | null {
   if (v === '图片' || v === '图像') return 'image';
   if (v === '视频') return 'video';
   if (v === 'pdf') return 'pdf';
+  if (v === 'md' || v === 'markdown' || v === '文档') return 'markdown';
   if (v === '其它' || v === '其他') return 'other';
   return null;
 }

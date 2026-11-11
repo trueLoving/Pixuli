@@ -10,6 +10,7 @@ import {
 } from '@/platforms/openAsset';
 import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
+import { MarkdownDocumentView } from './MarkdownDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 export function AssetInspectorFilePreview({
@@ -66,6 +67,20 @@ export function AssetInspectorFilePreview({
         aria-hidden
       >
         <FileVideo size={36} />
+      </div>
+    );
+  }
+
+  if (kind === 'markdown') {
+    return (
+      <div className="asset-inspector-preview asset-inspector-preview--markdown">
+        <MarkdownDocumentView
+          src={src}
+          localPath={image.localPath}
+          variant="inspector"
+          loadingLabel={t('image.markdown.loading')}
+          errorLabel={t('image.markdown.loadFailed')}
+        />
       </div>
     );
   }

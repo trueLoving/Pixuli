@@ -77,7 +77,7 @@ function setupContentSecurityPolicy() {
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' http://localhost:* ws://localhost:* wss://* https://* http://*; " +
+    "connect-src 'self' blob: http://localhost:* ws://localhost:* wss://* https://* http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
@@ -91,7 +91,7 @@ function setupContentSecurityPolicy() {
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' https: http://*; " +
+    "connect-src 'self' blob: https: http://*; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +

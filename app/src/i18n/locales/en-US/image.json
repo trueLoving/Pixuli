@@ -305,8 +305,13 @@
       "image": "Images",
       "video": "Videos",
       "pdf": "PDF",
+      "markdown": "Markdown",
       "other": "Other",
       "all": "All"
+    },
+    "markdown": {
+      "loading": "Loading Markdown…",
+      "loadFailed": "Failed to load Markdown"
     },
     "edit": {
       "title": "Edit file information",

@@ -305,8 +305,13 @@
       "image": "图片",
       "video": "视频",
       "pdf": "PDF",
+      "markdown": "Markdown",
       "other": "其他",
       "all": "全部"
+    },
+    "markdown": {
+      "loading": "正在加载 Markdown…",
+      "loadFailed": "无法加载 Markdown 内容"
     },
     "edit": {
       "title": "编辑文件信息",
