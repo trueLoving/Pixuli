@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { zipSync } from 'fflate';
 import {
   getWorkspaceAdapter,
@@ -29,7 +29,7 @@ export function buildZipDownloadFilename(count: number): string {
   return `pixuli-${count}-files-${stamp}.zip`;
 }
 
-export async function readAssetBytes(item: ImageItem): Promise<Uint8Array> {
+export async function readAssetBytes(item: AssetItem): Promise<Uint8Array> {
   if (item.localPath && isWorkspaceAvailable()) {
     return getWorkspaceAdapter().readFile(item.localPath);
   }
@@ -53,7 +53,7 @@ function triggerBlobDownload(blob: Blob, filename: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-export function downloadAssetFile(item: ImageItem): void {
+export function downloadAssetFile(item: AssetItem): void {
   const link = document.createElement('a');
   link.href = item.url;
   link.download = item.name;
@@ -64,7 +64,7 @@ export function downloadAssetFile(item: ImageItem): void {
 }
 
 export async function downloadAssetsAsZip(
-  items: ImageItem[],
+  items: AssetItem[],
   zipFilename?: string,
 ): Promise<{ packed: number; failed: number }> {
   if (items.length === 0) {

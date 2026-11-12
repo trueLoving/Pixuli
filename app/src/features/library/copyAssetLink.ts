@@ -1,14 +1,14 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { copyTextToClipboard } from '@/utils/clipboard';
 import { collectCopyablePublicUrls, getCopyablePublicUrl } from './copyLink';
 
-export type CopyImageLinkOptions = {
+export type CopyAssetLinkOptions = {
   hasRemoteConnection?: boolean;
   /** 当前选中连接的仓库是否私有 */
   repoPrivate?: boolean;
 };
 
-export type CopyImageLinkResult =
+export type CopyAssetLinkResult =
   | { ok: true; count: number; privateRepo?: boolean }
   | {
       ok: false;
@@ -20,13 +20,13 @@ export type CopyImageLinkResult =
     };
 
 export function resolveCopyLinkFailure(
-  images: ImageItem[],
-  options?: CopyImageLinkOptions,
-): CopyImageLinkResult {
-  if (images.length === 0) {
+  assets: AssetItem[],
+  options?: CopyAssetLinkOptions,
+): CopyAssetLinkResult {
+  if (assets.length === 0) {
     return { ok: false, reasonKey: 'image.copyLink.needSelect' };
   }
-  const urls = collectCopyablePublicUrls(images);
+  const urls = collectCopyablePublicUrls(assets);
   if (urls.length > 0) {
     return {
       ok: true,
@@ -41,7 +41,7 @@ export function resolveCopyLinkFailure(
       offerConnection: true,
     };
   }
-  const hasLocalOnly = images.some(
+  const hasLocalOnly = assets.some(
     item => item.localPath && !getCopyablePublicUrl(item),
   );
   if (hasLocalOnly) {
@@ -54,15 +54,15 @@ export function resolveCopyLinkFailure(
   return { ok: false, reasonKey: 'image.copyLink.unavailable' };
 }
 
-export async function copyImagePublicLinks(
-  images: ImageItem[],
-  options?: CopyImageLinkOptions,
-): Promise<CopyImageLinkResult> {
-  const check = resolveCopyLinkFailure(images, options);
+export async function copyAssetPublicLinks(
+  assets: AssetItem[],
+  options?: CopyAssetLinkOptions,
+): Promise<CopyAssetLinkResult> {
+  const check = resolveCopyLinkFailure(assets, options);
   if (!check.ok) {
     return check;
   }
-  const urls = collectCopyablePublicUrls(images);
+  const urls = collectCopyablePublicUrls(assets);
   await copyTextToClipboard(urls.join('\n'));
   return {
     ok: true,

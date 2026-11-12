@@ -6,7 +6,7 @@ import {
 } from '@pixuli/core/user-config';
 import { exportJsonFile } from '@/features/settings/exportJsonFile';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { syncSourceEntryToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
+import { syncSourceEntryToAssetStore } from '@/features/settings/syncSourceRepoToAssetStore';
 import { useThemeStore } from '@/features/theme/themeStore';
 import { isThemePreference } from '@/features/theme/theme';
 import i18n from '@/i18n';
@@ -54,7 +54,7 @@ function applySources(params: {
     ? useSourceStore.getState().getSourceById(selectedId)
     : undefined;
   if (selected) {
-    syncSourceEntryToImageStore(selected);
+    syncSourceEntryToAssetStore(selected);
   }
 }
 

@@ -7,7 +7,7 @@ import {
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -35,7 +35,7 @@ export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
 }) => {
   const { t } = useI18n();
   const { pickWorkspace, loading, error, reconnect } = useWorkspaceStore();
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const isWebWorkspace = isWebWorkspaceActive();
   const isMobileWorkspace = isMobileWorkspaceActive();
   const canPickFolder = isWebWorkspace && isFileSystemAccessSupported();
@@ -47,7 +47,7 @@ export const WorkspaceSetupPanel: React.FC<WorkspaceSetupPanelProps> = ({
     useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
-      await loadImages();
+      await loadAssets();
       onOpened?.();
     }
   };

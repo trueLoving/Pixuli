@@ -1,5 +1,5 @@
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
-import type { ImageUploadData } from '@pixuli/core/types';
+import type { AssetUploadData } from '@pixuli/core/types';
 import { getUploadFileName } from '@pixuli/core/types';
 import { guessMimeType, type LocalVault } from '@pixuli/core/vault';
 import {
@@ -24,8 +24,8 @@ export async function resolveImportTargetDir(): Promise<string> {
   return importDirForSelectedFolder(useUIStore.getState().selectedFolderPath);
 }
 
-export async function importImageToLocalVault(
-  uploadData: ImageUploadData,
+export async function importAssetToLocalVault(
+  uploadData: AssetUploadData,
 ): Promise<string> {
   const fileName = sanitizeWorkspaceFileName(
     getUploadFileName(uploadData.file, uploadData.name),

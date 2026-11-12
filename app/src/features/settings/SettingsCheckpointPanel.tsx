@@ -1,7 +1,7 @@
 import type { SyncCheckpointMeta } from '@pixuli/core/vault';
 import { History, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { runRestoreCheckpointWithFeedback } from '@/features/workspace/syncFeedback';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
@@ -32,7 +32,7 @@ export const SettingsCheckpointPanel: React.FC<
     state => state.getLatestCheckpointMeta,
   );
   const clearCheckpoint = useWorkspaceStore(state => state.clearCheckpoint);
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const [meta, setMeta] = useState<SyncCheckpointMeta | null>(null);
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -69,7 +69,7 @@ export const SettingsCheckpointPanel: React.FC<
     setBusy(true);
     try {
       await runRestoreCheckpointWithFeedback(t);
-      await loadImages();
+      await loadAssets();
       await refreshMeta();
     } finally {
       setBusy(false);

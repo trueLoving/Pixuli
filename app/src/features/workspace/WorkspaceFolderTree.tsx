@@ -100,7 +100,9 @@ const TreeRow: React.FC<TreeRowProps> = ({
             <Folder size={16} className="workspace-tree-icon" aria-hidden />
           )}
           <span className="workspace-tree-label">{label}</span>
-          <span className="workspace-tree-count">{node.imageCount}</span>
+          <span className="workspace-tree-count">
+            {node.processableAssetCount}
+          </span>
         </button>
       </div>
       {hasChildren && isExpanded

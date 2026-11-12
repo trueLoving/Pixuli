@@ -12,7 +12,7 @@ export type RepoConfigFields = Pick<
 >;
 
 /** 将仓库连接字段写入资源库（GitHub/Gitee 双轨 legacy 配置） */
-export function syncRepoConfigToImageStore(
+export function syncRepoConfigToAssetStore(
   pluginId: string,
   repoConfig: RepoConfigFields,
 ): void {
@@ -26,9 +26,9 @@ export function syncRepoConfigToImageStore(
 }
 
 /** 选中/编辑源时同步 storageType 与仓库配置 */
-export function syncSourceEntryToImageStore(source: StoredSourceEntry): void {
+export function syncSourceEntryToAssetStore(source: StoredSourceEntry): void {
   const legacyType = pluginIdToLegacyType(source.pluginId);
   const port = getSourceSelectionPort();
   port.setStorageType(legacyType);
-  syncRepoConfigToImageStore(source.pluginId, getRepoConfigFromSource(source));
+  syncRepoConfigToAssetStore(source.pluginId, getRepoConfigFromSource(source));
 }

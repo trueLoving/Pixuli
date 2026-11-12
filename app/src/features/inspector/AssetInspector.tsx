@@ -11,8 +11,8 @@ import {
   buildBatchSelectionActions,
   buildSingleSelectionActions,
 } from '@/features/library/selectionActions';
-import ImageEditModal from './ImageEditModal';
-import ImagePreviewModal from './ImagePreviewModal';
+import AssetEditModal from './AssetEditModal';
+import AssetPreviewModal from './AssetPreviewModal';
 import {
   AssetInspectorBatchBody,
   AssetInspectorFolderSummary,
@@ -30,7 +30,7 @@ import React, {
 } from 'react';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
 import { useUIStore } from '@/stores/uiStore';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import type { AssetEditData, AssetItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import {
@@ -43,15 +43,15 @@ import './AssetInspector.css';
 export type { MetadataReviewSession } from './inspectorTypes';
 
 interface AssetInspectorProps {
-  image: ImageItem | null;
-  selectedImages?: ImageItem[];
-  images: ImageItem[];
+  asset: AssetItem | null;
+  selectedAssets?: AssetItem[];
+  assets: AssetItem[];
   onClose: () => void;
-  onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
-  onUpdateImage?: (data: ImageEditData) => Promise<void>;
+  onDeleteAsset?: (id: string, name: string) => Promise<void>;
+  onDeleteMultipleAssets?: (ids: string[], names: string[]) => Promise<void>;
+  onUpdateAsset?: (data: AssetEditData) => Promise<void>;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
-  onShareImage?: (image: ImageItem) => Promise<void>;
+  onShareAsset?: (asset: AssetItem) => Promise<void>;
   onSync?: () => void;
   onSendConvert?: () => void;
   onBatchEdit?: () => void;
@@ -61,7 +61,7 @@ interface AssetInspectorProps {
   onCopyActiveLink?: () => void;
   hasRemoteConnection?: boolean;
   /** 批摘要列表点击 → 单文件 */
-  onSelectImage?: (id: string) => void;
+  onSelectAsset?: (id: string) => void;
   enableFolderMove?: boolean;
   folderOptions?: string[];
   /** 添加后逐张完善 */
@@ -78,15 +78,15 @@ interface AssetInspectorProps {
 }
 
 export const AssetInspector: React.FC<AssetInspectorProps> = ({
-  image,
-  selectedImages = [],
-  images,
+  asset,
+  selectedAssets = [],
+  assets,
   onClose,
-  onDeleteImage,
-  onDeleteMultipleImages,
-  onUpdateImage,
+  onDeleteAsset,
+  onDeleteMultipleAssets,
+  onUpdateAsset,
   onCopyUrl,
-  onShareImage,
+  onShareAsset,
   onSync,
   onSendConvert,
   onBatchEdit,
@@ -94,7 +94,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onCopyLinks,
   onCopyActiveLink,
   hasRemoteConnection,
-  onSelectImage,
+  onSelectAsset,
   enableFolderMove = false,
   folderOptions = [],
   metadataReview = null,
@@ -106,34 +106,34 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState<ImageItem | null>(image);
+  const [previewAsset, setPreviewAsset] = useState<AssetItem | null>(asset);
 
   useEffect(() => {
-    setPreviewImage(
-      image ?? (selectedImages.length === 1 ? selectedImages[0] : null),
+    setPreviewAsset(
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null),
     );
-  }, [image, selectedImages]);
+  }, [asset, selectedAssets]);
 
   const seenPreviewNonce = useRef(0);
   useEffect(() => {
     const nonce = openPreviewRequest?.nonce ?? 0;
     if (nonce <= 0 || nonce === seenPreviewNonce.current) return;
     const current =
-      image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
     if (current?.id !== openPreviewRequest?.id) return;
     seenPreviewNonce.current = nonce;
     setShowPreview(true);
-  }, [image, openPreviewRequest, selectedImages]);
+  }, [asset, openPreviewRequest, selectedAssets]);
 
   useEffect(() => {
-    if (!metadataReview || !onUpdateImage) {
+    if (!metadataReview || !onUpdateAsset) {
       return;
     }
     if (metadataReview.openEditNonce <= 0) {
       return;
     }
     setShowEdit(true);
-  }, [metadataReview?.openEditNonce, onUpdateImage]);
+  }, [metadataReview?.openEditNonce, onUpdateAsset]);
 
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
@@ -198,32 +198,32 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       if (isSheet) onClose();
     },
     Boolean(
-      (image || selectedImages.length > 0) &&
+      (asset || selectedAssets.length > 0) &&
         (isSheet || showPreview || showEdit),
     ),
   );
 
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  /** 单选时以 props.image 为准，缺省则回退 selectedImages[0] */
-  const activeImage =
-    image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
-  const previewIndex = previewImage
-    ? images.findIndex(item => item.id === previewImage.id)
+  /** 单选时以 props.asset 为准，缺省则回退 selectedAssets[0] */
+  const activeAsset =
+    asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
+  const previewIndex = previewAsset
+    ? assets.findIndex(item => item.id === previewAsset.id)
     : -1;
 
-  const kind = activeImage ? getAssetKind(activeImage) : 'image';
+  const kind = activeAsset ? getAssetKind(activeAsset) : 'image';
   const dimensions =
-    activeImage && activeImage.width > 0 && activeImage.height > 0
-      ? `${activeImage.width} × ${activeImage.height}`
+    activeAsset && activeAsset.width > 0 && activeAsset.height > 0
+      ? `${activeAsset.width} × ${activeAsset.height}`
       : t('image.grid.dimensionsUnknown');
 
   const handleCopy = useCallback(async () => {
-    if (!activeImage) return;
+    if (!activeAsset) return;
     if (onCopyActiveLink) {
       onCopyActiveLink();
       return;
     }
-    const url = getCopyablePublicUrl(activeImage);
+    const url = getCopyablePublicUrl(activeAsset);
     if (!url) {
       showError(t('image.copyLink.needSync'));
       return;
@@ -241,68 +241,68 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     } catch {
       showError(t('image.grid.copyFailed'));
     }
-  }, [activeImage, onCopyActiveLink, onCopyUrl, t]);
+  }, [activeAsset, onCopyActiveLink, onCopyUrl, t]);
 
   const handleDelete = useCallback(async () => {
-    if (!activeImage || !onDeleteImage) return;
+    if (!activeAsset || !onDeleteAsset) return;
     if (
       !confirm(
-        `${t('image.grid.confirmDelete')} "${activeImage.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
+        `${t('image.grid.confirmDelete')} "${activeAsset.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
       )
     ) {
       return;
     }
     const loadingToast = showLoading(
-      `${t('image.grid.deleting')} "${activeImage.name}"...`,
+      `${t('image.grid.deleting')} "${activeAsset.name}"...`,
     );
     try {
-      await onDeleteImage(activeImage.id, activeImage.name);
+      await onDeleteAsset(activeAsset.id, activeAsset.name);
       updateLoadingToSuccess(
         String(loadingToast),
-        `${t('image.grid.deleteSuccess')} "${activeImage.name}" ${t('image.grid.deleted')}`,
+        `${t('image.grid.deleteSuccess')} "${activeAsset.name}" ${t('image.grid.deleted')}`,
       );
       onClose();
     } catch (error) {
       updateLoadingToError(
         String(loadingToast),
-        `${t('image.grid.deleteFailed')} "${activeImage.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
+        `${t('image.grid.deleteFailed')} "${activeAsset.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
       );
     }
-  }, [activeImage, onClose, onDeleteImage, t]);
+  }, [activeAsset, onClose, onDeleteAsset, t]);
 
   const handleShare = useCallback(async () => {
-    if (!activeImage || !onShareImage) return;
+    if (!activeAsset || !onShareAsset) return;
     try {
-      await onShareImage(activeImage);
+      await onShareAsset(activeAsset);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       if (/cancel|abort|dismiss|user/i.test(message)) return;
       showError(`${t('image.grid.shareFailed')}: ${message}`);
     }
-  }, [activeImage, onShareImage, t]);
+  }, [activeAsset, onShareAsset, t]);
 
   const handleBatchDelete = useCallback(async () => {
-    if (selectedImages.length === 0) return;
+    if (selectedAssets.length === 0) return;
     if (
       !confirm(
         t('image.library.confirmDeleteN').replace(
           '{count}',
-          String(selectedImages.length),
+          String(selectedAssets.length),
         ),
       )
     ) {
       return;
     }
-    if (selectedImages.length === 1 && onDeleteImage) {
-      await onDeleteImage(selectedImages[0].id, selectedImages[0].name);
-    } else if (onDeleteMultipleImages) {
-      await onDeleteMultipleImages(
-        selectedImages.map(item => item.id),
-        selectedImages.map(item => item.name),
+    if (selectedAssets.length === 1 && onDeleteAsset) {
+      await onDeleteAsset(selectedAssets[0].id, selectedAssets[0].name);
+    } else if (onDeleteMultipleAssets) {
+      await onDeleteMultipleAssets(
+        selectedAssets.map(item => item.id),
+        selectedAssets.map(item => item.name),
       );
     }
     onClose();
-  }, [onClose, onDeleteImage, onDeleteMultipleImages, selectedImages, t]);
+  }, [onClose, onDeleteAsset, onDeleteMultipleAssets, selectedAssets, t]);
 
   const singleActions = useMemo(
     () =>
@@ -310,18 +310,18 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         kind,
         t,
         {
-          onEdit: onUpdateImage
+          onEdit: onUpdateAsset
             ? () => {
                 setShowEdit(true);
-                if (activeImage) {
-                  showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
+                if (activeAsset) {
+                  showInfo(`${t('image.grid.editing')} "${activeAsset.name}"`);
                 }
               }
             : undefined,
           onCopy: () => {
             void handleCopy();
           },
-          onShare: onShareImage
+          onShare: onShareAsset
             ? () => {
                 void handleShare();
               }
@@ -332,10 +332,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           },
         },
         {
-          canEdit: Boolean(onUpdateImage),
-          canShare: Boolean(onShareImage),
-          canDelete: Boolean(onDeleteImage),
-          canCopy: Boolean(activeImage && getCopyablePublicUrl(activeImage)),
+          canEdit: Boolean(onUpdateAsset),
+          canShare: Boolean(onShareAsset),
+          canDelete: Boolean(onDeleteAsset),
+          canCopy: Boolean(activeAsset && getCopyablePublicUrl(activeAsset)),
           copyDisabledTitle:
             hasRemoteConnection === false
               ? t('image.copyLink.needConnection')
@@ -344,17 +344,17 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         },
       ),
     [
-      activeImage,
+      activeAsset,
       convertInLibrary,
       handleCopy,
       handleDelete,
       handleShare,
       hasRemoteConnection,
       kind,
-      onDeleteImage,
+      onDeleteAsset,
       onSendConvert,
-      onShareImage,
-      onUpdateImage,
+      onShareAsset,
+      onUpdateAsset,
       t,
     ],
   );
@@ -362,7 +362,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const batchActions = useMemo(
     () =>
       buildBatchSelectionActions(
-        selectedImages,
+        selectedAssets,
         t,
         {
           onBatchEdit,
@@ -385,31 +385,31 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       onCopyLinks,
       onSendConvert,
       onSync,
-      selectedImages,
+      selectedAssets,
       t,
     ],
   );
 
   const batchBody =
-    selectedImages.length >= 2 ? (
+    selectedAssets.length >= 2 ? (
       <AssetInspectorBatchBody
-        selectedImages={selectedImages}
+        selectedAssets={selectedAssets}
         selectedFolderPath={selectedFolderPath}
-        onSelectImage={onSelectImage}
+        onSelectAsset={onSelectAsset}
         t={t}
       />
     ) : null;
 
-  const singleBody = activeImage ? (
+  const singleBody = activeAsset ? (
     <AssetInspectorSingleBody
-      activeImage={activeImage}
+      activeAsset={activeAsset}
       dimensions={dimensions}
       t={t}
     />
   ) : selectedFolderPath ? (
     <AssetInspectorFolderSummary
       selectedFolderPath={selectedFolderPath}
-      images={images}
+      assets={assets}
       t={t}
     />
   ) : (
@@ -418,9 +418,9 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const body = batchBody ?? singleBody;
   const actions =
-    selectedImages.length >= 2
+    selectedAssets.length >= 2
       ? batchActions
-      : activeImage
+      : activeAsset
         ? singleActions
         : null;
 
@@ -460,10 +460,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         ) : null}
         <div className="asset-inspector-header-row">
           <h2>
-            {selectedImages.length >= 2
+            {selectedAssets.length >= 2
               ? t('image.library.selectedCount').replace(
                   '{count}',
-                  String(selectedImages.length),
+                  String(selectedAssets.length),
                 )
               : t('image.inspector.title')}
           </h2>
@@ -551,12 +551,12 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         panel
       )}
 
-      {activeImage && onUpdateImage ? (
-        <ImageEditModal
-          image={activeImage}
+      {activeAsset && onUpdateAsset ? (
+        <AssetEditModal
+          asset={activeAsset}
           isOpen={showEdit}
           onClose={() => setShowEdit(false)}
-          onUpdateImage={onUpdateImage}
+          onUpdateAsset={onUpdateAsset}
           onSuccess={() => setShowEdit(false)}
           onCancel={() => setShowEdit(false)}
           enableFolderMove={enableFolderMove}
@@ -566,16 +566,16 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         />
       ) : null}
 
-      {previewImage ? (
-        <ImagePreviewModal
-          image={previewImage}
-          images={images}
+      {previewAsset ? (
+        <AssetPreviewModal
+          asset={previewAsset}
+          assets={assets}
           currentIndex={previewIndex < 0 ? 0 : previewIndex}
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
           onNavigate={index => {
-            const next = images[index];
-            if (next) setPreviewImage(next);
+            const next = assets[index];
+            if (next) setPreviewAsset(next);
           }}
           formatFileSize={formatFileSize}
           t={t}

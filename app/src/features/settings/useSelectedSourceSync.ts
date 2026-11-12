@@ -20,7 +20,7 @@ export function useSelectedSourceSync(
 
   useEffect(() => {
     const { editingSourceId, showSettingsModal } = useUIStore.getState();
-    // 正在设置向导中编辑某源时，不要用「当前选中源」覆盖 imageStore
+    // 正在设置向导中编辑某源时，不要用「当前选中源」覆盖 assetStore
     if (showSettingsModal && editingSourceId) {
       return;
     }

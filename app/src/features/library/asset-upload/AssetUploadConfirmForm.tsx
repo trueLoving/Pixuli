@@ -1,23 +1,23 @@
 import { Image as ImageIcon, Upload, X } from 'lucide-react';
 import React, { RefObject } from 'react';
 import type {
-  MultiImageUploadData,
-  WebImageUploadData,
+  MultiAssetUploadData,
+  WebAssetUploadData,
 } from '@pixuli/core/types';
-import { ImageUploadCompressionPanel } from './ImageUploadCompressionPanel';
-import type { ImageUploadCompressionPanelProps } from './ImageUploadCompressionPanel';
+import { AssetUploadCompressionPanel } from './AssetUploadCompressionPanel';
+import type { AssetUploadCompressionPanelProps } from './AssetUploadCompressionPanel';
 import {
   fileTypeLabel,
   formatByteSize,
   isPreviewableMedia,
-} from './imageUploadUtils';
-import './ImageUploadConfirmForm.css';
+} from './assetUploadUtils';
+import './AssetUploadConfirmForm.css';
 
-type UploadFormData = WebImageUploadData | MultiImageUploadData;
+type UploadFormData = WebAssetUploadData | MultiAssetUploadData;
 
-export interface ImageUploadConfirmFormProps
+export interface AssetUploadConfirmFormProps
   extends Omit<
-    ImageUploadCompressionPanelProps,
+    AssetUploadCompressionPanelProps,
     'files' | 'enableCrop' | 'enableCompression'
   > {
   files: File[];
@@ -41,7 +41,7 @@ export interface ImageUploadConfirmFormProps
   ) => void;
 }
 
-export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
+export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
   files,
   isMultipleUpload,
   currentData,
@@ -63,22 +63,22 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
   const addMoreRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div className="image-upload-form-container">
-      <form onSubmit={onSubmit} className="image-upload-form">
-        <div className="image-upload-form-main">
-          <div className="image-upload-confirm-header">
-            <p className="image-upload-confirm-title">
+    <div className="asset-upload-form-container">
+      <form onSubmit={onSubmit} className="asset-upload-form">
+        <div className="asset-upload-form-main">
+          <div className="asset-upload-confirm-header">
+            <p className="asset-upload-confirm-title">
               {translate('image.upload.confirmTitle')}
             </p>
-            <p className="image-upload-confirm-hint">
-              <span className="image-upload-local-badge">
+            <p className="asset-upload-confirm-hint">
+              <span className="asset-upload-local-badge">
                 {translate('image.upload.localOnlyBadge')}
               </span>
               {translate('image.upload.confirmHint')}
             </p>
           </div>
 
-          <div className="image-upload-file-toolbar">
+          <div className="asset-upload-file-toolbar">
             <p>
               {translate('image.upload.selectedCount').replace(
                 '{count}',
@@ -87,7 +87,7 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
             </p>
             <button
               type="button"
-              className="image-upload-add-more"
+              className="asset-upload-add-more"
               onClick={() => addMoreRef.current?.click()}
             >
               {translate('image.upload.addMore')}
@@ -108,7 +108,7 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
             />
           </div>
 
-          <div className="image-upload-file-list">
+          <div className="asset-upload-file-list">
             {files.map((file, index) => {
               const dimensions = fileDimensions[file.name];
               const dimensionsText =
@@ -120,28 +120,28 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
               return (
                 <div
                   key={`${file.name}-${file.size}-${index}`}
-                  className="image-upload-file-item"
+                  className="asset-upload-file-item"
                 >
                   {previewUrl && file.type.startsWith('image/') ? (
                     <img
                       src={previewUrl}
                       alt=""
-                      className="image-upload-file-thumb"
+                      className="asset-upload-file-thumb"
                     />
                   ) : previewUrl && file.type.startsWith('video/') ? (
                     <video
                       src={previewUrl}
-                      className="image-upload-file-thumb"
+                      className="asset-upload-file-thumb"
                       muted
                       playsInline
                       preload="metadata"
                     />
                   ) : (
-                    <ImageIcon className="image-upload-file-icon" />
+                    <ImageIcon className="asset-upload-file-icon" />
                   )}
-                  <div className="image-upload-file-info">
-                    <p className="image-upload-file-name">{file.name}</p>
-                    <p className="image-upload-file-meta">
+                  <div className="asset-upload-file-info">
+                    <p className="asset-upload-file-name">{file.name}</p>
+                    <p className="asset-upload-file-meta">
                       <span>{fileTypeLabel(file, translate)}</span>
                       <span>{formatByteSize(file.size)}</span>
                       {dimensionsText ? <span>{dimensionsText}</span> : null}
@@ -154,40 +154,40 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
                   </div>
                   <button
                     type="button"
-                    className="image-upload-file-remove"
+                    className="asset-upload-file-remove"
                     aria-label={translate('image.upload.removeFile').replace(
                       '{name}',
                       file.name,
                     )}
                     onClick={() => onRemoveFile(index)}
                   >
-                    <X className="image-upload-tag-remove-icon" />
+                    <X className="asset-upload-tag-remove-icon" />
                   </button>
                 </div>
               );
             })}
           </div>
 
-          <ImageUploadCompressionPanel
+          <AssetUploadCompressionPanel
             files={files}
             enableCrop={enableCrop}
             enableCompression={enableCompression}
             {...compressionProps}
           />
 
-          <p className="image-upload-destination">
+          <p className="asset-upload-destination">
             {translate('image.upload.folder')}
             <span>
               {destinationFolder || translate('image.library.rootFolder')}
             </span>
           </p>
 
-          <details className="image-upload-extra">
+          <details className="asset-upload-extra">
             <summary>{translate('image.upload.extraFields')}</summary>
-            <div className="image-upload-form-group">
-              <label className="image-upload-form-label">
+            <div className="asset-upload-form-group">
+              <label className="asset-upload-form-label">
                 {translate('image.upload.description')}{' '}
-                <span className="image-upload-form-optional">
+                <span className="asset-upload-form-optional">
                   {translate('image.upload.optional')}
                 </span>
               </label>
@@ -200,22 +200,22 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
                     : translate('image.upload.descriptionPlaceholder')
                 }
                 rows={2}
-                className="image-upload-form-textarea"
+                className="asset-upload-form-textarea"
               />
             </div>
 
-            <div className="image-upload-form-group">
-              <label className="image-upload-form-label">
+            <div className="asset-upload-form-group">
+              <label className="asset-upload-form-label">
                 {translate('image.upload.tags')}{' '}
-                <span className="image-upload-form-optional">
+                <span className="asset-upload-form-optional">
                   {translate('image.upload.optional')}
                 </span>
               </label>
               {Array.isArray(currentData?.tags) &&
               currentData.tags.length > 0 ? (
-                <div className="image-upload-tags-container">
+                <div className="asset-upload-tags-container">
                   {currentData.tags.map((tag, index) => (
-                    <span key={index} className="image-upload-tag">
+                    <span key={index} className="asset-upload-tag">
                       {tag}
                       <button
                         type="button"
@@ -225,9 +225,9 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
                             [];
                           onFieldChange('tags', newTags);
                         }}
-                        className="image-upload-tag-remove"
+                        className="asset-upload-tag-remove"
                       >
-                        <X className="image-upload-tag-remove-icon" />
+                        <X className="asset-upload-tag-remove-icon" />
                       </button>
                     </span>
                   ))}
@@ -286,33 +286,33 @@ export const ImageUploadConfirmForm: React.FC<ImageUploadConfirmFormProps> = ({
                     ? translate('image.upload.tagsPlaceholderMultiple')
                     : translate('image.upload.tagsPlaceholder')
                 }
-                className="image-upload-form-input"
+                className="asset-upload-form-input"
               />
             </div>
           </details>
         </div>
 
-        <div className="image-upload-button-group">
+        <div className="asset-upload-button-group">
           <button
             type="button"
             onClick={onCancel}
-            className="image-upload-button image-upload-button-secondary"
+            className="asset-upload-button asset-upload-button-secondary"
           >
             {translate('image.upload.cancel')}
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="image-upload-button image-upload-button-primary"
+            className="asset-upload-button asset-upload-button-primary"
           >
             {loading ? (
               <>
-                <div className="image-upload-spinner" />
+                <div className="asset-upload-spinner" />
                 <span>{translate('image.upload.uploading')}</span>
               </>
             ) : (
               <>
-                <Upload className="image-upload-button-icon" />
+                <Upload className="asset-upload-button-icon" />
                 <span>
                   {isMultipleUpload
                     ? `${translate('image.upload.batchUploadButton')} (${files.length})`

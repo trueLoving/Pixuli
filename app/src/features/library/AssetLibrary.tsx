@@ -6,8 +6,8 @@ import {
 } from '@/ui';
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
-import type { NativeImagePickers } from './image-upload/nativePickers';
-import { useImageStore } from '@/features/library/imageStore';
+import type { NativeImagePickers } from './asset-upload/nativePickers';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -35,13 +35,13 @@ import { resolveNewFolderParent } from '@/features/workspace/WorkspaceFolderTree
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import type {
   BatchUploadProgress,
-  ImageItem,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetItem,
+  AssetUploadData,
+  MultiAssetUploadData,
   SortField,
   SortOrder,
 } from '@pixuli/core/types';
-import { getSortedImages } from '@pixuli/core/utils';
+import { getSortedAssets } from '@pixuli/core/utils';
 import React, {
   useCallback,
   useEffect,
@@ -52,12 +52,12 @@ import React, {
 import './AssetLibrary.css';
 
 interface AssetLibraryProps {
-  images: ImageItem[];
+  assets: AssetItem[];
   hasConfig?: boolean;
   search?: LibrarySearchConfig;
   t: (key: string) => string;
-  onUploadImage?: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<unknown>;
+  onUploadAsset?: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets?: (data: MultiAssetUploadData) => Promise<unknown>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   nativePickers?: NativeImagePickers;
@@ -67,11 +67,11 @@ interface AssetLibraryProps {
   onRetry?: () => void;
   onOpenFolders?: () => void;
   selectedIds: string[];
-  onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
-  onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onCopyLink?: (image: ImageItem) => void;
-  onMoveImage?: (image: ImageItem) => void;
-  onOpenFile?: (image: ImageItem) => void;
+  onSelectedIdsChange: (ids: string[], items?: AssetItem[]) => void;
+  onDeleteAsset?: (id: string, name: string) => Promise<void>;
+  onCopyLink?: (asset: AssetItem) => void;
+  onMoveAsset?: (asset: AssetItem) => void;
+  onOpenFile?: (asset: AssetItem) => void;
   hasRemoteConnection?: boolean;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
@@ -81,12 +81,12 @@ interface AssetLibraryProps {
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
-  images,
+  assets,
   hasConfig = true,
   search,
   t,
-  onUploadImage,
-  onUploadMultipleImages,
+  onUploadAsset,
+  onUploadMultipleAssets,
   uploadLoading = false,
   batchUploadProgress,
   nativePickers,
@@ -97,9 +97,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   onOpenFolders,
   selectedIds,
   onSelectedIdsChange,
-  onDeleteImage,
+  onDeleteAsset,
   onCopyLink,
-  onMoveImage,
+  onMoveAsset,
   onOpenFile,
   hasRemoteConnection,
   multiSelectMode = false,
@@ -113,7 +113,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
-    file: ImageItem;
+    file: AssetItem;
   } | null>(null);
   const anchorIdRef = useRef<string | null>(null);
   const longPressRef = useRef<number | null>(null);
@@ -149,8 +149,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [search?.searchQuery, search?.onFiltersChange]);
 
   const files = useMemo(() => {
-    const filtered = filterByLibraryQuery(images, search?.searchQuery ?? '');
-    const unique = new Map<string, ImageItem>();
+    const filtered = filterByLibraryQuery(assets, search?.searchQuery ?? '');
+    const unique = new Map<string, AssetItem>();
     for (const item of filtered) {
       const existing = unique.get(item.id);
       if (
@@ -161,8 +161,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         unique.set(item.id, item);
       }
     }
-    return getSortedImages([...unique.values()], sortField, sortOrder);
-  }, [images, search?.searchQuery, sortField, sortOrder]);
+    return getSortedAssets([...unique.values()], sortField, sortOrder);
+  }, [assets, search?.searchQuery, sortField, sortOrder]);
 
   const visibleIds = useMemo(() => files.map(file => file.id), [files]);
 
@@ -171,7 +171,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     if (next !== selectedIds) {
       const selectedItems = next
         .map(id => files.find(file => file.id === id))
-        .filter((item): item is ImageItem => Boolean(item));
+        .filter((item): item is AssetItem => Boolean(item));
       onSelectedIdsChange(next, selectedItems);
     }
   }, [files, onSelectedIdsChange, selectedIds, visibleIds]);
@@ -197,7 +197,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       anchorIdRef.current = next.anchorId;
       const selectedItems = next.selectedIds
         .map(id => files.find(file => file.id === id))
-        .filter((item): item is ImageItem => Boolean(item));
+        .filter((item): item is AssetItem => Boolean(item));
       onSelectedIdsChange(next.selectedIds, selectedItems);
       if (
         next.selectedIds.length <= 1 &&
@@ -282,7 +282,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     [sortField],
   );
 
-  const canAcceptLibraryDrop = Boolean(onUploadImage && onUploadMultipleImages);
+  const canAcceptLibraryDrop = Boolean(onUploadAsset && onUploadMultipleAssets);
 
   const handleLibraryDragEnter = useCallback(
     (event: React.DragEvent) => {
@@ -461,7 +461,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     }
     const selectedItems = visibleIds
       .map(id => files.find(file => file.id === id))
-      .filter((item): item is ImageItem => Boolean(item));
+      .filter((item): item is AssetItem => Boolean(item));
     onSelectedIdsChange(visibleIds, selectedItems);
   }, [allVisibleSelected, files, onSelectedIdsChange, visibleIds]);
 
@@ -476,12 +476,12 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => observer.disconnect();
   }, [showEmpty, loading, files.length]);
 
-  const libraryTotal = useImageStore(state => state.libraryTotal);
-  const matchedTotal = Math.max(libraryTotal, images.length);
-  const listTruncated = matchedTotal > images.length;
+  const libraryTotal = useAssetStore(state => state.libraryTotal);
+  const matchedTotal = Math.max(libraryTotal, assets.length);
+  const listTruncated = matchedTotal > assets.length;
   const listedTotalSize = useMemo(() => sumListedFileSize(files), [files]);
   const isFilteredList =
-    Boolean(search?.searchQuery) && files.length !== images.length;
+    Boolean(search?.searchQuery) && files.length !== assets.length;
   const showStatusBar = files.length > 0;
 
   return (
@@ -503,8 +503,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         search={search}
         t={t}
         onOpenFolders={onOpenFolders}
-        onUploadImage={onUploadImage}
-        onUploadMultipleImages={onUploadMultipleImages}
+        onUploadAsset={onUploadAsset}
+        onUploadMultipleAssets={onUploadMultipleAssets}
         uploadLoading={uploadLoading}
         batchUploadProgress={batchUploadProgress}
         nativePickers={nativePickers}
@@ -628,7 +628,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           <AssetLibraryStatusBar
             filesCount={files.length}
             totalCount={
-              listTruncated && !isFilteredList ? matchedTotal : images.length
+              listTruncated && !isFilteredList ? matchedTotal : assets.length
             }
             totalSize={listedTotalSize}
             selectedCount={selectedIds.length}
@@ -657,8 +657,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           t={t}
           onClose={() => setContextMenu(null)}
           onCopyLink={onCopyLink}
-          onMoveImage={onMoveImage}
-          onDeleteImage={onDeleteImage}
+          onMoveAsset={onMoveAsset}
+          onDeleteAsset={onDeleteAsset}
           hasRemoteConnection={hasRemoteConnection}
         />
       ) : null}

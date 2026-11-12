@@ -99,7 +99,7 @@ export async function runWorkspaceSync(
       pathPrefix: selectedFolder,
     });
     await get().refreshLocalFolders();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
 
     if (result.remoteAhead) {
@@ -205,7 +205,7 @@ export async function restoreWorkspaceCheckpoint(
   try {
     const result = await restoreLatestSyncCheckpoint(getWorkspaceVault());
     await get().refreshLocalFolders();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     const checkpointOutcome: SyncRunOutcome = {
       kind: 'success',
@@ -283,7 +283,7 @@ export async function pullDirtyFolderIfNeeded(
       return;
     }
     await get().refreshLocalFolders();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
   } catch {
     // 懒加载失败不阻断浏览；显式 pull 仍可重试

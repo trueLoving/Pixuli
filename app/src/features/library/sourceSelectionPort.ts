@@ -2,7 +2,7 @@ import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 import type { StoragePluginId } from '@/storage/createProvider';
 
-/** settings ↔ library：源选中与仓库配置同步（避免 settings 直接依赖 imageStore） */
+/** settings ↔ library：源选中与仓库配置同步（避免 settings 直接依赖 assetStore） */
 export interface SourceSelectionPort {
   getStorageType(): StoragePluginId | null;
   getGitHubConfig(): GitHubConfig | null;
@@ -13,7 +13,7 @@ export interface SourceSelectionPort {
   setGiteeConfig(config: GiteeConfig): void;
   clearGitHubConfig(): void;
   clearGiteeConfig(): void;
-  loadImages(): Promise<void>;
+  loadAssets(): Promise<void>;
   initializeStorageIfNeeded(): void;
 }
 
@@ -27,7 +27,7 @@ const inactivePort: SourceSelectionPort = {
   setGiteeConfig: () => undefined,
   clearGitHubConfig: () => undefined,
   clearGiteeConfig: () => undefined,
-  loadImages: async () => undefined,
+  loadAssets: async () => undefined,
   initializeStorageIfNeeded: () => undefined,
 };
 

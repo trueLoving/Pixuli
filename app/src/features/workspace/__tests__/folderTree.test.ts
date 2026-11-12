@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildWorkspaceFolderTree, filterImagesByFolder } from '../folderTree';
+import { buildWorkspaceFolderTree, filterAssetsByFolder } from '../folderTree';
 
 describe('workspaceFolderTree', () => {
   it('builds nested folders from relative paths', () => {
@@ -9,35 +9,35 @@ describe('workspaceFolderTree', () => {
       'images/trip/c.jpg',
     ]);
 
-    expect(tree.imageCount).toBe(3);
+    expect(tree.processableAssetCount).toBe(3);
     expect(tree.children).toHaveLength(1);
     expect(tree.children[0]?.path).toBe('images');
-    expect(tree.children[0]?.imageCount).toBe(2);
+    expect(tree.children[0]?.processableAssetCount).toBe(2);
     expect(tree.children[0]?.children[0]?.path).toBe('images/trip');
-    expect(tree.children[0]?.children[0]?.imageCount).toBe(1);
+    expect(tree.children[0]?.children[0]?.processableAssetCount).toBe(1);
   });
 
   it('filters images by selected folder (shallow by default)', () => {
-    const images = [
+    const assets = [
       { id: '0', localPath: 'root.jpg' },
       { id: '1', localPath: 'images/a.jpg' },
       { id: '2', localPath: 'images/trip/b.jpg' },
       { id: '3', localPath: 'images/trip/c.jpg' },
     ];
 
-    expect(filterImagesByFolder(images, '').map(i => i.id)).toEqual(['0']);
+    expect(filterAssetsByFolder(assets, '').map(i => i.id)).toEqual(['0']);
     expect(
-      filterImagesByFolder(images, '', { shallow: false }).map(i => i.id),
+      filterAssetsByFolder(assets, '', { shallow: false }).map(i => i.id),
     ).toEqual(['0', '1', '2', '3']);
-    expect(filterImagesByFolder(images, 'images').map(i => i.id)).toEqual([
+    expect(filterAssetsByFolder(assets, 'images').map(i => i.id)).toEqual([
       '1',
     ]);
-    expect(filterImagesByFolder(images, 'images/trip').map(i => i.id)).toEqual([
+    expect(filterAssetsByFolder(assets, 'images/trip').map(i => i.id)).toEqual([
       '2',
       '3',
     ]);
     expect(
-      filterImagesByFolder(images, 'images', { shallow: false }).map(i => i.id),
+      filterAssetsByFolder(assets, 'images', { shallow: false }).map(i => i.id),
     ).toEqual(['1', '2', '3']);
   });
 

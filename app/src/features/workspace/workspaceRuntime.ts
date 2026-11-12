@@ -17,7 +17,7 @@ import {
   getWorkspaceAdapter,
   resetWorkspaceAdapter,
 } from '@/platforms/workspacePlatform';
-import { clearLocalPreviewCache } from '@/features/workspace/localImageMapper';
+import { clearLocalPreviewCache } from '@/features/workspace/localAssetMapper';
 
 let vaultInstance: LocalVault | null = null;
 let syncEngineInstance: SyncEngine | null = null;

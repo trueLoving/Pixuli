@@ -14,13 +14,13 @@ import {
 } from '@/features/operation-log';
 import {
   batchUpdateAssetMetadata,
-  deleteAssetImage,
-  deleteMultipleAssetImages,
-  updateAssetImage,
+  deleteAsset,
+  deleteMultipleAssets,
+  updateAsset,
 } from '@/features/library/assetMutationService';
 import {
-  uploadAssetImage,
-  uploadMultipleAssetImages,
+  uploadAsset,
+  uploadMultipleAssets,
 } from '@/features/library/assetUploadService';
 import {
   createStorageProvider,
@@ -29,30 +29,30 @@ import {
 } from '@/features/library/assetProviderSession';
 import {
   isLocalListMode,
-  loadRemoteImageList,
-  refreshLocalImageList,
+  loadRemoteAssetList,
+  refreshLocalAssetList,
   shouldSkipRemoteListLoad,
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
 import type { LibraryListScope } from '@/features/library/libraryListScope';
-import { registerLibraryImageReset } from '@/features/library/workspaceImageBridge';
+import { registerLibraryAssetReset } from '@/features/library/workspaceAssetBridge';
 import { registerSourceSelectionPort } from '@/features/library/sourceSelectionPort';
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import type {
   BatchUploadProgress,
   GiteeConfig,
   GitHubConfig,
-  ImageEditData,
-  ImageItem,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetEditData,
+  AssetItem,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 import { create } from 'zustand';
 
-interface ImageState {
-  images: ImageItem[];
-  /** 当前范围匹配总数；根视图截断时大于 images.length */
+interface AssetState {
+  assets: AssetItem[];
+  /** 当前范围匹配总数；根视图截断时大于 assets.length */
   libraryTotal: number;
   loading: boolean;
   error: string | null;
@@ -69,34 +69,34 @@ interface ImageState {
   setGiteeConfig: (config: GiteeConfig) => void;
   clearGiteeConfig: () => void;
   initializeStorage: () => void;
-  loadImages: (options?: LibraryListScope) => Promise<void>;
-  uploadImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
-  uploadMultipleImages: (
-    uploadData: MultiImageUploadData,
-  ) => Promise<ImageItem[]>;
-  deleteImage: (imageId: string, fileName: string) => Promise<void>;
-  deleteMultipleImages: (
-    imageIds: string[],
+  loadAssets: (options?: LibraryListScope) => Promise<void>;
+  uploadAsset: (uploadData: AssetUploadData) => Promise<AssetItem | null>;
+  uploadMultipleAssets: (
+    uploadData: MultiAssetUploadData,
+  ) => Promise<AssetItem[]>;
+  deleteAsset: (assetId: string, fileName: string) => Promise<void>;
+  deleteMultipleAssets: (
+    assetIds: string[],
     fileNames: string[],
   ) => Promise<void>;
-  updateImage: (editData: ImageEditData) => Promise<boolean>;
+  updateAsset: (editData: AssetEditData) => Promise<boolean>;
   batchUpdateMetadata: (
-    imageIds: string[],
+    assetIds: string[],
     patch: BatchMetadataPatch,
   ) => Promise<{ updated: number; failed: number }>;
-  addImage: (image: ImageItem) => void;
-  removeImage: (imageId: string) => void;
+  addAsset: (asset: AssetItem) => void;
+  removeAsset: (assetId: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
   setBatchUploadProgress: (progress: BatchUploadProgress | null) => void;
 }
 
-export const useImageStore = create<ImageState>((set, get) => {
+export const useAssetStore = create<AssetState>((set, get) => {
   const initialSession = resolveInitialProviderSession();
 
   return {
-    images: [],
+    assets: [],
     libraryTotal: 0,
     loading: false,
     error: null,
@@ -181,13 +181,13 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
-    loadImages: async (options?: LibraryListScope) => {
+    loadAssets: async (options?: LibraryListScope) => {
       if (shouldSkipRemoteListLoad()) {
         return;
       }
 
       if (isLocalListMode()) {
-        await refreshLocalImageList(set, options);
+        await refreshLocalAssetList(set, options);
         return;
       }
 
@@ -202,10 +202,10 @@ export const useImageStore = create<ImageState>((set, get) => {
 
       set({ loading: true, error: null });
       try {
-        const uniqueImages = await loadRemoteImageList(storageProvider);
+        const uniqueAssets = await loadRemoteAssetList(storageProvider);
         set({
-          images: uniqueImages,
-          libraryTotal: uniqueImages.length,
+          assets: uniqueAssets,
+          libraryTotal: uniqueAssets.length,
           loading: false,
         });
       } catch (error) {
@@ -218,86 +218,86 @@ export const useImageStore = create<ImageState>((set, get) => {
       }
     },
 
-    uploadImage: async (uploadData: ImageUploadData) =>
-      uploadAssetImage(
+    uploadAsset: async (uploadData: AssetUploadData) =>
+      uploadAsset(
         uploadData,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    uploadMultipleImages: async (uploadData: MultiImageUploadData) =>
-      uploadMultipleAssetImages(
+    uploadMultipleAssets: async (uploadData: MultiAssetUploadData) =>
+      uploadMultipleAssets(
         uploadData,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    deleteImage: async (imageId: string, fileName: string) =>
-      deleteAssetImage(
-        imageId,
+    deleteAsset: async (assetId: string, fileName: string) =>
+      deleteAsset(
+        assetId,
         fileName,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    deleteMultipleImages: async (imageIds: string[], fileNames: string[]) =>
-      deleteMultipleAssetImages(
-        imageIds,
+    deleteMultipleAssets: async (assetIds: string[], fileNames: string[]) =>
+      deleteMultipleAssets(
+        assetIds,
         fileNames,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    updateImage: async (editData: ImageEditData) =>
-      updateAssetImage(
+    updateAsset: async (editData: AssetEditData) =>
+      updateAsset(
         editData,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    batchUpdateMetadata: async (imageIds, patch) =>
+    batchUpdateMetadata: async (assetIds, patch) =>
       batchUpdateAssetMetadata(
-        imageIds,
+        assetIds,
         patch,
         () => ({
-          images: get().images,
+          assets: get().assets,
           storageProvider: get().storageProvider,
           storageType: get().storageType,
         }),
         set,
       ),
 
-    addImage: (image: ImageItem) => {
+    addAsset: (asset: AssetItem) => {
       set(state => ({
-        images: state.images.some(img => img.id === image.id)
-          ? state.images.map(img => (img.id === image.id ? image : img))
-          : [...state.images, image],
+        assets: state.assets.some(img => img.id === asset.id)
+          ? state.assets.map(img => (img.id === asset.id ? image : img))
+          : [...state.assets, image],
       }));
     },
 
-    removeImage: (imageId: string) => {
+    removeAsset: (assetId: string) => {
       set(state => ({
-        images: state.images.filter(img => img.id !== imageId),
+        assets: state.assets.filter(img => img.id !== assetId),
       }));
     },
 
@@ -319,9 +319,9 @@ export const useImageStore = create<ImageState>((set, get) => {
   };
 });
 
-registerLibraryImageReset(() => {
-  useImageStore.setState({
-    images: [],
+registerLibraryAssetReset(() => {
+  useAssetStore.setState({
+    assets: [],
     libraryTotal: 0,
     loading: false,
     error: null,
@@ -329,18 +329,18 @@ registerLibraryImageReset(() => {
 });
 
 registerSourceSelectionPort({
-  getStorageType: () => useImageStore.getState().storageType,
-  getGitHubConfig: () => useImageStore.getState().githubConfig,
-  getGiteeConfig: () => useImageStore.getState().giteeConfig,
-  getStorageProvider: () => useImageStore.getState().storageProvider,
-  setStorageType: type => useImageStore.setState({ storageType: type }),
-  setGitHubConfig: config => useImageStore.getState().setGitHubConfig(config),
-  setGiteeConfig: config => useImageStore.getState().setGiteeConfig(config),
-  clearGitHubConfig: () => useImageStore.getState().clearGitHubConfig(),
-  clearGiteeConfig: () => useImageStore.getState().clearGiteeConfig(),
-  loadImages: () => useImageStore.getState().loadImages(),
+  getStorageType: () => useAssetStore.getState().storageType,
+  getGitHubConfig: () => useAssetStore.getState().githubConfig,
+  getGiteeConfig: () => useAssetStore.getState().giteeConfig,
+  getStorageProvider: () => useAssetStore.getState().storageProvider,
+  setStorageType: type => useAssetStore.setState({ storageType: type }),
+  setGitHubConfig: config => useAssetStore.getState().setGitHubConfig(config),
+  setGiteeConfig: config => useAssetStore.getState().setGiteeConfig(config),
+  clearGitHubConfig: () => useAssetStore.getState().clearGitHubConfig(),
+  clearGiteeConfig: () => useAssetStore.getState().clearGiteeConfig(),
+  loadAssets: () => useAssetStore.getState().loadAssets(),
   initializeStorageIfNeeded: () => {
-    const { storageProvider, initializeStorage } = useImageStore.getState();
+    const { storageProvider, initializeStorage } = useAssetStore.getState();
     if (!storageProvider) {
       initializeStorage();
     }

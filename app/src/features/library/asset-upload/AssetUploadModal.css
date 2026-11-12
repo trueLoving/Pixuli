@@ -1,4 +1,4 @@
-.image-upload-modal-overlay {
+.asset-upload-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -9,7 +9,7 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
-.image-upload-modal-content {
+.asset-upload-modal-content {
   display: flex;
   width: 100%;
   max-width: 40rem;
@@ -23,7 +23,7 @@
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
-.image-upload-modal-header {
+.asset-upload-modal-header {
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -32,14 +32,14 @@
   border-bottom: 1px solid var(--pix-border);
 }
 
-.image-upload-modal-title {
+.asset-upload-modal-title {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--pix-fg);
 }
 
-.image-upload-modal-close {
+.asset-upload-modal-close {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -51,12 +51,12 @@
   cursor: pointer;
 }
 
-.image-upload-modal-close:hover {
+.asset-upload-modal-close:hover {
   background: var(--pix-bg-subtle);
   color: var(--pix-fg);
 }
 
-.image-upload-modal-body {
+.asset-upload-modal-body {
   display: flex;
   min-height: 0;
   flex: 1;
@@ -66,31 +66,31 @@
   background: var(--pix-bg-elevated);
 }
 
-.image-upload-modal-body:not(:has(.image-upload-form)) {
+.asset-upload-modal-body:not(:has(.asset-upload-form)) {
   overflow: auto;
   padding-bottom: 1.25rem;
 }
 
 @media (max-width: 767px) {
-  .image-upload-modal-overlay {
+  .asset-upload-modal-overlay {
     padding-top: max(1rem, env(safe-area-inset-top));
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  .image-upload-modal-body {
+  .asset-upload-modal-body {
     padding: 1rem 1.25rem 0;
   }
 
-  .image-upload-modal-body:not(:has(.image-upload-form)) {
+  .asset-upload-modal-body:not(:has(.asset-upload-form)) {
     padding-bottom: 1.25rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .image-upload-modal-overlay,
-  .image-upload-modal-content {
+  .asset-upload-modal-overlay,
+  .asset-upload-modal-content {
     animation: none;
   }
 }

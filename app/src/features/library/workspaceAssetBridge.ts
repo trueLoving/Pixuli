@@ -1,16 +1,16 @@
-import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import type { AssetItem, AssetUploadData } from '@pixuli/core/types';
 import type { LibraryListScope } from '@/features/library/libraryListScope';
 
 /** workspace → library：工作区变更时重置资源库列表 */
-export type LibraryImageReset = () => void;
+export type LibraryAssetReset = () => void;
 
-/** library → workspace：本地工作区 CRUD 端口（避免 imageStore 直接依赖 workspaceStore） */
+/** library → workspace：本地工作区 CRUD 端口（避免 assetStore 直接依赖 workspaceStore） */
 export interface WorkspaceLibraryPort {
   isLocalActive(): boolean;
-  refreshLocalImages(options?: LibraryListScope): Promise<void>;
-  getLocalImages(): ImageItem[];
+  refreshLocalAssets(options?: LibraryListScope): Promise<void>;
+  getLocalAssets(): AssetItem[];
   getScopedTotal(): number;
-  importLocalImage(uploadData: ImageUploadData): Promise<ImageItem | null>;
+  importLocalAsset(uploadData: AssetUploadData): Promise<AssetItem | null>;
   softDeleteLocal(relativePath: string): Promise<void>;
   moveLocalFile(relativePath: string, targetDir: string): Promise<void>;
   updateLocalMetadata(
@@ -25,17 +25,17 @@ export interface WorkspaceLibraryPort {
 
 const inactivePort: WorkspaceLibraryPort = {
   isLocalActive: () => false,
-  refreshLocalImages: async () => undefined,
-  getLocalImages: () => [],
+  refreshLocalAssets: async () => undefined,
+  getLocalAssets: () => [],
   getScopedTotal: () => 0,
-  importLocalImage: async () => null,
+  importLocalAsset: async () => null,
   softDeleteLocal: async () => undefined,
   moveLocalFile: async () => undefined,
   updateLocalMetadata: async () => undefined,
 };
 
 let workspacePort: WorkspaceLibraryPort | null = null;
-let resetLibraryImages: LibraryImageReset | null = null;
+let resetLibraryAssets: LibraryAssetReset | null = null;
 
 export function registerWorkspaceLibraryPort(port: WorkspaceLibraryPort): void {
   workspacePort = port;
@@ -45,10 +45,10 @@ export function getWorkspaceLibraryPort(): WorkspaceLibraryPort {
   return workspacePort ?? inactivePort;
 }
 
-export function registerLibraryImageReset(reset: LibraryImageReset): void {
-  resetLibraryImages = reset;
+export function registerLibraryAssetReset(reset: LibraryAssetReset): void {
+  resetLibraryAssets = reset;
 }
 
 export function notifyWorkspaceCleared(): void {
-  resetLibraryImages?.();
+  resetLibraryAssets?.();
 }

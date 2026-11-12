@@ -1,21 +1,21 @@
-import type { ImageItem } from '../types/image';
-import type { SortField, SortOrder } from '../types/image-browser';
+import type { AssetItem } from '../types/asset';
+import type { SortField, SortOrder } from '../types/asset-browser';
 
 /**
- * 对图片数组进行排序
- * @param images 图片数组
+ * 对资源数组进行排序
+ * @param assets 资源数组
  * @param sortField 排序字段
  * @param sortOrder 排序顺序
- * @returns 排序后的图片数组
+ * @returns 排序后的资源数组
  */
-function sortImages(
-  images: ImageItem[],
+function sortAssets(
+  assets: AssetItem[],
   sortField: SortField,
   sortOrder: SortOrder,
-): ImageItem[] {
-  const sortedImages = [...images];
+): AssetItem[] {
+  const sortedAssets = [...assets];
 
-  sortedImages.sort((a, b) => {
+  sortedAssets.sort((a, b) => {
     let comparison = 0;
 
     switch (sortField) {
@@ -47,20 +47,20 @@ function sortImages(
     return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  return sortedImages;
+  return sortedAssets;
 }
 
 /**
- * 获取排序后的图片数组（包含默认排序）
- * @param images 原始图片数组
+ * 获取排序后的资源数组（包含默认排序）
+ * @param assets 原始资源数组
  * @param sortField 排序字段
  * @param sortOrder 排序顺序
- * @returns 排序后的图片数组
+ * @returns 排序后的资源数组
  */
-export function getSortedImages(
-  images: ImageItem[],
+export function getSortedAssets(
+  assets: AssetItem[],
   sortField: SortField = 'createdAt',
   sortOrder: SortOrder = 'desc',
-): ImageItem[] {
-  return sortImages(images, sortField, sortOrder);
+): AssetItem[] {
+  return sortAssets(assets, sortField, sortOrder);
 }

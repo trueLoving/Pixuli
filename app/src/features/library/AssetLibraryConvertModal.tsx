@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import type { OutputMimeType } from '@/features/tools/imageProcessor';
 import { readAssetBytes } from '@/features/library/assetDownloadService';
 import { X } from 'lucide-react';
@@ -31,11 +31,11 @@ const FORMAT_LABEL: Record<OutputMimeType, string> = {
 
 export interface AssetLibraryConvertModalProps {
   isOpen: boolean;
-  items: ImageItem[];
+  items: AssetItem[];
   t: (key: string) => string;
   onClose: () => void;
   onConvert: (request: ImageConvertRequest) => Promise<void>;
-  onCrop: (item: ImageItem, crop: ImageCropRect) => Promise<{ saved: number }>;
+  onCrop: (item: AssetItem, crop: ImageCropRect) => Promise<{ saved: number }>;
 }
 
 export const AssetLibraryConvertModal: React.FC<

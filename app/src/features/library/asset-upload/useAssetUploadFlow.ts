@@ -4,9 +4,9 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageUploadData,
-  MultiImageUploadData,
-  WebImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
+  WebAssetUploadData,
 } from '@pixuli/core/types';
 import {
   showInfo,
@@ -19,13 +19,13 @@ import {
   getImageDimensions,
   isPreviewableMedia,
   resolveDefaultFolder,
-} from './imageUploadUtils';
-import { useImageUploadCapture } from './useImageUploadCapture';
-import { useImageUploadCompression } from './useImageUploadCompression';
+} from './assetUploadUtils';
+import { useAssetUploadCapture } from './useAssetUploadCapture';
+import { useAssetUploadCompression } from './useAssetUploadCompression';
 
-export interface UseImageUploadFlowOptions {
-  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
+export interface UseAssetUploadFlowOptions {
+  onUploadAsset: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets: (data: MultiAssetUploadData) => Promise<unknown>;
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   translate: (key: string) => string;
@@ -39,9 +39,9 @@ export interface UseImageUploadFlowOptions {
   onInitialFilesConsumed?: () => void;
 }
 
-export function useImageUploadFlow({
-  onUploadImage,
-  onUploadMultipleImages,
+export function useAssetUploadFlow({
+  onUploadAsset,
+  onUploadMultipleAssets,
   loading,
   batchUploadProgress,
   translate,
@@ -53,7 +53,7 @@ export function useImageUploadFlow({
   defaultFolder,
   initialFiles,
   onInitialFilesConsumed,
-}: UseImageUploadFlowOptions) {
+}: UseAssetUploadFlowOptions) {
   const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
@@ -62,9 +62,9 @@ export function useImageUploadFlow({
     };
   }, []);
 
-  const [uploadData, setUploadData] = useState<WebImageUploadData | null>(null);
+  const [uploadData, setUploadData] = useState<WebAssetUploadData | null>(null);
   const [multiUploadData, setMultiUploadData] =
-    useState<MultiImageUploadData | null>(null);
+    useState<MultiAssetUploadData | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isMultiple, setIsMultiple] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -81,7 +81,7 @@ export function useImageUploadFlow({
     transferCaptureMetadata,
     getCaptureMetadata,
     buildCaptureMetadataList,
-  } = useImageUploadCapture();
+  } = useAssetUploadCapture();
 
   const {
     userWantsCompress,
@@ -94,7 +94,7 @@ export function useImageUploadFlow({
     handleCompressionToggle: toggleCompressionPreview,
     handleCompressionConfigChange: applyCompressionConfig,
     resetCompressionState,
-  } = useImageUploadCompression({
+  } = useAssetUploadCompression({
     enableCompression,
     compressionOptions,
     fileDimensions,
@@ -146,13 +146,13 @@ export function useImageUploadFlow({
   );
 
   const performSingleUpload = useCallback(
-    async (finalFile: File, meta: WebImageUploadData) => {
+    async (finalFile: File, meta: WebAssetUploadData) => {
       const fileName = finalFile.name;
       const loadingToast = showLoading(
         `${translate('image.upload.uploadingSingle')} "${fileName}"...`,
       );
       try {
-        await onUploadImage({
+        await onUploadAsset({
           file: finalFile,
           name: fileName,
           description: meta.description || '',
@@ -179,7 +179,7 @@ export function useImageUploadFlow({
       }
     },
     [
-      onUploadImage,
+      onUploadAsset,
       translate,
       defaultFolder,
       getCaptureMetadata,
@@ -189,12 +189,12 @@ export function useImageUploadFlow({
   );
 
   const performMultiUpload = useCallback(
-    async (processedFiles: File[], meta: MultiImageUploadData) => {
+    async (processedFiles: File[], meta: MultiAssetUploadData) => {
       const loadingToast = showLoading(
         `${translate('image.upload.uploadingMultiple')} ${processedFiles.length} ${translate('image.upload.file')}...`,
       );
       try {
-        await onUploadMultipleImages({
+        await onUploadMultipleAssets({
           files: processedFiles,
           name: '',
           description: meta.description || '',
@@ -222,7 +222,7 @@ export function useImageUploadFlow({
       }
     },
     [
-      onUploadMultipleImages,
+      onUploadMultipleAssets,
       translate,
       defaultFolder,
       buildCaptureMetadataList,
@@ -434,7 +434,7 @@ export function useImageUploadFlow({
   };
 
   const handleInputChange = (
-    field: keyof WebImageUploadData,
+    field: keyof WebAssetUploadData,
     value: string | string[],
   ) => {
     if (uploadData) setUploadData({ ...uploadData, [field]: value });
@@ -464,7 +464,7 @@ export function useImageUploadFlow({
   };
 
   const handleMultiInputChange = (
-    field: keyof MultiImageUploadData,
+    field: keyof MultiAssetUploadData,
     value: string | string[],
   ) => {
     if (multiUploadData) {
@@ -626,14 +626,14 @@ export function useImageUploadFlow({
   }, [previewUrls]);
 
   const handleFormFieldChange = (
-    field: keyof WebImageUploadData | keyof MultiImageUploadData,
+    field: keyof WebAssetUploadData | keyof MultiAssetUploadData,
     value: string | string[],
   ) => {
     if (isMultipleUpload) {
-      handleMultiInputChange(field as keyof MultiImageUploadData, value);
+      handleMultiInputChange(field as keyof MultiAssetUploadData, value);
       return;
     }
-    handleInputChange(field as keyof WebImageUploadData, value);
+    handleInputChange(field as keyof WebAssetUploadData, value);
   };
 
   return {

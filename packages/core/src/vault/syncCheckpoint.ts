@@ -5,7 +5,7 @@ import {
   type BindingSyncStateRecord,
 } from './syncPersistence';
 import type {
-  LocalImageIndexEntry,
+  LocalAssetIndexEntry,
   LocalVault,
   WorkspaceAdapter,
 } from './types';
@@ -24,7 +24,7 @@ export interface SyncCheckpointMeta {
 
 export interface SyncCheckpointIndexFile {
   schemaVersion: number;
-  entries: LocalImageIndexEntry[];
+  entries: LocalAssetIndexEntry[];
   folders: string[];
 }
 

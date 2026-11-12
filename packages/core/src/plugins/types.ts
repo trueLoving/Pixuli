@@ -1,4 +1,4 @@
-import type { ImageItem, ImageUploadData, LinkKind } from '../types/image';
+import type { AssetItem, AssetUploadData, LinkKind } from '../types/asset';
 import type { PlatformAdapter } from '../platform/platformAdapter';
 
 export interface StorageCapabilities {
@@ -90,13 +90,13 @@ export interface StorageProvider {
   validateConfig?(
     config: StorageProviderConfig,
   ): Promise<ConfigValidationResult>;
-  listImages(options?: ImageListOptions): Promise<ImageItem[]>;
-  uploadImage(data: ImageUploadData): Promise<ImageItem>;
+  listImages(options?: ImageListOptions): Promise<AssetItem[]>;
+  uploadImage(data: AssetUploadData): Promise<AssetItem>;
   deleteImage(path: string): Promise<void>;
   updateImageMetadata?(
     path: string,
-    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>>,
-  ): Promise<ImageItem>;
+    metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>>,
+  ): Promise<AssetItem>;
   getRawUrl(path: string): string;
   /**
    * 带鉴权下载远端文件字节（pull 优先使用，避免公网 raw 无令牌 / CORS 失败）。
@@ -110,9 +110,9 @@ export interface StorageProvider {
  */
 export interface StorageProviderWithMetadata extends StorageProvider {
   loadImageMetadata(
-    images: ImageItem[],
+    images: AssetItem[],
     options?: ImageMetadataLoadOptions,
-  ): Promise<ImageItem[]>;
+  ): Promise<AssetItem[]>;
 }
 
 /** REF-607：远端同步拉取 */
@@ -129,7 +129,7 @@ export interface SyncPullResult {
     remotePath: string;
     action: 'add' | 'update' | 'delete';
     contentHash?: string;
-    metadata?: Partial<ImageItem>;
+    metadata?: Partial<AssetItem>;
   }>;
   nextCursor?: string;
   /** 列举时顺带发现的子目录（相对工作区） */
@@ -141,7 +141,7 @@ export interface SyncPushItem {
   remotePath: string;
   action: 'upload' | 'delete' | 'metadata';
   file?: Uint8Array;
-  metadata?: Partial<ImageItem>;
+  metadata?: Partial<AssetItem>;
 }
 
 /** 远端文件夹协商摘要（与 vault/syncTree 对齐） */

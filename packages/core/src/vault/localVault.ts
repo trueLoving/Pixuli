@@ -1,7 +1,7 @@
 import { WORKSPACE_PATHS, WORKSPACE_SCHEMA_VERSION } from './paths';
 import { randomUUID } from '../utils/randomUUID';
 import type {
-  LocalImageIndexEntry,
+  LocalAssetIndexEntry,
   LocalListOptions,
   LocalVault,
   WorkspaceAdapter,
@@ -20,7 +20,7 @@ import {
 
 type IndexFile = {
   schemaVersion: number;
-  entries: LocalImageIndexEntry[];
+  entries: LocalAssetIndexEntry[];
 };
 
 type FoldersFile = {
@@ -39,7 +39,7 @@ function joinPath(dir: string, name: string): string {
 
 export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
   let config: WorkspaceConfig | null = null;
-  let index: LocalImageIndexEntry[] = [];
+  let index: LocalAssetIndexEntry[] = [];
   let folders: string[] = [];
 
   const persistConfig = async () => {
@@ -102,7 +102,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
     return initial;
   };
 
-  const loadOrInitIndex = async (): Promise<LocalImageIndexEntry[]> => {
+  const loadOrInitIndex = async (): Promise<LocalAssetIndexEntry[]> => {
     if (await adapter.exists(WORKSPACE_PATHS.index)) {
       const raw = await adapter.readFile(WORKSPACE_PATHS.index);
       const parsed = decodeJson<IndexFile>(raw);

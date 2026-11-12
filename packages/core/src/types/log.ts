@@ -26,8 +26,8 @@ export interface OperationLog {
   status: LogStatus;
   timestamp: number;
   userId?: string;
-  imageId?: string;
-  imageName?: string;
+  assetId?: string;
+  assetName?: string;
   details?: Record<string, unknown>;
   error?: string;
   duration?: number;
@@ -38,7 +38,7 @@ export interface LogFilter {
   status?: LogStatus | LogStatus[];
   startTime?: number;
   endTime?: number;
-  imageId?: string;
+  assetId?: string;
   keyword?: string;
 }
 
@@ -59,8 +59,8 @@ export interface LogStatistics {
 }
 
 export interface OperationLogAddOptions {
-  imageId?: string;
-  imageName?: string;
+  assetId?: string;
+  assetName?: string;
   details?: Record<string, unknown>;
   error?: string;
   duration?: number;

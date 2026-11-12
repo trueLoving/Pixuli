@@ -10,7 +10,7 @@ export function useKeyboardShortcuts(
   showSettingsModal: boolean,
   handleCloseSettingsModal: () => void,
   handleOpenOperationLog: () => void,
-  handleLoadImages: () => Promise<void>,
+  handleLoadAssets: () => Promise<void>,
   handleOpenConfigModal: () => void,
 ) {
   useEffect(() => {
@@ -22,12 +22,12 @@ export function useKeyboardShortcuts(
     };
 
     const handleOpenOperationLogEvent = () => handleOpenOperationLog();
-    const handleRefreshImages = () => handleLoadImages();
+    const handleRefreshAssets = () => handleLoadAssets();
     const handleOpenConfig = () => handleOpenConfigModal();
 
     window.addEventListener('closeModals', handleCloseModals);
     window.addEventListener('openOperationLog', handleOpenOperationLogEvent);
-    window.addEventListener('refreshImages', handleRefreshImages);
+    window.addEventListener('refreshAssets', handleRefreshAssets);
     window.addEventListener('openConfig', handleOpenConfig);
 
     return () => {
@@ -37,7 +37,7 @@ export function useKeyboardShortcuts(
         'openOperationLog',
         handleOpenOperationLogEvent,
       );
-      window.removeEventListener('refreshImages', handleRefreshImages);
+      window.removeEventListener('refreshAssets', handleRefreshAssets);
       window.removeEventListener('openConfig', handleOpenConfig);
     };
   }, [
@@ -45,7 +45,7 @@ export function useKeyboardShortcuts(
     showSettingsModal,
     handleCloseSettingsModal,
     handleOpenOperationLog,
-    handleLoadImages,
+    handleLoadAssets,
     handleOpenConfigModal,
   ]);
 }

@@ -8,7 +8,7 @@ import {
   isWebWorkspaceActive,
   isWorkspaceAvailable,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
@@ -50,7 +50,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     isLocalActive,
     reconnect,
   } = useWorkspaceStore();
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
   const busy = pushing || syncing || loading;
@@ -80,7 +80,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
-      await loadImages();
+      await loadAssets();
     }
   };
 
@@ -89,7 +89,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
-      await loadImages();
+      await loadAssets();
     }
   };
 
@@ -102,7 +102,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     ui.setSelectedFolderPath('');
     ui.closeWorkspaceModal();
     ui.closeSettingsModal();
-    void clearWorkspace().then(() => loadImages());
+    void clearWorkspace().then(() => loadAssets());
   };
 
   if (!localActive) {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useUIStore } from '../uiStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 
 vi.mock('../../storage/registry', async importOriginal => {
   const actual =
@@ -38,12 +38,12 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
       sources: [giteeSource],
       selectedSourceId: 'gt-edit-1',
     });
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: 'gitee',
       githubConfig: null,
       giteeConfig: null,
       storageProvider: null,
-      images: [],
+      assets: [],
       loading: false,
       error: null,
     });
@@ -74,7 +74,7 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
       path: 'images',
     });
 
-    expect(useImageStore.getState().storageType).toBe('gitee');
-    expect(useImageStore.getState().giteeConfig?.owner).toBe('sakura0922');
+    expect(useAssetStore.getState().storageType).toBe('gitee');
+    expect(useAssetStore.getState().giteeConfig?.owner).toBe('sakura0922');
   });
 });

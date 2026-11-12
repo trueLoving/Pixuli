@@ -1,7 +1,7 @@
-import type { ImageItem, SortOrder } from '@pixuli/core/types';
+import type { AssetItem, SortOrder } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 
-export function kindLabel(item: ImageItem, t: (key: string) => string): string {
+export function kindLabel(item: AssetItem, t: (key: string) => string): string {
   const kind = getAssetKind(item);
   if (kind === 'video') return t('image.kind.video');
   if (kind === 'pdf') return t('image.kind.pdf');

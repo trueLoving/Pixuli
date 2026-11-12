@@ -1,10 +1,10 @@
 import { Loader2 } from 'lucide-react';
 import React from 'react';
 import type { ImageCompressionOptions } from '@pixuli/core/types';
-import type { CompressionPreviewMap } from './imageUploadTypes';
-import { formatByteSize } from './imageUploadUtils';
+import type { CompressionPreviewMap } from './assetUploadTypes';
+import { formatByteSize } from './assetUploadUtils';
 
-export interface ImageUploadCompressionPanelProps {
+export interface AssetUploadCompressionPanelProps {
   files: File[];
   enableCrop: boolean;
   enableCompression: boolean;
@@ -20,8 +20,8 @@ export interface ImageUploadCompressionPanelProps {
   onCompressionConfigChange: (config: ImageCompressionOptions) => void;
 }
 
-export const ImageUploadCompressionPanel: React.FC<
-  ImageUploadCompressionPanelProps
+export const AssetUploadCompressionPanel: React.FC<
+  AssetUploadCompressionPanelProps
 > = ({
   files,
   enableCrop,
@@ -45,8 +45,8 @@ export const ImageUploadCompressionPanel: React.FC<
   }
 
   return (
-    <div className="image-upload-form-group">
-      <label className="image-upload-form-label">处理选项</label>
+    <div className="asset-upload-form-group">
+      <label className="asset-upload-form-label">处理选项</label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {enableCrop ? (
           <label

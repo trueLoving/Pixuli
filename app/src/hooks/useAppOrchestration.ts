@@ -1,4 +1,4 @@
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useSelectedSourceSync } from '@/features/settings/useSelectedSourceSync';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
@@ -36,7 +36,7 @@ export function useAppOrchestration(): {
   routesProps: AppRoutesOrchestrationProps;
 } {
   const { t } = useI18n();
-  const { loadImages } = useImageStore();
+  const { loadAssets } = useAssetStore();
   const initializeWorkspace = useWorkspaceStore(state => state.initialize);
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const { sources, selectedSourceId } = useSourceStore();
@@ -47,10 +47,10 @@ export function useAppOrchestration(): {
     }
     void initializeWorkspace().then(() => {
       if (useWorkspaceStore.getState().isLocalActive()) {
-        void loadImages();
+        void loadAssets();
       }
     });
-  }, [initializeWorkspace, loadImages]);
+  }, [initializeWorkspace, loadAssets]);
 
   const {
     showSettingsModal,
@@ -73,13 +73,13 @@ export function useAppOrchestration(): {
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
-  const handleLoadImages = useCallback(async () => {
+  const handleLoadAssets = useCallback(async () => {
     try {
-      await loadImages();
+      await loadAssets();
     } catch (error) {
       console.error('Failed to load images:', error);
     }
-  }, [loadImages]);
+  }, [loadAssets]);
 
   const handleEditSourceWithId = useMemo(
     () => (sourceId: string) => {
@@ -100,19 +100,19 @@ export function useAppOrchestration(): {
       return;
     }
     if (sources.length > 0 && selectedSource) {
-      void handleLoadImages();
+      void handleLoadAssets();
     }
   });
 
   useWorkspaceBindingSync();
-  useAppInitialization(hasConfig, handleLoadImages);
+  useAppInitialization(hasConfig, handleLoadAssets);
   useCapacitorBackButton();
   useKeyboardShortcuts(
     t,
     showSettingsModal,
     closeSettingsModal,
     openOperationLog,
-    handleLoadImages,
+    handleLoadAssets,
     openConfigModal,
   );
 

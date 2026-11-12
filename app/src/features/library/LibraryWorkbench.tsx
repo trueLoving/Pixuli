@@ -3,10 +3,10 @@ import { EmptyState } from '@/features/library/empty-state';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type {
-  ImageEditData,
-  ImageItem,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetEditData,
+  AssetItem,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 import React, {
   useCallback,
@@ -20,10 +20,10 @@ import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
 import { AssetLibraryBatchMoveModal } from './AssetLibraryBatchMoveModal';
 import { AssetLibraryConvertModal } from './AssetLibraryConvertModal';
-import { convertLibraryImages, cropLibraryImage } from './convertLibraryImages';
+import { convertLibraryAssets, cropLibraryAsset } from './convertLibraryAssets';
 import type { ImageConvertRequest, ImageCropRect } from './imageConvertTarget';
 import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
-import { copyImagePublicLinks } from '@/features/library/copyImageLink';
+import { copyAssetPublicLinks } from '@/features/library/copyAssetLink';
 import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
 import { libraryProcessModes } from '@/features/library/libraryProcess';
@@ -39,12 +39,12 @@ import {
 } from '@/ui/feedback/toast';
 import { useMobileViewport, useWideViewport } from '@/hooks/useMobileViewport';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import { useImageCopyUrl } from '@/features/library/useImageCopyUrl';
+import { useAssetCopyUrl } from '@/features/library/useAssetCopyUrl';
 import {
-  useNativeImagePickers,
-  useNativeShareImage,
-} from '@/features/library/useNativeImageActions';
-import { useImageStore } from '@/features/library/imageStore';
+  useNativeAssetPickers,
+  useNativeShareAsset,
+} from '@/features/library/useNativeAssetActions';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -55,23 +55,23 @@ export interface LibraryWorkbenchProps {
   hasConfig: boolean;
   error: string | null;
   onClearError: () => void;
-  images: ImageItem[];
+  assets: AssetItem[];
   loading: boolean;
-  onDeleteImage: (imageId: string, fileName: string) => Promise<void>;
-  onDeleteMultipleImages?: (
-    imageIds: string[],
+  onDeleteAsset: (assetId: string, fileName: string) => Promise<void>;
+  onDeleteMultipleAssets?: (
+    assetIds: string[],
     fileNames: string[],
   ) => Promise<void>;
-  onUpdateImage: (data: ImageEditData) => Promise<void>;
+  onUpdateAsset: (data: AssetEditData) => Promise<void>;
   onBatchUpdateMetadata: (
-    imageIds: string[],
+    assetIds: string[],
     patch: BatchMetadataPatch,
   ) => Promise<{ updated: number; failed: number }>;
   t: (key: string, options?: Record<string, unknown>) => string;
   search?: LibrarySearchConfig;
 }
 
-function resolveImageErrorMessage(
+function resolveAssetErrorMessage(
   error: string,
   t: (key: string, options?: Record<string, unknown>) => string,
 ): string {
@@ -89,22 +89,22 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   hasConfig,
   error,
   onClearError,
-  images,
+  assets,
   loading,
-  onDeleteImage,
-  onDeleteMultipleImages,
-  onUpdateImage,
+  onDeleteAsset,
+  onDeleteMultipleAssets,
+  onUpdateAsset,
   onBatchUpdateMetadata,
   t,
   search,
 }) => {
-  const uploadImage = useImageStore(state => state.uploadImage);
-  const uploadMultipleImages = useImageStore(
-    state => state.uploadMultipleImages,
+  const uploadAsset = useAssetStore(state => state.uploadAsset);
+  const uploadMultipleAssets = useAssetStore(
+    state => state.uploadMultipleAssets,
   );
-  const batchUploadProgress = useImageStore(state => state.batchUploadProgress);
-  const imageLoading = useImageStore(state => state.loading);
-  const loadImages = useImageStore(state => state.loadImages);
+  const batchUploadProgress = useAssetStore(state => state.batchUploadProgress);
+  const assetLoading = useAssetStore(state => state.loading);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const workspaceMode = useWorkspaceStore(state => state.mode);
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const localActive = isWorkspaceAvailable() && workspaceMode === 'local';
@@ -119,10 +119,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       : sources[0];
     return source ? isStoredSourcePrivate(source) : false;
   }, [getSourceById, selectedSourceId, sources]);
-  const uploadLoading = localActive ? workspaceLoading : imageLoading;
-  const onCopyUrl = useImageCopyUrl();
-  const nativePickers = useNativeImagePickers();
-  const onShareImage = useNativeShareImage();
+  const uploadLoading = localActive ? workspaceLoading : assetLoading;
+  const onCopyUrl = useAssetCopyUrl();
+  const nativePickers = useNativeAssetPickers();
+  const onShareAsset = useNativeShareAsset();
   const isMobile = useMobileViewport();
   const isWide = useWideViewport();
   const requestSync = useCallback(() => {
@@ -139,33 +139,33 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     state => state.setWorkspaceExplorerOpen,
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [selectedItems, setSelectedItems] = useState<ImageItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<AssetItem[]>([]);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [batchEditOpen, setBatchEditOpen] = useState(false);
   const [batchMoveOpen, setBatchMoveOpen] = useState(false);
-  const [moveOverride, setMoveOverride] = useState<ImageItem[] | null>(null);
+  const [moveOverride, setMoveOverride] = useState<AssetItem[] | null>(null);
   const [previewRequest, setPreviewRequest] = useState<{
     id: string;
     nonce: number;
   } | null>(null);
-  const [convertTargets, setConvertTargets] = useState<ImageItem[] | null>(
+  const [convertTargets, setConvertTargets] = useState<AssetItem[] | null>(
     null,
   );
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const selectedImages = useMemo(
+  const selectedAssets = useMemo(
     () =>
       selectedIds
         .map(
           id =>
             selectedItems.find(item => item.id === id) ??
-            images.find(item => item.id === id),
+            assets.find(item => item.id === id),
         )
-        .filter((item): item is ImageItem => Boolean(item)),
-    [images, selectedIds, selectedItems],
+        .filter((item): item is AssetItem => Boolean(item)),
+    [assets, selectedIds, selectedItems],
   );
 
-  const selectedImage = selectedImages.length === 1 ? selectedImages[0] : null;
+  const selectedAsset = selectedAssets.length === 1 ? selectedAssets[0] : null;
   const hasSelection = selectedIds.length > 0;
   const showDockedInspector =
     !isMobile && !inspectorCollapsed && (isWide || hasSelection);
@@ -175,20 +175,20 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     isMobile && hasSelection && (multiSelectMode || selectedIds.length >= 2);
 
   const errorMessage = useMemo(
-    () => (error ? resolveImageErrorMessage(error, t) : null),
+    () => (error ? resolveAssetErrorMessage(error, t) : null),
     [error, t],
   );
 
   const handleRetry = useCallback(() => {
     onClearError();
-    void loadImages();
-  }, [loadImages, onClearError]);
+    void loadAssets();
+  }, [loadAssets, onClearError]);
 
-  const imagesRef = useRef(images);
-  imagesRef.current = images;
+  const assetsRef = useRef(assets);
+  assetsRef.current = assets;
 
   const handleSelectedIdsChange = useCallback(
-    (ids: string[], items?: ImageItem[]) => {
+    (ids: string[], items?: AssetItem[]) => {
       setSelectedIds(ids);
       if (items !== undefined) {
         setSelectedItems(items);
@@ -197,8 +197,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       } else {
         setSelectedItems(
           ids
-            .map(id => imagesRef.current.find(item => item.id === id))
-            .filter((item): item is ImageItem => Boolean(item)),
+            .map(id => assetsRef.current.find(item => item.id === id))
+            .filter((item): item is AssetItem => Boolean(item)),
         );
       }
       setSheetOpen(isMobile && ids.length === 1 && !multiSelectMode);
@@ -226,22 +226,22 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     }
   }, []);
 
-  const handleUploadImage = useCallback(
-    (data: ImageUploadData) => uploadImage(data),
-    [uploadImage],
+  const handleUploadAsset = useCallback(
+    (data: AssetUploadData) => uploadAsset(data),
+    [uploadAsset],
   );
 
-  const handleUploadMultipleImages = useCallback(
-    (data: MultiImageUploadData) => uploadMultipleImages(data),
-    [uploadMultipleImages],
+  const handleUploadMultipleAssets = useCallback(
+    (data: MultiAssetUploadData) => uploadMultipleAssets(data),
+    [uploadMultipleAssets],
   );
 
-  const handleSelectImage = useCallback(
+  const handleSelectAsset = useCallback(
     (id: string) => {
       setMultiSelectMode(false);
       const item =
-        imagesRef.current.find(image => image.id === id) ??
-        selectedItems.find(image => image.id === id);
+        assetsRef.current.find(asset => asset.id === id) ??
+        selectedItems.find(asset => asset.id === id);
       handleSelectedIdsChange([id], item ? [item] : undefined);
     },
     [handleSelectedIdsChange, selectedItems],
@@ -265,48 +265,48 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   }, [handleClearSelection, selectedFolderPath]);
 
   const handleBatchDelete = useCallback(async () => {
-    if (selectedImages.length === 0) return;
+    if (selectedAssets.length === 0) return;
     if (
       !confirm(
         t('image.library.confirmDeleteN').replace(
           '{count}',
-          String(selectedImages.length),
+          String(selectedAssets.length),
         ),
       )
     ) {
       return;
     }
-    if (selectedImages.length === 1) {
-      await onDeleteImage(selectedImages[0].id, selectedImages[0].name);
-    } else if (onDeleteMultipleImages) {
-      await onDeleteMultipleImages(
-        selectedImages.map(item => item.id),
-        selectedImages.map(item => item.name),
+    if (selectedAssets.length === 1) {
+      await onDeleteAsset(selectedAssets[0].id, selectedAssets[0].name);
+    } else if (onDeleteMultipleAssets) {
+      await onDeleteMultipleAssets(
+        selectedAssets.map(item => item.id),
+        selectedAssets.map(item => item.name),
       );
     }
     handleClearSelection();
   }, [
     handleClearSelection,
-    onDeleteImage,
-    onDeleteMultipleImages,
-    selectedImages,
+    onDeleteAsset,
+    onDeleteMultipleAssets,
+    selectedAssets,
     t,
   ]);
 
   const handleBatchDownload = useCallback(async () => {
-    if (selectedImages.length === 0) return;
+    if (selectedAssets.length === 0) return;
 
     const loadingToast = showLoading(
-      selectedImages.length === 1
+      selectedAssets.length === 1
         ? t('image.library.batchDownloadSingle')
         : t('image.library.batchDownloadZipping').replace(
             '{count}',
-            String(selectedImages.length),
+            String(selectedAssets.length),
           ),
     );
 
     try {
-      const result = await downloadAssetsAsZip(selectedImages);
+      const result = await downloadAssetsAsZip(selectedAssets);
       if (result.failed > 0) {
         updateLoadingToError(
           loadingToast,
@@ -320,7 +320,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
       updateLoadingToSuccess(
         loadingToast,
-        selectedImages.length === 1
+        selectedAssets.length === 1
           ? t('image.library.batchDownloadSuccessSingle')
           : t('image.library.batchDownloadSuccessZip').replace(
               '{count}',
@@ -333,22 +333,22 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         t('image.library.batchDownloadFailed'),
       );
     }
-  }, [selectedImages, t]);
+  }, [selectedAssets, t]);
 
   const handleBatchEditSubmit = useCallback(
     async (patch: BatchMetadataPatch) => {
       const result = await onBatchUpdateMetadata(selectedIds, patch);
-      await loadImages();
+      await loadAssets();
       return result;
     },
-    [loadImages, onBatchUpdateMetadata, selectedIds],
+    [loadAssets, onBatchUpdateMetadata, selectedIds],
   );
 
-  const movingImages = moveOverride ?? selectedImages;
+  const movingAssets = moveOverride ?? selectedAssets;
 
   const handleBatchMoveSubmit = useCallback(
     async (targetDir: string) => {
-      const paths = (moveOverride ?? selectedImages)
+      const paths = (moveOverride ?? selectedAssets)
         .map(item => item.localPath)
         .filter((path): path is string => Boolean(path));
       if (paths.length === 0) {
@@ -373,19 +373,19 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       setBatchMoveOpen(false);
       setMoveOverride(null);
       handleClearSelection();
-      await loadImages();
+      await loadAssets();
     },
-    [handleClearSelection, loadImages, moveOverride, selectedImages, t],
+    [handleClearSelection, loadAssets, moveOverride, selectedAssets, t],
   );
 
   const handleSendConvert = useCallback(() => {
     if (!localActive) return;
-    const images = selectedImages.filter(
+    const assets = selectedAssets.filter(
       item => libraryProcessModes(getAssetKind(item)).length > 0,
     );
-    if (images.length === 0) return;
-    setConvertTargets(images);
-  }, [localActive, selectedImages]);
+    if (assets.length === 0) return;
+    setConvertTargets(assets);
+  }, [localActive, selectedAssets]);
 
   const handleConvertSubmit = useCallback(
     async (request: ImageConvertRequest) => {
@@ -393,8 +393,8 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       if (targets.length === 0) return;
       const loadingToast = showLoading(t('image.library.convertSaving'));
       try {
-        const result = await convertLibraryImages(targets, request);
-        await loadImages();
+        const result = await convertLibraryAssets(targets, request);
+        await loadAssets();
         setConvertTargets(null);
         if (result.saved === 0) {
           updateLoadingToError(loadingToast, t('image.library.convertFailed'));
@@ -420,15 +420,15 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         updateLoadingToError(loadingToast, t('image.library.convertFailed'));
       }
     },
-    [convertTargets, loadImages, t],
+    [convertTargets, loadAssets, t],
   );
 
   const handleCropSubmit = useCallback(
-    async (item: ImageItem, crop: ImageCropRect) => {
+    async (item: AssetItem, crop: ImageCropRect) => {
       const loadingToast = showLoading(t('image.library.cropSaving'));
       try {
-        const result = await cropLibraryImage(item, crop);
-        await loadImages();
+        const result = await cropLibraryAsset(item, crop);
+        await loadAssets();
         updateLoadingToSuccess(
           loadingToast,
           t('image.library.convertSuccess').replace(
@@ -442,11 +442,11 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         return { saved: 0 };
       }
     },
-    [loadImages, t],
+    [loadAssets, t],
   );
 
   const notifyCopyLinkResult = useCallback(
-    (result: Awaited<ReturnType<typeof copyImagePublicLinks>>) => {
+    (result: Awaited<ReturnType<typeof copyAssetPublicLinks>>) => {
       if (!result.ok) {
         if (result.offerConnection) {
           showErrorWithAction(
@@ -490,14 +490,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const handleCopyLinks = useCallback(async () => {
     notifyCopyLinkResult(
-      await copyImagePublicLinks(selectedImages, copyLinkOptions),
+      await copyAssetPublicLinks(selectedAssets, copyLinkOptions),
     );
-  }, [copyLinkOptions, notifyCopyLinkResult, selectedImages]);
+  }, [copyLinkOptions, notifyCopyLinkResult, selectedAssets]);
 
-  const handleCopyLinkForImage = useCallback(
-    async (image: ImageItem) => {
+  const handleCopyLinkForAsset = useCallback(
+    async (asset: AssetItem) => {
       notifyCopyLinkResult(
-        await copyImagePublicLinks([image], copyLinkOptions),
+        await copyAssetPublicLinks([asset], copyLinkOptions),
       );
     },
     [copyLinkOptions, notifyCopyLinkResult],
@@ -506,15 +506,15 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const batchSelectionActions = useMemo(
     () =>
       buildBatchSelectionActions(
-        selectedImages,
+        selectedAssets,
         t,
         {
           onBatchEdit:
-            selectedImages.length > 0
+            selectedAssets.length > 0
               ? () => setBatchEditOpen(true)
               : undefined,
           onBatchMove:
-            localActive && selectedImages.length > 0
+            localActive && selectedAssets.length > 0
               ? () => {
                   setMoveOverride(null);
                   setBatchMoveOpen(true);
@@ -523,7 +523,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           onBatchDownload: handleBatchDownload,
           onSync: () => requestSync(),
           onCopyLinks:
-            selectedImages.length > 0
+            selectedAssets.length > 0
               ? () => void handleCopyLinks()
               : undefined,
           onSendConvert: () => {
@@ -543,7 +543,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       hasRemoteConnection,
       localActive,
       requestSync,
-      selectedImages,
+      selectedAssets,
       t,
     ],
   );
@@ -597,35 +597,35 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
   const inspector = (
     <AssetInspector
       key={
-        selectedImages.length >= 2
-          ? `batch:${selectedImages.map(item => item.id).join(',')}`
-          : (selectedImage?.id ?? 'empty')
+        selectedAssets.length >= 2
+          ? `batch:${selectedAssets.map(item => item.id).join(',')}`
+          : (selectedAsset?.id ?? 'empty')
       }
-      image={selectedImage}
-      selectedImages={selectedImages}
-      images={images}
+      asset={selectedAsset}
+      selectedAssets={selectedAssets}
+      assets={assets}
       onClose={handleCloseInspector}
-      onDeleteImage={onDeleteImage}
-      onDeleteMultipleImages={onDeleteMultipleImages}
-      onUpdateImage={onUpdateImage}
+      onDeleteAsset={onDeleteAsset}
+      onDeleteMultipleAssets={onDeleteMultipleAssets}
+      onUpdateAsset={onUpdateAsset}
       onCopyUrl={onCopyUrl}
-      onShareImage={onShareImage}
+      onShareAsset={onShareAsset}
       onSync={() => requestSync()}
       onSendConvert={() => {
         handleSendConvert();
       }}
       onBatchEdit={
-        selectedImages.length > 0 ? () => setBatchEditOpen(true) : undefined
+        selectedAssets.length > 0 ? () => setBatchEditOpen(true) : undefined
       }
       onBatchDownload={handleBatchDownload}
       onCopyLinks={handleCopyLinks}
       onCopyActiveLink={
-        selectedImage
-          ? () => void handleCopyLinkForImage(selectedImage)
+        selectedAsset
+          ? () => void handleCopyLinkForAsset(selectedAsset)
           : undefined
       }
       hasRemoteConnection={hasRemoteConnection}
-      onSelectImage={handleSelectImage}
+      onSelectAsset={handleSelectAsset}
       enableFolderMove={localActive}
       folderOptions={localFolders}
       getImageDimensionsFromUrl={getImageDimensionsFromUrl}
@@ -641,15 +641,15 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       <div className="library-workbench__main">
         <AssetLibrary
           t={t}
-          images={images}
+          assets={assets}
           hasConfig={hasConfig}
           search={search}
           loading={loading}
           errorMessage={errorMessage}
           onDismissError={onClearError}
           onRetry={handleRetry}
-          onUploadImage={handleUploadImage}
-          onUploadMultipleImages={handleUploadMultipleImages}
+          onUploadAsset={handleUploadAsset}
+          onUploadMultipleAssets={handleUploadMultipleAssets}
           uploadLoading={uploadLoading}
           batchUploadProgress={batchUploadProgress}
           nativePickers={nativePickers}
@@ -658,20 +658,20 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           }
           selectedIds={selectedIds}
           onSelectedIdsChange={handleSelectedIdsChange}
-          onDeleteImage={onDeleteImage}
-          onCopyLink={image => void handleCopyLinkForImage(image)}
-          onMoveImage={
+          onDeleteAsset={onDeleteAsset}
+          onCopyLink={asset => void handleCopyLinkForAsset(asset)}
+          onMoveAsset={
             localActive
-              ? image => {
-                  setMoveOverride([image]);
+              ? asset => {
+                  setMoveOverride([asset]);
                   setBatchMoveOpen(true);
-                  handleSelectedIdsChange([image.id], [image]);
+                  handleSelectedIdsChange([asset.id], [asset]);
                 }
               : undefined
           }
-          onOpenFile={image => {
-            handleSelectedIdsChange([image.id], [image]);
-            setPreviewRequest({ id: image.id, nonce: Date.now() });
+          onOpenFile={asset => {
+            handleSelectedIdsChange([asset.id], [asset]);
+            setPreviewRequest({ id: asset.id, nonce: Date.now() });
           }}
           hasRemoteConnection={hasRemoteConnection}
           multiSelectMode={multiSelectMode}
@@ -693,7 +693,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       />
       <AssetLibraryBatchMoveModal
         isOpen={batchMoveOpen}
-        selectedCount={movingImages.length}
+        selectedCount={movingAssets.length}
         folders={localFolders}
         t={t}
         onClose={() => {

@@ -1,4 +1,4 @@
-import type { AssetKind, ImageItem } from '@pixuli/core/types';
+import type { AssetKind, AssetItem } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 
 export type SizeCompare = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
@@ -181,7 +181,7 @@ function hasTag(tags: string[] | undefined, expected: string): boolean {
 }
 
 export function matchesLibraryQuery(
-  item: Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
+  item: Pick<AssetItem, 'name' | 'type' | 'size' | 'tags'>,
   query: LibraryQuery,
 ): boolean {
   for (const term of query.nameTerms) {
@@ -207,7 +207,7 @@ export function matchesLibraryQuery(
 }
 
 export function filterByLibraryQuery<
-  T extends Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
+  T extends Pick<AssetItem, 'name' | 'type' | 'size' | 'tags'>,
 >(items: T[], input: string): T[] {
   const trimmed = input.trim();
   if (!trimmed) return items;

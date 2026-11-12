@@ -3,7 +3,7 @@ import type {
   ImageExifSummary,
   ImageGeoLocation,
 } from '../types/imageCapture';
-import type { ImageItem } from '../types/image';
+import type { AssetItem } from '../types/asset';
 
 export interface BuildImageCaptureMetadataInput {
   source: ImageCaptureMetadata['source'];
@@ -52,7 +52,7 @@ export function buildImageCaptureMetadata(
 
 /** Provider sidecar JSON 公共字段（含可选 `capture`） */
 export function buildProviderSidecarPayload(
-  metadata: ImageItem,
+  metadata: AssetItem,
 ): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     id: metadata.id,

@@ -4,19 +4,19 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 import type { NativeImagePickers } from './nativePickers';
 import ImageCropModal from './ImageCropModal';
-import { ImageUploadBatchProgress } from './ImageUploadBatchProgress';
-import { ImageUploadConfirmForm } from './ImageUploadConfirmForm';
-import { ImageUploadDropzone } from './ImageUploadDropzone';
-import { useImageUploadFlow } from './useImageUploadFlow';
+import { AssetUploadBatchProgress } from './AssetUploadBatchProgress';
+import { AssetUploadConfirmForm } from './AssetUploadConfirmForm';
+import { AssetUploadDropzone } from './AssetUploadDropzone';
+import { useAssetUploadFlow } from './useAssetUploadFlow';
 
-interface ImageUploadProps {
-  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
+interface AssetUploadProps {
+  onUploadAsset: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets: (data: MultiAssetUploadData) => Promise<unknown>;
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   t?: (key: string) => string;
@@ -30,13 +30,13 @@ interface ImageUploadProps {
   onInitialFilesConsumed?: () => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = props => {
+const AssetUpload: React.FC<AssetUploadProps> = props => {
   const translate = props.t || defaultTranslate;
-  const flow = useImageUploadFlow({ ...props, translate });
+  const flow = useAssetUploadFlow({ ...props, translate });
 
   if (flow.showFormContent && flow.currentData) {
     return (
-      <ImageUploadConfirmForm
+      <AssetUploadConfirmForm
         files={flow.files}
         isMultipleUpload={flow.isMultipleUpload}
         currentData={flow.currentData}
@@ -97,13 +97,13 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
       ) : null}
 
       {flow.showProgress && flow.batchUploadProgress ? (
-        <ImageUploadBatchProgress
+        <AssetUploadBatchProgress
           batchUploadProgress={flow.batchUploadProgress}
           translate={flow.translate}
           fileNameAt={index => flow.multiUploadData?.files[index]?.name}
         />
       ) : (
-        <ImageUploadDropzone
+        <AssetUploadDropzone
           getRootProps={flow.getRootProps}
           getInputProps={flow.getInputProps}
           isDragActive={flow.isDragActive}
@@ -119,4 +119,4 @@ const ImageUpload: React.FC<ImageUploadProps> = props => {
   );
 };
 
-export default ImageUpload;
+export default AssetUpload;

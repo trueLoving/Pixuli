@@ -1,7 +1,7 @@
 import type {
   GitHubConfig,
-  ImageItem,
-  ImageUploadData,
+  AssetItem,
+  AssetUploadData,
 } from '@pixuli/core/types';
 import type { StorageProviderConfig } from '@pixuli/core/plugins';
 import {
@@ -39,7 +39,7 @@ export class GitHubStorageService {
     return this.provider.getImageDimensions(file);
   }
 
-  uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+  uploadImage(uploadData: AssetUploadData): Promise<AssetItem> {
     return this.provider.uploadImage(uploadData);
   }
 
@@ -47,22 +47,22 @@ export class GitHubStorageService {
     return this.provider.deleteImage(fileName);
   }
 
-  getImageList(): Promise<ImageItem[]> {
+  getImageList(): Promise<AssetItem[]> {
     return this.provider.listImages();
   }
 
   updateImageInfo(
     imageId: string,
     fileName: string,
-    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>>,
+    metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>>,
   ): Promise<void> {
     return this.provider.updateImageInfo(imageId, fileName, metadata);
   }
 
   loadImageMetadata(
-    images: ImageItem[],
+    images: AssetItem[],
     options?: Parameters<GitHubStorageProvider['loadImageMetadata']>[1],
-  ): Promise<ImageItem[]> {
+  ): Promise<AssetItem[]> {
     return this.provider.loadImageMetadata(images, options);
   }
 }

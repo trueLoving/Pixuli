@@ -9,15 +9,15 @@ import {
 } from '@/platforms/openAsset';
 import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
-import { ImageItem } from '@pixuli/core/types';
+import { AssetItem } from '@pixuli/core/types';
 import { MarkdownDocumentView } from './MarkdownDocumentView';
 import { TextDocumentView } from './TextDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
-import './ImagePreviewModal.css';
+import './AssetPreviewModal.css';
 
-interface ImagePreviewModalProps {
-  image: ImageItem | null;
-  images: ImageItem[];
+interface AssetPreviewModalProps {
+  asset: AssetItem | null;
+  assets: AssetItem[];
   currentIndex: number;
   isOpen: boolean;
   onClose: () => void;
@@ -26,9 +26,9 @@ interface ImagePreviewModalProps {
   t?: (key: string) => string;
 }
 
-const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
-  image,
-  images,
+const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
+  asset,
+  assets,
   currentIndex,
   isOpen,
   onClose,
@@ -37,22 +37,22 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   t,
 }) => {
   const translate = t || defaultTranslate;
-  const src = useResolvedAssetUrl(image);
-  const kind = image ? getAssetKind(image) : 'other';
+  const src = useResolvedAssetUrl(asset);
+  const kind = asset ? getAssetKind(asset) : 'other';
 
   const handlePrevious = useCallback(() => {
-    if (onNavigate && images.length > 1) {
-      const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+    if (onNavigate && assets.length > 1) {
+      const prevIndex = currentIndex > 0 ? currentIndex - 1 : assets.length - 1;
       onNavigate(prevIndex);
     }
-  }, [onNavigate, currentIndex, images.length]);
+  }, [onNavigate, currentIndex, assets.length]);
 
   const handleNext = useCallback(() => {
-    if (onNavigate && images.length > 1) {
-      const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+    if (onNavigate && assets.length > 1) {
+      const nextIndex = currentIndex < assets.length - 1 ? currentIndex + 1 : 0;
       onNavigate(nextIndex);
     }
-  }, [onNavigate, currentIndex, images.length]);
+  }, [onNavigate, currentIndex, assets.length]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -80,7 +80,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     };
   }, [isOpen, handlePrevious, handleNext, onClose]);
 
-  if (!isOpen || !image) {
+  if (!isOpen || !asset) {
     return null;
   }
 
@@ -88,9 +88,9 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     return new Date(dateString).toLocaleDateString('zh-CN');
   };
 
-  const getImageDimensions = () => {
-    if (image.width > 0 && image.height > 0) {
-      return `${image.width} × ${image.height}`;
+  const getAssetDimensions = () => {
+    if (asset.width > 0 && asset.height > 0) {
+      return `${asset.width} × ${asset.height}`;
     }
     return translate('image.grid.dimensionsUnknown');
   };
@@ -99,9 +99,9 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     if (!src) return;
     const platform = getPlatform();
     void downloadAssetOnPlatform(platform, {
-      name: image.name,
+      name: asset.name,
       url: src,
-      localPath: image.localPath,
+      localPath: asset.localPath,
     })
       .then(result => {
         if (result === 'mobile') {
@@ -119,7 +119,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
       return (
         <MarkdownDocumentView
           src={src}
-          localPath={image.localPath}
+          localPath={asset.localPath}
           variant="modal"
           loadingLabel={translate('image.markdown.loading')}
           errorLabel={translate('image.markdown.loadFailed')}
@@ -131,7 +131,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
       return (
         <TextDocumentView
           src={src}
-          localPath={image.localPath}
+          localPath={asset.localPath}
           variant="modal"
           loadingLabel={translate('image.text.loading')}
           errorLabel={translate('image.text.loadFailed')}
@@ -149,7 +149,7 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           controls
           playsInline
           preload="metadata"
-          className="image-preview-modal-media"
+          className="asset-preview-modal-media"
         >
           {translate('image.inspector.openExternal')}
         </video>
@@ -158,12 +158,12 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
 
     if (kind === 'pdf' || kind === 'other') {
       return (
-        <div className="image-preview-modal-file">
+        <div className="asset-preview-modal-file">
           <FileText size={48} aria-hidden />
-          <p className="image-preview-modal-file-name">{image.name}</p>
+          <p className="asset-preview-modal-file-name">{asset.name}</p>
           <button
             type="button"
-            className="image-preview-modal-download"
+            className="asset-preview-modal-download"
             onClick={handleDownload}
           >
             {translate(downloadAssetLabelKey())}
@@ -173,36 +173,36 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
     }
 
     return (
-      <img src={src} alt={image.name} className="image-preview-modal-image" />
+      <img src={src} alt={asset.name} className="asset-preview-modal-image" />
     );
   };
 
   return (
-    <div className="image-preview-modal-overlay">
-      <div className="image-preview-modal-container">
-        <div className="image-preview-modal-content">
+    <div className="asset-preview-modal-overlay">
+      <div className="asset-preview-modal-container">
+        <div className="asset-preview-modal-content">
           <button
             onClick={onClose}
-            className="image-preview-modal-close"
+            className="asset-preview-modal-close"
             title={translate('common.close')}
           >
             <X className="w-5 h-5" />
           </button>
 
-          {images.length > 1 && (
+          {assets.length > 1 && (
             <button
               onClick={handlePrevious}
-              className="image-preview-modal-nav image-preview-modal-nav-left"
+              className="asset-preview-modal-nav asset-preview-modal-nav-left"
               title="←"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
           )}
 
-          {images.length > 1 && (
+          {assets.length > 1 && (
             <button
               onClick={handleNext}
-              className="image-preview-modal-nav image-preview-modal-nav-right"
+              className="asset-preview-modal-nav asset-preview-modal-nav-right"
               title="→"
             >
               <ChevronRight className="w-8 h-8" />
@@ -212,34 +212,34 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
           {renderMedia()}
         </div>
 
-        <div className="image-preview-modal-info">
-          <h3 className="image-preview-modal-title">{image.name}</h3>
+        <div className="asset-preview-modal-info">
+          <h3 className="asset-preview-modal-title">{asset.name}</h3>
 
-          {images.length > 1 && (
-            <div className="image-preview-modal-counter">
-              {currentIndex + 1} / {images.length}
+          {assets.length > 1 && (
+            <div className="asset-preview-modal-counter">
+              {currentIndex + 1} / {assets.length}
             </div>
           )}
 
-          {image.description && (
-            <p className="image-preview-modal-description">
-              {image.description}
+          {asset.description && (
+            <p className="asset-preview-modal-description">
+              {asset.description}
             </p>
           )}
 
-          <div className="image-preview-modal-details">
+          <div className="asset-preview-modal-details">
             {kind === 'image' ? (
-              <div className="image-preview-modal-detail-item">
-                <span>{getImageDimensions()}</span>
+              <div className="asset-preview-modal-detail-item">
+                <span>{getAssetDimensions()}</span>
               </div>
             ) : null}
-            {image.size > 0 && (
-              <div className="image-preview-modal-detail-item">
-                <span>{formatFileSize(image.size)}</span>
+            {asset.size > 0 && (
+              <div className="asset-preview-modal-detail-item">
+                <span>{formatFileSize(asset.size)}</span>
               </div>
             )}
-            <div className="image-preview-modal-detail-item">
-              <span>{formatDate(image.createdAt)}</span>
+            <div className="asset-preview-modal-detail-item">
+              <span>{formatDate(asset.createdAt)}</span>
             </div>
           </div>
         </div>
@@ -248,4 +248,4 @@ const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   );
 };
 
-export default ImagePreviewModal;
+export default AssetPreviewModal;

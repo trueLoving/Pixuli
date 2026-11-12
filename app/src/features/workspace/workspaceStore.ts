@@ -1,4 +1,4 @@
-import { registerWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge';
+import { registerWorkspaceLibraryPort } from '@/features/library/workspaceAssetBridge';
 import {
   clearWorkspace,
   initializeWorkspace,
@@ -10,11 +10,11 @@ import {
 import {
   createLocalFolder,
   deleteLocalFolder,
-  importLocalImage,
+  importLocalAsset,
   moveLocalFile,
   moveLocalFiles,
   refreshLocalFolders,
-  refreshLocalImages,
+  refreshLocalAssets,
   refreshRootDisplayPath,
   renameLocalFolder,
   scanWorkspace,
@@ -39,7 +39,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   rootPath: null,
   displayName: null,
   rootDisplayPath: null,
-  localImages: [],
+  localAssets: [],
   scopedTotal: 0,
   indexPaths: [],
   localFolders: [],
@@ -70,7 +70,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   refreshRootDisplayPath: () => refreshRootDisplayPath(get, set),
 
-  refreshLocalImages: options => refreshLocalImages(get, set, options),
+  refreshLocalAssets: options => refreshLocalAssets(get, set, options),
 
   refreshLocalFolders: () => refreshLocalFolders(get, set),
 
@@ -91,7 +91,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   scanWorkspace: () => scanWorkspace(get, set),
 
-  importLocalImage: uploadData => importLocalImage(get, set, uploadData),
+  importLocalAsset: uploadData => importLocalAsset(get, set, uploadData),
 
   updateLocalMetadata: (relativePath, patch) =>
     updateLocalMetadata(get, set, relativePath, patch),
@@ -120,12 +120,12 @@ registerWorkspaceModeReader(() => useWorkspaceStore.getState().mode);
 
 registerWorkspaceLibraryPort({
   isLocalActive: () => useWorkspaceStore.getState().isLocalActive(),
-  refreshLocalImages: options =>
-    useWorkspaceStore.getState().refreshLocalImages(options),
-  getLocalImages: () => useWorkspaceStore.getState().localImages,
+  refreshLocalAssets: options =>
+    useWorkspaceStore.getState().refreshLocalAssets(options),
+  getLocalAssets: () => useWorkspaceStore.getState().localAssets,
   getScopedTotal: () => useWorkspaceStore.getState().scopedTotal,
-  importLocalImage: uploadData =>
-    useWorkspaceStore.getState().importLocalImage(uploadData),
+  importLocalAsset: uploadData =>
+    useWorkspaceStore.getState().importLocalAsset(uploadData),
   softDeleteLocal: relativePath =>
     useWorkspaceStore.getState().softDeleteLocal(relativePath),
   moveLocalFile: (relativePath, targetDir) =>

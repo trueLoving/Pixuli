@@ -3,14 +3,14 @@ import {
   type StoragePluginId,
 } from '@/storage/createProvider';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 import type { LibraryListScope } from '@/features/library/libraryListScope';
-import { getWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge';
+import { getWorkspaceLibraryPort } from '@/features/library/workspaceAssetBridge';
 
 export type AssetListPatch = {
-  images?: ImageItem[];
-  /** 当前范围匹配总数；未截断时等于 images.length */
+  assets?: AssetItem[];
+  /** 当前范围匹配总数；未截断时等于 assets.length */
   libraryTotal?: number;
   loading?: boolean;
   error?: string | null;
@@ -24,8 +24,8 @@ export function shouldSkipRemoteListLoad(): boolean {
   return isWorkspaceAvailable() && !isLocalListMode();
 }
 
-export function dedupeImagesById(images: ImageItem[]): ImageItem[] {
-  return images.reduce((acc: ImageItem[], current) => {
+export function dedupeAssetsById(assets: AssetItem[]): AssetItem[] {
+  return assets.reduce((acc: AssetItem[], current) => {
     const existingIndex = acc.findIndex(img => img.id === current.id);
     if (existingIndex === -1) {
       acc.push(current);
@@ -39,7 +39,7 @@ export function dedupeImagesById(images: ImageItem[]): ImageItem[] {
   }, []);
 }
 
-export async function refreshLocalImageList(
+export async function refreshLocalAssetList(
   set: (partial: AssetListPatch) => void,
   options?: LibraryListScope,
 ): Promise<void> {
@@ -49,9 +49,9 @@ export async function refreshLocalImageList(
     set({ loading: true, error: null });
   }
   try {
-    await workspace.refreshLocalImages(options);
+    await workspace.refreshLocalAssets(options);
     set({
-      images: workspace.getLocalImages(),
+      assets: workspace.getLocalAssets(),
       libraryTotal: workspace.getScopedTotal(),
       loading: false,
     });
@@ -63,11 +63,11 @@ export async function refreshLocalImageList(
   }
 }
 
-export async function loadRemoteImageList(
+export async function loadRemoteAssetList(
   storageProvider: StorageProvider,
-): Promise<ImageItem[]> {
-  const images = await storageProvider.listImages();
-  return dedupeImagesById(images);
+): Promise<AssetItem[]> {
+  const assets = await storageProvider.listImages();
+  return dedupeAssetsById(assets);
 }
 
 export function unconfiguredStorageError(
