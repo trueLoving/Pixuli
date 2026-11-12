@@ -6,6 +6,7 @@ export function kindLabel(item: ImageItem, t: (key: string) => string): string {
   if (kind === 'video') return t('image.kind.video');
   if (kind === 'pdf') return t('image.kind.pdf');
   if (kind === 'markdown') return t('image.kind.markdown');
+  if (kind === 'text') return t('image.kind.text');
   if (kind === 'other') return t('image.kind.other');
   return t('image.kind.image');
 }

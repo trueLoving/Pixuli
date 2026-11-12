@@ -19,6 +19,7 @@ const KIND_VALUES = new Set<AssetKind>([
   'video',
   'pdf',
   'markdown',
+  'text',
   'other',
 ]);
 
@@ -86,6 +87,7 @@ function parseKindValue(value: string): AssetKind | null {
   if (v === '视频') return 'video';
   if (v === 'pdf') return 'pdf';
   if (v === 'md' || v === 'markdown' || v === '文档') return 'markdown';
+  if (v === 'txt' || v === '文本') return 'text';
   if (v === '其它' || v === '其他') return 'other';
   return null;
 }

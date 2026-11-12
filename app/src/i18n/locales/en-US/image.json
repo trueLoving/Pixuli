@@ -306,12 +306,17 @@
       "video": "Videos",
       "pdf": "PDF",
       "markdown": "Markdown",
+      "text": "Text",
       "other": "Other",
       "all": "All"
     },
     "markdown": {
       "loading": "Loading Markdown…",
       "loadFailed": "Failed to load Markdown"
+    },
+    "text": {
+      "loading": "Loading text…",
+      "loadFailed": "Failed to load text"
     },
     "edit": {
       "title": "Edit file information",

@@ -27,6 +27,9 @@ export function getAssetKind(
   ) {
     return 'markdown';
   }
+  if (mime === 'text/plain' || ext === 'txt') {
+    return 'text';
+  }
   if (
     mime.startsWith('video/') ||
     ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)

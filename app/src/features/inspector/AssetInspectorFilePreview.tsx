@@ -11,6 +11,7 @@ import {
 import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { MarkdownDocumentView } from './MarkdownDocumentView';
+import { TextDocumentView } from './TextDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 export function AssetInspectorFilePreview({
@@ -46,6 +47,34 @@ export function AssetInspectorFilePreview({
     };
   }, [kind, src, image.id, image.name, image.type]);
 
+  if (kind === 'markdown') {
+    return (
+      <div className="asset-inspector-preview asset-inspector-preview--markdown">
+        <MarkdownDocumentView
+          src={src}
+          localPath={image.localPath}
+          variant="inspector"
+          loadingLabel={t('image.markdown.loading')}
+          errorLabel={t('image.markdown.loadFailed')}
+        />
+      </div>
+    );
+  }
+
+  if (kind === 'text') {
+    return (
+      <div className="asset-inspector-preview asset-inspector-preview--text">
+        <TextDocumentView
+          src={src}
+          localPath={image.localPath}
+          variant="inspector"
+          loadingLabel={t('image.text.loading')}
+          errorLabel={t('image.text.loadFailed')}
+        />
+      </div>
+    );
+  }
+
   if (!src) {
     return <div className="asset-inspector-preview" aria-hidden />;
   }
@@ -67,20 +96,6 @@ export function AssetInspectorFilePreview({
         aria-hidden
       >
         <FileVideo size={36} />
-      </div>
-    );
-  }
-
-  if (kind === 'markdown') {
-    return (
-      <div className="asset-inspector-preview asset-inspector-preview--markdown">
-        <MarkdownDocumentView
-          src={src}
-          localPath={image.localPath}
-          variant="inspector"
-          loadingLabel={t('image.markdown.loading')}
-          errorLabel={t('image.markdown.loadFailed')}
-        />
       </div>
     );
   }

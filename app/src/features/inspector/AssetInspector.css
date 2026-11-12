@@ -215,7 +215,8 @@
   color: var(--pix-fg-muted, #6b7280);
 }
 
-.asset-inspector-preview--markdown {
+.asset-inspector-preview--markdown,
+.asset-inspector-preview--text {
   overflow: hidden;
 }
 
