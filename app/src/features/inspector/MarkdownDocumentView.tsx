@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import {
-  getWorkspaceAdapter,
-  isWorkspaceAvailable,
-} from '@/platforms/workspacePlatform';
+import { loadDocumentText } from './loadDocumentText';
 import './MarkdownDocumentView.css';
 
 type MarkdownDocumentViewProps = {
@@ -17,36 +14,6 @@ type MarkdownDocumentViewProps = {
   loadingLabel?: string;
   errorLabel?: string;
 };
-
-async function loadMarkdownText(
-  localPath: string | null | undefined,
-  src: string | null,
-): Promise<string> {
-  const path = localPath?.trim();
-  if (path && isWorkspaceAvailable()) {
-    const bytes = await getWorkspaceAdapter().readFile(path);
-    return new TextDecoder('utf-8').decode(bytes);
-  }
-
-  if (!src) {
-    throw new Error('no markdown source');
-  }
-
-  // blob: 在部分 CSP 下 connect-src 不含 blob，尽量不用 fetch
-  if (src.startsWith('blob:')) {
-    const response = await fetch(src);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    return response.text();
-  }
-
-  const response = await fetch(src);
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-  return response.text();
-}
 
 export function MarkdownDocumentView({
   src,
@@ -75,7 +42,7 @@ export function MarkdownDocumentView({
     setStatus('loading');
     setText(null);
 
-    void loadMarkdownText(localPath, src)
+    void loadDocumentText(localPath, src)
       .then(body => {
         if (cancelled) return;
         setText(body);

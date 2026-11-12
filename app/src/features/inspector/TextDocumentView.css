@@ -1,0 +1,57 @@
+.text-document-view {
+  width: 100%;
+  overflow: auto;
+  text-align: left;
+}
+
+.text-document-view--modal {
+  max-width: min(52rem, 92vw);
+  max-height: min(72vh, 48rem);
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  background: #fafafa;
+  color: #111827;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+}
+
+.text-document-view--inspector {
+  max-height: 18rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--pix-bg-muted, #f9fafb);
+  color: var(--pix-fg, #111827);
+}
+
+.text-document-view-status {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.text-document-view-body {
+  margin: 0;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+html.dark .text-document-view--modal,
+html.dark .text-document-view--inspector {
+  background: #111827;
+  color: #f3f4f6;
+}
+
+html.dark .text-document-view-status {
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .text-document-view--modal {
+    max-width: 94vw;
+    max-height: 62vh;
+    padding: 1rem;
+  }
+}

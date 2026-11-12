@@ -2,7 +2,13 @@
  * 图片浏览/筛选相关共享类型（Web / Mobile）
  */
 
-export type AssetKind = 'image' | 'video' | 'pdf' | 'markdown' | 'other';
+export type AssetKind =
+  | 'image'
+  | 'video'
+  | 'pdf'
+  | 'markdown'
+  | 'text'
+  | 'other';
 
 export interface FilterOptions {
   searchTerm: string;

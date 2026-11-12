@@ -111,6 +111,11 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
           MD
         </span>
       ) : null}
+      {kind === 'text' ? (
+        <span className="asset-library-thumb-badge asset-library-thumb-badge--txt">
+          TXT
+        </span>
+      ) : null}
     </span>
   );
 };

@@ -19,9 +19,9 @@ describe('getAssetKind', () => {
   });
 
   it('defaults unknown files to other', () => {
-    expect(getAssetKind({ name: 'notes.txt', type: 'text/plain' })).toBe(
-      'other',
-    );
+    expect(
+      getAssetKind({ name: 'data.bin', type: 'application/octet-stream' }),
+    ).toBe('other');
   });
 
   it('classifies markdown by mime or extension', () => {
@@ -30,6 +30,11 @@ describe('getAssetKind', () => {
     expect(getAssetKind({ name: 'doc.bin', type: 'text/markdown' })).toBe(
       'markdown',
     );
+  });
+
+  it('classifies plain text by mime or extension', () => {
+    expect(getAssetKind({ name: 'notes.txt', type: '' })).toBe('text');
+    expect(getAssetKind({ name: 'log.bin', type: 'text/plain' })).toBe('text');
   });
 
   it('classifies images by mime or extension', () => {

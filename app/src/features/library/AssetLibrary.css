@@ -537,7 +537,8 @@
   background: var(--pix-violet-soft, #ede9fe);
 }
 
-.asset-library-thumb-icon--markdown {
+.asset-library-thumb-icon--markdown,
+.asset-library-thumb-icon--text {
   color: var(--pix-violet-deep, #5b4fe0);
   background: var(--pix-violet-soft, #ede9fe);
 }
@@ -557,7 +558,8 @@
 }
 
 .asset-library-thumb-badge--pdf,
-.asset-library-thumb-badge--md {
+.asset-library-thumb-badge--md,
+.asset-library-thumb-badge--txt {
   background: color-mix(in srgb, var(--pix-violet-deep, #5b4fe0) 88%, #000);
   letter-spacing: -0.02em;
 }
