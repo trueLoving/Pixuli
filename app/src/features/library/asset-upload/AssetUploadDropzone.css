@@ -1,4 +1,4 @@
-.image-upload-dropzone {
+.asset-upload-dropzone {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,22 +12,22 @@
   text-align: center;
 }
 
-.image-upload-dropzone:hover,
-.image-upload-dropzone:focus-visible,
-.image-upload-dropzone.is-active {
+.asset-upload-dropzone:hover,
+.asset-upload-dropzone:focus-visible,
+.asset-upload-dropzone.is-active {
   border-color: var(--pix-violet);
   background: color-mix(in srgb, var(--pix-violet) 10%, var(--pix-bg-elevated));
   outline: none;
 }
 
-.image-upload-content {
+.asset-upload-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.9rem;
 }
 
-.image-upload-icon-container {
+.asset-upload-icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,28 +38,28 @@
   color: var(--pix-violet);
 }
 
-.image-upload-dropzone.is-active .image-upload-icon-container {
+.asset-upload-dropzone.is-active .asset-upload-icon-container {
   background: var(--pix-violet);
   color: #fff;
 }
 
-.image-upload-icon {
+.asset-upload-icon {
   width: 1.35rem;
   height: 1.35rem;
 }
 
-.image-upload-copy {
+.asset-upload-copy {
   width: 100%;
 }
 
-.image-upload-text {
+.asset-upload-text {
   margin: 0;
   font-size: 1rem;
   font-weight: 650;
   line-height: 1.4;
 }
 
-.image-upload-description {
+.asset-upload-description {
   max-width: 28rem;
   margin: 0.4rem auto 0;
   color: var(--pix-fg-muted);
@@ -67,12 +67,12 @@
   line-height: 1.5;
 }
 
-.image-upload-crop-hint {
+.asset-upload-crop-hint {
   color: var(--pix-violet);
   font-weight: 600;
 }
 
-.image-upload-native-actions {
+.asset-upload-native-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -80,7 +80,7 @@
   margin-top: 1rem;
 }
 
-.image-upload-native-button {
+.asset-upload-native-button {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -93,18 +93,18 @@
   cursor: pointer;
 }
 
-.image-upload-native-button:hover {
+.asset-upload-native-button:hover {
   border-color: var(--pix-violet);
   background: var(--pix-bg-subtle);
 }
 
-.image-upload-native-icon {
+.asset-upload-native-icon {
   width: 1rem;
   height: 1rem;
 }
 
 @media (max-width: 640px) {
-  .image-upload-dropzone {
+  .asset-upload-dropzone {
     min-height: 13rem;
     padding: 1.5rem 1rem;
   }

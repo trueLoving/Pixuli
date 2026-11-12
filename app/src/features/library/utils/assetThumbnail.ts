@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 
 const THUMB_SIZE = 64;
@@ -13,7 +13,7 @@ let activeJobs = 0;
 const waitQueue: Array<() => void> = [];
 
 function cacheKey(
-  item: Pick<ImageItem, 'id' | 'url' | 'name' | 'type'>,
+  item: Pick<AssetItem, 'id' | 'url' | 'name' | 'type'>,
 ): CacheKey {
   return `${getAssetKind(item)}:${item.url || item.id}`;
 }
@@ -184,7 +184,7 @@ export async function capturePdfThumbnail(url: string): Promise<string | null> {
  * 图片请直接使用 `item.url`；失败返回 null，由 UI 回退类型图标。
  */
 export function resolveAssetThumbnail(
-  item: Pick<ImageItem, 'id' | 'url' | 'name' | 'type'>,
+  item: Pick<AssetItem, 'id' | 'url' | 'name' | 'type'>,
 ): Promise<string | null> {
   const kind = getAssetKind(item);
   if (kind === 'image') {

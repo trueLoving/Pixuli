@@ -5,18 +5,18 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
-import type { NativeImagePickers } from './image-upload/nativePickers';
-import ImageUploadModal from './image-upload/ImageUploadModal';
+import type { NativeImagePickers } from './asset-upload/nativePickers';
+import AssetUploadModal from './asset-upload/AssetUploadModal';
 import './UploadButton.css';
 
 export interface UploadButtonProps {
   /** 上传单张图片回调 */
-  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
+  onUploadAsset: (data: AssetUploadData) => Promise<unknown>;
   /** 批量上传图片回调 */
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
+  onUploadMultipleAssets: (data: MultiAssetUploadData) => Promise<unknown>;
   /** 是否正在加载（不再禁用「添加」按钮，避免 §5.1 锁壳） */
   loading?: boolean;
   /** 批量上传进度 */
@@ -49,8 +49,8 @@ export interface UploadButtonHandle {
 const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
   (
     {
-      onUploadImage,
-      onUploadMultipleImages,
+      onUploadAsset,
+      onUploadMultipleAssets,
       batchUploadProgress,
       t,
       enableCrop = false,
@@ -91,16 +91,16 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
     };
 
     // §5.1：点「添加到工作区」后立刻关浮层，写入在后台进行
-    const handleUploadImage = async (data: ImageUploadData) => {
+    const handleUploadAsset = async (data: AssetUploadData) => {
       setIsModalOpen(false);
       setSeedFiles(null);
-      return onUploadImage(data);
+      return onUploadAsset(data);
     };
 
-    const handleUploadMultipleImages = async (data: MultiImageUploadData) => {
+    const handleUploadMultipleAssets = async (data: MultiAssetUploadData) => {
       setIsModalOpen(false);
       setSeedFiles(null);
-      return onUploadMultipleImages(data);
+      return onUploadMultipleAssets(data);
     };
 
     const title = translate('header.upload') || '添加';
@@ -121,11 +121,11 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
         </button>
 
         {isModalOpen && (
-          <ImageUploadModal
+          <AssetUploadModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
-            onUploadImage={handleUploadImage}
-            onUploadMultipleImages={handleUploadMultipleImages}
+            onUploadAsset={handleUploadAsset}
+            onUploadMultipleAssets={handleUploadMultipleAssets}
             loading={false}
             batchUploadProgress={batchUploadProgress}
             t={t}

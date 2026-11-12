@@ -1,14 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import type { ImageItem } from '@pixuli/core/types';
-import { copyImagePublicLinks, resolveCopyLinkFailure } from '../copyImageLink';
+import type { AssetItem } from '@pixuli/core/types';
+import { copyAssetPublicLinks, resolveCopyLinkFailure } from '../copyAssetLink';
 
 vi.mock('@/utils/clipboard', () => ({
   copyTextToClipboard: vi.fn(async () => undefined),
 }));
 
-function makeImage(
-  partial: Partial<ImageItem> & Pick<ImageItem, 'id'>,
-): ImageItem {
+function makeAsset(
+  partial: Partial<AssetItem> & Pick<AssetItem, 'id'>,
+): AssetItem {
   return {
     id: partial.id,
     name: partial.name ?? 'a.png',
@@ -22,7 +22,7 @@ function makeImage(
   };
 }
 
-describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
+describe('resolveCopyLinkFailure / copyAssetPublicLinks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -35,7 +35,7 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
   });
 
   it('needConnection with offerConnection when no remote and not copyable', () => {
-    const local = makeImage({
+    const local = makeAsset({
       id: '1',
       localPath: 'a.png',
       syncState: 'local-only',
@@ -50,7 +50,7 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
   });
 
   it('needSync with offerSync when connected but local-only', () => {
-    const local = makeImage({
+    const local = makeAsset({
       id: '1',
       localPath: 'a.png',
       syncState: 'local-only',
@@ -65,13 +65,13 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
   });
 
   it('success marks privateRepo when repo is private', async () => {
-    const synced = makeImage({
+    const synced = makeAsset({
       id: '1',
       syncState: 'synced',
       publicUrl: 'https://raw.githubusercontent.com/o/r/main/a.png',
       linkKind: 'remote-raw',
     });
-    const result = await copyImagePublicLinks([synced], {
+    const result = await copyAssetPublicLinks([synced], {
       hasRemoteConnection: true,
       repoPrivate: true,
     });
@@ -83,12 +83,12 @@ describe('resolveCopyLinkFailure / copyImagePublicLinks', () => {
   });
 
   it('success without private note for public repo', async () => {
-    const synced = makeImage({
+    const synced = makeAsset({
       id: '1',
       syncState: 'synced',
       publicUrl: 'https://raw.githubusercontent.com/o/r/main/a.png',
     });
-    const result = await copyImagePublicLinks([synced], {
+    const result = await copyAssetPublicLinks([synced], {
       hasRemoteConnection: true,
       repoPrivate: false,
     });

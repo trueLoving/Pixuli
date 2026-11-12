@@ -1,4 +1,4 @@
-import type { ImageItem } from '../types/image';
+import type { AssetItem } from '../types/asset';
 import type { SyncPushItem } from '../plugins/types';
 import { buildProviderSidecarPayload } from '../utils/imageCaptureMetadata';
 import {
@@ -7,7 +7,7 @@ import {
   dirnameRelative,
   getDirManifestRelativePath,
   getManifestEntry,
-  manifestEntryFromImageFields,
+  manifestEntryFromAssetFields,
   parseManifestEntryRecord,
   removeManifestEntry,
   upsertManifestEntry,
@@ -147,10 +147,10 @@ function applyItemToManifest(
     updatedAt: now,
     createdAt: existing?.createdAt ?? now,
     captureMetadata: metadata.captureMetadata ?? existing?.capture,
-  } as ImageItem);
+  } as AssetItem);
   const entry =
     parseManifestEntryRecord(merged) ??
-    manifestEntryFromImageFields({ name: fileName });
+    manifestEntryFromAssetFields({ name: fileName });
   return upsertManifestEntry(manifest, fileName, entry);
 }
 

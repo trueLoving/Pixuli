@@ -3,8 +3,8 @@ import { GiteeStorageProvider } from '../giteeStorageProvider';
 import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import type {
   GiteeConfig,
-  ImageItem,
-  ImageUploadData,
+  AssetItem,
+  AssetUploadData,
 } from '@pixuli/core/types';
 import { createMockResponse, encodeManifestForMock } from './helpers';
 
@@ -93,7 +93,7 @@ describe('GiteeStorageProvider', () => {
   describe('uploadImage', () => {
     it('应该上传图片文件（使用 File）', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const uploadData: ImageUploadData = {
+      const uploadData: AssetUploadData = {
         file,
         name: 'test.jpg',
         description: 'Test image',
@@ -162,7 +162,7 @@ describe('GiteeStorageProvider', () => {
 
     it('应该处理上传失败的情况', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const uploadData: ImageUploadData = {
+      const uploadData: AssetUploadData = {
         file,
         name: 'test.jpg',
       };
@@ -181,7 +181,7 @@ describe('GiteeStorageProvider', () => {
 
     it('应该处理元数据上传失败但不影响图片上传', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const uploadData: ImageUploadData = {
+      const uploadData: AssetUploadData = {
         file,
         name: 'test.jpg',
       };
@@ -435,7 +435,7 @@ describe('GiteeStorageProvider', () => {
 
   describe('loadImageMetadata', () => {
     it('应该加载图片元数据', async () => {
-      const images: ImageItem[] = [
+      const images: AssetItem[] = [
         {
           id: 'id1',
           name: 'image1.jpg',
@@ -487,7 +487,7 @@ describe('GiteeStorageProvider', () => {
     });
 
     it('应该处理元数据不存在的情况', async () => {
-      const images: ImageItem[] = [
+      const images: AssetItem[] = [
         {
           id: 'id1',
           name: 'image1.jpg',
@@ -514,7 +514,7 @@ describe('GiteeStorageProvider', () => {
     });
 
     it('应该处理加载失败的情况', async () => {
-      const images: ImageItem[] = [
+      const images: AssetItem[] = [
         {
           id: 'id1',
           name: 'image1.jpg',
@@ -542,7 +542,7 @@ describe('GiteeStorageProvider', () => {
   describe('私有方法测试（通过公共方法间接测试）', () => {
     it('应该正确构建 raw URL', async () => {
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
-      const uploadData: ImageUploadData = {
+      const uploadData: AssetUploadData = {
         file,
         name: 'test.jpg',
       };

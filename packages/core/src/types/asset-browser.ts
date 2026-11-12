@@ -1,5 +1,5 @@
 /**
- * 图片浏览/筛选相关共享类型（Web / Mobile）
+ * 资源库浏览/筛选相关共享类型（Web / Mobile）
  */
 
 export type AssetKind =

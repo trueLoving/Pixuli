@@ -2,7 +2,7 @@ import { CloudDownload, CloudUpload, Loader2, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useEscapeKey } from '@/ui';
 import { useI18n } from '@/i18n/useI18n';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -24,7 +24,7 @@ export const SyncDirectionModal: React.FC = () => {
   const pendingPush = useWorkspaceStore(
     state => state.syncStatus?.pendingPush ?? 0,
   );
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const [running, setRunning] = useState(false);
@@ -59,7 +59,7 @@ export const SyncDirectionModal: React.FC = () => {
     setActiveDirection(direction);
     try {
       await runSyncWithFeedback(direction, t);
-      await loadImages();
+      await loadAssets();
       close();
     } finally {
       setRunning(false);

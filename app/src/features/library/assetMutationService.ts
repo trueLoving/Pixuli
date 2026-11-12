@@ -3,44 +3,44 @@ import {
   LogStatus,
   useLogStore,
 } from '@/features/operation-log';
-import { getWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge';
+import { getWorkspaceLibraryPort } from '@/features/library/workspaceAssetBridge';
 import {
   isLocalListMode,
-  refreshLocalImageList,
+  refreshLocalAssetList,
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
 import type { StoragePluginId } from '@/storage/createProvider';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import type { AssetEditData, AssetItem } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 
 export type AssetMutationContext = {
-  images: ImageItem[];
+  assets: AssetItem[];
   storageProvider: StorageProvider | null;
   storageType: StoragePluginId | null;
 };
 
 export type AssetMutationSet = (
   partial: Partial<{
-    images: ImageItem[];
+    assets: AssetItem[];
     loading: boolean;
     error: string | null;
   }>,
 ) => void;
 
-export async function deleteAssetImage(
-  imageId: string,
+export async function deleteAsset(
+  assetId: string,
   fileName: string,
   get: () => AssetMutationContext,
   set: AssetMutationSet,
 ): Promise<void> {
   const ctx = get();
   if (isLocalListMode()) {
-    const image = ctx.images.find(img => img.id === imageId);
-    const relativePath = image?.localPath ?? fileName;
+    const asset = ctx.assets.find(item => item.id === assetId);
+    const relativePath = asset?.localPath ?? fileName;
     set({ loading: true, error: null });
     try {
       await getWorkspaceLibraryPort().softDeleteLocal(relativePath);
-      await refreshLocalImageList(set);
+      await refreshLocalAssetList(set);
     } catch (error) {
       set({
         loading: false,
@@ -62,12 +62,12 @@ export async function deleteAssetImage(
     await storageProvider.deleteImage(fileName);
     const duration = Date.now() - startTime;
     set({
-      images: get().images.filter(img => img.id !== imageId),
+      assets: get().assets.filter(item => item.id !== assetId),
       loading: false,
     });
     useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.SUCCESS, {
-      imageId,
-      imageName: fileName,
+      assetId,
+      assetName: fileName,
       duration,
     });
   } catch (error) {
@@ -75,8 +75,8 @@ export async function deleteAssetImage(
     const errorMsg = error instanceof Error ? error.message : '删除图片失败';
     set({ error: errorMsg, loading: false });
     useLogStore.getState().addLog(LogActionType.DELETE, LogStatus.FAILED, {
-      imageId,
-      imageName: fileName,
+      assetId,
+      assetName: fileName,
       error: errorMsg,
       duration,
     });
@@ -85,34 +85,34 @@ export async function deleteAssetImage(
   }
 }
 
-export async function deleteMultipleAssetImages(
-  imageIds: string[],
+export async function deleteMultipleAssets(
+  assetIds: string[],
   fileNames: string[],
   get: () => AssetMutationContext,
   set: AssetMutationSet,
 ): Promise<void> {
   const ctx = get();
-  if (imageIds.length === 0) {
+  if (assetIds.length === 0) {
     return;
   }
 
   const batchLogDetails = {
-    imageIds,
-    imageNames: fileNames,
-    count: imageIds.length,
+    assetIds,
+    assetNames: fileNames,
+    count: assetIds.length,
   };
 
   if (isLocalListMode()) {
     const startTime = Date.now();
     set({ loading: true, error: null });
     try {
-      for (const imageId of imageIds) {
-        const image = ctx.images.find(img => img.id === imageId);
-        if (image?.localPath) {
-          await getWorkspaceLibraryPort().softDeleteLocal(image.localPath);
+      for (const assetId of assetIds) {
+        const asset = ctx.assets.find(item => item.id === assetId);
+        if (asset?.localPath) {
+          await getWorkspaceLibraryPort().softDeleteLocal(asset.localPath);
         }
       }
-      await refreshLocalImageList(set);
+      await refreshLocalAssetList(set);
       useLogStore
         .getState()
         .addLog(LogActionType.BATCH_DELETE, LogStatus.SUCCESS, {
@@ -147,7 +147,7 @@ export async function deleteMultipleAssetImages(
     );
     const duration = Date.now() - startTime;
     set({
-      images: get().images.filter(img => !imageIds.includes(img.id)),
+      assets: get().assets.filter(img => !assetIds.includes(img.id)),
       loading: false,
     });
     useLogStore
@@ -173,16 +173,16 @@ export async function deleteMultipleAssetImages(
   }
 }
 
-export async function updateAssetImage(
-  editData: ImageEditData,
+export async function updateAsset(
+  editData: AssetEditData,
   get: () => AssetMutationContext,
   set: AssetMutationSet,
   options?: { quiet?: boolean },
 ): Promise<boolean> {
   const ctx = get();
-  const { storageProvider, storageType, images } = ctx;
-  const image = images.find(img => img.id === editData.id);
-  if (!image) {
+  const { storageProvider, storageType, assets } = ctx;
+  const asset = assets.find(item => item.id === editData.id);
+  if (!asset) {
     if (!options?.quiet) {
       set({ error: '图片不存在', loading: false });
     }
@@ -190,7 +190,7 @@ export async function updateAssetImage(
   }
 
   if (isLocalListMode()) {
-    if (!image.localPath) {
+    if (!asset.localPath) {
       if (!options?.quiet) {
         set({ error: '本地路径缺失', loading: false });
       }
@@ -202,7 +202,7 @@ export async function updateAssetImage(
     const startTime = Date.now();
     try {
       const workspace = getWorkspaceLibraryPort();
-      let relativePath = image.localPath;
+      let relativePath = asset.localPath;
       if (editData.targetFolder !== undefined && relativePath) {
         const slash = relativePath.lastIndexOf('/');
         const currentFolder = slash === -1 ? '' : relativePath.slice(0, slash);
@@ -217,14 +217,14 @@ export async function updateAssetImage(
         }
       }
       await workspace.updateLocalMetadata(relativePath, {
-        name: editData.name || image.name,
-        description: editData.description ?? image.description,
-        tags: editData.tags ?? image.tags,
+        name: editData.name || asset.name,
+        description: editData.description ?? asset.description,
+        tags: editData.tags ?? asset.tags,
       });
-      await refreshLocalImageList(set, { quiet: true });
+      await refreshLocalAssetList(set, { quiet: true });
       useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
-        imageId: editData.id,
-        imageName: editData.name || image.name,
+        assetId: editData.id,
+        assetName: editData.name || asset.name,
         duration: Date.now() - startTime,
       });
       return true;
@@ -234,8 +234,8 @@ export async function updateAssetImage(
         set({ error: errorMsg, loading: false });
       }
       useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
-        imageId: editData.id,
-        imageName: image.name,
+        assetId: editData.id,
+        assetName: asset.name,
         error: errorMsg,
         duration: Date.now() - startTime,
       });
@@ -266,11 +266,11 @@ export async function updateAssetImage(
   }
   const startTime = Date.now();
   try {
-    const metadata: ImageItem = {
-      ...image,
-      name: editData.name || image.name,
-      description: editData.description ?? image.description,
-      tags: editData.tags ?? image.tags,
+    const metadata: AssetItem = {
+      ...asset,
+      name: editData.name || asset.name,
+      description: editData.description ?? asset.description,
+      tags: editData.tags ?? asset.tags,
       updatedAt: new Date().toISOString(),
     };
 
@@ -278,28 +278,28 @@ export async function updateAssetImage(
 
     const duration = Date.now() - startTime;
     set({
-      images: get().images.map(img =>
-        img.id === editData.id ? { ...img, ...metadata } : img,
+      assets: get().assets.map(item =>
+        item.id === editData.id ? { ...img, ...metadata } : img,
       ),
       ...(options?.quiet ? {} : { loading: false }),
     });
     useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
-      imageId: editData.id,
-      imageName: metadata.name,
+      assetId: editData.id,
+      assetName: metadata.name,
       duration,
       details: {
         changes: {
           name:
-            editData.name !== image.name
-              ? { old: image.name, new: editData.name }
+            editData.name !== asset.name
+              ? { old: asset.name, new: editData.name }
               : undefined,
           description:
-            editData.description !== image.description
-              ? { old: image.description, new: editData.description }
+            editData.description !== asset.description
+              ? { old: asset.description, new: editData.description }
               : undefined,
           tags:
-            editData.tags !== image.tags
-              ? { old: image.tags, new: editData.tags }
+            editData.tags !== asset.tags
+              ? { old: asset.tags, new: editData.tags }
               : undefined,
         },
       },
@@ -312,8 +312,8 @@ export async function updateAssetImage(
       set({ error: errorMsg, loading: false });
     }
     useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.FAILED, {
-      imageId: editData.id,
-      imageName: image.name,
+      assetId: editData.id,
+      assetName: asset.name,
       error: errorMsg,
       duration,
     });
@@ -349,12 +349,12 @@ function mergeTagsAppend(
 }
 
 export async function batchUpdateAssetMetadata(
-  imageIds: string[],
+  assetIds: string[],
   patch: BatchMetadataPatch,
   get: () => AssetMutationContext,
   set: AssetMutationSet,
 ): Promise<{ updated: number; failed: number }> {
-  if (imageIds.length === 0) {
+  if (assetIds.length === 0) {
     return { updated: 0, failed: 0 };
   }
 
@@ -372,20 +372,20 @@ export async function batchUpdateAssetMetadata(
 
   set({ loading: true, error: null });
 
-  for (const imageId of imageIds) {
-    const image = get().images.find(item => item.id === imageId);
-    if (!image) {
+  for (const assetId of assetIds) {
+    const asset = get().assets.find(item => item.id === assetId);
+    if (!asset) {
       failed++;
       continue;
     }
 
-    const nextTags = mergeTagsAppend(image.tags, tagsToAppend);
+    const nextTags = mergeTagsAppend(asset.tags, tagsToAppend);
     const tagsChanged =
       tagsToAppend.length > 0 &&
-      JSON.stringify(nextTags) !== JSON.stringify(image.tags ?? []);
+      JSON.stringify(nextTags) !== JSON.stringify(asset.tags ?? []);
     const descriptionChanged =
       patch.updateDescription &&
-      patch.description !== (image.description ?? '');
+      patch.description !== (asset.description ?? '');
 
     if (!tagsChanged && !descriptionChanged) {
       updated++;
@@ -393,10 +393,10 @@ export async function batchUpdateAssetMetadata(
     }
 
     try {
-      const ok = await updateAssetImage(
+      const ok = await updateAsset(
         {
-          id: image.id,
-          name: image.name,
+          id: asset.id,
+          name: asset.name,
           ...(patch.updateDescription
             ? { description: patch.description }
             : {}),
@@ -413,14 +413,14 @@ export async function batchUpdateAssetMetadata(
     }
   }
 
-  await refreshLocalImageList(set, { quiet: true }).catch(() => undefined);
+  await refreshLocalAssetList(set, { quiet: true }).catch(() => undefined);
   set({ loading: false });
 
   useLogStore.getState().addLog(LogActionType.EDIT, LogStatus.SUCCESS, {
     duration: Date.now() - startTime,
     details: {
       batchMetadata: true,
-      total: imageIds.length,
+      total: assetIds.length,
       updated,
       failed,
     },

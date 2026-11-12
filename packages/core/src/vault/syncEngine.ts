@@ -39,7 +39,7 @@ import {
   type SyncTreeFile,
 } from './syncTree';
 import type {
-  LocalImageIndexEntry,
+  LocalAssetIndexEntry,
   LocalVault,
   SyncEngine,
   SyncPushOperation,
@@ -958,14 +958,14 @@ async function flushPushQueue(
 
 function queuedBindingId(
   op: QueuedPushOperation,
-  entry: LocalImageIndexEntry | undefined,
+  entry: LocalAssetIndexEntry | undefined,
   fallbackBindingId: string,
 ): string {
   return op.bindingId || entry?.bindingId || fallbackBindingId;
 }
 
 function pendingPathsForBinding(
-  entries: LocalImageIndexEntry[],
+  entries: LocalAssetIndexEntry[],
   queue: QueuedPushOperation[],
   bindingId: string,
   fallbackBindingId: string,

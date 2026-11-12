@@ -4,8 +4,8 @@ import { useUIStore } from '../stores/uiStore';
 import { isNativeMobile } from '@/platforms/platform';
 
 const OVERLAY_CLOSE_SELECTORS = [
-  '.image-preview-modal-overlay .image-preview-modal-close',
-  '.image-upload-modal-overlay .image-upload-modal-close',
+  '.asset-preview-modal-overlay .asset-preview-modal-close',
+  '.asset-upload-modal-overlay .asset-upload-modal-close',
   '.image-batch-delete-modal-overlay .image-batch-delete-modal-close',
   '.image-crop-modal-overlay .image-crop-modal-close',
 ].join(', ');

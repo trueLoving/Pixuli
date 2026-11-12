@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { readAssetBytes } from '@/features/library/assetDownloadService';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { webImageProcessorService } from '@/features/tools/imageProcessor';
@@ -15,18 +15,18 @@ import {
 } from './imageConvertTarget';
 import type { OutputMimeType } from '@/features/tools/imageProcessor';
 
-export interface ConvertLibraryImagesResult {
+export interface ConvertLibraryAssetsResult {
   saved: number;
   failed: string[];
 }
 
-function mimeForItem(item: ImageItem): string {
+function mimeForItem(item: AssetItem): string {
   if (item.type?.startsWith('image/')) return item.type;
   return 'image/jpeg';
 }
 
 async function saveBesideOriginal(
-  item: ImageItem,
+  item: AssetItem,
   file: File,
   fileName: string,
   mimeType: string,
@@ -112,8 +112,8 @@ function cropFile(
 /**
  * 按像素选区裁出一张新图，写回原文件夹。只改本机，不加入同步队列。
  */
-export async function cropLibraryImage(
-  item: ImageItem,
+export async function cropLibraryAsset(
+  item: AssetItem,
   crop: ImageCropRect,
 ): Promise<{ saved: number }> {
   if (getAssetKind(item) !== 'image') {
@@ -144,13 +144,13 @@ export async function cropLibraryImage(
  * 把选中的图片转换成新文件，写回原文件夹。
  * 只改本机，不加入同步队列。单张失败不影响其余文件。
  */
-export async function convertLibraryImages(
-  items: ImageItem[],
+export async function convertLibraryAssets(
+  items: AssetItem[],
   request: ImageConvertRequest,
-): Promise<ConvertLibraryImagesResult> {
-  const images = items.filter(item => getAssetKind(item) === 'image');
+): Promise<ConvertLibraryAssetsResult> {
+  const assets = items.filter(item => getAssetKind(item) === 'image');
   const failed: string[] = [];
-  if (images.length === 0) {
+  if (assets.length === 0) {
     return { saved: 0, failed };
   }
 
@@ -159,7 +159,7 @@ export async function convertLibraryImages(
   const taken = new Set(existing.map(entry => entry.relativePath));
   let saved = 0;
 
-  for (const item of images) {
+  for (const item of assets) {
     try {
       const bytes = await readAssetBytes(item);
       const source = new File([bytes.slice()], item.name, {

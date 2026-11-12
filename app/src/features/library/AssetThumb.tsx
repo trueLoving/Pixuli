@@ -1,12 +1,12 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { File, FileText, FileVideo } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { resolveAssetThumbnail } from '@/features/library/utils/assetThumbnail';
-import { resolveLocalPreviewUrl } from '@/features/workspace/localImageMapper';
+import { resolveLocalPreviewUrl } from '@/features/workspace/localAssetMapper';
 
 interface AssetThumbProps {
-  item: ImageItem;
+  item: AssetItem;
 }
 
 /**

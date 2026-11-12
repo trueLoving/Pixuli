@@ -173,7 +173,7 @@ export async function pickImagesFromGallery(): Promise<NativePickedImage[]> {
 
 /** 下载图片到缓存后调起系统分享（J5-05）。 */
 export async function shareImageFile(
-  imageName: string,
+  assetName: string,
   url: string,
 ): Promise<void> {
   if (isNativeMobile()) {
@@ -187,7 +187,7 @@ export async function shareImageFile(
     const blob = await response.blob();
     const base64 = await blobToBase64(blob);
     const safeName =
-      imageName.replace(/[^\w.-]/g, '_') || `image-${Date.now()}.jpg`;
+      assetName.replace(/[^\w.-]/g, '_') || `image-${Date.now()}.jpg`;
     const path = `share/${Date.now()}-${safeName}`;
 
     await Filesystem.writeFile({
@@ -200,15 +200,15 @@ export async function shareImageFile(
       directory: Directory.Cache,
     });
     await Share.share({
-      title: imageName,
+      title: assetName,
       files: [uri],
-      dialogTitle: imageName,
+      dialogTitle: assetName,
     });
     return;
   }
 
   if (typeof navigator !== 'undefined' && navigator.share) {
-    await navigator.share({ title: imageName, url });
+    await navigator.share({ title: assetName, url });
     return;
   }
 

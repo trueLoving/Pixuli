@@ -20,8 +20,8 @@ interface LogState {
     action: LogActionType,
     status: LogStatus,
     options?: {
-      imageId?: string;
-      imageName?: string;
+      assetId?: string;
+      assetName?: string;
       details?: Record<string, unknown>;
       error?: string;
       duration?: number;

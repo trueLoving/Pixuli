@@ -1,13 +1,13 @@
 import { Cloud } from 'lucide-react';
 import React, { RefObject } from 'react';
-import type { ImageItem, SortField, SortOrder } from '@pixuli/core/types';
+import type { AssetItem, SortField, SortOrder } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { isAssetSynced } from './copyLink';
 import { AssetThumb } from './AssetThumb';
 import { kindLabel, sortIndicator } from './assetLibraryUtils';
 
 export interface AssetLibraryTableProps {
-  visibleFiles: ImageItem[];
+  visibleFiles: AssetItem[];
   tableWindow: {
     start: number;
     end: number;
@@ -30,11 +30,11 @@ export interface AssetLibraryTableProps {
     range: boolean,
     enterMulti?: boolean,
   ) => void;
-  onContextMenu: (event: React.MouseEvent, file: ImageItem) => void;
+  onContextMenu: (event: React.MouseEvent, file: AssetItem) => void;
   onTouchPointerDown: (fileId: string) => void;
   onTouchPointerEnd: () => void;
   longPressFiredRef: RefObject<boolean>;
-  onOpenFile?: (file: ImageItem) => void;
+  onOpenFile?: (file: AssetItem) => void;
 }
 
 export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({

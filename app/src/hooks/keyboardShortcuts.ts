@@ -16,7 +16,7 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     key: COMMON_SHORTCUTS.F5,
     description: t('keyboard.shortcuts.refresh'),
     action: () => {
-      const event = new CustomEvent('refreshImages');
+      const event = new CustomEvent('refreshAssets');
       window.dispatchEvent(event);
     },
     category: SHORTCUT_CATEGORIES.GENERAL,

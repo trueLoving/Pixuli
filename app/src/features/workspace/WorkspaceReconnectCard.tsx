@@ -1,7 +1,7 @@
 import { FolderSync } from 'lucide-react';
 import React from 'react';
 import { useI18n } from '@/i18n/useI18n';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 
 interface WorkspaceReconnectCardProps {
@@ -38,7 +38,7 @@ export const WorkspaceReconnectCard: React.FC<WorkspaceReconnectCardProps> = ({
   const reconnectWorkspace = useWorkspaceStore(
     state => state.reconnectWorkspace,
   );
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
 
   if (!reconnect) {
     return null;
@@ -54,7 +54,7 @@ export const WorkspaceReconnectCard: React.FC<WorkspaceReconnectCardProps> = ({
   const handleReconnect = async () => {
     const ok = await reconnectWorkspace();
     if (ok) {
-      await loadImages();
+      await loadAssets();
       onReconnected?.();
     }
   };

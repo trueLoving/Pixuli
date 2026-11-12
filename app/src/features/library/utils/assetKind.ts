@@ -1,4 +1,4 @@
-import type { AssetKind, ImageItem } from '@pixuli/core/types';
+import type { AssetKind, AssetItem } from '@pixuli/core/types';
 
 export type AssetKindFilter = 'all' | AssetKind;
 
@@ -11,7 +11,7 @@ function extensionOf(name: string): string {
 }
 
 export function getAssetKind(
-  item: Pick<ImageItem, 'name' | 'type'>,
+  item: Pick<AssetItem, 'name' | 'type'>,
 ): AssetKind {
   const mime = (item.type || '').toLowerCase();
   const ext = extensionOf(item.name || '');
@@ -45,7 +45,7 @@ export function getAssetKind(
   return 'other';
 }
 
-export function filterAssetsByKind<T extends Pick<ImageItem, 'name' | 'type'>>(
+export function filterAssetsByKind<T extends Pick<AssetItem, 'name' | 'type'>>(
   items: T[],
   kind: AssetKindFilter,
 ): T[] {
@@ -53,7 +53,7 @@ export function filterAssetsByKind<T extends Pick<ImageItem, 'name' | 'type'>>(
   return items.filter(item => getAssetKind(item) === kind);
 }
 
-export function filterAssetsByKinds<T extends Pick<ImageItem, 'name' | 'type'>>(
+export function filterAssetsByKinds<T extends Pick<AssetItem, 'name' | 'type'>>(
   items: T[],
   kinds: AssetKind[],
 ): T[] {

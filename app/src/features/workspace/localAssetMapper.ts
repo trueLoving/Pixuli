@@ -1,5 +1,5 @@
-import type { ImageItem, LinkKind } from '@pixuli/core/types';
-import type { LocalImageIndexEntry } from '@pixuli/core/vault';
+import type { AssetItem, LinkKind } from '@pixuli/core/types';
+import type { LocalAssetIndexEntry } from '@pixuli/core/vault';
 import {
   getWorkspaceAdapter,
   isWorkspaceAvailable,
@@ -44,11 +44,11 @@ export async function resolveLocalPreviewUrl(
   return url;
 }
 
-export function localEntryToImageItem(
-  entry: LocalImageIndexEntry,
+export function localEntryToAssetItem(
+  entry: LocalAssetIndexEntry,
   previewUrl: string,
   publicUrl?: string,
-): ImageItem {
+): AssetItem {
   const linkKind: LinkKind | undefined = publicUrl ? 'remote-raw' : 'local';
   return {
     id: entry.id,
@@ -79,13 +79,13 @@ export type MapEntriesOptions = {
   deferPreview?: boolean;
 };
 
-export async function mapEntriesToImageItems(
-  entries: LocalImageIndexEntry[],
+export async function mapEntriesToAssetItems(
+  entries: LocalAssetIndexEntry[],
   provider?: { getRawUrl: (path: string) => string } | null,
   options?: MapEntriesOptions,
-): Promise<ImageItem[]> {
+): Promise<AssetItem[]> {
   const deferPreview = options?.deferPreview !== false;
-  const items: ImageItem[] = [];
+  const items: AssetItem[] = [];
   for (const entry of entries) {
     const previewUrl = deferPreview
       ? ''
@@ -94,7 +94,7 @@ export async function mapEntriesToImageItems(
       entry.remotePath && provider
         ? provider.getRawUrl(entry.remotePath)
         : undefined;
-    items.push(localEntryToImageItem(entry, previewUrl, publicUrl));
+    items.push(localEntryToAssetItem(entry, previewUrl, publicUrl));
   }
   return items;
 }

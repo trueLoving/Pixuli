@@ -94,8 +94,8 @@ export class OperationLogService {
       status,
       timestamp: Date.now(),
       userId: options?.userId,
-      imageId: options?.imageId,
-      imageName: options?.imageName,
+      assetId: options?.assetId,
+      assetName: options?.assetName,
       details: options?.details,
       error: options?.error,
       duration: options?.duration,
@@ -167,12 +167,12 @@ export class OperationLogService {
         return false;
       if (filter.endTime !== undefined && log.timestamp > filter.endTime)
         return false;
-      if (filter.imageId !== undefined && log.imageId !== filter.imageId)
+      if (filter.assetId !== undefined && log.assetId !== filter.assetId)
         return false;
       if (filter.keyword !== undefined) {
         const keyword = filter.keyword.toLowerCase();
         const text = [
-          log.imageName,
+          log.assetName,
           log.error,
           log.details ? JSON.stringify(log.details) : '',
         ]
@@ -262,8 +262,8 @@ export class OperationLogService {
       log.action,
       log.status,
       new Date(log.timestamp).toISOString(),
-      log.imageId ?? '',
-      log.imageName ?? '',
+      log.assetId ?? '',
+      log.assetName ?? '',
       log.error ?? '',
       log.duration?.toString() ?? '',
       log.details ? JSON.stringify(log.details) : '',

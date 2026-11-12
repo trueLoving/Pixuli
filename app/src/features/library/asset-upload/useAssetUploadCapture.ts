@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { ImageCaptureMetadata } from '@pixuli/core/types';
 
 /** 上传流程中按 File 对象暂存 EXIF/拍摄元数据（WeakMap 避免泄漏） */
-export function useImageUploadCapture() {
+export function useAssetUploadCapture() {
   const captureMetadataByFileRef = useRef(
     new WeakMap<File, ImageCaptureMetadata>(),
   );

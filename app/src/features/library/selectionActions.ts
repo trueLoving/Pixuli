@@ -2,7 +2,7 @@ import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
 import { libraryProcessModes } from '@/features/library/libraryProcess';
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import {
   Download,
   Edit,
@@ -36,14 +36,14 @@ export interface SingleSelectionActionHandlers {
   onDelete: () => void;
 }
 
-function processableCount(selectedImages: ImageItem[]): number {
-  return selectedImages.filter(
+function processableCount(selectedAssets: AssetItem[]): number {
+  return selectedAssets.filter(
     item => libraryProcessModes(getAssetKind(item)).length > 0,
   ).length;
 }
 
 export function buildBatchSelectionActions(
-  selectedImages: ImageItem[],
+  selectedAssets: AssetItem[],
   t: (key: string) => string,
   handlers: BatchSelectionActionHandlers,
   options?: {
@@ -51,12 +51,12 @@ export function buildBatchSelectionActions(
     convertInLibrary?: boolean;
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
-  if (selectedImages.length === 0) {
+  if (selectedAssets.length === 0) {
     return { grid: [], danger: null };
   }
 
   const convertInLibrary = options?.convertInLibrary === true;
-  const imageCount = processableCount(selectedImages);
+  const processableAssetCount = processableCount(selectedAssets);
 
   const grid: CompactAction[] = [];
 
@@ -100,7 +100,7 @@ export function buildBatchSelectionActions(
   });
 
   if (handlers.onCopyLinks) {
-    const canCopyAny = selectedImages.some(
+    const canCopyAny = selectedAssets.some(
       item => getCopyablePublicUrl(item) !== null,
     );
     const copyTitle = canCopyAny
@@ -111,22 +111,22 @@ export function buildBatchSelectionActions(
     grid.push({
       id: 'copy-links',
       label: t('image.inspector.actionCopy'),
-      // 无公网链时仍可点：由 copyImageLink 弹出「去连接 / 去同步」
+      // 无公网链时仍可点：由 copyAssetLink 弹出「去连接 / 去同步」
       title: copyTitle,
       icon: Share2,
       onClick: handlers.onCopyLinks,
     });
   }
 
-  if (convertInLibrary && imageCount > 0) {
+  if (convertInLibrary && processableAssetCount > 0) {
     grid.push({
       id: 'convert',
       label: t('image.inspector.actionConvert'),
       title: t('image.inspector.sendConvert'),
       icon: Wand2,
-      disabled: imageCount === 0 || !handlers.onSendConvert,
+      disabled: processableAssetCount === 0 || !handlers.onSendConvert,
       onClick: () => {
-        if (imageCount === 0) return;
+        if (processableAssetCount === 0) return;
         handlers.onSendConvert?.();
       },
     });

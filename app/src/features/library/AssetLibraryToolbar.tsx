@@ -4,11 +4,11 @@ import React, { RefObject } from 'react';
 import UploadButton from './UploadButton';
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
-import type { NativeImagePickers } from './image-upload/nativePickers';
+import type { NativeImagePickers } from './asset-upload/nativePickers';
 import type {
   BatchUploadProgress,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 
 export interface AssetLibraryToolbarProps {
@@ -16,8 +16,8 @@ export interface AssetLibraryToolbarProps {
   search?: LibrarySearchConfig;
   t: (key: string) => string;
   onOpenFolders?: () => void;
-  onUploadImage?: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<unknown>;
+  onUploadAsset?: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets?: (data: MultiAssetUploadData) => Promise<unknown>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   nativePickers?: NativeImagePickers;
@@ -32,8 +32,8 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   search,
   t,
   onOpenFolders,
-  onUploadImage,
-  onUploadMultipleImages,
+  onUploadAsset,
+  onUploadMultipleAssets,
   uploadLoading = false,
   batchUploadProgress,
   nativePickers,
@@ -88,11 +88,11 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
         </button>
       ) : null}
 
-      {onUploadImage && onUploadMultipleImages ? (
+      {onUploadAsset && onUploadMultipleAssets ? (
         <UploadButton
           ref={uploadButtonRef}
-          onUploadImage={onUploadImage}
-          onUploadMultipleImages={onUploadMultipleImages}
+          onUploadAsset={onUploadAsset}
+          onUploadMultipleAssets={onUploadMultipleAssets}
           loading={uploadLoading}
           batchUploadProgress={batchUploadProgress}
           t={t}

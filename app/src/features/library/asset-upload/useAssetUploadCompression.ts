@@ -5,19 +5,19 @@ import { showInfo } from '@/ui/feedback/toast';
 import {
   DEFAULT_COMPRESSION_OPTIONS,
   type CompressionPreviewMap,
-} from './imageUploadTypes';
+} from './assetUploadTypes';
 
-interface UseImageUploadCompressionOptions {
+interface UseAssetUploadCompressionOptions {
   enableCompression: boolean;
   compressionOptions?: ImageCompressionOptions;
   fileDimensions: Record<string, { width: number; height: number }>;
 }
 
-export function useImageUploadCompression({
+export function useAssetUploadCompression({
   enableCompression,
   compressionOptions,
   fileDimensions,
-}: UseImageUploadCompressionOptions) {
+}: UseAssetUploadCompressionOptions) {
   const [userWantsCompress, setUserWantsCompress] = useState(false);
   const [compressionPreview, setCompressionPreview] =
     useState<CompressionPreviewMap>({});

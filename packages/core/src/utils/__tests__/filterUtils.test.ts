@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { filterImages, createDefaultFilters } from '../filterUtils';
-import type { ImageItem } from '../../types/image';
-import type { FilterOptions } from '../../types/image-browser';
+import { filterAssets, createDefaultFilters } from '../filterUtils';
+import type { AssetItem } from '../../types/asset';
+import type { FilterOptions } from '../../types/asset-browser';
 
-const mockImages: ImageItem[] = [
+const mockAssets: AssetItem[] = [
   {
     id: '1',
     name: 'test1.jpg',
@@ -25,10 +25,10 @@ const mockImages: ImageItem[] = [
 ];
 
 describe('filterUtils', () => {
-  describe('filterImages', () => {
+  describe('filterAssets', () => {
     it('应该返回所有图片当没有筛选条件时', () => {
       const filters: FilterOptions = createDefaultFilters();
-      const result = filterImages(mockImages, filters);
+      const result = filterAssets(mockAssets, filters);
       expect(result).toHaveLength(2);
     });
 
@@ -38,7 +38,7 @@ describe('filterUtils', () => {
         selectedTypes: [],
         selectedTags: [],
       };
-      const result = filterImages(mockImages, filters);
+      const result = filterAssets(mockAssets, filters);
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('test1.jpg');
     });
@@ -49,7 +49,7 @@ describe('filterUtils', () => {
         selectedTypes: ['image/png'],
         selectedTags: [],
       };
-      const result = filterImages(mockImages, filters);
+      const result = filterAssets(mockAssets, filters);
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe('image/png');
     });
@@ -60,7 +60,7 @@ describe('filterUtils', () => {
         selectedTypes: [],
         selectedTags: ['nature'],
       };
-      const result = filterImages(mockImages, filters);
+      const result = filterAssets(mockAssets, filters);
       expect(result).toHaveLength(1);
       expect(result[0].tags).toContain('nature');
     });

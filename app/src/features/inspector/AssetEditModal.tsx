@@ -1,21 +1,21 @@
 import { Save, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import type { AssetEditData, AssetItem } from '@pixuli/core/types';
 import {
   showLoading,
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
-import './ImageEditModal.css';
+import './AssetEditModal.css';
 import { folderFromLocalPath } from './inspectorUtils';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
-interface ImageEditModalProps {
-  image: ImageItem;
+interface AssetEditModalProps {
+  asset: AssetItem;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateImage: (data: ImageEditData) => Promise<void>;
-  onSuccess?: (image: ImageItem) => void;
+  onUpdateAsset: (data: AssetEditData) => Promise<void>;
+  onSuccess?: (asset: AssetItem) => void;
   onCancel?: () => void;
   loading?: boolean;
   enableFolderMove?: boolean;
@@ -26,11 +26,11 @@ interface ImageEditModalProps {
   t: (key: string) => string;
 }
 
-const ImageEditModal: React.FC<ImageEditModalProps> = ({
-  image,
+const AssetEditModal: React.FC<AssetEditModalProps> = ({
+  asset,
   isOpen,
   onClose,
-  onUpdateImage,
+  onUpdateAsset,
   onSuccess,
   onCancel,
   loading = false,
@@ -39,13 +39,13 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   getImageDimensionsFromUrl,
   t,
 }) => {
-  const previewSrc = useResolvedAssetUrl(image);
+  const previewSrc = useResolvedAssetUrl(asset);
   const translate = t;
-  const [formData, setFormData] = useState<ImageEditData>({
-    id: image.id,
-    name: image.name,
-    description: image.description || '',
-    tags: image.tags || [],
+  const [formData, setFormData] = useState<AssetEditData>({
+    id: asset.id,
+    name: asset.name,
+    description: asset.description || '',
+    tags: asset.tags || [],
   });
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
@@ -73,25 +73,25 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const loadingToast = showLoading(
-      `${translate('image.edit.updating')} "${image.name}" ${translate('common.info')}...`,
+      `${translate('image.edit.updating')} "${asset.name}" ${translate('common.info')}...`,
     );
     try {
-      await onUpdateImage(formData);
+      await onUpdateAsset(formData);
       updateLoadingToSuccess(
         loadingToast,
         translate('image.edit.savedLocalOnly'),
       );
       if (onSuccess) {
         // 构建更新后的图片数据
-        const updatedImage = {
-          ...image,
-          id: formData.name || image.id,
-          name: formData.name || image.name,
-          description: formData.description || image.description,
-          tags: formData.tags || image.tags,
+        const updatedAsset = {
+          ...asset,
+          id: formData.name || asset.id,
+          name: formData.name || asset.name,
+          description: formData.description || asset.description,
+          tags: formData.tags || asset.tags,
           updatedAt: new Date().toISOString(),
         };
-        onSuccess(updatedImage);
+        onSuccess(updatedAsset);
       } else {
         onClose();
       }
@@ -113,7 +113,7 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   };
 
   const handleInputChange = (
-    field: keyof ImageEditData,
+    field: keyof AssetEditData,
     value: string | string[],
   ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -121,51 +121,51 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
 
   // 当模态框打开或图片更新时，更新表单数据
   useEffect(() => {
-    if (isOpen && image) {
+    if (isOpen && asset) {
       setFormData({
-        id: image.id,
-        name: image.name,
-        description: image.description || '',
-        tags: image.tags || [],
-        targetFolder: folderFromLocalPath(image.localPath),
+        id: asset.id,
+        name: asset.name,
+        description: asset.description || '',
+        tags: asset.tags || [],
+        targetFolder: folderFromLocalPath(asset.localPath),
       });
       // 清空标签输入框
       if (tagInputRef.current) {
         tagInputRef.current.value = '';
       }
     }
-  }, [isOpen, image]);
+  }, [isOpen, asset]);
 
   // 获取图片真实尺寸
   useEffect(() => {
     if (
       isOpen &&
-      image &&
+      asset &&
       previewSrc &&
       getImageDimensionsFromUrl &&
-      (image.width === 0 || image.height === 0)
+      (asset.width === 0 || asset.height === 0)
     ) {
       getImageDimensionsFromUrl(previewSrc)
         .then(dimensions => {
           setImageDimensions(dimensions);
         })
         .catch(error => {
-          console.warn(`Failed to get dimensions for ${image.name}:`, error);
+          console.warn(`Failed to get dimensions for ${asset.name}:`, error);
         });
     }
-  }, [isOpen, image, previewSrc, getImageDimensionsFromUrl]);
+  }, [isOpen, asset, previewSrc, getImageDimensionsFromUrl]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="image-edit-modal-overlay">
-      <div className="image-edit-modal-content">
-        <div className="image-edit-modal-header">
-          <h2 className="image-edit-modal-title">
+    <div className="asset-edit-modal-overlay">
+      <div className="asset-edit-modal-content">
+        <div className="asset-edit-modal-header">
+          <h2 className="asset-edit-modal-title">
             {translate('image.edit.title')}
           </h2>
-          <button onClick={onClose} className="image-edit-modal-close">
-            <X className="image-edit-modal-close-icon" />
+          <button onClick={onClose} className="asset-edit-modal-close">
+            <X className="asset-edit-modal-close-icon" />
           </button>
         </div>
 
@@ -175,19 +175,19 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
             {previewSrc ? (
               <img
                 src={previewSrc}
-                alt={image.name}
+                alt={asset.name}
                 className="image-edit-file-thumbnail"
               />
             ) : null}
             <div className="image-edit-file-details">
-              <p className="image-edit-file-name">{image.name}</p>
+              <p className="image-edit-file-name">{asset.name}</p>
               <p className="image-edit-file-size">
                 {translate('image.edit.dimensions')}:{' '}
                 {(() => {
                   if (imageDimensions) {
                     return `${imageDimensions.width} × ${imageDimensions.height}`;
-                  } else if (image.width > 0 && image.height > 0) {
-                    return `${image.width} × ${image.height}`;
+                  } else if (asset.width > 0 && asset.height > 0) {
+                    return `${asset.width} × ${asset.height}`;
                   } else {
                     return translate('image.edit.gettingDimensions');
                   }
@@ -362,4 +362,4 @@ const ImageEditModal: React.FC<ImageEditModalProps> = ({
   );
 };
 
-export default ImageEditModal;
+export default AssetEditModal;

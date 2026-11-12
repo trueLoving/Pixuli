@@ -4,22 +4,22 @@ import type {
   BatchUploadProgress,
   ImageCompressionOptions,
   ImageCropOptions,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 import type { NativeImagePickers } from './nativePickers';
-import ImageUpload from './ImageUpload';
-import './ImageUploadModal.css';
+import AssetUpload from './AssetUpload';
+import './AssetUploadModal.css';
 
-export interface ImageUploadModalProps {
+export interface AssetUploadModalProps {
   /** 是否显示弹窗 */
   isOpen: boolean;
   /** 关闭弹窗回调 */
   onClose: () => void;
   /** 上传单张图片回调 */
-  onUploadImage: (data: ImageUploadData) => Promise<unknown>;
+  onUploadAsset: (data: AssetUploadData) => Promise<unknown>;
   /** 批量上传图片回调 */
-  onUploadMultipleImages: (data: MultiImageUploadData) => Promise<unknown>;
+  onUploadMultipleAssets: (data: MultiAssetUploadData) => Promise<unknown>;
   /** 是否正在加载 */
   loading?: boolean;
   /** 批量上传进度 */
@@ -43,11 +43,11 @@ export interface ImageUploadModalProps {
   onInitialFilesConsumed?: () => void;
 }
 
-const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
+const AssetUploadModal: React.FC<AssetUploadModalProps> = ({
   isOpen,
   onClose,
-  onUploadImage,
-  onUploadMultipleImages,
+  onUploadAsset,
+  onUploadMultipleAssets,
   loading = false,
   batchUploadProgress,
   t,
@@ -81,39 +81,39 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
 
   return (
     <div
-      className="image-upload-modal-overlay"
+      className="asset-upload-modal-overlay"
       role="presentation"
       onClick={onClose}
     >
       <div
         ref={dialogRef}
-        className="image-upload-modal-content"
+        className="asset-upload-modal-content"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="image-upload-modal-title"
+        aria-labelledby="asset-upload-modal-title"
         tabIndex={-1}
         onClick={event => event.stopPropagation()}
       >
-        <div className="image-upload-modal-header">
+        <div className="asset-upload-modal-header">
           <h2
-            id="image-upload-modal-title"
-            className="image-upload-modal-title"
+            id="asset-upload-modal-title"
+            className="asset-upload-modal-title"
           >
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="image-upload-modal-close"
+            className="asset-upload-modal-close"
             type="button"
             aria-label={t?.('image.upload.close') || '关闭'}
           >
             <X size={20} />
           </button>
         </div>
-        <div className="image-upload-modal-body">
-          <ImageUpload
-            onUploadImage={onUploadImage}
-            onUploadMultipleImages={onUploadMultipleImages}
+        <div className="asset-upload-modal-body">
+          <AssetUpload
+            onUploadAsset={onUploadAsset}
+            onUploadMultipleAssets={onUploadMultipleAssets}
             loading={loading}
             batchUploadProgress={batchUploadProgress}
             t={t}
@@ -132,4 +132,4 @@ const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   );
 };
 
-export default ImageUploadModal;
+export default AssetUploadModal;

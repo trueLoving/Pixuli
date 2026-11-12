@@ -20,9 +20,9 @@ import {
   clampPanelWidth,
 } from '../constants/panelWidth';
 import { isStoragePluginRegistered } from '../storage/registry';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { syncRepoConfigToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
+import { syncRepoConfigToAssetStore } from '@/features/settings/syncSourceRepoToAssetStore';
 import { create } from 'zustand';
 
 export type EditingSourceRepoConfig = Pick<
@@ -194,7 +194,7 @@ export const useUIStore = create<UIState>(set => ({
     }
     const repoConfig = getRepoConfigFromSource(source);
     if (repoConfig) {
-      syncRepoConfigToImageStore(source.pluginId, repoConfig);
+      syncRepoConfigToAssetStore(source.pluginId, repoConfig);
     }
     set({
       editingSourceId: sourceId,
@@ -272,7 +272,7 @@ export const useUIStore = create<UIState>(set => ({
       settingsSyncPrefillPluginId: null,
     }),
   prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: resolveSourceDisplay(pluginId).legacyType,
     });
     set({

@@ -1,4 +1,4 @@
-import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import type { AssetItem, AssetUploadData } from '@pixuli/core/types';
 import type {
   SyncCheckpointMeta,
   SyncStatusSummary,
@@ -14,8 +14,8 @@ export interface WorkspaceState {
   displayName: string | null;
   rootDisplayPath: string | null;
   /** 当前范围下的资源（可无预览 blob；见 deferPreview） */
-  localImages: ImageItem[];
-  /** 当前范围匹配总数（根视图 / 全库搜索可能大于 localImages.length） */
+  localAssets: AssetItem[];
+  /** 当前范围匹配总数（根视图 / 全库搜索可能大于 localAssets.length） */
   scopedTotal: number;
   /** 全库 relativePath，仅供文件夹树计数（无 blob） */
   indexPaths: string[];
@@ -41,11 +41,11 @@ export interface WorkspaceState {
   clearWorkspace: () => Promise<void>;
   resumeLocalWorkspace: () => Promise<boolean>;
   syncBindingsFromSources: () => Promise<void>;
-  refreshLocalImages: (options?: LibraryListScope) => Promise<void>;
+  refreshLocalAssets: (options?: LibraryListScope) => Promise<void>;
   refreshRootDisplayPath: () => Promise<void>;
   refreshSyncStatus: () => Promise<void>;
   scanWorkspace: () => Promise<void>;
-  importLocalImage: (uploadData: ImageUploadData) => Promise<ImageItem | null>;
+  importLocalAsset: (uploadData: AssetUploadData) => Promise<AssetItem | null>;
   updateLocalMetadata: (
     relativePath: string,
     patch: { name?: string; tags?: string[]; description?: string },
