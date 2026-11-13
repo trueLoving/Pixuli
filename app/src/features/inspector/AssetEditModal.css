@@ -63,11 +63,28 @@
   margin-bottom: 1rem;
 }
 
-.image-edit-file-thumbnail {
+.image-edit-file-thumb {
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.image-edit-file-thumb .asset-library-thumb-wrap,
+.image-edit-file-thumb .asset-library-thumb,
+.image-edit-file-thumb .asset-library-thumb-icon {
   width: 4rem;
   height: 4rem;
-  object-fit: cover;
-  border-radius: 0.25rem;
+}
+
+.image-edit-file-thumb .asset-library-thumb-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.image-edit-file-thumb .asset-library-thumb-badge {
+  right: 0.2rem;
+  bottom: 0.2rem;
+  font-size: 0.625rem;
+  padding: 0 0.2rem;
 }
 
 .image-edit-file-details {

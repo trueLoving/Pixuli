@@ -66,9 +66,6 @@ interface AssetInspectorProps {
   folderOptions?: string[];
   /** 添加后逐张完善 */
   metadataReview?: MetadataReviewSession | null;
-  getImageDimensionsFromUrl?: (
-    url: string,
-  ) => Promise<{ width: number; height: number }>;
   t: (key: string) => string;
   variant?: 'dock' | 'sheet';
   /** 桌面双击 / Enter 打开预览 */
@@ -98,7 +95,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   enableFolderMove = false,
   folderOptions = [],
   metadataReview = null,
-  getImageDimensionsFromUrl,
   t,
   variant = 'dock',
   openPreviewRequest = null,
@@ -561,7 +557,6 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           onCancel={() => setShowEdit(false)}
           enableFolderMove={enableFolderMove}
           folderOptions={folderOptions}
-          getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           t={t}
         />
       ) : null}

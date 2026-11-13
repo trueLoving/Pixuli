@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
   min-height: 0;
 }
 
@@ -113,6 +114,14 @@
   pointer-events: none;
 }
 
+/* 多选时仍允许悬停查看完整名称/描述/标签 */
+.asset-library-table-wrap--multi .asset-library-name-text,
+.asset-library-table-wrap--multi .asset-library-col-description,
+.asset-library-table-wrap--multi .asset-library-tag,
+.asset-library-table-wrap--multi .asset-library-tags {
+  pointer-events: auto;
+}
+
 .asset-library-chrome-btn {
   display: inline-flex;
   align-items: center;
@@ -193,6 +202,7 @@
 
 .asset-library-content {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -221,8 +231,11 @@
 
 .asset-library-table-wrap {
   flex: 1;
+  min-width: 0;
   min-height: 0;
-  overflow: auto;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--pix-border);
   border-radius: 0.5rem;
   background: var(--pix-bg-elevated);
@@ -423,8 +436,43 @@
 
 .asset-library-table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.875rem;
+}
+
+/* 百分比列宽：名称可省略，侧列始终可见 */
+.asset-library-col-name {
+  width: 28%;
+}
+
+.asset-library-table-wrap--multi .asset-library-col-check {
+  width: 3%;
+}
+
+.asset-library-table-wrap--multi .asset-library-col-name {
+  width: 25%;
+}
+
+.asset-library-col-description {
+  width: 22%;
+}
+
+.asset-library-col-tags {
+  width: 16%;
+}
+
+.asset-library-col-type {
+  width: 8%;
+}
+
+.asset-library-col-size {
+  width: 10%;
+}
+
+.asset-library-col-date {
+  width: 16%;
 }
 
 .asset-library-table th {
@@ -461,6 +509,26 @@
   vertical-align: middle;
 }
 
+/* 名称/描述用 max-width:0 配合 fixed 布局做省略；侧列保持可读 */
+.asset-library-table th.asset-library-col-name,
+.asset-library-table td.asset-library-col-name,
+.asset-library-table th.asset-library-col-description,
+.asset-library-table td.asset-library-col-description,
+.asset-library-table th.asset-library-col-tags,
+.asset-library-table td.asset-library-col-tags {
+  overflow: hidden;
+  max-width: 0;
+}
+
+.asset-library-table th.asset-library-col-type,
+.asset-library-table td.asset-library-col-type,
+.asset-library-table th.asset-library-col-size,
+.asset-library-table td.asset-library-col-size,
+.asset-library-table th.asset-library-col-date,
+.asset-library-table td.asset-library-col-date {
+  overflow: hidden;
+}
+
 .asset-library-row {
   height: 2.75rem;
   cursor: pointer;
@@ -483,6 +551,39 @@
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.asset-library-col-description {
+  color: var(--pix-fg-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-library-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.asset-library-tag {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: var(--pix-bg-subtle);
+  color: var(--pix-fg-secondary);
+  font-size: 0.6875rem;
+  line-height: 1.35;
 }
 
 .asset-library-thumb-wrap {
@@ -570,10 +671,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.875rem;
+  line-height: 1.25;
 }
 
+.asset-library-col-type,
 .asset-library-col-size,
-.asset-library-col-date {
+.asset-library-col-date,
+.asset-library-col-tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--pix-fg-secondary);
 }
@@ -838,6 +945,34 @@
 }
 
 @media (max-width: 1023px) {
+  .asset-library-col-name {
+    width: 26%;
+  }
+
+  .asset-library-table-wrap--multi .asset-library-col-name {
+    width: 23%;
+  }
+
+  .asset-library-col-description {
+    width: 20%;
+  }
+
+  .asset-library-col-tags {
+    width: 14%;
+  }
+
+  .asset-library-col-type {
+    width: 8%;
+  }
+
+  .asset-library-col-size {
+    width: 10%;
+  }
+
+  .asset-library-col-date {
+    width: 22%;
+  }
+
   .asset-library-folders-btn {
     display: inline-flex;
   }
@@ -911,10 +1046,20 @@
     grid-area: 2 / 4;
   }
 
+  .asset-library-col-description,
+  .asset-library-col-tags,
   .asset-library-col-type,
   .asset-library-col-size,
   .asset-library-col-date {
     display: none;
+  }
+
+  .asset-library-col-name {
+    width: 100%;
+  }
+
+  .asset-library-table-wrap--multi .asset-library-col-name {
+    width: calc(100% - 2.75rem);
   }
 
   .asset-library-batch {

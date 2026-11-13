@@ -1,7 +1,6 @@
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import { EmptyState } from '@/features/library/empty-state';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
-import { getImageDimensionsFromUrl } from '@pixuli/core/utils';
 import type {
   AssetEditData,
   AssetItem,
@@ -628,7 +627,6 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       onSelectAsset={handleSelectAsset}
       enableFolderMove={localActive}
       folderOptions={localFolders}
-      getImageDimensionsFromUrl={getImageDimensionsFromUrl}
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
       openPreviewRequest={previewRequest}
