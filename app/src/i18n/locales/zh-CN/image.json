@@ -235,6 +235,8 @@
       "searchScopeFolder": "范围：当前文件夹",
       "searchScopeAll": "范围：全部工作区",
       "colName": "名称",
+      "colDescription": "描述",
+      "colTags": "标签",
       "colType": "类型",
       "colSize": "大小",
       "colDate": "日期",

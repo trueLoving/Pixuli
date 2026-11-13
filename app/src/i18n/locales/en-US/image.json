@@ -227,6 +227,8 @@
       "searchScopeFolder": "Scope: current folder",
       "searchScopeAll": "Scope: whole workspace",
       "colName": "Name",
+      "colDescription": "Description",
+      "colTags": "Tags",
       "colType": "Type",
       "colSize": "Size",
       "colDate": "Date",

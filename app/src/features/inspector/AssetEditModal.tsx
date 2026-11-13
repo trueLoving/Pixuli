@@ -1,6 +1,7 @@
 import { Save, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import type { AssetEditData, AssetItem } from '@pixuli/core/types';
+import { AssetThumb } from '@/features/library/AssetThumb';
 import {
   showLoading,
   updateLoadingToError,
@@ -8,7 +9,6 @@ import {
 } from '@/ui/feedback/toast';
 import './AssetEditModal.css';
 import { folderFromLocalPath } from './inspectorUtils';
-import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
 interface AssetEditModalProps {
   asset: AssetItem;
@@ -20,9 +20,6 @@ interface AssetEditModalProps {
   loading?: boolean;
   enableFolderMove?: boolean;
   folderOptions?: string[];
-  getImageDimensionsFromUrl?: (
-    url: string,
-  ) => Promise<{ width: number; height: number }>;
   t: (key: string) => string;
 }
 
@@ -36,10 +33,8 @@ const AssetEditModal: React.FC<AssetEditModalProps> = ({
   loading = false,
   enableFolderMove = false,
   folderOptions = [],
-  getImageDimensionsFromUrl,
   t,
 }) => {
-  const previewSrc = useResolvedAssetUrl(asset);
   const translate = t;
   const [formData, setFormData] = useState<AssetEditData>({
     id: asset.id,
@@ -47,10 +42,6 @@ const AssetEditModal: React.FC<AssetEditModalProps> = ({
     description: asset.description || '',
     tags: asset.tags || [],
   });
-  const [imageDimensions, setImageDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   // ESC 键关闭编辑模态框
@@ -136,25 +127,6 @@ const AssetEditModal: React.FC<AssetEditModalProps> = ({
     }
   }, [isOpen, asset]);
 
-  // 获取图片真实尺寸
-  useEffect(() => {
-    if (
-      isOpen &&
-      asset &&
-      previewSrc &&
-      getImageDimensionsFromUrl &&
-      (asset.width === 0 || asset.height === 0)
-    ) {
-      getImageDimensionsFromUrl(previewSrc)
-        .then(dimensions => {
-          setImageDimensions(dimensions);
-        })
-        .catch(error => {
-          console.warn(`Failed to get dimensions for ${asset.name}:`, error);
-        });
-    }
-  }, [isOpen, asset, previewSrc, getImageDimensionsFromUrl]);
-
   if (!isOpen) return null;
 
   return (
@@ -170,29 +142,12 @@ const AssetEditModal: React.FC<AssetEditModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* 图片预览 */}
           <div className="image-edit-file-info">
-            {previewSrc ? (
-              <img
-                src={previewSrc}
-                alt={asset.name}
-                className="image-edit-file-thumbnail"
-              />
-            ) : null}
+            <span className="image-edit-file-thumb" aria-hidden>
+              <AssetThumb item={asset} />
+            </span>
             <div className="image-edit-file-details">
               <p className="image-edit-file-name">{asset.name}</p>
-              <p className="image-edit-file-size">
-                {translate('image.edit.dimensions')}:{' '}
-                {(() => {
-                  if (imageDimensions) {
-                    return `${imageDimensions.width} × ${imageDimensions.height}`;
-                  } else if (asset.width > 0 && asset.height > 0) {
-                    return `${asset.width} × ${asset.height}`;
-                  } else {
-                    return translate('image.edit.gettingDimensions');
-                  }
-                })()}
-              </p>
             </div>
           </div>
 
