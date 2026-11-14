@@ -13,6 +13,13 @@ export interface LibraryChildFolder {
   path: string;
 }
 
+/** 列表「返回上一级」行的虚拟 path（不对应真实目录）。 */
+export const LIBRARY_GO_UP_PATH = '..';
+
+export function isLibraryGoUpPath(path: string | null | undefined): boolean {
+  return path === LIBRARY_GO_UP_PATH;
+}
+
 /** 空字符串与 `__root__` 都表示工作区根。 */
 export function normalizeLibraryFolderPath(
   path: string | null | undefined,
@@ -29,6 +36,24 @@ export function parentLibraryFolderPath(path: string): string {
   const current = normalizeLibraryFolderPath(path);
   const slash = current.lastIndexOf('/');
   return slash === -1 ? '' : current.slice(0, slash);
+}
+
+/** 非根目录时，键盘导航 / 列表用的文件夹行（上一级 + 子文件夹）。 */
+export function libraryFolderNavItems(
+  childFolders: LibraryChildFolder[],
+  currentPath: string,
+): LibraryChildFolder[] {
+  const current = normalizeLibraryFolderPath(currentPath);
+  if (!current) return childFolders;
+  return [{ name: '..', path: LIBRARY_GO_UP_PATH }, ...childFolders];
+}
+
+export function resolveLibraryFolderNavPath(
+  path: string,
+  currentPath: string,
+): string {
+  if (isLibraryGoUpPath(path)) return parentLibraryFolderPath(currentPath);
+  return path;
 }
 
 export function libraryBreadcrumbSegments(

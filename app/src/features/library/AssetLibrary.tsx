@@ -29,7 +29,12 @@ import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
 import { LibraryFolderNav } from './LibraryFolderNav';
-import { libraryChildFolders } from './libraryNavigation';
+import {
+  libraryChildFolders,
+  libraryFolderNavItems,
+  normalizeLibraryFolderPath,
+  resolveLibraryFolderNavPath,
+} from './libraryNavigation';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { resolveNewFolderParent } from '@/features/workspace/WorkspaceFolderTree';
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
@@ -72,6 +77,8 @@ interface AssetLibraryProps {
   onCopyLink?: (asset: AssetItem) => void;
   onMoveAsset?: (asset: AssetItem) => void;
   onOpenFile?: (asset: AssetItem) => void;
+  onEditFile?: (asset: AssetItem) => void;
+  onShareFile?: (asset: AssetItem) => void;
   hasRemoteConnection?: boolean;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
@@ -101,6 +108,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   onCopyLink,
   onMoveAsset,
   onOpenFile,
+  onEditFile,
+  onShareFile,
   hasRemoteConnection,
   multiSelectMode = false,
   onMultiSelectModeChange,
@@ -229,47 +238,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return last ? files.findIndex(item => item.id === last) : -1;
   }, [files, selectedIds]);
 
-  const navigate = useCallback(
-    (delta: number) => {
-      if (files.length === 0) return;
-      if (selectedIndex < 0) {
-        applySelection(
-          files[delta > 0 ? 0 : files.length - 1].id,
-          false,
-          false,
-        );
-        return;
-      }
-      const next = Math.min(
-        files.length - 1,
-        Math.max(0, selectedIndex + delta),
-      );
-      applySelection(files[next].id, false, false);
-    },
-    [applySelection, files, selectedIndex],
-  );
-
-  useEffect(() => {
-    const shortcuts = [
-      {
-        key: COMMON_SHORTCUTS.ARROW_UP,
-        description: t('keyboard.shortcuts.selectUp'),
-        action: () => navigate(-1),
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
-      },
-      {
-        key: COMMON_SHORTCUTS.ARROW_DOWN,
-        description: t('keyboard.shortcuts.selectDown'),
-        action: () => navigate(1),
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
-      },
-    ];
-    keyboardManager.registerBatch(shortcuts);
-    return () => {
-      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
-    };
-  }, [navigate, onSelectedIdsChange, t]);
-
   const handleSort = useCallback(
     (field: SortField) => {
       if (sortField === field) {
@@ -393,10 +361,121 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     () => libraryChildFolders(indexPaths, localFolders, selectedFolderPath),
     [indexPaths, localFolders, selectedFolderPath],
   );
+  const folderNavItems = useMemo(
+    () => libraryFolderNavItems(childFolders, selectedFolderPath),
+    [childFolders, selectedFolderPath],
+  );
   const searchActive = Boolean(search?.searchQuery?.trim());
-  const showFolders = !loading && !searchActive && childFolders.length > 0;
-  const showEmpty = !loading && files.length === 0 && !showFolders;
+  const canGoUp = Boolean(normalizeLibraryFolderPath(selectedFolderPath));
+  const showFolders =
+    !loading && !searchActive && (childFolders.length > 0 || canGoUp);
+  const showEmpty = !loading && files.length === 0 && childFolders.length === 0;
   const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
+
+  const navigate = useCallback(
+    (delta: number) => {
+      const folders = !multiSelectMode && showFolders ? folderNavItems : [];
+      const folderCount = folders.length;
+      const fileCount = files.length;
+      const total = folderCount + fileCount;
+      if (total === 0) return;
+
+      let index = -1;
+      if (activeFolderPath && folderCount > 0) {
+        index = folders.findIndex(folder => folder.path === activeFolderPath);
+      } else if (selectedIndex >= 0) {
+        index = folderCount + selectedIndex;
+      }
+
+      const next =
+        index < 0
+          ? delta > 0
+            ? 0
+            : total - 1
+          : Math.min(total - 1, Math.max(0, index + delta));
+
+      if (next < folderCount) {
+        const path = folders[next].path;
+        setActiveFolderPath(path);
+        onSelectedIdsChange([]);
+        requestAnimationFrame(() => {
+          const el = document.querySelector(
+            `[data-folder-path="${CSS.escape(path)}"]`,
+          );
+          if (!(el instanceof HTMLElement)) return;
+          el.scrollIntoView({ block: 'nearest' });
+          el.focus({ preventScroll: true });
+        });
+        return;
+      }
+
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLElement &&
+        active.classList.contains('library-folder-row')
+      ) {
+        active.blur();
+      }
+      applySelection(files[next - folderCount].id, false, false);
+    },
+    [
+      activeFolderPath,
+      applySelection,
+      files,
+      folderNavItems,
+      multiSelectMode,
+      onSelectedIdsChange,
+      selectedIndex,
+      showFolders,
+    ],
+  );
+
+  const selectedFile = useMemo(() => {
+    if (activeFolderPath || selectedIds.length !== 1 || multiSelectMode) {
+      return null;
+    }
+    return files.find(item => item.id === selectedIds[0]) ?? null;
+  }, [activeFolderPath, files, multiSelectMode, selectedIds]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const shortcuts = [
+      {
+        key: COMMON_SHORTCUTS.ARROW_UP,
+        description: t('keyboard.shortcuts.selectUp'),
+        action: () => navigate(-1),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.ARROW_DOWN,
+        description: t('keyboard.shortcuts.selectDown'),
+        action: () => navigate(1),
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.E,
+        description: t('keyboard.shortcuts.editSelected'),
+        action: () => {
+          if (!selectedFile || !onEditFile) return;
+          onEditFile(selectedFile);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.S,
+        description: t('keyboard.shortcuts.shareSelected'),
+        action: () => {
+          if (!selectedFile || !onShareFile) return;
+          onShareFile(selectedFile);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+    ];
+    keyboardManager.registerBatch(shortcuts);
+    return () => {
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
+    };
+  }, [isMobile, navigate, onEditFile, onShareFile, selectedFile, t]);
 
   useEffect(() => {
     setActiveFolderPath(null);
@@ -417,24 +496,23 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       }
       if (activeFolderPath) {
         event.preventDefault();
-        setSelectedFolderPath(activeFolderPath);
+        setSelectedFolderPath(
+          resolveLibraryFolderNavPath(activeFolderPath, selectedFolderPath),
+        );
         return;
       }
-      if (selectedIds.length !== 1 || multiSelectMode) return;
-      const file = files.find(item => item.id === selectedIds[0]);
-      if (!file) return;
+      if (!selectedFile) return;
       event.preventDefault();
-      onOpenFile?.(file);
+      onOpenFile?.(selectedFile);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [
     activeFolderPath,
-    files,
     isMobile,
-    multiSelectMode,
     onOpenFile,
-    selectedIds,
+    selectedFile,
+    selectedFolderPath,
     setSelectedFolderPath,
   ]);
   const isFolderEmpty =
@@ -551,9 +629,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         ) : null}
         <LibraryFolderNav
           currentPath={selectedFolderPath}
-          folders={childFolders}
+          folders={folderNavItems}
           showFolders={showFolders}
-          solo={showFolders && files.length === 0}
+          solo={showFolders && files.length === 0 && childFolders.length > 0}
           isMobile={isMobile}
           canMutate={localWorkspaceActive}
           t={t}

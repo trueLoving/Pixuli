@@ -29,7 +29,9 @@
       "selectDown": "选择下一张图片",
       "selectLeft": "选择左侧图片",
       "selectRight": "选择右侧图片",
-      "openSelected": "打开选中的图片"
+      "openSelected": "打开选中的图片",
+      "editSelected": "编辑选中的文件",
+      "shareSelected": "复制选中文件的分享链接"
     }
   }
 }

@@ -1,10 +1,12 @@
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useUIStore } from '@/stores/uiStore';
-import { ChevronLeft, Folder } from 'lucide-react';
+import { ChevronLeft, CornerLeftUp, Folder } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  isLibraryGoUpPath,
   libraryBreadcrumbSegments,
   parentLibraryFolderPath,
+  resolveLibraryFolderNavPath,
   type LibraryChildFolder,
 } from './libraryNavigation';
 
@@ -200,64 +202,82 @@ export const LibraryFolderNav: React.FC<LibraryFolderNavProps> = ({
         <div
           className={`library-folder-list${solo ? ' library-folder-list--solo' : ''}`}
         >
-          {folders.map(folder => (
-            <button
-              key={folder.path}
-              type="button"
-              className={`library-folder-row${highlightedPath === folder.path ? ' library-folder-row--active' : ''}`}
-              onClick={() => {
-                if (longPressFiredRef.current) {
-                  longPressFiredRef.current = false;
-                  return;
+          {folders.map(folder => {
+            const isGoUp = isLibraryGoUpPath(folder.path);
+            const openPath = resolveLibraryFolderNavPath(
+              folder.path,
+              currentPath,
+            );
+            return (
+              <button
+                key={folder.path}
+                type="button"
+                data-folder-path={folder.path}
+                className={`library-folder-row${isGoUp ? ' library-folder-row--up' : ''}${highlightedPath === folder.path ? ' library-folder-row--active' : ''}`}
+                aria-label={
+                  isGoUp ? t('image.library.backToParent') : undefined
                 }
-                if (isMobile) onOpenFolder(folder.path);
-                else onHighlightFolder(folder.path);
-              }}
-              onDoubleClick={() => {
-                if (!isMobile) onOpenFolder(folder.path);
-              }}
-              onKeyDown={event => {
-                if (event.key !== 'Enter') return;
-                event.preventDefault();
-                onOpenFolder(folder.path);
-              }}
-              onContextMenu={event => {
-                event.preventDefault();
-                onHighlightFolder(folder.path);
-                openFolderActions(
-                  folder.path,
-                  false,
-                  event.clientX,
-                  event.clientY,
-                );
-              }}
-              onPointerDown={event => {
-                if (event.pointerType !== 'touch') return;
-                longPressFiredRef.current = false;
-                clearLongPress();
-                longPressOriginRef.current = {
-                  x: event.clientX,
-                  y: event.clientY,
-                };
-                longPressRef.current = window.setTimeout(() => {
-                  longPressFiredRef.current = true;
-                  openFolderActions(folder.path, true);
-                }, 480);
-              }}
-              onPointerUp={clearLongPress}
-              onPointerCancel={clearLongPress}
-              onPointerMove={event => {
-                const origin = longPressOriginRef.current;
-                if (!origin) return;
-                const dx = event.clientX - origin.x;
-                const dy = event.clientY - origin.y;
-                if (dx * dx + dy * dy > 100) clearLongPress();
-              }}
-            >
-              <Folder size={18} aria-hidden />
-              <span className="library-folder-row-name">{folder.name}</span>
-            </button>
-          ))}
+                onClick={() => {
+                  if (longPressFiredRef.current) {
+                    longPressFiredRef.current = false;
+                    return;
+                  }
+                  if (isMobile) onOpenFolder(openPath);
+                  else onHighlightFolder(folder.path);
+                }}
+                onDoubleClick={() => {
+                  if (!isMobile) onOpenFolder(openPath);
+                }}
+                onKeyDown={event => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  onOpenFolder(openPath);
+                }}
+                onContextMenu={event => {
+                  event.preventDefault();
+                  onHighlightFolder(folder.path);
+                  if (isGoUp) return;
+                  openFolderActions(
+                    folder.path,
+                    false,
+                    event.clientX,
+                    event.clientY,
+                  );
+                }}
+                onPointerDown={event => {
+                  if (event.pointerType !== 'touch' || isGoUp) return;
+                  longPressFiredRef.current = false;
+                  clearLongPress();
+                  longPressOriginRef.current = {
+                    x: event.clientX,
+                    y: event.clientY,
+                  };
+                  longPressRef.current = window.setTimeout(() => {
+                    longPressFiredRef.current = true;
+                    openFolderActions(folder.path, true);
+                  }, 480);
+                }}
+                onPointerUp={clearLongPress}
+                onPointerCancel={clearLongPress}
+                onPointerMove={event => {
+                  const origin = longPressOriginRef.current;
+                  if (!origin) return;
+                  const dx = event.clientX - origin.x;
+                  const dy = event.clientY - origin.y;
+                  if (dx * dx + dy * dy > 100) clearLongPress();
+                }}
+              >
+                {isGoUp ? (
+                  <CornerLeftUp size={18} aria-hidden />
+                ) : (
+                  <Folder size={18} aria-hidden />
+                )}
+                <span className="library-folder-row-name">
+                  {isGoUp ? t('image.library.backToParent') : folder.name}
+                </span>
+              </button>
+            );
+          })}
         </div>
       ) : null}
 

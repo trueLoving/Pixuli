@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isLibraryGoUpPath,
   libraryBreadcrumbSegments,
   libraryChildFolders,
+  libraryFolderNavItems,
+  LIBRARY_GO_UP_PATH,
   normalizeLibraryFolderPath,
   parentLibraryFolderPath,
+  resolveLibraryFolderNavPath,
 } from '../libraryNavigation';
 
 describe('libraryNavigation', () => {
@@ -39,5 +43,24 @@ describe('libraryNavigation', () => {
         folder => folder.name,
       ),
     ).toEqual(['notes', 'photos']);
+  });
+
+  it('prepends go-up row when not at workspace root', () => {
+    const children = [
+      { name: 'covers', path: 'photos/covers' },
+      { name: 'empty', path: 'photos/empty' },
+    ];
+    expect(libraryFolderNavItems(children, '')).toEqual(children);
+    expect(libraryFolderNavItems(children, 'photos')).toEqual([
+      { name: '..', path: LIBRARY_GO_UP_PATH },
+      ...children,
+    ]);
+    expect(isLibraryGoUpPath(LIBRARY_GO_UP_PATH)).toBe(true);
+    expect(
+      resolveLibraryFolderNavPath(LIBRARY_GO_UP_PATH, 'photos/covers'),
+    ).toBe('photos');
+    expect(resolveLibraryFolderNavPath('photos/covers', 'photos')).toBe(
+      'photos/covers',
+    );
   });
 });
