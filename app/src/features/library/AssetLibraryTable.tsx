@@ -2,6 +2,7 @@ import { Cloud } from 'lucide-react';
 import React, { RefObject } from 'react';
 import type { AssetItem, SortField, SortOrder } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
+import { useSyncIgnorePatterns } from '@/features/workspace/useSyncIgnorePatterns';
 import { isAssetSynced } from './copyLink';
 import { AssetThumb } from './AssetThumb';
 import { kindLabel, sortIndicator } from './assetLibraryUtils';
@@ -58,6 +59,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
   onOpenFile,
 }) => {
   const pointerTypeRef = React.useRef<string>('mouse');
+  const { isIgnored } = useSyncIgnorePatterns();
   const colSpan = multiSelectMode ? 7 : 6;
 
   return (
@@ -134,6 +136,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
           {visibleFiles.map(file => {
             const selected = selectedIds.includes(file.id);
             const synced = isAssetSynced(file);
+            const syncIgnored = isIgnored(file.localPath);
             const typeLabel = kindLabel(file, t);
             const sizeLabel = file.size > 0 ? formatFileSize(file.size) : '—';
             const dateLabel = file.createdAt
@@ -193,16 +196,25 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                       {file.name}
                     </span>
                     <span className="asset-library-badges">
-                      <span
-                        className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
-                        title={
-                          synced
-                            ? t('image.inspector.syncRemote')
-                            : t('image.inspector.syncLocal')
-                        }
-                      >
-                        <Cloud size={10} aria-hidden />
-                      </span>
+                      {syncIgnored ? (
+                        <span
+                          className="asset-library-badge asset-library-badge--sync-ignored"
+                          title={t('settings.syncIgnore.badge')}
+                        >
+                          {t('settings.syncIgnore.badge')}
+                        </span>
+                      ) : (
+                        <span
+                          className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
+                          title={
+                            synced
+                              ? t('image.inspector.syncRemote')
+                              : t('image.inspector.syncLocal')
+                          }
+                        >
+                          <Cloud size={10} aria-hidden />
+                        </span>
+                      )}
                     </span>
                   </div>
                 </td>

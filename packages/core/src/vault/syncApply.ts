@@ -9,6 +9,7 @@ import { hasStorageProviderSync } from '../plugins/types';
 import type { LocalAssetIndexEntry, LocalVault, SyncConflict } from './types';
 import {
   isSyncExcludedPath,
+  isUserSyncIgnored,
   resolveLocalPathForPull,
   resolveRemotePathForPush,
 } from './syncPath';
@@ -16,6 +17,7 @@ import { basename, nowIso } from './utils';
 
 export {
   isSyncExcludedPath,
+  isUserSyncIgnored,
   joinConfigRoot,
   normalizeConfigRoot,
   resolveLocalPathForPull,
@@ -188,14 +190,20 @@ export async function applySyncPull(
     onConflict?: (conflict: SyncConflict) => void | Promise<void>;
     /** 恢复检查点：强制用远端覆盖本地较新 / pending-push 条目 */
     overwriteLocal?: boolean;
+    /** 用户同步忽略规则（D5） */
+    ignorePatterns?: string[];
   },
 ): Promise<{ pulled: number; conflicts: SyncConflict[] }> {
   const fetchFn = options?.fetchFn ?? globalThis.fetch;
   const overwriteLocal = options?.overwriteLocal === true;
+  const ignorePatterns = options?.ignorePatterns ?? [];
   let pulled = 0;
 
   for (const item of pullResult.items) {
     const canonicalPath = resolveLocalPathForPull(item.remotePath);
+    if (isUserSyncIgnored(canonicalPath, ignorePatterns)) {
+      continue;
+    }
     const existing = await findExistingForPullItem(
       vault,
       bindingId,
@@ -321,8 +329,12 @@ export function intentFromEntry(
   entry: LocalAssetIndexEntry,
   overwriteRemote: boolean,
   bindingId: string,
+  options?: { ignorePatterns?: string[] },
 ): SyncPushIntent | null {
   if (isSyncExcludedPath(entry.relativePath)) {
+    return null;
+  }
+  if (isUserSyncIgnored(entry.relativePath, options?.ignorePatterns)) {
     return null;
   }
   if (entry.deletedAt) {
@@ -367,6 +379,7 @@ export function buildSyncPushItems(
   bindingId: string,
   plans: SyncPushPlan[],
   readBytes: (relativePath: string) => Promise<Uint8Array>,
+  options?: { ignorePatterns?: string[] },
 ): Promise<SyncPushItem[]> {
   void bindingId;
   return Promise.all(
@@ -376,7 +389,9 @@ export function buildSyncPushItems(
       if (!entry) {
         throw new Error(`Missing local entry: ${relativePath}`);
       }
-      const remotePath = resolveRemotePathForPush(entry);
+      const remotePath = resolveRemotePathForPush(entry, {
+        ignorePatterns: options?.ignorePatterns,
+      });
       if (!remotePath) {
         throw new Error(`Path is not syncable: ${relativePath}`);
       }

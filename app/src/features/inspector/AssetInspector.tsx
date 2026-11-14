@@ -38,6 +38,8 @@ import {
   INSPECTOR_WIDTH_MIN,
   usePanelResize,
 } from '@/hooks/usePanelResize';
+import { excludePathFromSync } from '@/features/workspace/syncIgnoreUi';
+import { useSyncIgnorePatterns } from '@/features/workspace/useSyncIgnorePatterns';
 import './AssetInspector.css';
 
 export type { MetadataReviewSession } from './inspectorTypes';
@@ -212,6 +214,24 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     activeAsset && activeAsset.width > 0 && activeAsset.height > 0
       ? `${activeAsset.width} × ${activeAsset.height}`
       : t('image.grid.dimensionsUnknown');
+
+  const { isIgnored, localActive } = useSyncIgnorePatterns();
+  const syncIgnored = isIgnored(activeAsset?.localPath);
+
+  const handleExcludeFromSync = useCallback(async () => {
+    const path = activeAsset?.localPath;
+    if (!path) return;
+    try {
+      await excludePathFromSync(path);
+      showSuccess(t('settings.syncIgnore.excludeDone'));
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? error.message
+          : t('settings.syncIgnore.excludeFailed'),
+      );
+    }
+  }, [activeAsset?.localPath, t]);
 
   const handleCopy = useCallback(async () => {
     if (!activeAsset) return;
@@ -401,6 +421,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       activeAsset={activeAsset}
       dimensions={dimensions}
       t={t}
+      syncIgnored={syncIgnored}
+      onExcludeFromSync={
+        localActive ? () => void handleExcludeFromSync() : undefined
+      }
     />
   ) : selectedFolderPath ? (
     <AssetInspectorFolderSummary

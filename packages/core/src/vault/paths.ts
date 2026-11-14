@@ -6,6 +6,8 @@ export const WORKSPACE_PATHS = {
   syncState: '.pixuli/sync/state.json',
   syncQueue: '.pixuli/sync/queue.jsonl',
   syncConflicts: '.pixuli/sync/conflicts.json',
+  /** 工作区同步忽略规则（永不同步，D5） */
+  syncIgnore: '.pixuli/sync-ignore.json',
   trashDir: '.pixuli/trash',
   imagesDir: 'images',
   /** 显式空文件夹列表（相对路径），用于树中显示无文件目录 */

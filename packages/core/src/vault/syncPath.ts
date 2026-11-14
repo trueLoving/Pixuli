@@ -1,8 +1,24 @@
+import { matchesSyncIgnore } from './syncIgnore';
+
 /** 本地工作区路径，永不同步（D3） */
 export const SYNC_EXCLUDED_DIR = '.pixuli';
 
 export function normalizeConfigRoot(configRoot: string): string {
   return configRoot.replace(/^\/+/, '').replace(/\/+$/, '');
+}
+
+/**
+ * 是否因用户忽略规则跳过同步（D5）。
+ * 与 `isSyncExcludedPath`（系统 `.pixuli/`）分层。
+ */
+export function isUserSyncIgnored(
+  relativePath: string,
+  ignorePatterns: string[] | undefined,
+): boolean {
+  if (!ignorePatterns || ignorePatterns.length === 0) {
+    return false;
+  }
+  return matchesSyncIgnore(relativePath, ignorePatterns);
 }
 
 export function joinConfigRoot(
@@ -28,12 +44,18 @@ export function isSyncExcludedPath(relativePath: string): boolean {
   );
 }
 
-/** 工作区相对路径；`.pixuli` 下返回 null */
-export function resolveRemotePathForPush(entry: {
-  relativePath: string;
-  remotePath?: string;
-}): string | null {
+/** 工作区相对路径；`.pixuli` 或用户忽略下返回 null */
+export function resolveRemotePathForPush(
+  entry: {
+    relativePath: string;
+    remotePath?: string;
+  },
+  options?: { ignorePatterns?: string[] },
+): string | null {
   if (isSyncExcludedPath(entry.relativePath)) {
+    return null;
+  }
+  if (isUserSyncIgnored(entry.relativePath, options?.ignorePatterns)) {
     return null;
   }
   return entry.remotePath ?? entry.relativePath.replace(/\\/g, '/');
