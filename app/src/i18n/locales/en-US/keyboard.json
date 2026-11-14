@@ -29,7 +29,9 @@
       "selectDown": "Select next image",
       "selectLeft": "Select left image",
       "selectRight": "Select right image",
-      "openSelected": "Open selected image"
+      "openSelected": "Open selected image",
+      "editSelected": "Edit selected file",
+      "shareSelected": "Copy share link for selected file"
     }
   }
 }

@@ -72,6 +72,8 @@ interface AssetInspectorProps {
   variant?: 'dock' | 'sheet';
   /** 桌面双击 / Enter 打开预览 */
   openPreviewRequest?: { id: string; nonce: number } | null;
+  /** 快捷键 E 打开编辑 */
+  openEditRequest?: { id: string; nonce: number } | null;
   /** 本地工作区里按文件类型打开处理弹窗 */
   convertInLibrary?: boolean;
 }
@@ -100,6 +102,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   t,
   variant = 'dock',
   openPreviewRequest = null,
+  openEditRequest = null,
   convertInLibrary = false,
 }) => {
   const [showEdit, setShowEdit] = useState(false);
@@ -122,6 +125,18 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     seenPreviewNonce.current = nonce;
     setShowPreview(true);
   }, [asset, openPreviewRequest, selectedAssets]);
+
+  const seenEditNonce = useRef(0);
+  useEffect(() => {
+    if (!onUpdateAsset) return;
+    const nonce = openEditRequest?.nonce ?? 0;
+    if (nonce <= 0 || nonce === seenEditNonce.current) return;
+    const current =
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
+    if (current?.id !== openEditRequest?.id) return;
+    seenEditNonce.current = nonce;
+    setShowEdit(true);
+  }, [asset, onUpdateAsset, openEditRequest, selectedAssets]);
 
   useEffect(() => {
     if (!metadataReview || !onUpdateAsset) {

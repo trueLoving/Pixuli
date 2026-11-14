@@ -147,6 +147,10 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     id: string;
     nonce: number;
   } | null>(null);
+  const [editRequest, setEditRequest] = useState<{
+    id: string;
+    nonce: number;
+  } | null>(null);
   const [convertTargets, setConvertTargets] = useState<AssetItem[] | null>(
     null,
   );
@@ -630,6 +634,7 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
       openPreviewRequest={previewRequest}
+      openEditRequest={editRequest}
       convertInLibrary={localActive}
     />
   );
@@ -670,6 +675,18 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
           onOpenFile={asset => {
             handleSelectedIdsChange([asset.id], [asset]);
             setPreviewRequest({ id: asset.id, nonce: Date.now() });
+          }}
+          onEditFile={
+            onUpdateAsset
+              ? asset => {
+                  handleSelectedIdsChange([asset.id], [asset]);
+                  setEditRequest({ id: asset.id, nonce: Date.now() });
+                }
+              : undefined
+          }
+          onShareFile={asset => {
+            handleSelectedIdsChange([asset.id], [asset]);
+            void handleCopyLinkForAsset(asset);
           }}
           hasRemoteConnection={hasRemoteConnection}
           multiSelectMode={multiSelectMode}

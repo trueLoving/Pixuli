@@ -342,6 +342,10 @@
   background: var(--pix-violet-soft, #ede9fe);
 }
 
+.library-folder-row--up {
+  color: var(--pix-fg-secondary);
+}
+
 .library-folder-row-name {
   min-width: 0;
   overflow: hidden;
