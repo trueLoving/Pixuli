@@ -13,6 +13,7 @@ import {
   exportSettingsConfig,
   importSettingsConfigText,
 } from '@/features/settings/userConfigTransfer';
+import { SettingsSyncIgnoreSection } from '@/features/settings/SettingsSyncIgnoreSection';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 
 interface SettingsSyncPanelProps {
@@ -166,6 +167,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
 
   return (
     <div className="space-y-8">
+      <SettingsSyncIgnoreSection t={t} />
       <section>
         <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:justify-between">
           <div>

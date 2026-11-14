@@ -26,7 +26,8 @@ import {
   resolveLocalPathForPull,
   type SyncPushIntent,
 } from './syncApply';
-import { isSyncExcludedPath } from './syncPath';
+import { readSyncIgnorePatterns } from './syncIgnore';
+import { isSyncExcludedPath, isUserSyncIgnored } from './syncPath';
 import {
   buildSyncTreeFromPaths,
   createEmptySyncTree,
@@ -106,7 +107,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     provider: StorageProvider & StorageProviderSync,
     folderKey: string,
     remoteRevision: string | null,
-    layerOptions?: { overwriteLocal?: boolean },
+    layerOptions?: { overwriteLocal?: boolean; ignorePatterns?: string[] },
   ): Promise<{
     pulled: number;
     conflicts: SyncRunResult['conflicts'];
@@ -125,7 +126,11 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       binding.bindingId,
       pullResult,
       provider,
-      { fetchFn, overwriteLocal: layerOptions?.overwriteLocal === true },
+      {
+        fetchFn,
+        overwriteLocal: layerOptions?.overwriteLocal === true,
+        ignorePatterns: layerOptions?.ignorePatterns,
+      },
     );
     const stampRevision = remoteRevision ?? pullResult.nextCursor ?? nowIso();
     await clearFolderDirty(
@@ -161,6 +166,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     pathPrefix?: string,
   ): Promise<SyncRunResult> {
     const result = emptyResult();
+    const ignorePatterns = await readSyncIgnorePatterns(vault.adapter);
     const bindingState = await getBindingSyncState(
       vault.adapter,
       binding.bindingId,
@@ -169,7 +175,13 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
 
     const remoteTree = await fetchRemoteSyncTree(provider);
     if (!remoteTree) {
-      return legacyFullPull(binding, provider, bindingState, result);
+      return legacyFullPull(
+        binding,
+        provider,
+        bindingState,
+        result,
+        ignorePatterns,
+      );
     }
 
     const dirty = listDirtyFolderKeys(
@@ -217,6 +229,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
           provider,
           key,
           folderRev,
+          { ignorePatterns },
         );
         result.pulled += applied.pulled;
         result.conflicts.push(...applied.conflicts);
@@ -234,6 +247,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
         provider,
         immediateKey,
         folderRev,
+        { ignorePatterns },
       );
       result.pulled += applied.pulled;
       result.conflicts.push(...applied.conflicts);
@@ -257,6 +271,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     provider: StorageProvider & StorageProviderSync,
     bindingState: BindingSyncStateRecord,
     result: SyncRunResult,
+    ignorePatterns: string[] = [],
   ): Promise<SyncRunResult> {
     const pullResult = await provider.syncPull({
       since: bindingState.cursor ?? undefined,
@@ -266,7 +281,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       binding.bindingId,
       pullResult,
       provider,
-      { fetchFn },
+      { fetchFn, ignorePatterns },
     );
     result.pulled += applied.pulled;
     result.conflicts.push(...applied.conflicts);
@@ -300,7 +315,10 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
     binding: SyncEngineBinding,
     provider: StorageProvider & StorageProviderSync,
     overwriteRemote: boolean,
+    ignorePatterns?: string[],
   ): Promise<number> {
+    const patterns =
+      ignorePatterns ?? (await readSyncIgnorePatterns(vault.adapter));
     const beforeEntries = await vault.list({ includeDeleted: true });
     const pendingFolders = new Set<string>();
     const rememberPending = (relativePath: string) => {
@@ -311,16 +329,24 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       }
     };
     for (const entry of beforeEntries) {
-      if (intentFromEntry(entry, overwriteRemote, binding.bindingId)) {
+      if (
+        intentFromEntry(entry, overwriteRemote, binding.bindingId, {
+          ignorePatterns: patterns,
+        })
+      ) {
         rememberPending(entry.relativePath);
       }
     }
     const queue = await readPushQueue(vault.adapter);
     for (const op of queue) {
-      rememberPending(op.relativePath);
+      if (!isUserSyncIgnored(op.relativePath, patterns)) {
+        rememberPending(op.relativePath);
+      }
     }
     for (const op of memoryQueue) {
-      rememberPending(op.relativePath);
+      if (!isUserSyncIgnored(op.relativePath, patterns)) {
+        rememberPending(op.relativePath);
+      }
     }
 
     if (pendingFolders.size === 0 && !overwriteRemote) {
@@ -333,7 +359,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       provider,
       readFileBytes,
       memoryQueue,
-      { overwriteRemote },
+      { overwriteRemote, ignorePatterns: patterns },
     );
 
     if (pushed === 0 && !overwriteRemote) {
@@ -389,6 +415,13 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
 
   return {
     async enqueuePush(op) {
+      const patterns = await readSyncIgnorePatterns(vault.adapter);
+      if (
+        isSyncExcludedPath(op.relativePath) ||
+        isUserSyncIgnored(op.relativePath, patterns)
+      ) {
+        return;
+      }
       memoryQueue.push(op);
       await appendPushQueue(vault.adapter, op);
       await onEnqueue?.(op);
@@ -400,6 +433,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       let lastSyncAt: string | null = null;
       const entries = await vault.list({ includeDeleted: true });
       const queue = await readPushQueue(vault.adapter);
+      const ignorePatterns = await readSyncIgnorePatterns(vault.adapter);
       const fallbackBindingId = focusBindingId ?? bindings[0]?.bindingId ?? '';
 
       for (const binding of bindings) {
@@ -419,6 +453,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             queue,
             binding.bindingId,
             fallbackBindingId,
+            ignorePatterns,
           ).size,
           treeRevision: record.treeRevision,
           dirtyFolders,
@@ -434,8 +469,13 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       const conflicts = await readConflicts(vault.adapter);
       const pendingPush = focusBindingId
         ? (stateBindings[focusBindingId]?.pendingPush ??
-          pendingPathsForBinding(entries, queue, focusBindingId, focusBindingId)
-            .size)
+          pendingPathsForBinding(
+            entries,
+            queue,
+            focusBindingId,
+            focusBindingId,
+            ignorePatterns,
+          ).size)
         : new Set(
             bindings.flatMap(binding => [
               ...pendingPathsForBinding(
@@ -443,6 +483,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
                 queue,
                 binding.bindingId,
                 fallbackBindingId,
+                ignorePatterns,
               ),
             ]),
           ).size;
@@ -476,10 +517,16 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       const provider = assertSyncProvider(binding.provider);
       const result = emptyResult();
       const folderKey = normalizeFolderKey(folderPath);
+      const ignorePatterns = await readSyncIgnorePatterns(vault.adapter);
 
       if (direction === 'push') {
         try {
-          result.pushed += await pushWithTree(binding, provider, false);
+          result.pushed += await pushWithTree(
+            binding,
+            provider,
+            false,
+            ignorePatterns,
+          );
         } catch (error) {
           result.errors.push({
             path: folderKey || 'push',
@@ -506,6 +553,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
           provider,
           folderKey,
           folderRev,
+          { ignorePatterns },
         );
         result.pulled += applied.pulled;
         result.conflicts.push(...applied.conflicts);
@@ -538,6 +586,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
       const binding = resolveBinding(runOptions?.bindingId);
       const provider = assertSyncProvider(binding.provider);
       const result = emptyResult();
+      const ignorePatterns = await readSyncIgnorePatterns(vault.adapter);
 
       if (direction === 'push' || direction === 'both') {
         try {
@@ -562,6 +611,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             binding,
             provider,
             runOptions?.overwriteRemote === true,
+            ignorePatterns,
           );
         } catch (error) {
           result.errors.push({
@@ -623,6 +673,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
 
       const remotePaths = new Set<string>();
       const remoteFolders = new Set<string>();
+      const ignorePatterns = await readSyncIgnorePatterns(vault.adapter);
 
       try {
         const remoteTree = await fetchRemoteSyncTree(provider);
@@ -633,7 +684,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
             binding.bindingId,
             pullResult,
             provider,
-            { fetchFn, overwriteLocal: true },
+            { fetchFn, overwriteLocal: true, ignorePatterns },
           );
           result.pulled += applied.pulled;
           result.conflicts.push(...applied.conflicts);
@@ -699,7 +750,7 @@ export function createSyncEngine(options: CreateSyncEngineOptions): SyncEngine {
               provider,
               key,
               folderRev,
-              { overwriteLocal: true },
+              { overwriteLocal: true, ignorePatterns },
             );
             result.pulled += applied.pulled;
             result.conflicts.push(...applied.conflicts);
@@ -834,8 +885,10 @@ async function flushPushQueue(
   provider: StorageProvider & StorageProviderSync,
   readFileBytes: (relativePath: string) => Promise<Uint8Array>,
   memoryQueue: SyncPushOperation[],
-  options?: { overwriteRemote?: boolean },
+  options?: { overwriteRemote?: boolean; ignorePatterns?: string[] },
 ): Promise<number> {
+  const ignorePatterns =
+    options?.ignorePatterns ?? (await readSyncIgnorePatterns(vault.adapter));
   const persisted = await readPushQueue(vault.adapter);
   const entries = await vault.list({ includeDeleted: true });
   const activeQueue: QueuedPushOperation[] = [];
@@ -867,7 +920,9 @@ async function flushPushQueue(
       await vault.removeEntry(entry.relativePath);
       continue;
     }
-    const intent = intentFromEntry(entry, overwriteRemote, binding.bindingId);
+    const intent = intentFromEntry(entry, overwriteRemote, binding.bindingId, {
+      ignorePatterns,
+    });
     if (!intent) {
       continue;
     }
@@ -878,7 +933,11 @@ async function flushPushQueue(
   }
   for (const op of queue) {
     const entry = await vault.getByPath(op.relativePath);
-    if (!entry || isSyncExcludedPath(entry.relativePath)) {
+    if (
+      !entry ||
+      isSyncExcludedPath(entry.relativePath) ||
+      isUserSyncIgnored(entry.relativePath, ignorePatterns)
+    ) {
       continue;
     }
     if (entry.deletedAt && !entry.remotePath) {
@@ -911,6 +970,7 @@ async function flushPushQueue(
       intent,
     })),
     readFileBytes,
+    { ignorePatterns },
   );
 
   const items: Awaited<ReturnType<typeof buildSyncPushItems>> = [];
@@ -969,17 +1029,25 @@ function pendingPathsForBinding(
   queue: QueuedPushOperation[],
   bindingId: string,
   fallbackBindingId: string,
+  ignorePatterns: string[] = [],
 ): Set<string> {
   const paths = new Set<string>();
   for (const entry of entries) {
     if (entry.deletedAt && !entry.remotePath) {
       continue;
     }
-    if (intentFromEntry(entry, false, bindingId)) {
+    if (
+      intentFromEntry(entry, false, bindingId, {
+        ignorePatterns,
+      })
+    ) {
       paths.add(entry.relativePath);
     }
   }
   for (const op of queue) {
+    if (isUserSyncIgnored(op.relativePath, ignorePatterns)) {
+      continue;
+    }
     const entry = entries.find(item => item.relativePath === op.relativePath);
     if (queuedBindingId(op, entry, fallbackBindingId) === bindingId) {
       paths.add(op.relativePath);

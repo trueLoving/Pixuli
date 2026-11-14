@@ -74,4 +74,19 @@ txt 等同库，契约层条目类型与相关源文件用 `Asset*`（如
 `imageProcess.ts` / `imageUtils` /
 `ImageCropModal`）。`StorageProvider.listImages` 等方法名可后续再迁。
 
-新增重大取舍时追加 `D5…`，并在 PR / Issue 引用编号。
+---
+
+## D5 · 同步忽略规则（本机）
+
+| 项             | 选择                                                          |
+| -------------- | ------------------------------------------------------------- |
+| 规则文件       | `.pixuli/sync-ignore.json`（落在永不同步目录）                |
+| 范围           | 工作区级；push / pull 双向跳过匹配路径                        |
+| 库内           | 匹配文件仍可见、可编辑；过滤只作用于同步                      |
+| 已同步后加忽略 | **不自动删远端**；仅停止后续同步                              |
+| 匹配语义       | gitignore 子集（`*` / `**` / 精确路径）；v1 无 `!` 取反       |
+| 与系统排除     | 分开：`.pixuli/` 硬排除 + 用户 ignore + 扩展名/白名单拉取策略 |
+
+详见 [docs/architecture.md](docs/architecture.md)。
+
+新增重大取舍时追加 `D6…`，并在 PR / Issue 引用编号。

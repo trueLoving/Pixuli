@@ -25,6 +25,23 @@
       "clearConfirm": "Delete the local sync checkpoint? This cannot be undone.",
       "clearDone": "Sync checkpoint deleted"
     },
+    "syncIgnore": {
+      "title": "Sync ignore rules",
+      "hint": "Matched workspace files stay in the library but are skipped on push and pull. Rules are local-only under .pixuli.",
+      "remoteNote": "Ignoring an already synced file does not delete the remote copy; it only stops further sync.",
+      "needWorkspace": "Open a local workspace before editing ignore rules.",
+      "placeholder": "e.g. *.psd, private/**, notes/draft.md",
+      "add": "Add",
+      "remove": "Remove rule",
+      "empty": "No ignore rules yet",
+      "matchCount": "About {count} local files currently match",
+      "saved": "Ignore rules saved",
+      "saveFailed": "Failed to save ignore rules",
+      "excludeAction": "Exclude from sync",
+      "excludeDone": "Excluded from sync",
+      "excludeFailed": "Failed to exclude from sync",
+      "badge": "Not synced"
+    },
     "sourcesTitle": "Remote repositories",
     "singleSyncHint": "Only one repository can sync at a time. Pick the active target in the table.",
     "addRemote": "Add remote",

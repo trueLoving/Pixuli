@@ -61,10 +61,14 @@ export function AssetInspectorSingleBody({
   activeAsset,
   dimensions,
   t,
+  syncIgnored = false,
+  onExcludeFromSync,
 }: {
   activeAsset: AssetItem;
   dimensions: string;
   t: (key: string) => string;
+  syncIgnored?: boolean;
+  onExcludeFromSync?: () => void;
 }) {
   const kind = getAssetKind(activeAsset);
 
@@ -109,11 +113,27 @@ export function AssetInspectorSingleBody({
           <div>
             <dt>{t('image.inspector.sync')}</dt>
             <dd>
-              {isAssetSynced(activeAsset)
-                ? t('image.inspector.syncRemote')
-                : t('image.inspector.syncLocal')}
+              {syncIgnored
+                ? t('settings.syncIgnore.badge')
+                : isAssetSynced(activeAsset)
+                  ? t('image.inspector.syncRemote')
+                  : t('image.inspector.syncLocal')}
             </dd>
           </div>
+          {onExcludeFromSync && !syncIgnored && activeAsset.localPath ? (
+            <div>
+              <dt />
+              <dd>
+                <button
+                  type="button"
+                  className="asset-inspector-exclude-sync"
+                  onClick={onExcludeFromSync}
+                >
+                  {t('settings.syncIgnore.excludeAction')}
+                </button>
+              </dd>
+            </div>
+          ) : null}
           {(activeAsset.tags?.length ?? 0) > 0 ? (
             <div>
               <dt>{t('image.inspector.tags')}</dt>

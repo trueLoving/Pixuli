@@ -25,6 +25,23 @@
       "clearConfirm": "确定删除本机同步检查点？此操作不可恢复。",
       "clearDone": "已删除同步检查点"
     },
+    "syncIgnore": {
+      "title": "同步忽略规则",
+      "hint": "匹配的工作区文件仍可在库内浏览与编辑，但不会参与推送或拉取。规则仅保存在本机 .pixuli。",
+      "remoteNote": "已同步后再加入忽略，不会自动删除远端副本，仅停止后续同步。",
+      "needWorkspace": "请先打开本机工作区后再配置忽略规则。",
+      "placeholder": "例如 *.psd、private/**、notes/draft.md",
+      "add": "添加",
+      "remove": "删除规则",
+      "empty": "暂无忽略规则",
+      "matchCount": "当前本地约命中 {count} 个文件",
+      "saved": "已保存忽略规则",
+      "saveFailed": "保存忽略规则失败",
+      "excludeAction": "排除同步",
+      "excludeDone": "已排除同步",
+      "excludeFailed": "排除同步失败",
+      "badge": "不同步"
+    },
     "sourcesTitle": "远端仓库",
     "singleSyncHint": "同时仅可对一个仓库执行同步；在表格中指定当前同步目标。",
     "addRemote": "添加远端仓库",

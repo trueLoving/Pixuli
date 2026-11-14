@@ -241,6 +241,22 @@ button.asset-inspector-open-external:hover {
   background: var(--pix-bg-subtle);
 }
 
+button.asset-inspector-exclude-sync {
+  margin: 0;
+  padding: 0.2rem 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--pix-violet-deep);
+  cursor: pointer;
+  text-align: left;
+}
+
+button.asset-inspector-exclude-sync:hover {
+  text-decoration: underline;
+}
+
 .asset-inspector-section {
   margin-bottom: 1.25rem;
 }
