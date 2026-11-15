@@ -1,0 +1,52 @@
+.library-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(18vh, 7rem) 1rem 1rem;
+}
+
+.library-search-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: color-mix(in srgb, var(--pix-bg, #0f0f12) 45%, transparent);
+  cursor: default;
+}
+
+.library-search-overlay-panel {
+  position: relative;
+  z-index: 1;
+  width: min(36rem, calc(100vw - 2rem));
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--pix-border);
+  border-radius: 0.875rem;
+  background: var(--pix-bg-elevated);
+  box-shadow:
+    0 12px 40px color-mix(in srgb, var(--pix-fg, #111) 18%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--pix-border) 60%, transparent);
+}
+
+.library-search-overlay-search.search-wrapper--header {
+  flex: none;
+  width: 100%;
+  max-width: none;
+}
+
+.library-search-overlay-search .search-compact-toggle {
+  display: none !important;
+}
+
+.library-search-overlay-search .search-bar-wrapper {
+  display: block !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.library-search-overlay-search .search-bar {
+  max-width: none;
+}

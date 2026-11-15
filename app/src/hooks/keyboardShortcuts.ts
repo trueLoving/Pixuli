@@ -1,4 +1,8 @@
 import { COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/ui';
+import {
+  requestClearLibrarySearch,
+  requestOpenLibrarySearch,
+} from '@/features/library/librarySearchEvents';
 
 // 键盘快捷键配置
 export const createKeyboardShortcuts = (t: (key: string) => string) => [
@@ -31,19 +35,36 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     },
     category: SHORTCUT_CATEGORIES.GENERAL,
   },
-  // 搜索快捷键
+  // 搜索：Cmd+K（mac）与 Ctrl+K（其它）
   {
-    key: COMMON_SHORTCUTS.SLASH,
+    key: COMMON_SHORTCUTS.K,
+    metaKey: true,
     description: t('keyboard.shortcuts.focusSearch'),
-    action: () => {
-      const searchInput = document.querySelector(
-        'input[type="text"]',
-      ) as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-        searchInput.select();
-      }
-    },
+    action: () => requestOpenLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
+  },
+  {
+    key: COMMON_SHORTCUTS.K,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.focusSearch'),
+    action: () => requestOpenLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
+  },
+  // 清除搜索：Cmd/Ctrl+Shift+K
+  {
+    key: COMMON_SHORTCUTS.K,
+    metaKey: true,
+    shiftKey: true,
+    description: t('keyboard.shortcuts.clearSearch'),
+    action: () => requestClearLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
+  },
+  {
+    key: COMMON_SHORTCUTS.K,
+    ctrlKey: true,
+    shiftKey: true,
+    description: t('keyboard.shortcuts.clearSearch'),
+    action: () => requestClearLibrarySearch(),
     category: SHORTCUT_CATEGORIES.SEARCH,
   },
   {

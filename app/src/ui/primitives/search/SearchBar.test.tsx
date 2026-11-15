@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SearchBar from './SearchBar';
 
@@ -50,7 +50,7 @@ describe('SearchBar', () => {
       const { container } = render(<SearchBar {...defaultProps} />);
       const shortcutHint = container.querySelector('.search-shortcut-hint');
       expect(shortcutHint).toBeInTheDocument();
-      expect(shortcutHint).toHaveTextContent('/');
+      expect(shortcutHint?.textContent).toMatch(/⌘K|Ctrl\+K/);
     });
 
     it('应该在聚焦时隐藏快捷键提示', () => {
@@ -166,85 +166,6 @@ describe('SearchBar', () => {
       fireEvent.focus(input);
 
       expect(searchBar).toHaveClass('focused');
-    });
-  });
-
-  describe('快捷键功能', () => {
-    it('应该按 "/" 键时聚焦输入框', () => {
-      const { container } = render(<SearchBar {...defaultProps} />);
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      // Mock focus
-      const focusSpy = vi.spyOn(input, 'focus');
-
-      fireEvent.keyDown(document, { key: '/' });
-
-      expect(focusSpy).toHaveBeenCalled();
-    });
-
-    it('应该在输入框已聚焦时不响应 "/" 键', () => {
-      const { container } = render(<SearchBar {...defaultProps} />);
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      // 先聚焦输入框
-      fireEvent.focus(input);
-
-      const focusSpy = vi.spyOn(input, 'focus');
-
-      // 在输入框中按 "/" 键
-      fireEvent.keyDown(input, { key: '/' });
-
-      // 不应该再次聚焦
-      expect(focusSpy).not.toHaveBeenCalled();
-    });
-
-    it('应该在禁用时不响应 "/" 键', () => {
-      const { container } = render(
-        <SearchBar {...defaultProps} disabled={true} />,
-      );
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      const focusSpy = vi.spyOn(input, 'focus');
-
-      fireEvent.keyDown(document, { key: '/' });
-
-      expect(focusSpy).not.toHaveBeenCalled();
-    });
-
-    it('应该在 textarea 聚焦时不响应 "/" 键', () => {
-      // 创建一个 textarea 并聚焦
-      const textarea = document.createElement('textarea');
-      document.body.appendChild(textarea);
-      textarea.focus();
-
-      const { container } = render(<SearchBar {...defaultProps} />);
-      const input = container.querySelector('input') as HTMLInputElement;
-
-      const focusSpy = vi.spyOn(input, 'focus');
-
-      fireEvent.keyDown(document, { key: '/' });
-
-      expect(focusSpy).not.toHaveBeenCalled();
-
-      document.body.removeChild(textarea);
-    });
-
-    it('应该阻止默认行为当按 "/" 键时', async () => {
-      render(<SearchBar {...defaultProps} />);
-
-      const preventDefault = vi.fn();
-      const event = new KeyboardEvent('keydown', {
-        key: '/',
-        bubbles: true,
-        cancelable: true,
-      });
-      event.preventDefault = preventDefault;
-
-      await waitFor(() => {
-        document.dispatchEvent(event);
-      });
-
-      expect(preventDefault).toHaveBeenCalled();
     });
   });
 

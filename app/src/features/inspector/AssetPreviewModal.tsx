@@ -61,22 +61,38 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
       switch (event.key) {
         case 'ArrowLeft':
           event.preventDefault();
+          event.stopImmediatePropagation();
           handlePrevious();
           break;
         case 'ArrowRight':
           event.preventDefault();
+          event.stopImmediatePropagation();
           handleNext();
           break;
         case 'Escape':
           event.preventDefault();
+          event.stopImmediatePropagation();
           onClose();
+          break;
+        case 'ArrowUp':
+        case 'ArrowDown':
+        case 'Enter':
+        case 'e':
+        case 'E':
+        case 's':
+        case 'S':
+          // 吞掉库级快捷键，避免预览下穿透出编辑/换选等弹层
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          break;
+        default:
           break;
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [isOpen, handlePrevious, handleNext, onClose]);
 

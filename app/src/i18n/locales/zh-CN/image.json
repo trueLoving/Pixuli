@@ -234,6 +234,8 @@
       "searchInFolder": "回到当前文件夹",
       "searchScopeFolder": "范围：当前文件夹",
       "searchScopeAll": "范围：全部工作区",
+      "clearSearch": "清除搜索",
+      "editSearchHint": "点击或 ⌘K 重编；⌘⇧K 或 × 清除",
       "colName": "名称",
       "colDescription": "描述",
       "colTags": "标签",

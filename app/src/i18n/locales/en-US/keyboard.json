@@ -7,7 +7,7 @@
       "tip1": "Shortcuts won't work in input fields, text areas and other editable elements",
       "tip2": "Press F1 key to open this help interface anytime",
       "tip3": "Press Esc key to close current modal",
-      "tip4": "Press / key to quickly focus on search box"
+      "tip4": "⌘K / Ctrl+K opens or re-edits search; ⌘⇧K / Ctrl+Shift+K clears the query"
     },
     "categories": {
       "general": "General Operations",
@@ -20,7 +20,8 @@
       "showHelp": "Show keyboard shortcuts help",
       "refresh": "Refresh image list",
       "openConfig": "Open GitHub configuration",
-      "focusSearch": "Focus search box",
+      "focusSearch": "Open or re-edit search",
+      "clearSearch": "Clear search query",
       "toggleView": "Toggle view mode",
       "openCompression": "Open image compression tool",
       "openFormatConversion": "Open image format conversion",

@@ -60,26 +60,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
     );
   }, [history, value]);
 
-  // 快捷键 '/' 聚焦搜索
-  useEffect(() => {
-    if (disabled) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // 如果按 '/' 且不在输入框中
-      if (
-        e.key === '/' &&
-        !isFocused &&
-        document.activeElement?.tagName !== 'INPUT' &&
-        document.activeElement?.tagName !== 'TEXTAREA'
-      ) {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isFocused, disabled]);
+  const shortcutHintLabel = React.useMemo(() => {
+    if (typeof navigator === 'undefined') return 'Ctrl+K';
+    return /Mac|iPhone|iPad|iPod/i.test(
+      navigator.platform || navigator.userAgent,
+    )
+      ? '⌘K'
+      : 'Ctrl+K';
+  }, []);
 
   // 键盘导航历史记录
   useEffect(() => {
@@ -269,7 +257,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         )}
         {!disabled && !isFocused && !value && (
           <div className="search-shortcut-hint">
-            <kbd>/</kbd>
+            <kbd>{shortcutHintLabel}</kbd>
           </div>
         )}
       </div>

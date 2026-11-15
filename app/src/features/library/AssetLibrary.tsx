@@ -29,6 +29,17 @@ import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
 import { LibraryFolderNav } from './LibraryFolderNav';
+import { LibrarySearchOverlay } from './LibrarySearchOverlay';
+import {
+  CLEAR_LIBRARY_SEARCH_EVENT,
+  OPEN_LIBRARY_SEARCH_EVENT,
+} from './librarySearchEvents';
+import {
+  areLibraryShortcutsActive,
+  LIBRARY_SHORTCUTS_GATE_EVENT,
+  resumeLibraryShortcuts,
+  suspendLibraryShortcuts,
+} from './libraryShortcutGate';
 import {
   libraryChildFolders,
   libraryFolderNavItems,
@@ -133,7 +144,39 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(480);
   const [activeFolderPath, setActiveFolderPath] = useState<string | null>(null);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const [searchOverlayNonce, setSearchOverlayNonce] = useState(0);
+  const [libraryShortcutsActive, setLibraryShortcutsActive] = useState(
+    areLibraryShortcutsActive,
+  );
   const isMobile = useMobileViewport();
+
+  useEffect(() => {
+    const onGate = () => setLibraryShortcutsActive(areLibraryShortcutsActive());
+    window.addEventListener(LIBRARY_SHORTCUTS_GATE_EVENT, onGate);
+    return () =>
+      window.removeEventListener(LIBRARY_SHORTCUTS_GATE_EVENT, onGate);
+  }, []);
+
+  useEffect(() => {
+    if (!searchOverlayOpen) return;
+    suspendLibraryShortcuts();
+    return () => resumeLibraryShortcuts();
+  }, [searchOverlayOpen]);
+
+  const openSearchOverlay = useCallback(() => {
+    if (!search) return;
+    const committed = search.searchQuery.trim();
+    if (committed && search.draftQuery !== search.searchQuery) {
+      search.onDraftChange(search.searchQuery);
+    }
+    setSearchOverlayOpen(true);
+    setSearchOverlayNonce(nonce => nonce + 1);
+  }, [search]);
+
+  const clearSearch = useCallback(() => {
+    search?.onSearchChange('');
+  }, [search]);
 
   const setMultiSelectActive = useCallback(
     (active: boolean) => {
@@ -438,24 +481,31 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [activeFolderPath, files, multiSelectMode, selectedIds]);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (isMobile || !libraryShortcutsActive) return;
     const shortcuts = [
       {
         key: COMMON_SHORTCUTS.ARROW_UP,
         description: t('keyboard.shortcuts.selectUp'),
-        action: () => navigate(-1),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          navigate(-1);
+        },
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
       },
       {
         key: COMMON_SHORTCUTS.ARROW_DOWN,
         description: t('keyboard.shortcuts.selectDown'),
-        action: () => navigate(1),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          navigate(1);
+        },
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
       },
       {
         key: COMMON_SHORTCUTS.E,
         description: t('keyboard.shortcuts.editSelected'),
         action: () => {
+          if (!areLibraryShortcutsActive()) return;
           if (!selectedFile || !onEditFile) return;
           onEditFile(selectedFile);
         },
@@ -465,6 +515,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         key: COMMON_SHORTCUTS.S,
         description: t('keyboard.shortcuts.shareSelected'),
         action: () => {
+          if (!areLibraryShortcutsActive()) return;
           if (!selectedFile || !onShareFile) return;
           onShareFile(selectedFile);
         },
@@ -475,16 +526,42 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
     };
-  }, [isMobile, navigate, onEditFile, onShareFile, selectedFile, t]);
+  }, [
+    isMobile,
+    libraryShortcutsActive,
+    navigate,
+    onEditFile,
+    onShareFile,
+    selectedFile,
+    t,
+  ]);
 
   useEffect(() => {
     setActiveFolderPath(null);
   }, [selectedFolderPath]);
 
   useEffect(() => {
-    if (isMobile) return;
+    const onOpenSearch = () => openSearchOverlay();
+    const onClearSearch = () => {
+      clearSearch();
+      setSearchOverlayOpen(false);
+    };
+    const onCloseModals = () => setSearchOverlayOpen(false);
+    window.addEventListener(OPEN_LIBRARY_SEARCH_EVENT, onOpenSearch);
+    window.addEventListener(CLEAR_LIBRARY_SEARCH_EVENT, onClearSearch);
+    window.addEventListener('closeModals', onCloseModals);
+    return () => {
+      window.removeEventListener(OPEN_LIBRARY_SEARCH_EVENT, onOpenSearch);
+      window.removeEventListener(CLEAR_LIBRARY_SEARCH_EVENT, onClearSearch);
+      window.removeEventListener('closeModals', onCloseModals);
+    };
+  }, [clearSearch, openSearchOverlay]);
+
+  useEffect(() => {
+    if (isMobile || !libraryShortcutsActive) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Enter') return;
+      if (!areLibraryShortcutsActive()) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (
@@ -510,6 +587,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [
     activeFolderPath,
     isMobile,
+    libraryShortcutsActive,
     onOpenFile,
     selectedFile,
     selectedFolderPath,
@@ -581,6 +659,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         search={search}
         t={t}
         onOpenFolders={onOpenFolders}
+        onOpenSearch={search ? openSearchOverlay : undefined}
+        onClearSearch={search ? clearSearch : undefined}
         onUploadAsset={onUploadAsset}
         onUploadMultipleAssets={onUploadMultipleAssets}
         uploadLoading={uploadLoading}
@@ -591,6 +671,17 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         multiSelectMode={multiSelectMode}
         onToggleSelectMode={handleToggleSelectMode}
       />
+
+      {search ? (
+        <LibrarySearchOverlay
+          open={searchOverlayOpen}
+          focusNonce={searchOverlayNonce}
+          search={search}
+          hasConfig={hasConfig}
+          t={t}
+          onClose={() => setSearchOverlayOpen(false)}
+        />
+      ) : null}
 
       {search?.searchQuery && search.canSearchInAll ? (
         <div

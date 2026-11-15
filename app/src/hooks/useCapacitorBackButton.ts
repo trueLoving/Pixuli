@@ -4,6 +4,7 @@ import { useUIStore } from '../stores/uiStore';
 import { isNativeMobile } from '@/platforms/platform';
 
 const OVERLAY_CLOSE_SELECTORS = [
+  '.library-search-overlay-backdrop',
   '.asset-preview-modal-overlay .asset-preview-modal-close',
   '.asset-upload-modal-overlay .asset-upload-modal-close',
   '.image-batch-delete-modal-overlay .image-batch-delete-modal-close',
