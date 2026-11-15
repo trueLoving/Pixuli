@@ -71,7 +71,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [searchQuery, setSearchQueryState] = useState('');
   const [filters, setFilters] = useState<FilterOptions>(createDefaultFilters());
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
-  const [searchScope, setSearchScope] = useState<LibrarySearchScope>('folder');
+  const [searchScope, setSearchScope] =
+    useState<LibrarySearchScope>('workspace');
 
   useEffect(() => {
     setHistory(getSearchHistory());
@@ -81,13 +82,13 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setDraftQuery(query);
     setSearchQueryState(query);
     if (!query.trim()) {
-      setSearchScope('folder');
+      setSearchScope('workspace');
     }
   }, []);
 
   const clearCommittedSearch = useCallback(() => {
     setSearchQueryState('');
-    setSearchScope('folder');
+    setSearchScope('workspace');
     setFilters(prev => (prev.searchTerm ? { ...prev, searchTerm: '' } : prev));
   }, []);
 
@@ -100,7 +101,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         addSearchHistory(q);
         setHistory(getSearchHistory());
       } else {
-        setSearchScope('folder');
+        setSearchScope('workspace');
       }
     },
     [draftQuery],

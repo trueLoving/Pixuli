@@ -40,6 +40,10 @@ import {
 } from '@/hooks/usePanelResize';
 import { excludePathFromSync } from '@/features/workspace/syncIgnoreUi';
 import { useSyncIgnorePatterns } from '@/features/workspace/useSyncIgnorePatterns';
+import {
+  resumeLibraryShortcuts,
+  suspendLibraryShortcuts,
+} from '@/features/library/libraryShortcutGate';
 import './AssetInspector.css';
 
 export type { MetadataReviewSession } from './inspectorTypes';
@@ -72,8 +76,11 @@ interface AssetInspectorProps {
   variant?: 'dock' | 'sheet';
   /** 桌面双击 / Enter 打开预览 */
   openPreviewRequest?: { id: string; nonce: number } | null;
+  /** 预览关闭或选中项变化后由父级清空 request，避免 remount 后再次弹出 */
+  onPreviewRequestClear?: () => void;
   /** 快捷键 E 打开编辑 */
   openEditRequest?: { id: string; nonce: number } | null;
+  onEditRequestClear?: () => void;
   /** 本地工作区里按文件类型打开处理弹窗 */
   convertInLibrary?: boolean;
 }
@@ -102,12 +109,24 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   t,
   variant = 'dock',
   openPreviewRequest = null,
+  onPreviewRequestClear,
   openEditRequest = null,
+  onEditRequestClear,
   convertInLibrary = false,
 }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewAsset, setPreviewAsset] = useState<AssetItem | null>(asset);
+
+  const closePreview = useCallback(() => {
+    setShowPreview(false);
+    onPreviewRequestClear?.();
+  }, [onPreviewRequestClear]);
+
+  const closeEdit = useCallback(() => {
+    setShowEdit(false);
+    onEditRequestClear?.();
+  }, [onEditRequestClear]);
 
   useEffect(() => {
     setPreviewAsset(
@@ -123,6 +142,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
     if (current?.id !== openPreviewRequest?.id) return;
     seenPreviewNonce.current = nonce;
+    setShowEdit(false);
     setShowPreview(true);
   }, [asset, openPreviewRequest, selectedAssets]);
 
@@ -135,6 +155,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
     if (current?.id !== openEditRequest?.id) return;
     seenEditNonce.current = nonce;
+    setShowPreview(false);
     setShowEdit(true);
   }, [asset, onUpdateAsset, openEditRequest, selectedAssets]);
 
@@ -145,6 +166,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     if (metadataReview.openEditNonce <= 0) {
       return;
     }
+    setShowPreview(false);
     setShowEdit(true);
   }, [metadataReview?.openEditNonce, onUpdateAsset]);
 
@@ -201,11 +223,11 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   useEscapeKey(
     () => {
       if (showPreview) {
-        setShowPreview(false);
+        closePreview();
         return;
       }
       if (showEdit) {
-        setShowEdit(false);
+        closeEdit();
         return;
       }
       if (isSheet) onClose();
@@ -215,6 +237,14 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         (isSheet || showPreview || showEdit),
     ),
   );
+
+  /** 预览 / 编辑打开时暂停库级快捷键（用合并布尔，避免两态切换时短暂 resume） */
+  const libraryShortcutsBlocked = showPreview || showEdit;
+  useEffect(() => {
+    if (!libraryShortcutsBlocked) return;
+    suspendLibraryShortcuts();
+    return () => resumeLibraryShortcuts();
+  }, [libraryShortcutsBlocked]);
 
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   /** 单选时以 props.asset 为准，缺省则回退 selectedAssets[0] */
@@ -343,6 +373,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         {
           onEdit: onUpdateAsset
             ? () => {
+                closePreview();
                 setShowEdit(true);
                 if (activeAsset) {
                   showInfo(`${t('image.grid.editing')} "${activeAsset.name}"`);
@@ -376,6 +407,8 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       ),
     [
       activeAsset,
+      activeAsset,
+      closePreview,
       convertInLibrary,
       handleCopy,
       handleDelete,
@@ -590,10 +623,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         <AssetEditModal
           asset={activeAsset}
           isOpen={showEdit}
-          onClose={() => setShowEdit(false)}
+          onClose={closeEdit}
           onUpdateAsset={onUpdateAsset}
-          onSuccess={() => setShowEdit(false)}
-          onCancel={() => setShowEdit(false)}
+          onSuccess={closeEdit}
+          onCancel={closeEdit}
           enableFolderMove={enableFolderMove}
           folderOptions={folderOptions}
           t={t}
@@ -606,7 +639,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           assets={assets}
           currentIndex={previewIndex < 0 ? 0 : previewIndex}
           isOpen={showPreview}
-          onClose={() => setShowPreview(false)}
+          onClose={closePreview}
           onNavigate={index => {
             const next = assets[index];
             if (next) setPreviewAsset(next);

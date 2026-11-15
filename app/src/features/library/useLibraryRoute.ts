@@ -31,12 +31,11 @@ export function useLibraryRoute() {
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
-  const searchScope = searchContext?.searchScope ?? 'folder';
+  const searchScope = searchContext?.searchScope ?? 'workspace';
   const searchQuery = searchContext?.searchQuery ?? '';
+  /** 有查询且范围为工作区时，跨全部文件夹搜索（默认） */
   const searchAllWorkspace =
-    searchScope === 'workspace' &&
-    Boolean(searchQuery.trim()) &&
-    Boolean(selectedFolderPath);
+    searchScope === 'workspace' && Boolean(searchQuery.trim());
 
   // store 已按文件夹 / 全库搜索范围懒载入，此处直接使用
   const visibleAssets = assets;

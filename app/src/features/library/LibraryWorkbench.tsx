@@ -170,6 +170,25 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const selectedAsset = selectedAssets.length === 1 ? selectedAssets[0] : null;
   const hasSelection = selectedIds.length > 0;
+
+  /** 选中项离开预览/编辑目标时清掉 request，避免 Inspector remount 后重复弹出 */
+  useEffect(() => {
+    if (
+      previewRequest &&
+      (selectedIds.length !== 1 || selectedIds[0] !== previewRequest.id)
+    ) {
+      setPreviewRequest(null);
+    }
+  }, [previewRequest, selectedIds]);
+
+  useEffect(() => {
+    if (
+      editRequest &&
+      (selectedIds.length !== 1 || selectedIds[0] !== editRequest.id)
+    ) {
+      setEditRequest(null);
+    }
+  }, [editRequest, selectedIds]);
   const showDockedInspector =
     !isMobile && !inspectorCollapsed && (isWide || hasSelection);
   const showSheetInspector =
@@ -634,7 +653,9 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
       t={t}
       variant={showSheetInspector ? 'sheet' : 'dock'}
       openPreviewRequest={previewRequest}
+      onPreviewRequestClear={() => setPreviewRequest(null)}
       openEditRequest={editRequest}
+      onEditRequestClear={() => setEditRequest(null)}
       convertInLibrary={localActive}
     />
   );

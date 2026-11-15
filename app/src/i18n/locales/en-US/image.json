@@ -226,6 +226,8 @@
       "searchInFolder": "Back to this folder",
       "searchScopeFolder": "Scope: current folder",
       "searchScopeAll": "Scope: whole workspace",
+      "clearSearch": "Clear search",
+      "editSearchHint": "Click or ⌘K to edit; ⌘⇧K or × to clear",
       "colName": "Name",
       "colDescription": "Description",
       "colTags": "Tags",
