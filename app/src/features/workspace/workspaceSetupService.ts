@@ -1,5 +1,6 @@
+import { flushSync } from 'react-dom';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { notifyWorkspaceCleared } from '@/features/library/workspaceImageBridge';
+import { notifyWorkspaceCleared } from '@/features/library/workspaceAssetBridge';
 import {
   clearPersistedWorkspace,
   loadPersistedWorkspace,
@@ -29,10 +30,20 @@ import {
   parseFsaRootPath,
 } from '@/platforms/web/fsaWorkspaceFs';
 import { buildReconnectHint } from '@/features/workspace/fsaReconnect';
+import { useUIStore } from '@/stores/uiStore';
 import {
   storedSourcesToWorkspaceBindings,
   type LocalVault,
 } from '@pixuli/core/vault';
+
+/** 关设置/工作区弹窗并同步提交绘制，避免系统选夹对话框背后仍叠着设置页 */
+function dismissOverlaysBeforeNativePicker(): void {
+  flushSync(() => {
+    const ui = useUIStore.getState();
+    if (ui.showSettingsModal) ui.closeSettingsModal();
+    if (ui.showWorkspaceModal) ui.closeWorkspaceModal();
+  });
+}
 
 function getAdapter() {
   return getWorkspaceAdapter();
@@ -154,7 +165,7 @@ export async function initializeWorkspace(
       rootDisplayPath => set({ rootDisplayPath }),
     );
     await get().syncBindingsFromSources();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
   } catch (error) {
     const message = error instanceof Error ? error.message : '工作区初始化失败';
@@ -206,7 +217,7 @@ export async function resumeLocalWorkspace(
       rootDisplayPath => set({ rootDisplayPath }),
     );
     await get().syncBindingsFromSources();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     return true;
   } catch (error) {
@@ -292,7 +303,7 @@ export async function reconnectWorkspace(
       set({ rootDisplayPath }),
     );
     await get().syncBindingsFromSources();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     return true;
   } catch (error) {
@@ -339,6 +350,7 @@ export async function pickWorkspace(
   const previousDisplayName = get().displayName;
   const hadLocal = get().mode === 'local' && Boolean(previousRootPath);
 
+  dismissOverlaysBeforeNativePicker();
   set({ loading: true, error: null, reconnect: null });
   try {
     resetWorkspaceRuntime();
@@ -353,7 +365,7 @@ export async function pickWorkspace(
           displayName: previousDisplayName,
           loading: false,
         });
-        await get().refreshLocalImages();
+        await get().refreshLocalAssets();
         await get().refreshSyncStatus();
       } else {
         set({ loading: false });
@@ -385,7 +397,7 @@ export async function pickWorkspace(
       set({ rootDisplayPath }),
     );
     await get().syncBindingsFromSources();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     if (options?.pullAfter) {
       await get().pullFromRemote();
@@ -413,7 +425,7 @@ export async function clearWorkspace(
     rootPath: null,
     displayName: null,
     rootDisplayPath: null,
-    localImages: [],
+    localAssets: [],
     scopedTotal: 0,
     indexPaths: [],
     localFolders: [],

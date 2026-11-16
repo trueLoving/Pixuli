@@ -11,8 +11,8 @@ import {
   buildBatchSelectionActions,
   buildSingleSelectionActions,
 } from '@/features/library/selectionActions';
-import ImageEditModal from './ImageEditModal';
-import ImagePreviewModal from './ImagePreviewModal';
+import AssetEditModal from './AssetEditModal';
+import AssetPreviewModal from './AssetPreviewModal';
 import {
   AssetInspectorBatchBody,
   AssetInspectorFolderSummary,
@@ -30,7 +30,7 @@ import React, {
 } from 'react';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
 import { useUIStore } from '@/stores/uiStore';
-import type { ImageEditData, ImageItem } from '@pixuli/core/types';
+import type { AssetEditData, AssetItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import {
@@ -38,20 +38,26 @@ import {
   INSPECTOR_WIDTH_MIN,
   usePanelResize,
 } from '@/hooks/usePanelResize';
+import { excludePathFromSync } from '@/features/workspace/syncIgnoreUi';
+import { useSyncIgnorePatterns } from '@/features/workspace/useSyncIgnorePatterns';
+import {
+  resumeLibraryShortcuts,
+  suspendLibraryShortcuts,
+} from '@/features/library/libraryShortcutGate';
 import './AssetInspector.css';
 
 export type { MetadataReviewSession } from './inspectorTypes';
 
 interface AssetInspectorProps {
-  image: ImageItem | null;
-  selectedImages?: ImageItem[];
-  images: ImageItem[];
+  asset: AssetItem | null;
+  selectedAssets?: AssetItem[];
+  assets: AssetItem[];
   onClose: () => void;
-  onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onDeleteMultipleImages?: (ids: string[], names: string[]) => Promise<void>;
-  onUpdateImage?: (data: ImageEditData) => Promise<void>;
+  onDeleteAsset?: (id: string, name: string) => Promise<void>;
+  onDeleteMultipleAssets?: (ids: string[], names: string[]) => Promise<void>;
+  onUpdateAsset?: (data: AssetEditData) => Promise<void>;
   onCopyUrl?: (url: string, type: 'url' | 'githubUrl') => Promise<void>;
-  onShareImage?: (image: ImageItem) => Promise<void>;
+  onShareAsset?: (asset: AssetItem) => Promise<void>;
   onSync?: () => void;
   onSendConvert?: () => void;
   onBatchEdit?: () => void;
@@ -61,32 +67,34 @@ interface AssetInspectorProps {
   onCopyActiveLink?: () => void;
   hasRemoteConnection?: boolean;
   /** 批摘要列表点击 → 单文件 */
-  onSelectImage?: (id: string) => void;
+  onSelectAsset?: (id: string) => void;
   enableFolderMove?: boolean;
   folderOptions?: string[];
   /** 添加后逐张完善 */
   metadataReview?: MetadataReviewSession | null;
-  getImageDimensionsFromUrl?: (
-    url: string,
-  ) => Promise<{ width: number; height: number }>;
   t: (key: string) => string;
   variant?: 'dock' | 'sheet';
   /** 桌面双击 / Enter 打开预览 */
   openPreviewRequest?: { id: string; nonce: number } | null;
+  /** 预览关闭或选中项变化后由父级清空 request，避免 remount 后再次弹出 */
+  onPreviewRequestClear?: () => void;
+  /** 快捷键 E 打开编辑 */
+  openEditRequest?: { id: string; nonce: number } | null;
+  onEditRequestClear?: () => void;
   /** 本地工作区里按文件类型打开处理弹窗 */
   convertInLibrary?: boolean;
 }
 
 export const AssetInspector: React.FC<AssetInspectorProps> = ({
-  image,
-  selectedImages = [],
-  images,
+  asset,
+  selectedAssets = [],
+  assets,
   onClose,
-  onDeleteImage,
-  onDeleteMultipleImages,
-  onUpdateImage,
+  onDeleteAsset,
+  onDeleteMultipleAssets,
+  onUpdateAsset,
   onCopyUrl,
-  onShareImage,
+  onShareAsset,
   onSync,
   onSendConvert,
   onBatchEdit,
@@ -94,46 +102,73 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   onCopyLinks,
   onCopyActiveLink,
   hasRemoteConnection,
-  onSelectImage,
+  onSelectAsset,
   enableFolderMove = false,
   folderOptions = [],
   metadataReview = null,
-  getImageDimensionsFromUrl,
   t,
   variant = 'dock',
   openPreviewRequest = null,
+  onPreviewRequestClear,
+  openEditRequest = null,
+  onEditRequestClear,
   convertInLibrary = false,
 }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewImage, setPreviewImage] = useState<ImageItem | null>(image);
+  const [previewAsset, setPreviewAsset] = useState<AssetItem | null>(asset);
+
+  const closePreview = useCallback(() => {
+    setShowPreview(false);
+    onPreviewRequestClear?.();
+  }, [onPreviewRequestClear]);
+
+  const closeEdit = useCallback(() => {
+    setShowEdit(false);
+    onEditRequestClear?.();
+  }, [onEditRequestClear]);
 
   useEffect(() => {
-    setPreviewImage(
-      image ?? (selectedImages.length === 1 ? selectedImages[0] : null),
+    setPreviewAsset(
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null),
     );
-  }, [image, selectedImages]);
+  }, [asset, selectedAssets]);
 
   const seenPreviewNonce = useRef(0);
   useEffect(() => {
     const nonce = openPreviewRequest?.nonce ?? 0;
     if (nonce <= 0 || nonce === seenPreviewNonce.current) return;
     const current =
-      image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
     if (current?.id !== openPreviewRequest?.id) return;
     seenPreviewNonce.current = nonce;
+    setShowEdit(false);
     setShowPreview(true);
-  }, [image, openPreviewRequest, selectedImages]);
+  }, [asset, openPreviewRequest, selectedAssets]);
+
+  const seenEditNonce = useRef(0);
+  useEffect(() => {
+    if (!onUpdateAsset) return;
+    const nonce = openEditRequest?.nonce ?? 0;
+    if (nonce <= 0 || nonce === seenEditNonce.current) return;
+    const current =
+      asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
+    if (current?.id !== openEditRequest?.id) return;
+    seenEditNonce.current = nonce;
+    setShowPreview(false);
+    setShowEdit(true);
+  }, [asset, onUpdateAsset, openEditRequest, selectedAssets]);
 
   useEffect(() => {
-    if (!metadataReview || !onUpdateImage) {
+    if (!metadataReview || !onUpdateAsset) {
       return;
     }
     if (metadataReview.openEditNonce <= 0) {
       return;
     }
+    setShowPreview(false);
     setShowEdit(true);
-  }, [metadataReview?.openEditNonce, onUpdateImage]);
+  }, [metadataReview?.openEditNonce, onUpdateAsset]);
 
   const isSheet = variant === 'sheet';
   const [sheetExpanded, setSheetExpanded] = useState(false);
@@ -188,42 +223,68 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   useEscapeKey(
     () => {
       if (showPreview) {
-        setShowPreview(false);
+        closePreview();
         return;
       }
       if (showEdit) {
-        setShowEdit(false);
+        closeEdit();
         return;
       }
       if (isSheet) onClose();
     },
     Boolean(
-      (image || selectedImages.length > 0) &&
+      (asset || selectedAssets.length > 0) &&
         (isSheet || showPreview || showEdit),
     ),
   );
 
+  /** 预览 / 编辑打开时暂停库级快捷键（用合并布尔，避免两态切换时短暂 resume） */
+  const libraryShortcutsBlocked = showPreview || showEdit;
+  useEffect(() => {
+    if (!libraryShortcutsBlocked) return;
+    suspendLibraryShortcuts();
+    return () => resumeLibraryShortcuts();
+  }, [libraryShortcutsBlocked]);
+
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
-  /** 单选时以 props.image 为准，缺省则回退 selectedImages[0] */
-  const activeImage =
-    image ?? (selectedImages.length === 1 ? selectedImages[0] : null);
-  const previewIndex = previewImage
-    ? images.findIndex(item => item.id === previewImage.id)
+  /** 单选时以 props.asset 为准，缺省则回退 selectedAssets[0] */
+  const activeAsset =
+    asset ?? (selectedAssets.length === 1 ? selectedAssets[0] : null);
+  const previewIndex = previewAsset
+    ? assets.findIndex(item => item.id === previewAsset.id)
     : -1;
 
-  const kind = activeImage ? getAssetKind(activeImage) : 'image';
+  const kind = activeAsset ? getAssetKind(activeAsset) : 'image';
   const dimensions =
-    activeImage && activeImage.width > 0 && activeImage.height > 0
-      ? `${activeImage.width} × ${activeImage.height}`
+    activeAsset && activeAsset.width > 0 && activeAsset.height > 0
+      ? `${activeAsset.width} × ${activeAsset.height}`
       : t('image.grid.dimensionsUnknown');
 
+  const { isIgnored, localActive } = useSyncIgnorePatterns();
+  const syncIgnored = isIgnored(activeAsset?.localPath);
+
+  const handleExcludeFromSync = useCallback(async () => {
+    const path = activeAsset?.localPath;
+    if (!path) return;
+    try {
+      await excludePathFromSync(path);
+      showSuccess(t('settings.syncIgnore.excludeDone'));
+    } catch (error) {
+      showError(
+        error instanceof Error
+          ? error.message
+          : t('settings.syncIgnore.excludeFailed'),
+      );
+    }
+  }, [activeAsset?.localPath, t]);
+
   const handleCopy = useCallback(async () => {
-    if (!activeImage) return;
+    if (!activeAsset) return;
     if (onCopyActiveLink) {
       onCopyActiveLink();
       return;
     }
-    const url = getCopyablePublicUrl(activeImage);
+    const url = getCopyablePublicUrl(activeAsset);
     if (!url) {
       showError(t('image.copyLink.needSync'));
       return;
@@ -241,68 +302,68 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
     } catch {
       showError(t('image.grid.copyFailed'));
     }
-  }, [activeImage, onCopyActiveLink, onCopyUrl, t]);
+  }, [activeAsset, onCopyActiveLink, onCopyUrl, t]);
 
   const handleDelete = useCallback(async () => {
-    if (!activeImage || !onDeleteImage) return;
+    if (!activeAsset || !onDeleteAsset) return;
     if (
       !confirm(
-        `${t('image.grid.confirmDelete')} "${activeImage.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
+        `${t('image.grid.confirmDelete')} "${activeAsset.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
       )
     ) {
       return;
     }
     const loadingToast = showLoading(
-      `${t('image.grid.deleting')} "${activeImage.name}"...`,
+      `${t('image.grid.deleting')} "${activeAsset.name}"...`,
     );
     try {
-      await onDeleteImage(activeImage.id, activeImage.name);
+      await onDeleteAsset(activeAsset.id, activeAsset.name);
       updateLoadingToSuccess(
         String(loadingToast),
-        `${t('image.grid.deleteSuccess')} "${activeImage.name}" ${t('image.grid.deleted')}`,
+        `${t('image.grid.deleteSuccess')} "${activeAsset.name}" ${t('image.grid.deleted')}`,
       );
       onClose();
     } catch (error) {
       updateLoadingToError(
         String(loadingToast),
-        `${t('image.grid.deleteFailed')} "${activeImage.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
+        `${t('image.grid.deleteFailed')} "${activeAsset.name}" ${t('image.grid.failed')}: ${error instanceof Error ? error.message : t('common.unknownError')}`,
       );
     }
-  }, [activeImage, onClose, onDeleteImage, t]);
+  }, [activeAsset, onClose, onDeleteAsset, t]);
 
   const handleShare = useCallback(async () => {
-    if (!activeImage || !onShareImage) return;
+    if (!activeAsset || !onShareAsset) return;
     try {
-      await onShareImage(activeImage);
+      await onShareAsset(activeAsset);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       if (/cancel|abort|dismiss|user/i.test(message)) return;
       showError(`${t('image.grid.shareFailed')}: ${message}`);
     }
-  }, [activeImage, onShareImage, t]);
+  }, [activeAsset, onShareAsset, t]);
 
   const handleBatchDelete = useCallback(async () => {
-    if (selectedImages.length === 0) return;
+    if (selectedAssets.length === 0) return;
     if (
       !confirm(
         t('image.library.confirmDeleteN').replace(
           '{count}',
-          String(selectedImages.length),
+          String(selectedAssets.length),
         ),
       )
     ) {
       return;
     }
-    if (selectedImages.length === 1 && onDeleteImage) {
-      await onDeleteImage(selectedImages[0].id, selectedImages[0].name);
-    } else if (onDeleteMultipleImages) {
-      await onDeleteMultipleImages(
-        selectedImages.map(item => item.id),
-        selectedImages.map(item => item.name),
+    if (selectedAssets.length === 1 && onDeleteAsset) {
+      await onDeleteAsset(selectedAssets[0].id, selectedAssets[0].name);
+    } else if (onDeleteMultipleAssets) {
+      await onDeleteMultipleAssets(
+        selectedAssets.map(item => item.id),
+        selectedAssets.map(item => item.name),
       );
     }
     onClose();
-  }, [onClose, onDeleteImage, onDeleteMultipleImages, selectedImages, t]);
+  }, [onClose, onDeleteAsset, onDeleteMultipleAssets, selectedAssets, t]);
 
   const singleActions = useMemo(
     () =>
@@ -310,18 +371,19 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         kind,
         t,
         {
-          onEdit: onUpdateImage
+          onEdit: onUpdateAsset
             ? () => {
+                closePreview();
                 setShowEdit(true);
-                if (activeImage) {
-                  showInfo(`${t('image.grid.editing')} "${activeImage.name}"`);
+                if (activeAsset) {
+                  showInfo(`${t('image.grid.editing')} "${activeAsset.name}"`);
                 }
               }
             : undefined,
           onCopy: () => {
             void handleCopy();
           },
-          onShare: onShareImage
+          onShare: onShareAsset
             ? () => {
                 void handleShare();
               }
@@ -332,10 +394,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
           },
         },
         {
-          canEdit: Boolean(onUpdateImage),
-          canShare: Boolean(onShareImage),
-          canDelete: Boolean(onDeleteImage),
-          canCopy: Boolean(activeImage && getCopyablePublicUrl(activeImage)),
+          canEdit: Boolean(onUpdateAsset),
+          canShare: Boolean(onShareAsset),
+          canDelete: Boolean(onDeleteAsset),
+          canCopy: Boolean(activeAsset && getCopyablePublicUrl(activeAsset)),
           copyDisabledTitle:
             hasRemoteConnection === false
               ? t('image.copyLink.needConnection')
@@ -344,17 +406,19 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         },
       ),
     [
-      activeImage,
+      activeAsset,
+      activeAsset,
+      closePreview,
       convertInLibrary,
       handleCopy,
       handleDelete,
       handleShare,
       hasRemoteConnection,
       kind,
-      onDeleteImage,
+      onDeleteAsset,
       onSendConvert,
-      onShareImage,
-      onUpdateImage,
+      onShareAsset,
+      onUpdateAsset,
       t,
     ],
   );
@@ -362,7 +426,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const batchActions = useMemo(
     () =>
       buildBatchSelectionActions(
-        selectedImages,
+        selectedAssets,
         t,
         {
           onBatchEdit,
@@ -385,32 +449,35 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       onCopyLinks,
       onSendConvert,
       onSync,
-      selectedImages,
+      selectedAssets,
       t,
     ],
   );
 
   const batchBody =
-    selectedImages.length >= 2 ? (
+    selectedAssets.length >= 2 ? (
       <AssetInspectorBatchBody
-        selectedImages={selectedImages}
+        selectedAssets={selectedAssets}
         selectedFolderPath={selectedFolderPath}
-        onSelectImage={onSelectImage}
+        onSelectAsset={onSelectAsset}
         t={t}
       />
     ) : null;
 
-  const singleBody = activeImage ? (
+  const singleBody = activeAsset ? (
     <AssetInspectorSingleBody
-      activeImage={activeImage}
+      activeAsset={activeAsset}
       dimensions={dimensions}
-      onPreview={() => setShowPreview(true)}
       t={t}
+      syncIgnored={syncIgnored}
+      onExcludeFromSync={
+        localActive ? () => void handleExcludeFromSync() : undefined
+      }
     />
   ) : selectedFolderPath ? (
     <AssetInspectorFolderSummary
       selectedFolderPath={selectedFolderPath}
-      images={images}
+      assets={assets}
       t={t}
     />
   ) : (
@@ -419,9 +486,9 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
 
   const body = batchBody ?? singleBody;
   const actions =
-    selectedImages.length >= 2
+    selectedAssets.length >= 2
       ? batchActions
-      : activeImage
+      : activeAsset
         ? singleActions
         : null;
 
@@ -461,10 +528,10 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         ) : null}
         <div className="asset-inspector-header-row">
           <h2>
-            {selectedImages.length >= 2
+            {selectedAssets.length >= 2
               ? t('image.library.selectedCount').replace(
                   '{count}',
-                  String(selectedImages.length),
+                  String(selectedAssets.length),
                 )
               : t('image.inspector.title')}
           </h2>
@@ -552,31 +619,30 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
         panel
       )}
 
-      {activeImage && onUpdateImage ? (
-        <ImageEditModal
-          image={activeImage}
+      {activeAsset && onUpdateAsset ? (
+        <AssetEditModal
+          asset={activeAsset}
           isOpen={showEdit}
-          onClose={() => setShowEdit(false)}
-          onUpdateImage={onUpdateImage}
-          onSuccess={() => setShowEdit(false)}
-          onCancel={() => setShowEdit(false)}
+          onClose={closeEdit}
+          onUpdateAsset={onUpdateAsset}
+          onSuccess={closeEdit}
+          onCancel={closeEdit}
           enableFolderMove={enableFolderMove}
           folderOptions={folderOptions}
-          getImageDimensionsFromUrl={getImageDimensionsFromUrl}
           t={t}
         />
       ) : null}
 
-      {previewImage ? (
-        <ImagePreviewModal
-          image={previewImage}
-          images={images}
+      {previewAsset ? (
+        <AssetPreviewModal
+          asset={previewAsset}
+          assets={assets}
           currentIndex={previewIndex < 0 ? 0 : previewIndex}
           isOpen={showPreview}
-          onClose={() => setShowPreview(false)}
+          onClose={closePreview}
           onNavigate={index => {
-            const next = images[index];
-            if (next) setPreviewImage(next);
+            const next = assets[index];
+            if (next) setPreviewAsset(next);
           }}
           formatFileSize={formatFileSize}
           t={t}

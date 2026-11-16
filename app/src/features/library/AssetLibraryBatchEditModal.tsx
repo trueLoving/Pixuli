@@ -6,6 +6,7 @@ import {
   updateLoadingToError,
   updateLoadingToSuccess,
 } from '@/ui/feedback/toast';
+import { useSuspendLibraryShortcuts } from './useSuspendLibraryShortcuts';
 import './AssetLibraryBatchEditModal.css';
 
 export interface AssetLibraryBatchEditModalProps {
@@ -27,6 +28,7 @@ export const AssetLibraryBatchEditModal: React.FC<
   const [description, setDescription] = useState('');
   const [updateDescription, setUpdateDescription] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
+  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

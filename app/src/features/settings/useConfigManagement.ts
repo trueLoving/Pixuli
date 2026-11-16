@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -14,7 +14,7 @@ export function useConfigManagement() {
     setGiteeConfig,
     clearGitHubConfig,
     clearGiteeConfig,
-    loadImages,
+    loadAssets,
   } = useSourceSelection();
   const { addSource, updateSource, removeSource, setSelectedSourceId } =
     useSourceStore();
@@ -47,7 +47,7 @@ export function useConfigManagement() {
       const editingSource = editingSourceId
         ? useSourceStore.getState().getSourceById(editingSourceId)
         : undefined;
-      const liveStorageType = useImageStore.getState().storageType;
+      const liveStorageType = useAssetStore.getState().storageType;
       const activePluginId = editingSource?.pluginId ?? liveStorageType;
 
       if (editingSourceId) {
@@ -79,7 +79,7 @@ export function useConfigManagement() {
       }
 
       setTimeout(() => {
-        void loadImages();
+        void loadAssets();
       }, 100);
     },
     [
@@ -89,7 +89,7 @@ export function useConfigManagement() {
       setSelectedSourceId,
       setGitHubConfig,
       setGiteeConfig,
-      loadImages,
+      loadAssets,
     ],
   );
 

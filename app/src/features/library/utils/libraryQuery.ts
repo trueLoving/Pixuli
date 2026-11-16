@@ -1,4 +1,4 @@
-import type { AssetKind, ImageItem } from '@pixuli/core/types';
+import type { AssetKind, AssetItem } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 
 export type SizeCompare = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
@@ -14,7 +14,14 @@ export interface LibraryQuery {
   tags: string[];
 }
 
-const KIND_VALUES = new Set<AssetKind>(['image', 'video', 'pdf', 'other']);
+const KIND_VALUES = new Set<AssetKind>([
+  'image',
+  'video',
+  'pdf',
+  'markdown',
+  'text',
+  'other',
+]);
 
 const UNIT_BYTES: Record<string, number> = {
   b: 1,
@@ -79,6 +86,8 @@ function parseKindValue(value: string): AssetKind | null {
   if (v === '图片' || v === '图像') return 'image';
   if (v === '视频') return 'video';
   if (v === 'pdf') return 'pdf';
+  if (v === 'md' || v === 'markdown' || v === '文档') return 'markdown';
+  if (v === 'txt' || v === '文本') return 'text';
   if (v === '其它' || v === '其他') return 'other';
   return null;
 }
@@ -172,7 +181,7 @@ function hasTag(tags: string[] | undefined, expected: string): boolean {
 }
 
 export function matchesLibraryQuery(
-  item: Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
+  item: Pick<AssetItem, 'name' | 'type' | 'size' | 'tags'>,
   query: LibraryQuery,
 ): boolean {
   for (const term of query.nameTerms) {
@@ -198,7 +207,7 @@ export function matchesLibraryQuery(
 }
 
 export function filterByLibraryQuery<
-  T extends Pick<ImageItem, 'name' | 'type' | 'size' | 'tags'>,
+  T extends Pick<AssetItem, 'name' | 'type' | 'size' | 'tags'>,
 >(items: T[], input: string): T[] {
   const trimmed = input.trim();
   if (!trimmed) return items;

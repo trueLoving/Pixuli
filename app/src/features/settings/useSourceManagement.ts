@@ -7,13 +7,13 @@ import { useCallback, useMemo } from 'react';
 import { isStoragePluginRegistered } from '@/storage/registry';
 import { useSourceSelection } from '@/features/library/useSourceSelection';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { syncSourceEntryToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
+import { syncSourceEntryToAssetStore } from '@/features/settings/syncSourceRepoToAssetStore';
 
 /**
  * 源管理相关的 hooks
  */
 export function useSourceManagement() {
-  const { loadImages } = useSourceSelection();
+  const { loadAssets } = useSourceSelection();
   const { sources, selectedSourceId, setSelectedSourceId, removeSource } =
     useSourceStore();
 
@@ -49,7 +49,7 @@ export function useSourceManagement() {
       if (!isStoragePluginRegistered(source.pluginId)) {
         return null;
       }
-      syncSourceEntryToImageStore(source);
+      syncSourceEntryToAssetStore(source);
       return sourceId;
     },
     [sources],
@@ -74,10 +74,10 @@ export function useSourceManagement() {
         return;
       }
       setSelectedSourceId(id);
-      syncSourceEntryToImageStore(source);
-      void loadImages();
+      syncSourceEntryToAssetStore(source);
+      void loadAssets();
     },
-    [sources, setSelectedSourceId, loadImages],
+    [sources, setSelectedSourceId, loadAssets],
   );
 
   return {

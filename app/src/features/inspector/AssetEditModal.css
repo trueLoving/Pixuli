@@ -1,0 +1,276 @@
+/* 图片编辑模态框样式 */
+.asset-edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.asset-edit-modal-content {
+  background-color: var(--pix-bg-elevated);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 1rem;
+}
+
+.asset-edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.asset-edit-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--pix-fg);
+}
+
+.asset-edit-modal-close {
+  color: var(--pix-fg-faint);
+  transition: color 0.2s ease-in-out;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.asset-edit-modal-close:hover {
+  color: var(--pix-fg-muted);
+}
+
+.asset-edit-modal-close-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.image-edit-file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: var(--pix-bg-muted);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.image-edit-file-thumb {
+  flex-shrink: 0;
+  display: inline-flex;
+}
+
+.image-edit-file-thumb .asset-library-thumb-wrap,
+.image-edit-file-thumb .asset-library-thumb,
+.image-edit-file-thumb .asset-library-thumb-icon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.image-edit-file-thumb .asset-library-thumb-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.image-edit-file-thumb .asset-library-thumb-badge {
+  right: 0.2rem;
+  bottom: 0.2rem;
+  font-size: 0.625rem;
+  padding: 0 0.2rem;
+}
+
+.image-edit-file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.image-edit-file-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pix-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-edit-file-size {
+  font-size: 0.75rem;
+  color: var(--pix-fg-muted);
+}
+
+.image-edit-form-group {
+  margin-bottom: 1rem;
+}
+
+.image-edit-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pix-fg-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.image-edit-form-optional {
+  color: var(--pix-fg-faint);
+  font-size: 0.75rem;
+}
+
+.image-edit-form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--pix-border-strong);
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.image-edit-form-input:focus {
+  ring: 2px;
+  ring-color: var(--pix-violet);
+  border-color: var(--pix-violet);
+}
+
+.image-edit-form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--pix-border-strong);
+  border-radius: 0.375rem;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  resize: none;
+}
+
+.image-edit-form-textarea:focus {
+  ring: 2px;
+  ring-color: var(--pix-violet);
+  border-color: var(--pix-violet);
+}
+
+.image-edit-form-description {
+  font-size: 0.75rem;
+  color: var(--pix-fg-muted);
+  margin-top: 0.25rem;
+}
+
+/* 标签样式 */
+.image-edit-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--pix-border);
+  border-radius: 0.375rem;
+  background-color: var(--pix-bg-muted);
+}
+
+.image-edit-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--pix-violet);
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.image-edit-tag-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 0.25rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 1rem;
+  height: 1rem;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.image-edit-tag-remove:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.image-edit-tag-remove-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.image-edit-button-group {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+.image-edit-button {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.image-edit-button-secondary {
+  border: 1px solid var(--pix-border-strong);
+  color: var(--pix-fg-secondary);
+  background-color: transparent;
+}
+
+.image-edit-button-secondary:hover {
+  background-color: var(--pix-bg-muted);
+}
+
+.image-edit-button-primary {
+  background-color: var(--pix-violet-deep);
+  color: white;
+}
+
+.image-edit-button-primary:hover {
+  background-color: var(--pix-violet-deep);
+}
+
+.image-edit-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-edit-button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .asset-edit-modal-content {
+    margin: 0 0.5rem;
+    padding: 1rem;
+  }
+
+  .image-edit-button-group {
+    flex-direction: column;
+  }
+
+  .image-edit-button {
+    width: 100%;
+  }
+}

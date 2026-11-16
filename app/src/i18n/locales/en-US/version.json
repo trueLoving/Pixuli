@@ -24,6 +24,19 @@
     },
     "footer": {
       "generated": "Generated"
+    },
+    "operationLog": {
+      "title": "Operation log",
+      "hint": "Logs are downloaded as files for you to open locally — they are not listed in Settings. Export JSON or CSV to your device.",
+      "count": "{{count}} entries",
+      "exportJSON": "Download JSON",
+      "exportCSV": "Download CSV",
+      "clear": "Clear log",
+      "confirmClear": "Clear all operation logs? This cannot be undone.",
+      "exportSuccess": "Log downloaded",
+      "exportFailed": "Download failed",
+      "clearSuccess": "Log cleared",
+      "clearFailed": "Clear failed"
     }
   }
 }

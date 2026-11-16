@@ -4,16 +4,16 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import UploadButton from './UploadButton';
 
-// Mock ImageUploadModal
-vi.mock('./image-upload/ImageUploadModal', () => ({
+// Mock AssetUploadModal
+vi.mock('./asset-upload/AssetUploadModal', () => ({
   default: ({
     isOpen,
     onClose,
-    onUploadImage,
-    onUploadMultipleImages,
+    onUploadAsset,
+    onUploadMultipleAssets,
   }: any) => {
     if (!isOpen) return null;
-    return React.createElement('div', { 'data-testid': 'image-upload-modal' }, [
+    return React.createElement('div', { 'data-testid': 'asset-upload-modal' }, [
       React.createElement(
         'button',
         { key: 'close', onClick: onClose, 'data-testid': 'modal-close' },
@@ -24,7 +24,7 @@ vi.mock('./image-upload/ImageUploadModal', () => ({
         {
           key: 'single',
           onClick: async () => {
-            await onUploadImage({
+            await onUploadAsset({
               file: new File([''], 'test.jpg'),
               metadata: {},
             });
@@ -38,7 +38,7 @@ vi.mock('./image-upload/ImageUploadModal', () => ({
         {
           key: 'multiple',
           onClick: async () => {
-            await onUploadMultipleImages({
+            await onUploadMultipleAssets({
               files: [new File([''], 'test1.jpg')],
               metadata: {},
             });
@@ -52,8 +52,8 @@ vi.mock('./image-upload/ImageUploadModal', () => ({
 }));
 
 describe('UploadButton', () => {
-  const mockUploadImage = vi.fn();
-  const mockUploadMultipleImages = vi.fn();
+  const mockUploadAsset = vi.fn();
+  const mockUploadMultipleAssets = vi.fn();
   const mockTranslate = vi.fn((key: string) => {
     const translations: Record<string, string> = {
       'header.upload': '上传',
@@ -62,8 +62,8 @@ describe('UploadButton', () => {
   });
 
   const defaultProps = {
-    onUploadImage: mockUploadImage,
-    onUploadMultipleImages: mockUploadMultipleImages,
+    onUploadAsset: mockUploadAsset,
+    onUploadMultipleAssets: mockUploadMultipleAssets,
     t: mockTranslate,
   };
 
@@ -116,8 +116,8 @@ describe('UploadButton', () => {
     it('应该默认不显示弹窗', () => {
       const { container } = render(<UploadButton {...defaultProps} />);
 
-      // 检查 ImageUploadModal 是否被渲染（通过检查是否有弹窗相关的元素）
-      const modal = container.querySelector('[class*="image-upload"]');
+      // 检查 AssetUploadModal 是否被渲染（通过检查是否有弹窗相关的元素）
+      const modal = container.querySelector('[class*="asset-upload"]');
       expect(modal).not.toBeInTheDocument();
     });
 
@@ -139,14 +139,14 @@ describe('UploadButton', () => {
 
   describe('上传功能', () => {
     it('应该正确设置上传回调函数', () => {
-      const onUploadImage = vi.fn();
-      const onUploadMultipleImages = vi.fn();
+      const onUploadAsset = vi.fn();
+      const onUploadMultipleAssets = vi.fn();
 
       render(
         <UploadButton
           {...defaultProps}
-          onUploadImage={onUploadImage}
-          onUploadMultipleImages={onUploadMultipleImages}
+          onUploadAsset={onUploadAsset}
+          onUploadMultipleAssets={onUploadMultipleAssets}
         />,
       );
 
@@ -185,20 +185,20 @@ describe('UploadButton', () => {
       const deferred = new Promise<void>(resolve => {
         resolveUpload = resolve;
       });
-      mockUploadImage.mockImplementation(() => deferred);
+      mockUploadAsset.mockImplementation(() => deferred);
 
       render(<UploadButton {...defaultProps} />);
       fireEvent.click(screen.getByRole('button', { name: /上传/i }));
-      expect(screen.getByTestId('image-upload-modal')).toBeInTheDocument();
+      expect(screen.getByTestId('asset-upload-modal')).toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('upload-single'));
 
       await waitFor(() => {
         expect(
-          screen.queryByTestId('image-upload-modal'),
+          screen.queryByTestId('asset-upload-modal'),
         ).not.toBeInTheDocument();
       });
-      expect(mockUploadImage).toHaveBeenCalled();
+      expect(mockUploadAsset).toHaveBeenCalled();
       resolveUpload();
     });
   });

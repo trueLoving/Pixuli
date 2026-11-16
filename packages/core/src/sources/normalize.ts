@@ -134,7 +134,7 @@ export function mergeStoredSourceUpdate(
   return next;
 }
 
-/** 从持久化条目读取仓库连接字段（供 imageStore / UI 使用） */
+/** 从持久化条目读取仓库连接字段（供 assetStore / UI 使用） */
 export function getRepoConfigFromSource(entry: StoredSourceEntry): {
   owner: string;
   repo: string;

@@ -9,11 +9,11 @@ export const LibraryRoute: React.FC = () => {
     hasConfig,
     error,
     clearError,
-    visibleImages,
+    visibleAssets,
     loading,
-    handleDeleteImage,
-    handleDeleteMultipleImages,
-    handleUpdateImage,
+    handleDeleteAsset,
+    handleDeleteMultipleAssets,
+    handleUpdateAsset,
     handleBatchUpdateMetadata,
     search,
   } = useLibraryRoute();
@@ -25,11 +25,11 @@ export const LibraryRoute: React.FC = () => {
           hasConfig={hasConfig}
           error={error}
           onClearError={clearError}
-          images={visibleImages}
+          assets={visibleAssets}
           loading={loading}
-          onDeleteImage={handleDeleteImage}
-          onDeleteMultipleImages={handleDeleteMultipleImages}
-          onUpdateImage={handleUpdateImage}
+          onDeleteAsset={handleDeleteAsset}
+          onDeleteMultipleAssets={handleDeleteMultipleAssets}
+          onUpdateAsset={handleUpdateAsset}
           onBatchUpdateMetadata={handleBatchUpdateMetadata}
           search={search}
           t={t}

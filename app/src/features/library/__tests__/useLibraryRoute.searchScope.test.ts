@@ -3,7 +3,7 @@ import { toLocalListOptions } from '@/features/library/libraryListScope';
 import { LIBRARY_ROOT_LIST_CAP } from '@/features/library/utils/libraryScale';
 
 /**
- * 与 useLibraryRoute 一致：仅在「有查询 + 工作区范围 + 当前在文件夹内」时扩大为全库搜索。
+ * 与 useLibraryRoute 一致：有查询且范围为 workspace 时全库搜索（默认）。
  */
 function resolveListScope(
   selectedFolderPath: string | null | undefined,
@@ -11,9 +11,7 @@ function resolveListScope(
   searchQuery: string,
 ) {
   const searchAllWorkspace =
-    searchScope === 'workspace' &&
-    Boolean(searchQuery.trim()) &&
-    Boolean(selectedFolderPath);
+    searchScope === 'workspace' && Boolean(searchQuery.trim());
   return toLocalListOptions({
     folderPath: selectedFolderPath ?? '',
     searchAll: searchAllWorkspace,
@@ -43,8 +41,13 @@ describe('library search scope → vault list (REF-603 lazy store)', () => {
     });
   });
 
-  it('caps root list when already at workspace root', () => {
+  it('searches the whole library from root when a query is set', () => {
     expect(resolveListScope('', 'workspace', 'jpg')).toEqual({
+      search: 'jpg',
+      limit: LIBRARY_ROOT_LIST_CAP,
+    });
+    expect(resolveListScope('', 'folder', '')).toEqual({
+      shallow: true,
       limit: LIBRARY_ROOT_LIST_CAP,
     });
   });

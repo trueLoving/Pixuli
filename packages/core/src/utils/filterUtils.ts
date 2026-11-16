@@ -1,40 +1,40 @@
-import type { ImageItem } from '../types/image';
-import type { FilterOptions } from '../types/image-browser';
+import type { AssetItem } from '../types/asset';
+import type { FilterOptions } from '../types/asset-browser';
 
 /**
- * 根据筛选条件过滤图片数组
- * @param images 原始图片数组
+ * 根据筛选条件过滤资源数组
+ * @param assets 原始资源数组
  * @param filters 筛选条件
- * @returns 筛选后的图片数组
+ * @returns 筛选后的资源数组
  */
-export function filterImages(
-  images: ImageItem[],
+export function filterAssets(
+  assets: AssetItem[],
   filters: FilterOptions,
-): ImageItem[] {
+): AssetItem[] {
   const { searchTerm, selectedTypes, selectedTags } = filters;
 
-  return images.filter(image => {
+  return assets.filter(asset => {
     // 搜索词筛选
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch =
-        image.name.toLowerCase().includes(searchLower) ||
-        image.description?.toLowerCase().includes(searchLower) ||
-        image.tags?.some(tag => tag.toLowerCase().includes(searchLower));
+        asset.name.toLowerCase().includes(searchLower) ||
+        asset.description?.toLowerCase().includes(searchLower) ||
+        asset.tags?.some(tag => tag.toLowerCase().includes(searchLower));
 
       if (!matchesSearch) return false;
     }
 
     // 类型筛选
     if (selectedTypes.length > 0) {
-      if (!image.type || !selectedTypes.includes(image.type)) {
+      if (!asset.type || !selectedTypes.includes(asset.type)) {
         return false;
       }
     }
 
     // 标签筛选
     if (selectedTags.length > 0) {
-      if (!image.tags || !image.tags.some(tag => selectedTags.includes(tag))) {
+      if (!asset.tags || !asset.tags.some(tag => selectedTags.includes(tag))) {
         return false;
       }
     }

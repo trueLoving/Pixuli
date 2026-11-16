@@ -1,5 +1,5 @@
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 
 /** 处理弹窗里的一种操作。文件类型决定有哪些操作。 */
 export type LibraryProcessMode = 'crop' | 'convert';
@@ -14,7 +14,7 @@ export function libraryProcessModes(
 }
 
 export function libraryProcessModesForItems(
-  items: ImageItem[],
+  items: AssetItem[],
 ): LibraryProcessMode[] {
   return MODE_ORDER.filter(mode =>
     items.some(item => libraryProcessModes(getAssetKind(item)).includes(mode)),

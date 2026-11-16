@@ -1,7 +1,7 @@
 import type {
   GiteeConfig,
-  ImageItem,
-  ImageUploadData,
+  AssetItem,
+  AssetUploadData,
 } from '@pixuli/core/types';
 import type { StorageProviderConfig } from '@pixuli/core/plugins';
 import {
@@ -39,7 +39,7 @@ export class GiteeStorageService {
     return this.provider.getImageDimensions(file);
   }
 
-  uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+  uploadImage(uploadData: AssetUploadData): Promise<AssetItem> {
     return this.provider.uploadImage(uploadData);
   }
 
@@ -47,7 +47,7 @@ export class GiteeStorageService {
     return this.provider.deleteImage(fileName);
   }
 
-  getImageList(): Promise<ImageItem[]> {
+  getImageList(): Promise<AssetItem[]> {
     return this.provider.listImages();
   }
 
@@ -60,9 +60,9 @@ export class GiteeStorageService {
   }
 
   loadImageMetadata(
-    images: ImageItem[],
+    images: AssetItem[],
     options?: Parameters<GiteeStorageProvider['loadImageMetadata']>[1],
-  ): Promise<ImageItem[]> {
+  ): Promise<AssetItem[]> {
     return this.provider.loadImageMetadata(images, options);
   }
 }

@@ -2,21 +2,25 @@ import { useEscapeKey } from '@/ui';
 import type { VersionInfo } from './version-info';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import {
+  Archive,
   ChevronLeft,
   ChevronRight,
   FolderOpen,
+  History,
   Info,
   Palette,
   RefreshCw,
-  ScrollText,
   Settings,
   X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
-import { SettingsOperationLogPanel } from './SettingsOperationLogPanel';
+import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
+import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
+import { SettingsCheckpointPanel } from './SettingsCheckpointPanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
+import { SettingsUserConfigPanel } from './SettingsUserConfigPanel';
 import { SettingsVersionPanel } from './SettingsVersionPanel';
 import { SettingsWorkspacePanel } from './SettingsWorkspacePanel';
 import type { SettingsSection } from './settingsTypes';
@@ -27,9 +31,6 @@ interface SettingsModalProps {
   t: (key: string) => string;
   versionInfo: VersionInfo;
 }
-
-/** 主路径打磨期暂隐设置 → 快捷键；代码与类型仍保留便于恢复 */
-const HIDDEN_SETTINGS_SECTIONS = new Set<SettingsSection>(['keyboard']);
 
 const GENERAL_ITEMS: Array<{
   id: SettingsSection;
@@ -46,22 +47,17 @@ const GENERAL_ITEMS: Array<{
     labelKey: 'settings.menuPreferences',
     icon: <Palette size={18} />,
   },
-  // keyboard：HIDDEN_SETTINGS_SECTIONS
-  {
-    id: 'operationLog',
-    labelKey: 'settings.menuOperationLog',
-    icon: <ScrollText size={18} />,
-  },
   {
     id: 'version',
     labelKey: 'settings.menuVersion',
     icon: <Info size={18} />,
   },
+  {
+    id: 'userConfig',
+    labelKey: 'settings.menuUserConfig',
+    icon: <Archive size={18} />,
+  },
 ];
-
-function resolveVisibleSection(section: SettingsSection): SettingsSection {
-  return HIDDEN_SETTINGS_SECTIONS.has(section) ? 'workspace' : section;
-}
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -70,24 +66,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   versionInfo,
 }) => {
   const settingsSection = useUIStore(state => state.settingsSection);
+  const workspaceMode = useWorkspaceStore(state => state.mode);
+  const workspaceLocalActive =
+    isWorkspaceAvailable() && workspaceMode === 'local';
   const isMobile = useMobileViewport();
-  const [activeSection, setActiveSection] = useState<SettingsSection>(() =>
-    resolveVisibleSection(settingsSection),
-  );
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>(settingsSection);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
-    const section = resolveVisibleSection(settingsSection);
-    setActiveSection(section);
-    setShowMobileMenu(section === 'workspace');
-  }, [isOpen, settingsSection]);
+    // 无本地工作区时不展示「工作区」设置（开库已由欢迎页负责）
+    const nextSection =
+      !workspaceLocalActive && settingsSection === 'workspace'
+        ? 'language'
+        : settingsSection;
+    setActiveSection(nextSection);
+    // 移动端打开设置先看菜单；桌面侧栏常显，不受此项影响
+    setShowMobileMenu(isMobile);
+  }, [isOpen, settingsSection, workspaceLocalActive, isMobile]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = panel.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      (focusable ?? panel).focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || workspaceLocalActive) return;
+    if (activeSection === 'workspace' || activeSection === 'checkpoint') {
+      setActiveSection('language');
+    }
+  }, [isOpen, workspaceLocalActive, activeSection]);
 
   useEscapeKey(() => {
     if (isOpen) onClose();
   }, isOpen);
 
   if (!isOpen) return null;
+
+  const generalItems = workspaceLocalActive
+    ? GENERAL_ITEMS
+    : GENERAL_ITEMS.filter(item => item.id !== 'workspace');
 
   const groups: Array<{
     labelKey: string;
@@ -97,7 +125,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       icon: React.ReactNode;
     }>;
   }> = [
-    { labelKey: 'settings.groupGeneral', items: GENERAL_ITEMS },
+    { labelKey: 'settings.groupGeneral', items: generalItems },
     {
       labelKey: 'settings.groupSync',
       items: [
@@ -106,6 +134,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           labelKey: 'settings.menuSync',
           icon: <RefreshCw size={18} />,
         },
+        ...(workspaceLocalActive
+          ? [
+              {
+                id: 'checkpoint' as const,
+                labelKey: 'settings.menuCheckpoint',
+                icon: <History size={18} />,
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -145,14 +182,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const sectionBody = (
     <>
       {activeSection === 'workspace' && <SettingsWorkspacePanel />}
-      {activeSection === 'operationLog' && <SettingsOperationLogPanel />}
       {(activeSection === 'language' || activeSection === 'appearance') && (
         <SettingsPreferencesPanel t={t} />
       )}
       {activeSection === 'version' && (
         <SettingsVersionPanel t={t} versionInfo={versionInfo} />
       )}
+      {activeSection === 'userConfig' && <SettingsUserConfigPanel t={t} />}
       {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
+      {activeSection === 'checkpoint' && <SettingsCheckpointPanel t={t} />}
     </>
   );
 
@@ -169,10 +207,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onClick={isMobile ? undefined : onClose}
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={
           isMobile
-            ? 'flex h-full min-h-0 w-full flex-col bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'
-            : 'flex h-[min(90dvh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl'
+            ? 'flex h-full min-h-0 w-full flex-col bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] outline-none'
+            : 'flex h-[min(90dvh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl outline-none'
         }
         onClick={event => event.stopPropagation()}
       >
@@ -263,11 +303,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             )}
 
             <div
-              className={`min-w-0 flex-1 ${isMobile ? 'px-4 py-4' : 'px-6 py-5'} ${
-                activeSection === 'operationLog' && !isMobile
-                  ? 'flex flex-col overflow-hidden'
-                  : 'overflow-y-auto'
-              }`}
+              className={`min-w-0 flex-1 overflow-y-auto ${isMobile ? 'px-4 py-4' : 'px-6 py-5'}`}
             >
               {sectionBody}
             </div>

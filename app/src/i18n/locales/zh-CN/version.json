@@ -24,6 +24,19 @@
     },
     "footer": {
       "generated": "生成时间"
+    },
+    "operationLog": {
+      "title": "操作日志",
+      "hint": "日志以下载文件方式查看，不在设置内列表展示。可导出 JSON 或 CSV 到本机后自行打开。",
+      "count": "当前共 {{count}} 条",
+      "exportJSON": "下载 JSON",
+      "exportCSV": "下载 CSV",
+      "clear": "清空日志",
+      "confirmClear": "确定清空全部操作日志？此操作不可恢复。",
+      "exportSuccess": "日志已下载",
+      "exportFailed": "下载失败",
+      "clearSuccess": "日志已清空",
+      "clearFailed": "清空失败"
     }
   }
 }

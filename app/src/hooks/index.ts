@@ -6,7 +6,6 @@ export type {
 } from './useAppOrchestration';
 export { useAppInitialization } from './useAppInitialization';
 export { useCapacitorBackButton } from './useCapacitorBackButton';
-export { useKeyboardCategories } from './useKeyboardCategories';
 export { useKeyboardShortcuts } from './useKeyboardShortcuts';
 export { useRouteSync } from './useRouteSync';
 export { useMobileViewport, useWideViewport } from './useMobileViewport';

@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { loading } from '../../src/boot/loading';
-// --------- Expose some API to the Renderer process ---------
+
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
     const [channel, listener] = args;
@@ -22,45 +22,6 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
 });
 
-// --------- Expose AI API to the Renderer process ---------
-contextBridge.exposeInMainWorld('aiAPI', {
-  // Qwen LLM分析
-  analyzeImageWithQwen: (request: any) =>
-    ipcRenderer.invoke('ai:analyze-image-qwen', request),
-  // Ollama 图片分析
-  analyzeImageWithOllama: (request: any) =>
-    ipcRenderer.invoke('ai:analyze-image-ollama', request),
-  // Shimmy 图片分析
-  analyzeImageWithShimmy: (request: any) =>
-    ipcRenderer.invoke('ai:analyze-image-shimmy', request),
-  // Qwen分析器检查
-  checkQwenAnalyzer: () => ipcRenderer.invoke('ai:check-qwen-analyzer'),
-  // Ollama 连接检查
-  checkOllamaConnection: (baseUrl?: string) =>
-    ipcRenderer.invoke('ai:check-ollama-connection', baseUrl),
-  // 获取 Ollama 可用模型列表
-  getOllamaModels: (baseUrl?: string) =>
-    ipcRenderer.invoke('ai:get-ollama-models', baseUrl),
-  // Shimmy 检查
-  checkShimmy: (shimmyPath?: string) =>
-    ipcRenderer.invoke('ai:check-shimmy', shimmyPath),
-  // 选择 Qwen 模型文件
-  selectModelFile: () => ipcRenderer.invoke('ai:select-model-file'),
-});
-
-// --------- Expose Clipboard API to the Renderer process ---------
-contextBridge.exposeInMainWorld('clipboardAPI', {
-  writeText: (text: string) => ipcRenderer.invoke('clipboard:writeText', text),
-  readText: () => ipcRenderer.invoke('clipboard:readText'),
-});
-
-// --------- Expose File API to the Renderer process ---------
-contextBridge.exposeInMainWorld('fileAPI', {
-  saveFile: (fileName: string, content: string, mimeType?: string) =>
-    ipcRenderer.invoke('file:save', fileName, content, mimeType),
-});
-
-// --------- Expose Workspace API (REF-607 Desktop) -------------------------
 contextBridge.exposeInMainWorld('workspaceAPI', {
   getRoot: () => ipcRenderer.invoke('workspace:getRoot'),
   pickRoot: () => ipcRenderer.invoke('workspace:pickRoot'),
@@ -78,16 +39,4 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
     ipcRenderer.invoke('workspace:exists', relativePath),
 });
 
-// --------- Expose Electron API to the Renderer process ---------
-contextBridge.exposeInMainWorld('electronAPI', {
-  onReceiveMessage: (callback: (message: string) => void) => {
-    return ipcRenderer.on('main-process-message', (event, message) => {
-      callback(message);
-    });
-  },
-  saveFile: (fileName: string, content: string, mimeType?: string) =>
-    ipcRenderer.invoke('file:save', fileName, content, mimeType),
-});
-
-// --------- Preload Loading Animation -------------------------
 loading();

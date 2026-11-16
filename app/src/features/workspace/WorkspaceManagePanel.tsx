@@ -8,7 +8,7 @@ import {
   isWebWorkspaceActive,
   isWorkspaceAvailable,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useUIStore } from '@/stores/uiStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
@@ -50,7 +50,7 @@ export const WorkspaceManagePanel: React.FC = () => {
     isLocalActive,
     reconnect,
   } = useWorkspaceStore();
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const sources = useSourceStore(state => state.sources);
   const hasRemote = sources.length > 0;
   const busy = pushing || syncing || loading;
@@ -75,16 +75,21 @@ export const WorkspaceManagePanel: React.FC = () => {
   }
 
   const handlePick = async (backend?: 'opfs' | 'fsa') => {
+    // 开库选夹前关掉设置，避免系统对话框背后仍是「工作区」设置页
+    useUIStore.getState().closeSettingsModal();
+    useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
-      await loadImages();
+      await loadAssets();
     }
   };
 
   const handleSwitchWorkspace = async (backend?: 'opfs' | 'fsa') => {
+    useUIStore.getState().closeSettingsModal();
+    useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
-      await loadImages();
+      await loadAssets();
     }
   };
 
@@ -92,12 +97,12 @@ export const WorkspaceManagePanel: React.FC = () => {
     if (!window.confirm(t('workspace.clearConfirm'))) {
       return;
     }
-    void clearWorkspace().then(() => {
-      const ui = useUIStore.getState();
-      ui.setSelectedFolderPath('');
-      ui.closeWorkspaceModal();
-      return loadImages();
-    });
+    // 先关弹窗，再清工作区，避免欢迎页叠着设置「工作区」页
+    const ui = useUIStore.getState();
+    ui.setSelectedFolderPath('');
+    ui.closeWorkspaceModal();
+    ui.closeSettingsModal();
+    void clearWorkspace().then(() => loadAssets());
   };
 
   if (!localActive) {

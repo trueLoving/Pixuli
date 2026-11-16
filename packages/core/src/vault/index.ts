@@ -2,6 +2,7 @@ export * from './types';
 export * from './paths';
 export * from './bindings';
 export * from './syncPath';
+export * from './syncIgnore';
 export * from './syncTree';
 export { matchesListPathPrefix } from './listFilter';
 export { MemoryWorkspaceAdapter } from './memoryAdapter';
@@ -9,6 +10,17 @@ export { createLocalVault } from './localVault';
 export { createSyncEngine, providerSupportsSync } from './syncEngine';
 export { commitSyncPush, listRepoImageBlobs } from './gitDataBatch';
 export type { CreateSyncEngineOptions, SyncEngineBinding } from './syncEngine';
+export {
+  deleteLatestSyncCheckpoint,
+  readLatestCheckpointMeta,
+  restoreLatestSyncCheckpoint,
+  writeLatestSyncCheckpoint,
+} from './syncCheckpoint';
+export type {
+  CreateSyncCheckpointOptions,
+  RestoreCheckpointResult,
+  SyncCheckpointMeta,
+} from './syncCheckpoint';
 export {
   basename,
   createIndexEntry,

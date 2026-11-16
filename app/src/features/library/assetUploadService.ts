@@ -3,25 +3,25 @@ import {
   LogStatus,
   useLogStore,
 } from '@/features/operation-log';
-import { getWorkspaceLibraryPort } from '@/features/library/workspaceImageBridge';
+import { getWorkspaceLibraryPort } from '@/features/library/workspaceAssetBridge';
 import {
   isLocalListMode,
-  refreshLocalImageList,
+  refreshLocalAssetList,
   unconfiguredStorageError,
 } from '@/features/library/assetListService';
 import type { StoragePluginId } from '@/storage/createProvider';
 import type {
   BatchUploadProgress,
-  ImageItem,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetItem,
+  AssetUploadData,
+  MultiAssetUploadData,
   UploadProgress,
 } from '@pixuli/core/types';
 import { getUploadFileName } from '@pixuli/core/types';
 import type { StorageProvider } from '@pixuli/core/plugins';
 
 export type AssetUploadContext = {
-  images: ImageItem[];
+  assets: AssetItem[];
   storageProvider: StorageProvider | null;
   storageType: StoragePluginId | null;
 };
@@ -29,16 +29,16 @@ export type AssetUploadContext = {
 export type AssetUploadSet = (
   partial:
     | Partial<{
-        images: ImageItem[];
+        assets: AssetItem[];
         loading: boolean;
         error: string | null;
         batchUploadProgress: BatchUploadProgress | null;
       }>
     | ((state: {
-        images: ImageItem[];
+        assets: AssetItem[];
         batchUploadProgress: BatchUploadProgress | null;
       }) => Partial<{
-        images: ImageItem[];
+        assets: AssetItem[];
         loading: boolean;
         error: string | null;
         batchUploadProgress: BatchUploadProgress | null;
@@ -68,20 +68,20 @@ function updateBatchItem(
   });
 }
 
-export async function uploadAssetImage(
-  uploadData: ImageUploadData,
+export async function uploadAsset(
+  uploadData: AssetUploadData,
   get: () => AssetUploadContext,
   set: AssetUploadSet,
-): Promise<ImageItem | null> {
+): Promise<AssetItem | null> {
   const ctx = get();
   if (isLocalListMode()) {
     const imported =
-      await getWorkspaceLibraryPort().importLocalImage(uploadData);
-    await refreshLocalImageList(set, { quiet: true });
+      await getWorkspaceLibraryPort().importLocalAsset(uploadData);
+    await refreshLocalAssetList(set, { quiet: true });
     if (!imported) {
       return null;
     }
-    return get().images.find(image => image.id === imported.id) ?? imported;
+    return get().assets.find(asset => asset.id === imported.id) ?? imported;
   }
 
   const { storageProvider, storageType } = ctx;
@@ -96,31 +96,31 @@ export async function uploadAssetImage(
   set({ loading: true, error: null });
   const startTime = Date.now();
   try {
-    const newImage = await storageProvider.uploadImage(uploadData);
+    const newAsset = await storageProvider.uploadImage(uploadData);
     const duration = Date.now() - startTime;
     set({
-      images: get().images.some(img => img.id === newImage.id)
-        ? get().images.map(img => (img.id === newImage.id ? newImage : img))
-        : [...get().images, newImage],
+      assets: get().assets.some(img => img.id === newAsset.id)
+        ? get().assets.map(img => (img.id === newAsset.id ? newAsset : img))
+        : [...get().assets, newAsset],
       loading: false,
     });
     useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.SUCCESS, {
-      imageId: newImage.id,
-      imageName: newImage.name,
+      assetId: newAsset.id,
+      assetName: newAsset.name,
       duration,
       details: {
-        size: newImage.size,
-        type: newImage.type,
-        capture: newImage.captureMetadata,
+        size: newAsset.size,
+        type: newAsset.type,
+        capture: newAsset.captureMetadata,
       },
     });
-    return newImage;
+    return newAsset;
   } catch (error) {
     const duration = Date.now() - startTime;
     const errorMsg = error instanceof Error ? error.message : '上传图片失败';
     set({ error: errorMsg, loading: false });
     useLogStore.getState().addLog(LogActionType.UPLOAD, LogStatus.FAILED, {
-      imageName: getUploadFileName(uploadData.file, uploadData.name),
+      assetName: getUploadFileName(uploadData.file, uploadData.name),
       error: errorMsg,
       duration,
     });
@@ -130,11 +130,11 @@ export async function uploadAssetImage(
   }
 }
 
-export async function uploadMultipleAssetImages(
-  uploadData: MultiImageUploadData,
+export async function uploadMultipleAssets(
+  uploadData: MultiAssetUploadData,
   get: () => AssetUploadContext,
   set: AssetUploadSet,
-): Promise<ImageItem[]> {
+): Promise<AssetItem[]> {
   const ctx = get();
   const { files, name, description, tags, captureMetadataList } = uploadData;
 
@@ -147,7 +147,7 @@ export async function uploadMultipleAssetImages(
     let completed = 0;
     let failed = 0;
     const startTime = Date.now();
-    const imported: ImageItem[] = [];
+    const imported: AssetItem[] = [];
     const items: UploadProgress[] = files.map((_file, index) => ({
       id: `${Date.now()}-${index}`,
       progress: 0,
@@ -184,7 +184,7 @@ export async function uploadMultipleAssetImages(
         });
 
         try {
-          const created = await getWorkspaceLibraryPort().importLocalImage({
+          const created = await getWorkspaceLibraryPort().importLocalAsset({
             file,
             name: file.name,
             description,
@@ -212,7 +212,7 @@ export async function uploadMultipleAssetImages(
         }
       }
 
-      await refreshLocalImageList(set, { quiet: true });
+      await refreshLocalAssetList(set, { quiet: true });
       set({ batchUploadProgress: null });
       useLogStore
         .getState()
@@ -221,7 +221,7 @@ export async function uploadMultipleAssetImages(
           duration: Date.now() - startTime,
         });
       const importedIds = new Set(imported.map(item => item.id));
-      return get().images.filter(image => importedIds.has(image.id));
+      return get().assets.filter(asset => importedIds.has(asset.id));
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : '批量导入失败';
       set({ error: errorMsg, batchUploadProgress: null });
@@ -247,7 +247,7 @@ export async function uploadMultipleAssetImages(
   const total = files.length;
   let completed = 0;
   let failed = 0;
-  const uploadedImages: ImageItem[] = [];
+  const uploadedAssets: AssetItem[] = [];
 
   try {
     const items: UploadProgress[] = files.map((_file, index) => ({
@@ -285,7 +285,7 @@ export async function uploadMultipleAssetImages(
         });
 
         const fileName = name ? `${name}-${i + 1}-${file.name}` : file.name;
-        const singleUploadData: ImageUploadData = {
+        const singleUploadData: AssetUploadData = {
           file,
           name: fileName,
           description,
@@ -293,8 +293,8 @@ export async function uploadMultipleAssetImages(
           captureMetadata: captureMetadataList?.[i],
         };
 
-        const newImage = await storageProvider.uploadImage(singleUploadData);
-        uploadedImages.push(newImage);
+        const newAsset = await storageProvider.uploadImage(singleUploadData);
+        uploadedAssets.push(newAsset);
         completed++;
         updateBatchItem(set, itemId, {
           completed,
@@ -314,7 +314,7 @@ export async function uploadMultipleAssetImages(
 
     const batchStartTime = Date.now();
     set({
-      images: [...get().images, ...uploadedImages],
+      assets: [...get().assets, ...uploadedAssets],
       loading: false,
       batchUploadProgress: null,
     });
@@ -325,11 +325,11 @@ export async function uploadMultipleAssetImages(
           total,
           completed,
           failed,
-          images: uploadedImages.map(img => ({ id: img.id, name: img.name })),
+          assets: uploadedAssets.map(img => ({ id: img.id, name: img.name })),
         },
         duration: Date.now() - batchStartTime,
       });
-    return uploadedImages;
+    return uploadedAssets;
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : '批量上传失败';
     set({ error: errorMsg, loading: false, batchUploadProgress: null });
@@ -339,7 +339,7 @@ export async function uploadMultipleAssetImages(
         error: errorMsg,
         details: { total, completed, failed },
       });
-    return uploadedImages;
+    return uploadedAssets;
   } finally {
     set({ loading: false });
   }

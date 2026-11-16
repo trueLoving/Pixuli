@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import type { ImageItem } from '@pixuli/core/types';
-import { resolveLocalPreviewUrl } from '@/features/workspace/localImageMapper';
+import type { AssetItem } from '@pixuli/core/types';
+import { resolveLocalPreviewUrl } from '@/features/workspace/localAssetMapper';
 
 /**
  * 本地 deferPreview 时 `url` 为空。有地址才返回字符串，否则 null（不要传给 src）。
  */
 export function useResolvedAssetUrl(
-  image:
-    | Pick<ImageItem, 'id' | 'url' | 'localPath' | 'type'>
+  asset:
+    | Pick<AssetItem, 'id' | 'url' | 'localPath' | 'type'>
     | null
     | undefined,
 ): string | null {
@@ -15,12 +15,12 @@ export function useResolvedAssetUrl(
 
   useEffect(() => {
     let cancelled = false;
-    const direct = image?.url?.trim() ?? '';
+    const direct = asset?.url?.trim() ?? '';
     if (direct) {
       setSrc(direct);
       return;
     }
-    const localPath = image?.localPath;
+    const localPath = asset?.localPath;
     if (!localPath) {
       setSrc(null);
       return;
@@ -28,7 +28,7 @@ export function useResolvedAssetUrl(
     setSrc(null);
     void resolveLocalPreviewUrl(
       localPath,
-      image?.type || 'application/octet-stream',
+      asset?.type || 'application/octet-stream',
     )
       .then(url => {
         if (!cancelled) setSrc(url || null);
@@ -39,7 +39,7 @@ export function useResolvedAssetUrl(
     return () => {
       cancelled = true;
     };
-  }, [image?.id, image?.url, image?.localPath, image?.type]);
+  }, [asset?.id, asset?.url, asset?.localPath, asset?.type]);
 
   return src;
 }

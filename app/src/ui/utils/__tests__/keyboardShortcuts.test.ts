@@ -134,6 +134,62 @@ describe('KeyboardShortcutManager', () => {
     });
   });
 
+  describe('modal blocking', () => {
+    it('有 aria-modal dialog 时不触发非 Esc/F5 快捷键', () => {
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      document.body.appendChild(dialog);
+
+      manager.register({
+        key: 'ArrowDown',
+        description: '下一张',
+        action: mockHandler,
+        category: 'test',
+      });
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        bubbles: true,
+      });
+      Object.defineProperty(event, 'target', {
+        value: document.body,
+        writable: false,
+      });
+      document.dispatchEvent(event);
+
+      expect(mockHandler).not.toHaveBeenCalled();
+      dialog.remove();
+    });
+
+    it('有 aria-modal dialog 时仍允许 Escape', () => {
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      document.body.appendChild(dialog);
+
+      manager.register({
+        key: 'Escape',
+        description: '关闭',
+        action: mockHandler,
+        category: 'test',
+      });
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+      });
+      Object.defineProperty(event, 'target', {
+        value: document.body,
+        writable: false,
+      });
+      document.dispatchEvent(event);
+
+      expect(mockHandler).toHaveBeenCalled();
+      dialog.remove();
+    });
+  });
+
   describe('setEnabled', () => {
     it('应该禁用快捷键系统', () => {
       const shortcut = {

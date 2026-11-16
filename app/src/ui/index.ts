@@ -8,12 +8,8 @@ export * from './hooks';
 export { Search } from './primitives/search';
 export type { SearchProps, SearchVariant } from './primitives/search';
 export * from './primitives/toaster';
-export * from './primitives/refresh-button';
-export * from './primitives/keyboard-help';
-export * from './primitives/language-switcher';
 export * from './primitives/fullscreen-loading';
 export * from './primitives/content-feedback';
-export * from './primitives/action-button';
 
 export { BrandPixelMark } from './brand/BrandPixelMark';
 export type { BrandPixelMarkProps } from './brand/BrandPixelMark';

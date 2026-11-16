@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConfigManagement } from '../useConfigManagement';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 
 const githubSource = {
   id: 'gh-1',
@@ -41,15 +41,15 @@ describe('useConfigManagement (REF-310)', () => {
       sources: [githubSource, giteeSource],
       selectedSourceId: 'gt-1',
     });
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: 'gitee',
       githubConfig: { ...githubSource.config },
       giteeConfig: { ...giteeSource.config },
       storageProvider: null,
-      images: [],
+      assets: [],
       loading: false,
       error: null,
-      loadImages: vi.fn().mockResolvedValue(undefined),
+      loadAssets: vi.fn().mockResolvedValue(undefined),
     });
   });
 
@@ -81,11 +81,11 @@ describe('useConfigManagement (REF-310)', () => {
       path: 'uploads',
       token: 'gh-token-new',
     });
-    expect(useImageStore.getState().githubConfig).toMatchObject({
+    expect(useAssetStore.getState().githubConfig).toMatchObject({
       branch: 'dev',
       path: 'uploads',
     });
-    expect(useImageStore.getState().giteeConfig?.path).toBe('pics');
+    expect(useAssetStore.getState().giteeConfig?.path).toBe('pics');
   });
 
   it('清除编辑中的源应从 sourceStore 移除（W16）', () => {
@@ -98,6 +98,6 @@ describe('useConfigManagement (REF-310)', () => {
     expect(useSourceStore.getState().sources).toHaveLength(1);
     expect(useSourceStore.getState().sources[0].id).toBe('gh-1');
     expect(useSourceStore.getState().selectedSourceId).toBeNull();
-    expect(useImageStore.getState().giteeConfig).toBeNull();
+    expect(useAssetStore.getState().giteeConfig).toBeNull();
   });
 });

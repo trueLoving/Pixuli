@@ -2,12 +2,6 @@ import type { GitHubConfig } from '@pixuli/core/types';
 
 const GITHUB_CONFIG_KEY = 'pixuli-github-config';
 
-// 默认 GitHub 配置
-export const DEFAULT_GITHUB_CONFIG: Partial<GitHubConfig> = {
-  branch: 'main',
-  path: 'images',
-};
-
 // 从本地存储加载配置
 export const loadGitHubConfig = (): GitHubConfig | null => {
   try {

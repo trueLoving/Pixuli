@@ -1,7 +1,7 @@
 import type {
   GiteeConfig,
-  ImageItem,
-  ImageUploadData,
+  AssetItem,
+  AssetUploadData,
 } from '@pixuli/core/types';
 import {
   basenameRelative,
@@ -10,7 +10,7 @@ import {
   dirnameRelative,
   getDirManifestRelativePath,
   getManifestEntry,
-  manifestEntryFromImageFields,
+  manifestEntryFromAssetFields,
   manifestEntryToRecord,
   parseManifestEntryRecord,
   parseMetadataManifest,
@@ -484,7 +484,7 @@ export class GiteeStorageProvider
    */
   private async uploadImageMetadata(
     fileName: string,
-    metadata: ImageItem,
+    metadata: AssetItem,
   ): Promise<void> {
     try {
       await this.persistImageMetadata(fileName, metadata);
@@ -504,9 +504,9 @@ export class GiteeStorageProvider
    * 3. 步骤2：上传图片元数据到 Gitee（包含尺寸信息）
    *
    * @param uploadData 上传数据
-   * @returns Promise<ImageItem> 上传后的图片信息
+   * @returns Promise<AssetItem> 上传后的图片信息
    */
-  async uploadImage(uploadData: ImageUploadData): Promise<ImageItem> {
+  async uploadImage(uploadData: AssetUploadData): Promise<AssetItem> {
     this.assertConfigured();
     try {
       const file = uploadData.file;
@@ -534,7 +534,7 @@ export class GiteeStorageProvider
         description,
       );
 
-      const imageItem: ImageItem = {
+      const imageItem: AssetItem = {
         id:
           uploadResponse.sha ||
           `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -735,7 +735,7 @@ export class GiteeStorageProvider
 
   private async persistImageMetadata(
     storagePath: string,
-    metadata: Partial<ImageItem>,
+    metadata: Partial<AssetItem>,
   ): Promise<void> {
     const dirPath = dirnameRelative(storagePath);
     const fileName = basenameRelative(storagePath);
@@ -752,10 +752,10 @@ export class GiteeStorageProvider
       updatedAt: new Date().toISOString(),
       createdAt: existing?.createdAt ?? new Date().toISOString(),
       captureMetadata: metadata.captureMetadata ?? existing?.capture,
-    } as ImageItem);
+    } as AssetItem);
     const entry =
       parseManifestEntryRecord(merged) ??
-      manifestEntryFromImageFields({ name: fileName });
+      manifestEntryFromAssetFields({ name: fileName });
     const next = upsertManifestEntry(manifest, fileName, entry);
     await this.saveDirManifest(dirPath, next, storagePath);
   }
@@ -799,7 +799,7 @@ export class GiteeStorageProvider
   }
 
   // 获取图片列表
-  async listImages(options?: ImageListOptions): Promise<ImageItem[]> {
+  async listImages(options?: ImageListOptions): Promise<AssetItem[]> {
     this.assertConfigured();
     try {
       const recursive = options?.recursive ?? false;
@@ -877,7 +877,7 @@ export class GiteeStorageProvider
       );
 
       const idCounts = images.reduce(
-        (acc: Record<string, number>, img: ImageItem) => {
+        (acc: Record<string, number>, img: AssetItem) => {
           acc[img.id] = (acc[img.id] || 0) + 1;
           return acc;
         },
@@ -889,7 +889,7 @@ export class GiteeStorageProvider
       );
       if (duplicateIds.length > 0) {
         this.logger.warn('发现重复的图片ID:', duplicateIds);
-        return images.map((img: ImageItem, index: number) => {
+        return images.map((img: AssetItem, index: number) => {
           if (idCounts[img.id] > 1) {
             return { ...img, id: `${img.id}-${index}` };
           }
@@ -906,7 +906,7 @@ export class GiteeStorageProvider
 
   async updateImageMetadata(
     path: string,
-    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>> & {
+    metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>> & {
       id?: string;
       size?: number;
       width?: number;
@@ -914,7 +914,7 @@ export class GiteeStorageProvider
       createdAt?: string;
       updatedAt?: string;
     },
-  ): Promise<ImageItem> {
+  ): Promise<AssetItem> {
     this.assertConfigured();
     try {
       await this.persistImageMetadata(path, metadata);
@@ -948,7 +948,7 @@ export class GiteeStorageProvider
   async updateImageInfo(
     _imageId: string,
     fileName: string,
-    metadata: Partial<Pick<ImageItem, 'name' | 'description' | 'tags'>> & {
+    metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>> & {
       id?: string;
       size?: number;
       width?: number;
@@ -968,9 +968,9 @@ export class GiteeStorageProvider
    * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
    */
   async loadImageMetadata(
-    images: ImageItem[],
+    images: AssetItem[],
     _options?: ImageMetadataLoadOptions,
-  ): Promise<ImageItem[]> {
+  ): Promise<AssetItem[]> {
     try {
       // 批量获取元数据
       const metadataPromises = images.map(async img => {
@@ -1051,7 +1051,7 @@ export class GiteeStorageProvider
   async syncPull(options?: SyncPullOptions): Promise<SyncPullResult> {
     const pathPrefix = (options?.pathPrefix ?? '').replace(/^\/+|\/+$/g, '');
     const shallow = options?.shallow === true;
-    let images: ImageItem[];
+    let images: AssetItem[];
     let folderKeys: string[] = [];
 
     if (shallow) {
@@ -1111,7 +1111,7 @@ export class GiteeStorageProvider
   }
 
   private async listShallowLayer(dirRelative: string): Promise<{
-    images: ImageItem[];
+    images: AssetItem[];
     folderKeys: string[];
   }> {
     this.assertConfigured();
@@ -1161,7 +1161,7 @@ export class GiteeStorageProvider
     }
 
     const defaultDate = new Date().toISOString();
-    const images: ImageItem[] = fileEntries.map(({ remotePath, item }) => {
+    const images: AssetItem[] = fileEntries.map(({ remotePath, item }) => {
       const fileName = basenameRelative(remotePath);
       const entry = getManifestEntry(manifest, fileName);
       const metadata = entry ? manifestEntryToRecord(entry) : null;

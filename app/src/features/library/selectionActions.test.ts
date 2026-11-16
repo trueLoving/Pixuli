@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import {
   buildBatchSelectionActions,
   buildSingleSelectionActions,
   filterActionsForMobileBar,
 } from './selectionActions';
 
-const image = {
+const asset = {
   id: '1',
   name: 'a.jpg',
   localPath: 'images/a.jpg',
@@ -17,21 +17,21 @@ const image = {
   height: 1,
   uploadTime: '2026-01-01',
   tags: [],
-} as ImageItem;
+} as AssetItem;
 
 const pdf = {
-  ...image,
+  ...asset,
   id: '2',
   name: 'doc.pdf',
   type: 'application/pdf',
-} as ImageItem;
+} as AssetItem;
 
 describe('buildBatchSelectionActions move', () => {
   const t = (key: string) => key;
 
   it('adds a local-only move action and keeps it on the narrow bar', () => {
     const onBatchMove = vi.fn();
-    const actions = buildBatchSelectionActions([image], t, {
+    const actions = buildBatchSelectionActions([asset], t, {
       onBatchMove,
       onBatchDelete: vi.fn(),
     });
@@ -45,7 +45,7 @@ describe('buildBatchSelectionActions move', () => {
   });
 
   it('omits move when the handler is absent', () => {
-    const actions = buildBatchSelectionActions([image], t, {
+    const actions = buildBatchSelectionActions([asset], t, {
       onBatchDelete: vi.fn(),
     });
     expect(actions.grid.some(action => action.id === 'batch-move')).toBe(false);
@@ -57,7 +57,7 @@ describe('buildBatchSelectionActions process', () => {
 
   it('hides process outside the local library', () => {
     const actions = buildBatchSelectionActions(
-      [image],
+      [asset],
       t,
       {
         onSendConvert: vi.fn(),
@@ -72,7 +72,7 @@ describe('buildBatchSelectionActions process', () => {
   it('shows process for images in the local library', () => {
     const onSendConvert = vi.fn();
     const actions = buildBatchSelectionActions(
-      [image],
+      [asset],
       t,
       {
         onSendConvert,
@@ -106,7 +106,7 @@ describe('buildBatchSelectionActions copy-link guidance', () => {
   it('keeps copy clickable when local-only so toast can offer sync', () => {
     const onCopyLinks = vi.fn();
     const actions = buildBatchSelectionActions(
-      [image],
+      [asset],
       t,
       {
         onCopyLinks,
@@ -123,7 +123,7 @@ describe('buildBatchSelectionActions copy-link guidance', () => {
 
   it('titles needConnection when no remote', () => {
     const actions = buildBatchSelectionActions(
-      [image],
+      [asset],
       t,
       {
         onCopyLinks: vi.fn(),

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
 import { isAssetSynced } from '@/features/library/copyLink';
 import { getAssetKind } from '@/features/library/utils/assetKind';
@@ -7,14 +7,14 @@ import { AssetInspectorFilePreview } from './AssetInspectorFilePreview';
 import { folderLabel } from './inspectorUtils';
 
 export function AssetInspectorBatchBody({
-  selectedImages,
+  selectedAssets,
   selectedFolderPath,
-  onSelectImage,
+  onSelectAsset,
   t,
 }: {
-  selectedImages: ImageItem[];
+  selectedAssets: AssetItem[];
   selectedFolderPath?: string;
-  onSelectImage?: (id: string) => void;
+  onSelectAsset?: (id: string) => void;
   t: (key: string) => string;
 }) {
   return (
@@ -22,7 +22,7 @@ export function AssetInspectorBatchBody({
       <p className="asset-inspector-batch-lead">
         {t('image.library.selectedCount').replace(
           '{count}',
-          String(selectedImages.length),
+          String(selectedAssets.length),
         )}
       </p>
       <p className="asset-inspector-batch-scope">
@@ -36,13 +36,13 @@ export function AssetInspectorBatchBody({
         {t('image.library.batchFocusHint')}
       </p>
       <ul className="asset-inspector-batch-list">
-        {selectedImages.slice(0, 12).map(item => (
+        {selectedAssets.slice(0, 12).map(item => (
           <li key={item.id}>
-            {onSelectImage ? (
+            {onSelectAsset ? (
               <button
                 type="button"
                 className="asset-inspector-batch-item-btn"
-                onClick={() => onSelectImage(item.id)}
+                onClick={() => onSelectAsset(item.id)}
               >
                 {item.name}
               </button>
@@ -51,34 +51,32 @@ export function AssetInspectorBatchBody({
             )}
           </li>
         ))}
-        {selectedImages.length > 12 ? <li>…</li> : null}
+        {selectedAssets.length > 12 ? <li>…</li> : null}
       </ul>
     </>
   );
 }
 
 export function AssetInspectorSingleBody({
-  activeImage,
+  activeAsset,
   dimensions,
-  onPreview,
   t,
+  syncIgnored = false,
+  onExcludeFromSync,
 }: {
-  activeImage: ImageItem;
+  activeAsset: AssetItem;
   dimensions: string;
-  onPreview: () => void;
   t: (key: string) => string;
+  syncIgnored?: boolean;
+  onExcludeFromSync?: () => void;
 }) {
-  const kind = getAssetKind(activeImage);
+  const kind = getAssetKind(activeAsset);
 
   return (
     <>
       <section className="asset-inspector-section">
         <h3>{t('image.inspector.sectionContent')}</h3>
-        <AssetInspectorFilePreview
-          image={activeImage}
-          onPreview={onPreview}
-          t={t}
-        />
+        <AssetInspectorFilePreview asset={activeAsset} t={t} />
       </section>
 
       <section className="asset-inspector-section">
@@ -86,7 +84,7 @@ export function AssetInspectorSingleBody({
         <dl className="asset-inspector-dl">
           <div>
             <dt>{t('image.inspector.name')}</dt>
-            <dd title={activeImage.name}>{activeImage.name}</dd>
+            <dd title={activeAsset.name}>{activeAsset.name}</dd>
           </div>
           {kind === 'image' ? (
             <div>
@@ -97,39 +95,55 @@ export function AssetInspectorSingleBody({
           <div>
             <dt>{t('image.inspector.size')}</dt>
             <dd>
-              {activeImage.size > 0 ? formatFileSize(activeImage.size) : '—'}
+              {activeAsset.size > 0 ? formatFileSize(activeAsset.size) : '—'}
             </dd>
           </div>
           <div>
             <dt>{t('image.inspector.date')}</dt>
             <dd>
-              {activeImage.createdAt
-                ? new Date(activeImage.createdAt).toLocaleString()
+              {activeAsset.createdAt
+                ? new Date(activeAsset.createdAt).toLocaleString()
                 : '—'}
             </dd>
           </div>
           <div>
             <dt>{t('image.inspector.folder')}</dt>
-            <dd>{folderLabel(activeImage.localPath)}</dd>
+            <dd>{folderLabel(activeAsset.localPath)}</dd>
           </div>
           <div>
             <dt>{t('image.inspector.sync')}</dt>
             <dd>
-              {isAssetSynced(activeImage)
-                ? t('image.inspector.syncRemote')
-                : t('image.inspector.syncLocal')}
+              {syncIgnored
+                ? t('settings.syncIgnore.badge')
+                : isAssetSynced(activeAsset)
+                  ? t('image.inspector.syncRemote')
+                  : t('image.inspector.syncLocal')}
             </dd>
           </div>
-          {(activeImage.tags?.length ?? 0) > 0 ? (
+          {onExcludeFromSync && !syncIgnored && activeAsset.localPath ? (
             <div>
-              <dt>{t('image.inspector.tags')}</dt>
-              <dd>{(activeImage.tags ?? []).join('、')}</dd>
+              <dt />
+              <dd>
+                <button
+                  type="button"
+                  className="asset-inspector-exclude-sync"
+                  onClick={onExcludeFromSync}
+                >
+                  {t('settings.syncIgnore.excludeAction')}
+                </button>
+              </dd>
             </div>
           ) : null}
-          {activeImage.description ? (
+          {(activeAsset.tags?.length ?? 0) > 0 ? (
+            <div>
+              <dt>{t('image.inspector.tags')}</dt>
+              <dd>{(activeAsset.tags ?? []).join('、')}</dd>
+            </div>
+          ) : null}
+          {activeAsset.description ? (
             <div>
               <dt>{t('image.inspector.description')}</dt>
-              <dd>{activeImage.description}</dd>
+              <dd>{activeAsset.description}</dd>
             </div>
           ) : null}
         </dl>
@@ -140,11 +154,11 @@ export function AssetInspectorSingleBody({
 
 export function AssetInspectorFolderSummary({
   selectedFolderPath,
-  images,
+  assets,
   t,
 }: {
   selectedFolderPath: string;
-  images: ImageItem[];
+  assets: AssetItem[];
   t: (key: string) => string;
 }) {
   return (
@@ -161,7 +175,7 @@ export function AssetInspectorFolderSummary({
             {t('image.inspector.folderFileCount').replace(
               '{count}',
               String(
-                images.filter(item => {
+                assets.filter(item => {
                   const path = item.localPath;
                   if (!path) return false;
                   const prefix = `${selectedFolderPath}/`;

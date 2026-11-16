@@ -1,5 +1,4 @@
-import { useImageStore } from '@/features/library/imageStore';
-import { useConfigManagement } from '@/features/settings/useConfigManagement';
+import { useAssetStore } from '@/features/library/assetStore';
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useSelectedSourceSync } from '@/features/settings/useSelectedSourceSync';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
@@ -16,15 +15,6 @@ import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { useUIStore } from '@/stores/uiStore';
 import { useCallback, useEffect, useMemo } from 'react';
 
-type RepoConfigForm = {
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  name?: string;
-};
-
 export type AppMainLayoutProps = {
   sidebarSources: SidebarSourceItem[];
   selectedSourceId: string | null;
@@ -33,8 +23,6 @@ export type AppMainLayoutProps = {
   onSourceDelete: (sourceId: string) => void;
   hasConfig: boolean;
   onAddSource: () => void;
-  onSaveConfig: (config: RepoConfigForm) => void;
-  onClearConfig: () => void;
 };
 
 export type AppRoutesOrchestrationProps = {
@@ -48,7 +36,7 @@ export function useAppOrchestration(): {
   routesProps: AppRoutesOrchestrationProps;
 } {
   const { t } = useI18n();
-  const { loadImages } = useImageStore();
+  const { loadAssets } = useAssetStore();
   const initializeWorkspace = useWorkspaceStore(state => state.initialize);
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const { sources, selectedSourceId } = useSourceStore();
@@ -59,24 +47,18 @@ export function useAppOrchestration(): {
     }
     void initializeWorkspace().then(() => {
       if (useWorkspaceStore.getState().isLocalActive()) {
-        void loadImages();
+        void loadAssets();
       }
     });
-  }, [initializeWorkspace, loadImages]);
+  }, [initializeWorkspace, loadAssets]);
 
   const {
-    showConfigModal,
-    editingSourceId,
     showSettingsModal,
     isFullscreenMode,
     setIsFullscreenMode,
-    openConfigModal,
-    closeConfigModal,
-    openKeyboardHelp,
     closeSettingsModal,
     openSettingsModalForAddSource,
     openConfigModalForEdit,
-    openOperationLog,
   } = useUIStore();
 
   const sourceManagement = useSourceManagement();
@@ -87,32 +69,15 @@ export function useAppOrchestration(): {
     handleSourceSelect,
   } = sourceManagement;
 
-  const { handleSaveConfig, handleClearConfig } = useConfigManagement();
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
-  const handleLoadImages = useCallback(async () => {
+  const handleLoadAssets = useCallback(async () => {
     try {
-      await loadImages();
+      await loadAssets();
     } catch (error) {
       console.error('Failed to load images:', error);
     }
-  }, [loadImages]);
-
-  const handleSaveConfigWithId = useMemo(
-    () => (config: RepoConfigForm) => {
-      handleSaveConfig(config, editingSourceId);
-      closeConfigModal();
-    },
-    [handleSaveConfig, editingSourceId, closeConfigModal],
-  );
-
-  const handleClearConfigWithId = useMemo(
-    () => () => {
-      handleClearConfig(editingSourceId);
-      closeConfigModal();
-    },
-    [handleClearConfig, editingSourceId, closeConfigModal],
-  );
+  }, [loadAssets]);
 
   const handleEditSourceWithId = useMemo(
     () => (sourceId: string) => {
@@ -133,24 +98,14 @@ export function useAppOrchestration(): {
       return;
     }
     if (sources.length > 0 && selectedSource) {
-      void handleLoadImages();
+      void handleLoadAssets();
     }
   });
 
   useWorkspaceBindingSync();
-  useAppInitialization(hasConfig, handleLoadImages);
+  useAppInitialization(hasConfig, handleLoadAssets);
   useCapacitorBackButton();
-  useKeyboardShortcuts(
-    t,
-    showConfigModal,
-    showSettingsModal,
-    closeConfigModal,
-    closeSettingsModal,
-    openKeyboardHelp,
-    openOperationLog,
-    handleLoadImages,
-    openConfigModal,
-  );
+  useKeyboardShortcuts(t, showSettingsModal, closeSettingsModal);
 
   return {
     mainLayoutProps: {
@@ -161,8 +116,6 @@ export function useAppOrchestration(): {
       onSourceDelete: handleDeleteSourceWithT,
       hasConfig,
       onAddSource: openSettingsModalForAddSource,
-      onSaveConfig: handleSaveConfigWithId,
-      onClearConfig: handleClearConfigWithId,
     },
     routesProps: {
       isFullscreenMode,

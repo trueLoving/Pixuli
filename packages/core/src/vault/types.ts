@@ -37,13 +37,13 @@ export interface WorkspaceConfig {
   bindings: WorkspaceBinding[];
 }
 
-export type LocalImageSyncState =
+export type LocalAssetSyncState =
   | 'local-only'
   | 'synced'
   | 'pending-push'
   | 'conflict';
 
-export interface LocalImageIndexEntry {
+export interface LocalAssetIndexEntry {
   id: string;
   relativePath: string;
   name: string;
@@ -58,7 +58,7 @@ export interface LocalImageIndexEntry {
   deletedAt?: string;
   bindingId?: string;
   remotePath?: string;
-  syncState?: LocalImageSyncState;
+  syncState?: LocalAssetSyncState;
   /** REF-511 #141 */
   captureMetadata?: ImageCaptureMetadata;
 }
@@ -73,8 +73,8 @@ export interface LocalListOptions {
    */
   pathPrefix?: string;
   /**
-   * 与 pathPrefix 联用：为 true 时只含直接子文件（不含子文件夹内文件）。
-   * pathPrefix 未传时忽略。
+   * 为 true 时只含直接子文件（不含子文件夹内文件）。
+   * pathPrefix 未传时表示工作区根本层；未设 shallow 则不限深度。
    */
   shallow?: boolean;
   /** 排序后跳过的条数（默认 0） */
@@ -87,7 +87,7 @@ export interface LocalListOptions {
 }
 
 export interface LocalListPage {
-  entries: LocalImageIndexEntry[];
+  entries: LocalAssetIndexEntry[];
   /** 截断前的匹配总数 */
   total: number;
 }
@@ -96,20 +96,20 @@ export interface LocalVault {
   readonly adapter: WorkspaceAdapter;
   open(): Promise<void>;
   getConfig(): WorkspaceConfig;
-  list(options?: LocalListOptions): Promise<LocalImageIndexEntry[]>;
+  list(options?: LocalListOptions): Promise<LocalAssetIndexEntry[]>;
   /** 与 list 相同过滤，额外返回截断前总数 */
   listPage(options?: LocalListOptions): Promise<LocalListPage>;
-  getByPath(relativePath: string): Promise<LocalImageIndexEntry | null>;
+  getByPath(relativePath: string): Promise<LocalAssetIndexEntry | null>;
   importFile(
     source: File | string,
     targetRelativePath: string,
-    meta?: Partial<LocalImageIndexEntry>,
-  ): Promise<LocalImageIndexEntry>;
+    meta?: Partial<LocalAssetIndexEntry>,
+  ): Promise<LocalAssetIndexEntry>;
   updateMetadata(
     relativePath: string,
-    patch: Partial<Pick<LocalImageIndexEntry, 'name' | 'tags' | 'description'>>,
+    patch: Partial<Pick<LocalAssetIndexEntry, 'name' | 'tags' | 'description'>>,
     options?: { skipPendingPush?: boolean },
-  ): Promise<LocalImageIndexEntry>;
+  ): Promise<LocalAssetIndexEntry>;
   softDelete(relativePath: string): Promise<void>;
   /** 从索引移除并删除磁盘文件（同步路径归并等内部用途） */
   removeEntry(relativePath: string): Promise<void>;
@@ -125,14 +125,14 @@ export interface LocalVault {
   moveFile(
     relativePath: string,
     targetDir: string,
-  ): Promise<LocalImageIndexEntry>;
+  ): Promise<LocalAssetIndexEntry>;
   scan(): Promise<number>;
   updateSyncMeta(
     relativePath: string,
     patch: Partial<
-      Pick<LocalImageIndexEntry, 'syncState' | 'remotePath' | 'bindingId'>
+      Pick<LocalAssetIndexEntry, 'syncState' | 'remotePath' | 'bindingId'>
     >,
-  ): Promise<LocalImageIndexEntry>;
+  ): Promise<LocalAssetIndexEntry>;
   /** 写入 bindings；默认按 id 合并，replace 时整表替换（REF-607 P4 sourceStore 同步） */
   upsertBindings(
     bindings: WorkspaceBinding[],
@@ -192,6 +192,13 @@ export interface SyncRunResult {
   /** 协商后仍脏、待进夹再拉的目录 */
   dirtyFolders?: string[];
   skipped?: boolean;
+  /** resetToRemote 时清除的本地独有条目数 */
+  removed?: number;
+  /**
+   * 推送前发现远端 sync-tree 已相对本地上次同步前进。
+   * 为 true 时不应推送，需先拉取。
+   */
+  remoteAhead?: boolean;
 }
 
 export interface SyncEngine {
@@ -204,6 +211,11 @@ export interface SyncEngine {
     options?: { bindingId?: string; direction?: 'pull' | 'push' },
   ): Promise<SyncRunResult>;
   listDirtyFolders(bindingId?: string): Promise<string[]>;
+  /**
+   * 整库恢复到与远端一致（远端为检查点）。
+   * 强制全量拉取并覆盖本地，删除远端没有的本地条目，清空推送队列与冲突。
+   */
+  resetToRemote(options?: { bindingId?: string }): Promise<SyncRunResult>;
 }
 
 export type WorkspaceMode = 'unset' | 'local';

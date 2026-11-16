@@ -1,12 +1,12 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import { File, FileText, FileVideo } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getAssetKind } from '@/features/library/utils/assetKind';
 import { resolveAssetThumbnail } from '@/features/library/utils/assetThumbnail';
-import { resolveLocalPreviewUrl } from '@/features/workspace/localImageMapper';
+import { resolveLocalPreviewUrl } from '@/features/workspace/localAssetMapper';
 
 interface AssetThumbProps {
-  item: ImageItem;
+  item: AssetItem;
 }
 
 /**
@@ -106,6 +106,16 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
       aria-hidden
     >
       <Icon size={16} />
+      {kind === 'markdown' ? (
+        <span className="asset-library-thumb-badge asset-library-thumb-badge--md">
+          MD
+        </span>
+      ) : null}
+      {kind === 'text' ? (
+        <span className="asset-library-thumb-badge asset-library-thumb-badge--txt">
+          TXT
+        </span>
+      ) : null}
     </span>
   );
 };

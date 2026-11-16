@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 
 /**
@@ -7,9 +7,9 @@ import { useSourceStore } from '@/features/settings/sourceStore';
  */
 export function useAppInitialization(
   hasConfig: boolean,
-  handleLoadImages: () => Promise<void>,
+  handleLoadAssets: () => Promise<void>,
 ) {
-  const { storageType, githubConfig, giteeConfig } = useImageStore();
+  const { storageType, githubConfig, giteeConfig } = useAssetStore();
   const { selectedSourceId, setSelectedSourceId, sources } = useSourceStore();
 
   // 初始化：如果没有选中源但有源列表，自动选中第一个
@@ -29,7 +29,7 @@ export function useAppInitialization(
 
     // 如果没有使用仓库源模式，使用旧的配置方式加载
     const { storageType, githubConfig, giteeConfig, initializeStorage } =
-      useImageStore.getState();
+      useAssetStore.getState();
 
     // 如果有配置，初始化存储服务并加载图片
     if (
@@ -37,13 +37,13 @@ export function useAppInitialization(
       (storageType === 'gitee' && giteeConfig)
     ) {
       initializeStorage();
-      handleLoadImages();
+      handleLoadAssets();
     }
   }, [
     storageType,
     githubConfig,
     giteeConfig,
-    handleLoadImages,
+    handleLoadAssets,
     hasConfig,
     sources,
   ]);
@@ -56,7 +56,7 @@ export function useAppInitialization(
       giteeConfig,
       storageProvider,
       initializeStorage,
-    } = useImageStore.getState();
+    } = useAssetStore.getState();
     if (
       !storageProvider &&
       ((storageType === 'github' && githubConfig) ||

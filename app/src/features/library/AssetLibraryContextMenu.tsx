@@ -1,14 +1,14 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import React from 'react';
 import { getCopyablePublicUrl } from './copyLink';
 
 export interface AssetLibraryContextMenuProps {
-  menu: { x: number; y: number; file: ImageItem };
+  menu: { x: number; y: number; file: AssetItem };
   t: (key: string) => string;
   onClose: () => void;
-  onCopyLink?: (image: ImageItem) => void;
-  onMoveImage?: (image: ImageItem) => void;
-  onDeleteImage?: (id: string, name: string) => Promise<void>;
+  onCopyLink?: (asset: AssetItem) => void;
+  onMoveAsset?: (asset: AssetItem) => void;
+  onDeleteAsset?: (id: string, name: string) => Promise<void>;
   hasRemoteConnection?: boolean;
 }
 
@@ -19,8 +19,8 @@ export const AssetLibraryContextMenu: React.FC<
   t,
   onClose,
   onCopyLink,
-  onMoveImage,
-  onDeleteImage,
+  onMoveAsset,
+  onDeleteAsset,
   hasRemoteConnection,
 }) => {
   const copyTitle =
@@ -58,12 +58,12 @@ export const AssetLibraryContextMenu: React.FC<
         >
           {t('image.actions.copyUrl')}
         </button>
-        {onMoveImage ? (
+        {onMoveAsset ? (
           <button
             type="button"
             role="menuitem"
             onClick={() => {
-              onMoveImage(menu.file);
+              onMoveAsset(menu.file);
               onClose();
             }}
           >
@@ -78,12 +78,12 @@ export const AssetLibraryContextMenu: React.FC<
             const file = menu.file;
             onClose();
             if (
-              onDeleteImage &&
+              onDeleteAsset &&
               confirm(
                 `${t('image.grid.confirmDelete')} "${file.name}"？${t('image.grid.confirmDeleteLocalHint')}`,
               )
             ) {
-              void onDeleteImage(file.id, file.name);
+              void onDeleteAsset(file.id, file.name);
             }
           }}
         >

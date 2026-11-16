@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSourceManagement } from '../useSourceManagement';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 
 vi.mock('@/storage/registry', async importOriginal => {
   const actual = await importOriginal<typeof import('@/storage/registry')>();
@@ -49,12 +49,12 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
       sources: [githubSource, giteeSource],
       selectedSourceId: 'gt-1',
     });
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: 'gitee',
       githubConfig: githubSource.config,
       giteeConfig: giteeSource.config,
       storageProvider: null,
-      images: [],
+      assets: [],
       loading: false,
       error: null,
     });
@@ -68,18 +68,18 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
       expect(id).toBe('gh-1');
     });
 
-    const imageState = useImageStore.getState();
-    expect(imageState.storageType).toBe('github');
-    expect(imageState.githubConfig).toMatchObject({
+    const assetState = useAssetStore.getState();
+    expect(assetState.storageType).toBe('github');
+    expect(assetState.githubConfig).toMatchObject({
       owner: 'o',
       repo: 'r-gh',
       token: 'gh-token',
     });
   });
 
-  it('切换选中源应同步 imageStore 配置（W7）', () => {
-    const loadImages = vi.fn().mockResolvedValue(undefined);
-    useImageStore.setState({ loadImages });
+  it('切换选中源应同步 assetStore 配置（W7）', () => {
+    const loadAssets = vi.fn().mockResolvedValue(undefined);
+    useAssetStore.setState({ loadAssets });
 
     const { result } = renderHook(() => useSourceManagement());
 
@@ -88,9 +88,9 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
     });
 
     expect(useSourceStore.getState().selectedSourceId).toBe('gh-1');
-    expect(useImageStore.getState().storageType).toBe('github');
-    expect(useImageStore.getState().githubConfig?.repo).toBe('r-gh');
-    expect(loadImages).toHaveBeenCalled();
+    expect(useAssetStore.getState().storageType).toBe('github');
+    expect(useAssetStore.getState().githubConfig?.repo).toBe('r-gh');
+    expect(loadAssets).toHaveBeenCalled();
   });
 
   it('删除非当前选中源后列表应更新（W15）', () => {

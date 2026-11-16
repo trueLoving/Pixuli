@@ -1,4 +1,4 @@
-import type { LocalImageIndexEntry } from './types';
+import type { LocalAssetIndexEntry } from './types';
 
 const TEXT_ENCODER = new TextEncoder();
 
@@ -51,8 +51,8 @@ export function decodeJson<T>(data: Uint8Array): T {
 export function createIndexEntry(
   relativePath: string,
   size: number,
-  meta?: Partial<LocalImageIndexEntry>,
-): LocalImageIndexEntry {
+  meta?: Partial<LocalAssetIndexEntry>,
+): LocalAssetIndexEntry {
   const name = meta?.name ?? basename(relativePath);
   const timestamp = nowIso();
   return {

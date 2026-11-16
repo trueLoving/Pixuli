@@ -3,9 +3,6 @@ import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
 
 export type { SidebarSource };
 
-export type SidebarView = 'library' | 'explore' | 'tags' | 'favorites';
-
-export type SidebarFilter = 'all' | 'tags' | 'favorites';
 export type SidebarMenuItem = { type: 'library' } | { type: 'workspace' };
 
 export interface SidebarProps {
@@ -42,7 +39,6 @@ export interface SidebarNavItemProps {
   label: string;
   active?: boolean;
   disabled?: boolean;
-  comingSoon?: boolean;
   onClick?: () => void;
   tooltip?: string;
   t?: (key: string) => string;

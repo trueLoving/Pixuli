@@ -1,8 +1,8 @@
 export interface WorkspaceFolderNode {
-  /** 相对目录路径；空字符串表示全部图片 */
+  /** 相对目录路径；空字符串表示工作区根 `/` */
   path: string;
   name: string;
-  imageCount: number;
+  processableAssetCount: number;
   children: WorkspaceFolderNode[];
 }
 
@@ -25,7 +25,7 @@ function ensureChild(
 ): WorkspaceFolderNode {
   let child = parent.children.find(node => node.path === path);
   if (!child) {
-    child = { path, name, imageCount: 0, children: [] };
+    child = { path, name, processableAssetCount: 0, children: [] };
     parent.children.push(child);
   }
   return child;
@@ -41,13 +41,13 @@ export function buildWorkspaceFolderTree(
   const root: WorkspaceFolderNode = {
     path: '',
     name: '',
-    imageCount: 0,
+    processableAssetCount: 0,
     children: [],
   };
 
   for (const relativePath of relativePaths) {
     if (!relativePath) continue;
-    root.imageCount += 1;
+    root.processableAssetCount += 1;
 
     const dir = dirname(relativePath);
     if (!dir) continue;
@@ -61,7 +61,7 @@ export function buildWorkspaceFolderTree(
       accumulated = accumulated ? `${accumulated}/${segment}` : segment;
       current = ensureChild(current, accumulated, segment);
       if (index === segments.length - 1) {
-        current.imageCount += 1;
+        current.processableAssetCount += 1;
       }
     }
   }
@@ -90,20 +90,26 @@ export function buildWorkspaceFolderTree(
 
 /**
  * 按文件夹范围过滤。默认仅本层文件（不含子文件夹内文件）；
- * folderPath 为空表示「全部」。
+ * folderPath 为空表示工作区根（浅层）或整库（shallow: false）。
  */
-export function filterImagesByFolder<T extends { localPath?: string }>(
-  images: T[],
+export function filterAssetsByFolder<T extends { localPath?: string }>(
+  assets: T[],
   folderPath: string,
   options?: { shallow?: boolean },
 ): T[] {
-  if (!folderPath) {
-    return images;
-  }
   const shallow = options?.shallow !== false;
+  if (!folderPath) {
+    if (!shallow) {
+      return assets;
+    }
+    return assets.filter(asset => {
+      const path = asset.localPath;
+      return Boolean(path && path.length > 0 && !path.includes('/'));
+    });
+  }
   const prefix = `${folderPath}/`;
-  return images.filter(image => {
-    const path = image.localPath;
+  return assets.filter(asset => {
+    const path = asset.localPath;
     if (!path) return false;
     if (!path.startsWith(prefix)) return false;
     if (!shallow) return true;

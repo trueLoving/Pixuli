@@ -1,13 +1,14 @@
 import { Cloud } from 'lucide-react';
 import React, { RefObject } from 'react';
-import type { ImageItem, SortField, SortOrder } from '@pixuli/core/types';
+import type { AssetItem, SortField, SortOrder } from '@pixuli/core/types';
 import { formatFileSize } from '@pixuli/core/utils';
+import { useSyncIgnorePatterns } from '@/features/workspace/useSyncIgnorePatterns';
 import { isAssetSynced } from './copyLink';
 import { AssetThumb } from './AssetThumb';
 import { kindLabel, sortIndicator } from './assetLibraryUtils';
 
 export interface AssetLibraryTableProps {
-  visibleFiles: ImageItem[];
+  visibleFiles: AssetItem[];
   tableWindow: {
     start: number;
     end: number;
@@ -30,11 +31,11 @@ export interface AssetLibraryTableProps {
     range: boolean,
     enterMulti?: boolean,
   ) => void;
-  onContextMenu: (event: React.MouseEvent, file: ImageItem) => void;
+  onContextMenu: (event: React.MouseEvent, file: AssetItem) => void;
   onTouchPointerDown: (fileId: string) => void;
   onTouchPointerEnd: () => void;
   longPressFiredRef: RefObject<boolean>;
-  onOpenFile?: (file: ImageItem) => void;
+  onOpenFile?: (file: AssetItem) => void;
 }
 
 export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
@@ -58,7 +59,8 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
   onOpenFile,
 }) => {
   const pointerTypeRef = React.useRef<string>('mouse');
-  const colSpan = multiSelectMode ? 5 : 4;
+  const { isIgnored } = useSyncIgnorePatterns();
+  const colSpan = multiSelectMode ? 7 : 6;
 
   return (
     <div
@@ -67,6 +69,15 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
       onScroll={event => onScroll(event.currentTarget.scrollTop)}
     >
       <table className="asset-library-table">
+        <colgroup>
+          {multiSelectMode ? <col className="asset-library-col-check" /> : null}
+          <col className="asset-library-col-name" />
+          <col className="asset-library-col-description" />
+          <col className="asset-library-col-tags" />
+          <col className="asset-library-col-type" />
+          <col className="asset-library-col-size" />
+          <col className="asset-library-col-date" />
+        </colgroup>
         <thead>
           <tr>
             {multiSelectMode ? (
@@ -80,11 +91,17 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                 />
               </th>
             ) : null}
-            <th>
+            <th className="asset-library-col-name">
               <button type="button" onClick={() => onSort('name')}>
                 {t('image.library.colName')}
                 {sortIndicator(sortField === 'name', sortOrder)}
               </button>
+            </th>
+            <th className="asset-library-col-description">
+              {t('image.library.colDescription')}
+            </th>
+            <th className="asset-library-col-tags">
+              {t('image.library.colTags')}
             </th>
             <th className="asset-library-col-type">
               {t('image.library.colType')}
@@ -119,6 +136,15 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
           {visibleFiles.map(file => {
             const selected = selectedIds.includes(file.id);
             const synced = isAssetSynced(file);
+            const syncIgnored = isIgnored(file.localPath);
+            const typeLabel = kindLabel(file, t);
+            const sizeLabel = file.size > 0 ? formatFileSize(file.size) : '—';
+            const dateLabel = file.createdAt
+              ? new Date(file.createdAt).toLocaleString()
+              : '—';
+            const description = file.description?.trim() ?? '';
+            const tags = file.tags ?? [];
+            const tagsLabel = tags.join('、');
             return (
               <tr
                 key={file.id}
@@ -163,34 +189,67 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
                     />
                   </td>
                 ) : null}
-                <td>
+                <td className="asset-library-col-name">
                   <div className="asset-library-name-cell">
                     <AssetThumb item={file} />
                     <span className="asset-library-name-text" title={file.name}>
                       {file.name}
                     </span>
                     <span className="asset-library-badges">
-                      <span
-                        className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
-                        title={
-                          synced
-                            ? t('image.inspector.syncRemote')
-                            : t('image.inspector.syncLocal')
-                        }
-                      >
-                        <Cloud size={10} aria-hidden />
-                      </span>
+                      {syncIgnored ? (
+                        <span
+                          className="asset-library-badge asset-library-badge--sync-ignored"
+                          title={t('settings.syncIgnore.badge')}
+                        >
+                          {t('settings.syncIgnore.badge')}
+                        </span>
+                      ) : (
+                        <span
+                          className={`asset-library-badge ${synced ? 'asset-library-badge--synced' : 'asset-library-badge--local-only'}`}
+                          title={
+                            synced
+                              ? t('image.inspector.syncRemote')
+                              : t('image.inspector.syncLocal')
+                          }
+                        >
+                          <Cloud size={10} aria-hidden />
+                        </span>
+                      )}
                     </span>
                   </div>
                 </td>
-                <td className="asset-library-col-type">{kindLabel(file, t)}</td>
-                <td className="asset-library-col-size">
-                  {file.size > 0 ? formatFileSize(file.size) : '—'}
+                <td
+                  className="asset-library-col-description"
+                  title={description || undefined}
+                >
+                  {description}
                 </td>
-                <td className="asset-library-col-date">
-                  {file.createdAt
-                    ? new Date(file.createdAt).toLocaleString()
-                    : '—'}
+                <td
+                  className="asset-library-col-tags"
+                  title={tagsLabel || undefined}
+                >
+                  {tags.length > 0 ? (
+                    <span className="asset-library-tags">
+                      {tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="asset-library-tag"
+                          title={tag}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </span>
+                  ) : null}
+                </td>
+                <td className="asset-library-col-type" title={typeLabel}>
+                  {typeLabel}
+                </td>
+                <td className="asset-library-col-size" title={sizeLabel}>
+                  {sizeLabel}
+                </td>
+                <td className="asset-library-col-date" title={dateLabel}>
+                  {dateLabel}
                 </td>
               </tr>
             );

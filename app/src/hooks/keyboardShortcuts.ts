@@ -1,4 +1,9 @@
 import { COMMON_SHORTCUTS, SHORTCUT_CATEGORIES } from '@/ui';
+import {
+  requestClearLibrarySearch,
+  requestOpenLibrarySearch,
+} from '@/features/library/librarySearchEvents';
+import { useUIStore } from '@/stores/uiStore';
 
 // 键盘快捷键配置
 export const createKeyboardShortcuts = (t: (key: string) => string) => [
@@ -13,57 +18,84 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     category: SHORTCUT_CATEGORIES.GENERAL,
   },
   {
-    key: COMMON_SHORTCUTS.F1,
+    key: COMMON_SHORTCUTS.F5,
     description: t('keyboard.shortcuts.showHelp'),
-    action: () => {
-      const event = new CustomEvent('openKeyboardHelp');
-      window.dispatchEvent(event);
-    },
+    action: () => useUIStore.getState().toggleKeyboardHelp(),
     category: SHORTCUT_CATEGORIES.HELP,
   },
   {
-    key: COMMON_SHORTCUTS.F5,
-    description: t('keyboard.shortcuts.refresh'),
-    action: () => {
-      const event = new CustomEvent('refreshImages');
-      window.dispatchEvent(event);
-    },
-    category: SHORTCUT_CATEGORIES.GENERAL,
-  },
-  {
-    key: COMMON_SHORTCUTS.COMMA,
+    key: COMMON_SHORTCUTS.SLASH,
     ctrlKey: true,
     description: t('keyboard.shortcuts.openConfig'),
-    action: () => {
-      const event = new CustomEvent('openConfig');
-      window.dispatchEvent(event);
-    },
+    action: () => useUIStore.getState().openSettingsModal(),
     category: SHORTCUT_CATEGORIES.GENERAL,
   },
-  // 搜索快捷键
   {
     key: COMMON_SHORTCUTS.SLASH,
+    metaKey: true,
+    description: t('keyboard.shortcuts.openConfig'),
+    action: () => useUIStore.getState().openSettingsModal(),
+    category: SHORTCUT_CATEGORIES.GENERAL,
+  },
+  // 面板：Ctrl/Cmd+B 文件夹大纲，Ctrl/Cmd+I Inspector
+  {
+    key: COMMON_SHORTCUTS.B,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.toggleFolderPanel'),
+    action: () => useUIStore.getState().toggleWorkspaceFolderPanel(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.B,
+    metaKey: true,
+    description: t('keyboard.shortcuts.toggleFolderPanel'),
+    action: () => useUIStore.getState().toggleWorkspaceFolderPanel(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.I,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.toggleInspector'),
+    action: () => useUIStore.getState().toggleInspectorCollapsed(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.I,
+    metaKey: true,
+    description: t('keyboard.shortcuts.toggleInspector'),
+    action: () => useUIStore.getState().toggleInspectorCollapsed(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  // 搜索：Cmd+K（mac）与 Ctrl+K（其它）
+  {
+    key: COMMON_SHORTCUTS.K,
+    metaKey: true,
     description: t('keyboard.shortcuts.focusSearch'),
-    action: () => {
-      const searchInput = document.querySelector(
-        'input[type="text"]',
-      ) as HTMLInputElement;
-      if (searchInput) {
-        searchInput.focus();
-        searchInput.select();
-      }
-    },
+    action: () => requestOpenLibrarySearch(),
     category: SHORTCUT_CATEGORIES.SEARCH,
   },
   {
-    key: COMMON_SHORTCUTS.L,
+    key: COMMON_SHORTCUTS.K,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.focusSearch'),
+    action: () => requestOpenLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
+  },
+  // 清除搜索：Cmd/Ctrl+Shift+K
+  {
+    key: COMMON_SHORTCUTS.K,
+    metaKey: true,
+    shiftKey: true,
+    description: t('keyboard.shortcuts.clearSearch'),
+    action: () => requestClearLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
+  },
+  {
+    key: COMMON_SHORTCUTS.K,
     ctrlKey: true,
     shiftKey: true,
-    description: t('keyboard.shortcuts.openOperationLog'),
-    action: () => {
-      const event = new CustomEvent('openOperationLog');
-      window.dispatchEvent(event);
-    },
-    category: SHORTCUT_CATEGORIES.HELP,
+    description: t('keyboard.shortcuts.clearSearch'),
+    action: () => requestClearLibrarySearch(),
+    category: SHORTCUT_CATEGORIES.SEARCH,
   },
 ];

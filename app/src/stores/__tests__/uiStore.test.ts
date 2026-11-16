@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useUIStore } from '../uiStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 
 vi.mock('../../storage/registry', async importOriginal => {
   const actual =
@@ -30,7 +30,6 @@ const giteeSource = {
 describe('uiStore.openConfigModalForEdit (REF-312)', () => {
   beforeEach(() => {
     useUIStore.setState({
-      showConfigModal: false,
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
@@ -39,12 +38,12 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
       sources: [giteeSource],
       selectedSourceId: 'gt-edit-1',
     });
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: 'gitee',
       githubConfig: null,
       giteeConfig: null,
       storageProvider: null,
-      images: [],
+      assets: [],
       loading: false,
       error: null,
     });
@@ -57,7 +56,6 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     expect(ui.settingsSection).toBe('sync');
     expect(ui.settingsSyncAddOpen).toBe(true);
     expect(ui.settingsSyncPrefillPluginId).toBe('github');
-    expect(ui.showConfigModal).toBe(false);
   });
 
   it('选中 Gitee 源后编辑应打开设置同步向导并快照 config', () => {
@@ -65,7 +63,6 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     expect(ok).toBe(true);
 
     const ui = useUIStore.getState();
-    expect(ui.showConfigModal).toBe(false);
     expect(ui.showSettingsModal).toBe(true);
     expect(ui.settingsSection).toBe('sync');
     expect(ui.editingSourceId).toBe('gt-edit-1');
@@ -77,7 +74,7 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
       path: 'images',
     });
 
-    expect(useImageStore.getState().storageType).toBe('gitee');
-    expect(useImageStore.getState().giteeConfig?.owner).toBe('sakura0922');
+    expect(useAssetStore.getState().storageType).toBe('gitee');
+    expect(useAssetStore.getState().giteeConfig?.owner).toBe('sakura0922');
   });
 });

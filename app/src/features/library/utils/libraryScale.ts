@@ -7,7 +7,7 @@ export const LIBRARY_SCALE_LARGE = 500;
 export const LIBRARY_SCALE_HUGE = 5000;
 
 /**
- * 根「全部」与全库搜索写入 store 的上限（按 updatedAt 新到旧）。
+ * 根 `/` 与全库搜索写入 store 的上限（按 updatedAt 新到旧）。
  * 文件夹浅列表不截断。
  */
 export const LIBRARY_ROOT_LIST_CAP = LIBRARY_SCALE_HUGE;

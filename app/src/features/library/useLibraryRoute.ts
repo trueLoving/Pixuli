@@ -1,6 +1,6 @@
 import { useSearchContextSafe } from '@/features/library/SearchContext';
-import { useImageOperations } from '@/features/library/useImageOperations';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetOperations } from '@/features/library/useAssetOperations';
+import { useAssetStore } from '@/features/library/assetStore';
 import type { LibrarySearchConfig } from '@/features/library/librarySearchTypes';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -13,33 +13,32 @@ import { useEffect, useMemo, useRef } from 'react';
 /** `/library` 路由：store 接线、文件夹过滤、搜索适配 */
 export function useLibraryRoute() {
   const { t } = useI18n();
-  const images = useImageStore(state => state.images);
-  const loadImages = useImageStore(state => state.loadImages);
-  const loading = useImageStore(state => state.loading);
-  const error = useImageStore(state => state.error);
-  const clearError = useImageStore(state => state.clearError);
+  const assets = useAssetStore(state => state.assets);
+  const loadAssets = useAssetStore(state => state.loadAssets);
+  const loading = useAssetStore(state => state.loading);
+  const error = useAssetStore(state => state.error);
+  const clearError = useAssetStore(state => state.clearError);
   const { sources } = useSourceStore();
   const localActive = useWorkspaceStore(state => state.isLocalActive());
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const {
-    handleDeleteImage,
-    handleDeleteMultipleImages,
-    handleUpdateImage,
+    handleDeleteAsset,
+    handleDeleteMultipleAssets,
+    handleUpdateAsset,
     handleBatchUpdateMetadata,
-  } = useImageOperations();
+  } = useAssetOperations();
   const searchContext = useSearchContextSafe();
 
   const hasConfig = isWorkspaceAvailable() ? localActive : sources.length > 0;
 
-  const searchScope = searchContext?.searchScope ?? 'folder';
+  const searchScope = searchContext?.searchScope ?? 'workspace';
   const searchQuery = searchContext?.searchQuery ?? '';
+  /** 有查询且范围为工作区时，跨全部文件夹搜索（默认） */
   const searchAllWorkspace =
-    searchScope === 'workspace' &&
-    Boolean(searchQuery.trim()) &&
-    Boolean(selectedFolderPath);
+    searchScope === 'workspace' && Boolean(searchQuery.trim());
 
   // store 已按文件夹 / 全库搜索范围懒载入，此处直接使用
-  const visibleImages = images;
+  const visibleAssets = assets;
 
   const clearCommittedSearch = searchContext?.clearCommittedSearch;
   const folderPathForSearchRef = useRef<string | null>(null);
@@ -65,7 +64,7 @@ export function useLibraryRoute() {
       if (cancelled) {
         return;
       }
-      await loadImages({
+      await loadAssets({
         folderPath: selectedFolderPath,
         searchAll: searchAllWorkspace,
         searchQuery: searchQuery.trim() || undefined,
@@ -76,7 +75,7 @@ export function useLibraryRoute() {
     };
   }, [
     localActive,
-    loadImages,
+    loadAssets,
     pullDirtyFolderIfNeeded,
     selectedFolderPath,
     searchAllWorkspace,
@@ -114,11 +113,11 @@ export function useLibraryRoute() {
     hasConfig,
     error,
     clearError,
-    visibleImages,
+    visibleAssets,
     loading,
-    handleDeleteImage,
-    handleDeleteMultipleImages,
-    handleUpdateImage,
+    handleDeleteAsset,
+    handleDeleteMultipleAssets,
+    handleUpdateAsset,
     handleBatchUpdateMetadata,
     search,
   };

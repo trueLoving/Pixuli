@@ -1,7 +1,7 @@
 import { WORKSPACE_PATHS, WORKSPACE_SCHEMA_VERSION } from './paths';
 import { randomUUID } from '../utils/randomUUID';
 import type {
-  LocalImageIndexEntry,
+  LocalAssetIndexEntry,
   LocalListOptions,
   LocalVault,
   WorkspaceAdapter,
@@ -20,7 +20,7 @@ import {
 
 type IndexFile = {
   schemaVersion: number;
-  entries: LocalImageIndexEntry[];
+  entries: LocalAssetIndexEntry[];
 };
 
 type FoldersFile = {
@@ -39,7 +39,7 @@ function joinPath(dir: string, name: string): string {
 
 export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
   let config: WorkspaceConfig | null = null;
-  let index: LocalImageIndexEntry[] = [];
+  let index: LocalAssetIndexEntry[] = [];
   let folders: string[] = [];
 
   const persistConfig = async () => {
@@ -102,7 +102,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
     return initial;
   };
 
-  const loadOrInitIndex = async (): Promise<LocalImageIndexEntry[]> => {
+  const loadOrInitIndex = async (): Promise<LocalAssetIndexEntry[]> => {
     if (await adapter.exists(WORKSPACE_PATHS.index)) {
       const raw = await adapter.readFile(WORKSPACE_PATHS.index);
       const parsed = decodeJson<IndexFile>(raw);
@@ -311,7 +311,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
             await adapter.deleteFile(entry.relativePath);
           }
           entry.relativePath = nextPath;
-          entry.name = basename(nextPath);
+          // 保留展示名：磁盘路径可能含上传时间戳前缀
           entry.updatedAt = nowIso();
           entry.syncState = 'pending-push';
           moved += 1;
@@ -378,7 +378,7 @@ export function createLocalVault(adapter: WorkspaceAdapter): LocalVault {
         await adapter.deleteFile(entry.relativePath);
       }
       entry.relativePath = nextPath;
-      entry.name = fileName;
+      // 保留展示名：磁盘文件名可能是「时间戳-原名」，与 name 字段不必一致
       entry.updatedAt = nowIso();
       entry.syncState = 'pending-push';
       await persistIndex();

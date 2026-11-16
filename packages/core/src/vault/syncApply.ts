@@ -1,4 +1,4 @@
-import type { ImageItem } from '../types/image';
+import type { AssetItem } from '../types/asset';
 import type {
   StorageProvider,
   StorageProviderSync,
@@ -6,9 +6,10 @@ import type {
   SyncPushItem,
 } from '../plugins/types';
 import { hasStorageProviderSync } from '../plugins/types';
-import type { LocalImageIndexEntry, LocalVault, SyncConflict } from './types';
+import type { LocalAssetIndexEntry, LocalVault, SyncConflict } from './types';
 import {
   isSyncExcludedPath,
+  isUserSyncIgnored,
   resolveLocalPathForPull,
   resolveRemotePathForPush,
 } from './syncPath';
@@ -16,6 +17,7 @@ import { basename, nowIso } from './utils';
 
 export {
   isSyncExcludedPath,
+  isUserSyncIgnored,
   joinConfigRoot,
   normalizeConfigRoot,
   resolveLocalPathForPull,
@@ -42,7 +44,7 @@ export async function downloadRemoteBytes(
   return new Uint8Array(await response.arrayBuffer());
 }
 
-function pickImageMetadata(metadata?: Partial<ImageItem>): Partial<ImageItem> {
+function pickImageMetadata(metadata?: Partial<AssetItem>): Partial<AssetItem> {
   if (!metadata) {
     return {};
   }
@@ -63,7 +65,7 @@ async function findExistingForPullItem(
   vault: LocalVault,
   bindingId: string,
   remotePath: string,
-): Promise<LocalImageIndexEntry | null> {
+): Promise<LocalAssetIndexEntry | null> {
   const canonicalPath = resolveLocalPathForPull(remotePath);
   const byPath = await vault.getByPath(canonicalPath);
   if (byPath && !byPath.deletedAt) {
@@ -93,8 +95,8 @@ async function findExistingForPullItem(
 
 /** 远端 manifest 未单独存展示名时，listImages 会回退为 basename（含 timestamp 前缀） */
 export function resolvePullDisplayName(
-  meta: Partial<ImageItem>,
-  existing: LocalImageIndexEntry | null | undefined,
+  meta: Partial<AssetItem>,
+  existing: LocalAssetIndexEntry | null | undefined,
   remotePath: string,
 ): string {
   const remoteBase = basename(remotePath);
@@ -108,11 +110,11 @@ export function resolvePullDisplayName(
 }
 
 function metadataPatchFromPull(
-  existing: LocalImageIndexEntry,
-  meta: Partial<ImageItem>,
+  existing: LocalAssetIndexEntry,
+  meta: Partial<AssetItem>,
   remotePath: string,
-): Partial<LocalImageIndexEntry> | null {
-  const patch: Partial<LocalImageIndexEntry> = {};
+): Partial<LocalAssetIndexEntry> | null {
+  const patch: Partial<LocalAssetIndexEntry> = {};
   const name = resolvePullDisplayName(meta, existing, remotePath);
   if (name !== existing.name) {
     patch.name = name;
@@ -133,18 +135,18 @@ function metadataPatchFromPull(
 }
 
 function isSyncedToBinding(
-  entry: LocalImageIndexEntry,
+  entry: LocalAssetIndexEntry,
   bindingId: string,
 ): boolean {
   return entry.syncState === 'synced' && entry.bindingId === bindingId;
 }
 
 function isRemoteUpToDate(
-  existing: LocalImageIndexEntry,
+  existing: LocalAssetIndexEntry,
   bindingId: string,
   remotePath: string,
   remoteUpdatedAt: string,
-  meta: Partial<ImageItem>,
+  meta: Partial<AssetItem>,
 ): boolean {
   if (!isSyncedToBinding(existing, bindingId)) {
     return false;
@@ -186,13 +188,22 @@ export async function applySyncPull(
     fetchFn?: typeof fetch;
     /** @deprecated 方向性 pull 不再登记冲突，远端始终覆盖本地 */
     onConflict?: (conflict: SyncConflict) => void | Promise<void>;
+    /** 恢复检查点：强制用远端覆盖本地较新 / pending-push 条目 */
+    overwriteLocal?: boolean;
+    /** 用户同步忽略规则（D5） */
+    ignorePatterns?: string[];
   },
 ): Promise<{ pulled: number; conflicts: SyncConflict[] }> {
   const fetchFn = options?.fetchFn ?? globalThis.fetch;
+  const overwriteLocal = options?.overwriteLocal === true;
+  const ignorePatterns = options?.ignorePatterns ?? [];
   let pulled = 0;
 
   for (const item of pullResult.items) {
     const canonicalPath = resolveLocalPathForPull(item.remotePath);
+    if (isUserSyncIgnored(canonicalPath, ignorePatterns)) {
+      continue;
+    }
     const existing = await findExistingForPullItem(
       vault,
       bindingId,
@@ -202,7 +213,11 @@ export async function applySyncPull(
 
     if (item.action === 'delete') {
       if (existing && !existing.deletedAt) {
-        await vault.softDelete(existing.relativePath);
+        if (overwriteLocal) {
+          await vault.removeEntry(existing.relativePath);
+        } else {
+          await vault.softDelete(existing.relativePath);
+        }
         pulled += 1;
       }
       continue;
@@ -211,6 +226,7 @@ export async function applySyncPull(
     const meta = pickImageMetadata(item.metadata);
 
     if (
+      !overwriteLocal &&
       existing &&
       !existing.deletedAt &&
       isRemoteUpToDate(
@@ -225,6 +241,7 @@ export async function applySyncPull(
     }
 
     if (
+      !overwriteLocal &&
       existing &&
       !existing.deletedAt &&
       isSyncedToBinding(existing, bindingId) &&
@@ -309,11 +326,15 @@ function normalizeSyncPath(path: string): string {
  * 只改过说明/标签、且仍是当前仓库的条目走 metadata，不重传字节。
  */
 export function intentFromEntry(
-  entry: LocalImageIndexEntry,
+  entry: LocalAssetIndexEntry,
   overwriteRemote: boolean,
   bindingId: string,
+  options?: { ignorePatterns?: string[] },
 ): SyncPushIntent | null {
   if (isSyncExcludedPath(entry.relativePath)) {
+    return null;
+  }
+  if (isUserSyncIgnored(entry.relativePath, options?.ignorePatterns)) {
     return null;
   }
   if (entry.deletedAt) {
@@ -341,7 +362,7 @@ export function intentFromEntry(
   return null;
 }
 
-function pushMetadata(entry: LocalImageIndexEntry): SyncPushItem['metadata'] {
+function pushMetadata(entry: LocalAssetIndexEntry): SyncPushItem['metadata'] {
   return {
     name: entry.name,
     tags: entry.tags,
@@ -358,6 +379,7 @@ export function buildSyncPushItems(
   bindingId: string,
   plans: SyncPushPlan[],
   readBytes: (relativePath: string) => Promise<Uint8Array>,
+  options?: { ignorePatterns?: string[] },
 ): Promise<SyncPushItem[]> {
   void bindingId;
   return Promise.all(
@@ -367,7 +389,9 @@ export function buildSyncPushItems(
       if (!entry) {
         throw new Error(`Missing local entry: ${relativePath}`);
       }
-      const remotePath = resolveRemotePathForPush(entry);
+      const remotePath = resolveRemotePathForPush(entry, {
+        ignorePatterns: options?.ignorePatterns,
+      });
       if (!remotePath) {
         throw new Error(`Path is not syncable: ${relativePath}`);
       }

@@ -90,6 +90,13 @@ describe('createLocalVault', () => {
       new File([new Uint8Array([2])], 'b.jpg', { type: 'image/jpeg' }),
       'images/trip/b.jpg',
     );
+    await vault.importFile(
+      new File([new Uint8Array([3])], 'root.jpg', { type: 'image/jpeg' }),
+      'root.jpg',
+    );
+
+    const rootShallow = await vault.list({ shallow: true });
+    expect(rootShallow.map(e => e.relativePath)).toEqual(['root.jpg']);
 
     const shallow = await vault.list({ pathPrefix: 'images', shallow: true });
     expect(shallow.map(e => e.relativePath)).toEqual(['images/a.jpg']);
@@ -282,5 +289,38 @@ describe('createLocalVault', () => {
     const deleted = await vault.deleteFolder('images');
     expect(deleted).toBeGreaterThanOrEqual(1);
     expect(await vault.list()).toHaveLength(0);
+  });
+
+  it('moveFile keeps display name when path has upload timestamp prefix', async () => {
+    const adapter = new MemoryWorkspaceAdapter();
+    const vault = createLocalVault(adapter);
+    await vault.open();
+    await vault.createFolder('images/album');
+
+    const file = new File([new Uint8Array([1, 2, 3])], 'doc.pdf', {
+      type: 'application/pdf',
+    });
+    await vault.importFile(
+      file,
+      'images/album/1794097253903-Academic Reading.pdf',
+      {
+        name: 'Academic Reading',
+        mimeType: 'application/pdf',
+      },
+    );
+
+    const moved = await vault.moveFile(
+      'images/album/1794097253903-Academic Reading.pdf',
+      'images',
+    );
+    expect(moved.relativePath).toBe(
+      'images/1794097253903-Academic Reading.pdf',
+    );
+    expect(moved.name).toBe('Academic Reading');
+
+    const listed = await vault.getByPath(
+      'images/1794097253903-Academic Reading.pdf',
+    );
+    expect(listed?.name).toBe('Academic Reading');
   });
 });

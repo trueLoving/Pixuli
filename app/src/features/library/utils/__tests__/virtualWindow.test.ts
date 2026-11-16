@@ -14,16 +14,17 @@ describe('getVirtualWindow', () => {
   });
 
   it('windows a large list with overscan', () => {
+    const rowHeight = LIBRARY_ROW_HEIGHT;
     const win = getVirtualWindow({
       total: 1000,
-      scrollTop: 440,
-      viewportHeight: 440,
-      rowHeight: 44,
+      scrollTop: rowHeight * 10,
+      viewportHeight: rowHeight * 10,
+      rowHeight,
       overscan: 2,
     });
     expect(win.start).toBe(8);
     expect(win.end).toBe(22);
-    expect(win.offsetTop).toBe(8 * 44);
-    expect(win.offsetBottom).toBe((1000 - 22) * 44);
+    expect(win.offsetTop).toBe(8 * rowHeight);
+    expect(win.offsetBottom).toBe((1000 - 22) * rowHeight);
   });
 });

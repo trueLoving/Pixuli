@@ -6,11 +6,12 @@ import {
   isOpfsSupported,
   isWebWorkspaceActive,
 } from '@/platforms/workspacePlatform';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
 import { WorkspaceReconnectCard } from '@/features/workspace/WorkspaceReconnectCard';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
+import { useUIStore } from '@/stores/uiStore';
 import { runSyncWithFeedback } from './syncFeedback';
 
 interface WorkspaceMigrationWizardProps {
@@ -24,7 +25,7 @@ export const WorkspaceMigrationWizard: React.FC<
   const { t } = useI18n();
   const sourceCount = useSourceStore(state => state.sources.length);
   const { pickWorkspace, loading, error, reconnect } = useWorkspaceStore();
-  const loadImages = useImageStore(state => state.loadImages);
+  const loadAssets = useAssetStore(state => state.loadAssets);
   const [pullAfter, setPullAfter] = useState(false);
   const isWebWorkspace = isWebWorkspaceActive();
   const isMobileWorkspace = isMobileWorkspaceActive();
@@ -38,11 +39,13 @@ export const WorkspaceMigrationWizard: React.FC<
         : error;
 
   const finish = async () => {
-    await loadImages();
+    await loadAssets();
     onComplete?.();
   };
 
   const handlePickLocal = async (backend?: 'opfs' | 'fsa') => {
+    useUIStore.getState().closeSettingsModal();
+    useUIStore.getState().closeWorkspaceModal();
     const ok = await pickWorkspace(backend ? { backend } : undefined);
     if (ok) {
       if (pullAfter) {

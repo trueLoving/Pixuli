@@ -1,4 +1,4 @@
-import type { ImageItem } from '@pixuli/core/types';
+import type { AssetItem } from '@pixuli/core/types';
 import type { OutputMimeType } from '@/features/tools/imageProcessor';
 import { readAssetBytes } from '@/features/library/assetDownloadService';
 import { X } from 'lucide-react';
@@ -19,6 +19,7 @@ import {
   libraryProcessModesForItems,
   type LibraryProcessMode,
 } from './libraryProcess';
+import { useSuspendLibraryShortcuts } from './useSuspendLibraryShortcuts';
 import './AssetLibraryBatchEditModal.css';
 
 const FORMATS: OutputMimeType[] = ['image/webp', 'image/jpeg', 'image/png'];
@@ -31,11 +32,11 @@ const FORMAT_LABEL: Record<OutputMimeType, string> = {
 
 export interface AssetLibraryConvertModalProps {
   isOpen: boolean;
-  items: ImageItem[];
+  items: AssetItem[];
   t: (key: string) => string;
   onClose: () => void;
   onConvert: (request: ImageConvertRequest) => Promise<void>;
-  onCrop: (item: ImageItem, crop: ImageCropRect) => Promise<{ saved: number }>;
+  onCrop: (item: AssetItem, crop: ImageCropRect) => Promise<{ saved: number }>;
 }
 
 export const AssetLibraryConvertModal: React.FC<
@@ -55,6 +56,7 @@ export const AssetLibraryConvertModal: React.FC<
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

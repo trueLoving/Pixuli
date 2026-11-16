@@ -1,16 +1,16 @@
-import type { ImageItem, ImageUploadData } from '@pixuli/core/types';
+import type { AssetItem, AssetUploadData } from '@pixuli/core/types';
 import type { LibraryListScope } from '@/features/library/libraryListScope';
 import {
   readDefaultLibraryListScope,
   toLocalListOptions,
 } from '@/features/library/libraryListScope';
 import {
-  mapEntriesToImageItems,
+  mapEntriesToAssetItems,
   pruneLocalPreviewCache,
-} from '@/features/workspace/localImageMapper';
+} from '@/features/workspace/localAssetMapper';
 import {
   enqueuePendingPushForFolder,
-  importImageToLocalVault,
+  importAssetToLocalVault,
 } from '@/features/workspace/workspaceLocalFs';
 import { refreshAndPersistRootDisplayPath } from '@/features/workspace/workspaceSetupService';
 import {
@@ -33,7 +33,7 @@ export async function refreshRootDisplayPath(
   );
 }
 
-export async function refreshLocalImages(
+export async function refreshLocalAssets(
   get: WorkspaceStoreGet,
   set: WorkspaceStoreSet,
   options?: LibraryListScope,
@@ -56,15 +56,15 @@ export async function refreshLocalImages(
     const indexPaths = allEntries.map(entry => entry.relativePath);
     const page = await vault.listPage(toLocalListOptions(scope));
     const provider = resolveSelectedProvider();
-    const images = await mapEntriesToImageItems(page.entries, provider, {
+    const assets = await mapEntriesToAssetItems(page.entries, provider, {
       deferPreview: true,
     });
     pruneLocalPreviewCache(
-      images.flatMap(image => (image.localPath ? [image.localPath] : [])),
+      assets.flatMap(asset => (asset.localPath ? [asset.localPath] : [])),
     );
     const localFolders = await vault.listFolders();
     set({
-      localImages: images,
+      localAssets: assets,
       scopedTotal: page.total,
       indexPaths,
       localFolders,
@@ -130,7 +130,7 @@ export async function renameLocalFolder(
     const moved = await getWorkspaceVault().renameFolder(fromDir, toDir);
     void moved;
     await enqueuePendingPushForFolder(getWorkspaceVault(), toDir, 'upload');
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({ loading: false, syncMessage: '已重命名文件夹（仅本机）' });
   } catch (error) {
@@ -157,7 +157,7 @@ export async function deleteLocalFolder(
       relativeDir,
       'delete',
     );
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({ loading: false, syncMessage: '已删除文件夹（仅本机）' });
     return count;
@@ -186,7 +186,7 @@ export async function moveLocalFile(
       type: 'upload',
       relativePath: entry.relativePath,
     });
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({ loading: false, syncMessage: '已移动文件（仅本机）' });
   } catch (error) {
@@ -221,7 +221,7 @@ export async function moveLocalFiles(
         moved += 1;
       }
     }
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({
       loading: false,
@@ -230,7 +230,7 @@ export async function moveLocalFiles(
     return moved;
   } catch (error) {
     try {
-      await get().refreshLocalImages();
+      await get().refreshLocalAssets();
     } catch {
       // 刷新失败不掩盖移动错误
     }
@@ -252,7 +252,7 @@ export async function scanWorkspace(
   set({ loading: true, error: null });
   try {
     const added = await getWorkspaceVault().scan();
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     const outcome: SyncRunOutcome =
       added > 0
@@ -278,11 +278,11 @@ export async function scanWorkspace(
   }
 }
 
-export async function importLocalImage(
+export async function importLocalAsset(
   get: WorkspaceStoreGet,
   set: WorkspaceStoreSet,
-  uploadData: ImageUploadData,
-): Promise<ImageItem | null> {
+  uploadData: AssetUploadData,
+): Promise<AssetItem | null> {
   if (get().mode !== 'local') {
     set({ error: '请先选择本地工作区' });
     return null;
@@ -290,12 +290,12 @@ export async function importLocalImage(
 
   set({ error: null });
   try {
-    const targetPath = await importImageToLocalVault(uploadData);
-    await get().refreshLocalImages({ quiet: true });
+    const targetPath = await importAssetToLocalVault(uploadData);
+    await get().refreshLocalAssets({ quiet: true });
     await get().refreshSyncStatus();
     set({ syncMessage: '已保存到本地工作区' });
     return (
-      get().localImages.find(image => image.localPath === targetPath) ?? null
+      get().localAssets.find(asset => asset.localPath === targetPath) ?? null
     );
   } catch (error) {
     set({
@@ -321,7 +321,7 @@ export async function updateLocalMetadata(
       type: 'metadata',
       relativePath,
     });
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({ loading: false });
   } catch (error) {
@@ -348,7 +348,7 @@ export async function softDeleteLocal(
       type: 'delete',
       relativePath,
     });
-    await get().refreshLocalImages();
+    await get().refreshLocalAssets();
     await get().refreshSyncStatus();
     set({ loading: false });
   } catch (error) {

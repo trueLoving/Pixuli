@@ -320,16 +320,3 @@ export function loading() {
 
   setTimeout(removeLoading, 4999);
 }
-
-export function removeLoading() {
-  const loadingDiv = document.querySelector('.simple-loading');
-  const loadingStyle = document.getElementById('app-loading-style');
-
-  if (loadingDiv) {
-    document.body.classList.remove('simple-loading-active');
-    if (loadingStyle) {
-      document.head.removeChild(loadingStyle);
-    }
-    document.body.removeChild(loadingDiv);
-  }
-}

@@ -4,8 +4,9 @@ import { useUIStore } from '../stores/uiStore';
 import { isNativeMobile } from '@/platforms/platform';
 
 const OVERLAY_CLOSE_SELECTORS = [
-  '.image-preview-modal-overlay .image-preview-modal-close',
-  '.image-upload-modal-overlay .image-upload-modal-close',
+  '.library-search-overlay-backdrop',
+  '.asset-preview-modal-overlay .asset-preview-modal-close',
+  '.asset-upload-modal-overlay .asset-upload-modal-close',
   '.image-batch-delete-modal-overlay .image-batch-delete-modal-close',
   '.image-crop-modal-overlay .image-crop-modal-close',
 ].join(', ');
@@ -46,8 +47,8 @@ export function useCapacitorBackButton(): void {
       handle = await App.addListener('backButton', ({ canGoBack }) => {
         const ui = useUIStore.getState();
 
-        if (ui.showConfigModal) {
-          ui.closeConfigModal();
+        if (ui.showKeyboardHelp) {
+          ui.closeKeyboardHelp();
           return;
         }
         if (ui.showSyncDirectionModal) {

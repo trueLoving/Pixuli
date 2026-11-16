@@ -99,7 +99,7 @@ export function getManifestEntry(
   return manifest.files[fileName] ?? null;
 }
 
-export function manifestEntryFromImageFields(
+export function manifestEntryFromAssetFields(
   fields: Partial<MetadataManifestFileEntry> & { name: string },
 ): MetadataManifestFileEntry {
   return {
@@ -150,7 +150,7 @@ export function parseManifestEntryRecord(
   if (typeof record.name !== 'string') {
     return null;
   }
-  return manifestEntryFromImageFields({
+  return manifestEntryFromAssetFields({
     id: typeof record.id === 'string' ? record.id : undefined,
     name: record.name,
     description:

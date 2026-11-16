@@ -47,37 +47,12 @@ export const AppRoutes: React.FC<AppRoutesProps> = () => {
         element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route
-        path="/slideshow"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
-      />
-      <Route
-        path="/timeline"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
-      />
-      <Route
         path={ROUTES.WORKSPACE}
         element={
           <RouteSuspense>
             <WorkspaceRouteRedirect />
           </RouteSuspense>
         }
-      />
-      <Route
-        path="/compress"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
-      />
-      <Route
-        path="/convert"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
-      />
-      <Route
-        path="/analyze"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
-      />
-      <Route path="/edit" element={<Navigate to={ROUTES.LIBRARY} replace />} />
-      <Route
-        path="/generate"
-        element={<Navigate to={ROUTES.LIBRARY} replace />}
       />
       <Route path="/" element={<Navigate to={ROUTES.LIBRARY} replace />} />
       <Route path="*" element={<Navigate to={ROUTES.LIBRARY} replace />} />

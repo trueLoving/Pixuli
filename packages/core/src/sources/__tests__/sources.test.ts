@@ -234,6 +234,17 @@ describe('settings import and export', () => {
       }),
     ).toBeNull();
   });
+
+  it('reads sources from the user-config envelope', () => {
+    const payload = buildSettingsExport({
+      sources: [github],
+      selectedSourceId: 'gh-1',
+    });
+    expect(payload).toMatchObject({
+      kind: 'pixuli-user-config',
+      blocks: { sources: { selectedSourceId: 'gh-1' } },
+    });
+  });
 });
 
 describe('resolveSourceDisplay', () => {

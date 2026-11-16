@@ -6,8 +6,8 @@ import {
 } from '@/ui';
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
-import type { NativeImagePickers } from './image-upload/nativePickers';
-import { useImageStore } from '@/features/library/imageStore';
+import type { NativeImagePickers } from './asset-upload/nativePickers';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -29,19 +29,35 @@ import { AssetLibraryEmptyState } from './AssetLibraryEmptyState';
 import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
 import { LibraryFolderNav } from './LibraryFolderNav';
-import { libraryChildFolders } from './libraryNavigation';
+import { LibrarySearchOverlay } from './LibrarySearchOverlay';
+import {
+  CLEAR_LIBRARY_SEARCH_EVENT,
+  OPEN_LIBRARY_SEARCH_EVENT,
+} from './librarySearchEvents';
+import {
+  areLibraryShortcutsActive,
+  LIBRARY_SHORTCUTS_GATE_EVENT,
+  resumeLibraryShortcuts,
+  suspendLibraryShortcuts,
+} from './libraryShortcutGate';
+import {
+  libraryChildFolders,
+  libraryFolderNavItems,
+  normalizeLibraryFolderPath,
+  resolveLibraryFolderNavPath,
+} from './libraryNavigation';
 import { useMobileViewport } from '@/hooks/useMobileViewport';
 import { resolveNewFolderParent } from '@/features/workspace/WorkspaceFolderTree';
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import type {
   BatchUploadProgress,
-  ImageItem,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetItem,
+  AssetUploadData,
+  MultiAssetUploadData,
   SortField,
   SortOrder,
 } from '@pixuli/core/types';
-import { getSortedImages } from '@pixuli/core/utils';
+import { getSortedAssets } from '@pixuli/core/utils';
 import React, {
   useCallback,
   useEffect,
@@ -52,12 +68,12 @@ import React, {
 import './AssetLibrary.css';
 
 interface AssetLibraryProps {
-  images: ImageItem[];
+  assets: AssetItem[];
   hasConfig?: boolean;
   search?: LibrarySearchConfig;
   t: (key: string) => string;
-  onUploadImage?: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<unknown>;
+  onUploadAsset?: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets?: (data: MultiAssetUploadData) => Promise<unknown>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   nativePickers?: NativeImagePickers;
@@ -67,11 +83,13 @@ interface AssetLibraryProps {
   onRetry?: () => void;
   onOpenFolders?: () => void;
   selectedIds: string[];
-  onSelectedIdsChange: (ids: string[], items?: ImageItem[]) => void;
-  onDeleteImage?: (id: string, name: string) => Promise<void>;
-  onCopyLink?: (image: ImageItem) => void;
-  onMoveImage?: (image: ImageItem) => void;
-  onOpenFile?: (image: ImageItem) => void;
+  onSelectedIdsChange: (ids: string[], items?: AssetItem[]) => void;
+  onDeleteAsset?: (id: string, name: string) => Promise<void>;
+  onCopyLink?: (asset: AssetItem) => void;
+  onMoveAsset?: (asset: AssetItem) => void;
+  onOpenFile?: (asset: AssetItem) => void;
+  onEditFile?: (asset: AssetItem) => void;
+  onShareFile?: (asset: AssetItem) => void;
   hasRemoteConnection?: boolean;
   multiSelectMode?: boolean;
   onMultiSelectModeChange?: (active: boolean) => void;
@@ -81,12 +99,12 @@ interface AssetLibraryProps {
 }
 
 export const AssetLibrary: React.FC<AssetLibraryProps> = ({
-  images,
+  assets,
   hasConfig = true,
   search,
   t,
-  onUploadImage,
-  onUploadMultipleImages,
+  onUploadAsset,
+  onUploadMultipleAssets,
   uploadLoading = false,
   batchUploadProgress,
   nativePickers,
@@ -97,10 +115,12 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   onOpenFolders,
   selectedIds,
   onSelectedIdsChange,
-  onDeleteImage,
+  onDeleteAsset,
   onCopyLink,
-  onMoveImage,
+  onMoveAsset,
   onOpenFile,
+  onEditFile,
+  onShareFile,
   hasRemoteConnection,
   multiSelectMode = false,
   onMultiSelectModeChange,
@@ -113,7 +133,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
-    file: ImageItem;
+    file: AssetItem;
   } | null>(null);
   const anchorIdRef = useRef<string | null>(null);
   const longPressRef = useRef<number | null>(null);
@@ -124,7 +144,39 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(480);
   const [activeFolderPath, setActiveFolderPath] = useState<string | null>(null);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const [searchOverlayNonce, setSearchOverlayNonce] = useState(0);
+  const [libraryShortcutsActive, setLibraryShortcutsActive] = useState(
+    areLibraryShortcutsActive,
+  );
   const isMobile = useMobileViewport();
+
+  useEffect(() => {
+    const onGate = () => setLibraryShortcutsActive(areLibraryShortcutsActive());
+    window.addEventListener(LIBRARY_SHORTCUTS_GATE_EVENT, onGate);
+    return () =>
+      window.removeEventListener(LIBRARY_SHORTCUTS_GATE_EVENT, onGate);
+  }, []);
+
+  useEffect(() => {
+    if (!searchOverlayOpen) return;
+    suspendLibraryShortcuts();
+    return () => resumeLibraryShortcuts();
+  }, [searchOverlayOpen]);
+
+  const openSearchOverlay = useCallback(() => {
+    if (!search) return;
+    const committed = search.searchQuery.trim();
+    if (committed && search.draftQuery !== search.searchQuery) {
+      search.onDraftChange(search.searchQuery);
+    }
+    setSearchOverlayOpen(true);
+    setSearchOverlayNonce(nonce => nonce + 1);
+  }, [search]);
+
+  const clearSearch = useCallback(() => {
+    search?.onSearchChange('');
+  }, [search]);
 
   const setMultiSelectActive = useCallback(
     (active: boolean) => {
@@ -149,8 +201,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   }, [search?.searchQuery, search?.onFiltersChange]);
 
   const files = useMemo(() => {
-    const filtered = filterByLibraryQuery(images, search?.searchQuery ?? '');
-    const unique = new Map<string, ImageItem>();
+    const filtered = filterByLibraryQuery(assets, search?.searchQuery ?? '');
+    const unique = new Map<string, AssetItem>();
     for (const item of filtered) {
       const existing = unique.get(item.id);
       if (
@@ -161,8 +213,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         unique.set(item.id, item);
       }
     }
-    return getSortedImages([...unique.values()], sortField, sortOrder);
-  }, [images, search?.searchQuery, sortField, sortOrder]);
+    return getSortedAssets([...unique.values()], sortField, sortOrder);
+  }, [assets, search?.searchQuery, sortField, sortOrder]);
 
   const visibleIds = useMemo(() => files.map(file => file.id), [files]);
 
@@ -171,7 +223,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     if (next !== selectedIds) {
       const selectedItems = next
         .map(id => files.find(file => file.id === id))
-        .filter((item): item is ImageItem => Boolean(item));
+        .filter((item): item is AssetItem => Boolean(item));
       onSelectedIdsChange(next, selectedItems);
     }
   }, [files, onSelectedIdsChange, selectedIds, visibleIds]);
@@ -197,7 +249,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       anchorIdRef.current = next.anchorId;
       const selectedItems = next.selectedIds
         .map(id => files.find(file => file.id === id))
-        .filter((item): item is ImageItem => Boolean(item));
+        .filter((item): item is AssetItem => Boolean(item));
       onSelectedIdsChange(next.selectedIds, selectedItems);
       if (
         next.selectedIds.length <= 1 &&
@@ -229,47 +281,6 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return last ? files.findIndex(item => item.id === last) : -1;
   }, [files, selectedIds]);
 
-  const navigate = useCallback(
-    (delta: number) => {
-      if (files.length === 0) return;
-      if (selectedIndex < 0) {
-        applySelection(
-          files[delta > 0 ? 0 : files.length - 1].id,
-          false,
-          false,
-        );
-        return;
-      }
-      const next = Math.min(
-        files.length - 1,
-        Math.max(0, selectedIndex + delta),
-      );
-      applySelection(files[next].id, false, false);
-    },
-    [applySelection, files, selectedIndex],
-  );
-
-  useEffect(() => {
-    const shortcuts = [
-      {
-        key: COMMON_SHORTCUTS.ARROW_UP,
-        description: t('keyboard.shortcuts.selectUp'),
-        action: () => navigate(-1),
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
-      },
-      {
-        key: COMMON_SHORTCUTS.ARROW_DOWN,
-        description: t('keyboard.shortcuts.selectDown'),
-        action: () => navigate(1),
-        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
-      },
-    ];
-    keyboardManager.registerBatch(shortcuts);
-    return () => {
-      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
-    };
-  }, [navigate, onSelectedIdsChange, t]);
-
   const handleSort = useCallback(
     (field: SortField) => {
       if (sortField === field) {
@@ -282,7 +293,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     [sortField],
   );
 
-  const canAcceptLibraryDrop = Boolean(onUploadImage && onUploadMultipleImages);
+  const canAcceptLibraryDrop = Boolean(onUploadAsset && onUploadMultipleAssets);
 
   const handleLibraryDragEnter = useCallback(
     (event: React.DragEvent) => {
@@ -393,19 +404,164 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     () => libraryChildFolders(indexPaths, localFolders, selectedFolderPath),
     [indexPaths, localFolders, selectedFolderPath],
   );
+  const folderNavItems = useMemo(
+    () => libraryFolderNavItems(childFolders, selectedFolderPath),
+    [childFolders, selectedFolderPath],
+  );
   const searchActive = Boolean(search?.searchQuery?.trim());
-  const showFolders = !loading && !searchActive && childFolders.length > 0;
-  const showEmpty = !loading && files.length === 0 && !showFolders;
+  const canGoUp = Boolean(normalizeLibraryFolderPath(selectedFolderPath));
+  const showFolders =
+    !loading && !searchActive && (childFolders.length > 0 || canGoUp);
+  const showEmpty = !loading && files.length === 0 && childFolders.length === 0;
   const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
+
+  const navigate = useCallback(
+    (delta: number) => {
+      const folders = !multiSelectMode && showFolders ? folderNavItems : [];
+      const folderCount = folders.length;
+      const fileCount = files.length;
+      const total = folderCount + fileCount;
+      if (total === 0) return;
+
+      let index = -1;
+      if (activeFolderPath && folderCount > 0) {
+        index = folders.findIndex(folder => folder.path === activeFolderPath);
+      } else if (selectedIndex >= 0) {
+        index = folderCount + selectedIndex;
+      }
+
+      const next =
+        index < 0
+          ? delta > 0
+            ? 0
+            : total - 1
+          : Math.min(total - 1, Math.max(0, index + delta));
+
+      if (next < folderCount) {
+        const path = folders[next].path;
+        setActiveFolderPath(path);
+        onSelectedIdsChange([]);
+        requestAnimationFrame(() => {
+          const el = document.querySelector(
+            `[data-folder-path="${CSS.escape(path)}"]`,
+          );
+          if (!(el instanceof HTMLElement)) return;
+          el.scrollIntoView({ block: 'nearest' });
+          el.focus({ preventScroll: true });
+        });
+        return;
+      }
+
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLElement &&
+        active.classList.contains('library-folder-row')
+      ) {
+        active.blur();
+      }
+      applySelection(files[next - folderCount].id, false, false);
+    },
+    [
+      activeFolderPath,
+      applySelection,
+      files,
+      folderNavItems,
+      multiSelectMode,
+      onSelectedIdsChange,
+      selectedIndex,
+      showFolders,
+    ],
+  );
+
+  const selectedFile = useMemo(() => {
+    if (activeFolderPath || selectedIds.length !== 1 || multiSelectMode) {
+      return null;
+    }
+    return files.find(item => item.id === selectedIds[0]) ?? null;
+  }, [activeFolderPath, files, multiSelectMode, selectedIds]);
+
+  useEffect(() => {
+    if (isMobile || !libraryShortcutsActive) return;
+    const shortcuts = [
+      {
+        key: COMMON_SHORTCUTS.ARROW_UP,
+        description: t('keyboard.shortcuts.selectUp'),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          navigate(-1);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.ARROW_DOWN,
+        description: t('keyboard.shortcuts.selectDown'),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          navigate(1);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.E,
+        description: t('keyboard.shortcuts.editSelected'),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          if (!selectedFile || !onEditFile) return;
+          onEditFile(selectedFile);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+      {
+        key: COMMON_SHORTCUTS.S,
+        description: t('keyboard.shortcuts.shareSelected'),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          if (!selectedFile || !onShareFile) return;
+          onShareFile(selectedFile);
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
+    ];
+    keyboardManager.registerBatch(shortcuts);
+    return () => {
+      shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
+    };
+  }, [
+    isMobile,
+    libraryShortcutsActive,
+    navigate,
+    onEditFile,
+    onShareFile,
+    selectedFile,
+    t,
+  ]);
 
   useEffect(() => {
     setActiveFolderPath(null);
   }, [selectedFolderPath]);
 
   useEffect(() => {
-    if (isMobile) return;
+    const onOpenSearch = () => openSearchOverlay();
+    const onClearSearch = () => {
+      clearSearch();
+      setSearchOverlayOpen(false);
+    };
+    const onCloseModals = () => setSearchOverlayOpen(false);
+    window.addEventListener(OPEN_LIBRARY_SEARCH_EVENT, onOpenSearch);
+    window.addEventListener(CLEAR_LIBRARY_SEARCH_EVENT, onClearSearch);
+    window.addEventListener('closeModals', onCloseModals);
+    return () => {
+      window.removeEventListener(OPEN_LIBRARY_SEARCH_EVENT, onOpenSearch);
+      window.removeEventListener(CLEAR_LIBRARY_SEARCH_EVENT, onClearSearch);
+      window.removeEventListener('closeModals', onCloseModals);
+    };
+  }, [clearSearch, openSearchOverlay]);
+
+  useEffect(() => {
+    if (isMobile || !libraryShortcutsActive) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Enter') return;
+      if (!areLibraryShortcutsActive()) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       if (
@@ -417,24 +573,24 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       }
       if (activeFolderPath) {
         event.preventDefault();
-        setSelectedFolderPath(activeFolderPath);
+        setSelectedFolderPath(
+          resolveLibraryFolderNavPath(activeFolderPath, selectedFolderPath),
+        );
         return;
       }
-      if (selectedIds.length !== 1 || multiSelectMode) return;
-      const file = files.find(item => item.id === selectedIds[0]);
-      if (!file) return;
+      if (!selectedFile) return;
       event.preventDefault();
-      onOpenFile?.(file);
+      onOpenFile?.(selectedFile);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [
     activeFolderPath,
-    files,
     isMobile,
-    multiSelectMode,
+    libraryShortcutsActive,
     onOpenFile,
-    selectedIds,
+    selectedFile,
+    selectedFolderPath,
     setSelectedFolderPath,
   ]);
   const isFolderEmpty =
@@ -461,7 +617,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     }
     const selectedItems = visibleIds
       .map(id => files.find(file => file.id === id))
-      .filter((item): item is ImageItem => Boolean(item));
+      .filter((item): item is AssetItem => Boolean(item));
     onSelectedIdsChange(visibleIds, selectedItems);
   }, [allVisibleSelected, files, onSelectedIdsChange, visibleIds]);
 
@@ -476,12 +632,12 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => observer.disconnect();
   }, [showEmpty, loading, files.length]);
 
-  const libraryTotal = useImageStore(state => state.libraryTotal);
-  const matchedTotal = Math.max(libraryTotal, images.length);
-  const listTruncated = matchedTotal > images.length;
+  const libraryTotal = useAssetStore(state => state.libraryTotal);
+  const matchedTotal = Math.max(libraryTotal, assets.length);
+  const listTruncated = matchedTotal > assets.length;
   const listedTotalSize = useMemo(() => sumListedFileSize(files), [files]);
   const isFilteredList =
-    Boolean(search?.searchQuery) && files.length !== images.length;
+    Boolean(search?.searchQuery) && files.length !== assets.length;
   const showStatusBar = files.length > 0;
 
   return (
@@ -503,8 +659,10 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         search={search}
         t={t}
         onOpenFolders={onOpenFolders}
-        onUploadImage={onUploadImage}
-        onUploadMultipleImages={onUploadMultipleImages}
+        onOpenSearch={search ? openSearchOverlay : undefined}
+        onClearSearch={search ? clearSearch : undefined}
+        onUploadAsset={onUploadAsset}
+        onUploadMultipleAssets={onUploadMultipleAssets}
         uploadLoading={uploadLoading}
         batchUploadProgress={batchUploadProgress}
         nativePickers={nativePickers}
@@ -513,6 +671,17 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         multiSelectMode={multiSelectMode}
         onToggleSelectMode={handleToggleSelectMode}
       />
+
+      {search ? (
+        <LibrarySearchOverlay
+          open={searchOverlayOpen}
+          focusNonce={searchOverlayNonce}
+          search={search}
+          hasConfig={hasConfig}
+          t={t}
+          onClose={() => setSearchOverlayOpen(false)}
+        />
+      ) : null}
 
       {search?.searchQuery && search.canSearchInAll ? (
         <div
@@ -551,9 +720,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         ) : null}
         <LibraryFolderNav
           currentPath={selectedFolderPath}
-          folders={childFolders}
+          folders={folderNavItems}
           showFolders={showFolders}
-          solo={showFolders && files.length === 0}
+          solo={showFolders && files.length === 0 && childFolders.length > 0}
           isMobile={isMobile}
           canMutate={localWorkspaceActive}
           t={t}
@@ -628,7 +797,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           <AssetLibraryStatusBar
             filesCount={files.length}
             totalCount={
-              listTruncated && !isFilteredList ? matchedTotal : images.length
+              listTruncated && !isFilteredList ? matchedTotal : assets.length
             }
             totalSize={listedTotalSize}
             selectedCount={selectedIds.length}
@@ -657,8 +826,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
           t={t}
           onClose={() => setContextMenu(null)}
           onCopyLink={onCopyLink}
-          onMoveImage={onMoveImage}
-          onDeleteImage={onDeleteImage}
+          onMoveAsset={onMoveAsset}
+          onDeleteAsset={onDeleteAsset}
           hasRemoteConnection={hasRemoteConnection}
         />
       ) : null}

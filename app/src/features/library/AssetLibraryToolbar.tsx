@@ -1,14 +1,13 @@
-import { Search } from '@/ui';
-import { Folder, ListChecks } from 'lucide-react';
+import { Folder, ListChecks, Search, X } from 'lucide-react';
 import React, { RefObject } from 'react';
 import UploadButton from './UploadButton';
 import type { UploadButtonHandle } from './UploadButton';
 import type { LibrarySearchConfig } from './librarySearchTypes';
-import type { NativeImagePickers } from './image-upload/nativePickers';
+import type { NativeImagePickers } from './asset-upload/nativePickers';
 import type {
   BatchUploadProgress,
-  ImageUploadData,
-  MultiImageUploadData,
+  AssetUploadData,
+  MultiAssetUploadData,
 } from '@pixuli/core/types';
 
 export interface AssetLibraryToolbarProps {
@@ -16,8 +15,10 @@ export interface AssetLibraryToolbarProps {
   search?: LibrarySearchConfig;
   t: (key: string) => string;
   onOpenFolders?: () => void;
-  onUploadImage?: (data: ImageUploadData) => Promise<unknown>;
-  onUploadMultipleImages?: (data: MultiImageUploadData) => Promise<unknown>;
+  onOpenSearch?: () => void;
+  onClearSearch?: () => void;
+  onUploadAsset?: (data: AssetUploadData) => Promise<unknown>;
+  onUploadMultipleAssets?: (data: MultiAssetUploadData) => Promise<unknown>;
   uploadLoading?: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   nativePickers?: NativeImagePickers;
@@ -32,8 +33,10 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   search,
   t,
   onOpenFolders,
-  onUploadImage,
-  onUploadMultipleImages,
+  onOpenSearch,
+  onClearSearch,
+  onUploadAsset,
+  onUploadMultipleAssets,
   uploadLoading = false,
   batchUploadProgress,
   nativePickers,
@@ -41,67 +44,94 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   uploadButtonRef,
   multiSelectMode = false,
   onToggleSelectMode,
-}) => (
-  <div className="asset-library-toolbar">
-    {onOpenFolders ? (
-      <button
-        type="button"
-        className="asset-library-icon-btn asset-library-folders-btn"
-        onClick={onOpenFolders}
-        aria-label={t('workspace.explorer')}
-        title={t('workspace.explorer')}
-      >
-        <Folder size={18} aria-hidden />
-      </button>
-    ) : null}
+}) => {
+  const activeQuery = search?.searchQuery?.trim() ?? '';
+  const searchActive = activeQuery.length > 0;
 
-    {search ? (
-      <Search
-        variant="header"
-        searchQuery={search.searchQuery}
-        draftQuery={search.draftQuery}
-        onDraftChange={search.onDraftChange}
-        onCommitSearch={search.onCommitSearch}
-        onSearchChange={search.onSearchChange}
-        hasConfig={hasConfig}
-        showHistory={true}
-        history={search.history}
-        onSelectHistory={search.onSelectHistory}
-        onDeleteHistory={search.onDeleteHistory}
-        onClearHistory={search.onClearHistory}
-        t={t}
-        className="asset-library-search"
-      />
-    ) : null}
-
-    <div className="asset-library-controls">
-      {onToggleSelectMode ? (
+  return (
+    <div className="asset-library-toolbar">
+      {onOpenFolders ? (
         <button
           type="button"
-          className={`asset-library-icon-btn asset-library-select-btn${multiSelectMode ? ' is-active' : ''}`}
-          onClick={onToggleSelectMode}
-          aria-pressed={multiSelectMode}
-          aria-label={t('image.library.selectMode')}
-          title={t('image.library.selectMode')}
+          className="asset-library-icon-btn asset-library-folders-btn"
+          onClick={onOpenFolders}
+          aria-label={t('workspace.explorer')}
+          title={t('workspace.explorer')}
         >
-          <ListChecks size={18} aria-hidden />
+          <Folder size={18} aria-hidden />
         </button>
       ) : null}
 
-      {onUploadImage && onUploadMultipleImages ? (
-        <UploadButton
-          ref={uploadButtonRef}
-          onUploadImage={onUploadImage}
-          onUploadMultipleImages={onUploadMultipleImages}
-          loading={uploadLoading}
-          batchUploadProgress={batchUploadProgress}
-          t={t}
-          className="asset-library-upload-btn asset-library-icon-btn asset-library-icon-btn--accent"
-          nativePickers={nativePickers}
-          defaultFolder={selectedFolderPath || 'images'}
-          iconOnly
-        />
+      {search && onOpenSearch ? (
+        <button
+          type="button"
+          className={`asset-library-icon-btn asset-library-search-btn${searchActive ? ' is-active' : ''}`}
+          onClick={onOpenSearch}
+          disabled={!hasConfig}
+          aria-label={t('image.grid.searchImages')}
+          title={`${t('image.grid.searchImages')} (⌘K / Ctrl+K · ⌘⇧K 清除)`}
+        >
+          <Search size={18} aria-hidden />
+        </button>
       ) : null}
+
+      {searchActive && onOpenSearch ? (
+        <div className="asset-library-search-chip">
+          <button
+            type="button"
+            className="asset-library-search-chip-query"
+            onClick={onOpenSearch}
+            title={t('image.library.editSearchHint')}
+          >
+            <span className="asset-library-search-chip-text">
+              {activeQuery}
+            </span>
+          </button>
+          {onClearSearch ? (
+            <button
+              type="button"
+              className="asset-library-search-chip-clear"
+              onClick={onClearSearch}
+              aria-label={t('image.library.clearSearch')}
+              title={t('image.library.clearSearch')}
+            >
+              <X size={14} aria-hidden />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="asset-library-toolbar-spacer" aria-hidden />
+
+      <div className="asset-library-controls">
+        {onToggleSelectMode ? (
+          <button
+            type="button"
+            className={`asset-library-icon-btn asset-library-select-btn${multiSelectMode ? ' is-active' : ''}`}
+            onClick={onToggleSelectMode}
+            aria-pressed={multiSelectMode}
+            aria-label={t('image.library.selectMode')}
+            title={t('image.library.selectMode')}
+          >
+            <ListChecks size={18} aria-hidden />
+          </button>
+        ) : null}
+
+        {onUploadAsset && onUploadMultipleAssets ? (
+          <UploadButton
+            ref={uploadButtonRef}
+            onUploadAsset={onUploadAsset}
+            onUploadMultipleAssets={onUploadMultipleAssets}
+            loading={uploadLoading}
+            batchUploadProgress={batchUploadProgress}
+            t={t}
+            className="asset-library-upload-btn asset-library-icon-btn asset-library-icon-btn--accent"
+            nativePickers={nativePickers}
+            defaultFolder={selectedFolderPath}
+            iconOnly
+          />
+        ) : null}
+      </div>
     </div>
-  </div>
-);
+  );
+};

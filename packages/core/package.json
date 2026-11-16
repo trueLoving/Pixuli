@@ -15,6 +15,7 @@
     "./locales": "./src/locales/index.ts",
     "./operation-log": "./src/operation-log/index.ts",
     "./sources": "./src/sources/index.ts",
+    "./user-config": "./src/user-config/index.ts",
     "./vault": "./src/vault/index.ts"
   },
   "scripts": {

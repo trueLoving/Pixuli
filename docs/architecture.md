@@ -49,10 +49,19 @@ UI 分层：L1 `features/`+`stores/` · L2 薄 `src/ui` · L3
 1. **浏览**：读本地 Vault 索引 → 当前文件夹浅层列表（虚拟窗口）。
 2. **库内增删改 / 处理**：只写本地；`syncState: local-only` 等，不自动 enqueue
    push。
-3. **同步**：用户触发 SyncEngine → Provider pull / push；不锁库。
-4. **外链**：已同步资源用 `publicUrl` / `buildPublicUrl`；与同步分离。
+3. **同步**：用户触发 SyncEngine → Provider pull /
+   push；不锁库。推送前若远端 sync-tree
+   revision 相对本地已前进，则拒绝推送并要求先拉取。
+4. **本地检查点**：同步成功后写入
+   `.pixuli/checkpoints/latest`（永不同步，只留最近一次）；设置中可恢复整库到该时间点。
+5. **外链**：已同步资源用 `publicUrl` / `buildPublicUrl`；与同步分离。
 
 Token 与连接配置仅存客户端。
+
+**个人配置文件**（`pixuli-user-config`，`@pixuli/core/user-config`）：同一信封、
+`blocks` 分块（现为 `preferences` /
+`sources`）。导入按块覆盖、未知块跳过。设置 ·「个人配置备份」为整包入口（可选勾选远端）；设置 · 同步只读写
+`sources` 块。旧 `pixuli-settings` / 单插件 JSON 仍可导入。
 
 ---
 
@@ -79,7 +88,9 @@ Token 与连接配置仅存客户端。
   **configRoot**；工作区相对路径与远端（相对 configRoot）**1:1**。
 - `.pixuli/` **永不同步**；各目录 `.metadata/manifest.json`
   描述本层文件并参与同步。
-- UI：选中目录只看本层文件；进文件夹可懒拉取脏层。
+- 用户同步忽略：`.pixuli/sync-ignore.json`（本机）；匹配路径不参与 push/pull，库内仍可见（D5）。
+- UI：含根「/」在内，选中目录只看本层文件 + 子文件夹入口；进子夹再看里面（可懒拉取脏层）。整库摊平仅用于「在全部中搜索」。
+- 设置 ·「同步检查点」可恢复到最近一次同步成功时的本机快照。
 - 无历史路径迁移负担（产品路径已按现行模型）。
 
 ---
@@ -87,7 +98,7 @@ Token 与连接配置仅存客户端。
 ## 6. 性能边界
 
 - 热路径：索引 + 可视区虚拟窗口 + 缩略节流。
-- 大库提示阈值约 500 / 5000；根「全部」/全库搜索列表有上限（约 5000）。
+- 大库提示阈值约 500 / 5000；各层浅列表（含根 `/`）与全库搜索有上限（约 5000）。
 - 不追求全库瞬时缩略或远端热路径零延迟。
 - Backlog：单文件夹游标、持久缩略、远端真分页。
 

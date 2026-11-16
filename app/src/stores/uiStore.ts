@@ -19,10 +19,11 @@ import {
   INSPECTOR_WIDTH_MIN,
   clampPanelWidth,
 } from '../constants/panelWidth';
+import { WIDE_BREAKPOINT_PX } from '@/hooks/useMobileViewport';
 import { isStoragePluginRegistered } from '../storage/registry';
-import { useImageStore } from '@/features/library/imageStore';
+import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
-import { syncRepoConfigToImageStore } from '@/features/settings/syncSourceRepoToImageStore';
+import { syncRepoConfigToAssetStore } from '@/features/settings/syncSourceRepoToAssetStore';
 import { create } from 'zustand';
 
 export type EditingSourceRepoConfig = Pick<
@@ -32,11 +33,12 @@ export type EditingSourceRepoConfig = Pick<
 
 interface UIState {
   // 模态框状态
-  showConfigModal: boolean;
   showSettingsModal: boolean;
   /** 同步方向：本地到远程 / 远程到本地 */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
+  /** 键盘快捷键帮助浮层 */
+  showKeyboardHelp: boolean;
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
@@ -62,10 +64,12 @@ interface UIState {
 
   // 视图状态
   currentView: string;
-  /** 工作区资源管理器当前选中的文件夹（空 = 全部） */
+  /** 工作区资源管理器当前选中的文件夹（空 = 根 `/`） */
   selectedFolderPath: string;
-  /** 窄屏是否展开文件夹面板 */
+  /** 窄屏是否展开文件夹面板（overlay） */
   workspaceExplorerOpen: boolean;
+  /** 宽屏是否折叠左侧文件夹大纲 */
+  workspaceExplorerCollapsed: boolean;
   /** 宽屏资源浏览器宽度（px） */
   workspaceExplorerWidth: number;
   /** 宽屏 Inspector 宽度（px） */
@@ -74,7 +78,6 @@ interface UIState {
   inspectorCollapsed: boolean;
 
   // Actions - 模态框
-  setShowConfigModal: (show: boolean) => void;
   setShowSettingsModal: (show: boolean) => void;
 
   // Actions - 编辑
@@ -96,19 +99,24 @@ interface UIState {
   setSelectedFolderPath: (path: string) => void;
   setWorkspaceExplorerOpen: (open: boolean) => void;
   toggleWorkspaceExplorer: () => void;
+  setWorkspaceExplorerCollapsed: (collapsed: boolean) => void;
+  toggleWorkspaceExplorerCollapsed: () => void;
+  /** Ctrl/Cmd+B：宽屏折叠大纲，窄屏开关 overlay */
+  toggleWorkspaceFolderPanel: () => void;
   setWorkspaceExplorerWidth: (width: number) => void;
   setInspectorWidth: (width: number) => void;
   setInspectorCollapsed: (collapsed: boolean) => void;
+  toggleInspectorCollapsed: () => void;
 
   // Actions - 模态框
   setShowWorkspaceModal: (show: boolean) => void;
 
   // Helper actions
-  /** 编辑连接：打开设置 · 同步分区内的统一向导（不再走分云旧表单） */
+  /** 编辑连接：打开设置 · 同步分区内的统一向导 */
   openConfigModalForEdit: (sourceId: string) => boolean;
   openConfigModal: () => void;
+  /** 结束同步向导编辑态（清除 editingSource*） */
   closeConfigModal: () => void;
-  openKeyboardHelp: () => void;
   openVersionInfo: () => void;
   openOperationLog: () => void;
   openSettingsModal: (section?: SettingsSection) => void;
@@ -117,6 +125,9 @@ interface UIState {
   closeSyncDirectionModal: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
+  openKeyboardHelp: () => void;
+  closeKeyboardHelp: () => void;
+  toggleKeyboardHelp: () => void;
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
@@ -125,7 +136,6 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>(set => ({
-  showConfigModal: false,
   showSettingsModal: false,
   showSyncDirectionModal: false,
   settingsSection: 'workspace',
@@ -142,12 +152,13 @@ export const useUIStore = create<UIState>(set => ({
   currentView: 'library',
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
+  workspaceExplorerCollapsed: false,
   workspaceExplorerWidth: EXPLORER_WIDTH_DEFAULT,
   inspectorWidth: INSPECTOR_WIDTH_DEFAULT,
   inspectorCollapsed: false,
   showWorkspaceModal: false,
+  showKeyboardHelp: false,
 
-  setShowConfigModal: (show: boolean) => set({ showConfigModal: show }),
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
   setShowWorkspaceModal: (show: boolean) => set({ showWorkspaceModal: show }),
 
@@ -172,6 +183,22 @@ export const useUIStore = create<UIState>(set => ({
     set({ workspaceExplorerOpen: open }),
   toggleWorkspaceExplorer: () =>
     set(state => ({ workspaceExplorerOpen: !state.workspaceExplorerOpen })),
+  setWorkspaceExplorerCollapsed: (collapsed: boolean) =>
+    set({ workspaceExplorerCollapsed: collapsed }),
+  toggleWorkspaceExplorerCollapsed: () =>
+    set(state => ({
+      workspaceExplorerCollapsed: !state.workspaceExplorerCollapsed,
+    })),
+  toggleWorkspaceFolderPanel: () => {
+    const wide =
+      typeof window !== 'undefined' &&
+      window.matchMedia(`(min-width: ${WIDE_BREAKPOINT_PX}px)`).matches;
+    if (wide) {
+      useUIStore.getState().toggleWorkspaceExplorerCollapsed();
+      return;
+    }
+    useUIStore.getState().toggleWorkspaceExplorer();
+  },
   setWorkspaceExplorerWidth: (width: number) =>
     set({
       workspaceExplorerWidth: clampPanelWidth(
@@ -190,6 +217,8 @@ export const useUIStore = create<UIState>(set => ({
     }),
   setInspectorCollapsed: (collapsed: boolean) =>
     set({ inspectorCollapsed: collapsed }),
+  toggleInspectorCollapsed: () =>
+    set(state => ({ inspectorCollapsed: !state.inspectorCollapsed })),
 
   openConfigModalForEdit: (sourceId: string) => {
     const source = useSourceStore.getState().getSourceById(sourceId);
@@ -198,13 +227,12 @@ export const useUIStore = create<UIState>(set => ({
     }
     const repoConfig = getRepoConfigFromSource(source);
     if (repoConfig) {
-      syncRepoConfigToImageStore(source.pluginId, repoConfig);
+      syncRepoConfigToAssetStore(source.pluginId, repoConfig);
     }
     set({
       editingSourceId: sourceId,
       editingSourcePluginId: source.pluginId,
       editingSourceRepoConfig: repoConfig,
-      showConfigModal: false,
       showSettingsModal: true,
       settingsSection: 'sync',
       settingsSyncAddOpen: false,
@@ -219,15 +247,10 @@ export const useUIStore = create<UIState>(set => ({
   },
   closeConfigModal: () =>
     set({
-      showConfigModal: false,
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
     }),
-  /** 设置 → 快捷键暂隐期间：F1 / 侧栏入口不打开空分区 */
-  openKeyboardHelp: () => {
-    // no-op until settings keyboard section is restored
-  },
   openVersionInfo: () =>
     set({
       showSettingsModal: true,
@@ -239,12 +262,12 @@ export const useUIStore = create<UIState>(set => ({
   openOperationLog: () =>
     set({
       showSettingsModal: true,
-      settingsSection: 'operationLog',
+      settingsSection: 'version',
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
       activeMenu: 'settings',
     }),
-  openSettingsModal: (section = 'workspace') =>
+  openSettingsModal: (section = 'language') =>
     set({
       showSettingsModal: true,
       settingsSection: section,
@@ -265,6 +288,10 @@ export const useUIStore = create<UIState>(set => ({
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
+  openKeyboardHelp: () => set({ showKeyboardHelp: true }),
+  closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
+  toggleKeyboardHelp: () =>
+    set(state => ({ showKeyboardHelp: !state.showKeyboardHelp })),
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') =>
     set({
       showSettingsModal: true,
@@ -274,7 +301,6 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: false,
       activeMenu: 'settings',
     }),
   clearSettingsSyncAddOpen: () =>
@@ -283,14 +309,13 @@ export const useUIStore = create<UIState>(set => ({
       settingsSyncPrefillPluginId: null,
     }),
   prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
-    useImageStore.setState({
+    useAssetStore.setState({
       storageType: resolveSourceDisplay(pluginId).legacyType,
     });
     set({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      showConfigModal: false,
       pendingConnectionPurpose: purpose ?? 'defaultSync',
     });
   },

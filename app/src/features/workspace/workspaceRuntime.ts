@@ -17,15 +17,11 @@ import {
   getWorkspaceAdapter,
   resetWorkspaceAdapter,
 } from '@/platforms/workspacePlatform';
-import { clearLocalPreviewCache } from '@/features/workspace/localImageMapper';
+import { clearLocalPreviewCache } from '@/features/workspace/localAssetMapper';
 
 let vaultInstance: LocalVault | null = null;
 let syncEngineInstance: SyncEngine | null = null;
 let readWorkspaceMode: () => WorkspaceMode = () => 'unset';
-
-export function getWorkspaceVaultInstance(): LocalVault | null {
-  return vaultInstance;
-}
 
 export function registerWorkspaceModeReader(reader: () => WorkspaceMode): void {
   readWorkspaceMode = reader;

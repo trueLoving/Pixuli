@@ -10,11 +10,20 @@ describe('toLocalListOptions (store lazy scope)', () => {
     });
   });
 
-  it('caps root all-view without a path prefix', () => {
+  it('uses shallow root list with a cap when no path prefix', () => {
     expect(toLocalListOptions({ folderPath: '' })).toEqual({
+      shallow: true,
       limit: LIBRARY_ROOT_LIST_CAP,
     });
     expect(toLocalListOptions({})).toEqual({
+      shallow: true,
+      limit: LIBRARY_ROOT_LIST_CAP,
+    });
+  });
+
+  it('uses vault search at root when a query is committed', () => {
+    expect(toLocalListOptions({ folderPath: '', searchQuery: 'cat' })).toEqual({
+      search: 'cat',
       limit: LIBRARY_ROOT_LIST_CAP,
     });
   });
