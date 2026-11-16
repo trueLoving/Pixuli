@@ -7,8 +7,16 @@ export const LIBRARY_SHORTCUTS_GATE_EVENT = 'pixuli:library-shortcuts-gate';
 
 let suspendCount = 0;
 
+/** 任意 aria-modal dialog 打开时，库级导航应让路 */
+export function hasOpenModalDialog(): boolean {
+  if (typeof document === 'undefined') return false;
+  return Boolean(document.querySelector('[role="dialog"][aria-modal="true"]'));
+}
+
 export function areLibraryShortcutsActive(): boolean {
-  return suspendCount <= 0;
+  if (suspendCount > 0) return false;
+  if (hasOpenModalDialog()) return false;
+  return true;
 }
 
 export function suspendLibraryShortcuts(): void {

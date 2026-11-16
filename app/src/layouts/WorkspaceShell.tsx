@@ -19,12 +19,17 @@ export const WorkspaceShell: React.FC<WorkspaceShellProps> = ({
   const workspaceExplorerOpen = useUIStore(
     state => state.workspaceExplorerOpen,
   );
+  const workspaceExplorerCollapsed = useUIStore(
+    state => state.workspaceExplorerCollapsed,
+  );
   const setWorkspaceExplorerOpen = useUIStore(
     state => state.setWorkspaceExplorerOpen,
   );
 
   const overlayExplorer = !isWide;
-  const showExplorer = isWide || workspaceExplorerOpen;
+  const showExplorer = isWide
+    ? !workspaceExplorerCollapsed
+    : workspaceExplorerOpen;
 
   return (
     <div className="workspace-shell">

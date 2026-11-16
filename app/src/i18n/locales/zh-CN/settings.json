@@ -139,6 +139,9 @@
     "appearanceSystem": "跟随系统",
     "appearanceLight": "浅色",
     "appearanceDark": "深色",
+    "keyboardTitle": "键盘快捷键",
+    "keyboardHint": "查看当前支持的快捷键。后续将支持自定义绑定。",
+    "keyboardViewShortcuts": "查看快捷键",
     "menuVersion": "版本信息",
     "menuUserConfig": "个人配置备份"
   }

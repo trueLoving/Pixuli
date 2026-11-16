@@ -19,6 +19,7 @@ import {
   INSPECTOR_WIDTH_MIN,
   clampPanelWidth,
 } from '../constants/panelWidth';
+import { WIDE_BREAKPOINT_PX } from '@/hooks/useMobileViewport';
 import { isStoragePluginRegistered } from '../storage/registry';
 import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -36,6 +37,8 @@ interface UIState {
   /** 同步方向：本地到远程 / 远程到本地 */
   showSyncDirectionModal: boolean;
   showWorkspaceModal: boolean;
+  /** 键盘快捷键帮助浮层 */
+  showKeyboardHelp: boolean;
   /** 设置弹窗左侧默认选中的分区 */
   settingsSection: SettingsSection;
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
@@ -63,8 +66,10 @@ interface UIState {
   currentView: string;
   /** 工作区资源管理器当前选中的文件夹（空 = 根 `/`） */
   selectedFolderPath: string;
-  /** 窄屏是否展开文件夹面板 */
+  /** 窄屏是否展开文件夹面板（overlay） */
   workspaceExplorerOpen: boolean;
+  /** 宽屏是否折叠左侧文件夹大纲 */
+  workspaceExplorerCollapsed: boolean;
   /** 宽屏资源浏览器宽度（px） */
   workspaceExplorerWidth: number;
   /** 宽屏 Inspector 宽度（px） */
@@ -94,9 +99,14 @@ interface UIState {
   setSelectedFolderPath: (path: string) => void;
   setWorkspaceExplorerOpen: (open: boolean) => void;
   toggleWorkspaceExplorer: () => void;
+  setWorkspaceExplorerCollapsed: (collapsed: boolean) => void;
+  toggleWorkspaceExplorerCollapsed: () => void;
+  /** Ctrl/Cmd+B：宽屏折叠大纲，窄屏开关 overlay */
+  toggleWorkspaceFolderPanel: () => void;
   setWorkspaceExplorerWidth: (width: number) => void;
   setInspectorWidth: (width: number) => void;
   setInspectorCollapsed: (collapsed: boolean) => void;
+  toggleInspectorCollapsed: () => void;
 
   // Actions - 模态框
   setShowWorkspaceModal: (show: boolean) => void;
@@ -115,6 +125,9 @@ interface UIState {
   closeSyncDirectionModal: () => void;
   openWorkspaceModal: () => void;
   closeWorkspaceModal: () => void;
+  openKeyboardHelp: () => void;
+  closeKeyboardHelp: () => void;
+  toggleKeyboardHelp: () => void;
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
@@ -139,10 +152,12 @@ export const useUIStore = create<UIState>(set => ({
   currentView: 'library',
   selectedFolderPath: '',
   workspaceExplorerOpen: false,
+  workspaceExplorerCollapsed: false,
   workspaceExplorerWidth: EXPLORER_WIDTH_DEFAULT,
   inspectorWidth: INSPECTOR_WIDTH_DEFAULT,
   inspectorCollapsed: false,
   showWorkspaceModal: false,
+  showKeyboardHelp: false,
 
   setShowSettingsModal: (show: boolean) => set({ showSettingsModal: show }),
   setShowWorkspaceModal: (show: boolean) => set({ showWorkspaceModal: show }),
@@ -168,6 +183,22 @@ export const useUIStore = create<UIState>(set => ({
     set({ workspaceExplorerOpen: open }),
   toggleWorkspaceExplorer: () =>
     set(state => ({ workspaceExplorerOpen: !state.workspaceExplorerOpen })),
+  setWorkspaceExplorerCollapsed: (collapsed: boolean) =>
+    set({ workspaceExplorerCollapsed: collapsed }),
+  toggleWorkspaceExplorerCollapsed: () =>
+    set(state => ({
+      workspaceExplorerCollapsed: !state.workspaceExplorerCollapsed,
+    })),
+  toggleWorkspaceFolderPanel: () => {
+    const wide =
+      typeof window !== 'undefined' &&
+      window.matchMedia(`(min-width: ${WIDE_BREAKPOINT_PX}px)`).matches;
+    if (wide) {
+      useUIStore.getState().toggleWorkspaceExplorerCollapsed();
+      return;
+    }
+    useUIStore.getState().toggleWorkspaceExplorer();
+  },
   setWorkspaceExplorerWidth: (width: number) =>
     set({
       workspaceExplorerWidth: clampPanelWidth(
@@ -186,6 +217,8 @@ export const useUIStore = create<UIState>(set => ({
     }),
   setInspectorCollapsed: (collapsed: boolean) =>
     set({ inspectorCollapsed: collapsed }),
+  toggleInspectorCollapsed: () =>
+    set(state => ({ inspectorCollapsed: !state.inspectorCollapsed })),
 
   openConfigModalForEdit: (sourceId: string) => {
     const source = useSourceStore.getState().getSourceById(sourceId);
@@ -255,6 +288,10 @@ export const useUIStore = create<UIState>(set => ({
   closeSyncDirectionModal: () => set({ showSyncDirectionModal: false }),
   openWorkspaceModal: () => set({ showWorkspaceModal: true }),
   closeWorkspaceModal: () => set({ showWorkspaceModal: false }),
+  openKeyboardHelp: () => set({ showKeyboardHelp: true }),
+  closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
+  toggleKeyboardHelp: () =>
+    set(state => ({ showKeyboardHelp: !state.showKeyboardHelp })),
   openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') =>
     set({
       showSettingsModal: true,

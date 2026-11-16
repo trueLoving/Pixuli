@@ -260,7 +260,7 @@ export function setApp(
           },
           {
             label: 'Keyboard Shortcuts',
-            accelerator: 'F1',
+            accelerator: 'F5',
             click: () => {
               // 触发键盘帮助事件
               if (win) {

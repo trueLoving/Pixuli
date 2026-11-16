@@ -47,6 +47,10 @@ export function useCapacitorBackButton(): void {
       handle = await App.addListener('backButton', ({ canGoBack }) => {
         const ui = useUIStore.getState();
 
+        if (ui.showKeyboardHelp) {
+          ui.closeKeyboardHelp();
+          return;
+        }
         if (ui.showSyncDirectionModal) {
           ui.closeSyncDirectionModal();
           return;

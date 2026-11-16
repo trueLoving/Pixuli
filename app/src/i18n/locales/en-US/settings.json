@@ -139,6 +139,9 @@
     "appearanceSystem": "System",
     "appearanceLight": "Light",
     "appearanceDark": "Dark",
+    "keyboardTitle": "Keyboard shortcuts",
+    "keyboardHint": "View currently supported shortcuts. Custom bindings will come later.",
+    "keyboardViewShortcuts": "View shortcuts",
     "menuVersion": "Version",
     "menuUserConfig": "Config backup"
   }

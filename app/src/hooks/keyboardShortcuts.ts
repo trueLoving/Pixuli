@@ -3,6 +3,7 @@ import {
   requestClearLibrarySearch,
   requestOpenLibrarySearch,
 } from '@/features/library/librarySearchEvents';
+import { useUIStore } from '@/stores/uiStore';
 
 // 键盘快捷键配置
 export const createKeyboardShortcuts = (t: (key: string) => string) => [
@@ -18,22 +19,52 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
   },
   {
     key: COMMON_SHORTCUTS.F5,
-    description: t('keyboard.shortcuts.refresh'),
-    action: () => {
-      const event = new CustomEvent('refreshAssets');
-      window.dispatchEvent(event);
-    },
+    description: t('keyboard.shortcuts.showHelp'),
+    action: () => useUIStore.getState().toggleKeyboardHelp(),
+    category: SHORTCUT_CATEGORIES.HELP,
+  },
+  {
+    key: COMMON_SHORTCUTS.SLASH,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.openConfig'),
+    action: () => useUIStore.getState().openSettingsModal(),
     category: SHORTCUT_CATEGORIES.GENERAL,
   },
   {
-    key: COMMON_SHORTCUTS.COMMA,
-    ctrlKey: true,
+    key: COMMON_SHORTCUTS.SLASH,
+    metaKey: true,
     description: t('keyboard.shortcuts.openConfig'),
-    action: () => {
-      const event = new CustomEvent('openConfig');
-      window.dispatchEvent(event);
-    },
+    action: () => useUIStore.getState().openSettingsModal(),
     category: SHORTCUT_CATEGORIES.GENERAL,
+  },
+  // 面板：Ctrl/Cmd+B 文件夹大纲，Ctrl/Cmd+I Inspector
+  {
+    key: COMMON_SHORTCUTS.B,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.toggleFolderPanel'),
+    action: () => useUIStore.getState().toggleWorkspaceFolderPanel(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.B,
+    metaKey: true,
+    description: t('keyboard.shortcuts.toggleFolderPanel'),
+    action: () => useUIStore.getState().toggleWorkspaceFolderPanel(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.I,
+    ctrlKey: true,
+    description: t('keyboard.shortcuts.toggleInspector'),
+    action: () => useUIStore.getState().toggleInspectorCollapsed(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
+  },
+  {
+    key: COMMON_SHORTCUTS.I,
+    metaKey: true,
+    description: t('keyboard.shortcuts.toggleInspector'),
+    action: () => useUIStore.getState().toggleInspectorCollapsed(),
+    category: SHORTCUT_CATEGORIES.NAVIGATION,
   },
   // 搜索：Cmd+K（mac）与 Ctrl+K（其它）
   {
@@ -66,16 +97,5 @@ export const createKeyboardShortcuts = (t: (key: string) => string) => [
     description: t('keyboard.shortcuts.clearSearch'),
     action: () => requestClearLibrarySearch(),
     category: SHORTCUT_CATEGORIES.SEARCH,
-  },
-  {
-    key: COMMON_SHORTCUTS.L,
-    ctrlKey: true,
-    shiftKey: true,
-    description: t('keyboard.shortcuts.openOperationLog'),
-    action: () => {
-      const event = new CustomEvent('openOperationLog');
-      window.dispatchEvent(event);
-    },
-    category: SHORTCUT_CATEGORIES.HELP,
   },
 ];

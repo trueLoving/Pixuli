@@ -1,4 +1,4 @@
-import { LayoutGrid, RefreshCw, Settings } from 'lucide-react';
+import { Keyboard, LayoutGrid, RefreshCw, Settings } from 'lucide-react';
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -21,6 +21,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
   const setActiveMenu = useUIStore(state => state.setActiveMenu);
   const setCurrentView = useUIStore(state => state.setCurrentView);
   const openSettingsModal = useUIStore(state => state.openSettingsModal);
+  const openKeyboardHelp = useUIStore(state => state.openKeyboardHelp);
   const sources = useSourceStore(state => state.sources);
   const selectedSourceId = useSourceStore(state => state.selectedSourceId);
   const pushing = useWorkspaceStore(state => state.pushing);
@@ -69,7 +70,7 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
           id: string;
           label: string;
           title?: string;
-          icon: typeof Settings;
+          icon: typeof Settings | typeof Keyboard;
           onClick: () => void;
         },
   ) => {
@@ -129,6 +130,17 @@ export const ActivityBar: React.FC<ActivityBarProps> = ({ t }) => {
     >
       <div className="activity-bar-main">{primary.map(renderItem)}</div>
       <div className="activity-bar-footer">
+        {!isMobile
+          ? renderItem({
+              id: 'keyboard',
+              label: t('sidebar.keyboardShortcuts'),
+              title: `${t('sidebar.keyboardShortcuts')} (F5)`,
+              icon: Keyboard,
+              onClick: () => {
+                openKeyboardHelp();
+              },
+            })
+          : null}
         {renderItem({
           id: 'settings',
           label: t('settings.title'),

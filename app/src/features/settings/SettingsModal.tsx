@@ -13,7 +13,7 @@ import {
   Settings,
   X,
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
@@ -73,6 +73,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [activeSection, setActiveSection] =
     useState<SettingsSection>(settingsSection);
   const [showMobileMenu, setShowMobileMenu] = useState(true);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -85,6 +86,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     // 移动端打开设置先看菜单；桌面侧栏常显，不受此项影响
     setShowMobileMenu(isMobile);
   }, [isOpen, settingsSection, workspaceLocalActive, isMobile]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = panel.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      (focusable ?? panel).focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || workspaceLocalActive) return;
@@ -193,10 +207,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onClick={isMobile ? undefined : onClose}
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={
           isMobile
-            ? 'flex h-full min-h-0 w-full flex-col bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]'
-            : 'flex h-[min(90dvh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl'
+            ? 'flex h-full min-h-0 w-full flex-col bg-white pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] outline-none'
+            : 'flex h-[min(90dvh,720px)] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl outline-none'
         }
         onClick={event => event.stopPropagation()}
       >

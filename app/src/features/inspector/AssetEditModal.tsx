@@ -130,10 +130,15 @@ const AssetEditModal: React.FC<AssetEditModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="asset-edit-modal-overlay">
+    <div
+      className="asset-edit-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="asset-edit-modal-title"
+    >
       <div className="asset-edit-modal-content">
         <div className="asset-edit-modal-header">
-          <h2 className="asset-edit-modal-title">
+          <h2 id="asset-edit-modal-title" className="asset-edit-modal-title">
             {translate('image.edit.title')}
           </h2>
           <button onClick={onClose} className="asset-edit-modal-close">
