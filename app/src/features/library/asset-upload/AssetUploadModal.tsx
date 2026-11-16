@@ -8,6 +8,7 @@ import type {
   MultiAssetUploadData,
 } from '@pixuli/core/types';
 import type { NativeImagePickers } from './nativePickers';
+import { useSuspendLibraryShortcuts } from '../useSuspendLibraryShortcuts';
 import AssetUpload from './AssetUpload';
 import './AssetUploadModal.css';
 
@@ -61,6 +62,7 @@ const AssetUploadModal: React.FC<AssetUploadModalProps> = ({
   onInitialFilesConsumed,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
+  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

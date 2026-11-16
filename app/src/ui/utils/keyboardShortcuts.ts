@@ -125,6 +125,15 @@ export class KeyboardShortcutManager {
       )
         return;
 
+      // 模态打开时不劫持按键（保留 Esc 关闭、F5 切换帮助）
+      if (
+        this.hasBlockingModal() &&
+        event.key !== 'Escape' &&
+        event.key !== 'F5'
+      ) {
+        return;
+      }
+
       const key = this.generateKey({
         key: event.key,
         ctrlKey: event.ctrlKey,
@@ -160,6 +169,14 @@ export class KeyboardShortcutManager {
     if (element.getAttribute('role') === 'textbox') return true;
 
     return false;
+  }
+
+  /** 有 aria-modal dialog 时，全局快捷键应让路给弹层 */
+  private hasBlockingModal(): boolean {
+    if (typeof document === 'undefined') return false;
+    return Boolean(
+      document.querySelector('[role="dialog"][aria-modal="true"]'),
+    );
   }
 
   /**

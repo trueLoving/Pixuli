@@ -19,6 +19,7 @@ import {
   libraryProcessModesForItems,
   type LibraryProcessMode,
 } from './libraryProcess';
+import { useSuspendLibraryShortcuts } from './useSuspendLibraryShortcuts';
 import './AssetLibraryBatchEditModal.css';
 
 const FORMATS: OutputMimeType[] = ['image/webp', 'image/jpeg', 'image/png'];
@@ -55,6 +56,7 @@ export const AssetLibraryConvertModal: React.FC<
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -56,11 +56,9 @@ export function useAppOrchestration(): {
     showSettingsModal,
     isFullscreenMode,
     setIsFullscreenMode,
-    openConfigModal,
     closeSettingsModal,
     openSettingsModalForAddSource,
     openConfigModalForEdit,
-    openOperationLog,
   } = useUIStore();
 
   const sourceManagement = useSourceManagement();
@@ -107,14 +105,7 @@ export function useAppOrchestration(): {
   useWorkspaceBindingSync();
   useAppInitialization(hasConfig, handleLoadAssets);
   useCapacitorBackButton();
-  useKeyboardShortcuts(
-    t,
-    showSettingsModal,
-    closeSettingsModal,
-    openOperationLog,
-    handleLoadAssets,
-    openConfigModal,
-  );
+  useKeyboardShortcuts(t, showSettingsModal, closeSettingsModal);
 
   return {
     mainLayoutProps: {

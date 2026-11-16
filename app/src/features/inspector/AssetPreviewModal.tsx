@@ -194,7 +194,12 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
   };
 
   return (
-    <div className="asset-preview-modal-overlay">
+    <div
+      className="asset-preview-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={asset.name}
+    >
       <div className="asset-preview-modal-container">
         <div className="asset-preview-modal-content">
           <button

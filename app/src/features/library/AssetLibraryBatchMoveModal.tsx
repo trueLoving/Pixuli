@@ -1,5 +1,6 @@
 import { FolderInput, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useSuspendLibraryShortcuts } from './useSuspendLibraryShortcuts';
 import './AssetLibraryBatchEditModal.css';
 
 export interface AssetLibraryBatchMoveModalProps {
@@ -16,6 +17,7 @@ export const AssetLibraryBatchMoveModal: React.FC<
 > = ({ isOpen, selectedCount, folders, t, onClose, onSubmit }) => {
   const [targetDir, setTargetDir] = useState('');
   const [busy, setBusy] = useState(false);
+  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -1,6 +1,7 @@
 import type { VersionInfo } from '@/features/settings/version-info';
 import React, { Suspense, lazy } from 'react';
 import { FullScreenLoading, Toaster } from '@/ui';
+import { useSuspendLibraryShortcuts } from '@/features/library/useSuspendLibraryShortcuts';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useI18n } from '@/i18n/useI18n';
 import { useUIStore } from '@/stores/uiStore';
@@ -21,6 +22,11 @@ const SyncDirectionModal = lazy(() =>
     default: m.SyncDirectionModal,
   })),
 );
+const KeyboardHelpOverlay = lazy(() =>
+  import('@/features/keyboard/KeyboardHelpOverlay').then(m => ({
+    default: m.KeyboardHelpOverlay,
+  })),
+);
 
 interface MainLayoutModalsProps {
   showGlobalLoading: boolean;
@@ -38,6 +44,8 @@ export const MainLayoutModals: React.FC<MainLayoutModalsProps> = ({
   const {
     showSettingsModal,
     showWorkspaceModal,
+    showSyncDirectionModal,
+    showKeyboardHelp,
     closeSettingsModal,
     closeWorkspaceModal,
   } = useUIStore();
@@ -47,6 +55,9 @@ export const MainLayoutModals: React.FC<MainLayoutModalsProps> = ({
   );
   const settingsOpen = showSettingsModal && !suppressOverlays;
   const workspaceOpen = showWorkspaceModal && !suppressOverlays;
+  useSuspendLibraryShortcuts(
+    settingsOpen || workspaceOpen || showSyncDirectionModal || showKeyboardHelp,
+  );
 
   return (
     <>
@@ -65,6 +76,7 @@ export const MainLayoutModals: React.FC<MainLayoutModalsProps> = ({
         />
 
         <SyncDirectionModal />
+        <KeyboardHelpOverlay />
       </Suspense>
 
       <Toaster />

@@ -225,6 +225,9 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     <div
       ref={overlayRef}
       className="image-crop-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="image-crop-modal-title"
       tabIndex={-1}
       onKeyDown={event => {
         if (event.key !== 'Escape') return;
@@ -235,7 +238,7 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
     >
       <div className="image-crop-modal-content">
         <div className="image-crop-modal-header">
-          <h2 className="image-crop-modal-title">
+          <h2 id="image-crop-modal-title" className="image-crop-modal-title">
             {translate('image.crop.title') || '裁剪图片'}
           </h2>
           <button onClick={onCancel} className="image-crop-modal-close">
