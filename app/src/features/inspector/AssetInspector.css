@@ -216,7 +216,8 @@
 }
 
 .asset-inspector-preview--markdown,
-.asset-inspector-preview--text {
+.asset-inspector-preview--text,
+.asset-inspector-preview--pdf {
   overflow: hidden;
 }
 
