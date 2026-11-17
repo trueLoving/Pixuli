@@ -19,6 +19,7 @@ import './Sidebar.css';
 const Sidebar: React.FC<SidebarProps> = ({
   onMenuClick,
   activeMenu,
+  settingsActive = false,
   sources,
   selectedSourceId,
   onSourceSelect,
@@ -274,7 +275,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {onSettingsClick && (
               <button
                 className={`sidebar-collapsed-item ${
-                  activeMenu === 'settings' ? 'active' : ''
+                  settingsActive ? 'active' : ''
                 }`}
                 onClick={onSettingsClick}
                 title={translate('sidebar.settings')}
@@ -409,7 +410,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <SidebarNavItem
                 icon={<Settings size={20} />}
                 label={translate('sidebar.settings')}
-                active={activeMenu === 'settings'}
+                active={settingsActive}
                 onClick={onSettingsClick}
                 t={t}
               />

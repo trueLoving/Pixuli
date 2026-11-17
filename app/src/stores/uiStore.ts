@@ -237,7 +237,6 @@ export const useUIStore = create<UIState>(set => ({
       settingsSection: 'sync',
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
-      activeMenu: 'settings',
     });
     return true;
   },
@@ -257,7 +256,6 @@ export const useUIStore = create<UIState>(set => ({
       settingsSection: 'version',
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
-      activeMenu: 'settings',
     }),
   openOperationLog: () =>
     set({
@@ -265,7 +263,6 @@ export const useUIStore = create<UIState>(set => ({
       settingsSection: 'version',
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
-      activeMenu: 'settings',
     }),
   openSettingsModal: (section = 'language') =>
     set({
@@ -273,7 +270,6 @@ export const useUIStore = create<UIState>(set => ({
       settingsSection: section,
       settingsSyncAddOpen: false,
       settingsSyncPrefillPluginId: null,
-      activeMenu: 'settings',
     }),
   closeSettingsModal: () =>
     set({
@@ -301,7 +297,6 @@ export const useUIStore = create<UIState>(set => ({
       editingSourceId: null,
       editingSourcePluginId: null,
       editingSourceRepoConfig: null,
-      activeMenu: 'settings',
     }),
   clearSettingsSyncAddOpen: () =>
     set({

@@ -40,6 +40,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
   const workspaceLoading = useWorkspaceStore(state => state.loading);
   const {
     activeMenu,
+    showSettingsModal,
     sidebarCollapsed,
     mobileSidebarOpen,
     isFullscreenMode,
@@ -109,7 +110,6 @@ export const AppSidebar: React.FC<SidebarProps> = ({
 
   const handleSettingsClick = () => {
     openSettingsModal();
-    setActiveMenu('settings');
     closeDrawerIfMobile();
   };
 
@@ -129,6 +129,7 @@ export const AppSidebar: React.FC<SidebarProps> = ({
         <CommonSidebar
           onMenuClick={handleMenuClick}
           activeMenu={activeMenu}
+          settingsActive={showSettingsModal}
           sources={sidebarSources}
           selectedSourceId={selectedSourceId}
           onSourceSelect={handleSourceSelect}

@@ -27,27 +27,65 @@ const CATEGORY_ORDER = [
   SHORTCUT_CATEGORIES.MODAL,
 ];
 
+const SCROLL_STEP_PX = 56;
+
 export const KeyboardHelpOverlay: React.FC = () => {
   const { t } = useI18n();
   const isOpen = useUIStore(state => state.showKeyboardHelp);
   const close = useUIStore(state => state.closeKeyboardHelp);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   useEscapeKey(() => {
     if (isOpen) close();
   }, isOpen);
 
+  /** 打开后焦点落到可滚动正文，便于 ↑↓ 滚动 */
   useEffect(() => {
     if (!isOpen) return;
     const frame = window.requestAnimationFrame(() => {
-      const panel = panelRef.current;
-      if (!panel) return;
-      const focusable = panel.querySelector<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      (focusable ?? panel).focus();
+      bodyRef.current?.focus();
     });
     return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
+
+  /** 场景内：↑↓ / PageUp·Down / Home·End 滚动列表；Esc 由 useEscapeKey 回库 */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onKey = (event: KeyboardEvent) => {
+      const body = bodyRef.current;
+      if (!body) return;
+
+      let delta: number | null = null;
+      if (event.key === 'ArrowDown') delta = SCROLL_STEP_PX;
+      else if (event.key === 'ArrowUp') delta = -SCROLL_STEP_PX;
+      else if (event.key === 'PageDown')
+        delta = Math.round(body.clientHeight * 0.85);
+      else if (event.key === 'PageUp')
+        delta = -Math.round(body.clientHeight * 0.85);
+
+      if (delta !== null) {
+        event.preventDefault();
+        event.stopPropagation();
+        body.scrollBy({ top: delta, behavior: 'auto' });
+        return;
+      }
+
+      if (event.key === 'Home') {
+        event.preventDefault();
+        event.stopPropagation();
+        body.scrollTo({ top: 0 });
+        return;
+      }
+      if (event.key === 'End') {
+        event.preventDefault();
+        event.stopPropagation();
+        body.scrollTo({ top: body.scrollHeight });
+      }
+    };
+
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [isOpen]);
 
   useEffect(() => {
@@ -95,8 +133,6 @@ export const KeyboardHelpOverlay: React.FC = () => {
         onClick={close}
       />
       <div
-        ref={panelRef}
-        tabIndex={-1}
         className="keyboard-help-overlay-panel"
         role="dialog"
         aria-modal="true"
@@ -126,7 +162,12 @@ export const KeyboardHelpOverlay: React.FC = () => {
           </button>
         </header>
 
-        <div className="keyboard-help-body">
+        <div
+          ref={bodyRef}
+          className="keyboard-help-body"
+          tabIndex={-1}
+          aria-label={t('keyboard.title')}
+        >
           {sections.map(section => (
             <section key={section.id} className="keyboard-help-section">
               <h3 className="keyboard-help-section-title">{section.title}</h3>
