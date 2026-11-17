@@ -1,0 +1,103 @@
+.pdf-document-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pdf-document-view--modal {
+  max-width: min(56rem, 94vw);
+  max-height: min(78vh, 52rem);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: #111827;
+  color: #f9fafb;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+}
+
+.pdf-document-view--inspector {
+  max-height: 18rem;
+  background: var(--pix-bg-muted, #f9fafb);
+  color: var(--pix-fg, #111827);
+}
+
+.pdf-document-view-status {
+  margin: 0;
+  padding: 1rem 0.85rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.pdf-document-view--modal .pdf-document-view-status {
+  color: #d1d5db;
+}
+
+.pdf-document-view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.pdf-document-view-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+
+.pdf-document-view-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pdf-document-view-nav:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.pdf-document-view-page-label {
+  min-width: 4.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: #e5e7eb;
+}
+
+.pdf-document-view-stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pdf-document-view-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+  border-radius: 0.25rem;
+}
+
+.pdf-document-view--inspector .pdf-document-view-stage {
+  padding: 0.5rem;
+}
+
+.pdf-document-view-meta {
+  margin: 0;
+  padding: 0.35rem 0.75rem 0.55rem;
+  font-size: 0.75rem;
+  color: var(--pix-fg-muted, #6b7280);
+  text-align: center;
+}

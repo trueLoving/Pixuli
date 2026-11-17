@@ -322,6 +322,11 @@
       "loading": "Loading text…",
       "loadFailed": "Failed to load text"
     },
+    "pdf": {
+      "loading": "Loading PDF…",
+      "loadFailed": "Failed to load PDF preview",
+      "pageOf": "Page {page} / {total}"
+    },
     "edit": {
       "title": "Edit file information",
       "updating": "Saving locally",

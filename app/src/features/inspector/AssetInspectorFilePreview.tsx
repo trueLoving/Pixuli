@@ -11,6 +11,7 @@ import {
 import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { MarkdownDocumentView } from './MarkdownDocumentView';
+import { PdfDocumentView } from './PdfDocumentView';
 import { TextDocumentView } from './TextDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 
@@ -75,6 +76,25 @@ export function AssetInspectorFilePreview({
     );
   }
 
+  if (kind === 'pdf') {
+    return (
+      <div className="asset-inspector-preview asset-inspector-preview--pdf">
+        <PdfDocumentView
+          src={src}
+          localPath={asset.localPath}
+          variant="inspector"
+          loadingLabel={t('image.pdf.loading')}
+          errorLabel={t('image.pdf.loadFailed')}
+          pageLabel={(page, total) =>
+            t('image.pdf.pageOf')
+              .replace('{page}', String(page))
+              .replace('{total}', String(total))
+          }
+        />
+      </div>
+    );
+  }
+
   if (!src) {
     return <div className="asset-inspector-preview" aria-hidden />;
   }
@@ -100,7 +120,7 @@ export function AssetInspectorFilePreview({
     );
   }
 
-  if (kind === 'pdf' || kind === 'other') {
+  if (kind === 'other') {
     const platform = getPlatform();
     const download = () => {
       void downloadAssetOnPlatform(platform, {

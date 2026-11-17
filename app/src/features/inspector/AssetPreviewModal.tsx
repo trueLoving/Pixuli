@@ -11,6 +11,7 @@ import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import { AssetItem } from '@pixuli/core/types';
 import { MarkdownDocumentView } from './MarkdownDocumentView';
+import { PdfDocumentView } from './PdfDocumentView';
 import { TextDocumentView } from './TextDocumentView';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 import './AssetPreviewModal.css';
@@ -155,6 +156,23 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
       );
     }
 
+    if (kind === 'pdf') {
+      return (
+        <PdfDocumentView
+          src={src}
+          localPath={asset.localPath}
+          variant="modal"
+          loadingLabel={translate('image.pdf.loading')}
+          errorLabel={translate('image.pdf.loadFailed')}
+          pageLabel={(page, total) =>
+            translate('image.pdf.pageOf')
+              .replace('{page}', String(page))
+              .replace('{total}', String(total))
+          }
+        />
+      );
+    }
+
     if (!src) return null;
 
     if (kind === 'video') {
@@ -172,7 +190,7 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
       );
     }
 
-    if (kind === 'pdf' || kind === 'other') {
+    if (kind === 'other') {
       return (
         <div className="asset-preview-modal-file">
           <FileText size={48} aria-hidden />

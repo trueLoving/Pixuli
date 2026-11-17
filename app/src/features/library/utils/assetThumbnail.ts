@@ -134,13 +134,8 @@ export async function capturePdfThumbnail(url: string): Promise<string | null> {
   if (typeof document === 'undefined' || !url) return null;
 
   try {
-    const pdfjs = await import('pdfjs-dist');
-    if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-        'pdfjs-dist/build/pdf.worker.min.mjs',
-        import.meta.url,
-      ).toString();
-    }
+    const { loadPdfjs } = await import('./pdfDocument');
+    const pdfjs = await loadPdfjs();
 
     const loadingTask = pdfjs.getDocument({
       url,
