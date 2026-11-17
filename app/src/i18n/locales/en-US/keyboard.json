@@ -5,8 +5,8 @@
     "usageTips": {
       "title": "Usage Tips",
       "tip1": "Shortcuts won't work in input fields, text areas and other editable elements",
-      "tip2": "Press F5 to open this help anytime",
-      "tip3": "Press Esc to close the current modal",
+      "tip2": "Press F5 to open this help; ↑↓ scrolls the list",
+      "tip3": "Press Esc to close help and return to the library",
       "tip4": "⌘K / Ctrl+K opens or re-edits search; ⌘⇧K / Ctrl+Shift+K clears the query"
     },
     "categories": {

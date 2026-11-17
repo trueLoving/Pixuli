@@ -94,6 +94,14 @@
 .keyboard-help-body {
   overflow: auto;
   padding: 0.75rem 1.125rem 1.25rem;
+  outline: none;
+  overscroll-behavior: contain;
+}
+
+.keyboard-help-body:focus,
+.keyboard-help-body:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .keyboard-help-section + .keyboard-help-section,

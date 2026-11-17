@@ -8,6 +8,8 @@ export type SidebarMenuItem = { type: 'library' } | { type: 'workspace' };
 export interface SidebarProps {
   onMenuClick?: (menuItem: SidebarMenuItem) => void;
   activeMenu?: string;
+  /** 设置是弹层，高亮跟 showSettingsModal，不占用 activeMenu */
+  settingsActive?: boolean;
   sources: SidebarSource[];
   selectedSourceId: string | null;
   onSourceSelect: (id: string) => void;
