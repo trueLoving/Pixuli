@@ -196,6 +196,8 @@ export const KeyboardHelpOverlay: React.FC = () => {
               <li>{t('keyboard.usageTips.tip2')}</li>
               <li>{t('keyboard.usageTips.tip3')}</li>
               <li>{t('keyboard.usageTips.tip4')}</li>
+              <li>{t('keyboard.usageTips.tip5')}</li>
+              <li>{t('keyboard.usageTips.tip6')}</li>
             </ul>
           </section>
         </div>

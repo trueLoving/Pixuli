@@ -27,6 +27,13 @@ export function suspendLibraryShortcuts(): void {
 export function resumeLibraryShortcuts(): void {
   suspendCount = Math.max(0, suspendCount - 1);
   notify();
+  // 弹层 DOM 常在 React commit 后才卸掉；延后多拍，避免 hasOpenModalDialog 把库快捷键卡住
+  if (typeof window !== 'undefined' && suspendCount === 0) {
+    window.requestAnimationFrame(() => {
+      notify();
+      window.setTimeout(() => notify(), 0);
+    });
+  }
 }
 
 function notify(): void {

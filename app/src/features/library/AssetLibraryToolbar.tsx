@@ -111,7 +111,7 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
             onClick={onToggleSelectMode}
             aria-pressed={multiSelectMode}
             aria-label={t('image.library.selectMode')}
-            title={t('image.library.selectMode')}
+            title={`${t('image.library.selectMode')} (M · Esc)`}
           >
             <ListChecks size={18} aria-hidden />
           </button>

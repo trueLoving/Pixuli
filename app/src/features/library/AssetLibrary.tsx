@@ -13,6 +13,7 @@ import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { filterByLibraryQuery } from '@/features/library/utils/libraryQuery';
 import {
+  nextFocusId,
   nextSelectedIds,
   pruneSelectedIds,
 } from '@/features/library/utils/librarySelection';
@@ -36,6 +37,7 @@ import {
 } from './librarySearchEvents';
 import {
   areLibraryShortcutsActive,
+  hasOpenModalDialog,
   LIBRARY_SHORTCUTS_GATE_EVENT,
   resumeLibraryShortcuts,
   suspendLibraryShortcuts,
@@ -136,6 +138,8 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     file: AssetItem;
   } | null>(null);
   const anchorIdRef = useRef<string | null>(null);
+  /** 多选模式键盘焦点（与勾选集合分离） */
+  const [focusFileId, setFocusFileId] = useState<string | null>(null);
   const longPressRef = useRef<number | null>(null);
   const longPressFiredRef = useRef(false);
   const tableWrapRef = useRef<HTMLDivElement>(null);
@@ -236,6 +240,9 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       enterMulti = false,
     ) => {
       setActiveFolderPath(null);
+      if (enterMulti || multiSelectMode) {
+        setFocusFileId(clickedId);
+      }
       if (enterMulti) setMultiSelectActive(true);
       const next = nextSelectedIds({
         visibleIds,
@@ -262,7 +269,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       }
       requestAnimationFrame(() => {
         document
-          .querySelector(`[data-file-id="${clickedId}"]`)
+          .querySelector(`[data-file-id="${CSS.escape(clickedId)}"]`)
           ?.scrollIntoView({ block: 'nearest' });
       });
     },
@@ -337,16 +344,34 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     [canAcceptLibraryDrop],
   );
 
+  const enterMultiSelectMode = useCallback(() => {
+    if (multiSelectMode) return;
+    const seed =
+      selectedIds.find(id => files.some(file => file.id === id)) ??
+      files[0]?.id ??
+      null;
+    if (seed) setFocusFileId(seed);
+    setMultiSelectActive(true);
+    onSelectedIdsChange([]);
+  }, [
+    files,
+    multiSelectMode,
+    onSelectedIdsChange,
+    selectedIds,
+    setMultiSelectActive,
+  ]);
+
   const handleToggleSelectMode = useCallback(() => {
     if (multiSelectMode) {
       setMultiSelectActive(false);
+      setFocusFileId(null);
       onClearSelection?.();
       onSelectedIdsChange([]);
       return;
     }
-    setMultiSelectActive(true);
-    onSelectedIdsChange([]);
+    enterMultiSelectMode();
   }, [
+    enterMultiSelectMode,
     multiSelectMode,
     onClearSelection,
     onSelectedIdsChange,
@@ -355,6 +380,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
 
   const handleClearSelectionFromBar = useCallback(() => {
     setMultiSelectActive(false);
+    setFocusFileId(null);
     onClearSelection?.();
     onSelectedIdsChange([]);
   }, [onClearSelection, onSelectedIdsChange, setMultiSelectActive]);
@@ -366,14 +392,36 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     }
   };
 
+  /**
+   * Esc：先关右键菜单，再退出多选。
+   * 必须用 document 捕获阶段：全局 Escape 在 document 冒泡里 stopPropagation，
+   * window 监听收不到。
+   */
   useEffect(() => {
-    if (!contextMenu) return;
+    if (!contextMenu && !multiSelectMode) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setContextMenu(null);
+      if (event.key !== 'Escape') return;
+      if (contextMenu) {
+        event.preventDefault();
+        event.stopPropagation();
+        setContextMenu(null);
+        return;
+      }
+      if (!multiSelectMode) return;
+      // 搜索浮层 / 模态优先吃掉 Esc
+      if (searchOverlayOpen || hasOpenModalDialog()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      handleClearSelectionFromBar();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [contextMenu]);
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [
+    contextMenu,
+    handleClearSelectionFromBar,
+    multiSelectMode,
+    searchOverlayOpen,
+  ]);
 
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const setSelectedFolderPath = useUIStore(
@@ -415,9 +463,43 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const showEmpty = !loading && files.length === 0 && childFolders.length === 0;
   const isFilteredEmpty = showEmpty && Boolean(search?.searchQuery);
 
+  /** 进入多选或列表变化时维护键盘焦点；退出时清空 */
+  useEffect(() => {
+    if (!multiSelectMode) {
+      setFocusFileId(null);
+      return;
+    }
+    const ids = files.map(file => file.id);
+    setFocusFileId(prev => {
+      if (prev && ids.includes(prev)) return prev;
+      const fromSelection = [...selectedIds]
+        .reverse()
+        .find(id => ids.includes(id));
+      return fromSelection ?? ids[0] ?? null;
+    });
+  }, [files, multiSelectMode, selectedIds]);
+
   const navigate = useCallback(
     (delta: number) => {
-      const folders = !multiSelectMode && showFolders ? folderNavItems : [];
+      // 多选：↑↓ 只移动焦点，不改勾选集合
+      if (multiSelectMode) {
+        if (files.length === 0) return;
+        const nextId = nextFocusId({
+          visibleIds: files.map(file => file.id),
+          focusId: focusFileId,
+          delta,
+        });
+        if (!nextId) return;
+        setFocusFileId(nextId);
+        requestAnimationFrame(() => {
+          document
+            .querySelector(`[data-file-id="${CSS.escape(nextId)}"]`)
+            ?.scrollIntoView({ block: 'nearest' });
+        });
+        return;
+      }
+
+      const folders = showFolders ? folderNavItems : [];
       const folderCount = folders.length;
       const fileCount = files.length;
       const total = folderCount + fileCount;
@@ -465,6 +547,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
       activeFolderPath,
       applySelection,
       files,
+      focusFileId,
       folderNavItems,
       multiSelectMode,
       onSelectedIdsChange,
@@ -521,12 +604,22 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         },
         category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
       },
+      {
+        key: COMMON_SHORTCUTS.M,
+        description: t('keyboard.shortcuts.enterMultiSelect'),
+        action: () => {
+          if (!areLibraryShortcutsActive()) return;
+          enterMultiSelectMode();
+        },
+        category: SHORTCUT_CATEGORIES.IMAGE_BROWSER,
+      },
     ];
     keyboardManager.registerBatch(shortcuts);
     return () => {
       shortcuts.forEach(shortcut => keyboardManager.unregister(shortcut));
     };
   }, [
+    enterMultiSelectMode,
     isMobile,
     libraryShortcutsActive,
     navigate,
@@ -560,10 +653,32 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   useEffect(() => {
     if (isMobile || !libraryShortcutsActive) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Enter') return;
       if (!areLibraryShortcutsActive()) return;
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+
+      // 多选：Space 切换当前焦点行的勾选
+      if (event.key === ' ' || event.code === 'Space') {
+        if (!multiSelectMode || !focusFileId) return;
+        if (
+          target.closest(
+            'textarea, select, button, a, [contenteditable="true"], [role="dialog"]',
+          )
+        ) {
+          return;
+        }
+        if (target instanceof HTMLInputElement) {
+          // 表头「全选」交给原生；行内 checkbox 仍走焦点勾选
+          if (target.closest('thead')) return;
+          if (!target.classList.contains('asset-library-row-check')) return;
+        }
+        event.preventDefault();
+        applySelection(focusFileId, false, false);
+        return;
+      }
+
+      if (event.key !== 'Enter') return;
+      if (multiSelectMode) return;
       if (
         target.closest(
           'input, textarea, select, button, a, [contenteditable="true"], [role="dialog"]',
@@ -586,8 +701,11 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [
     activeFolderPath,
+    applySelection,
+    focusFileId,
     isMobile,
     libraryShortcutsActive,
+    multiSelectMode,
     onOpenFile,
     selectedFile,
     selectedFolderPath,
@@ -764,6 +882,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
             sortField={sortField}
             sortOrder={sortOrder}
             selectedIds={selectedIds}
+            focusFileId={focusFileId}
             multiSelectMode={multiSelectMode}
             allVisibleSelected={allVisibleSelected}
             onToggleSelectAll={handleToggleSelectAll}

@@ -7,7 +7,9 @@
       "tip1": "Shortcuts won't work in input fields, text areas and other editable elements",
       "tip2": "Press F5 to open this help; ↑↓ scrolls the list",
       "tip3": "Press Esc to close help and return to the library",
-      "tip4": "⌘K / Ctrl+K opens or re-edits search; ⌘⇧K / Ctrl+Shift+K clears the query"
+      "tip4": "⌘K / Ctrl+K opens or re-edits search; ⌘⇧K / Ctrl+Shift+K clears the query",
+      "tip5": "Edit dialog: Esc cancels; Enter or ⌘↵ / Ctrl+Enter saves locally",
+      "tip6": "Press M to enter multi-select; ↑↓ moves focus, Space toggles, Esc exits"
     },
     "categories": {
       "general": "General",
@@ -32,8 +34,11 @@
       "openCompression": "Open image compression tool",
       "openFormatConversion": "Open image format conversion",
       "openAIAnalysis": "Open AI image analysis",
-      "selectUp": "Select previous resource",
-      "selectDown": "Select next resource",
+      "selectUp": "Select previous resource (move focus in multi-select)",
+      "selectDown": "Select next resource (move focus in multi-select)",
+      "enterMultiSelect": "Enter multi-select mode",
+      "toggleMultiFocus": "Multi-select: toggle focused row",
+      "exitMultiSelect": "Exit multi-select mode",
       "selectLeft": "Select left resource",
       "selectRight": "Select right resource",
       "openSelected": "Open selected resource",

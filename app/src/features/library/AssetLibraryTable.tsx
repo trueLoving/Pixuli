@@ -18,6 +18,8 @@ export interface AssetLibraryTableProps {
   sortField: SortField;
   sortOrder: SortOrder;
   selectedIds: string[];
+  /** 多选模式键盘焦点行（可与勾选集合不同） */
+  focusFileId?: string | null;
   multiSelectMode?: boolean;
   allVisibleSelected?: boolean;
   onToggleSelectAll?: () => void;
@@ -44,6 +46,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
   sortField,
   sortOrder,
   selectedIds,
+  focusFileId = null,
   multiSelectMode = false,
   allVisibleSelected = false,
   onToggleSelectAll,
@@ -135,6 +138,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
           ) : null}
           {visibleFiles.map(file => {
             const selected = selectedIds.includes(file.id);
+            const focused = multiSelectMode && focusFileId === file.id;
             const synced = isAssetSynced(file);
             const syncIgnored = isIgnored(file.localPath);
             const typeLabel = kindLabel(file, t);
@@ -149,7 +153,7 @@ export const AssetLibraryTable: React.FC<AssetLibraryTableProps> = ({
               <tr
                 key={file.id}
                 data-file-id={file.id}
-                className={`asset-library-row ${selected ? 'asset-library-row--selected' : ''}${multiSelectMode ? ' asset-library-row--multi' : ''}`}
+                className={`asset-library-row${selected ? ' asset-library-row--selected' : ''}${focused ? ' asset-library-row--focus' : ''}${multiSelectMode ? ' asset-library-row--multi' : ''}`}
                 aria-selected={selected}
                 onClick={event => {
                   if (longPressFiredRef.current) {
