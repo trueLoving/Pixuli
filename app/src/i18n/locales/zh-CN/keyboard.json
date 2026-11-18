@@ -7,7 +7,9 @@
       "tip1": "快捷键在输入框、文本区域等可编辑元素中不会生效",
       "tip2": "按 F5 打开此帮助；↑↓ 滚动内容",
       "tip3": "按 Esc 关闭帮助并回到资源库",
-      "tip4": "⌘K / Ctrl+K 打开或重编搜索；⌘⇧K / Ctrl+Shift+K 清除查询"
+      "tip4": "⌘K / Ctrl+K 打开或重编搜索；⌘⇧K / Ctrl+Shift+K 清除查询",
+      "tip5": "编辑弹窗：Esc 取消；Enter 或 ⌘↵ / Ctrl+Enter 保存到本机",
+      "tip6": "按 M 进入多选；↑↓ 移动焦点，Space 勾选/取消，Esc 退出"
     },
     "categories": {
       "general": "通用操作",
@@ -32,8 +34,11 @@
       "openCompression": "打开图片压缩工具",
       "openFormatConversion": "打开图片格式转换",
       "openAIAnalysis": "打开AI图片分析",
-      "selectUp": "选择上一张资源",
-      "selectDown": "选择下一张资源",
+      "selectUp": "选择上一张资源（多选时移动焦点）",
+      "selectDown": "选择下一张资源（多选时移动焦点）",
+      "enterMultiSelect": "进入多选模式",
+      "toggleMultiFocus": "多选：切换焦点行勾选",
+      "exitMultiSelect": "退出多选模式",
       "selectLeft": "选择左侧资源",
       "selectRight": "选择右侧资源",
       "openSelected": "打开选中的资源",

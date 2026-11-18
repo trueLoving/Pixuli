@@ -124,6 +124,13 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   }, [onPreviewRequestClear]);
 
   const closeEdit = useCallback(() => {
+    // 先移走焦点，再卸弹层：否则 keydown.target 可能仍是已卸载 input，库 ↑↓ 被跳过
+    if (
+      typeof document !== 'undefined' &&
+      document.activeElement instanceof HTMLElement
+    ) {
+      document.activeElement.blur();
+    }
     setShowEdit(false);
     onEditRequestClear?.();
   }, [onEditRequestClear]);

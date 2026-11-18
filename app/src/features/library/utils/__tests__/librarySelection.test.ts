@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { nextSelectedIds, pruneSelectedIds } from '../librarySelection';
+import {
+  nextFocusId,
+  nextSelectedIds,
+  pruneSelectedIds,
+} from '../librarySelection';
 
 const visible = ['a', 'b', 'c', 'd'];
 
@@ -72,5 +76,28 @@ describe('nextSelectedIds', () => {
         multiMode: true,
       }).selectedIds,
     ).toEqual(['a', 'c']);
+  });
+});
+
+describe('nextFocusId', () => {
+  it('moves within the list without wrapping', () => {
+    expect(nextFocusId({ visibleIds: visible, focusId: 'b', delta: 1 })).toBe(
+      'c',
+    );
+    expect(nextFocusId({ visibleIds: visible, focusId: 'a', delta: -1 })).toBe(
+      'a',
+    );
+    expect(nextFocusId({ visibleIds: visible, focusId: 'd', delta: 1 })).toBe(
+      'd',
+    );
+  });
+
+  it('picks an end when focus is missing', () => {
+    expect(nextFocusId({ visibleIds: visible, focusId: null, delta: 1 })).toBe(
+      'a',
+    );
+    expect(nextFocusId({ visibleIds: visible, focusId: 'z', delta: -1 })).toBe(
+      'd',
+    );
   });
 });

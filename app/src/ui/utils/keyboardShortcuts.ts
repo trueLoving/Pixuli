@@ -161,6 +161,9 @@ export class KeyboardShortcutManager {
    * 检查是否为可编辑元素
    */
   private isEditableElement(element: HTMLElement): boolean {
+    // 弹层关闭后焦点可能仍挂在已卸载节点上，不能据此跳过库快捷键
+    if (!element.isConnected) return false;
+
     const tagName = element.tagName.toLowerCase();
     const editableTags = ['input', 'textarea', 'select'];
 
