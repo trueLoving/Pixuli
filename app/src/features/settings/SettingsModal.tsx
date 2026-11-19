@@ -11,6 +11,7 @@ import {
   Palette,
   RefreshCw,
   Settings,
+  Wifi,
   X,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -18,6 +19,7 @@ import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { SettingsCheckpointPanel } from './SettingsCheckpointPanel';
+import { SettingsLanSharePanel } from './SettingsLanSharePanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsUserConfigPanel } from './SettingsUserConfigPanel';
@@ -145,6 +147,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           : []),
       ],
     },
+    ...(typeof window !== 'undefined' && window.lanShareAPI
+      ? [
+          {
+            labelKey: 'settings.groupAccess',
+            items: [
+              {
+                id: 'lanShare' as const,
+                labelKey: 'settings.menuLanShare',
+                icon: <Wifi size={18} />,
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 
   const navSection =
@@ -191,6 +207,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       {activeSection === 'userConfig' && <SettingsUserConfigPanel t={t} />}
       {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
       {activeSection === 'checkpoint' && <SettingsCheckpointPanel t={t} />}
+      {activeSection === 'lanShare' && <SettingsLanSharePanel t={t} />}
     </>
   );
 

@@ -5,4 +5,5 @@ export type SettingsSection =
   | 'version'
   | 'userConfig'
   | 'sync'
-  | 'checkpoint';
+  | 'checkpoint'
+  | 'lanShare';

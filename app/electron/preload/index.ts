@@ -39,4 +39,12 @@ contextBridge.exposeInMainWorld('workspaceAPI', {
     ipcRenderer.invoke('workspace:exists', relativePath),
 });
 
+contextBridge.exposeInMainWorld('lanShareAPI', {
+  getStatus: () => ipcRenderer.invoke('lanShare:getStatus'),
+  start: (preferredPort?: number) =>
+    ipcRenderer.invoke('lanShare:start', preferredPort),
+  stop: () => ipcRenderer.invoke('lanShare:stop'),
+  rotateToken: () => ipcRenderer.invoke('lanShare:rotateToken'),
+});
+
 loading();

@@ -1,0 +1,30 @@
+.lan-share-qr {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lan-share-qr-image {
+  display: block;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.lan-share-qr-caption {
+  max-width: 16rem;
+  word-break: break-all;
+  text-align: center;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #6b7280;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.lan-share-qr--loading {
+  border-radius: 0.5rem;
+  border: 1px dashed #e5e7eb;
+  background: #f9fafb;
+}

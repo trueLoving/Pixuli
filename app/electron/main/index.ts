@@ -14,6 +14,7 @@ import { getBrandCopyForElectronLocale } from '../../src/i18n/brandCopy';
 import { setApp } from './app';
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
+import { stopLanShareIfRunning } from './services/lanShareService';
 import { createTray, updateTrayMenu, destroyTray } from './tray';
 
 const require = createRequire(import.meta.url);
@@ -243,9 +244,10 @@ app.on('activate', () => {
   }
 });
 
-// 应用退出前清理托盘
+// 应用退出前清理托盘与局域网共享
 app.on('before-quit', () => {
   appIsQuitting = true;
+  void stopLanShareIfRunning();
   destroyTray();
 });
 

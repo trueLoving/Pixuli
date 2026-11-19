@@ -1,0 +1,154 @@
+.transfer-import-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .transfer-import-overlay {
+    align-items: center;
+    padding: 1rem;
+  }
+}
+
+.transfer-import-panel {
+  width: min(100%, 28rem);
+  max-height: min(90dvh, 40rem);
+  overflow: auto;
+  background: #fff;
+  border-radius: 1rem 1rem 0 0;
+  padding: 1rem 1rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .transfer-import-panel {
+    border-radius: 0.75rem;
+  }
+}
+
+.transfer-import-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.transfer-import-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.transfer-import-close {
+  display: inline-flex;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b7280;
+}
+
+.transfer-import-hint {
+  margin: 0.75rem 0 1rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.transfer-import-file-input {
+  display: none;
+}
+
+.transfer-import-pick,
+.transfer-import-submit {
+  width: 100%;
+  min-height: 2.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.transfer-import-submit {
+  margin-top: 0.85rem;
+  border-color: var(--pix-violet, #7c6cf0);
+  background: var(--pix-violet, #7c6cf0);
+  color: #fff;
+}
+
+.transfer-import-error {
+  margin: 0.75rem 0 0;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.transfer-import-preview {
+  margin-top: 1rem;
+}
+
+.transfer-import-count {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.transfer-import-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  max-height: 10rem;
+  overflow: auto;
+}
+
+.transfer-import-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.transfer-import-list li:last-child {
+  border-bottom: 0;
+}
+
+.transfer-import-item-name {
+  font-size: 0.9rem;
+  color: #111;
+}
+
+.transfer-import-item-path,
+.transfer-import-more {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.transfer-import-folder-label {
+  display: block;
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.transfer-import-folder {
+  width: 100%;
+  min-height: 2.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  padding: 0 0.65rem;
+  background: #fff;
+}
