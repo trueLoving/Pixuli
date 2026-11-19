@@ -68,17 +68,26 @@ export function renderLanShareBrowserPage(): string {
       position: fixed; left: 0; right: 0; bottom: 0;
       background: var(--card); border-top: 1px solid var(--line);
       padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
-      display: flex; gap: 0.5rem; align-items: center; justify-content: space-between;
+      display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: space-between;
     }
+    .bar .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .bar .count { font-size: 0.9rem; color: var(--muted); }
     .empty { padding: 2rem 1rem; text-align: center; color: var(--muted); }
     .err { color: #b91c1c; padding: 1rem; }
+    .next {
+      display: none; margin: 0.75rem 1rem 0; padding: 0.75rem 0.85rem;
+      border: 1px solid var(--line); border-radius: 0.65rem; background: var(--accent-soft);
+      font-size: 0.85rem; line-height: 1.45; color: #4c1d95;
+    }
+    .next.show { display: block; }
+    .next a { color: var(--accent); font-weight: 600; }
   </style>
 </head>
 <body>
   <header>
     <h1>Pixuli 局域网共享</h1>
-    <p class="meta">只读访客页 · 勾选文件或文件夹后下载转移包（含描述/标签）· 请到 Pixuli App「导入转移包」写入自己的工作区</p>
+    <p class="meta">只读访客页 · 勾选文件或文件夹后，可下载转移包，或直接在已安装的 Pixuli 中导入（含描述/标签）</p>
+    <div id="nextStep" class="next" role="status"></div>
     <div class="toolbar">
       <input id="filter" type="search" placeholder="筛选当前目录…" enterkeyhint="search" />
       <button type="button" id="selectVisible">全选可见</button>
@@ -89,7 +98,10 @@ export function renderLanShareBrowserPage(): string {
   <main id="list"></main>
   <div class="bar">
     <span class="count" id="count">已选 0</span>
-    <button type="button" class="primary" id="download" disabled>下载转移包</button>
+    <div class="actions">
+      <button type="button" id="download" disabled>仅下载</button>
+      <button type="button" class="primary" id="openInApp" disabled>在 Pixuli 中导入</button>
+    </div>
   </div>
   <script>
     const params = new URLSearchParams(location.search);
@@ -171,7 +183,81 @@ export function renderLanShareBrowserPage(): string {
     function updateBar() {
       const n = state.selected.size;
       setStatus('已选 ' + n);
-      document.getElementById('download').disabled = n === 0;
+      const empty = n === 0;
+      document.getElementById('download').disabled = empty;
+      document.getElementById('openInApp').disabled = empty;
+    }
+
+    function showNextStep(deepLink) {
+      const el = document.getElementById('nextStep');
+      el.classList.add('show');
+      el.innerHTML = '已准备转移包。若本机已安装 Pixuli，可 <a id="nextDeepLink" href="' +
+        escapeHtml(deepLink) + '">打开 App 导入</a>；也可在 App 工具栏或设置 · 局域网共享里选择刚下载的 zip。';
+    }
+
+    function buildDeepLink(ticketId) {
+      const ticketUrl = new URL('/api/export/ticket', location.origin);
+      ticketUrl.searchParams.set('id', ticketId);
+      ticketUrl.searchParams.set('token', token);
+      return 'pixuli://import-transfer?src=' + encodeURIComponent(ticketUrl.toString());
+    }
+
+    function triggerBlobDownload(blob, filename) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 0);
+    }
+
+    async function exportPack(mode) {
+      const paths = Array.from(state.selected);
+      if (!paths.length) return;
+      const downloadBtn = document.getElementById('download');
+      const openBtn = document.getElementById('openInApp');
+      downloadBtn.disabled = true;
+      openBtn.disabled = true;
+      const label = mode === 'app' ? '正在唤起…' : '打包中…';
+      openBtn.textContent = mode === 'app' ? label : '在 Pixuli 中导入';
+      downloadBtn.textContent = mode === 'download' ? label : '仅下载';
+      try {
+        const res = await fetch(withToken('/api/export'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          alert(text || '导出失败');
+          return;
+        }
+        const ticketId = res.headers.get('X-Pixuli-Import-Ticket') || '';
+        const blob = await res.blob();
+        const disp = res.headers.get('Content-Disposition') || '';
+        const match = /filename\\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i.exec(disp);
+        const filename = decodeURIComponent((match && (match[1] || match[2])) || 'pixuli-transfer.zip');
+        if (mode === 'download' || !ticketId) {
+          triggerBlobDownload(blob, filename);
+        }
+        if (ticketId) {
+          const deepLink = buildDeepLink(ticketId);
+          showNextStep(deepLink);
+          if (mode === 'app') {
+            window.location.href = deepLink;
+          }
+        } else if (mode === 'app') {
+          triggerBlobDownload(blob, filename);
+          alert('已下载转移包。请打开 Pixuli，使用「导入转移包」。');
+        }
+      } catch (err) {
+        alert(err && err.message ? err.message : '导出失败');
+      } finally {
+        downloadBtn.textContent = '仅下载';
+        openBtn.textContent = '在 Pixuli 中导入';
+        updateBar();
+      }
     }
 
     async function load() {
@@ -205,40 +291,11 @@ export function renderLanShareBrowserPage(): string {
       state.selected.clear();
       renderList();
     });
-    document.getElementById('download').addEventListener('click', async () => {
-      const paths = Array.from(state.selected);
-      if (!paths.length) return;
-      const btn = document.getElementById('download');
-      btn.disabled = true;
-      btn.textContent = '打包中…';
-      try {
-        const res = await fetch(withToken('/api/export'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paths }),
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          alert(text || '导出失败');
-          return;
-        }
-        const blob = await res.blob();
-        const disp = res.headers.get('Content-Disposition') || '';
-        const match = /filename\\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i.exec(disp);
-        const filename = decodeURIComponent((match && (match[1] || match[2])) || 'pixuli-transfer.zip');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(a.href), 0);
-      } catch (err) {
-        alert(err && err.message ? err.message : '导出失败');
-      } finally {
-        btn.textContent = '下载转移包';
-        updateBar();
-      }
+    document.getElementById('download').addEventListener('click', () => {
+      void exportPack('download');
+    });
+    document.getElementById('openInApp').addEventListener('click', () => {
+      void exportPack('app');
     });
 
     if (!token) {

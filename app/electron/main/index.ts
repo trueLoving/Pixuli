@@ -12,6 +12,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getBrandCopyForElectronLocale } from '../../src/i18n/brandCopy';
 import { setApp } from './app';
+import {
+  deliverDeepLink,
+  extractDeepLinkFromArgv,
+  registerPixuliProtocolClient,
+  setDeepLinkMainWindow,
+  takePendingDeepLink,
+} from './deepLink';
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
 import { stopLanShareIfRunning } from './services/lanShareService';
@@ -53,6 +60,13 @@ if (process.platform === 'win32') app.setAppUserModelId(app.getName());
 if (!app.requestSingleInstanceLock()) {
   app.quit();
   process.exit(0);
+}
+
+registerPixuliProtocolClient();
+
+const coldStartDeepLink = extractDeepLinkFromArgv(process.argv);
+if (coldStartDeepLink) {
+  deliverDeepLink(coldStartDeepLink);
 }
 
 let win: BrowserWindow | null = null;
@@ -206,12 +220,24 @@ async function createWindow() {
     if (url.startsWith('https:')) shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  setDeepLinkMainWindow(win);
+  win.on('closed', () => {
+    setDeepLinkMainWindow(null);
+  });
 }
 
 app.whenReady().then(() => {
   setupContentSecurityPolicy();
-  createWindow();
+  void createWindow();
 });
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  deliverDeepLink(url);
+});
+
+ipcMain.handle('pixuli:getPendingDeepLink', () => takePendingDeepLink());
 
 app.on('window-all-closed', () => {
   // macOS 上即使所有窗口都关闭，应用也继续运行
@@ -226,7 +252,12 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('second-instance', () => {
+app.on('second-instance', (_event, argv) => {
+  const deepLink = extractDeepLinkFromArgv(argv);
+  if (deepLink) {
+    deliverDeepLink(deepLink);
+    return;
+  }
   if (win) {
     // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore();

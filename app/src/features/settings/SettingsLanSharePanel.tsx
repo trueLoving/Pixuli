@@ -1,10 +1,12 @@
-import { Copy, RefreshCw, Share2, Wifi } from 'lucide-react';
+import { Archive, Copy, RefreshCw, Share2, Wifi } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { LanShareQrCode } from '@/features/lan-share/LanShareQrCode';
+import { useTransferImportStore } from '@/features/lan-share/transferImportStore';
 import { isDesktop } from '@/platforms/platform';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
+import { useUIStore } from '@/stores/uiStore';
 
 interface SettingsLanSharePanelProps {
   t: (key: string, params?: Record<string, string | number>) => string;
@@ -22,6 +24,8 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
   const mode = useWorkspaceStore(state => state.mode);
   const workspaceLocalActive = isWorkspaceAvailable() && mode === 'local';
   const available = isLanShareAvailable();
+  const openTransferImport = useTransferImportStore(state => state.openImport);
+  const closeSettingsModal = useUIStore(state => state.closeSettingsModal);
   const [status, setStatus] = useState<LanShareStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string>('');
@@ -145,6 +149,23 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
         <p className="text-xs text-gray-400">
           {t('settings.lanShare.clientHint')}
         </p>
+      </div>
+
+      <div className="rounded-lg border border-dashed border-gray-300 bg-white p-3">
+        <p className="text-sm text-gray-700">
+          {t('settings.lanShare.importShortcutHint')}
+        </p>
+        <button
+          type="button"
+          className="mt-2 inline-flex min-h-10 items-center gap-2 rounded-md border border-gray-300 px-3 text-sm text-gray-800 hover:bg-gray-50"
+          onClick={() => {
+            closeSettingsModal();
+            openTransferImport();
+          }}
+        >
+          <Archive size={14} aria-hidden />
+          {t('settings.lanShare.importPick')}
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-2">
