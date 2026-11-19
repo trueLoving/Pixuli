@@ -1,4 +1,4 @@
-import { Folder, ListChecks, Search, X } from 'lucide-react';
+import { Archive, Folder, ListChecks, Search, X } from 'lucide-react';
 import React, { RefObject } from 'react';
 import UploadButton from './UploadButton';
 import type { UploadButtonHandle } from './UploadButton';
@@ -26,6 +26,8 @@ export interface AssetLibraryToolbarProps {
   uploadButtonRef: RefObject<UploadButtonHandle | null>;
   multiSelectMode?: boolean;
   onToggleSelectMode?: () => void;
+  /** 导入局域网转移包 */
+  onImportTransfer?: () => void;
 }
 
 export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
@@ -44,6 +46,7 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
   uploadButtonRef,
   multiSelectMode = false,
   onToggleSelectMode,
+  onImportTransfer,
 }) => {
   const activeQuery = search?.searchQuery?.trim() ?? '';
   const searchActive = activeQuery.length > 0;
@@ -114,6 +117,18 @@ export const AssetLibraryToolbar: React.FC<AssetLibraryToolbarProps> = ({
             title={`${t('image.library.selectMode')} (M · Esc)`}
           >
             <ListChecks size={18} aria-hidden />
+          </button>
+        ) : null}
+
+        {onImportTransfer ? (
+          <button
+            type="button"
+            className="asset-library-icon-btn"
+            onClick={onImportTransfer}
+            aria-label={t('settings.lanShare.importTitle')}
+            title={t('settings.lanShare.importTitle')}
+          >
+            <Archive size={18} aria-hidden />
           </button>
         ) : null}
 

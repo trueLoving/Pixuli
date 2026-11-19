@@ -31,6 +31,7 @@ import { AssetLibraryTable } from './AssetLibraryTable';
 import { AssetLibraryToolbar } from './AssetLibraryToolbar';
 import { LibraryFolderNav } from './LibraryFolderNav';
 import { LibrarySearchOverlay } from './LibrarySearchOverlay';
+import { TransferImportModal } from '@/features/lan-share/TransferImportModal';
 import {
   CLEAR_LIBRARY_SEARCH_EVENT,
   OPEN_LIBRARY_SEARCH_EVENT,
@@ -150,6 +151,7 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
   const [activeFolderPath, setActiveFolderPath] = useState<string | null>(null);
   const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
   const [searchOverlayNonce, setSearchOverlayNonce] = useState(0);
+  const [transferImportOpen, setTransferImportOpen] = useState(false);
   const [libraryShortcutsActive, setLibraryShortcutsActive] = useState(
     areLibraryShortcutsActive,
   );
@@ -788,6 +790,17 @@ export const AssetLibrary: React.FC<AssetLibraryProps> = ({
         uploadButtonRef={uploadButtonRef}
         multiSelectMode={multiSelectMode}
         onToggleSelectMode={handleToggleSelectMode}
+        onImportTransfer={
+          hasConfig && onUploadAsset
+            ? () => setTransferImportOpen(true)
+            : undefined
+        }
+      />
+
+      <TransferImportModal
+        isOpen={transferImportOpen}
+        onClose={() => setTransferImportOpen(false)}
+        t={t}
       />
 
       {search ? (

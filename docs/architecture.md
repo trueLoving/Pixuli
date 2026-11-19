@@ -112,6 +112,20 @@ Token 与连接配置仅存客户端。
 
 ---
 
+## 7.1 局域网只读共享（Desktop Host）
+
+- Main：`electron/main/services/lanShareService.ts`（Node `http`，绑定
+  `0.0.0.0`）
+- 浏览器页：`lanShareBrowserPage.ts`（筛选 / 多选 / 下载转移包）
+- 导出：`POST /api/export`（paths 可为文件或文件夹；文件夹递归展开）→
+  zip（`pixuli-transfer.json` + `files/**`）
+- 导入：`app/src/features/lan-share/importTransferPackage.ts` + 库工具栏入口
+- Preload：`lanShareAPI`；设置 · 访问
+- 安全：口令；拒绝 `..`；不暴露 `.pixuli` / `.git` / `.metadata` 目录浏览
+- 退出应用时停止服务
+
+---
+
 ## 8. 发版
 
 | 规则   | 说明                                                               |

@@ -52,6 +52,10 @@ function listRelativeFiles(
 
 let workspaceRoot: string | null = null;
 
+export function getWorkspaceRoot(): string | null {
+  return workspaceRoot;
+}
+
 export function registerWorkspaceHandlers() {
   ipcMain.handle('workspace:getRoot', () => ({
     rootPath: workspaceRoot,
