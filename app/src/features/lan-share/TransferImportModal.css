@@ -25,6 +25,17 @@
   padding: 1rem 1rem 1.25rem;
 }
 
+.transfer-import-panel--drag {
+  outline: 2px dashed color-mix(in srgb, var(--pix-violet, #6d28d9) 70%, #fff);
+  outline-offset: -4px;
+}
+
+.transfer-import-drop-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
 @media (min-width: 768px) {
   .transfer-import-panel {
     border-radius: 0.75rem;

@@ -1,4 +1,5 @@
 import './App.css';
+import { TransferImportHost } from '@/features/lan-share/TransferImportHost';
 import { SearchProvider } from '@/features/library/SearchContext';
 import { ThemeSync } from '@/features/theme/ThemeSync';
 import { useAppOrchestration } from '@/hooks/useAppOrchestration';
@@ -11,6 +12,7 @@ function App() {
   return (
     <SearchProvider>
       <ThemeSync />
+      <TransferImportHost />
       <MainLayout {...mainLayoutProps}>
         <AppRoutes {...routesProps} />
       </MainLayout>

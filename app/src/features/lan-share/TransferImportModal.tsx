@@ -10,54 +10,47 @@ import {
   parseTransferZipFile,
   type TransferImportPreview,
 } from './importTransferPackage';
+import {
+  readRememberedImportFolder,
+  rememberImportFolder,
+  takePendingTransferSeedFile,
+  useTransferImportStore,
+} from './transferImportStore';
 import './TransferImportModal.css';
 
 interface TransferImportModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
-  /** 预选 zip（可选） */
-  seedFile?: File | null;
 }
 
 export const TransferImportModal: React.FC<TransferImportModalProps> = ({
-  isOpen,
-  onClose,
   t,
-  seedFile = null,
 }) => {
+  const isOpen = useTransferImportStore(state => state.open);
+  const sourceUrl = useTransferImportStore(state => state.sourceUrl);
+  const requestId = useTransferImportStore(state => state.requestId);
+  const closeImport = useTransferImportStore(state => state.closeImport);
+
   const localFolders = useWorkspaceStore(state => state.localFolders);
   const selectedFolderPath = useUIStore(state => state.selectedFolderPath);
   const loadAssets = useAssetStore(state => state.loadAssets);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<TransferImportPreview | null>(null);
-  const [targetFolder, setTargetFolder] = useState(selectedFolderPath || '');
+  const [targetFolder, setTargetFolder] = useState('');
   const [busy, setBusy] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const folderOptions = useMemo(() => {
     const set = new Set<string>(['', ...localFolders]);
     if (selectedFolderPath) set.add(selectedFolderPath);
+    const remembered = readRememberedImportFolder();
+    if (remembered) set.add(remembered);
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [localFolders, selectedFolderPath]);
 
   useEscapeKey(() => {
-    if (isOpen && !busy) onClose();
+    if (isOpen && !busy) closeImport();
   }, isOpen);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setPreview(null);
-      setParseError(null);
-      setBusy(false);
-      return;
-    }
-    setTargetFolder(selectedFolderPath || '');
-    if (seedFile) {
-      void handlePickFile(seedFile);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only seed on open
-  }, [isOpen, seedFile]);
 
   const handlePickFile = async (file: File) => {
     setParseError(null);
@@ -73,11 +66,50 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setPreview(null);
+      setParseError(null);
+      setBusy(false);
+      setDragOver(false);
+      return;
+    }
+
+    const remembered = readRememberedImportFolder();
+    setTargetFolder(selectedFolderPath || remembered || '');
+
+    const seed = takePendingTransferSeedFile();
+    if (seed) {
+      void handlePickFile(seed);
+      return;
+    }
+
+    if (sourceUrl) {
+      setBusy(true);
+      void (async () => {
+        try {
+          const res = await fetch(sourceUrl);
+          if (!res.ok) throw new Error('fetch failed');
+          const blob = await res.blob();
+          const file = new File([blob], 'pixuli-transfer.zip', {
+            type: 'application/zip',
+          });
+          await handlePickFile(file);
+        } catch {
+          setParseError(t('settings.lanShare.importDeepLinkFetchFailed'));
+          setBusy(false);
+        }
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on each open request
+  }, [isOpen, requestId, sourceUrl]);
+
   const handleImport = async () => {
     if (!preview) return;
     setBusy(true);
     try {
       const result = await importTransferPackageToFolder(preview, targetFolder);
+      rememberImportFolder(targetFolder);
       await loadAssets();
       showSuccess(
         t('settings.lanShare.importDone', {
@@ -86,7 +118,7 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
           failed: result.failed,
         }),
       );
-      onClose();
+      closeImport();
     } catch {
       showError(t('settings.lanShare.importFailed'));
     } finally {
@@ -103,12 +135,38 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
       aria-modal="true"
       aria-labelledby="transfer-import-title"
       onClick={() => {
-        if (!busy) onClose();
+        if (!busy) closeImport();
       }}
     >
       <div
-        className="transfer-import-panel"
+        className={
+          dragOver
+            ? 'transfer-import-panel transfer-import-panel--drag'
+            : 'transfer-import-panel'
+        }
         onClick={event => event.stopPropagation()}
+        onDragEnter={event => {
+          event.preventDefault();
+          setDragOver(true);
+        }}
+        onDragOver={event => {
+          event.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={event => {
+          event.preventDefault();
+          if (event.currentTarget === event.target) setDragOver(false);
+        }}
+        onDrop={event => {
+          event.preventDefault();
+          setDragOver(false);
+          const file = event.dataTransfer.files?.[0];
+          if (file && /\.zip$/i.test(file.name)) {
+            void handlePickFile(file);
+          } else if (file) {
+            setParseError(t('settings.lanShare.importInvalid'));
+          }
+        }}
       >
         <div className="transfer-import-header">
           <h2 id="transfer-import-title" className="transfer-import-title">
@@ -118,7 +176,7 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
           <button
             type="button"
             className="transfer-import-close"
-            onClick={onClose}
+            onClick={closeImport}
             disabled={busy}
             aria-label={t('settings.close')}
           >
@@ -128,6 +186,9 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
 
         <p className="transfer-import-hint">
           {t('settings.lanShare.importHint')}
+        </p>
+        <p className="transfer-import-drop-hint">
+          {t('settings.lanShare.importDropHint')}
         </p>
 
         <input

@@ -47,4 +47,18 @@ contextBridge.exposeInMainWorld('lanShareAPI', {
   rotateToken: () => ipcRenderer.invoke('lanShare:rotateToken'),
 });
 
+contextBridge.exposeInMainWorld('pixuliDeepLink', {
+  onOpen: (callback: (url: string) => void) => {
+    const listener = (_event: unknown, url: string) => {
+      if (typeof url === 'string') callback(url);
+    };
+    ipcRenderer.on('pixuli:deep-link', listener);
+    return () => {
+      ipcRenderer.off('pixuli:deep-link', listener);
+    };
+  },
+  getPending: () =>
+    ipcRenderer.invoke('pixuli:getPendingDeepLink') as Promise<string | null>,
+});
+
 loading();

@@ -54,6 +54,43 @@ let server: Server | null = null;
 let activePort: number | null = null;
 let activeToken: string | null = null;
 
+const EXPORT_TICKET_TTL_MS = 15 * 60 * 1000;
+const exportTickets = new Map<string, { paths: string[]; expiresAt: number }>();
+
+function pruneExportTickets(): void {
+  const now = Date.now();
+  for (const [id, ticket] of exportTickets) {
+    if (ticket.expiresAt <= now) exportTickets.delete(id);
+  }
+}
+
+function createExportTicket(paths: string[]): string {
+  pruneExportTickets();
+  const id = `${createShareToken()}${createShareToken()}`;
+  exportTickets.set(id, {
+    paths: [...paths],
+    expiresAt: Date.now() + EXPORT_TICKET_TTL_MS,
+  });
+  return id;
+}
+
+function getExportTicketPaths(id: string): string[] | null {
+  pruneExportTickets();
+  const ticket = exportTickets.get(id);
+  if (!ticket) return null;
+  return ticket.paths;
+}
+
+function setCorsHeaders(res: ServerResponse): void {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader(
+    'Access-Control-Expose-Headers',
+    'Content-Disposition, X-Pixuli-Import-Ticket',
+  );
+}
+
 function resolveSafePath(root: string, relativePath: string): string {
   const normalized = relativePath.replace(/^[/\\]+/, '').replace(/\\/g, '/');
   const resolved = path.resolve(root, normalized);
@@ -175,6 +212,7 @@ function readDiskManifestEntry(
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown): void {
+  setCorsHeaders(res);
   const payload = JSON.stringify(body);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -189,11 +227,32 @@ function sendText(
   body: string,
   contentType = 'text/plain; charset=utf-8',
 ): void {
+  setCorsHeaders(res);
   res.writeHead(status, {
     'Content-Type': contentType,
     'Cache-Control': 'no-store',
   });
   res.end(body);
+}
+
+function sendZip(
+  res: ServerResponse,
+  zip: Uint8Array,
+  filename: string,
+  ticketId?: string,
+): void {
+  setCorsHeaders(res);
+  const headers: Record<string, string | number> = {
+    'Content-Type': 'application/zip',
+    'Content-Length': zip.byteLength,
+    'Cache-Control': 'no-store',
+    'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+  };
+  if (ticketId) {
+    headers['X-Pixuli-Import-Ticket'] = ticketId;
+  }
+  res.writeHead(200, headers);
+  res.end(Buffer.from(zip));
 }
 
 function requireAuth(
@@ -324,6 +383,13 @@ function handleRequest(req: IncomingMessage, res: ServerResponse): void {
         req.headers.host || `127.0.0.1:${activePort ?? LAN_SHARE_DEFAULT_PORT}`;
       const url = new URL(req.url || '/', `http://${host}`);
 
+      if (req.method === 'OPTIONS') {
+        setCorsHeaders(res);
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
       if (url.pathname === '/api/health') {
         sendJson(res, 200, {
           ok: true,
@@ -341,6 +407,30 @@ function handleRequest(req: IncomingMessage, res: ServerResponse): void {
         return;
       }
 
+      if (url.pathname === '/api/export/ticket' && req.method === 'GET') {
+        const ticketId = (url.searchParams.get('id') || '').trim();
+        if (!ticketId) {
+          sendText(res, 400, 'ticket id required');
+          return;
+        }
+        const paths = getExportTicketPaths(ticketId);
+        if (!paths) {
+          sendText(res, 404, 'ticket expired or not found');
+          return;
+        }
+        try {
+          const { zip, filename } = buildExportZip(root, paths);
+          sendZip(res, zip, filename, ticketId);
+        } catch (error) {
+          sendText(
+            res,
+            400,
+            error instanceof Error ? error.message : 'export failed',
+          );
+        }
+        return;
+      }
+
       if (url.pathname === '/api/export' && req.method === 'POST') {
         const body = (await readRequestJson(req)) as {
           paths?: unknown;
@@ -354,13 +444,8 @@ function handleRequest(req: IncomingMessage, res: ServerResponse): void {
         }
         try {
           const { zip, filename } = buildExportZip(root, paths);
-          res.writeHead(200, {
-            'Content-Type': 'application/zip',
-            'Content-Length': zip.byteLength,
-            'Cache-Control': 'no-store',
-            'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
-          });
-          res.end(Buffer.from(zip));
+          const ticketId = createExportTicket(paths);
+          sendZip(res, zip, filename, ticketId);
         } catch (error) {
           sendText(
             res,
@@ -506,6 +591,7 @@ async function stopServer(): Promise<LanShareStatus> {
   if (!server) {
     activePort = null;
     activeToken = null;
+    exportTickets.clear();
     return getStatus();
   }
   const current = server;
@@ -515,6 +601,7 @@ async function stopServer(): Promise<LanShareStatus> {
   });
   activePort = null;
   activeToken = null;
+  exportTickets.clear();
   return getStatus();
 }
 
