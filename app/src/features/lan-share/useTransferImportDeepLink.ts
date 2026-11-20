@@ -2,23 +2,9 @@ import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { showError } from '@/ui/feedback/toast';
+import { fetchTransferZipAsFile } from './fetchTransferZip';
 import { parseImportTransferDeepLink } from './importDeepLink';
 import { useTransferImportStore } from './transferImportStore';
-
-async function fetchTransferZipAsFile(sourceUrl: string): Promise<File> {
-  const res = await fetch(sourceUrl);
-  if (!res.ok) {
-    throw new Error(`fetch failed: ${res.status}`);
-  }
-  const blob = await res.blob();
-  const disp = res.headers.get('Content-Disposition') || '';
-  const match =
-    /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(disp) || null;
-  const name = decodeURIComponent(
-    (match && (match[1] || match[2])) || 'pixuli-transfer.zip',
-  );
-  return new File([blob], name, { type: 'application/zip' });
-}
 
 async function handleDeepLinkUrl(
   raw: string,
@@ -40,7 +26,7 @@ async function handleDeepLinkUrl(
 
 /**
  * Desktop（protocol）+ Capacitor（appUrlOpen）接收
- * pixuli://import-transfer?src=…
+ * pixuli://import-transfer?...
  */
 export function useTransferImportDeepLink(
   t: (key: string, params?: Record<string, string | number>) => string,

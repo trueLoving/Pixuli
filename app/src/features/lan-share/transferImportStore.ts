@@ -1,6 +1,11 @@
 import { create } from 'zustand';
+import {
+  isTransferImportStrategy,
+  type TransferImportStrategy,
+} from './importStrategy';
 
 const TARGET_FOLDER_KEY = 'pixuli.transferImport.targetFolder';
+const STRATEGY_KEY = 'pixuli.transferImport.strategy';
 
 let pendingSeedFile: File | null = null;
 
@@ -55,6 +60,24 @@ export function readRememberedImportFolder(): string | null {
 export function rememberImportFolder(folder: string): void {
   try {
     localStorage.setItem(TARGET_FOLDER_KEY, folder);
+  } catch {
+    // ignore
+  }
+}
+
+export function readRememberedImportStrategy(): TransferImportStrategy {
+  try {
+    const raw = localStorage.getItem(STRATEGY_KEY);
+    if (raw && isTransferImportStrategy(raw)) return raw;
+  } catch {
+    // ignore
+  }
+  return 'skip';
+}
+
+export function rememberImportStrategy(strategy: TransferImportStrategy): void {
+  try {
+    localStorage.setItem(STRATEGY_KEY, strategy);
   } catch {
     // ignore
   }
