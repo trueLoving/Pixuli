@@ -6,13 +6,20 @@ import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useAssetStore } from '@/features/library/assetStore';
 import { useUIStore } from '@/stores/uiStore';
 import {
+  TRANSFER_IMPORT_STRATEGIES,
+  type TransferImportStrategy,
+} from './importStrategy';
+import { fetchTransferZipAsFile } from './fetchTransferZip';
+import {
   importTransferPackageToFolder,
   parseTransferZipFile,
   type TransferImportPreview,
 } from './importTransferPackage';
 import {
   readRememberedImportFolder,
+  readRememberedImportStrategy,
   rememberImportFolder,
+  rememberImportStrategy,
   takePendingTransferSeedFile,
   useTransferImportStore,
 } from './transferImportStore';
@@ -36,6 +43,8 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<TransferImportPreview | null>(null);
   const [targetFolder, setTargetFolder] = useState('');
+  const [strategy, setStrategy] = useState<TransferImportStrategy>('skip');
+  const [replaceConfirmed, setReplaceConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -72,11 +81,14 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
       setParseError(null);
       setBusy(false);
       setDragOver(false);
+      setReplaceConfirmed(false);
       return;
     }
 
     const remembered = readRememberedImportFolder();
     setTargetFolder(selectedFolderPath || remembered || '');
+    setStrategy(readRememberedImportStrategy());
+    setReplaceConfirmed(false);
 
     const seed = takePendingTransferSeedFile();
     if (seed) {
@@ -88,12 +100,7 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
       setBusy(true);
       void (async () => {
         try {
-          const res = await fetch(sourceUrl);
-          if (!res.ok) throw new Error('fetch failed');
-          const blob = await res.blob();
-          const file = new File([blob], 'pixuli-transfer.zip', {
-            type: 'application/zip',
-          });
+          const file = await fetchTransferZipAsFile(sourceUrl);
           await handlePickFile(file);
         } catch {
           setParseError(t('settings.lanShare.importDeepLinkFetchFailed'));
@@ -104,18 +111,27 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on each open request
   }, [isOpen, requestId, sourceUrl]);
 
+  const canSubmit =
+    Boolean(preview) && !busy && (strategy !== 'replace' || replaceConfirmed);
+
   const handleImport = async () => {
-    if (!preview) return;
+    if (!preview || !canSubmit) return;
     setBusy(true);
     try {
-      const result = await importTransferPackageToFolder(preview, targetFolder);
+      const result = await importTransferPackageToFolder(
+        preview,
+        targetFolder,
+        { strategy },
+      );
       rememberImportFolder(targetFolder);
+      rememberImportStrategy(strategy);
       await loadAssets();
       showSuccess(
         t('settings.lanShare.importDone', {
           imported: result.imported,
           skipped: result.skipped,
           failed: result.failed,
+          removed: result.removed,
         }),
       );
       closeImport();
@@ -264,15 +280,65 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
                 ))}
             </select>
 
+            <fieldset className="transfer-import-strategy" disabled={busy}>
+              <legend>{t('settings.lanShare.importStrategy')}</legend>
+              {TRANSFER_IMPORT_STRATEGIES.map(value => (
+                <label key={value} className="transfer-import-strategy-option">
+                  <input
+                    type="radio"
+                    name="transfer-import-strategy"
+                    value={value}
+                    checked={strategy === value}
+                    onChange={() => {
+                      setStrategy(value);
+                      if (value !== 'replace') setReplaceConfirmed(false);
+                    }}
+                  />
+                  <span>
+                    <span className="transfer-import-strategy-title">
+                      {t(`settings.lanShare.importStrategy_${value}`)}
+                    </span>
+                    <span className="transfer-import-strategy-desc">
+                      {t(`settings.lanShare.importStrategyHint_${value}`)}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
+            {strategy === 'replace' ? (
+              <label className="transfer-import-replace-confirm">
+                <input
+                  type="checkbox"
+                  checked={replaceConfirmed}
+                  disabled={busy}
+                  onChange={event => setReplaceConfirmed(event.target.checked)}
+                />
+                <span>
+                  {targetFolder
+                    ? t('settings.lanShare.importReplaceConfirmFolder', {
+                        folder: targetFolder,
+                      })
+                    : t('settings.lanShare.importReplaceConfirmRoot')}
+                </span>
+              </label>
+            ) : null}
+
             <button
               type="button"
-              className="transfer-import-submit"
-              disabled={busy}
+              className={
+                strategy === 'replace'
+                  ? 'transfer-import-submit transfer-import-submit--danger'
+                  : 'transfer-import-submit'
+              }
+              disabled={!canSubmit}
               onClick={() => void handleImport()}
             >
               {busy
                 ? t('settings.lanShare.importing')
-                : t('settings.lanShare.importConfirm')}
+                : strategy === 'replace'
+                  ? t('settings.lanShare.importConfirmReplace')
+                  : t('settings.lanShare.importConfirm')}
             </button>
           </div>
         ) : null}

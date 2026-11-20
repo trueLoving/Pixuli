@@ -1,12 +1,31 @@
 /**
  * 局域网转移包 → 本机 Pixuli 深链。
- * pixuli://import-transfer?src=<urlencoded ticket http url>
+ *
+ * 优先结构化参数（避免 Android 把嵌套 query 拆坏）：
+ *   pixuli://import-transfer?h=<host>&p=<port>&id=<ticket>&t=<token>
+ * 兼容旧式：
+ *   pixuli://import-transfer?src=<urlencoded ticket http url>
  */
 
 export const PIXULI_URL_SCHEME = 'pixuli';
 export const IMPORT_TRANSFER_PATH = 'import-transfer';
 
 export function buildImportTransferDeepLink(ticketHttpUrl: string): string {
+  try {
+    const ticket = new URL(ticketHttpUrl);
+    const id = ticket.searchParams.get('id') || '';
+    const token = ticket.searchParams.get('token') || '';
+    if (ticket.hostname && id && token) {
+      const params = new URLSearchParams();
+      params.set('h', ticket.hostname);
+      if (ticket.port) params.set('p', ticket.port);
+      params.set('id', id);
+      params.set('t', token);
+      return `${PIXULI_URL_SCHEME}://${IMPORT_TRANSFER_PATH}?${params.toString()}`;
+    }
+  } catch {
+    // fall through
+  }
   const src = encodeURIComponent(ticketHttpUrl);
   return `${PIXULI_URL_SCHEME}://${IMPORT_TRANSFER_PATH}?src=${src}`;
 }
@@ -23,6 +42,33 @@ export function buildExportTicketHttpUrl(
   return url.toString();
 }
 
+function buildTicketUrlFromParts(
+  host: string,
+  port: string | null,
+  id: string,
+  token: string,
+): string {
+  const portPart = port ? `:${port}` : '';
+  const url = new URL(`http://${host}${portPart}/api/export/ticket`);
+  url.searchParams.set('id', id);
+  url.searchParams.set('token', token);
+  return url.toString();
+}
+
+function decodeMaybe(value: string): string {
+  let current = value.trim();
+  for (let i = 0; i < 2; i += 1) {
+    try {
+      const next = decodeURIComponent(current);
+      if (next === current) break;
+      current = next;
+    } catch {
+      break;
+    }
+  }
+  return current;
+}
+
 export function parseImportTransferDeepLink(
   raw: string,
 ): { sourceUrl: string } | null {
@@ -36,20 +82,35 @@ export function parseImportTransferDeepLink(
   }
   if (url.protocol !== `${PIXULI_URL_SCHEME}:`) return null;
   const host = url.hostname || url.host;
-  // Electron / 部分平台会把 path 放在 pathname：pixuli://import-transfer?...
   const path =
     (host === IMPORT_TRANSFER_PATH ? IMPORT_TRANSFER_PATH : '') ||
     url.pathname.replace(/^\/+/, '');
   if (host !== IMPORT_TRANSFER_PATH && path !== IMPORT_TRANSFER_PATH) {
     return null;
   }
+
+  const lanHost = url.searchParams.get('h')?.trim();
+  const ticketId = url.searchParams.get('id')?.trim();
+  const token =
+    url.searchParams.get('t')?.trim() || url.searchParams.get('token')?.trim();
+  if (lanHost && ticketId && token) {
+    return {
+      sourceUrl: buildTicketUrlFromParts(
+        lanHost,
+        url.searchParams.get('p'),
+        ticketId,
+        token,
+      ),
+    };
+  }
+
   const src = url.searchParams.get('src');
   if (!src?.trim()) return null;
-  let decoded = src.trim();
-  try {
-    decoded = decodeURIComponent(decoded);
-  } catch {
-    // keep raw
+  let decoded = decodeMaybe(src);
+  // Android 偶尔把嵌套 ?id=&token= 拆到外层
+  if (/^https?:\/\//i.test(decoded) && !/[?&]token=/i.test(decoded) && token) {
+    const join = decoded.includes('?') ? '&' : '?';
+    decoded = `${decoded}${join}token=${encodeURIComponent(token)}`;
   }
   if (!/^https?:\/\//i.test(decoded)) return null;
   return { sourceUrl: decoded };

@@ -5,6 +5,10 @@ import {
 } from '@/features/workspace/workspaceRuntime';
 import { importDirForSelectedFolder } from '@/features/workspace/workspaceLocalFs';
 import {
+  shouldSkipExistingEntry,
+  type TransferImportStrategy,
+} from './importStrategy';
+import {
   parseTransferManifest,
   resolveImportTargetPath,
   TRANSFER_MANIFEST_NAME,
@@ -20,6 +24,12 @@ export interface TransferImportResult {
   imported: number;
   skipped: number;
   failed: number;
+  /** replace 策略下先清空的本机条目数 */
+  removed: number;
+}
+
+export interface TransferImportOptions {
+  strategy?: TransferImportStrategy;
 }
 
 function decodeUtf8(bytes: Uint8Array): string {
@@ -63,25 +73,75 @@ function uint8ToFile(bytes: Uint8Array, name: string, mimeType?: string): File {
 }
 
 /**
+ * 清空目标文件夹下全部活跃文件（含子目录），并入队删除同步。
+ * 根目录（空路径）会清空整个工作区索引中的活跃文件。
+ */
+async function clearTargetFolderTree(targetFolder: string): Promise<number> {
+  const vault = getWorkspaceVault();
+  const sync = getWorkspaceSyncEngine();
+  const base = importDirForSelectedFolder(targetFolder);
+  const entries = base
+    ? await vault.list({ pathPrefix: base })
+    : await vault.list();
+
+  let removed = 0;
+  for (const entry of entries) {
+    if (entry.deletedAt) continue;
+    try {
+      await vault.softDelete(entry.relativePath);
+      await sync.enqueuePush({
+        type: 'delete',
+        relativePath: entry.relativePath,
+        remotePath: entry.remotePath,
+      });
+      removed += 1;
+    } catch {
+      // 单条失败不阻断；后续导入仍可覆盖同名路径
+    }
+  }
+
+  if (base) {
+    try {
+      // 清理空文件夹登记（已 softDelete 的条目会被跳过）
+      await vault.deleteFolder(base);
+    } catch {
+      // 根路径或文件夹不存在时忽略
+    }
+  }
+
+  return removed;
+}
+
+/**
  * 将转移包写入本机工作区指定文件夹（保留包内相对路径结构）。
- * 目标已存在同名文件时跳过。
+ * - skip：目标已有同名活跃文件则跳过
+ * - overwrite：同名则覆盖写入
+ * - replace：先清空目标文件夹（含子目录）再全部写入
  */
 export async function importTransferPackageToFolder(
   preview: TransferImportPreview,
   targetFolder: string,
+  options: TransferImportOptions = {},
 ): Promise<TransferImportResult> {
+  const strategy: TransferImportStrategy = options.strategy ?? 'skip';
   const vault = getWorkspaceVault();
   const sync = getWorkspaceSyncEngine();
   const base = importDirForSelectedFolder(targetFolder);
   let imported = 0;
   let skipped = 0;
   let failed = 0;
+  let removed = 0;
+
+  if (strategy === 'replace') {
+    removed = await clearTargetFolderTree(targetFolder);
+  }
 
   for (const item of preview.manifest.items) {
     try {
       const targetPath = resolveImportTargetPath(base, item.relativePath);
       const existing = await vault.getByPath(targetPath);
-      if (existing && !existing.deletedAt) {
+      const hasActive = Boolean(existing && !existing.deletedAt);
+      if (shouldSkipExistingEntry(strategy, hasActive)) {
         skipped += 1;
         continue;
       }
@@ -108,5 +168,5 @@ export async function importTransferPackageToFolder(
     }
   }
 
-  return { imported, skipped, failed };
+  return { imported, skipped, failed, removed };
 }

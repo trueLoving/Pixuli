@@ -24,6 +24,12 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
   },
+  plugins: {
+    // 原生 HTTP：移动端可拉取局域网 http:// 转移包（绕过 https WebView 混合内容限制）
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;

@@ -155,6 +155,70 @@
   color: #374151;
 }
 
+.transfer-import-strategy {
+  margin: 0.85rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.transfer-import-strategy legend {
+  padding: 0 0.25rem;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.transfer-import-strategy-option {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+  color: #111;
+}
+
+.transfer-import-strategy-option:first-of-type {
+  margin-top: 0.35rem;
+}
+
+.transfer-import-strategy-option input {
+  margin-top: 0.15rem;
+}
+
+.transfer-import-strategy-title {
+  display: block;
+  font-weight: 500;
+}
+
+.transfer-import-strategy-desc {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+.transfer-import-replace-confirm {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.transfer-import-replace-confirm input {
+  margin-top: 0.15rem;
+}
+
+.transfer-import-submit--danger {
+  background: #b91c1c;
+}
+
 .transfer-import-folder {
   width: 100%;
   min-height: 2.5rem;

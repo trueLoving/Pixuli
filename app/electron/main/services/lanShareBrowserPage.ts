@@ -86,7 +86,7 @@ export function renderLanShareBrowserPage(): string {
 <body>
   <header>
     <h1>Pixuli 局域网共享</h1>
-    <p class="meta">只读访客页 · 勾选文件或文件夹后，可下载转移包，或直接在已安装的 Pixuli 中导入（含描述/标签）</p>
+    <p class="meta">只读访客页 · 目录与 Desktop 库视图一致（Vault）· 勾选后可下载转移包，或在已安装的 Pixuli 中导入</p>
     <div id="nextStep" class="next" role="status"></div>
     <div class="toolbar">
       <input id="filter" type="search" placeholder="筛选当前目录…" enterkeyhint="search" />
@@ -196,10 +196,13 @@ export function renderLanShareBrowserPage(): string {
     }
 
     function buildDeepLink(ticketId) {
-      const ticketUrl = new URL('/api/export/ticket', location.origin);
-      ticketUrl.searchParams.set('id', ticketId);
-      ticketUrl.searchParams.set('token', token);
-      return 'pixuli://import-transfer?src=' + encodeURIComponent(ticketUrl.toString());
+      // 结构化参数，避免 Android 拆坏嵌套 query（src=http://...?id=&token=）
+      const params = new URLSearchParams();
+      params.set('h', location.hostname);
+      if (location.port) params.set('p', location.port);
+      params.set('id', ticketId);
+      params.set('t', token);
+      return 'pixuli://import-transfer?' + params.toString();
     }
 
     function triggerBlobDownload(blob, filename) {

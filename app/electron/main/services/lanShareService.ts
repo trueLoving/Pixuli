@@ -14,17 +14,22 @@ import {
   getManifestRelativePath,
   parseMetadataManifest,
 } from '@pixuli/core/utils';
+import { WORKSPACE_PATHS } from '@pixuli/core/vault';
 import {
   buildShareUrls,
   createShareToken,
   extractShareToken,
   guessMimeType,
-  isHiddenRelativePath,
   isShareTokenValid,
   LAN_SHARE_DEFAULT_PORT,
-  LAN_SHARE_HIDDEN_SEGMENTS,
   sanitizeShareRelativePath,
 } from '../../../src/features/lan-share/lanShareHelpers';
+import {
+  collectVaultShareFilePaths,
+  listVaultShareDirectory,
+  vaultDisplayNameForPath,
+  type VaultShareIndexEntry,
+} from '../../../src/features/lan-share/lanShareVaultView';
 import {
   buildTransferManifest,
   buildTransferZipFilename,
@@ -48,6 +53,11 @@ interface DirEntry {
   relativePath: string;
   size?: number;
   mimeType?: string;
+}
+
+interface VaultShareSnapshot {
+  entries: VaultShareIndexEntry[];
+  folders: string[];
 }
 
 let server: Server | null = null;
@@ -134,38 +144,67 @@ function getStatus(): LanShareStatus {
   };
 }
 
-function listDirectory(root: string, relativeDir: string): DirEntry[] {
-  const abs = resolveSafePath(root, relativeDir);
-  if (!fs.existsSync(abs) || !fs.statSync(abs).isDirectory()) {
-    return [];
+function readJsonFileIfExists(absPath: string): unknown | null {
+  if (!fs.existsSync(absPath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(absPath, 'utf8')) as unknown;
+  } catch {
+    return null;
   }
-  const entries = fs.readdirSync(abs, { withFileTypes: true });
-  const items: DirEntry[] = [];
-  for (const entry of entries) {
-    if (LAN_SHARE_HIDDEN_SEGMENTS.has(entry.name)) continue;
-    if (entry.name === '.metadata') continue;
-    const rel = relativeDir
-      ? `${relativeDir}/${entry.name}`.replace(/\\/g, '/')
-      : entry.name;
-    if (isHiddenRelativePath(rel)) continue;
-    if (entry.isDirectory()) {
-      items.push({ name: entry.name, kind: 'dir', relativePath: rel });
-    } else if (entry.isFile()) {
-      const absFile = path.join(abs, entry.name);
-      const size = fs.statSync(absFile).size;
-      items.push({
-        name: entry.name,
-        kind: 'file',
-        relativePath: rel,
-        size,
-        mimeType: guessMimeType(entry.name),
+}
+
+/** 读 Vault 快照：与 Desktop 同一套 index / folders */
+function readVaultShareSnapshot(root: string): VaultShareSnapshot {
+  const indexRaw = readJsonFileIfExists(
+    resolveSafePath(root, WORKSPACE_PATHS.index),
+  ) as { entries?: unknown } | null;
+  const foldersRaw = readJsonFileIfExists(
+    resolveSafePath(root, WORKSPACE_PATHS.folders),
+  ) as { folders?: unknown } | null;
+
+  const entries: VaultShareIndexEntry[] = [];
+  if (Array.isArray(indexRaw?.entries)) {
+    for (const item of indexRaw.entries) {
+      if (!item || typeof item !== 'object') continue;
+      const record = item as Record<string, unknown>;
+      if (
+        typeof record.relativePath !== 'string' ||
+        !record.relativePath.trim()
+      ) {
+        continue;
+      }
+      entries.push({
+        relativePath: record.relativePath.replace(/\\/g, '/'),
+        name:
+          typeof record.name === 'string' && record.name.trim()
+            ? record.name
+            : basenameRelative(record.relativePath),
+        size: typeof record.size === 'number' ? record.size : undefined,
+        mimeType:
+          typeof record.mimeType === 'string' ? record.mimeType : undefined,
+        deletedAt:
+          typeof record.deletedAt === 'string' ? record.deletedAt : undefined,
       });
     }
   }
-  return items.sort((a, b) => {
-    if (a.kind !== b.kind) return a.kind === 'dir' ? -1 : 1;
-    return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-  });
+
+  const folders = Array.isArray(foldersRaw?.folders)
+    ? foldersRaw.folders.filter(
+        (folder): folder is string =>
+          typeof folder === 'string' && Boolean(folder.trim()),
+      )
+    : [];
+
+  return { entries, folders };
+}
+
+function listDirectory(root: string, relativeDir: string): DirEntry[] {
+  const snapshot = readVaultShareSnapshot(root);
+  return listVaultShareDirectory(
+    snapshot.entries,
+    snapshot.folders,
+    relativeDir,
+  );
 }
 
 function readDiskManifestEntry(
@@ -286,49 +325,31 @@ async function readRequestJson(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(raw) as unknown;
 }
 
-/** 将勾选的文件/文件夹展开为可导出的文件相对路径（文件夹递归包含子文件） */
+/** 将勾选的文件/文件夹展开为 Vault 索引中的文件相对路径 */
 function collectExportFilePaths(
   root: string,
   relativePaths: string[],
 ): string[] {
-  const unique = Array.from(
-    new Set(
-      relativePaths
-        .map(p => sanitizeShareRelativePath(p))
-        .filter((p): p is string => Boolean(p)),
-    ),
-  );
-  const files = new Set<string>();
-
-  const walkDir = (relDir: string) => {
-    for (const entry of listDirectory(root, relDir)) {
-      if (entry.kind === 'dir') walkDir(entry.relativePath);
-      else files.add(entry.relativePath);
-    }
-  };
-
-  for (const rel of unique) {
-    let abs: string;
+  const snapshot = readVaultShareSnapshot(root);
+  return collectVaultShareFilePaths(
+    snapshot.entries,
+    snapshot.folders,
+    relativePaths,
+  ).filter(rel => {
     try {
-      abs = resolveSafePath(root, rel);
+      const abs = resolveSafePath(root, rel);
+      return fs.existsSync(abs) && fs.statSync(abs).isFile();
     } catch {
-      continue;
+      return false;
     }
-    if (!fs.existsSync(abs)) continue;
-    const stat = fs.statSync(abs);
-    if (stat.isDirectory()) walkDir(rel);
-    else if (stat.isFile()) files.add(rel);
-  }
-
-  return Array.from(files).sort((a, b) =>
-    a.localeCompare(b, undefined, { sensitivity: 'base' }),
-  );
+  });
 }
 
 function buildExportZip(
   root: string,
   relativePaths: string[],
 ): { zip: Uint8Array; filename: string; packed: number } {
+  const snapshot = readVaultShareSnapshot(root);
   const filePaths = collectExportFilePaths(root, relativePaths);
   const itemInputs: Parameters<typeof buildTransferManifest>[0] = [];
 
@@ -342,9 +363,10 @@ function buildExportZip(
     if (!fs.existsSync(abs) || !fs.statSync(abs).isFile()) continue;
     const meta = readDiskManifestEntry(root, rel);
     const size = fs.statSync(abs).size;
+    const vaultName = vaultDisplayNameForPath(snapshot.entries, rel);
     itemInputs.push({
       relativePath: rel,
-      name: meta.name || basenameRelative(rel),
+      name: vaultName || meta.name || basenameRelative(rel),
       mimeType: meta.mimeType,
       description: meta.description,
       tags: meta.tags,
