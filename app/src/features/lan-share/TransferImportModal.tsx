@@ -34,6 +34,13 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
 }) => {
   const isOpen = useTransferImportStore(state => state.open);
   const sourceUrl = useTransferImportStore(state => state.sourceUrl);
+  const preferredStrategy = useTransferImportStore(
+    state => state.preferredStrategy,
+  );
+  const preferredTargetFolder = useTransferImportStore(
+    state => state.preferredTargetFolder,
+  );
+  const librarySync = useTransferImportStore(state => state.librarySync);
   const requestId = useTransferImportStore(state => state.requestId);
   const closeImport = useTransferImportStore(state => state.closeImport);
 
@@ -86,8 +93,21 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
     }
 
     const remembered = readRememberedImportFolder();
-    setTargetFolder(selectedFolderPath || remembered || '');
-    setStrategy(readRememberedImportStrategy());
+    if (preferredTargetFolder != null) {
+      setTargetFolder(preferredTargetFolder);
+    } else if (librarySync) {
+      setTargetFolder('');
+    } else {
+      setTargetFolder(selectedFolderPath || remembered || '');
+    }
+    if (preferredStrategy) {
+      setStrategy(preferredStrategy);
+    } else if (librarySync) {
+      setStrategy('replace');
+    } else {
+      setStrategy(readRememberedImportStrategy());
+    }
+    // 一键同步仍需用户勾选确认，避免误清库
     setReplaceConfirmed(false);
 
     const seed = takePendingTransferSeedFile();
@@ -187,7 +207,9 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
         <div className="transfer-import-header">
           <h2 id="transfer-import-title" className="transfer-import-title">
             <Archive size={18} aria-hidden />
-            {t('settings.lanShare.importTitle')}
+            {librarySync
+              ? t('settings.lanShare.librarySyncImportTitle')
+              : t('settings.lanShare.importTitle')}
           </h2>
           <button
             type="button"
@@ -201,7 +223,9 @@ export const TransferImportModal: React.FC<TransferImportModalProps> = ({
         </div>
 
         <p className="transfer-import-hint">
-          {t('settings.lanShare.importHint')}
+          {librarySync
+            ? t('settings.lanShare.librarySyncImportHint')
+            : t('settings.lanShare.importHint')}
         </p>
         <p className="transfer-import-drop-hint">
           {t('settings.lanShare.importDropHint')}

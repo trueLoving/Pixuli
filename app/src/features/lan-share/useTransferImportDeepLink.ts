@@ -12,13 +12,21 @@ async function handleDeepLinkUrl(
 ): Promise<void> {
   const parsed = parseImportTransferDeepLink(raw);
   if (!parsed) return;
+  const openOpts = {
+    strategy: parsed.strategy,
+    targetFolder: parsed.targetFolder,
+    librarySync: parsed.librarySync,
+  };
   try {
     const file = await fetchTransferZipAsFile(parsed.sourceUrl);
-    useTransferImportStore.getState().openImport({ file });
+    useTransferImportStore.getState().openImport({
+      file,
+      ...openOpts,
+    });
   } catch {
-    // 回退：仍打开导入框，让用户手动选文件；同时把 URL 交给弹窗再试一次
     useTransferImportStore.getState().openImport({
       sourceUrl: parsed.sourceUrl,
+      ...openOpts,
     });
     onFetchError();
   }
