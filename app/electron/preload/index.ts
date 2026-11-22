@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('lanShareAPI', {
     ipcRenderer.invoke('lanShare:start', preferredPort),
   stop: () => ipcRenderer.invoke('lanShare:stop'),
   rotateToken: () => ipcRenderer.invoke('lanShare:rotateToken'),
+  prepareLibrarySync: () => ipcRenderer.invoke('lanShare:prepareLibrarySync'),
 });
 
 contextBridge.exposeInMainWorld('pixuliDeepLink', {

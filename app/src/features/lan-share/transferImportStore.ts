@@ -19,18 +19,33 @@ export function peekPendingTransferSeedFile(): File | null {
   return pendingSeedFile;
 }
 
+export interface OpenTransferImportOptions {
+  sourceUrl?: string;
+  file?: File | null;
+  strategy?: TransferImportStrategy;
+  targetFolder?: string;
+  librarySync?: boolean;
+}
+
 interface TransferImportState {
   open: boolean;
   /** 从 Host 票据 URL 拉取 zip（深链） */
   sourceUrl: string | null;
+  /** 深链/一键同步预填策略 */
+  preferredStrategy: TransferImportStrategy | null;
+  preferredTargetFolder: string | null;
+  librarySync: boolean;
   requestId: number;
-  openImport: (opts?: { sourceUrl?: string; file?: File | null }) => void;
+  openImport: (opts?: OpenTransferImportOptions) => void;
   closeImport: () => void;
 }
 
 export const useTransferImportStore = create<TransferImportState>(set => ({
   open: false,
   sourceUrl: null,
+  preferredStrategy: null,
+  preferredTargetFolder: null,
+  librarySync: false,
   requestId: 0,
   openImport: (opts = {}) => {
     if (opts.file) {
@@ -39,12 +54,22 @@ export const useTransferImportStore = create<TransferImportState>(set => ({
     set(state => ({
       open: true,
       sourceUrl: opts.sourceUrl?.trim() || null,
+      preferredStrategy: opts.strategy ?? null,
+      preferredTargetFolder:
+        opts.targetFolder === undefined ? null : opts.targetFolder,
+      librarySync: Boolean(opts.librarySync),
       requestId: state.requestId + 1,
     }));
   },
   closeImport: () => {
     pendingSeedFile = null;
-    set({ open: false, sourceUrl: null });
+    set({
+      open: false,
+      sourceUrl: null,
+      preferredStrategy: null,
+      preferredTargetFolder: null,
+      librarySync: false,
+    });
   },
 }));
 

@@ -116,14 +116,14 @@ Token 与连接配置仅存客户端。
 
 - Main：`electron/main/services/lanShareService.ts`（Node `http`，绑定
   `0.0.0.0`）
-- 浏览器页：`lanShareBrowserPage.ts`（筛选 / 多选 / 仅下载 / 在 Pixuli 中导入）；列表读 Vault
-  `index.json` + `folders.json`（与 Desktop 库视图一致，非裸 `readdir`）
-- 导出：`POST /api/export` → zip +
-  `X-Pixuli-Import-Ticket`；`GET /api/export/ticket` 重打同一包（供
-  `pixuli://import-transfer?src=`）
+- 浏览器页：`lanShareBrowserPage.ts`（筛选 / 多选 / 仅下载 / 导入 / 一键整库同步）；列表读 Vault
+  `index.json` + `folders.json`
+- 导出：`POST /api/export`、`POST /api/export/library` → zip + ticket；IPC
+  `lanShare:prepareLibrarySync` 生成 `pixuli://…&s=replace&sync=1` 深链
 - 导入：`importTransferPackage.ts`（skip / overwrite / replace）+
-  `TransferImportHost`（工具栏 / 设置 / 深链 / 拖放）
-- Preload：`lanShareAPI`、`pixuliDeepLink`；设置 · 访问
+  `TransferImportHost`（工具栏 / 设置 / 深链 / 拖放 / 整库同步预填）
+- Preload：`lanShareAPI`（含
+  `prepareLibrarySync`）、`pixuliDeepLink`；设置 · 访问
 - 安全：口令；拒绝 `..`；不暴露 `.pixuli` / `.git` / `.metadata`
   目录浏览；票据TTL
 - 退出应用时停止服务

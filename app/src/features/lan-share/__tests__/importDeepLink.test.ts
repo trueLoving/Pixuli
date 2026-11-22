@@ -21,7 +21,33 @@ describe('importDeepLink', () => {
     expect(deep.includes('p=17890')).toBe(true);
     expect(deep.includes('id=TICKET1')).toBe(true);
     expect(deep.includes('t=TOK')).toBe(true);
-    expect(parseImportTransferDeepLink(deep)).toEqual({ sourceUrl: ticket });
+    expect(parseImportTransferDeepLink(deep)).toEqual({
+      sourceUrl: ticket,
+      strategy: undefined,
+      targetFolder: undefined,
+      librarySync: false,
+    });
+  });
+
+  it('builds library sync deep links with replace strategy', () => {
+    const ticket = buildExportTicketHttpUrl(
+      'http://192.168.1.8:17890',
+      'TICKET1',
+      'TOK',
+    );
+    const deep = buildImportTransferDeepLink(ticket, {
+      strategy: 'replace',
+      targetFolder: '',
+      librarySync: true,
+    });
+    expect(deep.includes('s=replace')).toBe(true);
+    expect(deep.includes('sync=1')).toBe(true);
+    expect(parseImportTransferDeepLink(deep)).toEqual({
+      sourceUrl: ticket,
+      strategy: 'replace',
+      targetFolder: undefined,
+      librarySync: true,
+    });
   });
 
   it('parses legacy src= deep links and recovers stripped token', () => {
@@ -34,6 +60,9 @@ describe('importDeepLink', () => {
     expect(parseImportTransferDeepLink(legacy)).toEqual({
       sourceUrl:
         'http://192.168.1.8:17890/api/export/ticket?id=TICKET1&token=TOK',
+      strategy: undefined,
+      targetFolder: undefined,
+      librarySync: false,
     });
   });
 

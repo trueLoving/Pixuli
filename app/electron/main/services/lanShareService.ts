@@ -15,6 +15,7 @@ import {
   parseMetadataManifest,
 } from '@pixuli/core/utils';
 import { WORKSPACE_PATHS } from '@pixuli/core/vault';
+import { buildImportTransferDeepLink } from '../../../src/features/lan-share/importDeepLink';
 import {
   buildShareUrls,
   createShareToken,
@@ -205,6 +206,50 @@ function listDirectory(root: string, relativeDir: string): DirEntry[] {
     snapshot.folders,
     relativeDir,
   );
+}
+
+/** 当前 Vault 全部活跃文件相对路径（一键全库同步） */
+function listAllLibraryFilePaths(root: string): string[] {
+  const snapshot = readVaultShareSnapshot(root);
+  return snapshot.entries
+    .filter(entry => !entry.deletedAt && entry.relativePath)
+    .map(entry => entry.relativePath)
+    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
+function prepareLibraryExportTicket(root: string): {
+  ticketId: string;
+  paths: string[];
+  zip: Uint8Array;
+  filename: string;
+} {
+  const paths = listAllLibraryFilePaths(root);
+  if (paths.length === 0) {
+    throw new Error('No exportable files');
+  }
+  const { zip, filename } = buildExportZip(root, paths);
+  const ticketId = createExportTicket(paths);
+  return { ticketId, paths, zip, filename };
+}
+
+function buildLibrarySyncDeepLinks(ticketId: string): string[] {
+  const status = getStatus();
+  if (!status.token || status.port == null) return [];
+  return status.urls
+    .map(shareUrl => {
+      try {
+        const parsed = new URL(shareUrl);
+        const ticketUrl = `http://${parsed.hostname}${parsed.port ? `:${parsed.port}` : `:${status.port}`}/api/export/ticket?id=${encodeURIComponent(ticketId)}&token=${encodeURIComponent(status.token!)}`;
+        return buildImportTransferDeepLink(ticketUrl, {
+          strategy: 'replace',
+          targetFolder: '',
+          librarySync: true,
+        });
+      } catch {
+        return '';
+      }
+    })
+    .filter(Boolean);
 }
 
 function readDiskManifestEntry(
@@ -453,10 +498,39 @@ function handleRequest(req: IncomingMessage, res: ServerResponse): void {
         return;
       }
 
+      if (url.pathname === '/api/export/library' && req.method === 'POST') {
+        try {
+          const { zip, filename, ticketId } = prepareLibraryExportTicket(root);
+          sendZip(res, zip, filename, ticketId);
+        } catch (error) {
+          sendText(
+            res,
+            400,
+            error instanceof Error ? error.message : 'export failed',
+          );
+        }
+        return;
+      }
+
       if (url.pathname === '/api/export' && req.method === 'POST') {
         const body = (await readRequestJson(req)) as {
           paths?: unknown;
+          scope?: unknown;
         } | null;
+        if (body?.scope === 'library') {
+          try {
+            const { zip, filename, ticketId } =
+              prepareLibraryExportTicket(root);
+            sendZip(res, zip, filename, ticketId);
+          } catch (error) {
+            sendText(
+              res,
+              400,
+              error instanceof Error ? error.message : 'export failed',
+            );
+          }
+          return;
+        }
         const paths = Array.isArray(body?.paths)
           ? body.paths.filter((p): p is string => typeof p === 'string')
           : [];
@@ -617,13 +691,50 @@ async function stopServer(): Promise<LanShareStatus> {
     return getStatus();
   }
   const current = server;
+  // 先摘掉引用与口令，避免 close 等待期间状态仍显示「共享中」
   server = null;
-  await new Promise<void>(resolve => {
-    current.close(() => resolve());
-  });
   activePort = null;
   activeToken = null;
   exportTickets.clear();
+
+  await new Promise<void>(resolve => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+
+    // Node http.Server.close() 会等既有 keep-alive 连接结束；
+    // 手机浏览器挂着页面时回调可能永不触发，导致「停止共享」卡住。
+    try {
+      current.closeAllConnections();
+    } catch {
+      try {
+        current.closeIdleConnections();
+      } catch {
+        // ignore
+      }
+    }
+
+    const timer = setTimeout(() => {
+      try {
+        current.closeAllConnections();
+      } catch {
+        // ignore
+      }
+      finish();
+    }, 1500);
+
+    current.close(error => {
+      clearTimeout(timer);
+      if (error) {
+        // 已摘引用；忽略 close 竞态错误
+      }
+      finish();
+    });
+  });
+
   return getStatus();
 }
 
@@ -658,5 +769,47 @@ export function registerLanShareHandlers(): void {
     }
     activeToken = createShareToken();
     return { ok: true as const, status: getStatus() };
+  });
+
+  ipcMain.handle('lanShare:prepareLibrarySync', async () => {
+    if (!server || !activeToken || activePort == null) {
+      return {
+        ok: false as const,
+        error: 'Share is not active',
+        status: getStatus(),
+      };
+    }
+    const root = getWorkspaceRoot();
+    if (!root) {
+      return {
+        ok: false as const,
+        error: 'Workspace root is not set',
+        status: getStatus(),
+      };
+    }
+    try {
+      const { ticketId, paths } = prepareLibraryExportTicket(root);
+      const deepLinks = buildLibrarySyncDeepLinks(ticketId);
+      if (deepLinks.length === 0) {
+        return {
+          ok: false as const,
+          error: 'No LAN address',
+          status: getStatus(),
+        };
+      }
+      return {
+        ok: true as const,
+        status: getStatus(),
+        ticketId,
+        itemCount: paths.length,
+        deepLinks,
+      };
+    } catch (error) {
+      return {
+        ok: false as const,
+        error: error instanceof Error ? error.message : 'prepare failed',
+        status: getStatus(),
+      };
+    }
   });
 }

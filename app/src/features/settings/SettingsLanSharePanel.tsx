@@ -29,6 +29,8 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
   const [status, setStatus] = useState<LanShareStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState<string>('');
+  const [syncDeepLinks, setSyncDeepLinks] = useState<string[]>([]);
+  const [syncItemCount, setSyncItemCount] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     if (!window.lanShareAPI) {
@@ -46,6 +48,8 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
     const urls = status?.urls ?? [];
     if (urls.length === 0) {
       setSelectedUrl('');
+      setSyncDeepLinks([]);
+      setSyncItemCount(null);
       return;
     }
     setSelectedUrl(prev => (prev && urls.includes(prev) ? prev : urls[0]));
@@ -55,6 +59,22 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
     () => selectedUrl || status?.urls?.[0] || '',
     [selectedUrl, status?.urls],
   );
+
+  const matchedSyncDeepLink = useMemo(() => {
+    if (syncDeepLinks.length === 0) return '';
+    if (!qrUrl) return syncDeepLinks[0];
+    try {
+      const shareHost = new URL(qrUrl).hostname;
+      const matched = syncDeepLinks.find(
+        item =>
+          item.includes(`h=${shareHost}`) ||
+          item.includes(`h=${encodeURIComponent(shareHost)}`),
+      );
+      return matched || syncDeepLinks[0];
+    } catch {
+      return syncDeepLinks[0];
+    }
+  }, [syncDeepLinks, qrUrl]);
 
   const handleStart = async () => {
     if (!window.lanShareAPI) return;
@@ -78,7 +98,16 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
     try {
       const result = await window.lanShareAPI.stop();
       setStatus(result.status);
+      setSyncDeepLinks([]);
+      setSyncItemCount(null);
       showSuccess(t('settings.lanShare.stopped'));
+    } catch {
+      try {
+        setStatus(await window.lanShareAPI.getStatus());
+      } catch {
+        setStatus(null);
+      }
+      showError(t('settings.lanShare.stopFailed'));
     } finally {
       setBusy(false);
     }
@@ -91,8 +120,32 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
       const result = await window.lanShareAPI.rotateToken();
       setStatus(result.status);
       if (result.ok) {
+        setSyncDeepLinks([]);
+        setSyncItemCount(null);
         showSuccess(t('settings.lanShare.tokenRotated'));
       }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePrepareLibrarySync = async () => {
+    if (!window.lanShareAPI?.prepareLibrarySync) return;
+    setBusy(true);
+    try {
+      const result = await window.lanShareAPI.prepareLibrarySync();
+      setStatus(result.status);
+      if (!result.ok || !result.deepLinks?.length) {
+        showError(result.error || t('settings.lanShare.librarySyncFailed'));
+        return;
+      }
+      setSyncDeepLinks(result.deepLinks);
+      setSyncItemCount(result.itemCount ?? null);
+      showSuccess(
+        t('settings.lanShare.librarySyncReady', {
+          count: result.itemCount ?? 0,
+        }),
+      );
     } finally {
       setBusy(false);
     }
@@ -255,6 +308,50 @@ export const SettingsLanSharePanel: React.FC<SettingsLanSharePanelProps> = ({
                       ))}
                     </select>
                   </label>
+                ) : null}
+              </div>
+
+              <div className="space-y-2 rounded-md border border-[color:var(--pix-violet)]/30 bg-white p-3">
+                <p className="text-sm font-medium text-gray-800">
+                  {t('settings.lanShare.librarySyncTitle')}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {t('settings.lanShare.librarySyncHint')}
+                </p>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void handlePrepareLibrarySync()}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-md bg-[color:var(--pix-violet)] px-3 text-sm text-white hover:opacity-90 disabled:opacity-60"
+                >
+                  <Share2 size={14} aria-hidden />
+                  {t('settings.lanShare.librarySyncPrepare')}
+                </button>
+                {matchedSyncDeepLink ? (
+                  <div className="flex flex-col items-center gap-2 pt-1">
+                    {syncItemCount != null ? (
+                      <p className="text-xs text-gray-600">
+                        {t('settings.lanShare.librarySyncReady', {
+                          count: syncItemCount,
+                        })}
+                      </p>
+                    ) : null}
+                    <LanShareQrCode
+                      url={matchedSyncDeepLink}
+                      label={matchedSyncDeepLink}
+                    />
+                    <p className="text-center text-xs text-amber-700">
+                      {t('settings.lanShare.librarySyncWarn')}
+                    </p>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 text-[color:var(--pix-violet-deep)]"
+                      onClick={() => void copyText(matchedSyncDeepLink)}
+                    >
+                      <Copy size={14} aria-hidden />
+                      {t('settings.lanShare.copy')}
+                    </button>
+                  </div>
                 ) : null}
               </div>
 

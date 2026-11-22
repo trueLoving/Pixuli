@@ -86,9 +86,10 @@ export function renderLanShareBrowserPage(): string {
 <body>
   <header>
     <h1>Pixuli 局域网共享</h1>
-    <p class="meta">只读访客页 · 目录与 Desktop 库视图一致（Vault）· 勾选后可下载转移包，或在已安装的 Pixuli 中导入</p>
+    <p class="meta">只读访客页 · 目录与 Desktop 库视图一致（Vault）· 可一键同步整库到本机 Pixuli，或勾选部分文件导入</p>
     <div id="nextStep" class="next" role="status"></div>
     <div class="toolbar">
+      <button type="button" class="primary" id="syncLibrary">一键同步整库到 Pixuli</button>
       <input id="filter" type="search" placeholder="筛选当前目录…" enterkeyhint="search" />
       <button type="button" id="selectVisible">全选可见</button>
       <button type="button" id="clearSelected">清空勾选</button>
@@ -195,13 +196,15 @@ export function renderLanShareBrowserPage(): string {
         escapeHtml(deepLink) + '">打开 App 导入</a>；也可在 App 工具栏或设置 · 局域网共享里选择刚下载的 zip。';
     }
 
-    function buildDeepLink(ticketId) {
+    function buildDeepLink(ticketId, options) {
       // 结构化参数，避免 Android 拆坏嵌套 query（src=http://...?id=&token=）
       const params = new URLSearchParams();
       params.set('h', location.hostname);
       if (location.port) params.set('p', location.port);
       params.set('id', ticketId);
       params.set('t', token);
+      if (options && options.strategy) params.set('s', options.strategy);
+      if (options && options.librarySync) params.set('sync', '1');
       return 'pixuli://import-transfer?' + params.toString();
     }
 
@@ -263,6 +266,41 @@ export function renderLanShareBrowserPage(): string {
       }
     }
 
+    async function syncEntireLibrary() {
+      const syncBtn = document.getElementById('syncLibrary');
+      syncBtn.disabled = true;
+      syncBtn.textContent = '正在打包整库…';
+      try {
+        const res = await fetch(withToken('/api/export/library'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          alert(text || '整库导出失败');
+          return;
+        }
+        const ticketId = res.headers.get('X-Pixuli-Import-Ticket') || '';
+        await res.arrayBuffer();
+        if (!ticketId) {
+          alert('整库已打包，但缺少导入票据。请改用勾选后导入。');
+          return;
+        }
+        const deepLink = buildDeepLink(ticketId, { strategy: 'replace', librarySync: true });
+        const el = document.getElementById('nextStep');
+        el.classList.add('show');
+        el.innerHTML = '已准备整库同步包。将用转移包<strong>替换</strong>本机 Pixuli 工作区根目录内容。' +
+          '请 <a id="nextDeepLink" href="' + escapeHtml(deepLink) + '">打开 Pixuli 一键同步</a>，并在 App 内确认清空后导入。';
+        window.location.href = deepLink;
+      } catch (err) {
+        alert(err && err.message ? err.message : '整库导出失败');
+      } finally {
+        syncBtn.textContent = '一键同步整库到 Pixuli';
+        syncBtn.disabled = false;
+      }
+    }
+
     async function load() {
       renderCrumbs();
       const url = withToken('/api/list?path=' + encodeURIComponent(state.path));
@@ -299,6 +337,9 @@ export function renderLanShareBrowserPage(): string {
     });
     document.getElementById('openInApp').addEventListener('click', () => {
       void exportPack('app');
+    });
+    document.getElementById('syncLibrary').addEventListener('click', () => {
+      void syncEntireLibrary();
     });
 
     if (!token) {
