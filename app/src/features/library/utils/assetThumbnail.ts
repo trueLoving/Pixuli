@@ -131,47 +131,8 @@ export async function captureVideoThumbnail(
 }
 
 export async function capturePdfThumbnail(url: string): Promise<string | null> {
-  if (typeof document === 'undefined' || !url) return null;
-
-  try {
-    const { loadPdfjs } = await import('./pdfDocument');
-    const pdfjs = await loadPdfjs();
-
-    const loadingTask = pdfjs.getDocument({
-      url,
-      withCredentials: false,
-      isEvalSupported: false,
-    });
-    const doc = await loadingTask.promise;
-    try {
-      const page = await doc.getPage(1);
-      const base = page.getViewport({ scale: 1 });
-      const scale = Math.max(THUMB_SIZE / base.width, THUMB_SIZE / base.height);
-      const viewport = page.getViewport({ scale });
-      const temp = document.createElement('canvas');
-      temp.width = Math.ceil(viewport.width);
-      temp.height = Math.ceil(viewport.height);
-      const tempCtx = temp.getContext('2d');
-      if (!tempCtx) return null;
-
-      await page.render({
-        canvasContext: tempCtx,
-        viewport,
-      }).promise;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = THUMB_SIZE;
-      canvas.height = THUMB_SIZE;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return null;
-      drawCover(ctx, temp, temp.width, temp.height, THUMB_SIZE);
-      return canvas.toDataURL('image/jpeg', 0.72);
-    } finally {
-      await doc.destroy();
-    }
-  } catch {
-    return null;
-  }
+  const { capturePdfThumbnailFromUrl } = await import('@pixuli/kind-pdf');
+  return capturePdfThumbnailFromUrl(url, THUMB_SIZE);
 }
 
 /**

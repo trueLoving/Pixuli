@@ -7,13 +7,14 @@
 
 ## 1. 原则
 
-| 项       | 约定                                                        |
-| -------- | ----------------------------------------------------------- |
-| 三端     | Web + Desktop + Capacitor Android，共用 `app`               |
-| 存储     | `StorageProvider` + `@pixuli/provider-*`；**无官方 Server** |
-| 本地优先 | LocalVault 为 SSOT；同步显式触发                            |
-| 包边界   | `core` / `provider-*` **禁止**依赖 `app/src/ui`             |
-| 语言     | 业务默认 TypeScript                                         |
+| 项       | 约定                                                                   |
+| -------- | ---------------------------------------------------------------------- |
+| 三端     | Web + Desktop + Capacitor Android，共用 `app`                          |
+| 存储     | `StorageProvider` + `@pixuli/provider-*`；**无官方 Server**            |
+| 文件类型 | `KindHandler` + `@pixuli/kind-*`（与存储正交）                         |
+| 本地优先 | LocalVault 为 SSOT；同步显式触发                                       |
+| 包边界   | `core` / `provider-*` **禁止**依赖 `app/src/ui`；kind 预览可经包 `/ui` |
+| 语言     | 业务默认 TypeScript                                                    |
 
 ---
 
@@ -25,19 +26,20 @@
         ▼
 ┌────────────── app ──────────────┐
 │ layouts · features · stores · ui │
-│ platforms/* · storage/registry   │
-└────────┬────────────┬───────────┘
-         ▼            ▼
-  @pixuli/core   @pixuli/provider-*
-  Vault · Sync   github / gitee
-  plugins        （仅依赖 core）
+│ platforms/* · storage/ · kinds/  │
+└────┬──────────┬──────────┬──────┘
+     ▼          ▼          ▼
+ @pixuli/core  provider-*  kind-*
+ Vault·Sync    github/gitee  pdf…
+ plugins/kinds （core）     引擎+/ui
 ```
 
-| 层          | 职责                                             |
-| ----------- | ------------------------------------------------ |
-| app         | 路由、状态、壳、工作区适配、注册 provider、UI    |
-| core        | 类型、Registry、LocalVault / Sync 契约、平台抽象 |
-| provider-\* | 云 API、sync、`buildPublicUrl`；无 React         |
+| 层          | 职责                                                    |
+| ----------- | ------------------------------------------------------- |
+| app         | 路由、状态、壳、工作区适配、注册 provider/kind、UI      |
+| core        | 类型、Registry、LocalVault / Sync / Kind 契约、平台抽象 |
+| provider-\* | 云 API、sync、`buildPublicUrl`；无 React                |
+| kind-\*     | 文件类型处理（识别、预览引擎；可选 `/ui`）              |
 
 UI 分层：L1 `features/`+`stores/` · L2 薄 `src/ui` · L3
 `layouts/`+`platforms/`+`boot/`。
@@ -77,7 +79,21 @@ Token 与连接配置仅存客户端。
 
 实现细节以源码与
 [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)
-为准。远期 Obsidian 式通用插件见 Issue
+为准。
+
+### 4.1 文件 Kind 插件
+
+- 注册：`app/src/kinds/registry.ts` →
+  `registerPdfKind`（`@pixuli/kind-pdf/register`）。
+- 契约：`@pixuli/core/kinds`（`KindHandler`、`KindPluginRegistry`、manifest /
+  capabilities）。
+- 与 Storage 正交：不负责远端同步；负责预览 / 缩略图等类型能力。
+- PDF：引擎 `openPdfDocument` / `capturePdfThumbnailFromUrl`；预览 UI
+  `@pixuli/kind-pdf/ui`；app 薄封装注入 workspace `readFile`。
+- 包 `exports` 直指 `src`；不必先 `build:packages`。
+
+运行时能力结论（先 Loader、暂不开放用户）：[plugins-runtime.md](./plugins-runtime.md)。  
+远期 Obsidian 式通用插件见 Issue
 [#126](https://github.com/trueLoving/Pixuli/issues/126)。
 
 ---

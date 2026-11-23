@@ -1,83 +1,36 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
-const loadPdfDocument = vi.fn();
+const KindPdfDocumentView = vi.fn((props: { emptyLabel?: string }) => (
+  <div data-testid="kind-pdf">{props.emptyLabel ?? 'ok'}</div>
+));
 
-vi.mock('@/features/library/utils/pdfDocument', () => ({
-  loadPdfDocument: (...args: unknown[]) => loadPdfDocument(...args),
+vi.mock('@pixuli/kind-pdf/ui', () => ({
+  PdfDocumentView: (props: { emptyLabel?: string }) =>
+    KindPdfDocumentView(props),
+}));
+
+vi.mock('@/platforms/workspacePlatform', () => ({
+  getWorkspaceAdapter: () => ({
+    readFile: vi.fn(),
+  }),
+  isWorkspaceAvailable: () => true,
 }));
 
 import { PdfDocumentView } from '../PdfDocumentView';
 
-function mockPage() {
-  return {
-    getViewport: ({ scale }: { scale: number }) => ({
-      width: 100 * scale,
-      height: 140 * scale,
-    }),
-    render: () => ({
-      promise: Promise.resolve(),
-      cancel: vi.fn(),
-    }),
-  };
-}
-
-function mockDoc(numPages = 2) {
-  return {
-    numPages,
-    getPage: vi.fn(async () => mockPage()),
-    destroy: vi.fn(async () => undefined),
-  };
-}
-
-describe('PdfDocumentView', () => {
-  afterEach(() => {
-    loadPdfDocument.mockReset();
-    vi.restoreAllMocks();
-  });
-
-  it('renders first page for inspector variant', async () => {
-    HTMLCanvasElement.prototype.getContext = vi.fn(
-      () =>
-        ({
-          canvas: document.createElement('canvas'),
-        }) as unknown as CanvasRenderingContext2D,
-    );
-    const doc = mockDoc(3);
-    loadPdfDocument.mockResolvedValue(doc);
-
+describe('PdfDocumentView (app wrapper)', () => {
+  it('injects workspace adapters into kind-pdf UI', () => {
     render(
-      <PdfDocumentView
-        src="blob:http://localhost/doc"
-        localPath="notes.pdf"
-        variant="inspector"
-        loadingLabel="loading"
-        errorLabel="failed"
-        pageLabel={(page, total) => `${page}/${total}`}
-      />,
+      <PdfDocumentView src={null} emptyLabel="empty" variant="inspector" />,
     );
-
-    await waitFor(() => {
-      expect(document.querySelector('.pdf-document-view-canvas')).toBeTruthy();
-    });
-    expect(screen.getByText('1/3')).toBeInTheDocument();
-    expect(doc.getPage).toHaveBeenCalledWith(1);
-  });
-
-  it('shows error when load fails', async () => {
-    loadPdfDocument.mockRejectedValue(new Error('boom'));
-
-    render(
-      <PdfDocumentView
-        src="https://example.com/missing.pdf"
-        variant="modal"
-        loadingLabel="loading"
-        errorLabel="failed"
-      />,
+    expect(screen.getByTestId('kind-pdf')).toHaveTextContent('empty');
+    expect(KindPdfDocumentView).toHaveBeenCalledWith(
+      expect.objectContaining({
+        emptyLabel: 'empty',
+        readFile: expect.any(Function),
+        isLocalAvailable: expect.any(Function),
+      }),
     );
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('failed');
-    });
   });
 });

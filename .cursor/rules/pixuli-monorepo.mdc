@@ -13,9 +13,10 @@ alwaysApply: true
 
 ## 包与导入
 
-- Workspace 包名：`@pixuli/core`、`@pixuli/provider-github`、`@pixuli/provider-gitee`
-- UI：`app/src/ui`，导入 `@/ui`（禁止 provider 依赖）
+- Workspace 包名：`@pixuli/core`、`@pixuli/provider-github`、`@pixuli/provider-gitee`、`@pixuli/kind-pdf`
+- UI：`app/src/ui`，导入 `@/ui`（禁止 provider 依赖；kind 预览 UI 可经包 `/ui` 导出）
 - Provider 注册：`registerGitHubProvider` / `registerGiteeProvider` 从各包 `/register` 导入
+- Kind 注册：`registerPdfKind` 等 → `app/src/kinds/registry.ts`；契约 `@pixuli/core/kinds`
 - 应用创建实例：`storageRegistry.create(pluginId, ctx)`（见 `app/src/storage/createProvider.ts`）
 - 已删除 `packages/common`；勿引用 `pixuli-common`
 

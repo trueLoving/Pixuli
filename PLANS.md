@@ -3,7 +3,7 @@
 > **进度以 [GitHub Issues](https://github.com/trueLoving/Pixuli/issues)
 > 为准**。  
 > 本文只做薄索引，避免与远程双份长表。  
-> **最近同步**：2026-11-04
+> **最近同步**：2026-11-23
 
 ---
 
@@ -17,13 +17,13 @@ core/provider ↛ UI。
 
 ## 当前 OPEN（远程）
 
-| Issue                                                   | 标题                          | 备注                       |
-| ------------------------------------------------------- | ----------------------------- | -------------------------- |
-| [#126](https://github.com/trueLoving/Pixuli/issues/126) | 插件体系重设计（Obsidian 式） | P1；勿抢跑挡主路径         |
-| [#127](https://github.com/trueLoving/Pixuli/issues/127) | 集成测试体系                  | P2；基线稳后薄做           |
-| [#138](https://github.com/trueLoving/Pixuli/issues/138) | 文档中/英策略                 | P2；本次 docs 简化未做英译 |
-| [#88](https://github.com/trueLoving/Pixuli/issues/88)   | Desktop 离线同步队列          | P2                         |
-| [#89](https://github.com/trueLoving/Pixuli/issues/89)   | Desktop 自动更新              | P2                         |
+| Issue                                                   | 标题                          | 备注                                                                                 |
+| ------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------ |
+| [#126](https://github.com/trueLoving/Pixuli/issues/126) | 插件体系重设计（Obsidian 式） | P1；结论见 [docs/plugins-runtime.md](docs/plugins-runtime.md)；Kind PDF 已编译期收纳 |
+| [#127](https://github.com/trueLoving/Pixuli/issues/127) | 集成测试体系                  | P2；基线稳后薄做                                                                     |
+| [#138](https://github.com/trueLoving/Pixuli/issues/138) | 文档中/英策略                 | P2；本次 docs 简化未做英译                                                           |
+| [#88](https://github.com/trueLoving/Pixuli/issues/88)   | Desktop 离线同步队列          | P2                                                                                   |
+| [#89](https://github.com/trueLoving/Pixuli/issues/89)   | Desktop 自动更新              | P2                                                                                   |
 
 已关近期主路径相关：Sprint
 A～D（#241～#245、#132）、资源库文件夹浏览与处理弹窗等（见 Releases
