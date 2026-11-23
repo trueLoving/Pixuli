@@ -25,6 +25,7 @@ website/      官网（pnpm dev:website → :5510）
 packages/core/
 packages/plugin-provider-github/
 packages/plugin-provider-gitee/
+packages/plugin-kind-pdf/   → @pixuli/kind-pdf
 ```
 
 常用：`pnpm test` · `pnpm ci` · `pnpm dev:web` · `pnpm dev:desktop` ·
@@ -39,6 +40,13 @@ packages/plugin-provider-gitee/
 - 创建：`storageRegistry.create(pluginId, ctx)`
 - 契约：`@pixuli/core/plugins`
 - Skill：[.cursor/skills/storage-provider](.cursor/skills/storage-provider/SKILL.md)
+
+## 文件 Kind 插件
+
+- 与 Storage 正交：识别 / 预览 / 缩略图 / 处理面板
+- 注册：`app/src/kinds/registry.ts`
+- 契约：`@pixuli/core/kinds`
+- PDF：`@pixuli/kind-pdf`（引擎 + `/ui` 预览；app 注入 workspace `readFile`）
 
 ## 代码约束
 

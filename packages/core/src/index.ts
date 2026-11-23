@@ -3,6 +3,7 @@
  */
 export * from './types';
 export * from './plugins';
+export * from './kinds';
 export * from './platform';
 export * from './operation-log';
 export * from './utils';
