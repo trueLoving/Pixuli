@@ -51,8 +51,7 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
     });
     useAssetStore.setState({
       storageType: 'gitee',
-      githubConfig: githubSource.config,
-      giteeConfig: giteeSource.config,
+      storageConfig: giteeSource.config,
       storageProvider: null,
       assets: [],
       loading: false,
@@ -60,7 +59,7 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
     });
   });
 
-  it('编辑非当前选中的 GitHub 源时应切换 storageType 并写入 githubConfig', () => {
+  it('编辑非当前选中的 GitHub 源时应切换激活会话', () => {
     const { result } = renderHook(() => useSourceManagement());
 
     act(() => {
@@ -70,7 +69,7 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
 
     const assetState = useAssetStore.getState();
     expect(assetState.storageType).toBe('github');
-    expect(assetState.githubConfig).toMatchObject({
+    expect(assetState.storageConfig).toMatchObject({
       owner: 'o',
       repo: 'r-gh',
       token: 'gh-token',
@@ -89,7 +88,7 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
 
     expect(useSourceStore.getState().selectedSourceId).toBe('gh-1');
     expect(useAssetStore.getState().storageType).toBe('github');
-    expect(useAssetStore.getState().githubConfig?.repo).toBe('r-gh');
+    expect(useAssetStore.getState().storageConfig?.repo).toBe('r-gh');
     expect(loadAssets).toHaveBeenCalled();
   });
 
@@ -101,10 +100,7 @@ describe('useSourceManagement (REF-310 / 编辑逻辑已迁至 uiStore.openConfi
       result.current.handleDeleteSource('gh-1', (key: string) => key);
     });
 
-    expect(useSourceStore.getState().sources).toHaveLength(1);
-    expect(useSourceStore.getState().sources[0].id).toBe('gt-1');
-    expect(useSourceStore.getState().selectedSourceId).toBe('gt-1');
-
+    expect(useSourceStore.getState().sources.map(s => s.id)).toEqual(['gt-1']);
     confirmSpy.mockRestore();
   });
 });

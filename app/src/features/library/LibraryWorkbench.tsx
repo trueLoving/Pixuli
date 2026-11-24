@@ -44,6 +44,8 @@ import {
   useNativeShareAsset,
 } from '@/features/library/useNativeAssetActions';
 import { useAssetStore } from '@/features/library/assetStore';
+import { uiRegistry } from '@/plugins/uiRegistry';
+import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { useSourceStore } from '@/features/settings/sourceStore';
@@ -604,12 +606,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
     return (
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
         <EmptyState
-          onAddGitHub={() => {
-            useUIStore.getState().openSettingsModalForAddSource('github');
-          }}
-          onAddGitee={() => {
-            useUIStore.getState().openSettingsModalForAddSource('gitee');
-          }}
+          providers={listStoragePluginManifests()
+            .filter(m => uiRegistry.resolveConnectionFields(m.id))
+            .map(m => ({
+              pluginId: m.id,
+              name: m.name,
+              onAdd: () =>
+                useUIStore.getState().openSettingsModalForAddSource(m.id),
+            }))}
           t={t}
         />
       </div>

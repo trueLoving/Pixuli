@@ -1,21 +1,13 @@
-import {
-  createKindPluginRegistry,
-  type KindPluginManifest,
-  type KindPluginRegistry,
+import type {
+  KindPluginManifest,
+  KindPluginRegistry,
 } from '@pixuli/core/kinds';
-import { registerPdfKind } from '@pixuli/kind-pdf/register';
+import { kindRegistry, startPluginRuntime } from '@/plugins/runtime';
 
-export const kindRegistry: KindPluginRegistry = createKindPluginRegistry();
+export { kindRegistry };
+export type { KindPluginRegistry };
 
-let bootstrapped = false;
-
-export function bootstrapKindPlugins(): void {
-  if (bootstrapped) return;
-  registerPdfKind(kindRegistry);
-  bootstrapped = true;
-}
-
-bootstrapKindPlugins();
+startPluginRuntime();
 
 export function listKindPluginManifests(): KindPluginManifest[] {
   return kindRegistry.listManifests();

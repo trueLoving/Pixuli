@@ -3,10 +3,7 @@
  * 管理全局 UI 状态，如模态框、侧边栏、全屏模式等
  */
 
-import {
-  getRepoConfigFromSource,
-  resolveSourceDisplay,
-} from '@pixuli/core/sources';
+import { getRepoConfigFromSource } from '@pixuli/core/sources';
 import type { GitHubConfig } from '@pixuli/core/types';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import type { SettingsSection } from '@/features/settings/settingsTypes';
@@ -44,7 +41,7 @@ interface UIState {
   /** 打开设置弹窗后自动展开内联「添加远端」选择器 */
   settingsSyncAddOpen: boolean;
   /** 空态等入口预选的服务（打开添加向导时带入） */
-  settingsSyncPrefillPluginId: 'github' | 'gitee' | null;
+  settingsSyncPrefillPluginId: string | null;
   /** 新建连接时暂存向导用途 */
   pendingConnectionPurpose: ConnectionPurpose | null;
 
@@ -128,7 +125,7 @@ interface UIState {
   openKeyboardHelp: () => void;
   closeKeyboardHelp: () => void;
   toggleKeyboardHelp: () => void;
-  openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') => void;
+  openSettingsModalForAddSource: (pluginId?: string) => void;
   clearSettingsSyncAddOpen: () => void;
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => void;
   /** 向导保存前写入 plugin 与用途，不打开分云大表单 */
@@ -288,7 +285,7 @@ export const useUIStore = create<UIState>(set => ({
   closeKeyboardHelp: () => set({ showKeyboardHelp: false }),
   toggleKeyboardHelp: () =>
     set(state => ({ showKeyboardHelp: !state.showKeyboardHelp })),
-  openSettingsModalForAddSource: (pluginId?: 'github' | 'gitee') =>
+  openSettingsModalForAddSource: (pluginId?: string) =>
     set({
       showSettingsModal: true,
       settingsSection: 'sync',
@@ -305,7 +302,7 @@ export const useUIStore = create<UIState>(set => ({
     }),
   prepareNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
     useAssetStore.setState({
-      storageType: resolveSourceDisplay(pluginId).legacyType,
+      storageType: pluginId,
     });
     set({
       editingSourceId: null,
@@ -315,11 +312,7 @@ export const useUIStore = create<UIState>(set => ({
     });
   },
   beginNewSource: (pluginId: string, purpose?: ConnectionPurpose) => {
-    useUIStore
-      .getState()
-      .openSettingsModalForAddSource(
-        pluginId === 'gitee' || pluginId === 'github' ? pluginId : undefined,
-      );
+    useUIStore.getState().openSettingsModalForAddSource(pluginId);
     if (purpose) {
       set({ pendingConnectionPurpose: purpose });
     }

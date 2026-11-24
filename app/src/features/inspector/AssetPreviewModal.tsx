@@ -1,18 +1,9 @@
-import { ChevronLeft, ChevronRight, FileText, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import React, { useCallback, useEffect } from 'react';
 import { defaultTranslate } from '@/i18n/locales';
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import {
-  downloadAssetLabelKey,
-  downloadAssetOnPlatform,
-  isOpenCancelled,
-} from '@/platforms/openAsset';
-import { getPlatform } from '@/platforms/platform';
-import { showError, showSuccess } from '@/ui/feedback/toast';
 import { AssetItem } from '@pixuli/core/types';
-import { MarkdownDocumentView } from './MarkdownDocumentView';
-import { PdfDocumentView } from './PdfDocumentView';
-import { TextDocumentView } from './TextDocumentView';
+import { KindPreviewHost } from './KindPreviewHost';
 import { useResolvedAssetUrl } from './useResolvedAssetUrl';
 import './AssetPreviewModal.css';
 
@@ -112,105 +103,6 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
     return translate('image.grid.dimensionsUnknown');
   };
 
-  const handleDownload = () => {
-    if (!src) return;
-    const platform = getPlatform();
-    void downloadAssetOnPlatform(platform, {
-      name: asset.name,
-      url: src,
-      localPath: asset.localPath,
-    })
-      .then(result => {
-        if (result === 'mobile') {
-          showSuccess(translate('image.inspector.downloadSaved'));
-        }
-      })
-      .catch(error => {
-        if (isOpenCancelled(error)) return;
-        showError(translate('image.inspector.downloadFailed'));
-      });
-  };
-
-  const renderMedia = () => {
-    if (kind === 'markdown') {
-      return (
-        <MarkdownDocumentView
-          src={src}
-          localPath={asset.localPath}
-          variant="modal"
-          loadingLabel={translate('image.markdown.loading')}
-          errorLabel={translate('image.markdown.loadFailed')}
-        />
-      );
-    }
-
-    if (kind === 'text') {
-      return (
-        <TextDocumentView
-          src={src}
-          localPath={asset.localPath}
-          variant="modal"
-          loadingLabel={translate('image.text.loading')}
-          errorLabel={translate('image.text.loadFailed')}
-        />
-      );
-    }
-
-    if (kind === 'pdf') {
-      return (
-        <PdfDocumentView
-          src={src}
-          localPath={asset.localPath}
-          variant="modal"
-          loadingLabel={translate('image.pdf.loading')}
-          errorLabel={translate('image.pdf.loadFailed')}
-          pageLabel={(page, total) =>
-            translate('image.pdf.pageOf')
-              .replace('{page}', String(page))
-              .replace('{total}', String(total))
-          }
-        />
-      );
-    }
-
-    if (!src) return null;
-
-    if (kind === 'video') {
-      return (
-        <video
-          key={src}
-          src={src}
-          controls
-          playsInline
-          preload="metadata"
-          className="asset-preview-modal-media"
-        >
-          {translate('image.inspector.openExternal')}
-        </video>
-      );
-    }
-
-    if (kind === 'other') {
-      return (
-        <div className="asset-preview-modal-file">
-          <FileText size={48} aria-hidden />
-          <p className="asset-preview-modal-file-name">{asset.name}</p>
-          <button
-            type="button"
-            className="asset-preview-modal-download"
-            onClick={handleDownload}
-          >
-            {translate(downloadAssetLabelKey())}
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <img src={src} alt={asset.name} className="asset-preview-modal-image" />
-    );
-  };
-
   return (
     <div
       className="asset-preview-modal-overlay"
@@ -248,7 +140,12 @@ const AssetPreviewModal: React.FC<AssetPreviewModalProps> = ({
             </button>
           )}
 
-          {renderMedia()}
+          <KindPreviewHost
+            asset={asset}
+            src={src}
+            variant="modal"
+            t={translate}
+          />
         </div>
 
         <div className="asset-preview-modal-info">

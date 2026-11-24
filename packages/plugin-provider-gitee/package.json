@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./register": "./src/register.ts",
-    "./manifest": "./src/manifest.ts"
+    "./manifest": "./src/manifest.ts",
+    "./ui": "./src/ui/index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,9 +17,17 @@
   "dependencies": {
     "@pixuli/core": "workspace:*"
   },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "jsdom": "^25.0.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "typescript": "^5.0.0",
     "vitest": "^2.1.8"
   }

@@ -1,19 +1,21 @@
 import type { StoragePluginManifest } from '@pixuli/core/plugins';
-import type { StorageProviderDiscovery } from '@pixuli/core/plugins';
-import { Github, X } from 'lucide-react';
+import type {
+  StorageProviderConfig,
+  StorageProviderDiscovery,
+} from '@pixuli/core/plugins';
+import { X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useConfigManagement } from '@/features/settings/useConfigManagement';
-import {
-  GitPatConnectionFields,
-  type GitPatFieldValues,
-} from '@/features/settings/git-connection/GitPatConnectionFields';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
+import { startPluginRuntime } from '@/plugins/runtime';
+import { StorageSourceIcon } from '@/plugins/storageUi';
+import { uiRegistry } from '@/plugins/uiRegistry';
+import { createDiscoveryProvider } from '@/storage/createProvider';
 import { showSuccess } from '@/ui/feedback/toast';
 import { useUIStore } from '@/stores/uiStore';
 
 type WizardStep = 'service' | 'auth' | 'location' | 'done';
-type WizardPluginId = 'github' | 'gitee';
 
 const STEPS: WizardStep[] = ['service', 'auth', 'location', 'done'];
 const EDIT_STEPS: WizardStep[] = ['auth', 'location', 'done'];
@@ -29,13 +31,7 @@ const FIELD_CLASSES = {
   description: 'text-xs text-gray-500',
 };
 
-const EMPTY_VALUES: GitPatFieldValues = {
-  owner: '',
-  repo: '',
-  branch: 'main',
-  token: '',
-  path: 'images',
-};
+const EMPTY_CONFIG: StorageProviderConfig = {};
 
 export interface ConnectionWizardProps {
   manifests: StoragePluginManifest[];
@@ -45,8 +41,9 @@ export interface ConnectionWizardProps {
   discovery?: StorageProviderDiscovery;
   /** 传入时为编辑已有连接：跳过「选服务」，预填仓库与令牌 */
   editSourceId?: string | null;
-  initialPluginId?: WizardPluginId | null;
-  initialValues?: GitPatFieldValues | null;
+  initialPluginId?: string | null;
+  /** 不透明插件配置；由 connectionFields 解释 */
+  initialConfig?: StorageProviderConfig | null;
 }
 
 function stepLabelKey(step: WizardStep): string {
@@ -67,8 +64,22 @@ function supportsPat(manifest: StoragePluginManifest | undefined): boolean {
   return modes.includes('pat');
 }
 
-function isWizardPluginId(id: string | null | undefined): id is WizardPluginId {
-  return id === 'github' || id === 'gitee';
+function hasConnectionUi(pluginId: string): boolean {
+  startPluginRuntime();
+  return Boolean(uiRegistry.resolveConnectionFields(pluginId));
+}
+
+function configRepoLabel(config: StorageProviderConfig): string {
+  const owner = String(config.owner ?? '').trim();
+  const repo = String(config.repo ?? '').trim();
+  return [owner, repo].filter(Boolean).join('/');
+}
+
+function configSummaryLabel(config: StorageProviderConfig): string {
+  const base = configRepoLabel(config);
+  const branch = String(config.branch ?? '').trim();
+  if (!base) return '';
+  return branch ? `${base} · ${branch}` : base;
 }
 
 export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
@@ -79,10 +90,17 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   discovery,
   editSourceId = null,
   initialPluginId = null,
-  initialValues = null,
+  initialConfig = null,
 }) => {
-  const isEdit = Boolean(editSourceId && isWizardPluginId(initialPluginId));
-  const startWithPlugin = !isEdit && isWizardPluginId(initialPluginId);
+  const canEdit =
+    Boolean(editSourceId) &&
+    Boolean(initialPluginId) &&
+    hasConnectionUi(initialPluginId ?? '');
+  const isEdit = canEdit;
+  const startWithPlugin =
+    !isEdit &&
+    Boolean(initialPluginId) &&
+    hasConnectionUi(initialPluginId ?? '');
   const prepareNewSource = useUIStore(state => state.prepareNewSource);
   const closeSettingsModal = useUIStore(state => state.closeSettingsModal);
   const { handleSaveConfig } = useConfigManagement();
@@ -91,36 +109,46 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   const [step, setStep] = useState<WizardStep>(
     isEdit || startWithPlugin ? 'auth' : 'service',
   );
-  const [pluginId, setPluginId] = useState<WizardPluginId | null>(
-    isWizardPluginId(initialPluginId) ? initialPluginId : null,
+  const [pluginId, setPluginId] = useState<string | null>(
+    initialPluginId && hasConnectionUi(initialPluginId)
+      ? initialPluginId
+      : null,
   );
   const [purpose, setPurpose] = useState<ConnectionPurpose>('defaultSync');
-  const [values, setValues] = useState<GitPatFieldValues>(
-    initialValues ?? EMPTY_VALUES,
+  const [config, setConfig] = useState<StorageProviderConfig>(
+    initialConfig ?? EMPTY_CONFIG,
   );
   const [tokenOk, setTokenOk] = useState(
-    isEdit && Boolean(initialValues?.token?.trim()),
+    isEdit && Boolean(String(initialConfig?.token ?? '').trim()),
   );
   const [patMounted, setPatMounted] = useState(isEdit || startWithPlugin);
+
+  const selectableManifests = useMemo(
+    () => manifests.filter(item => hasConnectionUi(item.id)),
+    [manifests],
+  );
 
   const manifest = useMemo(
     () => manifests.find(item => item.id === pluginId),
     [manifests, pluginId],
   );
-  const editTargetLabel = [values.owner.trim(), values.repo.trim()]
-    .filter(Boolean)
-    .join('/');
+  const connectionFields = pluginId
+    ? uiRegistry.resolveConnectionFields(pluginId)
+    : undefined;
+  const Fields = connectionFields?.component;
+  const labelPrefix =
+    connectionFields?.labelPrefix ?? `${pluginId ?? 'storage'}.config`;
+
+  const editTargetLabel = configRepoLabel(config);
+  const doneSummaryLabel = configSummaryLabel(config);
   const patAvailable = supportsPat(manifest);
   const stepIndex = steps.indexOf(step);
-  const locationReady = Boolean(
-    values.owner.trim() &&
-      values.repo.trim() &&
-      values.branch.trim() &&
-      values.path.trim(),
-  );
+  const locationReady = connectionFields?.isConfigComplete
+    ? connectionFields.isConfigComplete(config)
+    : false;
 
   const goAuth = () => {
-    if (!pluginId || !patAvailable) return;
+    if (!pluginId || !patAvailable || !Fields) return;
     setPatMounted(true);
     setStep('auth');
   };
@@ -128,10 +156,10 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
   const finish = (syncNow: boolean) => {
     if (!pluginId) return;
     if (isEdit && editSourceId) {
-      handleSaveConfig(values, editSourceId);
+      handleSaveConfig(config, editSourceId);
     } else {
       prepareNewSource(pluginId, purpose);
-      handleSaveConfig(values, null);
+      handleSaveConfig(config, null);
     }
     showSuccess(t('messages.configSaved'));
     onComplete();
@@ -182,35 +210,28 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
 
       {step === 'service' ? (
         <div className="space-y-3">
-          {manifests
-            .filter(item => isWizardPluginId(item.id))
-            .map(item => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  if (!isWizardPluginId(item.id)) return;
-                  setPluginId(item.id);
-                  setValues(EMPTY_VALUES);
-                  setTokenOk(false);
-                  setPatMounted(false);
-                }}
-                className={`flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left ${
-                  pluginId === item.id
-                    ? 'border-[var(--pix-violet)]'
-                    : 'border-gray-200'
-                }`}
-              >
-                {item.id === 'github' ? (
-                  <Github size={18} />
-                ) : (
-                  <span className="text-xs font-bold text-red-600">码</span>
-                )}
-                <span className="text-sm font-semibold text-gray-900">
-                  {item.name}
-                </span>
-              </button>
-            ))}
+          {selectableManifests.map(item => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setPluginId(item.id);
+                setConfig(EMPTY_CONFIG);
+                setTokenOk(false);
+                setPatMounted(false);
+              }}
+              className={`flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left ${
+                pluginId === item.id
+                  ? 'border-[var(--pix-violet)]'
+                  : 'border-gray-200'
+              }`}
+            >
+              <StorageSourceIcon pluginId={item.id} size={18} />
+              <span className="text-sm font-semibold text-gray-900">
+                {item.name}
+              </span>
+            </button>
+          ))}
           {pluginId ? (
             <div className="space-y-2">
               <label className="flex items-start gap-2 text-sm">
@@ -237,7 +258,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
             <button
               type="button"
               className="rounded-md pix-btn-primary px-3 py-1.5 text-sm disabled:opacity-40"
-              disabled={!pluginId || !patAvailable}
+              disabled={!pluginId || !patAvailable || !Fields}
               onClick={goAuth}
             >
               {t('settings.wizardContinue')}
@@ -246,25 +267,22 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
         </div>
       ) : null}
 
-      {patMounted && pluginId ? (
+      {patMounted && pluginId && Fields ? (
         <div hidden={step !== 'auth' && step !== 'location'}>
           {step === 'auth' && !patAvailable ? (
             <p className="text-sm text-gray-600">
               {t('settings.wizardAuthUnavailable')}
             </p>
           ) : (
-            <GitPatConnectionFields
+            <Fields
               pluginId={pluginId}
-              labelPrefix={
-                pluginId === 'gitee' ? 'gitee.config' : 'github.config'
-              }
-              values={values}
-              onChange={patch =>
-                setValues(current => ({ ...current, ...patch }))
-              }
+              labelPrefix={labelPrefix}
+              config={config}
+              onChange={setConfig}
               t={t}
               classes={FIELD_CLASSES}
               discovery={discovery}
+              resolveDiscovery={() => createDiscoveryProvider(pluginId)}
               section={step === 'location' ? 'location' : 'auth'}
               onValidatedChange={setTokenOk}
             />
@@ -275,7 +293,7 @@ export const ConnectionWizard: React.FC<ConnectionWizardProps> = ({
       {step === 'done' && pluginId ? (
         <div className="space-y-3">
           <p className="text-sm text-gray-800">
-            {`${manifest?.name} · ${values.owner}/${values.repo} · ${values.branch}`}
+            {`${manifest?.name}${doneSummaryLabel ? ` · ${doneSummaryLabel}` : ''}`}
           </p>
           <p className="text-xs text-gray-500">
             {isEdit

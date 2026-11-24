@@ -1,15 +1,11 @@
-import { Github, GitBranch, HelpCircle } from 'lucide-react';
 import React from 'react';
 import { BrandPixelMark } from '@/ui/brand/BrandPixelMark';
 import { defaultTranslate } from '@/i18n/locales';
+import { StorageSourceIcon } from '@/plugins/storageUi';
 import type { EmptyStateProps } from './types';
 import './EmptyState.css';
 
-const EmptyState: React.FC<EmptyStateProps> = ({
-  onAddGitHub,
-  onAddGitee,
-  t,
-}) => {
+const EmptyState: React.FC<EmptyStateProps> = ({ providers, t }) => {
   const translate = t || defaultTranslate;
 
   return (
@@ -19,27 +15,32 @@ const EmptyState: React.FC<EmptyStateProps> = ({
           <BrandPixelMark variant="offline" size={112} />
         </div>
 
-        {/* 标题 */}
         <h2 className="empty-state-title">{translate('emptyState.title')}</h2>
 
-        {/* 描述 */}
         <p className="empty-state-description">
           {translate('emptyState.description')}
         </p>
 
-        {/* 主要操作按钮 */}
         <div className="empty-state-actions">
-          <button onClick={onAddGitHub} className="empty-state-button primary">
-            <Github className="w-5 h-5" />
-            {translate('emptyState.addGitHub')}
-          </button>
-          <button onClick={onAddGitee} className="empty-state-button primary">
-            <GitBranch className="w-5 h-5" />
-            {translate('emptyState.addGitee')}
-          </button>
+          {providers.map(provider => (
+            <button
+              key={provider.pluginId}
+              type="button"
+              onClick={provider.onAdd}
+              className="empty-state-button primary"
+            >
+              <StorageSourceIcon pluginId={provider.pluginId} size={20} />
+              {(() => {
+                const template = translate('emptyState.addProvider');
+                if (template === 'emptyState.addProvider') {
+                  return `配置 ${provider.name}`;
+                }
+                return template.replace('{name}', provider.name);
+              })()}
+            </button>
+          ))}
         </div>
 
-        {/* 快速开始指南 */}
         <div className="empty-state-guide">
           <h3 className="guide-title">{translate('emptyState.quickStart')}</h3>
           <div className="guide-steps">
@@ -65,20 +66,6 @@ const EmptyState: React.FC<EmptyStateProps> = ({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 帮助链接 */}
-        <div className="empty-state-help">
-          <HelpCircle className="w-4 h-4" />
-          <span>{translate('emptyState.needHelp')}</span>
-          <a
-            href="https://github.com/trueLoving/Pixuli/blob/develop/docs/guide.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="help-link"
-          >
-            {translate('emptyState.viewDocs')}
-          </a>
         </div>
       </div>
     </div>

@@ -22,6 +22,13 @@ export class DefaultStoragePluginRegistry implements StoragePluginRegistry {
     this.factories.set(manifest.id, factory);
   }
 
+  unregister(id: string): boolean {
+    const had = this.factories.has(id);
+    this.factories.delete(id);
+    this.manifests.delete(id);
+    return had;
+  }
+
   get(id: string): StorageProviderFactory | undefined {
     return this.factories.get(id);
   }

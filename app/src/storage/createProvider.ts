@@ -1,4 +1,3 @@
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
 import type {
   StorageProvider,
   StorageProviderConfig,
@@ -8,38 +7,42 @@ import { DefaultPlatformAdapter } from '@pixuli/core/platform';
 import {
   getStoragePluginDisplayName,
   hasStorageProviderDiscovery,
-  isKnownBuiltinPluginId,
 } from '@pixuli/core/plugins';
+import { storageRegistry } from '@/plugins/registries';
+import { startPluginRuntime } from '@/plugins/runtime';
 import { isWeb } from '@/platforms/platform';
-import { storageRegistry } from './registry';
 
-export type StoragePluginId = 'github' | 'gitee';
+/** 已注册的 storage 插件 id（不再白名单写死） */
+export type StoragePluginId = string;
 
 export function getAppPlatform(): 'web' | 'desktop' {
   return isWeb() ? 'web' : 'desktop';
 }
 
-export function createConfiguredStorageProvider(
-  pluginId: string,
-  config: GitHubConfig | GiteeConfig,
-): StorageProvider {
-  if (!isKnownBuiltinPluginId(pluginId)) {
+function assertStoragePluginRegistered(pluginId: string): void {
+  startPluginRuntime();
+  if (!storageRegistry.getManifest(pluginId)) {
     throw new Error(`Unsupported storage plugin: ${pluginId}`);
   }
+}
+
+export function createConfiguredStorageProvider(
+  pluginId: string,
+  config: StorageProviderConfig,
+): StorageProvider {
+  assertStoragePluginRegistered(pluginId);
   const provider = storageRegistry.create(pluginId, {
     platform: getAppPlatform(),
     platformAdapter: new DefaultPlatformAdapter(),
   });
-  provider.configure(config as unknown as StorageProviderConfig);
+  provider.configure(config);
   return provider;
 }
 
 export function createDiscoveryProvider(
   pluginId: string,
 ): StorageProvider & StorageProviderDiscovery {
-  if (!isKnownBuiltinPluginId(pluginId)) {
-    throw new Error(`Unsupported storage plugin: ${pluginId}`);
-  }
+  assertStoragePluginRegistered(pluginId);
   const provider = storageRegistry.create(pluginId, {
     platform: getAppPlatform(),
     platformAdapter: new DefaultPlatformAdapter(),

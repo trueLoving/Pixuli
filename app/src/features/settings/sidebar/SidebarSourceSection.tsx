@@ -1,7 +1,8 @@
-import { Github, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { SidebarSourceContextMenu } from '@/layouts/sidebar/SidebarSourceContextMenu';
 import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
+import { StorageSourceIcon } from '@/plugins/storageUi';
 
 export interface SidebarSourceSectionProps {
   sources: SidebarSource[];
@@ -116,11 +117,7 @@ export const SidebarSourceSection: React.FC<SidebarSourceSectionProps> = ({
               onContextMenu={event => handleContextMenu(event, source.id)}
               title={`${source.name}\n${source.owner}/${source.repo}`}
             >
-              {source.type === 'github' ? (
-                <Github size={26} />
-              ) : (
-                <div className="gitee-icon-small">码</div>
-              )}
+              <StorageSourceIcon pluginId={source.type} size={26} />
               <span className="sidebar-collapsed-tooltip">{source.name}</span>
             </button>
           ))}
@@ -202,11 +199,7 @@ export const SidebarSourceSection: React.FC<SidebarSourceSectionProps> = ({
                   disabled={unavailable}
                 >
                   <div className="sidebar-source-icon">
-                    {source.type === 'github' ? (
-                      <Github size={16} />
-                    ) : (
-                      <div className="gitee-icon">码</div>
-                    )}
+                    <StorageSourceIcon pluginId={source.type} size={16} />
                   </div>
                   <div className="sidebar-source-info">
                     <div className="sidebar-source-name">{source.name}</div>

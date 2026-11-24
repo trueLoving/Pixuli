@@ -1,25 +1,13 @@
 import {
-  createStoragePluginRegistry,
   isStoragePluginRegistered as isPluginRegisteredOnRegistry,
   type StoragePluginManifest,
 } from '@pixuli/core/plugins';
-import { registerGitHubProvider } from '@pixuli/provider-github/register';
-import { registerPixuliGiteeProvider } from './registerGiteeProvider';
+import { startPluginRuntime, storageRegistry } from '@/plugins/runtime';
 
-export const storageRegistry = createStoragePluginRegistry();
+export { storageRegistry };
 
-let bootstrapped = false;
-
-export function bootstrapStorageProviders(): void {
-  if (bootstrapped) {
-    return;
-  }
-  registerGitHubProvider(storageRegistry);
-  registerPixuliGiteeProvider(storageRegistry);
-  bootstrapped = true;
-}
-
-bootstrapStorageProviders();
+/** 确保 Builtin Runtime 已 start（幂等） */
+startPluginRuntime();
 
 export function listStoragePluginManifests(): StoragePluginManifest[] {
   return storageRegistry.listManifests();

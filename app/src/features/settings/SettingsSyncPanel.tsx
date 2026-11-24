@@ -1,11 +1,11 @@
-import type { SidebarSource } from '@/features/settings/sidebarSourceTypes';
-import { Download, Edit, Github, Plus, Trash2, Upload } from 'lucide-react';
+import { Download, Edit, Plus, Trash2, Upload } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CapabilityChips } from '@/features/source-type/CapabilityChips';
+import type { StorageProviderConfig } from '@pixuli/core/plugins';
 import { ConnectionWizard } from '@/features/settings/connection-wizard/ConnectionWizard';
-import type { GitPatFieldValues } from '@/features/settings/git-connection/GitPatConnectionFields';
 import { useSourceManagement } from '@/features/settings/useSourceManagement';
 import { useSourceStore } from '@/features/settings/sourceStore';
+import { StorageSourceIcon } from '@/plugins/storageUi';
 import { listStoragePluginManifests } from '@/storage/registry';
 import { useUIStore } from '@/stores/uiStore';
 import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
@@ -18,17 +18,6 @@ import { showError, showSuccess } from '@/ui/feedback/toast';
 
 interface SettingsSyncPanelProps {
   t: (key: string) => string;
-}
-
-function renderSourceTypeIcon(type: SidebarSource['type']) {
-  if (type === 'github') {
-    return <Github size={14} className="shrink-0 text-gray-700" />;
-  }
-  return (
-    <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded bg-red-500 text-[9px] font-bold text-white">
-      码
-    </span>
-  );
 }
 
 export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
@@ -66,27 +55,20 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
 
   const isGitEditing = Boolean(
     editingSourceId &&
-      (editingSourcePluginId === 'github' ||
-        editingSourcePluginId === 'gitee') &&
+      Boolean(editingSourcePluginId) &&
       editingSourceRepoConfig,
   );
   const isEditing = isGitEditing;
   const wizardOpen = isEditing || addingSource;
 
-  const editInitialValues = useMemo((): GitPatFieldValues | null => {
+  const editInitialConfig = useMemo((): StorageProviderConfig | null => {
     if (!editingSourceRepoConfig) return null;
-    return {
-      owner: editingSourceRepoConfig.owner,
-      repo: editingSourceRepoConfig.repo,
-      branch: editingSourceRepoConfig.branch,
-      token: editingSourceRepoConfig.token,
-      path: editingSourceRepoConfig.path,
-    };
+    return { ...editingSourceRepoConfig };
   }, [editingSourceRepoConfig]);
 
-  const [addPrefillPluginId, setAddPrefillPluginId] = useState<
-    'github' | 'gitee' | null
-  >(null);
+  const [addPrefillPluginId, setAddPrefillPluginId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     if (settingsSyncAddOpen) {
@@ -231,13 +213,11 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
             onComplete={closeWizard}
             editSourceId={isEditing ? editingSourceId : null}
             initialPluginId={
-              isEditing &&
-              (editingSourcePluginId === 'github' ||
-                editingSourcePluginId === 'gitee')
+              isEditing && editingSourcePluginId
                 ? editingSourcePluginId
                 : addPrefillPluginId
             }
-            initialValues={isGitEditing ? editInitialValues : null}
+            initialConfig={isGitEditing ? editInitialConfig : null}
           />
         ) : null}
 
@@ -273,7 +253,7 @@ export const SettingsSyncPanel: React.FC<SettingsSyncPanelProps> = ({ t }) => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-2">
-                        {renderSourceTypeIcon(source.type)}
+                        <StorageSourceIcon pluginId={source.type} size={14} />
                         <h3 className="min-w-0 truncate text-sm font-semibold text-gray-900">
                           {source.name}
                         </h3>

@@ -9,7 +9,7 @@ export function useAppInitialization(
   hasConfig: boolean,
   handleLoadAssets: () => Promise<void>,
 ) {
-  const { storageType, githubConfig, giteeConfig } = useAssetStore();
+  const { storageType, storageConfig } = useAssetStore();
   const { selectedSourceId, setSelectedSourceId, sources } = useSourceStore();
 
   // 初始化：如果没有选中源但有源列表，自动选中第一个
@@ -27,41 +27,20 @@ export function useAppInitialization(
       return;
     }
 
-    // 如果没有使用仓库源模式，使用旧的配置方式加载
-    const { storageType, githubConfig, giteeConfig, initializeStorage } =
+    const { storageType, storageConfig, initializeStorage } =
       useAssetStore.getState();
 
-    // 如果有配置，初始化存储服务并加载图片
-    if (
-      (storageType === 'github' && githubConfig) ||
-      (storageType === 'gitee' && giteeConfig)
-    ) {
+    if (storageType && storageConfig) {
       initializeStorage();
       handleLoadAssets();
     }
-  }, [
-    storageType,
-    githubConfig,
-    giteeConfig,
-    handleLoadAssets,
-    hasConfig,
-    sources,
-  ]);
+  }, [storageType, storageConfig, handleLoadAssets, hasConfig, sources]);
 
   // 页面加载时初始化
   useEffect(() => {
-    const {
-      storageType,
-      githubConfig,
-      giteeConfig,
-      storageProvider,
-      initializeStorage,
-    } = useAssetStore.getState();
-    if (
-      !storageProvider &&
-      ((storageType === 'github' && githubConfig) ||
-        (storageType === 'gitee' && giteeConfig))
-    ) {
+    const { storageType, storageConfig, storageProvider, initializeStorage } =
+      useAssetStore.getState();
+    if (!storageProvider && storageType && storageConfig) {
       initializeStorage();
     }
   }, []);

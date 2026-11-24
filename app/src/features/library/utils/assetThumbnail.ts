@@ -130,27 +130,13 @@ export async function captureVideoThumbnail(
   });
 }
 
-export async function capturePdfThumbnail(url: string): Promise<string | null> {
-  const { capturePdfThumbnailFromUrl } = await import('@pixuli/kind-pdf');
-  return capturePdfThumbnailFromUrl(url, THUMB_SIZE);
-}
-
 /**
- * 为视频/PDF 生成列表缩略图（data URL），带内存缓存与并发上限。
- * 图片请直接使用 `item.url`；失败返回 null，由 UI 回退类型图标。
+ * 列表缩略图：经 UI 槽位 `resolveThumbnail`；失败返回 null，由 UI 回退类型图标。
  */
 export function resolveAssetThumbnail(
   item: Pick<AssetItem, 'id' | 'url' | 'name' | 'type'>,
 ): Promise<string | null> {
   const kind = getAssetKind(item);
-  if (kind === 'image') {
-    return Promise.resolve(item.url || null);
-  }
-  if (kind !== 'video' && kind !== 'pdf') {
-    return Promise.resolve(null);
-  }
-  if (!item.url) return Promise.resolve(null);
-
   const key = cacheKey(item);
   if (resultCache.has(key)) {
     return Promise.resolve(resultCache.get(key) ?? null);
@@ -159,10 +145,17 @@ export function resolveAssetThumbnail(
   if (pending) return pending;
 
   const job = withConcurrency(async () => {
-    const thumb =
-      kind === 'video'
-        ? await captureVideoThumbnail(item.url)
-        : await capturePdfThumbnail(item.url);
+    const { uiRegistry } = await import('@/plugins/uiRegistry');
+    const { startPluginRuntime } = await import('@/plugins/runtime');
+    startPluginRuntime();
+    const contribution = uiRegistry.resolveThumbnail({
+      name: item.name,
+      mimeType: item.type,
+      kind,
+    });
+    if (!contribution) return remember(key, null);
+    if (!item.url) return remember(key, null);
+    const thumb = await contribution.capture(item.url);
     return remember(key, thumb);
   }).finally(() => {
     inflight.delete(key);

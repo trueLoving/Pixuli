@@ -32,6 +32,8 @@ export type KindHandlerFactory = () => KindHandler;
 
 export interface KindPluginRegistry {
   register(manifest: KindPluginManifest, factory: KindHandlerFactory): void;
+  /** 移除已注册插件；不存在时返回 false */
+  unregister(id: string): boolean;
   get(id: string): KindHandler | undefined;
   getManifest(id: string): KindPluginManifest | undefined;
   listManifests(): KindPluginManifest[];

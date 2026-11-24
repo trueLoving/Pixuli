@@ -80,4 +80,12 @@ describe('DefaultStoragePluginRegistry', () => {
       'Storage plugin not registered: missing',
     );
   });
+
+  it('unregisters a plugin', () => {
+    const registry = createStoragePluginRegistry();
+    registry.register(githubManifest, () => createStubProvider(githubManifest));
+    expect(registry.unregister('github')).toBe(true);
+    expect(registry.getManifest('github')).toBeUndefined();
+    expect(registry.unregister('github')).toBe(false);
+  });
 });

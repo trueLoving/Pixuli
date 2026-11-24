@@ -21,6 +21,15 @@ export class DefaultKindPluginRegistry implements KindPluginRegistry {
     this.order.push(manifest.id);
   }
 
+  unregister(id: string): boolean {
+    const had = this.factories.has(id);
+    this.factories.delete(id);
+    this.manifests.delete(id);
+    const idx = this.order.indexOf(id);
+    if (idx >= 0) this.order.splice(idx, 1);
+    return had;
+  }
+
   get(id: string): KindHandler | undefined {
     const factory = this.factories.get(id);
     return factory ? factory() : undefined;
