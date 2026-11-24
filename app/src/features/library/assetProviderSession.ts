@@ -1,57 +1,75 @@
-import { loadGiteeConfig } from '@/features/settings/config/gitee';
-import { loadGitHubConfig } from '@/features/settings/config/github';
+import {
+  clearActiveStorageSession,
+  loadActiveStorageSession,
+  saveActiveStorageSession,
+  type ActiveStorageSession,
+} from '@/features/settings/config/storageSession';
 import {
   createConfiguredStorageProvider,
   type StoragePluginId,
 } from '@/storage/createProvider';
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
-import type { StorageProvider } from '@pixuli/core/plugins';
+import type {
+  StorageProvider,
+  StorageProviderConfig,
+} from '@pixuli/core/plugins';
 
 export type ProviderSessionState = {
-  githubConfig: GitHubConfig | null;
-  giteeConfig: GiteeConfig | null;
   storageType: StoragePluginId | null;
+  storageConfig: StorageProviderConfig | null;
   storageProvider: StorageProvider | null;
 };
 
 export function resolveInitialProviderSession(): ProviderSessionState {
-  const githubConfig = loadGitHubConfig();
-  const giteeConfig = loadGiteeConfig();
-  const storageType: StoragePluginId | null = giteeConfig
-    ? 'gitee'
-    : githubConfig
-      ? 'github'
-      : null;
-  const initialConfig = giteeConfig || githubConfig;
+  const session = loadActiveStorageSession();
+  if (!session) {
+    return {
+      storageType: null,
+      storageConfig: null,
+      storageProvider: null,
+    };
+  }
 
-  return {
-    githubConfig,
-    giteeConfig,
-    storageType,
-    storageProvider:
-      initialConfig && storageType
-        ? createConfiguredStorageProvider(storageType, initialConfig)
-        : null,
-  };
+  try {
+    return {
+      storageType: session.pluginId,
+      storageConfig: session.config,
+      storageProvider: createConfiguredStorageProvider(
+        session.pluginId,
+        session.config,
+      ),
+    };
+  } catch (error) {
+    console.error('Failed to restore storage session:', error);
+    return {
+      storageType: session.pluginId,
+      storageConfig: session.config,
+      storageProvider: null,
+    };
+  }
 }
 
 export function createStorageProvider(
   storageType: StoragePluginId,
-  config: GitHubConfig | GiteeConfig,
+  config: StorageProviderConfig,
 ): StorageProvider {
   return createConfiguredStorageProvider(storageType, config);
 }
 
-export function resolveActiveRepoConfig(
-  storageType: StoragePluginId | null,
-  githubConfig: GitHubConfig | null,
-  giteeConfig: GiteeConfig | null,
-): GitHubConfig | GiteeConfig | null {
-  if (storageType === 'gitee') {
-    return giteeConfig;
-  }
-  if (storageType === 'github') {
-    return githubConfig;
-  }
-  return null;
+export function persistActiveSession(
+  pluginId: string,
+  config: StorageProviderConfig,
+): void {
+  saveActiveStorageSession({ pluginId, config });
+}
+
+export function clearPersistedActiveSession(): void {
+  clearActiveStorageSession();
+}
+
+export function toActiveSession(
+  pluginId: string | null,
+  config: StorageProviderConfig | null,
+): ActiveStorageSession | null {
+  if (!pluginId || !config) return null;
+  return { pluginId, config };
 }

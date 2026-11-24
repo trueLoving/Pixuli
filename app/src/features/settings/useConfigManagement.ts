@@ -1,3 +1,4 @@
+import type { StorageProviderConfig } from '@pixuli/core/plugins';
 import { useCallback } from 'react';
 import { useAssetStore } from '@/features/library/assetStore';
 import { useSourceSelection } from '@/features/library/useSourceSelection';
@@ -8,47 +9,26 @@ import { useUIStore } from '@/stores/uiStore';
  * 配置管理相关的 hooks
  */
 export function useConfigManagement() {
-  const {
-    storageType,
-    setGitHubConfig,
-    setGiteeConfig,
-    clearGitHubConfig,
-    clearGiteeConfig,
-    loadAssets,
-  } = useSourceSelection();
+  const { storageType, setActiveStorage, clearActiveStorage, loadAssets } =
+    useSourceSelection();
   const { addSource, updateSource, removeSource, setSelectedSourceId } =
     useSourceStore();
 
   const handleSaveConfig = useCallback(
-    (
-      config: {
-        owner: string;
-        repo: string;
-        branch: string;
-        token: string;
-        path: string;
-        name?: string;
-        private?: boolean;
-      },
-      editingSourceId: string | null,
-    ) => {
-      const label = config.name || `${config.owner}/${config.repo}`;
-      const repoConfig = {
-        owner: config.owner,
-        repo: config.repo,
-        branch: config.branch,
-        token: config.token,
-        path: config.path,
-        ...(typeof config.private === 'boolean'
-          ? { private: config.private }
-          : {}),
-      };
+    (config: StorageProviderConfig, editingSourceId: string | null) => {
+      const owner = String(config.owner ?? '');
+      const repo = String(config.repo ?? '');
+      const name = typeof config.name === 'string' ? config.name : undefined;
+      const label = name || `${owner}/${repo}`;
+      const repoConfig: StorageProviderConfig = { ...config };
+      delete repoConfig.name;
 
       const editingSource = editingSourceId
         ? useSourceStore.getState().getSourceById(editingSourceId)
         : undefined;
       const liveStorageType = useAssetStore.getState().storageType;
-      const activePluginId = editingSource?.pluginId ?? liveStorageType;
+      const activePluginId =
+        editingSource?.pluginId ?? liveStorageType ?? undefined;
 
       if (editingSourceId) {
         updateSource(editingSourceId, {
@@ -58,8 +38,11 @@ export function useConfigManagement() {
       } else {
         const purpose =
           useUIStore.getState().pendingConnectionPurpose ?? 'defaultSync';
+        if (!liveStorageType) {
+          return;
+        }
         const newSource = addSource({
-          pluginId: liveStorageType!,
+          pluginId: liveStorageType,
           label,
           config: { ...repoConfig, connectionPurpose: purpose },
         });
@@ -72,10 +55,8 @@ export function useConfigManagement() {
         useUIStore.setState({ pendingConnectionPurpose: null });
       }
 
-      if (activePluginId === 'github') {
-        setGitHubConfig(repoConfig);
-      } else if (activePluginId === 'gitee') {
-        setGiteeConfig(repoConfig);
+      if (activePluginId) {
+        setActiveStorage(activePluginId, repoConfig);
       }
 
       setTimeout(() => {
@@ -87,8 +68,7 @@ export function useConfigManagement() {
       addSource,
       updateSource,
       setSelectedSourceId,
-      setGitHubConfig,
-      setGiteeConfig,
+      setActiveStorage,
       loadAssets,
     ],
   );
@@ -99,19 +79,9 @@ export function useConfigManagement() {
         removeSource(editingSourceId);
         setSelectedSourceId(null);
       }
-      if (storageType === 'github') {
-        clearGitHubConfig();
-      } else if (storageType === 'gitee') {
-        clearGiteeConfig();
-      }
+      clearActiveStorage();
     },
-    [
-      storageType,
-      removeSource,
-      setSelectedSourceId,
-      clearGitHubConfig,
-      clearGiteeConfig,
-    ],
+    [removeSource, setSelectedSourceId, clearActiveStorage],
   );
 
   return {

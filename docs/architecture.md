@@ -67,34 +67,25 @@ Token 与连接配置仅存客户端。
 
 ---
 
-## 4. 存储插件
+## 4. 插件运行时与能力注册
 
-- 注册：`app/src/storage/registry.ts` → `registerGitHubProvider` /
-  `registerGiteeProvider`（各包 `/register`）。
-- 创建：`storageRegistry.create(pluginId, ctx)` →
-  `createConfiguredStorageProvider`。
-- 契约：`@pixuli/core/plugins`（`StorageProvider`、`StoragePluginRegistry`、manifest
-  / capabilities）。
-- 包 `exports` 直指 `src`；Vite / vitest 直接编译，不必先 `build:packages`。
-
-实现细节以源码与
-[`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)
-为准。
-
-### 4.1 文件 Kind 插件
-
-- 注册：`app/src/kinds/registry.ts` →
-  `registerPdfKind`（`@pixuli/kind-pdf/register`）。
-- 契约：`@pixuli/core/kinds`（`KindHandler`、`KindPluginRegistry`、manifest /
-  capabilities）。
-- 与 Storage 正交：不负责远端同步；负责预览 / 缩略图等类型能力。
-- PDF：引擎 `openPdfDocument` / `capturePdfThumbnailFromUrl`；预览 UI
-  `@pixuli/kind-pdf/ui`；app 薄封装注入 workspace `readFile`。
+- **Runtime**：`@pixuli/core/plugin-runtime`；app 入口
+  [`app/src/plugins/runtime.ts`](../app/src/plugins/runtime.ts)（Builtin
+  `startSync`，状态 `localStorage`）。
+- **UI 槽位**：[`app/src/plugins/uiRegistry.ts`](../app/src/plugins/uiRegistry.ts)
+  （preview / thumbnail / connectionFields /
+  sourceIcon）；壳组件按贡献渲染，禁止按 pluginId 写死分支。见
+  [plugins-runtime.md](./plugins-runtime.md)。
+- **Storage**：`storageRegistry`（经 Runtime onload 注册）→
+  `storageRegistry.create(pluginId, ctx)` /
+  `createConfiguredStorageProvider`。契约 `@pixuli/core/plugins`；authoring 见
+  [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)。
+- **Kind**：`kindRegistry`（经 Runtime）；契约
+  `@pixuli/core/kinds`。PDF：`@pixuli/kind-pdf`（`/runtime` + `/ui`
+  `contributePdfUi`；app 注入 `readFile`）。
 - 包 `exports` 直指 `src`；不必先 `build:packages`。
 
-运行时能力结论（先 Loader、暂不开放用户）：[plugins-runtime.md](./plugins-runtime.md)。  
-远期 Obsidian 式通用插件见 Issue
-[#126](https://github.com/trueLoving/Pixuli/issues/126)。
+远期 Obsidian 式扩展见 [#126](https://github.com/trueLoving/Pixuli/issues/126)。
 
 ---
 

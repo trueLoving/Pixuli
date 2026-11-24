@@ -1,11 +1,3 @@
-import {
-  clearGiteeConfig,
-  saveGiteeConfig,
-} from '@/features/settings/config/gitee';
-import {
-  clearGitHubConfig,
-  saveGitHubConfig,
-} from '@/features/settings/config/github';
 import type { StoragePluginId } from '@/storage/createProvider';
 import {
   LogActionType,
@@ -23,9 +15,10 @@ import {
   uploadMultipleAssets,
 } from '@/features/library/assetUploadService';
 import {
+  clearPersistedActiveSession,
   createStorageProvider,
+  persistActiveSession,
   resolveInitialProviderSession,
-  resolveActiveRepoConfig,
 } from '@/features/library/assetProviderSession';
 import {
   isLocalListMode,
@@ -40,15 +33,17 @@ import { registerSourceSelectionPort } from '@/features/library/sourceSelectionP
 import type { BatchMetadataPatch } from '@/features/library/assetMutationService';
 import type {
   BatchUploadProgress,
-  GiteeConfig,
-  GitHubConfig,
   AssetEditData,
   AssetItem,
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
-import type { StorageProvider } from '@pixuli/core/plugins';
+import type {
+  StorageProvider,
+  StorageProviderConfig,
+} from '@pixuli/core/plugins';
 import { create } from 'zustand';
+import { storagePluginLabel } from '@/storage/createProvider';
 
 interface AssetState {
   assets: AssetItem[];
@@ -56,18 +51,15 @@ interface AssetState {
   libraryTotal: number;
   loading: boolean;
   error: string | null;
-  githubConfig: GitHubConfig | null;
-  giteeConfig: GiteeConfig | null;
-  /** 当前激活的存储插件（与 storageType 同值，对应 Registry pluginId） */
+  /** 当前激活插件配置（单一会话，不再 github/gitee 双轨） */
+  storageConfig: StorageProviderConfig | null;
   storageProvider: StorageProvider | null;
   storageType: StoragePluginId | null;
   batchUploadProgress: BatchUploadProgress | null;
 
   // Actions
-  setGitHubConfig: (config: GitHubConfig) => void;
-  clearGitHubConfig: () => void;
-  setGiteeConfig: (config: GiteeConfig) => void;
-  clearGiteeConfig: () => void;
+  setActiveStorage: (pluginId: string, config: StorageProviderConfig) => void;
+  clearActiveStorage: () => void;
   initializeStorage: () => void;
   loadAssets: (options?: LibraryListScope) => Promise<void>;
   uploadAsset: (uploadData: AssetUploadData) => Promise<AssetItem | null>;
@@ -100,83 +92,52 @@ export const useAssetStore = create<AssetState>((set, get) => {
     libraryTotal: 0,
     loading: false,
     error: null,
-    githubConfig: initialSession.githubConfig,
-    giteeConfig: initialSession.giteeConfig,
+    storageConfig: initialSession.storageConfig,
     storageProvider: initialSession.storageProvider,
     storageType: initialSession.storageType,
     batchUploadProgress: null,
 
-    setGitHubConfig: (config: GitHubConfig) => {
-      set({ githubConfig: config });
-      saveGitHubConfig(config);
-      set({ storageType: 'github' });
+    setActiveStorage: (pluginId, config) => {
+      set({
+        storageType: pluginId,
+        storageConfig: config,
+      });
+      persistActiveSession(pluginId, config);
       get().initializeStorage();
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'github', action: 'set' },
+          details: { type: pluginId, action: 'set' },
         });
     },
 
-    clearGitHubConfig: () => {
-      set({ githubConfig: null });
-      clearGitHubConfig();
-      const { storageType } = get();
-      if (storageType === 'github') {
-        set({ storageProvider: null, storageType: null });
-      }
+    clearActiveStorage: () => {
+      set({
+        storageConfig: null,
+        storageProvider: null,
+        storageType: null,
+      });
+      clearPersistedActiveSession();
       useLogStore
         .getState()
         .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'github', action: 'clear' },
-        });
-    },
-
-    setGiteeConfig: (config: GiteeConfig) => {
-      set({ giteeConfig: config });
-      saveGiteeConfig(config);
-      set({ storageType: 'gitee' });
-      get().initializeStorage();
-      useLogStore
-        .getState()
-        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'gitee', action: 'set' },
-        });
-    },
-
-    clearGiteeConfig: () => {
-      set({ giteeConfig: null });
-      clearGiteeConfig();
-      const { storageType } = get();
-      if (storageType === 'gitee') {
-        set({ storageProvider: null, storageType: null });
-      }
-      useLogStore
-        .getState()
-        .addLog(LogActionType.CONFIG_CHANGE, LogStatus.SUCCESS, {
-          details: { type: 'gitee', action: 'clear' },
+          details: { action: 'clear' },
         });
     },
 
     initializeStorage: () => {
-      const { githubConfig, giteeConfig, storageType } = get();
-      const config = resolveActiveRepoConfig(
-        storageType,
-        githubConfig,
-        giteeConfig,
-      );
-      if (!storageType || !config) {
+      const { storageConfig, storageType } = get();
+      if (!storageType || !storageConfig) {
         return;
       }
       try {
-        set({ storageProvider: createStorageProvider(storageType, config) });
+        set({
+          storageProvider: createStorageProvider(storageType, storageConfig),
+        });
       } catch (error) {
         console.error('Failed to initialize storage provider:', error);
         set({
-          error:
-            storageType === 'gitee'
-              ? '初始化Gitee存储服务失败'
-              : '初始化GitHub存储服务失败',
+          error: `初始化${storagePluginLabel(storageType)}存储服务失败`,
         });
       }
     },
@@ -290,8 +251,8 @@ export const useAssetStore = create<AssetState>((set, get) => {
     addAsset: (asset: AssetItem) => {
       set(state => ({
         assets: state.assets.some(img => img.id === asset.id)
-          ? state.assets.map(img => (img.id === asset.id ? image : img))
-          : [...state.assets, image],
+          ? state.assets.map(img => (img.id === asset.id ? asset : img))
+          : [...state.assets, asset],
       }));
     },
 
@@ -330,14 +291,12 @@ registerLibraryAssetReset(() => {
 
 registerSourceSelectionPort({
   getStorageType: () => useAssetStore.getState().storageType,
-  getGitHubConfig: () => useAssetStore.getState().githubConfig,
-  getGiteeConfig: () => useAssetStore.getState().giteeConfig,
+  getStorageConfig: () => useAssetStore.getState().storageConfig,
   getStorageProvider: () => useAssetStore.getState().storageProvider,
   setStorageType: type => useAssetStore.setState({ storageType: type }),
-  setGitHubConfig: config => useAssetStore.getState().setGitHubConfig(config),
-  setGiteeConfig: config => useAssetStore.getState().setGiteeConfig(config),
-  clearGitHubConfig: () => useAssetStore.getState().clearGitHubConfig(),
-  clearGiteeConfig: () => useAssetStore.getState().clearGiteeConfig(),
+  setActiveStorage: (pluginId, config) =>
+    useAssetStore.getState().setActiveStorage(pluginId, config),
+  clearActiveStorage: () => useAssetStore.getState().clearActiveStorage(),
   loadAssets: () => useAssetStore.getState().loadAssets(),
   initializeStorageIfNeeded: () => {
     const { storageProvider, initializeStorage } = useAssetStore.getState();

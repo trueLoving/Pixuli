@@ -40,8 +40,7 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     });
     useAssetStore.setState({
       storageType: 'gitee',
-      githubConfig: null,
-      giteeConfig: null,
+      storageConfig: null,
       storageProvider: null,
       assets: [],
       loading: false,
@@ -75,6 +74,6 @@ describe('uiStore.openConfigModalForEdit (REF-312)', () => {
     });
 
     expect(useAssetStore.getState().storageType).toBe('gitee');
-    expect(useAssetStore.getState().giteeConfig?.owner).toBe('sakura0922');
+    expect(useAssetStore.getState().storageConfig?.owner).toBe('sakura0922');
   });
 });

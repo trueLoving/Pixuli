@@ -43,8 +43,7 @@ describe('useConfigManagement (REF-310)', () => {
     });
     useAssetStore.setState({
       storageType: 'gitee',
-      githubConfig: { ...githubSource.config },
-      giteeConfig: { ...giteeSource.config },
+      storageConfig: { ...giteeSource.config },
       storageProvider: null,
       assets: [],
       loading: false,
@@ -57,7 +56,7 @@ describe('useConfigManagement (REF-310)', () => {
     vi.useRealTimers();
   });
 
-  it('编辑非当前选中 GitHub 源保存时应更新 sourceStore 并写入 githubConfig（W6）', () => {
+  it('编辑非当前选中 GitHub 源保存时应更新 sourceStore 并切换激活会话', () => {
     const { result } = renderHook(() => useConfigManagement());
 
     act(() => {
@@ -81,14 +80,14 @@ describe('useConfigManagement (REF-310)', () => {
       path: 'uploads',
       token: 'gh-token-new',
     });
-    expect(useAssetStore.getState().githubConfig).toMatchObject({
+    expect(useAssetStore.getState().storageType).toBe('github');
+    expect(useAssetStore.getState().storageConfig).toMatchObject({
       branch: 'dev',
       path: 'uploads',
     });
-    expect(useAssetStore.getState().giteeConfig?.path).toBe('pics');
   });
 
-  it('清除编辑中的源应从 sourceStore 移除（W16）', () => {
+  it('清除编辑中的源应从 sourceStore 移除并清空激活会话', () => {
     const { result } = renderHook(() => useConfigManagement());
 
     act(() => {
@@ -98,6 +97,7 @@ describe('useConfigManagement (REF-310)', () => {
     expect(useSourceStore.getState().sources).toHaveLength(1);
     expect(useSourceStore.getState().sources[0].id).toBe('gh-1');
     expect(useSourceStore.getState().selectedSourceId).toBeNull();
-    expect(useAssetStore.getState().giteeConfig).toBeNull();
+    expect(useAssetStore.getState().storageConfig).toBeNull();
+    expect(useAssetStore.getState().storageType).toBeNull();
   });
 });

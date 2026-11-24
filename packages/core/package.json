@@ -11,6 +11,7 @@
     "./plugins/host": "./src/plugins/hostIntegration.ts",
     "./plugins/registry": "./src/plugins/registry.ts",
     "./kinds": "./src/kinds/index.ts",
+    "./plugin-runtime": "./src/plugin-runtime/index.ts",
     "./platform": "./src/platform/index.ts",
     "./utils": "./src/utils/index.ts",
     "./locales": "./src/locales/index.ts",

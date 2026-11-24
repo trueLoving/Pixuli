@@ -219,7 +219,7 @@ describe('ConnectionWizard', () => {
         discovery={discovery}
         editSourceId="src-1"
         initialPluginId="github"
-        initialValues={{
+        initialConfig={{
           owner: 'octo',
           repo: 'pics',
           branch: 'main',

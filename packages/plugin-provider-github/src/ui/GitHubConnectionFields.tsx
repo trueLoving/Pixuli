@@ -1,44 +1,29 @@
 import type {
   RemoteRepositoryRef,
+  StorageProviderConfig,
   StorageProviderDiscovery,
 } from '@pixuli/core/plugins';
-import React, { useCallback, useMemo, useState } from 'react';
-import { listStoragePluginManifests } from '@/storage/registry';
-import { createDiscoveryProvider } from '@/storage/createProvider';
-import './GitPatConnectionFields.css';
+import React, { useCallback, useState } from 'react';
+import { githubManifest } from '../manifest';
+import {
+  mergeFieldPatch,
+  storageConfigToFields,
+  type GitHubFieldValues,
+} from './config';
+import './ConnectionFields.css';
 
-export type GitPatFieldValues = {
-  owner: string;
-  repo: string;
-  branch: string;
-  token: string;
-  path: string;
-  /** 从仓库列表选择时写入；手工改 owner/repo 会清除 */
-  private?: boolean;
-};
-
-export type GitPatFieldClasses = {
-  sectionTitle: string;
-  group: string;
-  row: string;
-  label: string;
-  required: string;
-  input: string;
-  description: string;
-};
-
-interface GitPatConnectionFieldsProps {
-  pluginId: 'github' | 'gitee';
-  labelPrefix: 'github.config' | 'gitee.config';
-  values: GitPatFieldValues;
-  onChange: (patch: Partial<GitPatFieldValues>) => void;
+export type GitHubConnectionFieldsProps = {
+  pluginId: string;
+  labelPrefix: string;
+  config: StorageProviderConfig;
+  onChange: (config: StorageProviderConfig) => void;
   t: (key: string) => string;
-  classes: GitPatFieldClasses;
+  classes: Record<string, string>;
   discovery?: StorageProviderDiscovery;
-  /** 向导分步时只渲染对应块；缺省两块都显示（编辑大表单） */
-  section?: 'all' | 'auth' | 'location';
+  resolveDiscovery?: () => StorageProviderDiscovery;
+  section: 'auth' | 'location';
   onValidatedChange?: (ok: boolean) => void;
-}
+};
 
 function interpolate(template: string, vars: Record<string, string>): string {
   return Object.entries(vars).reduce(
@@ -47,23 +32,23 @@ function interpolate(template: string, vars: Record<string, string>): string {
   );
 }
 
-export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
-  pluginId,
+export const GitHubConnectionFields: React.FC<GitHubConnectionFieldsProps> = ({
   labelPrefix,
-  values,
+  config,
   onChange,
   t,
   classes,
   discovery,
-  section = 'all',
+  resolveDiscovery,
+  section,
   onValidatedChange,
 }) => {
-  const manifest = useMemo(
-    () => listStoragePluginManifests().find(item => item.id === pluginId),
-    [pluginId],
-  );
-  const tokenCreateUrl = manifest?.auth?.tokenCreateUrl;
-  const requiredScopes = manifest?.auth?.requiredScopes ?? [];
+  const values = storageConfigToFields(config);
+  const patch = (next: Partial<GitHubFieldValues>) =>
+    onChange(mergeFieldPatch(config, next));
+
+  const tokenCreateUrl = githubManifest.auth?.tokenCreateUrl;
+  const requiredScopes = githubManifest.auth?.requiredScopes ?? [];
 
   const [status, setStatus] = useState<'idle' | 'validating' | 'ok' | 'error'>(
     'idle',
@@ -76,12 +61,11 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [repoLoadError, setRepoLoadError] = useState<string | null>(null);
 
-  const resolveDiscovery = useCallback((): StorageProviderDiscovery => {
-    if (discovery) {
-      return discovery;
-    }
-    return createDiscoveryProvider(pluginId);
-  }, [discovery, pluginId]);
+  const getDiscovery = useCallback((): StorageProviderDiscovery => {
+    if (discovery) return discovery;
+    if (resolveDiscovery) return resolveDiscovery();
+    throw new Error('GitHubConnectionFields: discovery is required');
+  }, [discovery, resolveDiscovery]);
 
   const handleTokenChange = (token: string) => {
     setStatus('idle');
@@ -92,7 +76,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
     setBranches([]);
     setRepoLoadError(null);
     onValidatedChange?.(false);
-    onChange({ token });
+    patch({ token });
   };
 
   const loadBranches = useCallback(
@@ -121,7 +105,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
     setErrorMessage(null);
     setRepoLoadError(null);
     try {
-      const client = resolveDiscovery();
+      const client = getDiscovery();
       const result = await client.validateToken(values.token);
       if (!result.ok) {
         setStatus('error');
@@ -148,7 +132,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
           item => item.owner === values.owner && item.name === values.repo,
         );
         if (current) {
-          onChange({ private: current.private });
+          patch({ private: current.private });
           await loadBranches(client, current.owner, current.name, values.token);
         }
       } catch {
@@ -167,18 +151,16 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
 
   const handleSelectRepo = async (fullName: string) => {
     const selected = repositories.find(item => item.fullName === fullName);
-    if (!selected) {
-      return;
-    }
+    if (!selected) return;
     const nextBranch = selected.defaultBranch || values.branch;
-    onChange({
+    patch({
       owner: selected.owner,
       repo: selected.name,
       branch: nextBranch,
       private: selected.private,
     });
     try {
-      const client = resolveDiscovery();
+      const client = getDiscovery();
       await loadBranches(client, selected.owner, selected.name, values.token);
     } catch {
       setBranches([]);
@@ -190,8 +172,8 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
       item => item.owner === values.owner && item.name === values.repo,
     )?.fullName ?? '';
 
-  const showAuth = section === 'all' || section === 'auth';
-  const showLocation = section === 'all' || section === 'location';
+  const showAuth = section === 'auth';
+  const showLocation = section === 'location';
 
   return (
     <>
@@ -285,11 +267,11 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
           ) : null}
           {repositories.length > 0 ? (
             <div className={classes.group}>
-              <label className={classes.label} htmlFor="git-pat-repo">
+              <label className={classes.label} htmlFor="github-conn-repo">
                 {t('settings.pat.pickRepo')}
               </label>
               <select
-                id="git-pat-repo"
+                id="github-conn-repo"
                 className={classes.input}
                 value={selectedRepoValue}
                 onChange={event => void handleSelectRepo(event.target.value)}
@@ -317,7 +299,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
                 type="text"
                 value={values.owner}
                 onChange={event =>
-                  onChange({ owner: event.target.value, private: false })
+                  patch({ owner: event.target.value, private: false })
                 }
                 placeholder={t(`${labelPrefix}.usernamePlaceholder`)}
                 className={classes.input}
@@ -335,7 +317,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
                 type="text"
                 value={values.repo}
                 onChange={event =>
-                  onChange({ repo: event.target.value, private: false })
+                  patch({ repo: event.target.value, private: false })
                 }
                 placeholder={t(`${labelPrefix}.repositoryPlaceholder`)}
                 className={classes.input}
@@ -346,14 +328,14 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
 
           {branches.length > 0 ? (
             <div className={classes.group}>
-              <label className={classes.label} htmlFor="git-pat-branch">
+              <label className={classes.label} htmlFor="github-conn-branch">
                 {t('settings.pat.pickBranch')}
               </label>
               <select
-                id="git-pat-branch"
+                id="github-conn-branch"
                 className={classes.input}
                 value={branches.includes(values.branch) ? values.branch : ''}
-                onChange={event => onChange({ branch: event.target.value })}
+                onChange={event => patch({ branch: event.target.value })}
               >
                 <option value="">{t('settings.pat.pickBranch')}</option>
                 {branches.map(name => (
@@ -376,7 +358,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
               <input
                 type="text"
                 value={values.branch}
-                onChange={event => onChange({ branch: event.target.value })}
+                onChange={event => patch({ branch: event.target.value })}
                 placeholder={t(`${labelPrefix}.branchPlaceholder`)}
                 className={classes.input}
                 required
@@ -397,7 +379,7 @@ export const GitPatConnectionFields: React.FC<GitPatConnectionFieldsProps> = ({
                 <input
                   type="text"
                   value={values.path}
-                  onChange={event => onChange({ path: event.target.value })}
+                  onChange={event => patch({ path: event.target.value })}
                   placeholder={t(`${labelPrefix}.pathPlaceholder`)}
                   className={classes.input}
                   required

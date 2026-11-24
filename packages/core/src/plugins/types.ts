@@ -250,6 +250,8 @@ export interface StoragePluginRegistry {
     manifest: StoragePluginManifest,
     factory: StorageProviderFactory,
   ): void;
+  /** 移除已注册插件；不存在时返回 false */
+  unregister(id: string): boolean;
   get(id: string): StorageProviderFactory | undefined;
   getManifest(id: string): StoragePluginManifest | undefined;
   listManifests(): StoragePluginManifest[];

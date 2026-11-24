@@ -28,25 +28,34 @@ packages/plugin-provider-gitee/
 packages/plugin-kind-pdf/   → @pixuli/kind-pdf
 ```
 
+连接 UI：`@pixuli/provider-github/ui`、`@pixuli/provider-gitee/ui`（各自维护，无共享 git-ui 包）。
+
 常用：`pnpm test` · `pnpm ci` · `pnpm dev:web` · `pnpm dev:desktop` ·
 `pnpm dev:android` · `pnpm build:web`
 
 `@pixuli/core` 与 `provider-*` 的 `exports` 直指 `src`，不必先
 `build:packages`。
 
+## 插件运行时
+
+- 契约：`@pixuli/core/plugin-runtime`（Manifest / onload·onunload / enable）
+- 启动：`app/src/plugins/runtime.ts`（Builtin Loader；暂无用户安装 UI）
+- UI 槽位：`app/src/plugins/uiRegistry` + `contribute*`（core 无 React）
+- 激活存储：`storageType` + `storageConfig`（非 github/gitee 双轨）
+- 说明：[docs/plugins-runtime.md](docs/plugins-runtime.md)
+
 ## 存储插件
 
-- 注册：`app/src/storage/registry.ts`
+- 经 Runtime 注册；对外仍 `app/src/storage/registry.ts`
 - 创建：`storageRegistry.create(pluginId, ctx)`
 - 契约：`@pixuli/core/plugins`
 - Skill：[.cursor/skills/storage-provider](.cursor/skills/storage-provider/SKILL.md)
 
 ## 文件 Kind 插件
 
-- 与 Storage 正交：识别 / 预览 / 缩略图 / 处理面板
-- 注册：`app/src/kinds/registry.ts`
+- 与 Storage 正交；经 Runtime 注册（`app/src/kinds/registry.ts`）
 - 契约：`@pixuli/core/kinds`
-- PDF：`@pixuli/kind-pdf`（引擎 + `/ui` 预览；app 注入 workspace `readFile`）
+- PDF：`@pixuli/kind-pdf`（`/runtime` + `/ui`；app 注入 workspace `readFile`）
 
 ## 代码约束
 

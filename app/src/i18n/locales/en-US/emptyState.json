@@ -4,6 +4,7 @@
     "description": "Add a connection or enable a local workspace to build your library",
     "addGitHub": "Configure GitHub",
     "addGitee": "Configure Gitee",
+    "addProvider": "Configure {name}",
     "quickStart": "Quick Start",
     "step1": {
       "title": "Choose how to connect",

@@ -1,7 +1,4 @@
-import {
-  getRepoConfigFromSource,
-  resolveSourceDisplay,
-} from '@pixuli/core/sources';
+import { getRepoConfigFromSource } from '@pixuli/core/sources';
 import type { SidebarSourceItem } from '@/features/settings/sidebarSourceTypes';
 import { useCallback, useMemo } from 'react';
 import { isStoragePluginRegistered } from '@/storage/registry';
@@ -26,11 +23,10 @@ export function useSourceManagement() {
   const sidebarSources = useMemo((): SidebarSourceItem[] => {
     return sources.map(source => {
       const repo = getRepoConfigFromSource(source);
-      const { legacyType } = resolveSourceDisplay(source.pluginId);
       return {
         id: source.id,
         name: source.label || `${repo.owner}/${repo.repo}`,
-        type: legacyType,
+        type: source.pluginId,
         owner: repo.owner,
         repo: repo.repo,
         path: repo.path,

@@ -14,7 +14,7 @@ export function useSelectedSourceSync(
   selectedSource: StoredSourceEntry | null,
   onConfigSynced?: () => void,
 ) {
-  const { setGitHubConfig, setGiteeConfig } = useSourceSelection();
+  const { setActiveStorage } = useSourceSelection();
   const lastSyncedSourceIdRef = useRef<string | null>(null);
   const isInitialMountRef = useRef(true);
 
@@ -34,24 +34,17 @@ export function useSelectedSourceSync(
       }
 
       const sourceConfig = getRepoConfigFromSource(selectedSource);
-      const port = getSourceSelectionPort();
-      if (selectedSource.pluginId === 'github') {
-        setGitHubConfig(sourceConfig);
-        port.setStorageType('github');
-      } else {
-        setGiteeConfig(sourceConfig);
-        port.setStorageType('gitee');
-      }
+      setActiveStorage(selectedSource.pluginId, sourceConfig);
 
       lastSyncedSourceIdRef.current = selectedSource.id;
       isInitialMountRef.current = false;
 
       if (onConfigSynced) {
         setTimeout(() => {
-          port.initializeStorageIfNeeded();
+          getSourceSelectionPort().initializeStorageIfNeeded();
           onConfigSynced();
         }, 100);
       }
     }
-  }, [selectedSource, setGitHubConfig, setGiteeConfig, onConfigSynced]);
+  }, [selectedSource, setActiveStorage, onConfigSynced]);
 }

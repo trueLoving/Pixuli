@@ -36,4 +36,12 @@ describe('KindPluginRegistry', () => {
       KindPluginAlreadyRegisteredError,
     );
   });
+
+  it('unregisters and stops matching', () => {
+    const reg = createKindPluginRegistry();
+    reg.register(pdfManifest, makePdfHandler);
+    expect(reg.unregister('kind.pdf')).toBe(true);
+    expect(reg.matchHandler({ name: 'a.pdf' })).toBeUndefined();
+    expect(reg.unregister('kind.pdf')).toBe(false);
+  });
 });

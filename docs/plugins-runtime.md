@@ -6,60 +6,85 @@
 
 ---
 
-## 1. 现状（编译期内置）
+## 1. 现状（Builtin Loader + UI 槽位）
 
-| 类      | 注册入口                      | 契约                   |
-| ------- | ----------------------------- | ---------------------- |
-| Storage | `app/src/storage/registry.ts` | `@pixuli/core/plugins` |
-| Kind    | `app/src/kinds/registry.ts`   | `@pixuli/core/kinds`   |
+| 类      | 能力 registry                 | 启动                          |
+| ------- | ----------------------------- | ----------------------------- |
+| Storage | `@pixuli/core/plugins`        | `PluginRuntime` → onload 注册 |
+| Kind    | `@pixuli/core/kinds`          | 同上                          |
+| Runtime | `@pixuli/core/plugin-runtime` | `app/src/plugins/runtime.ts`  |
+| UI 槽位 | `app/src/plugins/uiRegistry`  | `contributeAllPluginUi()`     |
 
-- 官方实现以 monorepo 包（`@pixuli/provider-*`、`@pixuli/kind-*`）**静态依赖 +
-  bootstrap `register*`** 编入应用。
-- **不支持**用户侧安装/卸载、任意 URL 热加载、插件市场。
-- Registry /
-  Manifest 已为扩展预留接口；缺的是 Loader 与生命周期，不是再加一套硬编码。
+- 官方实现仍以 monorepo 包**静态依赖**提供工厂；经统一
+  `PluginRuntime.registerBuiltin` + `startSync()` 加载。
+- 支持 `load` / `unload` / `setEnabled`；状态默认持久化到
+  `localStorage`（`pixuli.plugin-runtime.v1`）。
+- **不对用户开放**安装 UI / sideload / 任意 URL 热加载。
 
----
+### 1.1 UI 槽位（App 拥有，core 无 React）
 
-## 2. 目标态（先具备运行时，暂不对用户开放）
+| 槽                         | 用途                   | 注册方                                       |
+| -------------------------- | ---------------------- | -------------------------------------------- |
+| `kind.preview`             | Inspector / Modal 预览 | `contributePdfUi`、`contributeBuiltinKindUi` |
+| `kind.thumbnail`           | 列表缩略图             | 同上                                         |
+| `storage.connectionFields` | 添加/编辑源表单        | `contributeGitHubUi` / `contributeGiteeUi`   |
+| `storage.sourceIcon`       | 源列表 / 向导图标      | 同上                                         |
 
-**原则：** 内置插件也走统一 Loader；用户安装入口、商店 UI 后置。
-
-| 层             | 要做什么                                                                      |
-| -------------- | ----------------------------------------------------------------------------- |
-| 统一插件模型   | Storage / Kind 之上的壳：统一 Manifest、`onload` / `onunload`、enable/disable |
-| Plugin Loader  | 解析入口 → 校验 → 动态加载 → `registry.register`；支持 `unregister`           |
-| Core API       | 宿主注入窄 API（workspace 读写、命令/设置 schema 等）；插件 ↛ `app/src/ui`    |
-| 启用状态       | 持久化 `{ id, enabled, origin, version }`；启动按状态加载                     |
-| 三端策略       | Desktop 可真动态加载；Web/Mobile 首版以 builtin / 打包内置为主                |
-| 安全（最小集） | manifest 禁带 secret；单插件失败隔离；对内可用 allowlist                      |
-
-「暂不开放」时：Loader 仅允许
-`origin: 'builtin'`（monorepo 或打进包的目录），禁止 sideload / 目录商店。
-
----
-
-## 3. 建议落地顺序
-
-1. 设计定稿：统一 Manifest + Lifecycle + Core API（对齐 #126）。
-2. Registry 演进：`register` / `unregister` / enable；Storage、Kind 作能力适配。
-3. Builtin Loader PoC：启动经 Loader 加载例如 GitHub +
-   PDF；去掉（或薄封装）app 硬编码 `register*`。
-4. `pluginState` 持久化（仅 builtin、默认全开）。
-5. **非目标（本阶段）**：商店 UI、第三方 sideload、Web 任意远程脚本。
+- App 壳：`KindPreviewHost`、`ConnectionWizard`、`StorageSourceIcon` —
+  **按 registry 解析，不按 pluginId/kind 写死业务分支**；Wizard 持有不透明
+  `StorageProviderConfig`。
+- 插件经 `/ui` 的 `contribute*(registry)`
+  注册；PDF：`@pixuli/kind-pdf/ui`；连接表单由
+  `@pixuli/provider-github/ui`、`@pixuli/provider-gitee/ui`
+  各自贡献（app 只对接这两个包，无共享 git-ui 包）。
+- **激活存储会话**：`storageType`（pluginId）+ `storageConfig`（一份
+  `StorageProviderConfig`），不再 github/gitee 双轨；持久化
+  `pixuli-storage-session.v1`（兼容旧分 key 迁移）。
+- 后置槽：`kind.processPanel`、`kind.inspectorMeta`、configSchema 表单引擎。
 
 ---
 
-## 4. 与当前 Kind 收纳的关系
+## 2. 目标态（后续）
 
-- `@pixuli/kind-pdf` 仍是**编译期包**；与 Storage 一样，为将来 Builtin
-  Loader 提供可注册单元。
-- Kind 与 Storage **正交**：同步归 Storage；预览 / 缩略图 / 处理面板归 Kind。
-- 预览 UI 经包 `/ui` 导出、由 app 注入 `readFile`；core 仍无 React。
+**原则：** 内置与将来第三方走同一 Runtime；商店 UI 后置。
+
+| 层             | 状态                                                        |
+| -------------- | ----------------------------------------------------------- |
+| 统一插件模型   | Manifest + `onload` / `onunload` + enable — **已有**        |
+| Plugin Loader  | Builtin 工厂目录 — **已有**；Desktop 真动态 `import` — 未做 |
+| Core API       | 现仅 `{ storage, kinds }`；workspace / commands — 未做      |
+| UI 槽位        | preview / thumbnail / connection / icon — **已有**          |
+| 启用状态       | Memory + localStorage — **已有**                            |
+| 三端策略       | 当前三端共用 Builtin；Desktop 动态加载 — 未做               |
+| 安全（最小集） | 单插件 onload 失败隔离 — **已有**；签名 / allowlist — 未做  |
+
+「暂不开放」：Loader 仅 `origin: 'builtin'`。
+
+---
+
+## 3. 建议落地顺序（更新）
+
+1. ~~设计定稿：统一 Manifest + Lifecycle~~
+2. ~~Registry `unregister` + Builtin Runtime~~
+3. ~~app 经 Runtime 启动 GitHub / Gitee / PDF~~
+4. ~~UI 槽位：Kind 预览 + Storage 连接~~
+5. Core API 扩展（workspace 读写等）与官方插件迁移文档
+6. Desktop 动态加载 PoC（仍可隐藏 UI）
+7. **非目标（仍后置）**：商店 UI、第三方 sideload、Web 任意远程脚本
+
+---
+
+## 4. 与 Kind / Storage 的关系
+
+- `@pixuli/kind-pdf`、`@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee
+  Pixuli 特化在 `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
+- Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
+- core 仍无 React；预览 / 连接 UI 经包 `/ui`（Kind builtin 预览仍可在 app
+  `contributeBuiltinKindUi`）。
 
 ---
 
 ## 5. 非目标（重申）
 
 - 官方 Server、跨端统一插件市场后端。
-- 在未完成 #126 契约前，不对终端用户暴露「安装插件」。
+- 不对终端用户暴露「安装插件」。

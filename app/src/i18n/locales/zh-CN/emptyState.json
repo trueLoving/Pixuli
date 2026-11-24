@@ -4,6 +4,7 @@
     "description": "添加连接或启用本地工作区，开始构建您的资源库",
     "addGitHub": "配置 GitHub",
     "addGitee": "配置 Gitee",
+    "addProvider": "配置 {name}",
     "quickStart": "快速开始",
     "step1": {
       "title": "选择连接方式",

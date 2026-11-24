@@ -1,38 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import type { StorageProviderDiscovery } from '@pixuli/core/plugins';
-import { GitPatConnectionFields } from './GitPatConnectionFields';
-import {
-  githubConfigModalTranslations,
-  makeModalTranslate,
-} from '../__tests__/modalTestFixtures';
+import { GitHubConnectionFields } from './GitHubConnectionFields';
 
-vi.mock('@/storage/registry', () => ({
-  listStoragePluginManifests: () => [
-    {
-      id: 'github',
-      name: 'GitHub',
-      version: '1.0.0',
-      capabilities: {
-        list: true,
-        upload: true,
-        delete: true,
-        updateMetadata: true,
-      },
-      auth: {
-        modes: ['pat'],
-        tokenCreateUrl:
-          'https://github.com/settings/tokens/new?scopes=repo&description=Pixuli',
-        requiredScopes: ['repo'],
-      },
-    },
-  ],
-}));
+const translations: Record<string, string> = {
+  'github.config.username': 'GitHub 用户名',
+  'github.config.repository': '仓库名称',
+  'github.config.branch': '分支名称',
+  'github.config.path': '图片存储路径',
+  'github.config.token': 'GitHub Token',
+  'github.config.usernamePlaceholder': '您的 GitHub 用户名或组织名',
+  'github.config.repositoryPlaceholder': '用于存储图片的仓库名称',
+  'github.config.branchPlaceholder': '通常为 main 或 master',
+  'github.config.pathPlaceholder': '仓库中存储图片的文件夹路径',
+  'github.config.tokenPlaceholder': 'ghp_xxxxxxxxxxxxxxxxxxxx',
+  'github.config.tokenDescription': '需要 repo 权限的 Personal Access Token',
+  'github.config.required': '*',
+  'settings.pat.authTitle': '授权',
+  'settings.pat.locationTitle': '选位置',
+  'settings.pat.createToken': '创建令牌',
+  'settings.pat.validateToken': '校验令牌',
+  'settings.pat.validating': '正在校验…',
+  'settings.pat.validatedAs': '已验证：{login}',
+  'settings.pat.validateFailed': '令牌无效，请检查后重试',
+  'settings.pat.scopeHint': '所需权限：{scopes}（读写仓库）',
+  'settings.pat.scopeMissing': '当前令牌可能缺少权限：{scopes}',
+  'settings.pat.pickRepo': '从列表选择仓库',
+  'settings.pat.privateRepo': '私有',
+  'settings.pat.loadingRepos': '正在加载仓库列表…',
+  'settings.pat.loadReposFailed': '无法加载仓库列表，请手动填写',
+  'settings.pat.pickBranch': '选择分支',
+  'settings.pat.advancedPath': '挂载路径（高级）',
+  'settings.pat.pathHint': '仓库内同步根目录，一般保持默认即可。',
+};
 
-vi.mock('@/storage/createProvider', () => ({
-  createDiscoveryProvider: vi.fn(),
-}));
+const t = (key: string) => translations[key] || key;
 
 const classes = {
   sectionTitle: 'title',
@@ -44,16 +46,7 @@ const classes = {
   description: 'desc',
 };
 
-const emptyValues = {
-  owner: '',
-  repo: '',
-  branch: 'main',
-  token: '',
-  path: 'images',
-};
-
-describe('GitPatConnectionFields', () => {
-  const t = makeModalTranslate(githubConfigModalTranslations);
+describe('GitHubConnectionFields', () => {
   let discovery: StorageProviderDiscovery;
 
   beforeEach(() => {
@@ -66,14 +59,15 @@ describe('GitPatConnectionFields', () => {
 
   it('shows create-token link and scope hint', () => {
     render(
-      <GitPatConnectionFields
+      <GitHubConnectionFields
         pluginId="github"
         labelPrefix="github.config"
-        values={emptyValues}
+        config={{}}
         onChange={vi.fn()}
         t={t}
         classes={classes}
         discovery={discovery}
+        section="auth"
       />,
     );
 
@@ -105,14 +99,15 @@ describe('GitPatConnectionFields', () => {
 
     const onChange = vi.fn();
     const { rerender } = render(
-      <GitPatConnectionFields
+      <GitHubConnectionFields
         pluginId="github"
         labelPrefix="github.config"
-        values={{ ...emptyValues, token: 'ghp_test' }}
+        config={{ token: 'ghp_test' }}
         onChange={onChange}
         t={t}
         classes={classes}
         discovery={discovery}
+        section="auth"
       />,
     );
 
@@ -123,24 +118,40 @@ describe('GitPatConnectionFields', () => {
     });
     expect(discovery.listRepositories).toHaveBeenCalledWith('ghp_test');
 
+    rerender(
+      <GitHubConnectionFields
+        pluginId="github"
+        labelPrefix="github.config"
+        config={{ token: 'ghp_test' }}
+        onChange={onChange}
+        t={t}
+        classes={classes}
+        discovery={discovery}
+        section="location"
+      />,
+    );
+
     fireEvent.change(screen.getByLabelText('从列表选择仓库'), {
       target: { value: 'octocat/pixuli' },
     });
 
     await waitFor(() => {
-      expect(onChange).toHaveBeenCalledWith({
-        owner: 'octocat',
-        repo: 'pixuli',
-        branch: 'main',
-        private: true,
-      });
+      expect(onChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: 'octocat',
+          repo: 'pixuli',
+          branch: 'main',
+          private: true,
+          token: 'ghp_test',
+        }),
+      );
     });
 
     rerender(
-      <GitPatConnectionFields
+      <GitHubConnectionFields
         pluginId="github"
         labelPrefix="github.config"
-        values={{
+        config={{
           owner: 'octocat',
           repo: 'pixuli',
           branch: 'main',
@@ -151,6 +162,7 @@ describe('GitPatConnectionFields', () => {
         t={t}
         classes={classes}
         discovery={discovery}
+        section="location"
       />,
     );
 
@@ -166,14 +178,15 @@ describe('GitPatConnectionFields', () => {
     });
 
     render(
-      <GitPatConnectionFields
+      <GitHubConnectionFields
         pluginId="github"
         labelPrefix="github.config"
-        values={{ ...emptyValues, token: 'bad' }}
+        config={{ token: 'bad' }}
         onChange={vi.fn()}
         t={t}
         classes={classes}
         discovery={discovery}
+        section="auth"
       />,
     );
 

@@ -15,8 +15,9 @@ alwaysApply: true
 
 - Workspace 包名：`@pixuli/core`、`@pixuli/provider-github`、`@pixuli/provider-gitee`、`@pixuli/kind-pdf`
 - UI：`app/src/ui`，导入 `@/ui`（禁止 provider 依赖；kind 预览 UI 可经包 `/ui` 导出）
-- Provider 注册：`registerGitHubProvider` / `registerGiteeProvider` 从各包 `/register` 导入
-- Kind 注册：`registerPdfKind` 等 → `app/src/kinds/registry.ts`；契约 `@pixuli/core/kinds`
+- 插件 Runtime：`@pixuli/core/plugin-runtime`；启动 `app/src/plugins/runtime.ts`（Builtin；暂无用户安装）
+- UI 槽位：`app/src/plugins/uiRegistry`；插件 `contribute*` 注册预览/连接等，app 壳不写死 pluginId
+- Provider / Kind 经 Runtime onload 注册；包仍导出 `/register`、`/runtime`、可选 `/ui`
 - 应用创建实例：`storageRegistry.create(pluginId, ctx)`（见 `app/src/storage/createProvider.ts`）
 - 已删除 `packages/common`；勿引用 `pixuli-common`
 

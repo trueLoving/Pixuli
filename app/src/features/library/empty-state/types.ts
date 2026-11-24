@@ -1,8 +1,10 @@
-// EmptyState 组件公共类型定义
+export type EmptyStateProviderAction = {
+  pluginId: string;
+  name: string;
+  onAdd: () => void;
+};
 
 export interface EmptyStateProps {
-  onAddGitHub: () => void;
-  onAddGitee: () => void;
+  providers: EmptyStateProviderAction[];
   t?: (key: string) => string;
-  colorScheme?: 'light' | 'dark';
 }
