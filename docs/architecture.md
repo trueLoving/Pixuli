@@ -82,7 +82,7 @@ Token 与连接配置仅存客户端。
   [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)。
 - **Kind**：`kindRegistry`（经 Runtime）；契约
   `@pixuli/core/kinds`。PDF：`@pixuli/kind-pdf`（`/runtime` + `/ui`
-  `contributePdfUi`；app 经通用 `kindHost` 注入 `readFile`，无类型包装组件）。
+  `contributePdfUi`；经 `PluginApi.ui.getKindCapabilities()` 注入 `readFile`）。
 - 包 `exports` 直指 `src`；不必先 `build:packages`。
 
 远期 Obsidian 式扩展见 [#126](https://github.com/trueLoving/Pixuli/issues/126)。

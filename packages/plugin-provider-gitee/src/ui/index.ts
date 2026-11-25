@@ -1,1 +1,1 @@
-export { contributeGiteeUi, type StorageUiHostRegistry } from './contribute';
+export { contributeGiteeUi, unregisterGiteeUi } from './contribute';

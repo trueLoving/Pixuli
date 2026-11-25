@@ -4,6 +4,15 @@ import { createStoragePluginRegistry } from '../../plugins';
 import { MemoryPluginStateStore } from '../memoryStateStore';
 import { createPluginRuntime } from '../runtime';
 import type { RuntimePlugin, RuntimePluginManifest } from '../types';
+import { createEmptyPluginUiHost } from '../uiHost';
+
+function api() {
+  return {
+    storage: createStoragePluginRegistry(),
+    kinds: createKindPluginRegistry(),
+    ui: createEmptyPluginUiHost(),
+  };
+}
 
 function makePlugin(
   partial: Partial<RuntimePluginManifest> & Pick<RuntimePluginManifest, 'id'>,
@@ -30,10 +39,14 @@ describe('PluginRuntime', () => {
   it('loads enabled builtins on start and supports unload / setEnabled', async () => {
     const storage = createStoragePluginRegistry();
     const kinds = createKindPluginRegistry();
-    const runtime = createPluginRuntime({ storage, kinds });
+    const runtime = createPluginRuntime({
+      storage,
+      kinds,
+      ui: createEmptyPluginUiHost(),
+    });
 
-    const onloadA = vi.fn(async api => {
-      api.storage.register(
+    const onloadA = vi.fn(async apiArg => {
+      apiArg.storage.register(
         {
           id: 'a',
           name: 'A',
@@ -81,11 +94,79 @@ describe('PluginRuntime', () => {
     expect(storage.getManifest('a')?.id).toBe('a');
   });
 
-  it('isolates onload failures', async () => {
+  it('registerExternal forces origin external and supports enable cycle', async () => {
+    const kinds = createKindPluginRegistry();
+    const ui = createEmptyPluginUiHost();
     const runtime = createPluginRuntime({
       storage: createStoragePluginRegistry(),
-      kinds: createKindPluginRegistry(),
+      kinds,
+      ui,
     });
+
+    const onload = vi.fn(apiArg => {
+      apiArg.kinds.register(
+        {
+          id: 'ext.sample',
+          name: 'Sample',
+          version: '0.1.0',
+          match: () => false,
+        },
+        () => ({}) as never,
+      );
+      apiArg.ui.registerPreview({
+        id: 'ext.sample',
+        match: () => false,
+        component: {},
+      });
+    });
+    const onunload = vi.fn(() => {
+      kinds.unregister('ext.sample');
+      ui.unregisterPreview('ext.sample');
+    });
+
+    runtime.registerExternal(() =>
+      makePlugin(
+        {
+          id: 'ext.sample',
+          origin: 'builtin',
+          capabilities: ['kind'],
+        },
+        { onload, onunload },
+      ),
+    );
+
+    const results = await runtime.start();
+    expect(results[0]?.ok).toBe(true);
+    expect(runtime.listStates().find(s => s.id === 'ext.sample')?.origin).toBe(
+      'external',
+    );
+    expect(onload).toHaveBeenCalled();
+
+    await runtime.setEnabled('ext.sample', false);
+    expect(onunload).toHaveBeenCalled();
+    expect(runtime.getLoadedIds()).toEqual([]);
+
+    await runtime.setEnabled('ext.sample', true);
+    expect(onload).toHaveBeenCalledTimes(2);
+  });
+
+  it('throws when registering duplicate external id', () => {
+    const runtime = createPluginRuntime(api());
+    runtime.registerExternal(() => makePlugin({ id: 'dup' }));
+    expect(() =>
+      runtime.registerExternal(() => makePlugin({ id: 'dup' })),
+    ).toThrow(/External plugin already registered/);
+  });
+
+  it('setEnabled throws for unknown id', async () => {
+    const runtime = createPluginRuntime(api());
+    await expect(runtime.setEnabled('missing', false)).rejects.toThrow(
+      /Unknown plugin/,
+    );
+  });
+
+  it('isolates onload failures', async () => {
+    const runtime = createPluginRuntime(api());
 
     runtime.registerBuiltin(() =>
       makePlugin(
@@ -114,13 +195,14 @@ describe('PluginRuntime', () => {
     const runtime = createPluginRuntime({
       storage,
       kinds: createKindPluginRegistry(),
+      ui: createEmptyPluginUiHost(),
     });
     runtime.registerBuiltin(() =>
       makePlugin(
         { id: 'sync' },
         {
-          onload(api) {
-            api.storage.register(
+          onload(apiArg) {
+            apiArg.storage.register(
               {
                 id: 'sync',
                 name: 'Sync',
@@ -152,13 +234,7 @@ describe('PluginRuntime', () => {
       version: '1.0.0',
     });
     const onload = vi.fn();
-    const runtime = createPluginRuntime(
-      {
-        storage: createStoragePluginRegistry(),
-        kinds: createKindPluginRegistry(),
-      },
-      store,
-    );
+    const runtime = createPluginRuntime(api(), store);
     runtime.registerBuiltin(() => makePlugin({ id: 'off' }, { onload }));
 
     await runtime.start();

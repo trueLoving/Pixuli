@@ -1,39 +1,10 @@
-import React, { type ComponentType } from 'react';
+import React from 'react';
+import type { PluginUiHost } from '@pixuli/core/plugin-runtime';
 import { matchPdfKind } from '../match';
 import { capturePdfThumbnailFromUrl, type PdfReadFile } from '../pdfEngine';
 import { PdfDocumentView } from './PdfDocumentView';
 
-/** 宿主注入的 UI 注册表（结构兼容 app UiContributionRegistry） */
-export type PdfUiHostRegistry = {
-  registerPreview(contribution: {
-    id: string;
-    priority?: number;
-    match: (input: {
-      name: string;
-      mimeType?: string;
-      kind?: string;
-    }) => boolean;
-    component: ComponentType<{
-      asset: { name: string };
-      src: string | null;
-      localPath?: string | null;
-      variant: 'inspector' | 'modal';
-      t: (key: string) => string;
-    }>;
-  }): void;
-  registerThumbnail(contribution: {
-    id: string;
-    priority?: number;
-    match: (input: {
-      name: string;
-      mimeType?: string;
-      kind?: string;
-    }) => boolean;
-    capture: (url: string) => Promise<string | null>;
-  }): void;
-};
-
-/** 宿主工作区能力；由 app 一次注入，插件内部接线到 PdfDocumentView */
+/** 宿主工作区能力；由 PluginApi.ui.getKindCapabilities() 注入 */
 export type ContributePdfUiOptions = {
   readFile?: PdfReadFile;
   isLocalAvailable?: () => boolean;
@@ -50,16 +21,27 @@ function matchPdfUiInput(input: {
 }
 
 export function contributePdfUi(
-  registry: PdfUiHostRegistry,
+  ui: PluginUiHost,
   options: ContributePdfUiOptions = {},
 ): void {
   const { readFile, isLocalAvailable, thumbnailSize = 64 } = options;
 
-  registry.registerPreview({
+  ui.registerPreview({
     id: 'kind.pdf',
     priority: 10,
     match: matchPdfUiInput,
-    component: function PdfKindPreviewSlot({ src, localPath, variant, t }) {
+    component: function PdfKindPreviewSlot({
+      src,
+      localPath,
+      variant,
+      t,
+    }: {
+      asset: { name: string };
+      src: string | null;
+      localPath?: string | null;
+      variant: 'inspector' | 'modal';
+      t: (key: string) => string;
+    }) {
       return (
         <PdfDocumentView
           src={src}
@@ -79,10 +61,15 @@ export function contributePdfUi(
     },
   });
 
-  registry.registerThumbnail({
+  ui.registerThumbnail({
     id: 'kind.pdf',
     priority: 10,
     match: matchPdfUiInput,
     capture: url => capturePdfThumbnailFromUrl(url, thumbnailSize),
   });
+}
+
+export function unregisterPdfUi(ui: PluginUiHost): void {
+  ui.unregisterPreview('kind.pdf');
+  ui.unregisterThumbnail('kind.pdf');
 }

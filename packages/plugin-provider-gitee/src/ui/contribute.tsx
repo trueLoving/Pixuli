@@ -1,36 +1,7 @@
-import React from 'react';
-import type {
-  StorageProviderConfig,
-  StorageProviderDiscovery,
-} from '@pixuli/core/plugins';
+import type { PluginUiHost } from '@pixuli/core/plugin-runtime';
 import { giteeManifest } from '../manifest';
 import { isGiteeConfigComplete } from './config';
 import { GiteeConnectionFields } from './GiteeConnectionFields';
-
-/** 与 app UiContributionRegistry 结构兼容 */
-export type StorageUiHostRegistry = {
-  registerConnectionFields(contribution: {
-    pluginId: string;
-    labelPrefix?: string;
-    isConfigComplete?: (config: StorageProviderConfig) => boolean;
-    component: React.ComponentType<{
-      pluginId: string;
-      labelPrefix: string;
-      config: StorageProviderConfig;
-      onChange: (config: StorageProviderConfig) => void;
-      t: (key: string) => string;
-      classes: Record<string, string>;
-      discovery?: StorageProviderDiscovery;
-      resolveDiscovery?: () => StorageProviderDiscovery;
-      section: 'auth' | 'location';
-      onValidatedChange?: (ok: boolean) => void;
-    }>;
-  }): void;
-  registerSourceIcon(contribution: {
-    pluginId: string;
-    render: (size?: number) => React.ReactNode;
-  }): void;
-};
 
 function GiteeIcon({ size = 18 }: { size?: number }) {
   const fontSize = Math.max(10, Math.round(size * 0.66));
@@ -45,15 +16,20 @@ function GiteeIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-export function contributeGiteeUi(registry: StorageUiHostRegistry): void {
-  registry.registerConnectionFields({
+export function contributeGiteeUi(ui: PluginUiHost): void {
+  ui.registerConnectionFields({
     pluginId: giteeManifest.id,
     labelPrefix: 'gitee.config',
     isConfigComplete: isGiteeConfigComplete,
     component: GiteeConnectionFields,
   });
-  registry.registerSourceIcon({
+  ui.registerSourceIcon({
     pluginId: giteeManifest.id,
     render: (size = 18) => <GiteeIcon size={size} />,
   });
+}
+
+export function unregisterGiteeUi(ui: PluginUiHost): void {
+  ui.unregisterConnectionFields(giteeManifest.id);
+  ui.unregisterSourceIcon(giteeManifest.id);
 }
