@@ -1,12 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   filterAssetsByKind,
   filterAssetsByKinds,
   getAssetKind,
 } from '../assetKind';
+import { startPluginRuntime } from '@/plugins/runtime';
 
 describe('getAssetKind', () => {
-  it('classifies pdf by mime or extension', () => {
+  beforeAll(() => {
+    startPluginRuntime();
+  });
+
+  it('classifies pdf via kind-pdf plugin when registered', () => {
     expect(getAssetKind({ name: 'a.pdf', type: '' })).toBe('pdf');
     expect(getAssetKind({ name: 'a.bin', type: 'application/pdf' })).toBe(
       'pdf',
@@ -45,6 +50,10 @@ describe('getAssetKind', () => {
 });
 
 describe('filterAssetsByKind', () => {
+  beforeAll(() => {
+    startPluginRuntime();
+  });
+
   const items = [
     { name: 'a.jpg', type: 'image/jpeg' },
     { name: 'b.pdf', type: '' },

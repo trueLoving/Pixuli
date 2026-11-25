@@ -5,6 +5,11 @@ import {
 } from '@pixuli/core/plugin-runtime';
 import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
 import { createPdfRuntimePlugin } from '@pixuli/kind-pdf/runtime';
+import {
+  bindGiteePluginUi,
+  bindGitHubPluginUi,
+  bindPdfPluginUi,
+} from './bindPluginUi';
 import { createPixuliGiteeRuntimePlugin } from './createPixuliGiteeRuntimePlugin';
 import { contributeAllPluginUi } from './contributeUi';
 import { LocalStoragePluginStateStore } from './localStorageStateStore';
@@ -19,9 +24,11 @@ export const pluginRuntime: PluginRuntime = createPluginRuntime(
   stateStore,
 );
 
-pluginRuntime.registerBuiltin(createGitHubRuntimePlugin);
-pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
-pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
+pluginRuntime.registerBuiltin(bindGitHubPluginUi(createGitHubRuntimePlugin));
+pluginRuntime.registerBuiltin(
+  bindGiteePluginUi(createPixuliGiteeRuntimePlugin),
+);
+pluginRuntime.registerBuiltin(bindPdfPluginUi(createPdfRuntimePlugin));
 
 let bootResults: PluginLoadResult[] | null = null;
 

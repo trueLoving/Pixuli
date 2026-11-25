@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { startPluginRuntime } from '@/plugins/runtime';
 import {
   filterByLibraryQuery,
   parseLibraryQuery,
@@ -7,6 +8,10 @@ import {
 } from '../libraryQuery';
 
 describe('libraryQuery', () => {
+  beforeAll(() => {
+    startPluginRuntime();
+  });
+
   it('tokenizes quoted phrases and bare words', () => {
     expect(tokenizeLibraryQuery('foo "bar baz" kind:pdf')).toEqual([
       'foo',

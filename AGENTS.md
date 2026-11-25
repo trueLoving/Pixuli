@@ -55,7 +55,8 @@ packages/plugin-kind-pdf/   → @pixuli/kind-pdf
 
 - 与 Storage 正交；经 Runtime 注册（`app/src/kinds/registry.ts`）
 - 契约：`@pixuli/core/kinds`
-- PDF：`@pixuli/kind-pdf`（`/runtime` + `/ui`；app 注入 workspace `readFile`）
+- PDF：`@pixuli/kind-pdf`；UI 经 `bindPluginUi` 与 Runtime onload/onunload 同步
+- 无 Kind 预览贡献时降级下载打开（`builtin.other`）
 
 ## 代码约束
 

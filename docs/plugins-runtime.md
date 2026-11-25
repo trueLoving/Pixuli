@@ -33,10 +33,11 @@
 - App 壳：`KindPreviewHost`、`ConnectionWizard`、`StorageSourceIcon` —
   **按 registry 解析，不按 pluginId/kind 写死业务分支**；Wizard 持有不透明
   `StorageProviderConfig`。
-- 插件经 `/ui` 的 `contribute*(registry)`
-  注册；PDF：`@pixuli/kind-pdf/ui`；连接表单由
-  `@pixuli/provider-github/ui`、`@pixuli/provider-gitee/ui`
-  各自贡献（app 只对接这两个包，无共享 git-ui 包）。
+- 无匹配预览时降级 `builtin.other`（下载打开）。
+- 插件 UI 与 Runtime **同生命周期**：`bindPluginUi`
+  在 onload 贡献、onunload 注销；`setEnabled(false)`
+  会同时卸 capability 与 UI。app 内置 Kind UI（image/…/other）仍由
+  `contributeAllPluginUi` 注册；`kindHost` 提供通用 `readFile`。
 - **激活存储会话**：`storageType`（pluginId）+ `storageConfig`（一份
   `StorageProviderConfig`），不再 github/gitee 双轨；持久化
   `pixuli-storage-session.v1`（兼容旧分 key 迁移）。

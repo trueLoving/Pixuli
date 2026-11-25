@@ -1,7 +1,7 @@
 import React, { type ComponentType } from 'react';
 import { matchPdfKind } from '../match';
-import { capturePdfThumbnailFromUrl } from '../pdfEngine';
-import { PdfDocumentView, type PdfDocumentViewProps } from './PdfDocumentView';
+import { capturePdfThumbnailFromUrl, type PdfReadFile } from '../pdfEngine';
+import { PdfDocumentView } from './PdfDocumentView';
 
 /** 宿主注入的 UI 注册表（结构兼容 app UiContributionRegistry） */
 export type PdfUiHostRegistry = {
@@ -33,9 +33,10 @@ export type PdfUiHostRegistry = {
   }): void;
 };
 
+/** 宿主工作区能力；由 app 一次注入，插件内部接线到 PdfDocumentView */
 export type ContributePdfUiOptions = {
-  /** 宿主包装（如注入 workspace readFile）；默认裸 PdfDocumentView */
-  PreviewComponent?: ComponentType<PdfDocumentViewProps>;
+  readFile?: PdfReadFile;
+  isLocalAvailable?: () => boolean;
   thumbnailSize?: number;
 };
 
@@ -52,8 +53,7 @@ export function contributePdfUi(
   registry: PdfUiHostRegistry,
   options: ContributePdfUiOptions = {},
 ): void {
-  const Preview = options.PreviewComponent ?? PdfDocumentView;
-  const thumbSize = options.thumbnailSize ?? 64;
+  const { readFile, isLocalAvailable, thumbnailSize = 64 } = options;
 
   registry.registerPreview({
     id: 'kind.pdf',
@@ -61,10 +61,12 @@ export function contributePdfUi(
     match: matchPdfUiInput,
     component: function PdfKindPreviewSlot({ src, localPath, variant, t }) {
       return (
-        <Preview
+        <PdfDocumentView
           src={src}
           localPath={localPath}
           variant={variant}
+          readFile={readFile}
+          isLocalAvailable={isLocalAvailable}
           loadingLabel={t('image.pdf.loading')}
           errorLabel={t('image.pdf.loadFailed')}
           pageLabel={(page, total) =>
@@ -81,6 +83,6 @@ export function contributePdfUi(
     id: 'kind.pdf',
     priority: 10,
     match: matchPdfUiInput,
-    capture: url => capturePdfThumbnailFromUrl(url, thumbSize),
+    capture: url => capturePdfThumbnailFromUrl(url, thumbnailSize),
   });
 }

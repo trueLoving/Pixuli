@@ -1,0 +1,42 @@
+import React, { type ComponentType } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { contributePdfUi, type PdfUiHostRegistry } from '../contribute';
+
+describe('contributePdfUi', () => {
+  it('wires host readFile into registered preview without app wrapper', () => {
+    const readFile = vi.fn(async () => new Uint8Array([1]));
+    const isLocalAvailable = vi.fn(() => true);
+    let Preview: ComponentType<{
+      asset: { name: string };
+      src: string | null;
+      localPath?: string | null;
+      variant: 'inspector' | 'modal';
+      t: (key: string) => string;
+    }> | null = null;
+
+    const registry: PdfUiHostRegistry = {
+      registerPreview: contribution => {
+        Preview = contribution.component;
+      },
+      registerThumbnail: () => undefined,
+    };
+
+    contributePdfUi(registry, { readFile, isLocalAvailable });
+    expect(Preview).toBeTruthy();
+    const Slot = Preview!;
+
+    render(
+      <Slot
+        asset={{ name: 'a.pdf' }}
+        src={null}
+        localPath="docs/a.pdf"
+        variant="inspector"
+        t={key => key}
+      />,
+    );
+
+    // empty/loading UI mounts; engine will call readFile asynchronously
+    expect(screen.getByText('image.pdf.loading')).toBeInTheDocument();
+  });
+});

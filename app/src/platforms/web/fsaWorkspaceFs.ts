@@ -83,14 +83,68 @@ export async function loadFsaDirectoryHandle(
   return handle;
 }
 
+const FSA_PERMISSION_TIMEOUT_MS = 2500;
+
+export type EnsureFsaPermissionOptions = {
+  /**
+   * 仅用户手势路径开启。自动恢复只 query：无手势 request 会失败，
+   * 且部分 Chrome 版本对失效句柄的 query/request 会永不 settle。
+   */
+  allowRequest?: boolean;
+  timeoutMs?: number;
+};
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  message: string,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+    promise.then(
+      value => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      error => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 export async function ensureFsaPermission(
   handle: FileSystemDirectoryHandle,
+  options?: EnsureFsaPermissionOptions,
 ): Promise<boolean> {
-  const options = { mode: 'readwrite' as const };
-  if ((await handle.queryPermission(options)) === 'granted') {
-    return true;
+  const mode = { mode: 'readwrite' as const };
+  const timeoutMs = options?.timeoutMs ?? FSA_PERMISSION_TIMEOUT_MS;
+  const allowRequest = options?.allowRequest === true;
+
+  try {
+    const state = await withTimeout(
+      handle.queryPermission(mode),
+      timeoutMs,
+      'Folder permission query timed out',
+    );
+    if (state === 'granted') {
+      return true;
+    }
+    if (!allowRequest) {
+      return false;
+    }
+    const next = await withTimeout(
+      handle.requestPermission(mode),
+      timeoutMs,
+      'Folder permission request timed out',
+    );
+    return next === 'granted';
+  } catch {
+    return false;
   }
-  return (await handle.requestPermission(options)) === 'granted';
 }
 
 async function resolveParentInDir(
@@ -267,7 +321,7 @@ export async function pickFsaDirectory(): Promise<FileSystemDirectoryHandle | nu
   }
   try {
     const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
-    const granted = await ensureFsaPermission(handle);
+    const granted = await ensureFsaPermission(handle, { allowRequest: true });
     return granted ? handle : null;
   } catch {
     return null;
