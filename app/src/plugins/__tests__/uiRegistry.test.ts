@@ -40,4 +40,28 @@ describe('UiContributionRegistry', () => {
       reg.resolvePreview({ name: 'x.bin', kind: 'other' }),
     ).toBeUndefined();
   });
+
+  it('unregisters preview / connection / icon by id', () => {
+    const reg = new DefaultUiContributionRegistry();
+    reg.registerPreview({
+      id: 'kind.pdf',
+      match: input => input.kind === 'pdf',
+      component: () => null,
+    });
+    reg.registerConnectionFields({
+      pluginId: 'github',
+      component: () => null,
+    });
+    reg.registerSourceIcon({
+      pluginId: 'github',
+      render: () => null,
+    });
+
+    expect(reg.unregisterPreview('kind.pdf')).toBe(true);
+    expect(reg.resolvePreview({ name: 'a.pdf', kind: 'pdf' })).toBeUndefined();
+    expect(reg.unregisterConnectionFields('github')).toBe(true);
+    expect(reg.resolveConnectionFields('github')).toBeUndefined();
+    expect(reg.unregisterSourceIcon('github')).toBe(true);
+    expect(reg.resolveSourceIcon('github')).toBeUndefined();
+  });
 });

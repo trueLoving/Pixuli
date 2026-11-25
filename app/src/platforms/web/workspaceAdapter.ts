@@ -86,7 +86,9 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
     return this.workspaceId;
   }
 
-  private async requireFsaHandle(): Promise<FileSystemDirectoryHandle> {
+  private async requireFsaHandle(options?: {
+    allowRequest?: boolean;
+  }): Promise<FileSystemDirectoryHandle> {
     if (this.fsaHandle) {
       return this.fsaHandle;
     }
@@ -97,7 +99,9 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
         'Connected folder handle not found; pick the folder again',
       );
     }
-    const granted = await ensureFsaPermission(handle);
+    const granted = await ensureFsaPermission(handle, {
+      allowRequest: options?.allowRequest === true,
+    });
     if (!granted) {
       throw new Error('Folder permission denied');
     }
@@ -115,7 +119,7 @@ export class WebWorkspaceAdapter implements WorkspaceAdapter {
       this.setRootPath(this.rootPath);
     }
     try {
-      await this.requireFsaHandle();
+      await this.requireFsaHandle({ allowRequest: true });
       return true;
     } catch {
       return false;

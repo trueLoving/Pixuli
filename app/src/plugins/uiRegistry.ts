@@ -70,6 +70,10 @@ export interface UiContributionRegistry {
     contribution: StorageConnectionFieldsContribution,
   ): void;
   registerSourceIcon(contribution: StorageSourceIconContribution): void;
+  unregisterPreview(id: string): boolean;
+  unregisterThumbnail(id: string): boolean;
+  unregisterConnectionFields(pluginId: string): boolean;
+  unregisterSourceIcon(pluginId: string): boolean;
   resolvePreview(input: KindUiMatchInput): KindPreviewContribution | undefined;
   resolveThumbnail(
     input: KindUiMatchInput,
@@ -127,6 +131,28 @@ export class DefaultUiContributionRegistry implements UiContributionRegistry {
 
   registerSourceIcon(contribution: StorageSourceIconContribution): void {
     this.sourceIcons.set(contribution.pluginId, contribution);
+  }
+
+  unregisterPreview(id: string): boolean {
+    const idx = this.previews.findIndex(c => c.id === id);
+    if (idx < 0) return false;
+    this.previews.splice(idx, 1);
+    return true;
+  }
+
+  unregisterThumbnail(id: string): boolean {
+    const idx = this.thumbnails.findIndex(c => c.id === id);
+    if (idx < 0) return false;
+    this.thumbnails.splice(idx, 1);
+    return true;
+  }
+
+  unregisterConnectionFields(pluginId: string): boolean {
+    return this.connectionFields.delete(pluginId);
+  }
+
+  unregisterSourceIcon(pluginId: string): boolean {
+    return this.sourceIcons.delete(pluginId);
   }
 
   resolvePreview(input: KindUiMatchInput): KindPreviewContribution | undefined {

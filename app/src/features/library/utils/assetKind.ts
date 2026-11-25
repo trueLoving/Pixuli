@@ -1,4 +1,6 @@
 import type { AssetKind, AssetItem } from '@pixuli/core/types';
+import { kindRegistry } from '@/plugins/registries';
+import { startPluginRuntime } from '@/plugins/runtime';
 
 export type AssetKindFilter = 'all' | AssetKind;
 
@@ -10,15 +12,25 @@ function extensionOf(name: string): string {
   return name.slice(dot + 1).toLowerCase();
 }
 
+/**
+ * 解析资源类型：优先 Kind 插件 `matchHandler`；
+ * 未命中时用 app 内置启发式（不含 PDF 等应由插件声明的类型）。
+ */
 export function getAssetKind(
   item: Pick<AssetItem, 'name' | 'type'>,
 ): AssetKind {
+  startPluginRuntime();
+  const handler = kindRegistry.matchHandler({
+    name: item.name || '',
+    mimeType: item.type,
+  });
+  if (handler) {
+    return handler.manifest.kind;
+  }
+
   const mime = (item.type || '').toLowerCase();
   const ext = extensionOf(item.name || '');
 
-  if (mime === 'application/pdf' || ext === 'pdf') {
-    return 'pdf';
-  }
   if (
     mime === 'text/markdown' ||
     mime === 'text/x-markdown' ||

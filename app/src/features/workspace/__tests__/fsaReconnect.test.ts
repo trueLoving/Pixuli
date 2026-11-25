@@ -15,6 +15,9 @@ describe('fsaReconnect', () => {
     expect(classifyFsaAccessError('Folder permission denied')).toBe(
       'permission',
     );
+    expect(classifyFsaAccessError('Folder permission query timed out')).toBe(
+      'permission',
+    );
     expect(
       classifyFsaAccessError(
         'Connected folder handle not found; pick the folder again',

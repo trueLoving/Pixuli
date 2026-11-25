@@ -10,8 +10,8 @@ interface AssetThumbProps {
 }
 
 /**
- * 资源库行缩略图：图片懒加载；视频取帧；PDF 首页渲染；失败回退类型图标。
- * 本地条目可无 url（deferPreview），可见时再读盘建 blob。
+ * 资源库行缩略图：图片直出；其余经 Kind UI 槽位 `resolveThumbnail`；
+ * 无贡献或失败时回退类型图标。
  */
 export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
   const kind = getAssetKind(item);
@@ -43,13 +43,8 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
         return;
       }
 
-      if (kind !== 'video' && kind !== 'pdf') {
-        setSrc(null);
-        return;
-      }
-
       if (!url) {
-        setFailed(true);
+        setSrc(null);
         return;
       }
 
@@ -61,7 +56,7 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
       });
       if (cancelled) return;
       if (thumb) setSrc(thumb);
-      else setFailed(true);
+      else setSrc(null);
     };
 
     void run();
@@ -114,6 +109,11 @@ export const AssetThumb: React.FC<AssetThumbProps> = ({ item }) => {
       {kind === 'text' ? (
         <span className="asset-library-thumb-badge asset-library-thumb-badge--txt">
           TXT
+        </span>
+      ) : null}
+      {kind === 'pdf' ? (
+        <span className="asset-library-thumb-badge asset-library-thumb-badge--pdf">
+          PDF
         </span>
       ) : null}
     </span>

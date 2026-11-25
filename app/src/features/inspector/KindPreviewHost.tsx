@@ -1,7 +1,6 @@
 import React from 'react';
 import type { AssetItem } from '@pixuli/core/types';
 import { getAssetKind } from '@/features/library/utils/assetKind';
-import { kindRegistry } from '@/plugins/registries';
 import { startPluginRuntime } from '@/plugins/runtime';
 import { uiRegistry } from '@/plugins/uiRegistry';
 
@@ -20,15 +19,18 @@ export function KindPreviewHost({
 }) {
   startPluginRuntime();
   const kind = getAssetKind(asset);
-  const handler = kindRegistry.matchHandler({
-    name: asset.name,
-    mimeType: asset.type,
-  });
-  const contribution = uiRegistry.resolvePreview({
-    name: asset.name,
-    mimeType: asset.type,
-    kind: handler?.manifest.kind ?? kind,
-  });
+  const contribution =
+    uiRegistry.resolvePreview({
+      name: asset.name,
+      mimeType: asset.type,
+      kind,
+    }) ??
+    // 无专用预览时降级为下载打开（builtin.other）
+    uiRegistry.resolvePreview({
+      name: asset.name,
+      mimeType: asset.type,
+      kind: 'other',
+    });
 
   if (!contribution) {
     return className ? <div className={className} aria-hidden /> : null;

@@ -22,7 +22,12 @@ export function classifyFsaAccessError(
   ) {
     return 'missing_handle';
   }
-  if (lower.includes('permission') || lower.includes('denied')) {
+  if (
+    lower.includes('permission') ||
+    lower.includes('denied') ||
+    lower.includes('timed out') ||
+    lower.includes('timeout')
+  ) {
     return 'permission';
   }
   return null;

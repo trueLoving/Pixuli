@@ -20,6 +20,11 @@ function mountApp() {
       </BrowserRouter>
     </React.StrictMode>,
   );
+
+  // 首帧后尽快收起 boot 遮罩，避免工作区恢复较慢时误以为一直卡在启动页
+  requestAnimationFrame(() => {
+    window.postMessage({ payload: 'removeLoading' }, window.location.origin);
+  });
 }
 
 bootstrapCapacitorNative().finally(mountApp);
