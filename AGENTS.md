@@ -55,7 +55,10 @@ packages/plugin-kind-pdf/   → @pixuli/kind-pdf
 
 - 与 Storage 正交；经 Runtime 注册（`app/src/kinds/registry.ts`）
 - 契约：`@pixuli/core/kinds`
-- PDF：`@pixuli/kind-pdf`；UI 经 `bindPluginUi` 与 Runtime onload/onunload 同步
+- PDF：`@pixuli/kind-pdf`；UI 在 RuntimePlugin onload 经 `PluginApi.ui` 贡献
+- 用户安装插件（D2.9）：仅 Desktop +
+  Mobile；**Web 禁止**。Desktop：`userData/plugins` + `registerExternal`；Mobile
+  Loader 待做
 - 无 Kind 预览贡献时降级下载打开（`builtin.other`）
 
 ## 代码约束

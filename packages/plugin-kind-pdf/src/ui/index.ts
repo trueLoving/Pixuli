@@ -1,6 +1,6 @@
 export { PdfDocumentView, type PdfDocumentViewProps } from './PdfDocumentView';
 export {
   contributePdfUi,
+  unregisterPdfUi,
   type ContributePdfUiOptions,
-  type PdfUiHostRegistry,
 } from './contribute';

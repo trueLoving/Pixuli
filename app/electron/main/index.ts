@@ -22,6 +22,10 @@ import {
 import { resolvePreloadScript } from './resolvePreload';
 import { registerServiceHandlers } from './services';
 import { stopLanShareIfRunning } from './services/lanShareService';
+import {
+  registerPluginProtocolHandler,
+  registerPluginProtocolScheme,
+} from './services/pluginsService';
 import { createTray, updateTrayMenu, destroyTray } from './tray';
 
 const require = createRequire(import.meta.url);
@@ -63,6 +67,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 registerPixuliProtocolClient();
+registerPluginProtocolScheme();
 
 const coldStartDeepLink = extractDeepLinkFromArgv(process.argv);
 if (coldStartDeepLink) {
@@ -86,13 +91,13 @@ function setupContentSecurityPolicy() {
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
   // Electron 会在开发模式下显示警告，但这是预期的行为
   const devCSP =
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:*; " +
+    "default-src 'self' pixuli-plugin:; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:* pixuli-plugin:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' blob: http://localhost:* ws://localhost:* wss://* https://* http://*; " +
+    "connect-src 'self' blob: http://localhost:* ws://localhost:* wss://* https://* http://* pixuli-plugin:; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
@@ -100,13 +105,13 @@ function setupContentSecurityPolicy() {
 
   // 生产模式的 CSP（更严格，移除 unsafe-eval）
   const prodCSP =
-    "default-src 'self'; " +
-    "script-src 'self'; " +
+    "default-src 'self' pixuli-plugin:; " +
+    "script-src 'self' pixuli-plugin:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +
     "font-src 'self' data:; " +
-    "connect-src 'self' blob: https: http://*; " +
+    "connect-src 'self' blob: https: http://* pixuli-plugin:; " +
     "frame-src 'self'; " +
     "object-src 'none'; " +
     "base-uri 'self'; " +
@@ -229,6 +234,7 @@ async function createWindow() {
 
 app.whenReady().then(() => {
   setupContentSecurityPolicy();
+  registerPluginProtocolHandler();
   void createWindow();
 });
 

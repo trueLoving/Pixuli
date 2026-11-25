@@ -37,16 +37,31 @@ Gitee 等）管自己的图、文档、视频——**云是同步与外链通道
 
 ## D2 · 相关决策（摘要）
 
-| ID   | 决策                        | 要点                       |
-| ---- | --------------------------- | -------------------------- |
-| D2.1 | 无官方 NestJS Server        | 存储走 Provider            |
-| D2.2 | core / provider 禁止依赖 UI | 契约可独立演进             |
-| D2.3 | UI 内联 `app/src/ui`        | 少一层包税                 |
-| D2.4 | 展示裁剪                    | 聚焦资源管理               |
-| D2.5 | Mobile = Capacitor          | 与 Web/Desktop 同 UI       |
-| D2.6 | 默认 TypeScript             | 业务 `.ts`/`.tsx`          |
-| D2.7 | 外链 = 复制链接             | 无用户向「发布」           |
-| D2.8 | 处理在库内弹窗              | 按类型扩展；结果仅本机写回 |
+| ID   | 决策                        | 要点                                  |
+| ---- | --------------------------- | ------------------------------------- |
+| D2.1 | 无官方 NestJS Server        | 存储走 Provider                       |
+| D2.2 | core / provider 禁止依赖 UI | 契约可独立演进                        |
+| D2.3 | UI 内联 `app/src/ui`        | 少一层包税                            |
+| D2.4 | 展示裁剪                    | 聚焦资源管理                          |
+| D2.5 | Mobile = Capacitor          | 与 Web/Desktop 同 UI                  |
+| D2.6 | 默认 TypeScript             | 业务 `.ts`/`.tsx`                     |
+| D2.7 | 外链 = 复制链接             | 无用户向「发布」                      |
+| D2.8 | 处理在库内弹窗              | 按类型扩展；结果仅本机写回            |
+| D2.9 | 用户安装插件端策略          | 仅 Desktop + Mobile；**Web 永不开放** |
+
+### D2.9 · 用户安装插件（external）三端策略
+
+| 端      | Builtin 官方插件 | 用户自行安装 / 卸载（external）     |
+| ------- | ---------------- | ----------------------------------- |
+| Web     | 有               | **不做**（无 sideload / 远程脚本）  |
+| Desktop | 有               | **做**（本机目录；Loader PoC 已有） |
+| Mobile  | 有               | **做**（应用私有目录；Loader 待做） |
+
+理由：Web 无法安全、持久地托管第三方代码（CSP、无可靠本机插件目录、供应链风险）；Desktop
+/ Mobile 具备应用私有文件系统，与 Obsidian 式本机插件一致。商店 UI
+/ 签名仍可后置，但不改变「Web 不装第三方」边界。
+
+详见 [docs/plugins-runtime.md](docs/plugins-runtime.md)。
 
 ---
 

@@ -1,13 +1,14 @@
-import React, { type ComponentType } from 'react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { contributePdfUi, type PdfUiHostRegistry } from '../contribute';
+import { createEmptyPluginUiHost } from '@pixuli/core/plugin-runtime';
+import { contributePdfUi } from '../contribute';
 
 describe('contributePdfUi', () => {
   it('wires host readFile into registered preview without app wrapper', () => {
     const readFile = vi.fn(async () => new Uint8Array([1]));
     const isLocalAvailable = vi.fn(() => true);
-    let Preview: ComponentType<{
+    let Preview: React.ComponentType<{
       asset: { name: string };
       src: string | null;
       localPath?: string | null;
@@ -15,14 +16,12 @@ describe('contributePdfUi', () => {
       t: (key: string) => string;
     }> | null = null;
 
-    const registry: PdfUiHostRegistry = {
-      registerPreview: contribution => {
-        Preview = contribution.component;
-      },
-      registerThumbnail: () => undefined,
+    const ui = createEmptyPluginUiHost();
+    ui.registerPreview = contribution => {
+      Preview = contribution.component as typeof Preview;
     };
 
-    contributePdfUi(registry, { readFile, isLocalAvailable });
+    contributePdfUi(ui, { readFile, isLocalAvailable });
     expect(Preview).toBeTruthy();
     const Slot = Preview!;
 
@@ -36,7 +35,6 @@ describe('contributePdfUi', () => {
       />,
     );
 
-    // empty/loading UI mounts; engine will call readFile asynchronously
     expect(screen.getByText('image.pdf.loading')).toBeInTheDocument();
   });
 });

@@ -2,6 +2,7 @@ import { MemoryPluginStateStore } from './memoryStateStore';
 import type {
   PluginApi,
   PluginLoadResult,
+  PluginOrigin,
   PluginRuntime,
   PluginStateRecord,
   PluginStateStore,
@@ -15,6 +16,20 @@ function isThenable(value: unknown): value is PromiseLike<unknown> {
     typeof value === 'object' &&
     typeof (value as PromiseLike<unknown>).then === 'function'
   );
+}
+
+function withOrigin(
+  factory: RuntimePluginFactory,
+  origin: PluginOrigin,
+): RuntimePluginFactory {
+  return () => {
+    const plugin = factory();
+    if (plugin.manifest.origin === origin) return plugin;
+    return {
+      ...plugin,
+      manifest: { ...plugin.manifest, origin },
+    };
+  };
 }
 
 export class DefaultPluginRuntime implements PluginRuntime {
@@ -32,10 +47,25 @@ export class DefaultPluginRuntime implements PluginRuntime {
   }
 
   registerBuiltin(factory: RuntimePluginFactory): void {
+    this.registerFactory(withOrigin(factory, 'builtin'), 'builtin');
+  }
+
+  registerExternal(factory: RuntimePluginFactory): void {
+    this.registerFactory(withOrigin(factory, 'external'), 'external');
+  }
+
+  private registerFactory(
+    factory: RuntimePluginFactory,
+    origin: PluginOrigin,
+  ): void {
     const plugin = factory();
     const { id } = plugin.manifest;
     if (this.factories.has(id)) {
-      throw new Error(`Builtin plugin already registered: ${id}`);
+      throw new Error(
+        origin === 'builtin'
+          ? `Builtin plugin already registered: ${id}`
+          : `External plugin already registered: ${id}`,
+      );
     }
     this.factories.set(id, factory);
     this.manifests.set(id, plugin.manifest);
@@ -45,7 +75,7 @@ export class DefaultPluginRuntime implements PluginRuntime {
       this.store.set({
         id,
         enabled: true,
-        origin: plugin.manifest.origin,
+        origin,
         version: plugin.manifest.version,
       });
     }
@@ -162,9 +192,8 @@ export class DefaultPluginRuntime implements PluginRuntime {
       await this.unload(id);
       return;
     }
-    if (this.started) {
-      await this.load(id);
-    }
+    // 允许 start 之后 registerExternal 再启停；load 对已加载 id 幂等
+    await this.load(id);
   }
 
   listStates(): PluginStateRecord[] {

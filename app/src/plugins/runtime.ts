@@ -5,14 +5,11 @@ import {
 } from '@pixuli/core/plugin-runtime';
 import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
 import { createPdfRuntimePlugin } from '@pixuli/kind-pdf/runtime';
-import {
-  bindGiteePluginUi,
-  bindGitHubPluginUi,
-  bindPdfPluginUi,
-} from './bindPluginUi';
 import { createPixuliGiteeRuntimePlugin } from './createPixuliGiteeRuntimePlugin';
 import { contributeAllPluginUi } from './contributeUi';
+import { loadDesktopExternalPlugins } from './loadDesktopExternalPlugins';
 import { LocalStoragePluginStateStore } from './localStorageStateStore';
+import { createAppPluginUiHost } from './pluginUiHost';
 import { kindRegistry, storageRegistry } from './registries';
 
 export { kindRegistry, storageRegistry };
@@ -20,23 +17,30 @@ export { kindRegistry, storageRegistry };
 const stateStore = new LocalStoragePluginStateStore();
 
 export const pluginRuntime: PluginRuntime = createPluginRuntime(
-  { storage: storageRegistry, kinds: kindRegistry },
+  {
+    storage: storageRegistry,
+    kinds: kindRegistry,
+    ui: createAppPluginUiHost(),
+  },
   stateStore,
 );
 
-pluginRuntime.registerBuiltin(bindGitHubPluginUi(createGitHubRuntimePlugin));
-pluginRuntime.registerBuiltin(
-  bindGiteePluginUi(createPixuliGiteeRuntimePlugin),
-);
-pluginRuntime.registerBuiltin(bindPdfPluginUi(createPdfRuntimePlugin));
+pluginRuntime.registerBuiltin(createGitHubRuntimePlugin);
+pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
+pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
 
 let bootResults: PluginLoadResult[] | null = null;
+let externalLoadStarted = false;
 
 /** 同步启动内置插件（模块导入侧与测试可用） */
 export function startPluginRuntime(): PluginLoadResult[] {
   if (!bootResults) {
     bootResults = pluginRuntime.startSync();
     contributeAllPluginUi();
+    if (!externalLoadStarted) {
+      externalLoadStarted = true;
+      void loadDesktopExternalPlugins(pluginRuntime);
+    }
   }
   return bootResults;
 }

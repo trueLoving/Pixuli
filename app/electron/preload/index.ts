@@ -62,4 +62,9 @@ contextBridge.exposeInMainWorld('pixuliDeepLink', {
     ipcRenderer.invoke('pixuli:getPendingDeepLink') as Promise<string | null>,
 });
 
+contextBridge.exposeInMainWorld('pluginsAPI', {
+  getRoot: () => ipcRenderer.invoke('plugins:getRoot'),
+  discover: () => ipcRenderer.invoke('plugins:discover'),
+});
+
 loading();

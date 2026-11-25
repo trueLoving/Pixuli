@@ -1,7 +1,8 @@
 import type { KindPluginRegistry } from '../kinds/types';
 import type { StoragePluginRegistry } from '../plugins/types';
+import type { PluginUiHost } from './uiHost';
 
-export type PluginOrigin = 'builtin';
+export type PluginOrigin = 'builtin' | 'external';
 
 export type PluginCapabilityKind = 'storage' | 'kind';
 
@@ -15,10 +16,11 @@ export interface RuntimePluginManifest {
   minAppVersion?: string;
 }
 
-/** 宿主注入的窄 API；本切片仅暴露能力 registry */
+/** 宿主注入的窄 API */
 export interface PluginApi {
   storage: StoragePluginRegistry;
   kinds: KindPluginRegistry;
+  ui: PluginUiHost;
 }
 
 export interface RuntimePlugin {
@@ -50,6 +52,8 @@ export interface PluginStateStore {
 
 export interface PluginRuntime {
   registerBuiltin(factory: RuntimePluginFactory): void;
+  /** 第三方 / 磁盘加载插件；state.origin 固定为 external */
+  registerExternal(factory: RuntimePluginFactory): void;
   /** 异步启动（支持 onload 返回 Promise） */
   start(): Promise<PluginLoadResult[]>;
   /**
