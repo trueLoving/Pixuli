@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { loadDocumentText } from './loadDocumentText';
-import './TextDocumentView.css';
+import ReactMarkdown from 'react-markdown';
+import { loadDocumentText, type DocumentReadFile } from '../documentText';
+import './MarkdownDocumentView.css';
 
-type TextDocumentViewProps = {
+export type MarkdownDocumentViewProps = {
   src: string | null;
   localPath?: string | null;
+  readFile?: DocumentReadFile;
+  isLocalAvailable?: () => boolean;
   className?: string;
   variant?: 'modal' | 'inspector';
   emptyLabel?: string;
@@ -12,15 +15,17 @@ type TextDocumentViewProps = {
   errorLabel?: string;
 };
 
-export function TextDocumentView({
+export function MarkdownDocumentView({
   src,
   localPath = null,
+  readFile,
+  isLocalAvailable,
   className,
   variant = 'modal',
   emptyLabel = '—',
   loadingLabel = '…',
   errorLabel = '—',
-}: TextDocumentViewProps) {
+}: MarkdownDocumentViewProps) {
   const [text, setText] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>(
     'idle',
@@ -39,7 +44,7 @@ export function TextDocumentView({
     setStatus('loading');
     setText(null);
 
-    void loadDocumentText(localPath, src)
+    void loadDocumentText(localPath, src, { readFile, isLocalAvailable })
       .then(body => {
         if (cancelled) return;
         setText(body);
@@ -54,11 +59,11 @@ export function TextDocumentView({
     return () => {
       cancelled = true;
     };
-  }, [hasSource, localPath, src]);
+  }, [hasSource, localPath, src, readFile, isLocalAvailable]);
 
   const rootClass = [
-    'text-document-view',
-    `text-document-view--${variant}`,
+    'markdown-document-view',
+    `markdown-document-view--${variant}`,
     className,
   ]
     .filter(Boolean)
@@ -67,7 +72,7 @@ export function TextDocumentView({
   if (!hasSource || status === 'idle') {
     return (
       <div className={rootClass} aria-hidden>
-        <p className="text-document-view-status">{emptyLabel}</p>
+        <p className="markdown-document-view-status">{emptyLabel}</p>
       </div>
     );
   }
@@ -75,7 +80,7 @@ export function TextDocumentView({
   if (status === 'loading') {
     return (
       <div className={rootClass} role="status">
-        <p className="text-document-view-status">{loadingLabel}</p>
+        <p className="markdown-document-view-status">{loadingLabel}</p>
       </div>
     );
   }
@@ -83,14 +88,16 @@ export function TextDocumentView({
   if (status === 'error' || text === null) {
     return (
       <div className={rootClass} role="alert">
-        <p className="text-document-view-status">{errorLabel}</p>
+        <p className="markdown-document-view-status">{errorLabel}</p>
       </div>
     );
   }
 
   return (
     <div className={rootClass}>
-      <pre className="text-document-view-body">{text}</pre>
+      <article className="markdown-document-view-body">
+        <ReactMarkdown>{text}</ReactMarkdown>
+      </article>
     </div>
   );
 }

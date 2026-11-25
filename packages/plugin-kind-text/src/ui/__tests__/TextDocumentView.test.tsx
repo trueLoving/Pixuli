@@ -1,28 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-const readFile = vi.fn();
-const isWorkspaceAvailable = vi.fn(() => false);
-
-vi.mock('@/platforms/workspacePlatform', () => ({
-  getWorkspaceAdapter: () => ({ readFile }),
-  isWorkspaceAvailable: () => isWorkspaceAvailable(),
-}));
-
 import { TextDocumentView } from '../TextDocumentView';
 
 describe('TextDocumentView', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-    readFile.mockReset();
-    isWorkspaceAvailable.mockReset();
-    isWorkspaceAvailable.mockReturnValue(false);
   });
 
   it('reads local workspace text without fetch', async () => {
-    isWorkspaceAvailable.mockReturnValue(true);
-    readFile.mockResolvedValue(new TextEncoder().encode('hello\nworld'));
-
+    const readFile = vi
+      .fn()
+      .mockResolvedValue(new TextEncoder().encode('hello\nworld'));
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -30,6 +18,8 @@ describe('TextDocumentView', () => {
       <TextDocumentView
         src="blob:http://localhost/ignored"
         localPath="notes.txt"
+        readFile={readFile}
+        isLocalAvailable={() => true}
         variant="modal"
         loadingLabel="loading"
         errorLabel="failed"

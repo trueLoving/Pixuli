@@ -1,29 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { loadDocumentText } from './loadDocumentText';
-import './MarkdownDocumentView.css';
+import { loadDocumentText, type DocumentReadFile } from '../documentText';
+import './TextDocumentView.css';
 
-type MarkdownDocumentViewProps = {
+export type TextDocumentViewProps = {
   src: string | null;
-  /** 本机工作区路径：优先直接读盘，避免 fetch(blob:) 触发 CSP connect-src */
   localPath?: string | null;
+  readFile?: DocumentReadFile;
+  isLocalAvailable?: () => boolean;
   className?: string;
-  /** inspector 侧栏用紧凑高度；全屏预览用大画布 */
   variant?: 'modal' | 'inspector';
   emptyLabel?: string;
   loadingLabel?: string;
   errorLabel?: string;
 };
 
-export function MarkdownDocumentView({
+export function TextDocumentView({
   src,
   localPath = null,
+  readFile,
+  isLocalAvailable,
   className,
   variant = 'modal',
   emptyLabel = '—',
   loadingLabel = '…',
   errorLabel = '—',
-}: MarkdownDocumentViewProps) {
+}: TextDocumentViewProps) {
   const [text, setText] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>(
     'idle',
@@ -42,7 +43,7 @@ export function MarkdownDocumentView({
     setStatus('loading');
     setText(null);
 
-    void loadDocumentText(localPath, src)
+    void loadDocumentText(localPath, src, { readFile, isLocalAvailable })
       .then(body => {
         if (cancelled) return;
         setText(body);
@@ -57,11 +58,11 @@ export function MarkdownDocumentView({
     return () => {
       cancelled = true;
     };
-  }, [hasSource, localPath, src]);
+  }, [hasSource, localPath, src, readFile, isLocalAvailable]);
 
   const rootClass = [
-    'markdown-document-view',
-    `markdown-document-view--${variant}`,
+    'text-document-view',
+    `text-document-view--${variant}`,
     className,
   ]
     .filter(Boolean)
@@ -70,7 +71,7 @@ export function MarkdownDocumentView({
   if (!hasSource || status === 'idle') {
     return (
       <div className={rootClass} aria-hidden>
-        <p className="markdown-document-view-status">{emptyLabel}</p>
+        <p className="text-document-view-status">{emptyLabel}</p>
       </div>
     );
   }
@@ -78,7 +79,7 @@ export function MarkdownDocumentView({
   if (status === 'loading') {
     return (
       <div className={rootClass} role="status">
-        <p className="markdown-document-view-status">{loadingLabel}</p>
+        <p className="text-document-view-status">{loadingLabel}</p>
       </div>
     );
   }
@@ -86,16 +87,14 @@ export function MarkdownDocumentView({
   if (status === 'error' || text === null) {
     return (
       <div className={rootClass} role="alert">
-        <p className="markdown-document-view-status">{errorLabel}</p>
+        <p className="text-document-view-status">{errorLabel}</p>
       </div>
     );
   }
 
   return (
     <div className={rootClass}>
-      <article className="markdown-document-view-body">
-        <ReactMarkdown>{text}</ReactMarkdown>
-      </article>
+      <pre className="text-document-view-body">{text}</pre>
     </div>
   );
 }

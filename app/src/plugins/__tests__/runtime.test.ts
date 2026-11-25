@@ -13,15 +13,19 @@ describe('app plugin runtime', () => {
     localStorage.removeItem(PLUGIN_RUNTIME_STATE_KEY);
   });
 
-  it('boots builtin github / gitee / pdf with UI contributions', () => {
+  it('boots builtin github / gitee / kind plugins with UI contributions', () => {
     startPluginRuntime();
     expect(storageRegistry.getManifest('github')?.id).toBe('github');
     expect(storageRegistry.getManifest('gitee')?.id).toBe('gitee');
     expect(kindRegistry.getManifest('kind.pdf')?.id).toBe('kind.pdf');
+    expect(kindRegistry.getManifest('kind.markdown')?.id).toBe('kind.markdown');
+    expect(kindRegistry.getManifest('kind.text')?.id).toBe('kind.text');
     expect(pluginRuntime.getLoadedIds().sort()).toEqual([
       'gitee',
       'github',
+      'kind.markdown',
       'kind.pdf',
+      'kind.text',
     ]);
     expect(
       uiRegistry.resolvePreview({
@@ -30,6 +34,18 @@ describe('app plugin runtime', () => {
         kind: 'pdf',
       })?.id,
     ).toBe('kind.pdf');
+    expect(
+      uiRegistry.resolvePreview({
+        name: 'a.md',
+        kind: 'markdown',
+      })?.id,
+    ).toBe('kind.markdown');
+    expect(
+      uiRegistry.resolvePreview({
+        name: 'a.txt',
+        kind: 'text',
+      })?.id,
+    ).toBe('kind.text');
     expect(uiRegistry.resolveConnectionFields('github')?.pluginId).toBe(
       'github',
     );
