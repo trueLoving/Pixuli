@@ -77,9 +77,15 @@ importers:
       '@pixuli/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@pixuli/kind-markdown':
+        specifier: workspace:*
+        version: link:../packages/plugin-kind-markdown
       '@pixuli/kind-pdf':
         specifier: workspace:*
         version: link:../packages/plugin-kind-pdf
+      '@pixuli/kind-text':
+        specifier: workspace:*
+        version: link:../packages/plugin-kind-text
       '@pixuli/provider-gitee':
         specifier: workspace:*
         version: link:../packages/plugin-provider-gitee
@@ -125,9 +131,6 @@ importers:
       react-image-crop:
         specifier: ^10.1.8
         version: 10.1.8(react@19.1.0)
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.2.2)(react@19.1.0)
       react-router-dom:
         specifier: ^7.11.0
         version: 7.11.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -211,6 +214,37 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.18.12)(@vitest/ui@2.1.9)(jsdom@25.0.1)(lightningcss@1.30.2)(terser@5.44.1)
 
+  packages/plugin-kind-markdown:
+    dependencies:
+      '@pixuli/core':
+        specifier: workspace:*
+        version: link:../core
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@19.2.2)(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.0
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19.1.0
+        version: 19.2.2(@types/react@19.2.2)
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@24.10.1)(@vitest/ui@2.1.9)(jsdom@25.0.1)(lightningcss@1.30.2)(terser@5.44.1)
+
   packages/plugin-kind-pdf:
     dependencies:
       '@pixuli/core':
@@ -232,6 +266,34 @@ importers:
       lucide-react:
         specifier: ^0.556.0
         version: 0.556.0(react@19.1.0)
+      react:
+        specifier: ^19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.1.0(react@19.1.0)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@24.10.1)(@vitest/ui@2.1.9)(jsdom@25.0.1)(lightningcss@1.30.2)(terser@5.44.1)
+
+  packages/plugin-kind-text:
+    dependencies:
+      '@pixuli/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.0
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19.1.0
+        version: 19.2.2(@types/react@19.2.2)
+      jsdom:
+        specifier: ^25.0.1
+        version: 25.0.1
       react:
         specifier: ^19.1.0
         version: 19.1.0

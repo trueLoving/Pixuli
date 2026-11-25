@@ -29,7 +29,7 @@ describe('getAssetKind', () => {
     ).toBe('other');
   });
 
-  it('classifies markdown by mime or extension', () => {
+  it('classifies markdown via kind-markdown plugin when registered', () => {
     expect(getAssetKind({ name: 'readme.md', type: '' })).toBe('markdown');
     expect(getAssetKind({ name: 'guide.markdown', type: '' })).toBe('markdown');
     expect(getAssetKind({ name: 'doc.bin', type: 'text/markdown' })).toBe(
@@ -37,7 +37,7 @@ describe('getAssetKind', () => {
     );
   });
 
-  it('classifies plain text by mime or extension', () => {
+  it('classifies plain text via kind-text plugin when registered', () => {
     expect(getAssetKind({ name: 'notes.txt', type: '' })).toBe('text');
     expect(getAssetKind({ name: 'log.bin', type: 'text/plain' })).toBe('text');
   });

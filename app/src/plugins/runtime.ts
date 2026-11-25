@@ -3,8 +3,10 @@ import {
   type PluginLoadResult,
   type PluginRuntime,
 } from '@pixuli/core/plugin-runtime';
-import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
+import { createMarkdownRuntimePlugin } from '@pixuli/kind-markdown/runtime';
 import { createPdfRuntimePlugin } from '@pixuli/kind-pdf/runtime';
+import { createTextRuntimePlugin } from '@pixuli/kind-text/runtime';
+import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
 import { createPixuliGiteeRuntimePlugin } from './createPixuliGiteeRuntimePlugin';
 import { contributeAllPluginUi } from './contributeUi';
 import { loadDesktopExternalPlugins } from './loadDesktopExternalPlugins';
@@ -28,6 +30,8 @@ export const pluginRuntime: PluginRuntime = createPluginRuntime(
 pluginRuntime.registerBuiltin(createGitHubRuntimePlugin);
 pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
 pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
+pluginRuntime.registerBuiltin(createMarkdownRuntimePlugin);
+pluginRuntime.registerBuiltin(createTextRuntimePlugin);
 
 let bootResults: PluginLoadResult[] | null = null;
 let externalLoadStarted = false;

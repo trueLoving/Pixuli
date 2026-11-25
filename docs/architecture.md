@@ -81,8 +81,9 @@ Token 与连接配置仅存客户端。
   `createConfiguredStorageProvider`。契约 `@pixuli/core/plugins`；authoring 见
   [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)。
 - **Kind**：`kindRegistry`（经 Runtime）；契约
-  `@pixuli/core/kinds`。PDF：`@pixuli/kind-pdf`（`/runtime` + `/ui`
-  `contributePdfUi`；经 `PluginApi.ui.getKindCapabilities()` 注入 `readFile`）。
+  `@pixuli/core/kinds`。文档类：`@pixuli/kind-pdf` / `kind-markdown` /
+  `kind-text`（`/runtime` + `/ui`；经 `PluginApi.ui.getKindCapabilities()` 注入
+  `readFile`）。
 - 包 `exports` 直指 `src`；不必先 `build:packages`。
 
 远期 Obsidian 式扩展见 [#126](https://github.com/trueLoving/Pixuli/issues/126)。

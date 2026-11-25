@@ -14,7 +14,7 @@ function extensionOf(name: string): string {
 
 /**
  * 解析资源类型：优先 Kind 插件 `matchHandler`；
- * 未命中时用 app 内置启发式（不含 PDF 等应由插件声明的类型）。
+ * 未命中时用 app 内置启发式（image/video/other；文档类由插件声明）。
  */
 export function getAssetKind(
   item: Pick<AssetItem, 'name' | 'type'>,
@@ -31,17 +31,6 @@ export function getAssetKind(
   const mime = (item.type || '').toLowerCase();
   const ext = extensionOf(item.name || '');
 
-  if (
-    mime === 'text/markdown' ||
-    mime === 'text/x-markdown' ||
-    ext === 'md' ||
-    ext === 'markdown'
-  ) {
-    return 'markdown';
-  }
-  if (mime === 'text/plain' || ext === 'txt') {
-    return 'text';
-  }
   if (
     mime.startsWith('video/') ||
     ['mp4', 'webm', 'mov', 'mkv', 'avi'].includes(ext)

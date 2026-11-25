@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, FileVideo } from 'lucide-react';
-import { MarkdownDocumentView } from '@/features/inspector/MarkdownDocumentView';
-import { TextDocumentView } from '@/features/inspector/TextDocumentView';
 import { captureVideoThumbnail } from '@/features/library/utils/assetThumbnail';
 import {
   downloadAssetLabelKey,
@@ -78,30 +76,6 @@ function VideoPreview(props: KindPreviewProps) {
   return <VideoInspectorPreview {...props} />;
 }
 
-function MarkdownPreview({ asset, src, variant, t }: KindPreviewProps) {
-  return (
-    <MarkdownDocumentView
-      src={src}
-      localPath={asset.localPath}
-      variant={variant}
-      loadingLabel={t('image.markdown.loading')}
-      errorLabel={t('image.markdown.loadFailed')}
-    />
-  );
-}
-
-function TextPreview({ asset, src, variant, t }: KindPreviewProps) {
-  return (
-    <TextDocumentView
-      src={src}
-      localPath={asset.localPath}
-      variant={variant}
-      loadingLabel={t('image.text.loading')}
-      errorLabel={t('image.text.loadFailed')}
-    />
-  );
-}
-
 function OtherPreview({ asset, src, variant, t }: KindPreviewProps) {
   const download = () => {
     if (!src) return;
@@ -151,7 +125,7 @@ function OtherPreview({ asset, src, variant, t }: KindPreviewProps) {
   );
 }
 
-/** app 内置 kind UI（markdown/text/image/video/other）→ 同一 registry */
+/** app 内置 kind UI（image/video/other）；markdown/text/pdf 由 Kind 插件贡献 */
 export function contributeBuiltinKindUi(
   registry: UiContributionRegistry,
 ): void {
@@ -166,18 +140,6 @@ export function contributeBuiltinKindUi(
     priority: 0,
     match: input => input.kind === 'video',
     component: VideoPreview,
-  });
-  registry.registerPreview({
-    id: 'builtin.markdown',
-    priority: 0,
-    match: input => input.kind === 'markdown',
-    component: MarkdownPreview,
-  });
-  registry.registerPreview({
-    id: 'builtin.text',
-    priority: 0,
-    match: input => input.kind === 'text',
-    component: TextPreview,
   });
   registry.registerPreview({
     id: 'builtin.other',

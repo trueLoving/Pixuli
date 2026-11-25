@@ -32,12 +32,12 @@
 
 ### 1.1 UI 槽位（App 拥有，core 无 React）
 
-| 槽                         | 用途                   | 注册方                                       |
-| -------------------------- | ---------------------- | -------------------------------------------- |
-| `kind.preview`             | Inspector / Modal 预览 | `contributePdfUi`、`contributeBuiltinKindUi` |
-| `kind.thumbnail`           | 列表缩略图             | 同上                                         |
-| `storage.connectionFields` | 添加/编辑源表单        | `contributeGitHubUi` / `contributeGiteeUi`   |
-| `storage.sourceIcon`       | 源列表 / 向导图标      | 同上                                         |
+| 槽                         | 用途                   | 注册方                                               |
+| -------------------------- | ---------------------- | ---------------------------------------------------- |
+| `kind.preview`             | Inspector / Modal 预览 | Kind 插件 `contribute*Ui`、`contributeBuiltinKindUi` |
+| `kind.thumbnail`           | 列表缩略图             | 同上（image/video/pdf）                              |
+| `storage.connectionFields` | 添加/编辑源表单        | `contributeGitHubUi` / `contributeGiteeUi`           |
+| `storage.sourceIcon`       | 源列表 / 向导图标      | 同上                                                 |
 
 - App 壳：`KindPreviewHost`、`ConnectionWizard`、`StorageSourceIcon` —
   **按 registry 解析，不按 pluginId/kind 写死业务分支**；Wizard 持有不透明
@@ -90,8 +90,9 @@
 
 ## 4. 与 Kind / Storage 的关系
 
-- `@pixuli/kind-pdf`、`@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee
-  Pixuli 特化在 `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
+- `@pixuli/kind-pdf` / `kind-markdown` / `kind-text`、`@pixuli/provider-*` 提供
+  `create*RuntimePlugin()`（Gitee Pixuli 特化在
+  `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
 - Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
 - core 仍无 React；`PluginUiHost.component` 为 `unknown`；预览 / 连接 UI 经包
   `/ui`。

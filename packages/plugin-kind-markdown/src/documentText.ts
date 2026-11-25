@@ -1,16 +1,18 @@
-import {
-  getWorkspaceAdapter,
-  isWorkspaceAvailable,
-} from '@/platforms/workspacePlatform';
+export type DocumentReadFile = (path: string) => Promise<Uint8Array>;
 
-/** 本机优先读盘；远端/blob 走 fetch（避免仅有 blob 时无法取正文） */
+/** 本机优先读盘；远端/blob 走 fetch */
 export async function loadDocumentText(
   localPath: string | null | undefined,
   src: string | null,
+  options: {
+    readFile?: DocumentReadFile;
+    isLocalAvailable?: () => boolean;
+  } = {},
 ): Promise<string> {
   const path = localPath?.trim();
-  if (path && isWorkspaceAvailable()) {
-    const bytes = await getWorkspaceAdapter().readFile(path);
+  const { readFile, isLocalAvailable } = options;
+  if (path && readFile && isLocalAvailable?.()) {
+    const bytes = await readFile(path);
     return new TextDecoder('utf-8').decode(bytes);
   }
 
