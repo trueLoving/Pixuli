@@ -33,7 +33,7 @@ pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
 pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
 pluginRuntime.registerBuiltin(createMarkdownRuntimePlugin);
 pluginRuntime.registerBuiltin(createTextRuntimePlugin);
-// pluginRuntime.registerBuiltin(createVideoRuntimePlugin);
+pluginRuntime.registerBuiltin(createVideoRuntimePlugin);
 
 let bootResults: PluginLoadResult[] | null = null;
 let externalLoadStarted = false;
