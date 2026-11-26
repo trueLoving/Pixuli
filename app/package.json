@@ -48,6 +48,7 @@
     "@pixuli/kind-markdown": "workspace:*",
     "@pixuli/kind-pdf": "workspace:*",
     "@pixuli/kind-text": "workspace:*",
+    "@pixuli/kind-video": "workspace:*",
     "@pixuli/provider-gitee": "workspace:*",
     "@pixuli/provider-github": "workspace:*",
     "exifr": "^7.1.3",

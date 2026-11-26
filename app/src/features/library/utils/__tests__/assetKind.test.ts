@@ -18,7 +18,7 @@ describe('getAssetKind', () => {
     );
   });
 
-  it('classifies video by mime or extension', () => {
+  it('classifies video via kind-video plugin when registered', () => {
     expect(getAssetKind({ name: 'clip.mp4', type: '' })).toBe('video');
     expect(getAssetKind({ name: 'clip', type: 'video/webm' })).toBe('video');
   });
