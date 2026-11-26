@@ -28,6 +28,7 @@ packages/plugin-provider-gitee/
 packages/plugin-kind-pdf/      → @pixuli/kind-pdf
 packages/plugin-kind-markdown/ → @pixuli/kind-markdown
 packages/plugin-kind-text/     → @pixuli/kind-text
+packages/plugin-kind-video/    → @pixuli/kind-video
 ```
 
 连接 UI：`@pixuli/provider-github/ui`、`@pixuli/provider-gitee/ui`（各自维护，无共享 git-ui 包）。
@@ -57,8 +58,8 @@ packages/plugin-kind-text/     → @pixuli/kind-text
 
 - 与 Storage 正交；经 Runtime 注册（`app/src/kinds/registry.ts`）
 - 契约：`@pixuli/core/kinds`
-- Kind：`@pixuli/kind-pdf` / `kind-markdown` / `kind-text`；UI 在 onload 经
-  `PluginApi.ui` 贡献
+- Kind：`@pixuli/kind-pdf` / `kind-markdown` / `kind-text` /
+  `kind-video`；UI 在 onload 经 `PluginApi.ui` 贡献
 - 用户安装插件（D2.9）：仅 Desktop +
   Mobile；**Web 禁止**。Desktop：`userData/plugins` + `registerExternal`；Mobile
   Loader 待做

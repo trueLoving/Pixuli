@@ -35,7 +35,7 @@
 | 槽                         | 用途                   | 注册方                                               |
 | -------------------------- | ---------------------- | ---------------------------------------------------- |
 | `kind.preview`             | Inspector / Modal 预览 | Kind 插件 `contribute*Ui`、`contributeBuiltinKindUi` |
-| `kind.thumbnail`           | 列表缩略图             | 同上（image/video/pdf）                              |
+| `kind.thumbnail`           | 列表缩略图             | image builtin；video/pdf 由 Kind 插件贡献            |
 | `storage.connectionFields` | 添加/编辑源表单        | `contributeGitHubUi` / `contributeGiteeUi`           |
 | `storage.sourceIcon`       | 源列表 / 向导图标      | 同上                                                 |
 
@@ -90,8 +90,8 @@
 
 ## 4. 与 Kind / Storage 的关系
 
-- `@pixuli/kind-pdf` / `kind-markdown` / `kind-text`、`@pixuli/provider-*` 提供
-  `create*RuntimePlugin()`（Gitee Pixuli 特化在
+- `@pixuli/kind-pdf` / `kind-markdown` / `kind-text` / `kind-video`、
+  `@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee Pixuli 特化在
   `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
 - Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
 - core 仍无 React；`PluginUiHost.component` 为 `unknown`；预览 / 连接 UI 经包
