@@ -375,7 +375,7 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
   const singleActions = useMemo(
     () =>
       buildSingleSelectionActions(
-        kind,
+        activeAsset ?? { name: '', type: '' },
         t,
         {
           onEdit: onUpdateAsset
@@ -414,14 +414,12 @@ export const AssetInspector: React.FC<AssetInspectorProps> = ({
       ),
     [
       activeAsset,
-      activeAsset,
       closePreview,
       convertInLibrary,
       handleCopy,
       handleDelete,
       handleShare,
       hasRemoteConnection,
-      kind,
       onDeleteAsset,
       onSendConvert,
       onShareAsset,

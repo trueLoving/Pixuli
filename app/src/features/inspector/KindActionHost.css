@@ -1,0 +1,46 @@
+.kind-action-host {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kind-action-host-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.kind-action-host-panel {
+  position: relative;
+  z-index: 1;
+  max-width: min(52rem, 94vw);
+  max-height: min(84vh, 48rem);
+  overflow: auto;
+  border-radius: 0.75rem;
+  background: var(--pix-bg, #fff);
+  color: var(--pix-fg, #111827);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+}
+
+.kind-action-host--fullscreen .kind-action-host-panel {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+.kind-action-host--panel {
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+.kind-action-host--panel .kind-action-host-panel {
+  width: min(28rem, 100%);
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+}

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ImageCompressionOptions } from '@pixuli/core/types';
-import { compressImage } from '@pixuli/core/utils';
+import {
+  compressImage,
+  type ImageCompressionOptions,
+} from '@pixuli/kind-image';
 import { showInfo } from '@/ui/feedback/toast';
 import {
   DEFAULT_COMPRESSION_OPTIONS,

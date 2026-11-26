@@ -2,11 +2,13 @@ import { X } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 import type {
   BatchUploadProgress,
-  ImageCompressionOptions,
-  ImageCropOptions,
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
+import type {
+  ImageCompressionOptions,
+  ImageCropOptions,
+} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './nativePickers';
 import { useSuspendLibraryShortcuts } from '../useSuspendLibraryShortcuts';
 import AssetUpload from './AssetUpload';

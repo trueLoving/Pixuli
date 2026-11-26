@@ -32,26 +32,35 @@
 
 ### 1.1 UI 槽位（App 拥有，core 无 React）
 
-| 槽                         | 用途                   | 注册方                                               |
-| -------------------------- | ---------------------- | ---------------------------------------------------- |
-| `kind.preview`             | Inspector / Modal 预览 | Kind 插件 `contribute*Ui`、`contributeBuiltinKindUi` |
-| `kind.thumbnail`           | 列表缩略图             | image builtin；video/pdf 由 Kind 插件贡献            |
-| `storage.connectionFields` | 添加/编辑源表单        | `contributeGitHubUi` / `contributeGiteeUi`           |
-| `storage.sourceIcon`       | 源列表 / 向导图标      | 同上                                                 |
+| 槽                         | 用途                          | 注册方                                               |
+| -------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `kind.preview`             | Inspector / Modal 预览        | Kind 插件 `contribute*Ui`、`contributeBuiltinKindUi` |
+| `kind.thumbnail`           | 列表缩略图                    | image/video/pdf 等由 Kind 插件贡献                   |
+| `kind.editor`              | 原地改内容（Markdown / txt…） | Kind 插件；`writeFile` 写回原路径；不产新文件        |
+| `kind.process`             | 文件变换（裁剪/压缩/转换…）   | Kind 插件；`saveProcessedAsset` 旁路新文件           |
+| `storage.connectionFields` | 添加/编辑源表单               | `contributeGitHubUi` / `contributeGiteeUi`           |
+| `storage.sourceIcon`       | 源列表 / 向导图标             | 同上                                                 |
 
-- App 壳：`KindPreviewHost`、`ConnectionWizard`、`StorageSourceIcon` —
+- App 壳：`KindPreviewHost`、`KindEditorHost`、`KindProcessHost`、
+  `ConnectionWizard`、`StorageSourceIcon` —
   **按 registry 解析，不按 pluginId/kind 写死业务分支**；Wizard 持有不透明
   `StorageProviderConfig`。
 - 无匹配预览时降级 `builtin.other`（下载打开）。
+- **editor vs
+  process**：editor 改原文件内容（`readFile`/`writeFile`）；process变换文件本体并旁路产新文件（`readAssetBytes`/`saveProcessedAsset`）。Inspector用
+  `hasKindEditor` / `hasKindProcess`
+  决定入口；写回本机、**不自动 push**。元数据编辑（名称/标签）仍为 App 通用能力，不走 Kind 槽。
+- 图片压缩/转换/尺寸工具与处理类型均在 `@pixuli/kind-image`（含上传预压缩）；
+  **core 不含**具体文件类型的处理逻辑。采集元数据（`ImageCaptureMetadata`）属资产/sidecar 契约，仍在 core。
 - `PluginApi.ui`（`PluginUiHost`）由 app 注入；官方插件在
   **onload 贡献 UI、onunload 注销**；`setEnabled(false)`
-  同步卸 capability 与 UI。app 内置 Kind UI（image/…/other）仍由
-  `contributeAllPluginUi` 注册； `ui.getKindCapabilities()` 提供通用
-  `readFile`。
+  同步卸 capability 与 UI。app 仅保留 `builtin.other`
+  降级预览（`contributeAllPluginUi`）。
 - **激活存储会话**：`storageType`（pluginId）+ `storageConfig`（一份
   `StorageProviderConfig`），不再 github/gitee 双轨；持久化
   `pixuli-storage-session.v1`（兼容旧分 key 迁移）。
-- 后置槽：`kind.processPanel`、`kind.inspectorMeta`、configSchema 表单引擎。
+- 后置槽：`kind.inspectorMeta`、configSchema 表单引擎；官方 `kind-markdown`
+  editor 待迁入；`kind-image` process **已迁入**。
 
 ---
 
@@ -90,9 +99,9 @@
 
 ## 4. 与 Kind / Storage 的关系
 
-- `@pixuli/kind-pdf` / `kind-markdown` / `kind-text` / `kind-video`、
-  `@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee Pixuli 特化在
-  `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
+- `@pixuli/kind-pdf` / `kind-markdown` / `kind-text` / `kind-video` /
+  `kind-image`、`@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee
+  Pixuli特化在 `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
 - Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
 - core 仍无 React；`PluginUiHost.component` 为 `unknown`；预览 / 连接 UI 经包
   `/ui`。

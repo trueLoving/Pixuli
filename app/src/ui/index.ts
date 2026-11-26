@@ -1,7 +1,7 @@
 /**
  * 薄 UI 层：primitives、hooks、反馈与快捷键。
  * 复合业务 UI 在 `@/features/*`；侧栏在 `@/layouts/sidebar`；
- * 压缩/转换与 imageProcessor 在 `@/features/tools`。
+ * 库内图片裁剪/转换在 `@pixuli/kind-image`（kind.process）。
  */
 export * from './hooks';
 

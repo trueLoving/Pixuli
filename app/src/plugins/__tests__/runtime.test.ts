@@ -21,9 +21,11 @@ describe('app plugin runtime', () => {
     expect(kindRegistry.getManifest('kind.markdown')?.id).toBe('kind.markdown');
     expect(kindRegistry.getManifest('kind.text')?.id).toBe('kind.text');
     expect(kindRegistry.getManifest('kind.video')?.id).toBe('kind.video');
+    expect(kindRegistry.getManifest('kind.image')?.id).toBe('kind.image');
     expect(pluginRuntime.getLoadedIds().sort()).toEqual([
       'gitee',
       'github',
+      'kind.image',
       'kind.markdown',
       'kind.pdf',
       'kind.text',
@@ -54,6 +56,18 @@ describe('app plugin runtime', () => {
         kind: 'video',
       })?.id,
     ).toBe('kind.video');
+    expect(
+      uiRegistry.resolvePreview({
+        name: 'a.jpg',
+        kind: 'image',
+      })?.id,
+    ).toBe('kind.image');
+    expect(
+      uiRegistry.resolveProcess({
+        name: 'a.jpg',
+        kind: 'image',
+      })?.id,
+    ).toBe('kind.image');
     expect(uiRegistry.resolveConnectionFields('github')?.pluginId).toBe(
       'github',
     );

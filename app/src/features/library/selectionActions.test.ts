@@ -9,6 +9,7 @@ import {
 const asset = {
   id: '1',
   name: 'a.jpg',
+  type: 'image/jpeg',
   localPath: 'images/a.jpg',
   url: '',
   githubUrl: '',
@@ -142,7 +143,7 @@ describe('buildSingleSelectionActions process', () => {
 
   it('hides process outside the local library', () => {
     const actions = buildSingleSelectionActions(
-      'image',
+      asset,
       t,
       {
         onCopy: vi.fn(),
@@ -162,7 +163,7 @@ describe('buildSingleSelectionActions process', () => {
   it('shows process for an image in the local library', () => {
     const onSendConvert = vi.fn();
     const actions = buildSingleSelectionActions(
-      'image',
+      asset,
       t,
       {
         onCopy: vi.fn(),
@@ -184,7 +185,7 @@ describe('buildSingleSelectionActions process', () => {
 
   it('hides process for a pdf', () => {
     const actions = buildSingleSelectionActions(
-      'pdf',
+      pdf,
       t,
       {
         onCopy: vi.fn(),
@@ -204,7 +205,7 @@ describe('buildSingleSelectionActions process', () => {
   it('keeps copy clickable when no public url', () => {
     const onCopy = vi.fn();
     const actions = buildSingleSelectionActions(
-      'image',
+      asset,
       t,
       { onCopy, onDelete: vi.fn() },
       {

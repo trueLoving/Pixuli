@@ -3,11 +3,13 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { defaultTranslate } from '@/i18n/locales';
 import type {
   BatchUploadProgress,
-  ImageCompressionOptions,
-  ImageCropOptions,
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
+import type {
+  ImageCompressionOptions,
+  ImageCropOptions,
+} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './asset-upload/nativePickers';
 import AssetUploadModal from './asset-upload/AssetUploadModal';
 import './UploadButton.css';

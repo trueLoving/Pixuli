@@ -5,7 +5,9 @@ import {
 } from './kindHost';
 import {
   uiRegistry,
+  type KindEditorContribution,
   type KindPreviewContribution,
+  type KindProcessContribution,
   type KindThumbnailContribution,
   type StorageConnectionFieldsContribution,
   type StorageSourceIconContribution,
@@ -22,6 +24,12 @@ export function createAppPluginUiHost(
     registerThumbnail(contribution) {
       uiRegistry.registerThumbnail(contribution as KindThumbnailContribution);
     },
+    registerEditor(contribution) {
+      uiRegistry.registerEditor(contribution as KindEditorContribution);
+    },
+    registerProcess(contribution) {
+      uiRegistry.registerProcess(contribution as KindProcessContribution);
+    },
     registerConnectionFields(contribution) {
       uiRegistry.registerConnectionFields(
         contribution as StorageConnectionFieldsContribution,
@@ -37,6 +45,12 @@ export function createAppPluginUiHost(
     },
     unregisterThumbnail(id) {
       return uiRegistry.unregisterThumbnail(id);
+    },
+    unregisterEditor(id) {
+      return uiRegistry.unregisterEditor(id);
+    },
+    unregisterProcess(id) {
+      return uiRegistry.unregisterProcess(id);
     },
     unregisterConnectionFields(pluginId) {
       return uiRegistry.unregisterConnectionFields(pluginId);

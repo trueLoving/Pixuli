@@ -1,6 +1,6 @@
 /**
  * 库内条目与上传/编辑契约（图 / PDF / 视频 / Markdown / txt 等）。
- * 位图处理类型见 `imageProcess.ts`；采集元数据见 `imageCapture.ts`。
+ * 采集元数据见 `imageCapture.ts`；位图压缩/转换类型在 `@pixuli/kind-image`。
  */
 import type { ImageCaptureMetadata } from './imageCapture';
 

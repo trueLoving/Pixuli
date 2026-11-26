@@ -1,16 +1,46 @@
 import type { StorageProviderConfig } from '../plugins/types';
 
-/** 预览 / 缩略图匹配输入（与 app uiRegistry 对齐；kind 为字符串以免 core 依赖 AssetKind） */
+/** 预览 / 缩略图 / 编辑 / 处理匹配输入（kind 为字符串以免 core 依赖 AssetKind） */
 export type PluginUiMatchInput = {
   name: string;
   mimeType?: string;
   kind?: string;
 };
 
-/** Kind UI 可用的宿主工作区能力 */
+export type PluginUiPlacement = 'modal' | 'panel' | 'fullscreen';
+
+/**
+ * Kind UI 可用的宿主工作区能力。
+ * - editor：`readFile` / `writeFile` 原地改原路径内容。
+ * - process：`readAssetBytes` + `saveProcessedAsset` 产出旁路新文件。
+ */
 export type PluginKindCapabilities = {
+  /** editor：读本机原文件 */
   readFile?: (path: string) => Promise<Uint8Array>;
+  /** editor：原地写回原路径；不自动 push */
+  writeFile?: (path: string, data: Uint8Array) => Promise<void>;
   isLocalAvailable?: () => boolean;
+  /** process：按资源读字节（本机优先，否则 fetch url） */
+  readAssetBytes?: (asset: {
+    name: string;
+    type?: string;
+    url?: string;
+    localPath?: string;
+  }) => Promise<Uint8Array>;
+  /** process：旁路写回新文件；仅本机，不入同步队列，不覆盖原件 */
+  saveProcessedAsset?: (input: {
+    source: {
+      name: string;
+      type?: string;
+      url?: string;
+      localPath?: string;
+    };
+    fileName: string;
+    data: Uint8Array;
+    mimeType: string;
+    width?: number;
+    height?: number;
+  }) => Promise<{ path: string }>;
 };
 
 /**
@@ -30,6 +60,22 @@ export interface PluginUiHost {
     match: (input: PluginUiMatchInput) => boolean;
     capture: (url: string) => Promise<string | null>;
   }): void;
+  registerEditor(contribution: {
+    id: string;
+    priority?: number;
+    match: (input: PluginUiMatchInput) => boolean;
+    component: unknown;
+    placement?: PluginUiPlacement;
+    labelKey?: string;
+  }): void;
+  registerProcess(contribution: {
+    id: string;
+    priority?: number;
+    match: (input: PluginUiMatchInput) => boolean;
+    component: unknown;
+    placement?: PluginUiPlacement;
+    labelKey?: string;
+  }): void;
   registerConnectionFields(contribution: {
     pluginId: string;
     labelPrefix?: string;
@@ -39,6 +85,8 @@ export interface PluginUiHost {
   registerSourceIcon(contribution: { pluginId: string; render: unknown }): void;
   unregisterPreview(id: string): boolean;
   unregisterThumbnail(id: string): boolean;
+  unregisterEditor(id: string): boolean;
+  unregisterProcess(id: string): boolean;
   unregisterConnectionFields(pluginId: string): boolean;
   unregisterSourceIcon(pluginId: string): boolean;
   getKindCapabilities(): PluginKindCapabilities;
@@ -51,12 +99,20 @@ export function createEmptyPluginUiHost(
   return {
     registerPreview() {},
     registerThumbnail() {},
+    registerEditor() {},
+    registerProcess() {},
     registerConnectionFields() {},
     registerSourceIcon() {},
     unregisterPreview() {
       return false;
     },
     unregisterThumbnail() {
+      return false;
+    },
+    unregisterEditor() {
+      return false;
+    },
+    unregisterProcess() {
       return false;
     },
     unregisterConnectionFields() {

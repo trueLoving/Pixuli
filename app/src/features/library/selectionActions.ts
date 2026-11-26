@@ -1,7 +1,7 @@
 import type { CompactAction } from '@/features/inspector/inspectorTypes';
 import { getCopyablePublicUrl } from '@/features/library/copyLink';
-import { libraryProcessModes } from '@/features/library/libraryProcess';
 import { getAssetKind } from '@/features/library/utils/assetKind';
+import { hasKindProcess } from '@/plugins/kindActionResolve';
 import type { AssetItem } from '@pixuli/core/types';
 import {
   Download,
@@ -37,9 +37,7 @@ export interface SingleSelectionActionHandlers {
 }
 
 function processableCount(selectedAssets: AssetItem[]): number {
-  return selectedAssets.filter(
-    item => libraryProcessModes(getAssetKind(item)).length > 0,
-  ).length;
+  return selectedAssets.filter(item => hasKindProcess(item)).length;
 }
 
 export function buildBatchSelectionActions(
@@ -145,7 +143,7 @@ export function buildBatchSelectionActions(
 }
 
 export function buildSingleSelectionActions(
-  kind: ReturnType<typeof getAssetKind>,
+  asset: Pick<AssetItem, 'name' | 'type'>,
   t: (key: string) => string,
   handlers: SingleSelectionActionHandlers,
   options: {
@@ -160,8 +158,9 @@ export function buildSingleSelectionActions(
   },
 ): { grid: CompactAction[]; danger: CompactAction | null } {
   const grid: CompactAction[] = [];
+  const kind = getAssetKind(asset);
   const convertInLibrary = options.convertInLibrary === true;
-  const canProcess = libraryProcessModes(kind).length > 0;
+  const canProcess = hasKindProcess(asset);
 
   if (options.canEdit && handlers.onEdit) {
     grid.push({

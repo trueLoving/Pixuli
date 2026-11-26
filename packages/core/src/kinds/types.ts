@@ -11,6 +11,16 @@ export interface KindPluginManifest {
     thumbnail: boolean;
     /** 声明式动作 id；执行由 handler / app 后续扩展 */
     actions: string[];
+    /**
+     * 是否贡献 kind.editor：原地改内容（如 Markdown / txt），
+     * 写回原文件，不产生旁路新文件。
+     */
+    edit?: boolean;
+    /**
+     * 是否贡献 kind.process：对文件本体做变换（裁剪/压缩/转换等），
+     * 产物为新文件（旁路写回），不覆盖原件。
+     */
+    process?: boolean;
   };
 }
 

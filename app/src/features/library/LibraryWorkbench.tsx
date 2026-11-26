@@ -18,16 +18,13 @@ import { AssetInspector } from '../inspector/AssetInspector';
 import { AssetLibrary } from './AssetLibrary';
 import { AssetLibraryBatchEditModal } from './AssetLibraryBatchEditModal';
 import { AssetLibraryBatchMoveModal } from './AssetLibraryBatchMoveModal';
-import { AssetLibraryConvertModal } from './AssetLibraryConvertModal';
-import { convertLibraryAssets, cropLibraryAsset } from './convertLibraryAssets';
-import type { ImageConvertRequest, ImageCropRect } from './imageConvertTarget';
 import { downloadAssetsAsZip } from '@/features/library/assetDownloadService';
 import { copyAssetPublicLinks } from '@/features/library/copyAssetLink';
 import { requestWorkspaceSync } from '@/features/workspace/syncFeedback';
 import { buildBatchSelectionActions } from '@/features/library/selectionActions';
-import { libraryProcessModes } from '@/features/library/libraryProcess';
-import { getAssetKind } from '@/features/library/utils/assetKind';
 import { shouldResetOnFolderChange } from '@/features/library/utils/folderScopeReset';
+import { KindProcessHost } from '@/features/inspector/KindProcessHost';
+import { hasKindProcess } from '@/plugins/kindActionResolve';
 import {
   showError,
   showErrorWithAction,
@@ -404,67 +401,37 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
 
   const handleSendConvert = useCallback(() => {
     if (!localActive) return;
-    const assets = selectedAssets.filter(
-      item => libraryProcessModes(getAssetKind(item)).length > 0,
-    );
+    const assets = selectedAssets.filter(item => hasKindProcess(item));
     if (assets.length === 0) return;
     setConvertTargets(assets);
   }, [localActive, selectedAssets]);
 
-  const handleConvertSubmit = useCallback(
-    async (request: ImageConvertRequest) => {
-      const targets = convertTargets ?? [];
-      if (targets.length === 0) return;
-      const loadingToast = showLoading(t('image.library.convertSaving'));
-      try {
-        const result = await convertLibraryAssets(targets, request);
-        await loadAssets();
-        setConvertTargets(null);
-        if (result.saved === 0) {
-          updateLoadingToError(loadingToast, t('image.library.convertFailed'));
-          return;
-        }
-        if (result.failed.length > 0) {
-          updateLoadingToSuccess(
-            loadingToast,
-            t('image.library.convertPartial')
-              .replace('{saved}', String(result.saved))
-              .replace('{failed}', String(result.failed.length)),
-          );
-          return;
-        }
-        updateLoadingToSuccess(
-          loadingToast,
-          t('image.library.convertSuccess').replace(
-            '{count}',
-            String(result.saved),
-          ),
+  const handleProcessApplied = useCallback(
+    async (result: { paths: string[]; failed?: string[] }) => {
+      await loadAssets();
+      const failed = result.failed ?? [];
+      if (result.paths.length === 0) {
+        showError(
+          failed.length > 0
+            ? t('image.library.cropFailed')
+            : t('image.library.convertFailed'),
         );
-      } catch {
-        updateLoadingToError(loadingToast, t('image.library.convertFailed'));
+        return;
       }
-    },
-    [convertTargets, loadAssets, t],
-  );
-
-  const handleCropSubmit = useCallback(
-    async (item: AssetItem, crop: ImageCropRect) => {
-      const loadingToast = showLoading(t('image.library.cropSaving'));
-      try {
-        const result = await cropLibraryAsset(item, crop);
-        await loadAssets();
-        updateLoadingToSuccess(
-          loadingToast,
-          t('image.library.convertSuccess').replace(
-            '{count}',
-            String(result.saved),
-          ),
+      if (failed.length > 0) {
+        showSuccess(
+          t('image.library.convertPartial')
+            .replace('{saved}', String(result.paths.length))
+            .replace('{failed}', String(failed.length)),
         );
-        return result;
-      } catch {
-        updateLoadingToError(loadingToast, t('image.library.cropFailed'));
-        return { saved: 0 };
+        return;
       }
+      showSuccess(
+        t('image.library.convertSuccess').replace(
+          '{count}',
+          String(result.paths.length),
+        ),
+      );
     },
     [loadAssets, t],
   );
@@ -742,13 +709,14 @@ export const LibraryWorkbench: React.FC<LibraryWorkbenchProps> = ({
         }}
         onSubmit={handleBatchMoveSubmit}
       />
-      <AssetLibraryConvertModal
-        isOpen={convertTargets !== null}
-        items={convertTargets ?? []}
+      <KindProcessHost
+        assets={convertTargets ?? []}
+        open={convertTargets !== null}
         t={t}
         onClose={() => setConvertTargets(null)}
-        onConvert={handleConvertSubmit}
-        onCrop={handleCropSubmit}
+        onApplied={result => {
+          void handleProcessApplied(result);
+        }}
       />
     </div>
   );

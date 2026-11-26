@@ -1,6 +1,4 @@
 import type { AssetItem } from '@pixuli/core/types';
-import type { OutputMimeType } from '@/features/tools/imageProcessor';
-import { readAssetBytes } from '@/features/library/assetDownloadService';
 import { X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactCrop, {
@@ -14,13 +12,9 @@ import {
   type ImageConvertPresetId,
   type ImageConvertRequest,
   type ImageCropRect,
-} from './imageConvertTarget';
-import {
-  libraryProcessModesForItems,
-  type LibraryProcessMode,
-} from './libraryProcess';
-import { useSuspendLibraryShortcuts } from './useSuspendLibraryShortcuts';
-import './AssetLibraryBatchEditModal.css';
+  type OutputMimeType,
+} from '../naming';
+import { convertImageBytes, cropImageBytes } from '../processEngine';
 
 const FORMATS: OutputMimeType[] = ['image/webp', 'image/jpeg', 'image/png'];
 
@@ -30,19 +24,39 @@ const FORMAT_LABEL: Record<OutputMimeType, string> = {
   'image/png': 'PNG',
 };
 
-export interface AssetLibraryConvertModalProps {
-  isOpen: boolean;
-  items: AssetItem[];
+export type ImageProcessMode = 'crop' | 'convert';
+
+export type ImageProcessWorkspace = {
+  readAssetBytes: (asset: AssetItem) => Promise<Uint8Array>;
+  saveProcessedAsset: (input: {
+    source: AssetItem;
+    fileName: string;
+    data: Uint8Array;
+    mimeType: string;
+    width?: number;
+    height?: number;
+  }) => Promise<{ path: string }>;
+  isLocalAvailable: () => boolean;
+};
+
+export type ImageProcessPanelProps = {
+  assets: AssetItem[];
+  workspace: ImageProcessWorkspace;
   t: (key: string) => string;
   onClose: () => void;
-  onConvert: (request: ImageConvertRequest) => Promise<void>;
-  onCrop: (item: AssetItem, crop: ImageCropRect) => Promise<{ saved: number }>;
-}
+  onApplied?: (result: { paths: string[]; failed?: string[] }) => void;
+};
 
-export const AssetLibraryConvertModal: React.FC<
-  AssetLibraryConvertModalProps
-> = ({ isOpen, items, t, onClose, onConvert, onCrop }) => {
-  const [mode, setMode] = useState<LibraryProcessMode>('convert');
+const MODE_ORDER: ImageProcessMode[] = ['crop', 'convert'];
+
+export function ImageProcessPanel({
+  assets,
+  workspace,
+  t,
+  onClose,
+  onApplied,
+}: ImageProcessPanelProps) {
+  const [mode, setMode] = useState<ImageProcessMode>('convert');
   const [presetId, setPresetId] = useState<ImageConvertPresetId | null>(
     'webp-80',
   );
@@ -56,14 +70,9 @@ export const AssetLibraryConvertModal: React.FC<
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
-  useSuspendLibraryShortcuts(isOpen);
 
   useEffect(() => {
-    if (!isOpen) return;
-    const available = libraryProcessModesForItems(items);
-    setMode(
-      available.includes('convert') ? 'convert' : (available[0] ?? 'convert'),
-    );
+    setMode('convert');
     setPresetId('webp-80');
     setFormat('image/webp');
     setQuality(0.8);
@@ -72,29 +81,29 @@ export const AssetLibraryConvertModal: React.FC<
     setCropIndex(0);
     setCrop(undefined);
     setCompletedCrop(undefined);
-  }, [isOpen, items]);
+  }, [assets]);
 
   useEffect(() => {
-    if (!isOpen) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !busy) onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [busy, isOpen, onClose]);
+  }, [busy, onClose]);
 
-  const modes = libraryProcessModesForItems(items);
-  const cropItem = items[cropIndex] ?? null;
+  const modes = MODE_ORDER;
+  const cropItem = assets[cropIndex] ?? null;
 
   useEffect(() => {
-    if (!isOpen || mode !== 'crop' || !cropItem) return;
+    if (mode !== 'crop' || !cropItem) return;
     let cancelled = false;
     let url = '';
     setPreviewUrl(null);
     setPreviewError(false);
     setCrop(undefined);
     setCompletedCrop(undefined);
-    void readAssetBytes(cropItem)
+    void workspace
+      .readAssetBytes(cropItem)
       .then(bytes => {
         if (cancelled) return;
         url = URL.createObjectURL(
@@ -113,9 +122,7 @@ export const AssetLibraryConvertModal: React.FC<
       cancelled = true;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [cropItem, isOpen, mode]);
-
-  if (!isOpen) return null;
+  }, [cropItem, mode, workspace]);
 
   const applyPreset = (id: ImageConvertPresetId) => {
     const preset = IMAGE_CONVERT_PRESETS[id];
@@ -163,6 +170,45 @@ export const AssetLibraryConvertModal: React.FC<
     setCompletedCrop(convertToPixelCrop(next, image.width, image.height));
   };
 
+  const runConvert = async () => {
+    const request = convertRequest();
+    const paths: string[] = [];
+    const failed: string[] = [];
+    for (const item of assets) {
+      try {
+        const bytes = await workspace.readAssetBytes(item);
+        const payload = await convertImageBytes(item, bytes, request);
+        const saved = await workspace.saveProcessedAsset({
+          source: item,
+          ...payload,
+        });
+        paths.push(saved.path);
+      } catch {
+        failed.push(item.name);
+      }
+    }
+    onApplied?.({ paths, failed });
+    if (paths.length > 0) onClose();
+  };
+
+  const runCrop = async () => {
+    const rect = naturalCrop();
+    if (!cropItem || !rect) return;
+    try {
+      const bytes = await workspace.readAssetBytes(cropItem);
+      const payload = await cropImageBytes(cropItem, bytes, rect);
+      const saved = await workspace.saveProcessedAsset({
+        source: cropItem,
+        ...payload,
+      });
+      onApplied?.({ paths: [saved.path], failed: [] });
+      if (cropIndex + 1 >= assets.length) onClose();
+      else setCropIndex(index => index + 1);
+    } catch {
+      onApplied?.({ paths: [], failed: [cropItem.name] });
+    }
+  };
+
   return (
     <div className="asset-library-batch-edit-overlay" role="presentation">
       <div
@@ -191,7 +237,7 @@ export const AssetLibraryConvertModal: React.FC<
         <p className="asset-library-batch-edit-scope">
           {t('image.library.convertScope').replace(
             '{count}',
-            String(items.length),
+            String(assets.length),
           )}
         </p>
         {modes.length > 1 ? (
@@ -221,17 +267,7 @@ export const AssetLibraryConvertModal: React.FC<
             event.preventDefault();
             if (busy) return;
             setBusy(true);
-            const task =
-              mode === 'convert'
-                ? onConvert(convertRequest()).then(() => undefined)
-                : (async () => {
-                    const rect = naturalCrop();
-                    if (!cropItem || !rect) return;
-                    const result = await onCrop(cropItem, rect);
-                    if (result.saved === 0) return;
-                    if (cropIndex + 1 >= items.length) onClose();
-                    else setCropIndex(index => index + 1);
-                  })();
+            const task = mode === 'convert' ? runConvert() : runCrop();
             void task.finally(() => setBusy(false));
           }}
         >
@@ -313,12 +349,12 @@ export const AssetLibraryConvertModal: React.FC<
           ) : (
             <div className="asset-library-process-crop">
               <p className="asset-library-batch-edit-scope">
-                {items.length > 1
+                {assets.length > 1
                   ? `${t('image.library.cropStep')
                       .replace('{index}', String(cropIndex + 1))
                       .replace(
                         '{count}',
-                        String(items.length),
+                        String(assets.length),
                       )} · ${cropItem?.name ?? ''}`
                   : (cropItem?.name ?? '')}
               </p>
@@ -357,7 +393,7 @@ export const AssetLibraryConvertModal: React.FC<
               className="asset-library-chrome-btn asset-library-chrome-btn--accent asset-library-batch-edit-save"
               disabled={
                 busy ||
-                items.length === 0 ||
+                assets.length === 0 ||
                 (mode === 'crop' && (previewError || !completedCrop))
               }
             >
@@ -374,4 +410,4 @@ export const AssetLibraryConvertModal: React.FC<
       </div>
     </div>
   );
-};
+}

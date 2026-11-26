@@ -5,11 +5,32 @@ import type {
 } from '@pixuli/core/plugins';
 import type { AssetItem, AssetKind } from '@pixuli/core/types';
 
-/** 预览 / 缩略图匹配输入（含 getAssetKind 过渡回退） */
+/** 预览 / 缩略图 / 编辑 / 处理匹配输入（含 getAssetKind 过渡回退） */
 export type KindUiMatchInput = {
   name: string;
   mimeType?: string;
   kind?: AssetKind;
+};
+
+export type KindUiPlacement = 'modal' | 'panel' | 'fullscreen';
+
+export type KindProcessedAssetInput = {
+  source: AssetItem;
+  fileName: string;
+  data: Uint8Array;
+  mimeType: string;
+  width?: number;
+  height?: number;
+};
+
+export type KindWorkspaceIO = {
+  readFile: (path: string) => Promise<Uint8Array>;
+  writeFile: (path: string, data: Uint8Array) => Promise<void>;
+  isLocalAvailable: () => boolean;
+  readAssetBytes: (asset: AssetItem) => Promise<Uint8Array>;
+  saveProcessedAsset: (
+    input: KindProcessedAssetInput,
+  ) => Promise<{ path: string }>;
 };
 
 export type KindPreviewProps = {
@@ -33,6 +54,51 @@ export type KindThumbnailContribution = {
   match: (input: KindUiMatchInput) => boolean;
   capture: (url: string) => Promise<string | null>;
   priority?: number;
+};
+
+/**
+ * 内容编辑（如 Markdown / txt）：改原文件内容本身。
+ * 保存用 workspace.writeFile 写回原路径，不产生新文件。
+ */
+export type KindEditorProps = {
+  asset: AssetItem;
+  src: string | null;
+  localPath?: string | null;
+  workspace: KindWorkspaceIO;
+  t: (key: string) => string;
+  onClose: () => void;
+  onSaved?: (result: { path: string }) => void;
+};
+
+export type KindEditorContribution = {
+  id: string;
+  match: (input: KindUiMatchInput) => boolean;
+  component: ComponentType<KindEditorProps>;
+  placement?: KindUiPlacement;
+  priority?: number;
+  /** 入口按钮 i18n key */
+  labelKey?: string;
+};
+
+/**
+ * 文件变换（如图片裁剪/压缩/转换）：针对文件本体，产物为新文件。
+ * 经 workspace.saveProcessedAsset 旁路写回；可单选或多选。
+ */
+export type KindProcessProps = {
+  assets: AssetItem[];
+  workspace: KindWorkspaceIO;
+  t: (key: string) => string;
+  onClose: () => void;
+  onApplied?: (result: { paths: string[]; failed?: string[] }) => void;
+};
+
+export type KindProcessContribution = {
+  id: string;
+  match: (input: KindUiMatchInput) => boolean;
+  component: ComponentType<KindProcessProps>;
+  placement?: KindUiPlacement;
+  priority?: number;
+  labelKey?: string;
 };
 
 export type StorageConnectionFieldsProps = {
@@ -66,18 +132,24 @@ export type StorageSourceIconContribution = {
 export interface UiContributionRegistry {
   registerPreview(contribution: KindPreviewContribution): void;
   registerThumbnail(contribution: KindThumbnailContribution): void;
+  registerEditor(contribution: KindEditorContribution): void;
+  registerProcess(contribution: KindProcessContribution): void;
   registerConnectionFields(
     contribution: StorageConnectionFieldsContribution,
   ): void;
   registerSourceIcon(contribution: StorageSourceIconContribution): void;
   unregisterPreview(id: string): boolean;
   unregisterThumbnail(id: string): boolean;
+  unregisterEditor(id: string): boolean;
+  unregisterProcess(id: string): boolean;
   unregisterConnectionFields(pluginId: string): boolean;
   unregisterSourceIcon(pluginId: string): boolean;
   resolvePreview(input: KindUiMatchInput): KindPreviewContribution | undefined;
   resolveThumbnail(
     input: KindUiMatchInput,
   ): KindThumbnailContribution | undefined;
+  resolveEditor(input: KindUiMatchInput): KindEditorContribution | undefined;
+  resolveProcess(input: KindUiMatchInput): KindProcessContribution | undefined;
   resolveConnectionFields(
     pluginId: string,
   ): StorageConnectionFieldsContribution | undefined;
@@ -99,9 +171,24 @@ function pickBest<T extends { priority?: number; id: string }>(
   return hits[0];
 }
 
+function upsertById<T extends { id: string }>(list: T[], item: T): void {
+  const idx = list.findIndex(c => c.id === item.id);
+  if (idx >= 0) list.splice(idx, 1);
+  list.push(item);
+}
+
+function removeById<T extends { id: string }>(list: T[], id: string): boolean {
+  const idx = list.findIndex(c => c.id === id);
+  if (idx < 0) return false;
+  list.splice(idx, 1);
+  return true;
+}
+
 export class DefaultUiContributionRegistry implements UiContributionRegistry {
   private readonly previews: KindPreviewContribution[] = [];
   private readonly thumbnails: KindThumbnailContribution[] = [];
+  private readonly editors: KindEditorContribution[] = [];
+  private readonly processes: KindProcessContribution[] = [];
   private readonly connectionFields = new Map<
     string,
     StorageConnectionFieldsContribution
@@ -112,15 +199,19 @@ export class DefaultUiContributionRegistry implements UiContributionRegistry {
   >();
 
   registerPreview(contribution: KindPreviewContribution): void {
-    const idx = this.previews.findIndex(c => c.id === contribution.id);
-    if (idx >= 0) this.previews.splice(idx, 1);
-    this.previews.push(contribution);
+    upsertById(this.previews, contribution);
   }
 
   registerThumbnail(contribution: KindThumbnailContribution): void {
-    const idx = this.thumbnails.findIndex(c => c.id === contribution.id);
-    if (idx >= 0) this.thumbnails.splice(idx, 1);
-    this.thumbnails.push(contribution);
+    upsertById(this.thumbnails, contribution);
+  }
+
+  registerEditor(contribution: KindEditorContribution): void {
+    upsertById(this.editors, contribution);
+  }
+
+  registerProcess(contribution: KindProcessContribution): void {
+    upsertById(this.processes, contribution);
   }
 
   registerConnectionFields(
@@ -134,17 +225,19 @@ export class DefaultUiContributionRegistry implements UiContributionRegistry {
   }
 
   unregisterPreview(id: string): boolean {
-    const idx = this.previews.findIndex(c => c.id === id);
-    if (idx < 0) return false;
-    this.previews.splice(idx, 1);
-    return true;
+    return removeById(this.previews, id);
   }
 
   unregisterThumbnail(id: string): boolean {
-    const idx = this.thumbnails.findIndex(c => c.id === id);
-    if (idx < 0) return false;
-    this.thumbnails.splice(idx, 1);
-    return true;
+    return removeById(this.thumbnails, id);
+  }
+
+  unregisterEditor(id: string): boolean {
+    return removeById(this.editors, id);
+  }
+
+  unregisterProcess(id: string): boolean {
+    return removeById(this.processes, id);
   }
 
   unregisterConnectionFields(pluginId: string): boolean {
@@ -163,6 +256,14 @@ export class DefaultUiContributionRegistry implements UiContributionRegistry {
     input: KindUiMatchInput,
   ): KindThumbnailContribution | undefined {
     return pickBest(this.thumbnails, c => c.match(input));
+  }
+
+  resolveEditor(input: KindUiMatchInput): KindEditorContribution | undefined {
+    return pickBest(this.editors, c => c.match(input));
+  }
+
+  resolveProcess(input: KindUiMatchInput): KindProcessContribution | undefined {
+    return pickBest(this.processes, c => c.match(input));
   }
 
   resolveConnectionFields(

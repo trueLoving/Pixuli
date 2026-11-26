@@ -2,11 +2,13 @@ import React from 'react';
 import { defaultTranslate } from '@/i18n/locales';
 import type {
   BatchUploadProgress,
-  ImageCompressionOptions,
-  ImageCropOptions,
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
+import type {
+  ImageCompressionOptions,
+  ImageCropOptions,
+} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './nativePickers';
 import ImageCropModal from './ImageCropModal';
 import { AssetUploadBatchProgress } from './AssetUploadBatchProgress';

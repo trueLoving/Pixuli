@@ -1,0 +1,38 @@
+{
+  "name": "@pixuli/kind-image",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pixuli KindHandler：图片预览 / 缩略图 / 裁剪与转换",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts",
+    "./register": "./src/register.ts",
+    "./runtime": "./src/runtimePlugin.ts",
+    "./ui": "./src/ui/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@pixuli/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "lucide-react": ">=0.400.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-image-crop": "^10.1.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "jsdom": "^25.0.1",
+    "lucide-react": "^0.556.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-image-crop": "^10.1.8",
+    "typescript": "^5.0.0",
+    "vitest": "^2.1.8"
+  }
+}
