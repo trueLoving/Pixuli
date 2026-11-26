@@ -37,12 +37,12 @@ provider.configure({
   token,
   path,
 });
-await provider.listImages();
+await provider.listAssets();
 ```
 
 ## 配置形状
 
-与 [`GitHubConfig`](../core/src/types/github.ts) 一致：
+与本包 [`GitHubConfig`](./src/types.ts) 一致：
 
 | 字段     | 说明           |
 | -------- | -------------- |

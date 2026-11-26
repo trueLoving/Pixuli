@@ -13,21 +13,21 @@ import {
   upsertManifestEntry,
   type MetadataManifest,
 } from '@pixuli/core/utils';
-import { buildProviderSidecarPayload } from '@pixuli/core/utils';
-import type { GitHubConfig } from '@pixuli/core/types';
+import { buildProviderSidecarPayload, guessMimeType } from '@pixuli/core/utils';
+import type { GitHubConfig } from './types';
 import {
   commitSyncPush,
   isPullableSyncFile,
   isSyncableAssetName,
   joinConfigRoot,
-  listRepoImageBlobs,
+  listRepoAssetBlobs,
   parseSyncTree,
   SYNC_EXCLUDED_DIR,
   SYNC_TREE_RELATIVE_PATH,
 } from '@pixuli/core/vault';
 import type {
-  ImageListOptions,
-  ImageMetadataLoadOptions,
+  AssetListOptions,
+  AssetMetadataLoadOptions,
   ProviderContext,
   RemoteRepositoryRef,
   RemoteSyncTreeFile,
@@ -402,7 +402,7 @@ export class GitHubStorageProvider
    * @param metadata 元数据对象
    * @returns Promise<void>
    */
-  private async uploadImageMetadata(
+  private async uploadAssetMetadata(
     fileName: string,
     metadata: AssetItem,
   ): Promise<void> {
@@ -426,7 +426,7 @@ export class GitHubStorageProvider
    * @param uploadData 上传数据
    * @returns Promise<AssetItem> 上传后的图片信息
    */
-  async uploadImage(uploadData: AssetUploadData): Promise<AssetItem> {
+  async uploadAsset(uploadData: AssetUploadData): Promise<AssetItem> {
     this.assertConfigured();
     try {
       const file = uploadData.file;
@@ -478,7 +478,7 @@ export class GitHubStorageProvider
 
       // ========== 步骤2：上传图片元数据 ==========
       try {
-        await this.uploadImageMetadata(storagePath, imageItem);
+        await this.uploadAssetMetadata(storagePath, imageItem);
       } catch (error) {
         this.logger.warn(
           'Image file uploaded successfully, but metadata upload failed:',
@@ -497,7 +497,7 @@ export class GitHubStorageProvider
   }
 
   // 删除图片
-  async deleteImage(path: string): Promise<void> {
+  async deleteAsset(path: string): Promise<void> {
     this.assertConfigured();
     try {
       const filePath = this.joinRemotePath(path);
@@ -538,7 +538,7 @@ export class GitHubStorageProvider
 
       // 删除对应的元数据文件
       try {
-        await this.deleteImageMetadata(path);
+        await this.deleteAssetMetadata(path);
       } catch (error) {
         this.logger.warn('Failed to delete metadata file:', error);
         // 不抛出错误，因为图片已经删除成功
@@ -649,7 +649,7 @@ export class GitHubStorageProvider
     );
   }
 
-  private async deleteImageMetadata(storagePath: string): Promise<void> {
+  private async deleteAssetMetadata(storagePath: string): Promise<void> {
     const dirPath = dirnameRelative(storagePath);
     const fileName = basenameRelative(storagePath);
     const manifest = await this.loadDirManifest(dirPath);
@@ -740,7 +740,7 @@ export class GitHubStorageProvider
   }
 
   // 获取图片列表
-  async listImages(options?: ImageListOptions): Promise<AssetItem[]> {
+  async listAssets(options?: AssetListOptions): Promise<AssetItem[]> {
     this.assertConfigured();
     try {
       const recursive = options?.recursive ?? false;
@@ -756,7 +756,7 @@ export class GitHubStorageProvider
           .filter(
             (item: any) =>
               item.type === 'file' &&
-              this.isImageFile(item.name) &&
+              this.isKnownAssetName(item.name) &&
               item.name !== SYNC_EXCLUDED_DIR,
           )
           .map((item: any) => ({ remotePath: item.name, item }));
@@ -844,7 +844,7 @@ export class GitHubStorageProvider
   }
 
   // 更新图片信息（如标签、描述等）
-  async updateImageMetadata(
+  async updateAssetMetadata(
     path: string,
     metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>>,
   ): Promise<AssetItem> {
@@ -877,7 +877,7 @@ export class GitHubStorageProvider
     fileName: string,
     metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>>,
   ): Promise<void> {
-    await this.updateImageMetadata(fileName, metadata);
+    await this.updateAssetMetadata(fileName, metadata);
   }
 
   /**
@@ -887,9 +887,9 @@ export class GitHubStorageProvider
    * @param options.forceRefresh 强制刷新，忽略缓存
    * @param options.backgroundUpdate 后台更新，使用缓存但后台检查更新
    */
-  async loadImageMetadata(
+  async loadAssetMetadata(
     images: AssetItem[],
-    _options?: ImageMetadataLoadOptions,
+    _options?: AssetMetadataLoadOptions,
   ): Promise<AssetItem[]> {
     try {
       // const { forceRefresh = false } = options || {};
@@ -981,9 +981,9 @@ export class GitHubStorageProvider
       images = listed.images;
       folderKeys = listed.folderKeys;
     } else if (pathPrefix) {
-      images = await this.listImages({ path: pathPrefix, recursive: true });
+      images = await this.listAssets({ path: pathPrefix, recursive: true });
     } else {
-      images = await this.listImages({ recursive: true });
+      images = await this.listAssets({ recursive: true });
     }
 
     const since = options?.since;
@@ -1130,7 +1130,7 @@ export class GitHubStorageProvider
   private async collectImageFilesFromTree(): Promise<
     Array<{ remotePath: string; item: any }>
   > {
-    const blobs = await listRepoImageBlobs(
+    const blobs = await listRepoAssetBlobs(
       this.gitTransport(),
       {
         owner: this.config.owner,
@@ -1138,7 +1138,7 @@ export class GitHubStorageProvider
         branch: this.config.branch,
         configRoot: this.config.path,
       },
-      name => this.isImageFile(name),
+      name => this.isKnownAssetName(name),
     );
     if (blobs === null) {
       return this.collectImageFiles('');
@@ -1182,11 +1182,11 @@ export class GitHubStorageProvider
   private async syncPushSequential(items: SyncPushItem[]): Promise<void> {
     for (const item of items) {
       if (item.action === 'delete') {
-        await this.deleteImage(item.remotePath);
+        await this.deleteAsset(item.remotePath);
         continue;
       }
       if (item.action === 'metadata') {
-        await this.updateImageMetadata(item.remotePath, item.metadata ?? {});
+        await this.updateAssetMetadata(item.remotePath, item.metadata ?? {});
         continue;
       }
       if (!item.file) {
@@ -1195,7 +1195,7 @@ export class GitHubStorageProvider
       const file = new File([Uint8Array.from(item.file)], item.remotePath, {
         type: item.metadata?.type ?? this.getMimeType(item.remotePath),
       });
-      await this.uploadImage({
+      await this.uploadAsset({
         file,
         name: item.metadata?.name,
         storagePath: item.remotePath,
@@ -1205,30 +1205,11 @@ export class GitHubStorageProvider
     }
   }
 
-  private isImageFile(fileName: string): boolean {
+  private isKnownAssetName(fileName: string): boolean {
     return isSyncableAssetName(fileName);
   }
 
-  // 辅助方法：获取 MIME 类型
   private getMimeType(fileName: string): string {
-    const extension = fileName
-      .toLowerCase()
-      .substring(fileName.lastIndexOf('.'));
-    const mimeTypes: Record<string, string> = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.bmp': 'image/bmp',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-      '.pdf': 'application/pdf',
-      '.mp4': 'video/mp4',
-      '.webm': 'video/webm',
-      '.mov': 'video/quicktime',
-      '.mkv': 'video/x-matroska',
-      '.avi': 'video/x-msvideo',
-    };
-    return mimeTypes[extension] || 'application/octet-stream';
+    return guessMimeType(fileName);
   }
 }

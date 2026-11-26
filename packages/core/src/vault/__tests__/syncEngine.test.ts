@@ -15,11 +15,11 @@ function createMockSyncProvider(
       capabilities: { list: true, upload: true, delete: true, sync: true },
     },
     configure: () => undefined,
-    listImages: async () => [],
-    uploadImage: async () => {
+    listAssets: async () => [],
+    uploadAsset: async () => {
       throw new Error('not used');
     },
-    deleteImage: async () => undefined,
+    deleteAsset: async () => undefined,
     getRawUrl: (path: string) => `https://example.test/${path}`,
     syncPull: async () => ({ items: [], nextCursor: 'cursor-1' }),
     syncPush: async () => undefined,

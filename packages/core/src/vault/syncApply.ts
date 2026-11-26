@@ -93,7 +93,7 @@ async function findExistingForPullItem(
   );
 }
 
-/** 远端 manifest 未单独存展示名时，listImages 会回退为 basename（含 timestamp 前缀） */
+/** 远端 manifest 未单独存展示名时，listAssets 会回退为 basename（含 timestamp 前缀） */
 export function resolvePullDisplayName(
   meta: Partial<AssetItem>,
   existing: LocalAssetIndexEntry | null | undefined,

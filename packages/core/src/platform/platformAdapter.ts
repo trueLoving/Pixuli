@@ -1,11 +1,15 @@
 /**
  * 平台适配接口
- * 不同平台（web、desktop、mobile）可以实现此接口来适配各自的特殊需求
+ * 不同平台（web、desktop、mobile）可以实现此接口来适配各自的特殊需求。
+ * 不含 Kind 级文件处理（压缩/预览等）。
  */
+
+import { guessMimeType } from '../utils/mime';
+
 export interface PlatformAdapter {
   /**
-   * 获取图片尺寸信息
-   * @param file 图片文件（web/desktop）或 URI（mobile）
+   * 探测栅格图尺寸（非图片返回 0×0）。
+   * 用于入库填 width/height，不是 Kind process。
    */
   getImageDimensions(
     file: File | string,
@@ -13,20 +17,17 @@ export interface PlatformAdapter {
 
   /**
    * 将文件转换为 base64
-   * @param file 图片文件（web/desktop）或 URI（mobile）
+   * @param file 文件（web/desktop）或 URI（mobile）
    */
   fileToBase64(file: File | string): Promise<string>;
 
   /**
    * 获取文件大小
-   * @param file 图片文件（web/desktop）或 URI（mobile）
    */
   getFileSize(file: File | string): Promise<number>;
 
   /**
-   * 获取 MIME 类型
-   * @param file 图片文件（web/desktop）或 URI（mobile）
-   * @param fileName 文件名
+   * 获取 MIME 类型（优先 File.type，否则按扩展名表）
    */
   getMimeType(file: File | string, fileName: string): Promise<string>;
 }
@@ -39,8 +40,7 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
     file: File | string,
   ): Promise<{ width: number; height: number }> {
     if (typeof file === 'string') {
-      // Mobile 端 URI 处理
-      return new Promise((resolve, _reject) => {
+      return new Promise(resolve => {
         const img = new Image();
         img.onload = () => {
           resolve({
@@ -55,8 +55,7 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
       });
     }
 
-    // Web/Desktop 端 File 处理
-    return new Promise((resolve, _reject) => {
+    return new Promise(resolve => {
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
 
@@ -86,7 +85,6 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
 
   async fileToBase64(file: File | string): Promise<string> {
     if (typeof file === 'string') {
-      // Mobile 端 URI 处理
       try {
         const response = await fetch(file);
         const blob = await response.blob();
@@ -105,7 +103,6 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
       }
     }
 
-    // Web/Desktop 端 File 处理
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -120,7 +117,6 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
 
   async getFileSize(file: File | string): Promise<number> {
     if (typeof file === 'string') {
-      // Mobile 端 URI 处理
       try {
         const response = await fetch(file, { method: 'HEAD' });
         const contentLength = response.headers.get('content-length');
@@ -133,33 +129,14 @@ export class DefaultPlatformAdapter implements PlatformAdapter {
       }
     }
 
-    // Web/Desktop 端 File 处理
     return file.size;
   }
 
   async getMimeType(file: File | string, fileName: string): Promise<string> {
     if (typeof file === 'string') {
-      // Mobile 端：从文件名推断
-      return this.getMimeTypeFromFileName(fileName);
+      return guessMimeType(fileName);
     }
 
-    // Web/Desktop 端：优先使用文件的 type，否则从文件名推断
-    return file.type || this.getMimeTypeFromFileName(fileName);
-  }
-
-  private getMimeTypeFromFileName(fileName: string): string {
-    const extension = fileName
-      .toLowerCase()
-      .substring(fileName.lastIndexOf('.'));
-    const mimeTypes: Record<string, string> = {
-      '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.png': 'image/png',
-      '.gif': 'image/gif',
-      '.bmp': 'image/bmp',
-      '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
-    };
-    return mimeTypes[extension] || 'image/jpeg';
+    return file.type || guessMimeType(fileName);
   }
 }

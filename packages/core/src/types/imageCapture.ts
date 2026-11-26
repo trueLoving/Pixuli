@@ -1,4 +1,7 @@
-/** REF-511 #141：移动端/原生选图时的拍摄上下文（sidecar 可持久化子集） */
+/**
+ * REF-511 #141：移动端/原生选图时的拍摄上下文（sidecar 可持久化子集）。
+ * 属资产元数据契约，不是图片 process（压缩/裁剪在 `@pixuli/kind-image`）。
+ */
 
 export type ImageCaptureSource = 'camera' | 'gallery' | 'file';
 

@@ -96,7 +96,7 @@ export async function uploadAsset(
   set({ loading: true, error: null });
   const startTime = Date.now();
   try {
-    const newAsset = await storageProvider.uploadImage(uploadData);
+    const newAsset = await storageProvider.uploadAsset(uploadData);
     const duration = Date.now() - startTime;
     set({
       assets: get().assets.some(img => img.id === newAsset.id)
@@ -293,7 +293,7 @@ export async function uploadMultipleAssets(
           captureMetadata: captureMetadataList?.[i],
         };
 
-        const newAsset = await storageProvider.uploadImage(singleUploadData);
+        const newAsset = await storageProvider.uploadAsset(singleUploadData);
         uploadedAssets.push(newAsset);
         completed++;
         updateBatchItem(set, itemId, {

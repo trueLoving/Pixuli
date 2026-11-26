@@ -4,7 +4,7 @@ import { createMockResponse } from './helpers';
 
 /** REF-309：兼容层保留最小冒烟，主测见 giteeStorageProvider.test.ts */
 describe('GiteeStorageService（兼容层）', () => {
-  it('getImageList 委托 GiteeStorageProvider.listImages', async () => {
+  it('getImageList 委托 GiteeStorageProvider.listAssets', async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(
       createMockResponse(true, [
         {

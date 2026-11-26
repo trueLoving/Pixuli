@@ -1,4 +1,7 @@
+import { isSyncableAssetName, SYNCABLE_ASSET_EXTENSIONS } from '../utils/mime';
 import { matchesSyncIgnore } from './syncIgnore';
+
+export { isSyncableAssetName, SYNCABLE_ASSET_EXTENSIONS };
 
 /** 本地工作区路径，永不同步（D3） */
 export const SYNC_EXCLUDED_DIR = '.pixuli';
@@ -66,34 +69,9 @@ export function resolveLocalPathForPull(remotePath: string): string {
   return remotePath.replace(/^\/+/, '').replace(/\\/g, '/');
 }
 
-const SYNCABLE_ASSET_EXTENSIONS = new Set([
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.gif',
-  '.bmp',
-  '.webp',
-  '.svg',
-  '.pdf',
-  '.mp4',
-  '.webm',
-  '.mov',
-  '.mkv',
-  '.avi',
-]);
-
-/** Git 树列举时是否纳入同步（图片 / PDF / 常见视频） */
-export function isSyncableAssetName(fileName: string): boolean {
-  const dot = fileName.lastIndexOf('.');
-  if (dot < 0) {
-    return false;
-  }
-  return SYNCABLE_ASSET_EXTENSIONS.has(fileName.slice(dot).toLowerCase());
-}
-
 /**
- * 本层要拉取的文件。媒体扩展名始终纳入；
- * 写进该目录 manifest 的其它文件（例如 .txt）也要纳入，否则子文件夹会拉成空的。
+ * 本层要拉取的文件。默认同步扩展名始终纳入；
+ * 写进该目录 manifest 的其它文件也要纳入，否则子文件夹会拉成空的。
  */
 export function isPullableSyncFile(
   fileName: string,

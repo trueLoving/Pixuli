@@ -21,13 +21,14 @@ description: >-
 ## Add or change a provider
 
 1. Read `docs/architecture.md`（存储插件节）与 `@pixuli/core/plugins` 源码
-2. In provider package: `manifest.ts`（含可选 `hostIntegrations`）→
-   `*StorageProvider.ts` → `register.ts` → `package.json` `exports`（直指
-   `src`，与 GitHub provider 一致）
+2. In provider package: `types.ts`（配置/API 形状，**勿放进 `@pixuli/core`**）→
+   `manifest.ts`（含可选 `hostIntegrations`）→ `*StorageProvider.ts` →
+   `register.ts` → `package.json` `exports`（直指 `src`）
 3. Register in both app `registry.ts` bootstrap functions
 4. Extend `createConfiguredStorageProvider` if new `pluginId` / config type
 5. Add Vitest: `register.test.ts` + provider behavior tests
-6. **Do not** add UI or depend on `app/src/ui` (`@/ui`) from provider or core
+6. **Do not** add UI or depend on `app/src/ui` (`@/ui`) from provider or
+   core；core 只认不透明 `StorageProviderConfig`
 
 ## ProviderContext
 

@@ -336,11 +336,11 @@ describe('DefaultPlatformAdapter', () => {
       }
     });
 
-    it('应该返回默认 MIME 类型（image/jpeg）对于未知格式', async () => {
+    it('未知扩展名回退为 application/octet-stream', async () => {
       const file = new File([''], 'test.unknown', { type: '' });
 
       const result = await adapter.getMimeType(file, 'test.unknown');
-      expect(result).toBe('image/jpeg');
+      expect(result).toBe('application/octet-stream');
     });
   });
 });

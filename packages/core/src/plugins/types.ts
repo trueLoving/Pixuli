@@ -69,20 +69,27 @@ export interface ConfigValidationResult {
   message?: string;
 }
 
-export interface ImageListOptions {
+export interface AssetListOptions {
   path?: string;
   page?: number;
   pageSize?: number;
   recursive?: boolean;
 }
 
-export interface ImageMetadataLoadOptions {
+/** @deprecated 使用 AssetListOptions */
+export type ImageListOptions = AssetListOptions;
+
+export interface AssetMetadataLoadOptions {
   forceRefresh?: boolean;
   backgroundUpdate?: boolean;
 }
 
+/** @deprecated 使用 AssetMetadataLoadOptions */
+export type ImageMetadataLoadOptions = AssetMetadataLoadOptions;
+
 /**
- * 存储 Provider 最小契约。须先 `configure(config)` 再调用 list/upload/delete 等方法。
+ * 存储 Provider 最小契约（任意资产，非仅图片）。
+ * 须先 `configure(config)` 再调用 list/upload/delete 等方法。
  */
 export interface StorageProvider {
   readonly manifest: StoragePluginManifest;
@@ -90,10 +97,10 @@ export interface StorageProvider {
   validateConfig?(
     config: StorageProviderConfig,
   ): Promise<ConfigValidationResult>;
-  listImages(options?: ImageListOptions): Promise<AssetItem[]>;
-  uploadImage(data: AssetUploadData): Promise<AssetItem>;
-  deleteImage(path: string): Promise<void>;
-  updateImageMetadata?(
+  listAssets(options?: AssetListOptions): Promise<AssetItem[]>;
+  uploadAsset(data: AssetUploadData): Promise<AssetItem>;
+  deleteAsset(path: string): Promise<void>;
+  updateAssetMetadata?(
     path: string,
     metadata: Partial<Pick<AssetItem, 'name' | 'description' | 'tags'>>,
   ): Promise<AssetItem>;
@@ -109,9 +116,9 @@ export interface StorageProvider {
  * 可选扩展：Mobile 等场景懒加载 sidecar 元数据。REF-302 在 provider 包内实现。
  */
 export interface StorageProviderWithMetadata extends StorageProvider {
-  loadImageMetadata(
-    images: AssetItem[],
-    options?: ImageMetadataLoadOptions,
+  loadAssetMetadata(
+    assets: AssetItem[],
+    options?: AssetMetadataLoadOptions,
   ): Promise<AssetItem[]>;
 }
 

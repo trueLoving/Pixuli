@@ -1,3 +1,5 @@
+/** GitHub StorageProvider 配置与内部 API 参数（仅本插件使用） */
+
 export interface GitHubConfig {
   owner: string;
   repo: string;
@@ -9,7 +11,6 @@ export interface GitHubConfig {
   private?: boolean;
 }
 
-// GitHub API 相关类型
 export interface GitHubUploadParams {
   owner: string;
   repo: string;
@@ -48,6 +49,6 @@ export interface GitHubUpdateMetadataParams {
   path: string;
   branch: string;
   fileName: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   oldFileName?: string;
 }

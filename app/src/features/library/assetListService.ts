@@ -66,7 +66,7 @@ export async function refreshLocalAssetList(
 export async function loadRemoteAssetList(
   storageProvider: StorageProvider,
 ): Promise<AssetItem[]> {
-  const assets = await storageProvider.listImages();
+  const assets = await storageProvider.listAssets();
   return dedupeAssetsById(assets);
 }
 

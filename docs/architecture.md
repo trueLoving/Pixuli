@@ -78,7 +78,9 @@ Token 与连接配置仅存客户端。
   [plugins-runtime.md](./plugins-runtime.md)。
 - **Storage**：`storageRegistry`（经 Runtime onload 注册）→
   `storageRegistry.create(pluginId, ctx)` /
-  `createConfiguredStorageProvider`。契约 `@pixuli/core/plugins`；authoring 见
+  `createConfiguredStorageProvider`。契约 `@pixuli/core/plugins`（配置为不透明
+  `StorageProviderConfig`）；GitHub/Gitee 配置与 API 类型在 `@pixuli/provider-*`
+  的 `types.ts`。authoring 见
   [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)。
 - **Kind**：`kindRegistry`（经 Runtime）；契约
   `@pixuli/core/kinds`。Kind 包：`@pixuli/kind-pdf` / `kind-markdown` /
@@ -121,10 +123,11 @@ Token 与连接配置仅存客户端。
   旁路写回 Vault（仅本机，不入同步队列，不覆盖原件）。
 - 上传预压缩同样调用 `@pixuli/kind-image` 的
   `compressImage`（产新 File 再导入）。
-- 位图处理类型与 Canvas 工具均在 `@pixuli/kind-image`；core **不含** image
-  process 类型 / `imageUtils`。core 仅保留跨类型资产字段：`ImageCaptureMetadata`
-  （sidecar / AssetItem）与
-  `PlatformAdapter.getImageDimensions`（入库宽高探测）。
+- 位图处理类型与 Canvas 工具均在 `@pixuli/kind-image`；core **不含**
+  Kind 处理逻辑。
+- core 资产中立面：`StorageProvider.listAssets/uploadAsset/...`、共享
+  `utils/mime`（MIME / 默认同步扩展名）、`ImageCaptureMetadata`（sidecar）、
+  `PlatformAdapter.getImageDimensions`（栅格宽高探测，失败为 0×0）。
 - 对比 `kind.editor`：编辑是原地改内容（如 Markdown），不产新文件。
 
 ---

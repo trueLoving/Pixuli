@@ -4,7 +4,7 @@ import { createMockResponse } from './helpers';
 
 /** REF-309：兼容层保留最小冒烟，主测见 githubStorageProvider.test.ts */
 describe('GitHubStorageService（兼容层）', () => {
-  it('getImageList 委托 GitHubStorageProvider.listImages', async () => {
+  it('getImageList 委托 GitHubStorageProvider.listAssets', async () => {
     global.fetch = vi.fn().mockResolvedValueOnce(
       createMockResponse(true, [
         {

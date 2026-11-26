@@ -31,11 +31,14 @@ export interface GitRepoRef {
   branch: string;
 }
 
-export interface RepoImageBlob {
+export interface RepoAssetBlob {
   workspacePath: string;
   sha: string;
   size: number;
 }
+
+/** @deprecated 使用 RepoAssetBlob */
+export type RepoImageBlob = RepoAssetBlob;
 
 interface RepoHead {
   commitSha: string;
@@ -326,14 +329,15 @@ export async function commitSyncPush(
 }
 
 /**
- * 一次递归树列出挂载点下的图片 blob。
+ * 一次递归树列出挂载点下的可同步资产 blob。
  * 返回 null 表示树被截断，调用方应退回按目录列举。
+ * @param isKnownAssetName 默认同步扩展名（或等价）判定；由调用方注入，避免 vault 依赖 Kind。
  */
-export async function listRepoImageBlobs(
+export async function listRepoAssetBlobs(
   transport: GitDataTransport,
   repo: GitRepoRef & { configRoot: string },
-  isImageName: (name: string) => boolean,
-): Promise<RepoImageBlob[] | null> {
+  isKnownAssetName: (name: string) => boolean,
+): Promise<RepoAssetBlob[] | null> {
   const head = await readRepoHead(transport, repo);
   if (!head) {
     return [];
@@ -370,7 +374,7 @@ export async function listRepoImageBlobs(
       manifestDirs.add(manifestDir);
     }
   }
-  const images: RepoImageBlob[] = [];
+  const assets: RepoAssetBlob[] = [];
   for (const node of tree) {
     const entry = asRecord(node);
     if (!entry || entry.type !== 'blob' || typeof entry.path !== 'string') {
@@ -389,7 +393,7 @@ export async function listRepoImageBlobs(
     const name = basenameRelative(workspacePath);
     const parent = folderKeyFromWorkspacePath(workspacePath);
     if (
-      !isImageName(name) &&
+      !isKnownAssetName(name) &&
       !(manifestDirs.has(parent) && !name.startsWith('.'))
     ) {
       continue;
@@ -398,14 +402,17 @@ export async function listRepoImageBlobs(
     if (!sha) {
       continue;
     }
-    images.push({
+    assets.push({
       workspacePath,
       sha,
       size: typeof entry.size === 'number' ? entry.size : 0,
     });
   }
-  return images;
+  return assets;
 }
+
+/** @deprecated 使用 listRepoAssetBlobs */
+export const listRepoImageBlobs = listRepoAssetBlobs;
 
 function folderKeyFromWorkspacePath(workspacePath: string): string {
   const slash = workspacePath.lastIndexOf('/');

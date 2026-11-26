@@ -33,9 +33,9 @@ function createStubProvider(manifest: StoragePluginManifest): StorageProvider {
   return {
     manifest,
     configure: vi.fn(),
-    listImages: vi.fn().mockResolvedValue([]),
-    uploadImage: vi.fn(),
-    deleteImage: vi.fn(),
+    listAssets: vi.fn().mockResolvedValue([]),
+    uploadAsset: vi.fn(),
+    deleteAsset: vi.fn(),
     getRawUrl: vi.fn().mockReturnValue(''),
   };
 }
