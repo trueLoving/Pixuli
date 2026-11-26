@@ -45,6 +45,7 @@
     "@capacitor/filesystem": "^7.1.8",
     "@capacitor/share": "^7.0.4",
     "@pixuli/core": "workspace:*",
+    "@pixuli/kind-image": "workspace:*",
     "@pixuli/kind-markdown": "workspace:*",
     "@pixuli/kind-pdf": "workspace:*",
     "@pixuli/kind-text": "workspace:*",

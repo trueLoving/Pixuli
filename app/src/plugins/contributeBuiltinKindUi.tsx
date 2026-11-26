@@ -9,16 +9,6 @@ import { getPlatform } from '@/platforms/platform';
 import { showError, showSuccess } from '@/ui/feedback/toast';
 import type { KindPreviewProps, UiContributionRegistry } from './uiRegistry';
 
-function ImagePreview({ asset, src, variant }: KindPreviewProps) {
-  if (!src) return null;
-  if (variant === 'modal') {
-    return (
-      <img src={src} alt={asset.name} className="asset-preview-modal-image" />
-    );
-  }
-  return <img src={src} alt={asset.name} />;
-}
-
 function OtherPreview({ asset, src, variant, t }: KindPreviewProps) {
   const download = () => {
     if (!src) return;
@@ -68,27 +58,14 @@ function OtherPreview({ asset, src, variant, t }: KindPreviewProps) {
   );
 }
 
-/** app 内置 kind UI（image/other）；其余 Kind 由插件贡献 */
+/** app 内置 kind UI（other 降级）；image 等由 Kind 插件贡献 */
 export function contributeBuiltinKindUi(
   registry: UiContributionRegistry,
 ): void {
-  registry.registerPreview({
-    id: 'builtin.image',
-    priority: 0,
-    match: input => input.kind === 'image',
-    component: ImagePreview,
-  });
   registry.registerPreview({
     id: 'builtin.other',
     priority: -10,
     match: input => input.kind === 'other',
     component: OtherPreview,
-  });
-
-  registry.registerThumbnail({
-    id: 'builtin.image',
-    priority: 0,
-    match: input => input.kind === 'image',
-    capture: async url => url || null,
   });
 }

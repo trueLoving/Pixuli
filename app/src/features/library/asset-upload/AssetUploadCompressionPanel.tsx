@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import React from 'react';
-import type { ImageCompressionOptions } from '@pixuli/core/types';
+import type { ImageCompressionOptions } from '@pixuli/kind-image';
 import type { CompressionPreviewMap } from './assetUploadTypes';
 import { formatByteSize } from './assetUploadUtils';
 

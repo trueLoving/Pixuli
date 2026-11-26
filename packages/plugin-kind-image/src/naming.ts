@@ -1,5 +1,4 @@
-import { sanitizeWorkspaceFileName } from '@/features/workspace/workspaceLocalFs';
-import type { OutputMimeType } from '@/features/tools/imageProcessor';
+export type OutputMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
 
 export type ImageConvertPresetId = 'webp-80' | 'long-1600' | 'png-original';
 
@@ -32,6 +31,10 @@ const EXTENSION_BY_FORMAT: Record<OutputMimeType, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
 };
+
+export function sanitizeWorkspaceFileName(name: string): string {
+  return name.replace(/[/\\?%*:|"<>]/g, '_');
+}
 
 export function convertedFileName(
   sourceName: string,

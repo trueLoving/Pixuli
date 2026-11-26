@@ -3,6 +3,7 @@ import {
   type PluginLoadResult,
   type PluginRuntime,
 } from '@pixuli/core/plugin-runtime';
+import { createImageRuntimePlugin } from '@pixuli/kind-image/runtime';
 import { createMarkdownRuntimePlugin } from '@pixuli/kind-markdown/runtime';
 import { createPdfRuntimePlugin } from '@pixuli/kind-pdf/runtime';
 import { createTextRuntimePlugin } from '@pixuli/kind-text/runtime';
@@ -30,6 +31,7 @@ export const pluginRuntime: PluginRuntime = createPluginRuntime(
 
 pluginRuntime.registerBuiltin(createGitHubRuntimePlugin);
 pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
+pluginRuntime.registerBuiltin(createImageRuntimePlugin);
 pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
 pluginRuntime.registerBuiltin(createMarkdownRuntimePlugin);
 pluginRuntime.registerBuiltin(createTextRuntimePlugin);

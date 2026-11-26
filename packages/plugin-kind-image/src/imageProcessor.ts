@@ -1,24 +1,18 @@
 /**
- * Web/Desktop 图片处理服务（纯 Web 技术：Canvas API）
- * 供 Web 与 Electron 渲染进程使用，不依赖 WASM。
- * 相关运行环境依赖由使用方保证，本包不安装图片处理相关依赖，仅以 peerDependency 声明（如需要）。
+ * Web/Desktop 图片处理服务（纯 Canvas API）。
+ * 供库内转换与可选上传压缩复用。
  */
 
+import { compressImage } from './compressImage';
+import { calculateDisplayDimensions } from './dimensions';
+import type { OutputMimeType } from './naming';
 import type {
   ImageCompressionOptions,
-  ImageProcessResult,
   ImageConversionOptions,
-} from '@pixuli/core/types';
-import {
-  calculateDisplayDimensions,
-  getImageDimensions,
-} from '@pixuli/core/utils';
+  ImageProcessResult,
+} from './types';
 
-const DEFAULT_QUALITY = 0.8;
 const DEFAULT_CONVERT_QUALITY = 0.9;
-
-/** 支持的输出 MIME 类型（与 Canvas toBlob 一致） */
-export type OutputMimeType = 'image/jpeg' | 'image/png' | 'image/webp';
 
 function getExtensionFromMime(mime: string): string {
   const map: Record<string, string> = {
@@ -29,9 +23,6 @@ function getExtensionFromMime(mime: string): string {
   return map[mime] ?? 'jpg';
 }
 
-/**
- * 使用 Canvas 将图片绘制并导出为 Blob
- */
 function processImageWithCanvas(
   file: File,
   options: {
@@ -163,74 +154,34 @@ function buildResult(
   };
 }
 
-/**
- * Web 图片处理服务（纯 Canvas 实现）
- */
 export class WebImageProcessorService {
-  /**
-   * 压缩图片（质量 + 可选尺寸）
-   * @param file 原始图片文件
-   * @param options 压缩选项
-   */
   async compress(
     file: File,
     options: ImageCompressionOptions = {},
   ): Promise<ImageProcessResult> {
-    const {
-      quality = DEFAULT_QUALITY,
-      maxWidth,
-      maxHeight,
-      maintainAspectRatio = true,
-      outputFormat = 'image/jpeg',
-      minSizeToCompress,
-    } = options;
-
-    if (minSizeToCompress != null && file.size < minSizeToCompress) {
-      const dims = await getImageDimensions(file);
-      const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-      const uri = URL.createObjectURL(blob);
-      return {
-        uri,
-        blob,
-        file,
-        originalSize: file.size,
-        processedSize: file.size,
-        compressionRatio: 1,
-        width: dims.width,
-        height: dims.height,
-        originalWidth: dims.width,
-        originalHeight: dims.height,
-        mimeType: file.type,
-      };
-    }
-
-    const { blob, originalWidth, originalHeight, width, height } =
-      await processImageWithCanvas(file, {
-        outputFormat: outputFormat as OutputMimeType,
-        quality,
-        maxWidth,
-        maxHeight,
-        maintainAspectRatio,
-      });
-
-    return buildResult(
-      file,
+    const result = await compressImage(file, options);
+    const mimeType =
+      options.outputFormat ?? (result.compressedFile.type || 'image/jpeg');
+    const blob = result.compressedFile;
+    const uri = URL.createObjectURL(blob);
+    return {
+      uri,
       blob,
-      outputFormat,
-      file.size,
-      originalWidth,
-      originalHeight,
-      width,
-      height,
-    );
+      file: result.compressedFile,
+      originalSize: result.originalSize,
+      processedSize: result.compressedSize,
+      compressionRatio:
+        result.originalSize > 0
+          ? result.compressedSize / result.originalSize
+          : 1,
+      width: result.compressedDimensions.width,
+      height: result.compressedDimensions.height,
+      originalWidth: result.originalDimensions.width,
+      originalHeight: result.originalDimensions.height,
+      mimeType,
+    };
   }
 
-  /**
-   * 格式转换（可同时改尺寸与质量）
-   * @param file 原始图片文件
-   * @param outputFormat 目标 MIME 类型
-   * @param options 可选质量与尺寸
-   */
   async convert(
     file: File,
     outputFormat: OutputMimeType,
@@ -267,5 +218,4 @@ export class WebImageProcessorService {
   }
 }
 
-/** 单例，供 Web/Desktop 直接使用 */
 export const webImageProcessorService = new WebImageProcessorService();

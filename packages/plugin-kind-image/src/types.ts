@@ -1,4 +1,7 @@
-/** 位图压缩 / 裁剪 / 转换相关类型（非库内条目契约）。 */
+/**
+ * 位图压缩 / 裁剪 / 转换相关类型（选项与结果形状）。
+ * 实现同包；不进 `@pixuli/core`。
+ */
 
 export interface ImageCropOptions {
   aspectRatio?: number;

@@ -39,7 +39,7 @@
 | app         | 路由、状态、壳、工作区适配、注册 provider/kind、UI      |
 | core        | 类型、Registry、LocalVault / Sync / Kind 契约、平台抽象 |
 | provider-\* | 云 API、sync、`buildPublicUrl`；无 React                |
-| kind-\*     | 文件类型处理（识别、预览引擎；可选 `/ui`）              |
+| kind-\*     | 文件类型（识别、预览；可选 editor/process `/ui`）       |
 
 UI 分层：L1 `features/`+`stores/` · L2 薄 `src/ui` · L3
 `layouts/`+`platforms/`+`boot/`。
@@ -82,8 +82,9 @@ Token 与连接配置仅存客户端。
   [`.cursor/skills/storage-provider`](../.cursor/skills/storage-provider/SKILL.md)。
 - **Kind**：`kindRegistry`（经 Runtime）；契约
   `@pixuli/core/kinds`。Kind 包：`@pixuli/kind-pdf` / `kind-markdown` /
-  `kind-text` / `kind-video`（`/runtime` + `/ui`；文档类经
-  `PluginApi.ui.getKindCapabilities()` 注入 `readFile`）。
+  `kind-text` / `kind-video` / `kind-image`（`/runtime` + `/ui`；文档类经
+  `PluginApi.ui.getKindCapabilities()` 注入 `readFile`；image process 经
+  `readAssetBytes` / `saveProcessedAsset`）。
 - 包 `exports` 直指 `src`；不必先 `build:packages`。
 
 远期 Obsidian 式扩展见 [#126](https://github.com/trueLoving/Pixuli/issues/126)。
@@ -114,9 +115,17 @@ Token 与连接配置仅存客户端。
 
 ## 7. 图片处理
 
-- 入口：资源库处理弹窗（非独立工具路由）。
-- 实现：Canvas（`app/src/features/tools/imageProcessor`）；产物写回 Vault。
-- 旧压缩/转换 Overlay 与设置总开关已移除。
+- 入口：库内 `kind.process`（`@pixuli/kind-image` → `KindProcessHost`）。
+- 实现：Canvas（包内 `compressImage` / `imageProcessor` /
+  `processEngine`）；产物经 `saveProcessedAsset`
+  旁路写回 Vault（仅本机，不入同步队列，不覆盖原件）。
+- 上传预压缩同样调用 `@pixuli/kind-image` 的
+  `compressImage`（产新 File 再导入）。
+- 位图处理类型与 Canvas 工具均在 `@pixuli/kind-image`；core **不含** image
+  process 类型 / `imageUtils`。core 仅保留跨类型资产字段：`ImageCaptureMetadata`
+  （sidecar / AssetItem）与
+  `PlatformAdapter.getImageDimensions`（入库宽高探测）。
+- 对比 `kind.editor`：编辑是原地改内容（如 Markdown），不产新文件。
 
 ---
 

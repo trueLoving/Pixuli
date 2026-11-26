@@ -1,4 +1,4 @@
-import type { ImageCompressionOptions } from '@pixuli/core/types';
+import type { ImageCompressionOptions } from '@pixuli/kind-image';
 
 export interface CompressionPreviewRecord {
   originalSize: number;

@@ -16,6 +16,7 @@ export type {
   PluginKindCapabilities,
   PluginUiHost,
   PluginUiMatchInput,
+  PluginUiPlacement,
 } from './uiHost';
 export { createEmptyPluginUiHost } from './uiHost';
 export { MemoryPluginStateStore } from './memoryStateStore';

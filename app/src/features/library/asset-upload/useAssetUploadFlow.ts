@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import type {
   BatchUploadProgress,
-  ImageCompressionOptions,
-  ImageCropOptions,
   AssetUploadData,
   MultiAssetUploadData,
   WebAssetUploadData,
 } from '@pixuli/core/types';
+import type {
+  ImageCompressionOptions,
+  ImageCropOptions,
+} from '@pixuli/kind-image';
 import {
   showInfo,
   showLoading,

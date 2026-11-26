@@ -42,10 +42,11 @@ describe('getAssetKind', () => {
     expect(getAssetKind({ name: 'log.bin', type: 'text/plain' })).toBe('text');
   });
 
-  it('classifies images by mime or extension', () => {
+  it('classifies images via kind-image plugin when registered', () => {
     expect(getAssetKind({ name: 'photo.jpg', type: 'image/jpeg' })).toBe(
       'image',
     );
+    expect(getAssetKind({ name: 'icon.webp', type: '' })).toBe('image');
   });
 });
 

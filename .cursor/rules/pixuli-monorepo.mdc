@@ -13,7 +13,7 @@ alwaysApply: true
 
 ## 包与导入
 
-- Workspace 包名：`@pixuli/core`、`@pixuli/provider-github`、`@pixuli/provider-gitee`、`@pixuli/kind-pdf`、`@pixuli/kind-markdown`、`@pixuli/kind-text`、`@pixuli/kind-video`
+- Workspace 包名：`@pixuli/core`、`@pixuli/provider-github`、`@pixuli/provider-gitee`、`@pixuli/kind-pdf`、`@pixuli/kind-markdown`、`@pixuli/kind-text`、`@pixuli/kind-video`、`@pixuli/kind-image`
 - UI：`app/src/ui`，导入 `@/ui`（禁止 provider 依赖；kind 预览 UI 可经包 `/ui` 导出）
 - 插件 Runtime：`@pixuli/core/plugin-runtime`；启动 `app/src/plugins/runtime.ts`（Builtin；暂无用户安装）
 - UI 槽位：`app/src/plugins/uiRegistry`；插件 `contribute*` 注册预览/连接等，app 壳不写死 pluginId

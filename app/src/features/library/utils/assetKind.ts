@@ -6,15 +6,9 @@ export type AssetKindFilter = 'all' | AssetKind;
 
 export type { AssetKind };
 
-function extensionOf(name: string): string {
-  const dot = name.lastIndexOf('.');
-  if (dot < 0) return '';
-  return name.slice(dot + 1).toLowerCase();
-}
-
 /**
  * 解析资源类型：优先 Kind 插件 `matchHandler`；
- * 未命中时用 app 内置启发式（image/other；视频与文档类由插件声明）。
+ * 未命中时为 other（image / video / 文档类均由插件声明）。
  */
 export function getAssetKind(
   item: Pick<AssetItem, 'name' | 'type'>,
@@ -26,16 +20,6 @@ export function getAssetKind(
   });
   if (handler) {
     return handler.manifest.kind;
-  }
-
-  const mime = (item.type || '').toLowerCase();
-  const ext = extensionOf(item.name || '');
-
-  if (
-    mime.startsWith('image/') ||
-    ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
-  ) {
-    return 'image';
   }
   return 'other';
 }

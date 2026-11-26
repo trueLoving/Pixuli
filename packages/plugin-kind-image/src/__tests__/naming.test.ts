@@ -5,9 +5,9 @@ import {
   cropOutputMime,
   parentDirOfRelativePath,
   uniqueRelativePath,
-} from '../imageConvertTarget';
+} from '../naming';
 
-describe('imageConvertTarget', () => {
+describe('image naming', () => {
   it('names the new file from the source and the target format', () => {
     expect(convertedFileName('cover.PNG', 'image/webp')).toBe('cover.webp');
     expect(convertedFileName('notes', 'image/jpeg')).toBe('notes.jpg');

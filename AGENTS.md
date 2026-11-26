@@ -29,6 +29,7 @@ packages/plugin-kind-pdf/      → @pixuli/kind-pdf
 packages/plugin-kind-markdown/ → @pixuli/kind-markdown
 packages/plugin-kind-text/     → @pixuli/kind-text
 packages/plugin-kind-video/    → @pixuli/kind-video
+packages/plugin-kind-image/    → @pixuli/kind-image
 ```
 
 连接 UI：`@pixuli/provider-github/ui`、`@pixuli/provider-gitee/ui`（各自维护，无共享 git-ui 包）。
@@ -43,7 +44,8 @@ packages/plugin-kind-video/    → @pixuli/kind-video
 
 - 契约：`@pixuli/core/plugin-runtime`（Manifest / onload·onunload / enable）
 - 启动：`app/src/plugins/runtime.ts`（Builtin Loader；暂无用户安装 UI）
-- UI 槽位：`app/src/plugins/uiRegistry` + `contribute*`（core 无 React）
+- UI 槽位：`app/src/plugins/uiRegistry` + `contribute*`（preview / thumbnail /
+  editor / process；core 无 React）
 - 激活存储：`storageType` + `storageConfig`（非 github/gitee 双轨）
 - 说明：[docs/plugins-runtime.md](docs/plugins-runtime.md)
 
