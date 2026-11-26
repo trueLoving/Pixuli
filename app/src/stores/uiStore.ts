@@ -4,7 +4,7 @@
  */
 
 import { getRepoConfigFromSource } from '@pixuli/core/sources';
-import type { GitHubConfig } from '@pixuli/core/types';
+import type { GitHubConfig } from '@pixuli/provider-github';
 import type { ConnectionPurpose } from '@/features/source-type/connectionPurpose';
 import type { SettingsSection } from '@/features/settings/settingsTypes';
 import {

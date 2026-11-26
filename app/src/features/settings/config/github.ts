@@ -1,4 +1,4 @@
-import type { GitHubConfig } from '@pixuli/core/types';
+import type { GitHubConfig } from '@pixuli/provider-github';
 
 const GITHUB_CONFIG_KEY = 'pixuli-github-config';
 

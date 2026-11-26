@@ -59,7 +59,7 @@ export async function deleteAsset(
   set({ loading: true, error: null });
   const startTime = Date.now();
   try {
-    await storageProvider.deleteImage(fileName);
+    await storageProvider.deleteAsset(fileName);
     const duration = Date.now() - startTime;
     set({
       assets: get().assets.filter(item => item.id !== assetId),
@@ -143,7 +143,7 @@ export async function deleteMultipleAssets(
   const startTime = Date.now();
   try {
     await Promise.all(
-      fileNames.map(fileName => storageProvider.deleteImage(fileName)),
+      fileNames.map(fileName => storageProvider.deleteAsset(fileName)),
     );
     const duration = Date.now() - startTime;
     set({
@@ -254,7 +254,7 @@ export async function updateAsset(
     return false;
   }
 
-  if (!storageProvider.updateImageMetadata) {
+  if (!storageProvider.updateAssetMetadata) {
     if (!options?.quiet) {
       set({ error: '当前存储插件不支持更新元数据', loading: false });
     }
@@ -274,7 +274,7 @@ export async function updateAsset(
       updatedAt: new Date().toISOString(),
     };
 
-    await storageProvider.updateImageMetadata(metadata.name, metadata);
+    await storageProvider.updateAssetMetadata(metadata.name, metadata);
 
     const duration = Date.now() - startTime;
     set({

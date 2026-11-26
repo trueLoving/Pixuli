@@ -6,6 +6,7 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
+    "./types": "./src/types.ts",
     "./register": "./src/register.ts",
     "./manifest": "./src/manifest.ts",
     "./runtime": "./src/runtimePlugin.ts",

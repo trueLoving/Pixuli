@@ -82,12 +82,11 @@ Gitee 等）管自己的图、文档、视频——**云是同步与外链通道
 
 ## D4 · 库内条目类型用 Asset\*
 
-产品对象已是图 / PDF / 视频 / Markdown /
-txt 等同库，契约层条目类型与相关源文件用 `Asset*`（如
-`types/asset.ts`、`assetStore`、`asset-upload/`）；`Image*`
-仅保留位图处理（Compression / Crop / Process / Conversion / Capture，含
-`imageProcess.ts` / `imageUtils` /
-`ImageCropModal`）。`StorageProvider.listImages` 等方法名可后续再迁。
+产品对象已是图 / PDF / 视频 / Markdown / txt 等同库，契约层条目与 Storage API 用
+`Asset*`（如
+`types/asset.ts`、`StorageProvider.listAssets/uploadAsset`、`assetStore`）。位图
+**process**（压缩/裁剪/转换）在 `@pixuli/kind-image`；core 仅保留
+`ImageCaptureMetadata`（sidecar）与栅格宽高探测等跨类型基础设施。
 
 ---
 

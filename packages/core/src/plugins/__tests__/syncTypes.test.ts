@@ -20,11 +20,11 @@ describe('StorageProvider sync type guards', () => {
       },
     },
     configure: () => {},
-    listImages: async () => [],
-    uploadImage: async () => {
+    listAssets: async () => [],
+    uploadAsset: async () => {
       throw new Error('not implemented');
     },
-    deleteImage: async () => {},
+    deleteAsset: async () => {},
     getRawUrl: () => '',
   } satisfies StorageProvider;
 

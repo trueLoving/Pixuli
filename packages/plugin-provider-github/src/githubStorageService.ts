@@ -1,8 +1,5 @@
-import type {
-  GitHubConfig,
-  AssetItem,
-  AssetUploadData,
-} from '@pixuli/core/types';
+import type { AssetItem, AssetUploadData } from '@pixuli/core/types';
+import type { GitHubConfig } from './types';
 import type { StorageProviderConfig } from '@pixuli/core/plugins';
 import {
   DefaultPlatformAdapter,
@@ -39,16 +36,16 @@ export class GitHubStorageService {
     return this.provider.getImageDimensions(file);
   }
 
-  uploadImage(uploadData: AssetUploadData): Promise<AssetItem> {
-    return this.provider.uploadImage(uploadData);
+  uploadAsset(uploadData: AssetUploadData): Promise<AssetItem> {
+    return this.provider.uploadAsset(uploadData);
   }
 
-  deleteImage(_imageId: string, fileName: string): Promise<void> {
-    return this.provider.deleteImage(fileName);
+  deleteAsset(_imageId: string, fileName: string): Promise<void> {
+    return this.provider.deleteAsset(fileName);
   }
 
   getImageList(): Promise<AssetItem[]> {
-    return this.provider.listImages();
+    return this.provider.listAssets();
   }
 
   updateImageInfo(
@@ -59,10 +56,10 @@ export class GitHubStorageService {
     return this.provider.updateImageInfo(imageId, fileName, metadata);
   }
 
-  loadImageMetadata(
+  loadAssetMetadata(
     images: AssetItem[],
-    options?: Parameters<GitHubStorageProvider['loadImageMetadata']>[1],
+    options?: Parameters<GitHubStorageProvider['loadAssetMetadata']>[1],
   ): Promise<AssetItem[]> {
-    return this.provider.loadImageMetadata(images, options);
+    return this.provider.loadAssetMetadata(images, options);
   }
 }

@@ -1,4 +1,4 @@
-import type { GiteeConfig } from '@pixuli/core/types';
+import type { GiteeConfig } from '@pixuli/provider-gitee';
 
 const GITEE_CONFIG_KEY = 'pixuli-gitee-config';
 

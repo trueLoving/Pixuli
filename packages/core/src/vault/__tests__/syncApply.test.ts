@@ -27,11 +27,11 @@ function createMockProvider(
       capabilities: { list: true, upload: true, delete: true, sync: true },
     },
     configure: () => undefined,
-    listImages: async () => [],
-    uploadImage: async () => {
+    listAssets: async () => [],
+    uploadAsset: async () => {
       throw new Error('not used');
     },
-    deleteImage: async () => undefined,
+    deleteAsset: async () => undefined,
     getRawUrl: (path: string) => `https://example.test/${path}`,
     ...overrides,
   } as StorageProvider;
@@ -43,15 +43,16 @@ describe('syncPath', () => {
     expect(isSyncExcludedPath('images/a.jpg')).toBe(false);
   });
 
-  it('recognizes image pdf and video names for sync listing', () => {
+  it('recognizes media and document names for sync listing', () => {
     expect(isSyncableAssetName('a.jpg')).toBe(true);
     expect(isSyncableAssetName('doc.pdf')).toBe(true);
     expect(isSyncableAssetName('clip.mp4')).toBe(true);
-    expect(isSyncableAssetName('notes.txt')).toBe(false);
-    expect(isPullableSyncFile('notes.txt')).toBe(false);
-    expect(
-      isPullableSyncFile('sentences.txt', { listedInManifest: true }),
-    ).toBe(true);
+    expect(isSyncableAssetName('notes.txt')).toBe(true);
+    expect(isSyncableAssetName('readme.md')).toBe(true);
+    expect(isPullableSyncFile('notes.txt')).toBe(true);
+    expect(isPullableSyncFile('custom.bin', { listedInManifest: true })).toBe(
+      true,
+    );
     expect(isPullableSyncFile('.DS_Store', { listedInManifest: true })).toBe(
       false,
     );

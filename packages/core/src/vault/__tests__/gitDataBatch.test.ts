@@ -3,7 +3,7 @@ import type { SyncPushItem } from '../../plugins/types';
 import { createEmptyManifest } from '../../utils/metadataManifest';
 import {
   commitSyncPush,
-  listRepoImageBlobs,
+  listRepoAssetBlobs,
   workspacePathFromRepoPath,
   type GitDataRequest,
   type GitDataTransport,
@@ -136,7 +136,7 @@ describe('gitDataBatch', () => {
         return { truncated: true, tree: [] };
       },
     });
-    const listed = await listRepoImageBlobs(
+    const listed = await listRepoAssetBlobs(
       transport,
       { ...repo, configRoot: 'root' },
       name => name.endsWith('.jpg'),
@@ -191,7 +191,7 @@ describe('gitDataBatch', () => {
         };
       },
     });
-    const listed = await listRepoImageBlobs(
+    const listed = await listRepoAssetBlobs(
       transport,
       { ...repo, configRoot: 'root' },
       name => name.endsWith('.jpg'),

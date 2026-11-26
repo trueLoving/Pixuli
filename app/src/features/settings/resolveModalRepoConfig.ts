@@ -3,7 +3,8 @@ import {
   resolveSourceDisplay,
   type StoredSourceEntry,
 } from '@pixuli/core/sources';
-import type { GiteeConfig, GitHubConfig } from '@pixuli/core/types';
+import type { GitHubConfig } from '@pixuli/provider-github';
+import type { GiteeConfig } from '@pixuli/provider-gitee';
 
 type RepoConfigFields = Pick<
   GitHubConfig,
