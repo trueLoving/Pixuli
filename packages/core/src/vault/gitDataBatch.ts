@@ -1,6 +1,6 @@
 import type { AssetItem } from '../types/asset';
 import type { SyncPushItem } from '../plugins/types';
-import { buildProviderSidecarPayload } from '../utils/imageCaptureMetadata';
+import { buildProviderSidecarPayload } from '../utils/assetCaptureMetadata';
 import {
   basenameRelative,
   createEmptyManifest,

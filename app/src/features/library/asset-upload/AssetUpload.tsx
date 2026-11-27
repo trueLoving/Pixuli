@@ -5,12 +5,7 @@ import type {
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
-import type {
-  ImageCompressionOptions,
-  ImageCropOptions,
-} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './nativePickers';
-import ImageCropModal from './ImageCropModal';
 import { AssetUploadBatchProgress } from './AssetUploadBatchProgress';
 import { AssetUploadConfirmForm } from './AssetUploadConfirmForm';
 import { AssetUploadDropzone } from './AssetUploadDropzone';
@@ -22,10 +17,6 @@ interface AssetUploadProps {
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   t?: (key: string) => string;
-  enableCrop?: boolean;
-  cropOptions?: ImageCropOptions;
-  enableCompression?: boolean;
-  compressionOptions?: ImageCompressionOptions;
   nativePickers?: NativeImagePickers;
   defaultFolder?: string;
   initialFiles?: File[];
@@ -44,20 +35,6 @@ const AssetUpload: React.FC<AssetUploadProps> = props => {
         currentData={flow.currentData}
         fileDimensions={flow.fileDimensions}
         previewUrls={flow.previewUrls}
-        enableCrop={flow.enableCrop}
-        enableCompression={flow.enableCompression}
-        userWantsCrop={flow.userWantsCrop}
-        userWantsCompress={flow.userWantsCompress}
-        calculatingCompression={flow.calculatingCompression}
-        showCompressionConfig={flow.showCompressionConfig}
-        userCompressionConfig={flow.userCompressionConfig}
-        compressionPreview={flow.compressionPreview}
-        onCropToggle={flow.setUserWantsCrop}
-        onCompressionToggle={flow.handleCompressionToggle}
-        onToggleCompressionConfig={() =>
-          flow.setShowCompressionConfig(open => !open)
-        }
-        onCompressionConfigChange={flow.handleCompressionConfigChange}
         loading={flow.loading}
         destinationFolder={flow.destinationFolder}
         translate={flow.translate}
@@ -77,27 +54,6 @@ const AssetUpload: React.FC<AssetUploadProps> = props => {
 
   return (
     <>
-      {flow.showCropModal && flow.cropFile ? (
-        <ImageCropModal
-          src={URL.createObjectURL(flow.cropFile)}
-          fileName={flow.cropFile.name}
-          originalFile={flow.cropFile}
-          onCropComplete={file => {
-            void flow.handleCropComplete(file);
-          }}
-          onSkipCrop={file => {
-            void flow.handleSkipCrop(file);
-          }}
-          onCancel={flow.handleCropCancel}
-          t={flow.translate}
-          aspectRatio={flow.cropOptions?.aspectRatio}
-          minWidth={flow.cropOptions?.minWidth}
-          minHeight={flow.cropOptions?.minHeight}
-          maxWidth={flow.cropOptions?.maxWidth}
-          maxHeight={flow.cropOptions?.maxHeight}
-        />
-      ) : null}
-
       {flow.showProgress && flow.batchUploadProgress ? (
         <AssetUploadBatchProgress
           batchUploadProgress={flow.batchUploadProgress}
@@ -109,8 +65,10 @@ const AssetUpload: React.FC<AssetUploadProps> = props => {
           getRootProps={flow.getRootProps}
           getInputProps={flow.getInputProps}
           isDragActive={flow.isDragActive}
-          enableCrop={flow.enableCrop}
-          nativePickers={flow.nativePickers}
+          ingestEnabled={Boolean(flow.ingestAccept)}
+          ingestTypesLabel={flow.ingestTypesLabel}
+          showCamera={Boolean(flow.nativeSourceButtons?.camera)}
+          showGallery={Boolean(flow.nativeSourceButtons?.gallery)}
           translate={flow.translate}
           onNativePick={source => {
             void flow.handleNativePick(source);

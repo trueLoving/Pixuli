@@ -20,6 +20,17 @@
   outline: none;
 }
 
+.asset-upload-dropzone.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.asset-upload-dropzone.is-disabled:hover,
+.asset-upload-dropzone.is-disabled:focus-visible {
+  border-color: var(--pix-border-strong);
+  background: var(--pix-bg-subtle);
+}
+
 .asset-upload-content {
   display: flex;
   flex-direction: column;

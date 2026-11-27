@@ -4,8 +4,7 @@ import type {
   MultiAssetUploadData,
   WebAssetUploadData,
 } from '@pixuli/core/types';
-import { AssetUploadCompressionPanel } from './AssetUploadCompressionPanel';
-import type { AssetUploadCompressionPanelProps } from './AssetUploadCompressionPanel';
+import { getRegisteredKindIngestInputAttr } from './kindIngestAccept';
 import {
   fileTypeLabel,
   formatByteSize,
@@ -15,18 +14,12 @@ import './AssetUploadConfirmForm.css';
 
 type UploadFormData = WebAssetUploadData | MultiAssetUploadData;
 
-export interface AssetUploadConfirmFormProps
-  extends Omit<
-    AssetUploadCompressionPanelProps,
-    'files' | 'enableCrop' | 'enableCompression'
-  > {
+export interface AssetUploadConfirmFormProps {
   files: File[];
   isMultipleUpload: boolean;
   currentData: UploadFormData;
   fileDimensions: Record<string, { width: number; height: number }>;
   previewUrls: Map<string, string>;
-  enableCrop?: boolean;
-  enableCompression?: boolean;
   loading: boolean;
   destinationFolder: string;
   translate: (key: string) => string;
@@ -47,8 +40,6 @@ export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
   currentData,
   fileDimensions,
   previewUrls,
-  enableCrop = false,
-  enableCompression = false,
   loading,
   destinationFolder,
   translate,
@@ -58,9 +49,9 @@ export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
   onRemoveFile,
   onAppendFiles,
   onFieldChange,
-  ...compressionProps
 }) => {
   const addMoreRef = React.useRef<HTMLInputElement>(null);
+  const acceptAttr = getRegisteredKindIngestInputAttr();
 
   return (
     <div className="asset-upload-form-container">
@@ -89,6 +80,7 @@ export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
               type="button"
               className="asset-upload-add-more"
               onClick={() => addMoreRef.current?.click()}
+              disabled={!acceptAttr}
             >
               {translate('image.upload.addMore')}
             </button>
@@ -97,7 +89,7 @@ export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
               type="file"
               multiple
               hidden
-              accept="image/*,video/*,application/pdf,.txt,.md,.json,.zip"
+              accept={acceptAttr}
               onChange={event => {
                 const picked = event.target.files
                   ? Array.from(event.target.files)
@@ -167,13 +159,6 @@ export const AssetUploadConfirmForm: React.FC<AssetUploadConfirmFormProps> = ({
               );
             })}
           </div>
-
-          <AssetUploadCompressionPanel
-            files={files}
-            enableCrop={enableCrop}
-            enableCompression={enableCompression}
-            {...compressionProps}
-          />
 
           <p className="asset-upload-destination">
             {translate('image.upload.folder')}

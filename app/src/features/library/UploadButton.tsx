@@ -6,10 +6,6 @@ import type {
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
-import type {
-  ImageCompressionOptions,
-  ImageCropOptions,
-} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './asset-upload/nativePickers';
 import AssetUploadModal from './asset-upload/AssetUploadModal';
 import './UploadButton.css';
@@ -25,14 +21,6 @@ export interface UploadButtonProps {
   batchUploadProgress?: BatchUploadProgress | null;
   /** 翻译函数 */
   t?: (key: string) => string;
-  /** 是否启用裁剪 */
-  enableCrop?: boolean;
-  /** 裁剪选项 */
-  cropOptions?: ImageCropOptions;
-  /** 是否启用压缩 */
-  enableCompression?: boolean;
-  /** 压缩选项 */
-  compressionOptions?: ImageCompressionOptions;
   /** 自定义 CSS 类名 */
   className?: string;
   /** Capacitor 原生选图 */
@@ -55,10 +43,6 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
       onUploadMultipleAssets,
       batchUploadProgress,
       t,
-      enableCrop = false,
-      cropOptions,
-      enableCompression = false,
-      compressionOptions,
       className = '',
       nativePickers,
       defaultFolder,
@@ -131,10 +115,6 @@ const UploadButton = forwardRef<UploadButtonHandle, UploadButtonProps>(
             loading={false}
             batchUploadProgress={batchUploadProgress}
             t={t}
-            enableCrop={enableCrop}
-            cropOptions={cropOptions}
-            enableCompression={enableCompression}
-            compressionOptions={compressionOptions}
             nativePickers={nativePickers}
             defaultFolder={defaultFolder}
             initialFiles={seedFiles ?? undefined}

@@ -121,12 +121,12 @@ Token 与连接配置仅存客户端。
 - 实现：Canvas（包内 `compressImage` / `imageProcessor` /
   `processEngine`）；产物经 `saveProcessedAsset`
   旁路写回 Vault（仅本机，不入同步队列，不覆盖原件）。
-- 上传预压缩同样调用 `@pixuli/kind-image` 的
-  `compressImage`（产新 File 再导入）。
+- **上传流不做处理**：选文件 → 确认 → 直接入库；裁剪/压缩等走 process。
 - 位图处理类型与 Canvas 工具均在 `@pixuli/kind-image`；core **不含**
   Kind 处理逻辑。
+- Kind `manifest.ingest` 声明 upload accept；App 按已注册 Kind 与平台能力取交。
 - core 资产中立面：`StorageProvider.listAssets/uploadAsset/...`、共享
-  `utils/mime`（MIME / 默认同步扩展名）、`ImageCaptureMetadata`（sidecar）、
+  `utils/mime`（MIME / 默认同步扩展名）、`AssetCaptureMetadata`（sidecar）、
   `PlatformAdapter.getImageDimensions`（栅格宽高探测，失败为 0×0）。
 - 对比 `kind.editor`：编辑是原地改内容（如 Markdown），不产新文件。
 

@@ -5,6 +5,12 @@ export const pdfKindManifest: KindPluginManifest = {
   name: 'PDF',
   version: '0.1.0',
   kind: 'pdf',
+  ingest: {
+    accept: {
+      'application/pdf': ['.pdf'],
+    },
+    preferredSources: ['file'],
+  },
   capabilities: {
     preview: true,
     thumbnail: true,

@@ -5,6 +5,13 @@ export const markdownKindManifest: KindPluginManifest = {
   name: 'Markdown',
   version: '0.1.0',
   kind: 'markdown',
+  ingest: {
+    accept: {
+      'text/markdown': ['.md', '.markdown'],
+      'text/x-markdown': ['.md', '.markdown'],
+    },
+    preferredSources: ['file'],
+  },
   capabilities: {
     preview: true,
     thumbnail: false,

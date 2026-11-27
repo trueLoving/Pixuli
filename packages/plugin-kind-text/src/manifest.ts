@@ -5,6 +5,12 @@ export const textKindManifest: KindPluginManifest = {
   name: 'Plain Text',
   version: '0.1.0',
   kind: 'text',
+  ingest: {
+    accept: {
+      'text/plain': ['.txt'],
+    },
+    preferredSources: ['file'],
+  },
   capabilities: {
     preview: true,
     thumbnail: false,

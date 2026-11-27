@@ -1,15 +1,17 @@
-import type { ImageCaptureMetadata } from '@pixuli/core/types';
-import type { ImageCaptureSource } from '@pixuli/core/types';
-import { buildImageCaptureMetadata } from '@pixuli/core/utils';
+import type {
+  AssetCaptureMetadata,
+  AssetCaptureSource,
+} from '@pixuli/core/types';
+import { buildAssetCaptureMetadata } from '@pixuli/core/utils';
 import { isNativeMobile } from '@/platforms/platform';
 import {
   buildCaptureMetadataFromFile,
   mapCapacitorExif,
-} from './imageCaptureMetadata';
+} from './assetCaptureMetadata';
 
 export interface NativePickedImage {
   file: File;
-  captureMetadata: ImageCaptureMetadata;
+  captureMetadata: AssetCaptureMetadata;
 }
 
 type CapacitorPhoto = {
@@ -69,7 +71,7 @@ function basename(path: string): string {
 
 async function photoToPickedImage(
   photo: CapacitorPhoto,
-  source: ImageCaptureSource,
+  source: AssetCaptureSource,
   fallbackName: string,
 ): Promise<NativePickedImage | null> {
   if (!photo.webPath) {
@@ -91,7 +93,7 @@ async function photoToPickedImage(
     localPath: photo.path,
   });
 
-  const captureMetadata = buildImageCaptureMetadata({
+  const captureMetadata = buildAssetCaptureMetadata({
     source,
     fileName: file.name,
     mimeType: file.type || undefined,

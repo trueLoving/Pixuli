@@ -1,4 +1,4 @@
-import type { ImageCaptureMetadata } from '../types/imageCapture';
+import type { AssetCaptureMetadata } from '../types/assetCapture';
 
 export const METADATA_DIR = '.metadata';
 export const MANIFEST_FILE = 'manifest.json';
@@ -15,7 +15,7 @@ export interface MetadataManifestFileEntry {
   type?: string;
   createdAt?: string;
   updatedAt?: string;
-  capture?: ImageCaptureMetadata;
+  capture?: AssetCaptureMetadata;
 }
 
 export interface MetadataManifest {

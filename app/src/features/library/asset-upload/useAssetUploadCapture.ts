@@ -1,14 +1,14 @@
 import { useCallback, useRef } from 'react';
-import type { ImageCaptureMetadata } from '@pixuli/core/types';
+import type { AssetCaptureMetadata } from '@pixuli/core/types';
 
-/** 上传流程中按 File 对象暂存 EXIF/拍摄元数据（WeakMap 避免泄漏） */
+/** 上传流程中按 File 对象暂存采集元数据（WeakMap 避免泄漏） */
 export function useAssetUploadCapture() {
   const captureMetadataByFileRef = useRef(
-    new WeakMap<File, ImageCaptureMetadata>(),
+    new WeakMap<File, AssetCaptureMetadata>(),
   );
 
   const rememberCaptureMetadata = useCallback(
-    (file: File, metadata?: ImageCaptureMetadata) => {
+    (file: File, metadata?: AssetCaptureMetadata) => {
       if (metadata) {
         captureMetadataByFileRef.current.set(file, metadata);
       }
@@ -25,7 +25,7 @@ export function useAssetUploadCapture() {
   }, []);
 
   const getCaptureMetadata = useCallback(
-    (file: File): ImageCaptureMetadata | undefined =>
+    (file: File): AssetCaptureMetadata | undefined =>
       captureMetadataByFileRef.current.get(file),
     [],
   );

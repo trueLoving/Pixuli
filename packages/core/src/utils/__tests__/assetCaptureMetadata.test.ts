@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildImageCaptureMetadata,
+  buildAssetCaptureMetadata,
   buildProviderSidecarPayload,
-} from '../imageCaptureMetadata';
+} from '../assetCaptureMetadata';
 
-describe('imageCaptureMetadata', () => {
-  it('buildImageCaptureMetadata prefers takenAt over file mtime', () => {
-    const meta = buildImageCaptureMetadata({
+describe('assetCaptureMetadata', () => {
+  it('buildAssetCaptureMetadata prefers takenAt over file mtime', () => {
+    const meta = buildAssetCaptureMetadata({
       source: 'camera',
       fileName: 'photo.jpg',
       takenAt: '2024-01-02T03:04:05.000Z',
@@ -21,7 +21,7 @@ describe('imageCaptureMetadata', () => {
   });
 
   it('buildProviderSidecarPayload includes capture when present', () => {
-    const capture = buildImageCaptureMetadata({
+    const capture = buildAssetCaptureMetadata({
       source: 'gallery',
       fileName: 'a.jpg',
     });

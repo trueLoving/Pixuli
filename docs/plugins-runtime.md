@@ -50,8 +50,11 @@
   process**：editor 改原文件内容（`readFile`/`writeFile`）；process变换文件本体并旁路产新文件（`readAssetBytes`/`saveProcessedAsset`）。Inspector用
   `hasKindEditor` / `hasKindProcess`
   决定入口；写回本机、**不自动 push**。元数据编辑（名称/标签）仍为 App 通用能力，不走 Kind 槽。
-- 图片压缩/转换/尺寸工具与处理类型均在 `@pixuli/kind-image`（含上传预压缩）；
-  **core 不含**具体文件类型的处理逻辑。采集元数据（`ImageCaptureMetadata`）属资产/sidecar 契约，仍在 core。
+- 图片压缩/转换/尺寸工具与处理类型均在 `@pixuli/kind-image`（经
+  `kind.process`；**上传流不做预压缩/裁剪**）；**core 不含**具体文件类型的处理逻辑。采集元数据（`AssetCaptureMetadata`）属资产/sidecar 契约，仍在 core。Kind
+  `manifest.ingest` 声明 upload accept 与逻辑采集来源 `preferredSources`（`file`
+  / `gallery` /
+  `camera`）；**平台能力由 App 适配器提供**，二者取交后展示入口。确认后直接入库，文案展示由 accept 推导的扩展名。
 - `PluginApi.ui`（`PluginUiHost`）由 app 注入；官方插件在
   **onload 贡献 UI、onunload 注销**；`setEnabled(false)`
   同步卸 capability 与 UI。app 仅保留 `builtin.other`
