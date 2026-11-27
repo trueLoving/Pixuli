@@ -1,8 +1,8 @@
 /**
  * 库内条目与上传/编辑契约（图 / PDF / 视频 / Markdown / txt 等）。
- * 采集元数据见 `imageCapture.ts`；位图压缩/转换类型在 `@pixuli/kind-image`。
+ * 采集元数据见 `assetCapture.ts`；位图压缩/转换类型在 `@pixuli/kind-image`。
  */
-import type { ImageCaptureMetadata } from './imageCapture';
+import type { AssetCaptureMetadata } from './assetCapture';
 
 /** REF-607：与 `StorageProviderPublicUrl.resolveLinkKind` 一致 */
 export type LinkKind = 'local' | 'remote-raw';
@@ -41,7 +41,7 @@ export interface AssetItem {
   /** 本地工作区条目同步态（仅 local 列表模式） */
   syncState?: AssetSyncState;
   /** REF-511 #141：原生选图/拍照采集上下文 */
-  captureMetadata?: ImageCaptureMetadata;
+  captureMetadata?: AssetCaptureMetadata;
 }
 
 export interface AssetUploadData {
@@ -55,7 +55,7 @@ export interface AssetUploadData {
   /** 远端存储相对路径（含子目录）；sync / 指定路径上传时使用 */
   storagePath?: string;
   /** REF-511 #141：拍照/选图采集上下文 */
-  captureMetadata?: ImageCaptureMetadata;
+  captureMetadata?: AssetCaptureMetadata;
 }
 
 /** Web/Desktop 上传表单：file 恒为 File */
@@ -94,7 +94,7 @@ export interface MultiAssetUploadData {
   /** 目标文件夹（相对工作区路径）；默认当前资源库范围 */
   targetFolder?: string;
   /** 与 `files` 同序；无元数据项可省略 */
-  captureMetadataList?: (ImageCaptureMetadata | undefined)[];
+  captureMetadataList?: (AssetCaptureMetadata | undefined)[];
 }
 
 export interface BatchUploadProgress {

@@ -5,10 +5,6 @@ import type {
   AssetUploadData,
   MultiAssetUploadData,
 } from '@pixuli/core/types';
-import type {
-  ImageCompressionOptions,
-  ImageCropOptions,
-} from '@pixuli/kind-image';
 import type { NativeImagePickers } from './nativePickers';
 import { useSuspendLibraryShortcuts } from '../useSuspendLibraryShortcuts';
 import AssetUpload from './AssetUpload';
@@ -29,14 +25,6 @@ export interface AssetUploadModalProps {
   batchUploadProgress?: BatchUploadProgress | null;
   /** 翻译函数 */
   t?: (key: string) => string;
-  /** 是否启用裁剪 */
-  enableCrop?: boolean;
-  /** 裁剪选项 */
-  cropOptions?: ImageCropOptions;
-  /** 是否启用压缩 */
-  enableCompression?: boolean;
-  /** 压缩选项 */
-  compressionOptions?: ImageCompressionOptions;
   /** Capacitor 原生选图 */
   nativePickers?: NativeImagePickers;
   /** 默认目标文件夹（当前资源库范围） */
@@ -54,10 +42,6 @@ const AssetUploadModal: React.FC<AssetUploadModalProps> = ({
   loading = false,
   batchUploadProgress,
   t,
-  enableCrop = false,
-  cropOptions,
-  enableCompression = false,
-  compressionOptions,
   nativePickers,
   defaultFolder,
   initialFiles,
@@ -121,10 +105,6 @@ const AssetUploadModal: React.FC<AssetUploadModalProps> = ({
             loading={loading}
             batchUploadProgress={batchUploadProgress}
             t={t}
-            enableCrop={enableCrop}
-            cropOptions={cropOptions}
-            enableCompression={enableCompression}
-            compressionOptions={compressionOptions}
             nativePickers={nativePickers}
             defaultFolder={defaultFolder}
             initialFiles={initialFiles}

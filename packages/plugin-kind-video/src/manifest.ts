@@ -5,6 +5,12 @@ export const videoKindManifest: KindPluginManifest = {
   name: 'Video',
   version: '0.1.0',
   kind: 'video',
+  ingest: {
+    accept: {
+      'video/*': ['.mp4', '.webm', '.mov', '.mkv', '.avi'],
+    },
+    preferredSources: ['file', 'gallery'],
+  },
   capabilities: {
     preview: true,
     thumbnail: true,

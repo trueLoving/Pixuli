@@ -204,18 +204,15 @@ describe('UploadButton', () => {
   });
 
   describe('props 传递', () => {
-    it('应该接受 enableCrop prop', () => {
+    it('应该接受 nativePickers prop', () => {
       const { container } = render(
-        <UploadButton {...defaultProps} enableCrop={true} />,
-      );
-
-      const button = container.querySelector('.upload-button');
-      expect(button).toBeInTheDocument();
-    });
-
-    it('应该接受 enableCompression prop', () => {
-      const { container } = render(
-        <UploadButton {...defaultProps} enableCompression={true} />,
+        <UploadButton
+          {...defaultProps}
+          nativePickers={{
+            pickFromCamera: async () => [],
+            pickFromGallery: async () => [],
+          }}
+        />,
       );
 
       const button = container.querySelector('.upload-button');

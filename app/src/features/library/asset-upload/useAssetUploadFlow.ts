@@ -6,10 +6,6 @@ import type {
   MultiAssetUploadData,
   WebAssetUploadData,
 } from '@pixuli/core/types';
-import type {
-  ImageCompressionOptions,
-  ImageCropOptions,
-} from '@pixuli/kind-image';
 import {
   showInfo,
   showLoading,
@@ -22,8 +18,13 @@ import {
   isPreviewableMedia,
   resolveDefaultFolder,
 } from './assetUploadUtils';
+import {
+  filterFilesAcceptedByRegisteredKinds,
+  getAvailableIngestSources,
+  getRegisteredKindIngestAccept,
+  getRegisteredKindIngestTypesLabel,
+} from './kindIngestAccept';
 import { useAssetUploadCapture } from './useAssetUploadCapture';
-import { useAssetUploadCompression } from './useAssetUploadCompression';
 
 export interface UseAssetUploadFlowOptions {
   onUploadAsset: (data: AssetUploadData) => Promise<unknown>;
@@ -31,10 +32,6 @@ export interface UseAssetUploadFlowOptions {
   loading: boolean;
   batchUploadProgress?: BatchUploadProgress | null;
   translate: (key: string) => string;
-  enableCrop?: boolean;
-  cropOptions?: ImageCropOptions;
-  enableCompression?: boolean;
-  compressionOptions?: ImageCompressionOptions;
   nativePickers?: NativeImagePickers;
   defaultFolder?: string;
   initialFiles?: File[];
@@ -47,10 +44,6 @@ export function useAssetUploadFlow({
   loading,
   batchUploadProgress,
   translate,
-  enableCrop = false,
-  cropOptions,
-  enableCompression = false,
-  compressionOptions,
   nativePickers,
   defaultFolder,
   initialFiles,
@@ -69,58 +62,35 @@ export function useAssetUploadFlow({
     useState<MultiAssetUploadData | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isMultiple, setIsMultiple] = useState(false);
-  const [showCropModal, setShowCropModal] = useState(false);
-  const [cropFile, setCropFile] = useState<File | null>(null);
-  const [cropFileIndex, setCropFileIndex] = useState<number>(-1);
   const [fileDimensions, setFileDimensions] = useState<
     Record<string, { width: number; height: number }>
   >({});
-  const [userWantsCrop, setUserWantsCrop] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   const {
     rememberCaptureMetadata,
-    transferCaptureMetadata,
     getCaptureMetadata,
     buildCaptureMetadataList,
   } = useAssetUploadCapture();
 
-  const {
-    userWantsCompress,
-    compressionPreview,
-    calculatingCompression,
-    showCompressionConfig,
-    userCompressionConfig,
-    setShowCompressionConfig,
-    compressFileIfNeeded,
-    handleCompressionToggle: toggleCompressionPreview,
-    handleCompressionConfigChange: applyCompressionConfig,
-    resetCompressionState,
-  } = useAssetUploadCompression({
-    enableCompression,
-    compressionOptions,
-    fileDimensions,
-  });
-
-  const getPreviewFiles = useCallback((): File[] => {
-    if (uploadData) return [uploadData.file];
-    if (multiUploadData) return multiUploadData.files;
-    return [];
-  }, [uploadData, multiUploadData]);
-
-  const handleCompressionToggle = useCallback(
-    (checked: boolean) => {
-      toggleCompressionPreview(checked, getPreviewFiles());
-    },
-    [toggleCompressionPreview, getPreviewFiles],
+  const ingestAccept = useMemo(() => getRegisteredKindIngestAccept(), []);
+  const ingestTypesLabel = useMemo(
+    () => getRegisteredKindIngestTypesLabel(),
+    [],
   );
-
-  const handleCompressionConfigChange = useCallback(
-    (config: ImageCompressionOptions) => {
-      applyCompressionConfig(config, getPreviewFiles());
-    },
-    [applyCompressionConfig, getPreviewFiles],
-  );
+  /** Kind 声明 ∩ 平台能力 */
+  const availableSources = useMemo(() => getAvailableIngestSources(), []);
+  const nativeSourceButtons = useMemo(() => {
+    if (!nativePickers) return null;
+    return {
+      camera: availableSources.includes('camera')
+        ? nativePickers.pickFromCamera
+        : undefined,
+      gallery: availableSources.includes('gallery')
+        ? nativePickers.pickFromGallery
+        : undefined,
+    };
+  }, [nativePickers, availableSources]);
 
   const clearSingleDimensions = useCallback(
     (originalName: string, finalName: string) => {
@@ -191,24 +161,24 @@ export function useAssetUploadFlow({
   );
 
   const performMultiUpload = useCallback(
-    async (processedFiles: File[], meta: MultiAssetUploadData) => {
+    async (files: File[], meta: MultiAssetUploadData) => {
       const loadingToast = showLoading(
-        `${translate('image.upload.uploadingMultiple')} ${processedFiles.length} ${translate('image.upload.file')}...`,
+        `${translate('image.upload.uploadingMultiple')} ${files.length} ${translate('image.upload.file')}...`,
       );
       try {
         await onUploadMultipleAssets({
-          files: processedFiles,
+          files,
           name: '',
           description: meta.description || '',
           tags: meta.tags || [],
           targetFolder: resolveDefaultFolder(defaultFolder),
-          captureMetadataList: buildCaptureMetadataList(processedFiles),
+          captureMetadataList: buildCaptureMetadataList(files),
         });
         updateLoadingToSuccess(
           loadingToast,
           translate('image.upload.successToastMultiple').replace(
             '{count}',
-            String(processedFiles.length),
+            String(files.length),
           ),
         );
         if (mountedRef.current) {
@@ -231,40 +201,26 @@ export function useAssetUploadFlow({
     ],
   );
 
-  const compressWithToast = useCallback(
-    async (files: File[], message: string): Promise<File[]> => {
-      const compressionToast = showLoading(message);
-      try {
-        const processed = await Promise.all(
-          files.map(async file => {
-            const compressed = await compressFileIfNeeded(file, true);
-            transferCaptureMetadata(file, compressed);
-            return compressed;
-          }),
-        );
-        updateLoadingToSuccess(compressionToast, '图片压缩完成');
-        return processed;
-      } catch (error) {
-        updateLoadingToError(
-          compressionToast,
-          `压缩失败: ${error instanceof Error ? error.message : '未知错误'}`,
-        );
-        return files;
-      }
-    },
-    [compressFileIfNeeded, transferCaptureMetadata],
-  );
-
   const selectFiles = useCallback(
     async (
-      acceptedFiles: File[],
+      incoming: File[],
       meta?: { description: string; tags: string[] },
     ) => {
-      if (acceptedFiles.length === 0) return;
+      const { accepted, rejected } =
+        filterFilesAcceptedByRegisteredKinds(incoming);
+      if (rejected.length > 0) {
+        showInfo(
+          translate('image.upload.unsupportedByKind').replace(
+            '{count}',
+            String(rejected.length),
+          ),
+        );
+      }
+      if (accepted.length === 0) return;
 
       const dimensionsMap: Record<string, { width: number; height: number }> =
         {};
-      for (const file of acceptedFiles) {
+      for (const file of accepted) {
         try {
           dimensionsMap[file.name] = await getImageDimensions(file);
         } catch {
@@ -277,14 +233,12 @@ export function useAssetUploadFlow({
       const targetFolder = resolveDefaultFolder(defaultFolder);
       if (!meta) {
         setFileDimensions(dimensionsMap);
-        resetCompressionState();
-        setUserWantsCrop(false);
       } else {
         setFileDimensions(current => ({ ...current, ...dimensionsMap }));
       }
 
-      if (acceptedFiles.length === 1) {
-        const file = acceptedFiles[0];
+      if (accepted.length === 1) {
+        const file = accepted[0];
         setMultiUploadData(null);
         setUploadData({
           file,
@@ -297,7 +251,7 @@ export function useAssetUploadFlow({
       } else {
         setUploadData(null);
         setMultiUploadData({
-          files: acceptedFiles,
+          files: accepted,
           name: '',
           description,
           tags,
@@ -307,7 +261,7 @@ export function useAssetUploadFlow({
       }
       setShowForm(true);
     },
-    [defaultFolder, resetCompressionState],
+    [defaultFolder, translate],
   );
 
   const onDrop = useCallback(
@@ -337,7 +291,6 @@ export function useAssetUploadFlow({
         : (multiUploadData?.files ?? []);
       const next = existing.filter((_, fileIndex) => fileIndex !== index);
       if (next.length === 0) {
-        resetCompressionState();
         setUploadData(null);
         setMultiUploadData(null);
         setShowForm(false);
@@ -350,7 +303,7 @@ export function useAssetUploadFlow({
         tags: uploadData?.tags ?? multiUploadData?.tags ?? [],
       });
     },
-    [uploadData, multiUploadData, resetCompressionState, selectFiles],
+    [uploadData, multiUploadData, selectFiles],
   );
 
   useEffect(() => {
@@ -390,49 +343,23 @@ export function useAssetUploadFlow({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg'],
-      'application/pdf': ['.pdf'],
-      'video/*': ['.mp4', '.webm', '.mov', '.mkv', '.avi'],
-      'text/plain': ['.txt', '.md'],
-      'application/json': ['.json'],
-      'application/zip': ['.zip'],
-    },
+    accept: ingestAccept,
     multiple: true,
-    onDragEnter: () => {},
-    onDragOver: () => {},
-    onDragLeave: () => {},
+    disabled: !ingestAccept,
+    noClick: !ingestAccept,
+    noDrag: !ingestAccept,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadData) return;
+    await performSingleUpload(uploadData.file, uploadData);
+  };
 
-    let finalFile = uploadData.file;
-    if (userWantsCrop && enableCrop) {
-      setCropFile(finalFile);
-      setCropFileIndex(-1);
-      setShowCropModal(true);
-      setShowForm(false);
-      return;
-    }
-
-    if (userWantsCompress && enableCompression) {
-      const compressionToast = showLoading('正在压缩图片...');
-      try {
-        const compressed = await compressFileIfNeeded(finalFile, true);
-        transferCaptureMetadata(finalFile, compressed);
-        finalFile = compressed;
-        updateLoadingToSuccess(compressionToast, '图片压缩完成');
-      } catch (error) {
-        updateLoadingToError(
-          compressionToast,
-          `压缩失败: ${error instanceof Error ? error.message : '未知错误'}`,
-        );
-      }
-    }
-
-    await performSingleUpload(finalFile, uploadData);
+  const handleMultiSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!multiUploadData) return;
+    await performMultiUpload(multiUploadData.files, multiUploadData);
   };
 
   const handleInputChange = (
@@ -440,29 +367,6 @@ export function useAssetUploadFlow({
     value: string | string[],
   ) => {
     if (uploadData) setUploadData({ ...uploadData, [field]: value });
-  };
-
-  const handleMultiSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!multiUploadData) return;
-
-    if (userWantsCrop && enableCrop && multiUploadData.files.length > 0) {
-      setCropFile(multiUploadData.files[0]);
-      setCropFileIndex(0);
-      setShowCropModal(true);
-      setShowForm(false);
-      return;
-    }
-
-    let processedFiles = multiUploadData.files;
-    if (userWantsCompress && enableCompression) {
-      processedFiles = await compressWithToast(
-        multiUploadData.files,
-        `正在压缩 ${multiUploadData.files.length} 张图片...`,
-      );
-    }
-
-    await performMultiUpload(processedFiles, multiUploadData);
   };
 
   const handleMultiInputChange = (
@@ -475,125 +379,11 @@ export function useAssetUploadFlow({
   };
 
   const handleCancel = useCallback(() => {
-    resetCompressionState();
     setUploadData(null);
     setMultiUploadData(null);
     setShowForm(false);
     setIsMultiple(false);
-    setShowCropModal(false);
-    setCropFile(null);
-    setCropFileIndex(-1);
-  }, [resetCompressionState]);
-
-  const closeCropModal = useCallback(() => {
-    setShowCropModal(false);
-    setCropFile(null);
-    setCropFileIndex(-1);
   }, []);
-
-  const handleCropComplete = async (croppedFile: File) => {
-    if (cropFile) transferCaptureMetadata(cropFile, croppedFile);
-
-    let finalFile = croppedFile;
-    if (userWantsCompress && enableCompression) {
-      try {
-        const compressionToast = showLoading('正在压缩裁剪后的图片...');
-        const compressed = await compressFileIfNeeded(croppedFile, true);
-        transferCaptureMetadata(croppedFile, compressed);
-        finalFile = compressed;
-        updateLoadingToSuccess(compressionToast, '压缩完成');
-      } catch (error) {
-        console.warn('裁剪后压缩失败，使用原文件:', error);
-        finalFile = croppedFile;
-      }
-    }
-
-    if (cropFileIndex === -1) {
-      if (uploadData) {
-        await performSingleUpload(finalFile, uploadData);
-      }
-    } else if (multiUploadData) {
-      const newFiles = [...multiUploadData.files];
-      if (cropFile) transferCaptureMetadata(cropFile, finalFile);
-      newFiles[cropFileIndex] = finalFile;
-
-      if (userWantsCrop && enableCrop) {
-        const nextCropIndex = newFiles.findIndex(
-          (_, idx) => idx > cropFileIndex,
-        );
-        if (nextCropIndex !== -1) {
-          setCropFile(newFiles[nextCropIndex]);
-          setCropFileIndex(nextCropIndex);
-          setMultiUploadData({ ...multiUploadData, files: newFiles });
-          return;
-        }
-      }
-
-      let processedFiles = newFiles;
-      if (userWantsCompress && enableCompression) {
-        processedFiles = await compressWithToast(
-          newFiles,
-          `正在压缩 ${newFiles.length} 张图片...`,
-        );
-      }
-      await performMultiUpload(processedFiles, multiUploadData);
-    }
-
-    closeCropModal();
-  };
-
-  const handleSkipCrop = async (originalFile: File) => {
-    let finalFile = originalFile;
-    if (userWantsCompress && enableCompression) {
-      try {
-        const compressionToast = showLoading('正在压缩图片...');
-        const compressed = await compressFileIfNeeded(originalFile, true);
-        transferCaptureMetadata(originalFile, compressed);
-        finalFile = compressed;
-        updateLoadingToSuccess(compressionToast, '压缩完成');
-      } catch (error) {
-        console.warn('压缩失败，使用原文件:', error);
-        finalFile = originalFile;
-      }
-    }
-
-    if (cropFileIndex === -1) {
-      if (uploadData) await performSingleUpload(finalFile, uploadData);
-    } else if (multiUploadData) {
-      const newFiles = [...multiUploadData.files];
-      if (cropFile) transferCaptureMetadata(cropFile, finalFile);
-      newFiles[cropFileIndex] = finalFile;
-
-      const nextCropIndex = newFiles.findIndex(
-        (_, idx) => idx > cropFileIndex && userWantsCrop,
-      );
-      if (nextCropIndex !== -1 && userWantsCrop && enableCrop) {
-        setCropFile(newFiles[nextCropIndex]);
-        setCropFileIndex(nextCropIndex);
-        setMultiUploadData({ ...multiUploadData, files: newFiles });
-        return;
-      }
-
-      let processedFiles = newFiles;
-      if (userWantsCompress && enableCompression) {
-        processedFiles = await compressWithToast(
-          newFiles,
-          `正在压缩 ${newFiles.length} 张图片...`,
-        );
-      }
-      await performMultiUpload(processedFiles, multiUploadData);
-    }
-
-    closeCropModal();
-  };
-
-  const handleCropCancel = () => {
-    closeCropModal();
-    if (multiUploadData) {
-      setMultiUploadData(null);
-      setIsMultiple(false);
-    }
-  };
 
   const showProgress = Boolean(batchUploadProgress && !showForm);
   const showFormContent = showForm && (uploadData || multiUploadData);
@@ -640,44 +430,29 @@ export function useAssetUploadFlow({
 
   return {
     loading,
-    cropOptions,
-    enableCrop,
-    enableCompression,
     nativePickers,
+    nativeSourceButtons,
     translate,
     batchUploadProgress,
     multiUploadData,
     showProgress,
     showFormContent,
-    showCropModal,
-    cropFile,
     isMultipleUpload,
     files,
     currentData,
     fileDimensions,
     previewUrls,
-    userWantsCrop,
-    userWantsCompress,
-    calculatingCompression,
-    showCompressionConfig,
-    userCompressionConfig,
-    compressionPreview,
     tagInputRef,
     getRootProps,
     getInputProps,
     isDragActive,
-    setUserWantsCrop,
-    handleCompressionToggle,
-    setShowCompressionConfig,
-    handleCompressionConfigChange,
+    ingestAccept,
+    ingestTypesLabel,
     handleSubmit,
     handleMultiSubmit,
     handleCancel,
     appendFiles,
     removeFileAt,
-    handleCropComplete,
-    handleSkipCrop,
-    handleCropCancel,
     handleNativePick,
     handleFormFieldChange,
     destinationFolder: resolveDefaultFolder(defaultFolder),

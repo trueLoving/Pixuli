@@ -1,12 +1,12 @@
 import type {
-  ImageCaptureMetadata,
-  ImageExifSummary,
-  ImageGeoLocation,
-} from '../types/imageCapture';
+  AssetCaptureMetadata,
+  AssetExifSummary,
+  AssetGeoLocation,
+} from '../types/assetCapture';
 import type { AssetItem } from '../types/asset';
 
-export interface BuildImageCaptureMetadataInput {
-  source: ImageCaptureMetadata['source'];
+export interface BuildAssetCaptureMetadataInput {
+  source: AssetCaptureMetadata['source'];
   fileName: string;
   mimeType?: string;
   fileSize?: number;
@@ -15,14 +15,14 @@ export interface BuildImageCaptureMetadataInput {
   localPath?: string;
   fileLastModified?: number;
   takenAt?: string;
-  location?: ImageGeoLocation;
-  exif?: ImageExifSummary;
+  location?: AssetGeoLocation;
+  exif?: AssetExifSummary;
   capturedAt?: string;
 }
 
-export function buildImageCaptureMetadata(
-  input: BuildImageCaptureMetadataInput,
-): ImageCaptureMetadata {
+export function buildAssetCaptureMetadata(
+  input: BuildAssetCaptureMetadataInput,
+): AssetCaptureMetadata {
   const capturedAt = input.capturedAt ?? new Date().toISOString();
   const takenAt =
     input.takenAt ??
@@ -30,7 +30,7 @@ export function buildImageCaptureMetadata(
       ? new Date(input.fileLastModified).toISOString()
       : capturedAt);
 
-  const metadata: ImageCaptureMetadata = {
+  const metadata: AssetCaptureMetadata = {
     source: input.source,
     takenAt,
     capturedAt,

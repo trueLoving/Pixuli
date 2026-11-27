@@ -1,6 +1,8 @@
 export type {
   KindHandler,
   KindHandlerFactory,
+  KindIngestSource,
+  KindIngestSpec,
   KindMatchInput,
   KindPluginManifest,
   KindPluginRegistry,
@@ -10,3 +12,10 @@ export {
   DefaultKindPluginRegistry,
   KindPluginAlreadyRegisteredError,
 } from './registry';
+export {
+  collectPreferredIngestSources,
+  formatIngestAcceptTypeLabels,
+  formatIngestAcceptTypesLabel,
+  ingestAcceptToInputAttr,
+  mergeKindIngestAccept,
+} from './ingest';

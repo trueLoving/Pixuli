@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildCaptureMetadataFromFile,
   mapCapacitorExif,
-} from '../imageCaptureMetadata';
+} from '../assetCaptureMetadata';
 
 vi.mock('exifr', () => ({
   default: {
@@ -10,7 +10,7 @@ vi.mock('exifr', () => ({
   },
 }));
 
-describe('imageCaptureMetadata (pixuli)', () => {
+describe('assetCaptureMetadata (mobile)', () => {
   it('mapCapacitorExif maps GPS and camera fields', () => {
     const mapped = mapCapacitorExif({
       Make: 'Pixel',

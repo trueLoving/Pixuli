@@ -1,15 +1,17 @@
-import { Camera, Crop, Images, Upload } from 'lucide-react';
+import { Camera, Images, Upload } from 'lucide-react';
 import React from 'react';
 import type { DropzoneRootProps, DropzoneInputProps } from 'react-dropzone';
-import type { NativeImagePickers } from './nativePickers';
 import './AssetUploadDropzone.css';
 
 export interface AssetUploadDropzoneProps {
   getRootProps: <T extends DropzoneRootProps>(props?: T) => T;
   getInputProps: <T extends DropzoneInputProps>(props?: T) => T;
   isDragActive: boolean;
-  enableCrop?: boolean;
-  nativePickers?: NativeImagePickers;
+  ingestEnabled: boolean;
+  /** 由 Kind ingest.accept 推导，如 `JPG · PNG · PDF` */
+  ingestTypesLabel?: string;
+  showCamera?: boolean;
+  showGallery?: boolean;
   translate: (key: string) => string;
   onNativePick: (source: 'camera' | 'gallery') => void;
 }
@@ -18,63 +20,68 @@ export const AssetUploadDropzone: React.FC<AssetUploadDropzoneProps> = ({
   getRootProps,
   getInputProps,
   isDragActive,
-  enableCrop = false,
-  nativePickers,
+  ingestEnabled,
+  ingestTypesLabel = '',
+  showCamera = false,
+  showGallery = false,
   translate,
   onNativePick,
 }) => (
   <div
     {...getRootProps()}
-    className={`asset-upload-dropzone${isDragActive ? ' is-active' : ''}`}
+    className={`asset-upload-dropzone${isDragActive ? ' is-active' : ''}${
+      ingestEnabled ? '' : ' is-disabled'
+    }`}
   >
     <input {...getInputProps({})} />
     <div className="asset-upload-content">
       <div className="asset-upload-icon-container" aria-hidden>
-        {enableCrop ? (
-          <Crop className="asset-upload-icon" />
-        ) : (
-          <Upload className="asset-upload-icon" />
-        )}
+        <Upload className="asset-upload-icon" />
       </div>
       <div className="asset-upload-copy">
         <p className="asset-upload-text">
-          {isDragActive
-            ? translate('image.upload.dragActive')
-            : translate('image.upload.dragInactive')}
+          {!ingestEnabled
+            ? translate('image.upload.noKindIngest')
+            : isDragActive
+              ? translate('image.upload.dragActive')
+              : translate('image.upload.dragInactive')}
         </p>
-        <p className="asset-upload-description">
-          {translate('image.upload.supportedFormats')}
-          {enableCrop ? (
-            <span className="asset-upload-crop-hint">
-              {' · '}
-              {translate('image.upload.cropHint')}
-            </span>
-          ) : null}
-        </p>
-        {nativePickers ? (
+        {ingestEnabled && ingestTypesLabel ? (
+          <p className="asset-upload-description">
+            {translate('image.upload.supportedFormats').replace(
+              '{types}',
+              ingestTypesLabel,
+            )}
+          </p>
+        ) : null}
+        {ingestEnabled && (showCamera || showGallery) ? (
           <div className="asset-upload-native-actions">
-            <button
-              type="button"
-              className="asset-upload-native-button"
-              onClick={event => {
-                event.stopPropagation();
-                onNativePick('camera');
-              }}
-            >
-              <Camera className="asset-upload-native-icon" />
-              <span>{translate('image.upload.pickFromCamera')}</span>
-            </button>
-            <button
-              type="button"
-              className="asset-upload-native-button"
-              onClick={event => {
-                event.stopPropagation();
-                onNativePick('gallery');
-              }}
-            >
-              <Images className="asset-upload-native-icon" />
-              <span>{translate('image.upload.pickFromGallery')}</span>
-            </button>
+            {showCamera ? (
+              <button
+                type="button"
+                className="asset-upload-native-button"
+                onClick={event => {
+                  event.stopPropagation();
+                  onNativePick('camera');
+                }}
+              >
+                <Camera className="asset-upload-native-icon" />
+                <span>{translate('image.upload.pickFromCamera')}</span>
+              </button>
+            ) : null}
+            {showGallery ? (
+              <button
+                type="button"
+                className="asset-upload-native-button"
+                onClick={event => {
+                  event.stopPropagation();
+                  onNativePick('gallery');
+                }}
+              >
+                <Images className="asset-upload-native-icon" />
+                <span>{translate('image.upload.pickFromGallery')}</span>
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

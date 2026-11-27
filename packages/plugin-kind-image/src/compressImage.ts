@@ -2,7 +2,7 @@ import { calculateDisplayDimensions, getImageDimensions } from './dimensions';
 import type { ImageCompressionOptions, ImageCompressionResult } from './types';
 
 /**
- * 压缩图片文件（Canvas）。供上传预压缩与库内 process 共用。
+ * 压缩图片文件（Canvas）。供库内 `kind.process` 使用。
  * 压缩结果是新 File；库内 process 再经 saveProcessedAsset 落成新资源。
  */
 export async function compressImage(

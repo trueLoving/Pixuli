@@ -1,10 +1,10 @@
 import type {
-  ImageCaptureMetadata,
-  ImageCaptureSource,
-  ImageExifSummary,
-  ImageGeoLocation,
+  AssetCaptureMetadata,
+  AssetCaptureSource,
+  AssetExifSummary,
+  AssetGeoLocation,
 } from '@pixuli/core/types';
-import { buildImageCaptureMetadata } from '@pixuli/core/utils';
+import { buildAssetCaptureMetadata } from '@pixuli/core/utils';
 
 type ExifrGps = {
   latitude?: number;
@@ -43,13 +43,13 @@ function toIsoTimestamp(value: Date | string | undefined): string | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
-function pickLocation(parsed: ExifrParseResult): ImageGeoLocation | undefined {
+function pickLocation(parsed: ExifrParseResult): AssetGeoLocation | undefined {
   const latitude = parsed.latitude ?? parsed.GPSLatitude;
   const longitude = parsed.longitude ?? parsed.GPSLongitude;
   if (latitude == null || longitude == null) {
     return undefined;
   }
-  const location: ImageGeoLocation = { latitude, longitude };
+  const location: AssetGeoLocation = { latitude, longitude };
   const altitude = parsed.GPSAltitude;
   if (altitude != null) {
     location.altitude = altitude;
@@ -59,8 +59,8 @@ function pickLocation(parsed: ExifrParseResult): ImageGeoLocation | undefined {
 
 function pickExifSummary(
   parsed: ExifrParseResult,
-): ImageExifSummary | undefined {
-  const summary: ImageExifSummary = {};
+): AssetExifSummary | undefined {
+  const summary: AssetExifSummary = {};
   if (parsed.Make) summary.make = String(parsed.Make);
   if (parsed.Model) summary.model = String(parsed.Model);
   if (parsed.Orientation != null) summary.orientation = parsed.Orientation;
@@ -77,8 +77,8 @@ function pickExifSummary(
 /** 从 File/Blob 解析 EXIF（WebView 可用）；失败时回退文件信息。 */
 export async function parseExifFromBlob(blob: Blob): Promise<{
   takenAt?: string;
-  location?: ImageGeoLocation;
-  exif?: ImageExifSummary;
+  location?: AssetGeoLocation;
+  exif?: AssetExifSummary;
 }> {
   try {
     const exifr = await import('exifr');
@@ -107,14 +107,14 @@ export async function parseExifFromBlob(blob: Blob): Promise<{
 export async function buildCaptureMetadataFromFile(
   file: File,
   options: {
-    source: ImageCaptureSource;
+    source: AssetCaptureSource;
     localPath?: string;
     width?: number;
     height?: number;
   },
-): Promise<ImageCaptureMetadata> {
+): Promise<AssetCaptureMetadata> {
   const parsed = await parseExifFromBlob(file);
-  return buildImageCaptureMetadata({
+  return buildAssetCaptureMetadata({
     source: options.source,
     fileName: file.name,
     mimeType: file.type || undefined,
@@ -132,8 +132,8 @@ export async function buildCaptureMetadataFromFile(
 /** Capacitor `@capacitor/camera` 返回的 EXIF 子集映射 */
 export function mapCapacitorExif(raw: Record<string, unknown> | undefined): {
   takenAt?: string;
-  location?: ImageGeoLocation;
-  exif?: ImageExifSummary;
+  location?: AssetGeoLocation;
+  exif?: AssetExifSummary;
 } {
   if (!raw) {
     return {};
@@ -153,7 +153,7 @@ export function mapCapacitorExif(raw: Record<string, unknown> | undefined): {
         }
       : undefined;
 
-  const exif: ImageExifSummary = {};
+  const exif: AssetExifSummary = {};
   if (raw.Make) exif.make = String(raw.Make);
   if (raw.Model) exif.model = String(raw.Model);
   if (raw.Orientation != null) {

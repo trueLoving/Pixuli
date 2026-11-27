@@ -86,7 +86,7 @@ Gitee 等）管自己的图、文档、视频——**云是同步与外链通道
 `Asset*`（如
 `types/asset.ts`、`StorageProvider.listAssets/uploadAsset`、`assetStore`）。位图
 **process**（压缩/裁剪/转换）在 `@pixuli/kind-image`；core 仅保留
-`ImageCaptureMetadata`（sidecar）与栅格宽高探测等跨类型基础设施。
+`AssetCaptureMetadata`（sidecar）与栅格宽高探测等跨类型基础设施。
 
 ---
 
