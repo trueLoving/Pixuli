@@ -6,7 +6,7 @@
 
 ---
 
-## 1. 现状（Builtin + Desktop external Loader PoC）
+## 1. 现状（Builtin + Desktop / Mobile external Loader PoC）
 
 | 类      | 能力 registry                 | 启动                          |
 | ------- | ----------------------------- | ----------------------------- |
@@ -19,16 +19,20 @@
   `PluginRuntime.registerBuiltin` + `startSync()` 加载。
 - **三端策略（D2.9）**：Builtin 三端共用；**用户安装插件仅 Desktop + Mobile**；
   **Web 永不开放** sideload / 远程脚本。
-- Desktop（已有 PoC）：扫描 `userData/plugins/*/manifest.json`，经
-  `pixuli-plugin:` 协议 `import` 入口，`registerExternal` + `load`（见
-  `app/src/plugins/externalLoader.ts`）。
-- Mobile（待做）：应用私有目录同等 Loader；与 Desktop 共用 `discover` /
-  `registerExternal` 契约。
+- Desktop（PoC）：扫描 `userData/plugins/*/manifest.json`，经 `pixuli-plugin:`
+  协议 `import` 入口，`registerExternal` + `load`（见
+  `app/src/plugins/externalLoader.ts`、`loadDesktopExternalPlugins.ts`）。
+- Mobile（PoC）：扫描 Capacitor
+  `Directory.Data/plugins/<id>/manifest.json`，读入口源码后 Blob ESM
+  `import`（无自定义协议）；与 Desktop 共用 `discover` / `registerExternal`
+  契约（`loadMobileExternalPlugins.ts`）。
+- 启动统一入口：`loadExternalPlugins`（Desktop ∥ Mobile；Web 皆跳过）。
 - Web：仅 `registerBuiltin`；启动路径**不扫描** external。
 - 支持 `load` / `unload` / `setEnabled`；状态默认持久化到
-  `localStorage`（`pixuli.plugin-runtime.v1`）。
+  `localStorage`（`pixuli.plugin-runtime.v1`；含 external）。
 - origin：`builtin` | `external`。
-- 安装 UI / 商店仍后置；Desktop 可先本机目录投放。
+- 安装 UI / 商店仍后置；Desktop / Mobile 可先本机目录投放（单文件
+  `main`，与 fixture 一致）。
 
 ### 1.1 UI 槽位（App 拥有，core 无 React）
 
@@ -71,15 +75,15 @@
 
 **原则：** 内置与将来第三方走同一 Runtime；商店 UI 后置。
 
-| 层             | 状态                                                                      |
-| -------------- | ------------------------------------------------------------------------- |
-| 统一插件模型   | Manifest + `onload` / `onunload` + enable — **已有**                      |
-| Plugin Loader  | Builtin — **已有**；Desktop 目录 + `registerExternal` — **PoC 已有**      |
-| Core API       | `{ storage, kinds, ui }` — **已有**；workspace / commands — 未做          |
-| UI 槽位        | preview / thumbnail / connection / icon — **已有**                        |
-| 启用状态       | Memory + localStorage — **已有**                                          |
-| 三端策略       | Builtin 三端共用；external = Desktop（PoC）+ Mobile（待做）；**Web 禁止** |
-| 安全（最小集） | 单插件 onload 失败隔离 — **已有**；签名 / allowlist — 未做                |
+| 层             | 状态                                                                     |
+| -------------- | ------------------------------------------------------------------------ |
+| 统一插件模型   | Manifest + `onload` / `onunload` + enable — **已有**                     |
+| Plugin Loader  | Builtin — **已有**；Desktop + Mobile 目录 + `registerExternal` — **PoC** |
+| Core API       | `{ storage, kinds, ui }` — **已有**；workspace / commands — 未做         |
+| UI 槽位        | preview / thumbnail / connection / icon — **已有**                       |
+| 启用状态       | Memory + localStorage — **已有**（builtin + external）                   |
+| 三端策略       | Builtin 三端共用；external = Desktop + Mobile（PoC）；**Web 禁止**       |
+| 安全（最小集） | 单插件 onload 失败隔离 — **已有**；签名 / allowlist — 未做               |
 
 「暂不开放」：商店 UI、签名；**Web 用户安装为永久非目标**。
 
@@ -93,9 +97,9 @@
 4. ~~UI 槽位：Kind 预览 + Storage 连接~~
 5. ~~PluginApi.ui + 官方包 UI 进 onload~~
 6. ~~Desktop 动态加载 PoC（无安装 UI）~~
-7. Mobile external Loader（应用私有目录，对齐 Desktop 契约）
+7. ~~Mobile external Loader（应用私有目录，对齐 Desktop 契约）~~
 8. Core API 扩展（workspace 读写等）与官方插件迁移文档
-9. **后置**：商店 UI、签名 / allowlist
+9. **后置**：商店 UI、签名 / allowlist；插件管理 UI（启用列表）
 10. **永久非目标**：Web 用户安装 / 任意远程脚本
 
 ---

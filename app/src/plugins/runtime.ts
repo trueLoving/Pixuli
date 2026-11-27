@@ -11,7 +11,7 @@ import { createVideoRuntimePlugin } from '@pixuli/kind-video/runtime';
 import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
 import { createPixuliGiteeRuntimePlugin } from './createPixuliGiteeRuntimePlugin';
 import { contributeAllPluginUi } from './contributeUi';
-import { loadDesktopExternalPlugins } from './loadDesktopExternalPlugins';
+import { loadExternalPlugins } from './loadExternalPlugins';
 import { LocalStoragePluginStateStore } from './localStorageStateStore';
 import { createAppPluginUiHost } from './pluginUiHost';
 import { kindRegistry, storageRegistry } from './registries';
@@ -47,7 +47,7 @@ export function startPluginRuntime(): PluginLoadResult[] {
     contributeAllPluginUi();
     if (!externalLoadStarted) {
       externalLoadStarted = true;
-      void loadDesktopExternalPlugins(pluginRuntime);
+      void loadExternalPlugins(pluginRuntime);
     }
   }
   return bootResults;

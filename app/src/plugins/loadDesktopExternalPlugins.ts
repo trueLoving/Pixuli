@@ -11,7 +11,7 @@ import {
 
 /**
  * Desktop：经 preload discover + pixuli-plugin: URL 动态 import。
- * Web / Mobile 直接跳过。
+ * Web / Mobile 直接跳过（Mobile 见 `loadMobileExternalPlugins`）。
  */
 export async function loadDesktopExternalPlugins(
   runtime: PluginRuntime,
