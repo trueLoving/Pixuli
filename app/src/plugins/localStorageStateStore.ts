@@ -18,7 +18,7 @@ function readAll(key: string): Map<string, PluginStateRecord> {
         row &&
         typeof row.id === 'string' &&
         typeof row.enabled === 'boolean' &&
-        row.origin === 'builtin' &&
+        (row.origin === 'builtin' || row.origin === 'external') &&
         typeof row.version === 'string'
       ) {
         map.set(row.id, row);

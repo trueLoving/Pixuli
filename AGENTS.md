@@ -64,7 +64,7 @@ packages/plugin-kind-image/    → @pixuli/kind-image
   `kind-video`；UI 在 onload 经 `PluginApi.ui` 贡献
 - 用户安装插件（D2.9）：仅 Desktop +
   Mobile；**Web 禁止**。Desktop：`userData/plugins` + `registerExternal`；Mobile
-  Loader 待做
+  Loader PoC 已有
 - 无 Kind 预览贡献时降级下载打开（`builtin.other`）
 
 ## 代码约束
