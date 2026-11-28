@@ -90,9 +90,10 @@ function setupContentSecurityPolicy() {
   // 开发模式的 CSP（允许 Vite dev server 和 HMR）
   // 注意：'unsafe-eval' 只在开发模式下需要，用于 Vite HMR
   // Electron 会在开发模式下显示警告，但这是预期的行为
+  // blob:：外部插件入口经 Blob URL 动态 import（Desk/Mobile Loader）
   const devCSP =
     "default-src 'self' pixuli-plugin:; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* ws://localhost:* pixuli-plugin:; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data: http://localhost:* ws://localhost:* pixuli-plugin:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +
@@ -106,7 +107,7 @@ function setupContentSecurityPolicy() {
   // 生产模式的 CSP（更严格，移除 unsafe-eval）
   const prodCSP =
     "default-src 'self' pixuli-plugin:; " +
-    "script-src 'self' pixuli-plugin:; " +
+    "script-src 'self' blob: data: pixuli-plugin:; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https: http:; " +
     "media-src 'self' blob: https: http:; " +

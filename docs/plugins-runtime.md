@@ -19,20 +19,22 @@
   `PluginRuntime.registerBuiltin` + `startSync()` 加载。
 - **三端策略（D2.9）**：Builtin 三端共用；**用户安装插件仅 Desktop + Mobile**；
   **Web 永不开放** sideload / 远程脚本。
-- Desktop（PoC）：扫描 `userData/plugins/*/manifest.json`，经 `pixuli-plugin:`
-  协议 `import` 入口，`registerExternal` + `load`（见
-  `app/src/plugins/externalLoader.ts`、`loadDesktopExternalPlugins.ts`）。
+- Desktop（PoC）：扫描 `userData/plugins/*/manifest.json`；入口经 IPC `readText`
+  后 Blob ESM `import`（与 Mobile 一致；`pixuli-plugin:` 仍可用于其它资源）。见
+  `externalLoader.ts`、`loadDesktopExternalPlugins.ts`。
 - Mobile（PoC）：扫描 Capacitor
   `Directory.Data/plugins/<id>/manifest.json`，读入口源码后 Blob ESM
-  `import`（无自定义协议）；与 Desktop 共用 `discover` / `registerExternal`
+  `import`；与 Desktop 共用 `discover` / `registerExternal`
   契约（`loadMobileExternalPlugins.ts`）。
 - 启动统一入口：`loadExternalPlugins`（Desktop ∥ Mobile；Web 皆跳过）。
 - Web：仅 `registerBuiltin`；启动路径**不扫描** external。
 - 支持 `load` / `unload` / `setEnabled`；状态默认持久化到
   `localStorage`（`pixuli.plugin-runtime.v1`；含 external）。
 - origin：`builtin` | `external`。
-- 安装 UI / 商店仍后置；Desktop / Mobile 可先本机目录投放（单文件
-  `main`，与 fixture 一致）。
+- 设置 → 插件：三端均可启用/关闭已注册插件；**Web 仅 builtin**。Desktop /
+  Mobile 支持离线「从文件夹安装 / 卸载」（复制或删除本机 plugins 目录，再
+  `registerExternal` / `unregisterExternal`；单文件
+  `main`，与 fixture 一致）。商店 UI / 签名仍后置。
 
 ### 1.1 UI 槽位（App 拥有，core 无 React）
 
@@ -99,7 +101,8 @@
 6. ~~Desktop 动态加载 PoC（无安装 UI）~~
 7. ~~Mobile external Loader（应用私有目录，对齐 Desktop 契约）~~
 8. Core API 扩展（workspace 读写等）与官方插件迁移文档
-9. **后置**：商店 UI、签名 / allowlist；插件管理 UI（启用列表）
+9. ~~插件管理 UI（启用/禁用；Desktop/Mobile 离线目录安装与卸载）~~；**后置**：商店 UI、签名 /
+   allowlist
 10. **永久非目标**：Web 用户安装 / 任意远程脚本
 
 ---
@@ -112,7 +115,9 @@
 - Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
 - core 仍无 React；`PluginUiHost.component` 为 `unknown`；预览 / 连接 UI 经包
   `/ui`。
-- Fixture：`app/electron/fixtures/sample-kind-plugin/`（验证 external 链路）。
+- 外部插件开发示例（Desk+Mobile 同一份产物）：
+  [`examples/plugin-example-kind/`](../examples/plugin-example-kind/)（安装目录为
+  `plugin/`）。其它演示代码见 [`examples/`](../examples/)。
 
 ---
 

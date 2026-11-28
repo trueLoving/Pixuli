@@ -9,6 +9,7 @@ import {
   History,
   Info,
   Palette,
+  Puzzle,
   RefreshCw,
   Settings,
   Wifi,
@@ -20,6 +21,7 @@ import { useWorkspaceStore } from '@/features/workspace/workspaceStore';
 import { isWorkspaceAvailable } from '@/platforms/workspacePlatform';
 import { SettingsCheckpointPanel } from './SettingsCheckpointPanel';
 import { SettingsLanSharePanel } from './SettingsLanSharePanel';
+import { SettingsPluginsPanel } from './SettingsPluginsPanel';
 import { SettingsPreferencesPanel } from './SettingsPreferencesPanel';
 import { SettingsSyncPanel } from './SettingsSyncPanel';
 import { SettingsUserConfigPanel } from './SettingsUserConfigPanel';
@@ -58,6 +60,11 @@ const GENERAL_ITEMS: Array<{
     id: 'userConfig',
     labelKey: 'settings.menuUserConfig',
     icon: <Archive size={18} />,
+  },
+  {
+    id: 'plugins',
+    labelKey: 'settings.menuPlugins',
+    icon: <Puzzle size={18} />,
   },
 ];
 
@@ -205,6 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <SettingsVersionPanel t={t} versionInfo={versionInfo} />
       )}
       {activeSection === 'userConfig' && <SettingsUserConfigPanel t={t} />}
+      {activeSection === 'plugins' && <SettingsPluginsPanel t={t} />}
       {activeSection === 'sync' && <SettingsSyncPanel t={t} />}
       {activeSection === 'checkpoint' && <SettingsCheckpointPanel t={t} />}
       {activeSection === 'lanShare' && <SettingsLanSharePanel t={t} />}

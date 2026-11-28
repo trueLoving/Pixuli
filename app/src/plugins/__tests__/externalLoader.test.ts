@@ -14,10 +14,13 @@ import {
   type ExternalLoaderFs,
 } from '../externalLoader';
 
-const fixturesRoot = path.resolve(
+/** examples/plugin-example-kind：子目录 `plugin/` 含可安装产物 */
+const examplesPluginRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../../../electron/fixtures',
+  '../../../../examples/plugin-example-kind',
 );
+
+const exampleMain = path.join(examplesPluginRoot, 'plugin', 'main.mjs');
 
 function nodeFs(): ExternalLoaderFs {
   return {
@@ -36,12 +39,12 @@ function nodeFs(): ExternalLoaderFs {
 }
 
 describe('externalLoader', () => {
-  it('discovers fixture plugin from fixtures root', async () => {
-    const found = await discoverExternalPlugins(fixturesRoot, nodeFs());
-    expect(found.some(p => p.manifest.id === 'ext.sample-kind')).toBe(true);
+  it('discovers example plugin from examples root', async () => {
+    const found = await discoverExternalPlugins(examplesPluginRoot, nodeFs());
+    expect(found.some(p => p.manifest.id === 'ext.example-kind')).toBe(true);
   });
 
-  it('loads fixture via registerExternal and supports setEnabled', async () => {
+  it('loads example via registerExternal and supports setEnabled', async () => {
     const kinds = createKindPluginRegistry();
     const runtime = createPluginRuntime({
       storage: createStoragePluginRegistry(),
@@ -51,38 +54,35 @@ describe('externalLoader', () => {
 
     const results = await loadExternalPluginsFromDisk(
       runtime,
-      fixturesRoot,
+      examplesPluginRoot,
       nodeFs(),
-      async () =>
-        import(
-          /* @vite-ignore */ '../../../electron/fixtures/sample-kind-plugin/main.mjs'
-        ),
+      async () => import(/* @vite-ignore */ pathToFileURL(exampleMain).href),
     );
 
-    expect(results).toEqual([{ id: 'ext.sample-kind', ok: true }]);
-    expect(runtime.getLoadedIds()).toContain('ext.sample-kind');
+    expect(results).toEqual([{ id: 'ext.example-kind', ok: true }]);
+    expect(runtime.getLoadedIds()).toContain('ext.example-kind');
     expect(
-      runtime.listStates().find(s => s.id === 'ext.sample-kind')?.origin,
+      runtime.listStates().find(s => s.id === 'ext.example-kind')?.origin,
     ).toBe('external');
-    expect(kinds.matchHandler({ name: 'demo.sample' })?.manifest.id).toBe(
-      'ext.sample-kind',
+    expect(kinds.matchHandler({ name: 'demo.example' })?.manifest.id).toBe(
+      'ext.example-kind',
     );
 
-    await runtime.setEnabled('ext.sample-kind', false);
-    expect(kinds.getManifest('ext.sample-kind')).toBeUndefined();
-    expect(runtime.getLoadedIds()).not.toContain('ext.sample-kind');
+    await runtime.setEnabled('ext.example-kind', false);
+    expect(kinds.getManifest('ext.example-kind')).toBeUndefined();
+    expect(runtime.getLoadedIds()).not.toContain('ext.example-kind');
 
-    await runtime.setEnabled('ext.sample-kind', true);
-    expect(runtime.getLoadedIds()).toContain('ext.sample-kind');
-    expect(kinds.getManifest('ext.sample-kind')?.id).toBe('ext.sample-kind');
-    expect(kinds.matchHandler({ name: 'demo.sample' })?.manifest.id).toBe(
-      'ext.sample-kind',
+    await runtime.setEnabled('ext.example-kind', true);
+    expect(runtime.getLoadedIds()).toContain('ext.example-kind');
+    expect(kinds.getManifest('ext.example-kind')?.id).toBe('ext.example-kind');
+    expect(kinds.matchHandler({ name: 'demo.example' })?.manifest.id).toBe(
+      'ext.example-kind',
     );
   });
 
   it('returns empty when root missing', async () => {
     const found = await discoverExternalPlugins(
-      path.join(fixturesRoot, 'no-such-plugins-root'),
+      path.join(examplesPluginRoot, 'no-such-plugins-root'),
       nodeFs(),
     );
     expect(found).toEqual([]);

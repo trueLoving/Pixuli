@@ -22,6 +22,7 @@ Issues。决策：[DECISIONS.md](DECISIONS.md)。产品/架构：[docs/product.m
 ```text
 app/          Web + Desktop + Mobile
 website/      官网（pnpm dev:website → :5510）
+examples/     示例与演示（如 plugin-example-kind）
 packages/core/
 packages/plugin-provider-github/
 packages/plugin-provider-gitee/
@@ -43,7 +44,8 @@ packages/plugin-kind-image/    → @pixuli/kind-image
 ## 插件运行时
 
 - 契约：`@pixuli/core/plugin-runtime`（Manifest / onload·onunload / enable）
-- 启动：`app/src/plugins/runtime.ts`（Builtin Loader；暂无用户安装 UI）
+- 启动：`app/src/plugins/runtime.ts`（Builtin + Desk/Mobile external
+  Loader；设置内插件管理）
 - UI 槽位：`app/src/plugins/uiRegistry` + `contribute*`（preview / thumbnail /
   editor / process；core 无 React）
 - 激活存储：`storageType` + `storageConfig`（非 github/gitee 双轨）
@@ -65,6 +67,7 @@ packages/plugin-kind-image/    → @pixuli/kind-image
 - 用户安装插件（D2.9）：仅 Desktop +
   Mobile；**Web 禁止**。Desktop：`userData/plugins` + `registerExternal`；Mobile
   Loader PoC 已有
+- 外部插件示例（Desk+Mobile 同一 `plugin/`）：`examples/plugin-example-kind/`
 - 无 Kind 预览贡献时降级下载打开（`builtin.other`）
 
 ## 代码约束

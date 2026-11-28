@@ -48,12 +48,19 @@ export interface PluginStateStore {
   get(id: string): PluginStateRecord | undefined;
   list(): PluginStateRecord[];
   set(record: PluginStateRecord): void | Promise<void>;
+  /** 卸载 external 时移除持久化状态；无记录时为 no-op */
+  delete(id: string): void | Promise<void>;
 }
 
 export interface PluginRuntime {
   registerBuiltin(factory: RuntimePluginFactory): void;
   /** 第三方 / 磁盘加载插件；state.origin 固定为 external */
   registerExternal(factory: RuntimePluginFactory): void;
+  /**
+   * 卸载已注册的 external：先 onunload，再移除 factory / state。
+   * builtin 不可调用。磁盘文件由宿主另行删除。
+   */
+  unregisterExternal(id: string): Promise<void>;
   /** 异步启动（支持 onload 返回 Promise） */
   start(): Promise<PluginLoadResult[]>;
   /**
@@ -66,4 +73,5 @@ export interface PluginRuntime {
   setEnabled(id: string, enabled: boolean): Promise<void>;
   listStates(): PluginStateRecord[];
   getLoadedIds(): string[];
+  getManifest(id: string): RuntimePluginManifest | undefined;
 }
