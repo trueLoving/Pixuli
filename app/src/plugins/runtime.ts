@@ -9,7 +9,7 @@ import { createPdfRuntimePlugin } from '@pixuli/kind-pdf/runtime';
 import { createTextRuntimePlugin } from '@pixuli/kind-text/runtime';
 import { createVideoRuntimePlugin } from '@pixuli/kind-video/runtime';
 import { createGitHubRuntimePlugin } from '@pixuli/provider-github/runtime';
-import { createPixuliGiteeRuntimePlugin } from './createPixuliGiteeRuntimePlugin';
+import { createGiteeRuntimePlugin } from '@pixuli/provider-gitee/runtime';
 import { contributeAllPluginUi } from './contributeUi';
 import { loadExternalPlugins } from './loadExternalPlugins';
 import { LocalStoragePluginStateStore } from './localStorageStateStore';
@@ -30,7 +30,7 @@ export const pluginRuntime: PluginRuntime = createPluginRuntime(
 );
 
 pluginRuntime.registerBuiltin(createGitHubRuntimePlugin);
-pluginRuntime.registerBuiltin(createPixuliGiteeRuntimePlugin);
+pluginRuntime.registerBuiltin(createGiteeRuntimePlugin);
 pluginRuntime.registerBuiltin(createImageRuntimePlugin);
 pluginRuntime.registerBuiltin(createPdfRuntimePlugin);
 pluginRuntime.registerBuiltin(createMarkdownRuntimePlugin);

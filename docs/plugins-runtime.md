@@ -110,8 +110,8 @@
 ## 4. 与 Kind / Storage 的关系
 
 - `@pixuli/kind-pdf` / `kind-markdown` / `kind-text` / `kind-video` /
-  `kind-image`、`@pixuli/provider-*` 提供 `create*RuntimePlugin()`（Gitee
-  Pixuli特化在 `app/src/plugins/createPixuliGiteeRuntimePlugin.ts`）。
+  `kind-image`、`@pixuli/provider-*` 提供 `create*RuntimePlugin()`（经包
+  `/runtime` 导出；App 仅 `registerBuiltin`）。
 - Kind 与 Storage **正交**：同步归 Storage；预览等归 Kind。
 - core 仍无 React；`PluginUiHost.component` 为 `unknown`；预览 / 连接 UI 经包
   `/ui`。
