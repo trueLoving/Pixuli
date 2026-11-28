@@ -1,5 +1,5 @@
 /**
- * 从 app/brand/source 生成 Web / PWA / Desktop / Capacitor Android 衍生图标。
+ * 从 app/brand/source 生成 Web / Desktop / Capacitor Android 衍生图标。
  */
 import { copyFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -9,7 +9,6 @@ import { PIXULI_ROOT } from './paths.mjs';
 
 const BRAND_SOURCE = path.join(PIXULI_ROOT, 'brand/source');
 const PUBLIC_DIR = path.join(PIXULI_ROOT, 'public');
-const PWA_DIR = path.join(PUBLIC_DIR, 'pwa');
 const ANDROID_RES = path.join(PIXULI_ROOT, 'android/app/src/main/res');
 
 const LAUNCHER_SIZES = {
@@ -51,9 +50,6 @@ async function generateWebAssets() {
   await copyFile(icon, path.join(PUBLIC_DIR, 'icon.png'));
   await copyFile(favicon, path.join(PUBLIC_DIR, 'favicon.png'));
 
-  await resizePng(icon, path.join(PWA_DIR, 'icon-192x192.png'), 192, 192, 'contain');
-  await resizePng(icon, path.join(PWA_DIR, 'icon-512x512.png'), 512, 512, 'contain');
-
   const faviconIco = await pngToIco(favicon);
   await writeFile(path.join(PUBLIC_DIR, 'favicon.ico'), faviconIco);
 
@@ -61,7 +57,7 @@ async function generateWebAssets() {
   const iconIco = await pngToIco(icon256);
   await writeFile(path.join(PUBLIC_DIR, 'icon.ico'), iconIco);
 
-  console.log('  web: public/icon.png, favicon.*, pwa/icons, icon.ico');
+  console.log('  web: public/icon.png, favicon.*, icon.ico');
 }
 
 async function generateAndroidLaunchers() {
@@ -145,8 +141,8 @@ async function generateSplashScreens() {
 }
 
 async function main() {
-  console.log('Sync brand assets from app/brand/source → Web / PWA / Android\n');
-  await mkdir(PWA_DIR, { recursive: true });
+  console.log('Sync brand assets from app/brand/source → Web / Android\n');
+  await mkdir(PUBLIC_DIR, { recursive: true });
   await generateWebAssets();
   await generateAndroidLaunchers();
   await generateSplashScreens();

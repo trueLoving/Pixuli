@@ -2,7 +2,23 @@
 
 > 现状与目标边界。产品底线见 [product.md](./product.md)；分层见
 > [architecture.md](./architecture.md)。  
-> 追踪：[#126](https://github.com/trueLoving/Pixuli/issues/126)（Obsidian 式体系）；热加载草案曾见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（已关，待 #126 后再评）。
+> 追踪：[#126](https://github.com/trueLoving/Pixuli/issues/126)（Obsidian 式体系）；热加载草案曾见 [#102](https://github.com/trueLoving/Pixuli/issues/102)（已关，待 #126 后再评）。  
+> 产品决策：**首启精简 + 插件扩场景**见
+> [DECISIONS.md](../DECISIONS.md) **D2.10**（含场景包后置、默认开关口径）。
+
+---
+
+## 0. 与 App 核心的关系（D2.10）
+
+|                    | 含义                                                                              |
+| ------------------ | --------------------------------------------------------------------------------- |
+| App                | 核心链路与 Runtime 宿主；不把可选产品面永久焊死在 feature 里                      |
+| Builtin / external | 按需启停；Desk/Mobile 可离线安装（D2.9）                                          |
+| Feature 插件       | 目标态承接局域网、操作日志等；**契约未齐前可暂留 App**；**Web 不做 PWA**（D2.10） |
+| 场景包             | 后置：清单批量启停/安装；建立在单插件生命周期稳定之后                             |
+
+落地顺序建议：builtin **默认开关**（如可选 Storage 默认关）→ Feature API
+→ 从 App 剥离 → 场景包。
 
 ---
 

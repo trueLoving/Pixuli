@@ -1,6 +1,6 @@
 # Pixuli App — Web · Desktop · Android
 
-三端合一主应用（`pixuli-app`）：**Web（PWA）**、**Desktop（Electron）**、**Mobile（Capacitor
+三端合一主应用（`pixuli-app`）：**Web**、**Desktop（Electron）**、**Mobile（Capacitor
 Android）** 共用 `src/`（含 `src/ui`）。
 
 工程约定与常用脚本见本文件下文及仓库根 `package.json`（`pnpm dev:*` / `build:*`
@@ -61,7 +61,6 @@ pnpm build:android    # 已签名 release APK；debug 用 pnpm build:android:deb
 | ---------------- | ------------------------------- |
 | `dist/`          | Web / Desktop renderer 构建输出 |
 | `dist-electron/` | Desktop 主进程构建              |
-| `dev-dist/`      | PWA dev service worker 缓存     |
 | `release/`       | electron-builder 安装包         |
 
 日常浏览以 `src/`、`electron/`、`android/`

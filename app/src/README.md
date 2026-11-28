@@ -56,7 +56,7 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 ## 文案
 
 - 域 JSON：`i18n/locales/{zh-CN,en-US}/*.json`
-- 启动前可读：`brand.json` → `i18n/brandCopy.ts`（preloading / PWA / Electron）
+- 启动前可读：`brand.json` → `i18n/brandCopy.ts`（preloading / Electron）
 - 工具文案：`tools.compress.*` / `tools.convert.*`（非 `*Page`）
 
 ## 常用命令

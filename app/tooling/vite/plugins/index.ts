@@ -5,7 +5,6 @@ import type { ViteModeFlags } from '../modes';
 import type { PixuliPackageJson } from '../versionInfo';
 import { PIXULI_ROOT } from '../paths';
 import { createElectronPlugins } from './electron';
-import { createPwaPlugin } from './pwa';
 
 export interface CreatePixuliPluginsOptions {
   flags: ViteModeFlags;
@@ -18,7 +17,7 @@ export function createPixuliPlugins({
   pkg,
   sourcemap,
 }: CreatePixuliPluginsOptions): PluginOption[] {
-  const { isWeb, isDesktop, isServe, isBuild, isCapacitorNativeBuild } = flags;
+  const { isDesktop, isBuild } = flags;
   const plugins: PluginOption[] = [react()];
 
   if (isDesktop) {
@@ -31,31 +30,17 @@ export function createPixuliPlugins({
     );
   }
 
-  if (isWeb && !isCapacitorNativeBuild) {
-    plugins.push(createPwaPlugin(isServe));
-  }
-
   return plugins;
 }
 
 export function createResolveAlias(
-  flags: ViteModeFlags,
+  _flags: ViteModeFlags,
 ): Record<string, string> {
-  const { isDesktop, isCapacitorNativeBuild } = flags;
-  const resolveAlias: Record<string, string> = {
+  return {
     '@': path.join(PIXULI_ROOT, 'src'),
     '@platforms': path.resolve(PIXULI_ROOT, 'src/platforms'),
     '@packages': path.resolve(PIXULI_ROOT, '../packages'),
     '@platforms/web': path.resolve(PIXULI_ROOT, 'src/platforms/web'),
     '@platforms/desktop': path.resolve(PIXULI_ROOT, 'src/platforms/desktop'),
   };
-
-  if (isDesktop || isCapacitorNativeBuild) {
-    resolveAlias['virtual:pwa-register/react'] = path.resolve(
-      PIXULI_ROOT,
-      'src/features/pwa/pwaRegisterStub.ts',
-    );
-  }
-
-  return resolveAlias;
 }

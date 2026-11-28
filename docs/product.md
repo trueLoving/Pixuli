@@ -8,8 +8,9 @@
 ## 1. 定位
 
 **本地优先的资源工作区**：本机文件夹是 SSOT；GitHub /
-Gitee 为可选同步；外链靠复制链接。三端共用一份 `app`（Web PWA · Desktop Electron
-· Mobile Capacitor Android）。**无官方 Server**，无用户向「发布」。
+Gitee 为可选同步；外链靠复制链接。三端共用一份 `app`（Web 浏览器 · Desktop
+Electron · Mobile Capacitor
+Android）。**无官方 Server**，无用户向「发布」。**Web 不做 PWA**（D2.10）。
 
 三条主线（并行，互不代替）：
 
@@ -20,6 +21,19 @@ Gitee 为可选同步；外链靠复制链接。三端共用一份 `app`（Web P
 | **共享** | 复制远端链接；桌面局域网只读 HTTP Host | 复制链接已通；Desktop LAN Host v1 |
 
 北极星：**本机整理 → 同步公开仓 → 复制 raw 贴进 Markdown**（站点 / 博客配图）。
+
+### 1.1 核心精简与插件扩展（D2.10）
+
+- **首启轻**：默认只铺核心链路（本机库 + 基础文件能力 + 显式同步 + 复制链接）；可选增强不堆进第一眼。
+- **插件扩场景**：特性 / 增强由插件维护；用户按需启用或（Desktop /
+  Mobile）安装；后续可提供**场景化插件包**一键组合能力。
+- **分端角色**：**Web
+  = 快速使用的小工具**（浏览器入口、builtin 启停、**不做 PWA**）；**Desktop /
+  Mobile
+  = 深度使用与高度自定义**（可装第三方插件，承担持久化客户端）。主路径三端对齐，扩展深度可以不对称。
+- **App 职责**：壳、Vault、同步挂钩、复制链接、平台适配、插件 Runtime 宿主——不无限堆产品面。
+- 细则与边界（含「何物不当可关插件」）：[DECISIONS.md](../DECISIONS.md)
+  D2.10；运行时见 [plugins-runtime.md](./plugins-runtime.md)。
 
 ---
 
@@ -132,7 +146,8 @@ Gitee 为可选同步；外链靠复制链接。三端共用一份 `app`（Web P
 ## 8. 明确不做 / 延后
 
 **不做：** 官方 NestJS Server；用户向「发布」；恢复幻灯片 / 时间线 / 照片墙 /
-3D 画廊；取消三端任一端；默认 Gitee 图片 Host 代理。
+3D 画廊；取消三端任一端；默认 Gitee 图片 Host 代理；**Web PWA**（可安装 /
+Service Worker 离线壳；持久化用 Desktop / Mobile）。
 
 **延后：**
 Drive、全员 OAuth、同步任务抽屉、网格·列表切换、回收站、AI 标签、桌面离线队列 / 自动更新、局域网可写/移动端 Host、文档全英镜像。
