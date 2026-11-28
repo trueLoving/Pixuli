@@ -14,7 +14,7 @@ export const isWeb = (): boolean =>
 export const isDesktop = (): boolean =>
   typeof __IS_DESKTOP__ !== 'undefined' ? __IS_DESKTOP__ : true;
 
-/** Web 浏览器（含 PWA），不含 Capacitor WebView */
+/** Web 浏览器，不含 Capacitor WebView */
 export const isWebBrowser = (): boolean => isWeb() && !isNativeMobile();
 
 export const getPlatform = (): 'web' | 'desktop' | 'mobile' => {

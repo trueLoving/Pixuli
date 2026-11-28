@@ -8,11 +8,6 @@
     "trayTooltip": "Pixuli — Local-first resource workspace",
     "htmlTitle": "Pixuli — Resource workspace",
     "htmlDescription": "Pixuli — Local-first resource workspace (Web / Desktop / Mobile)",
-    "pwaName": "Pixuli — Resource workspace",
-    "pwaDescription": "Manage resources locally; sync via GitHub, Gitee, and other connections, then copy links",
-    "pwaShortcutAdd": "Add to library",
-    "pwaShortcutAddShort": "Add",
-    "pwaShortcutAddDescription": "Quickly add files to your local library",
     "desktopDescription": "Local-first resource workspace desktop client",
     "desktopComment": "Local-first resource workspace"
   }

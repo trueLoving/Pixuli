@@ -11,14 +11,15 @@ pnpm -F pixuli-app sync:brand
 
 ## 源文件（`source/`）
 
-| 文件                          | 用途                                         |
-| ----------------------------- | -------------------------------------------- |
-| `icon.png`                    | 主图标 1024×1024；Web PWA、Desktop 托盘/窗口 |
-| `favicon.png`                 | 32×32 站点图标                               |
-| `splash-icon.png`             | 启动图中心标识（对齐 Expo splash）           |
-| `android-icon-foreground.png` | Android 自适应图标前景                       |
-| `android-icon-background.png` | Android 自适应图标背景                       |
-| `android-icon-monochrome.png` | Android 13+ 单色图标（可选）                 |
+| 文件       | 用途                                                |
+| ---------- | --------------------------------------------------- |
+| `icon.png` | 主图标 1024×1024；Web favicon 源、Desktop 托盘/窗口 |
+
+| `favicon.png` | 32×32 站点图标 | | `splash-icon.png`
+| 启动图中心标识（对齐 Expo splash） | | `android-icon-foreground.png` |
+Android 自适应图标前景 | | `android-icon-background.png` |
+Android 自适应图标背景 | | `android-icon-monochrome.png` | Android
+13+ 单色图标（可选） |
 
 视觉 token 以实现与 `app/src/ui` 品牌组件为准；产品口径见
 [docs/product.md](../../../docs/product.md)。
@@ -26,6 +27,5 @@ pnpm -F pixuli-app sync:brand
 ## 生成产物
 
 - `public/icon.png`、`public/favicon.png`、`public/favicon.ico`、`public/icon.ico`
-- `public/pwa/icon-192x192.png`、`public/pwa/icon-512x512.png`
 - `android/app/src/main/res/mipmap-*/` 启动器图标
 - `android/app/src/main/res/drawable*/splash.png` 启动屏

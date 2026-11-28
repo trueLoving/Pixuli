@@ -1,8 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
 /**
- * Capacitor 真机/模拟器启动清理：卸载历史 SW，避免 WebView 白屏。
- * 离线 APK 构建已禁用 PWA（CAPACITOR_NATIVE），此处兜底 Live Reload 包残留。
+ * Capacitor 真机/模拟器启动清理：卸载历史 Service Worker（旧 Web PWA 残留），避免 WebView 白屏。
  */
 export async function bootstrapCapacitorNative(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;

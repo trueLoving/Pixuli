@@ -2,7 +2,8 @@
 
 > **无官方后端**：本机为 SSOT；经 GitHub / Gitee **同步**；需要外链时
 > **复制链接**。  
-> 三端共用一份 `app`（Web PWA · Desktop Electron · Mobile Capacitor Android）。
+> 三端共用一份 `app`（Web · Desktop Electron · Mobile Capacitor
+> Android；Web 不做 PWA）。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Required Node.JS >= 22.0.0](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/about/releases)

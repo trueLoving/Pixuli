@@ -8,7 +8,7 @@
       "VITE_DEV_SERVER_URL": "http://localhost:5173"
     }
   },
-  "description": "Pixuli 主应用 — Web（PWA）+ Desktop（Electron）+ Android（Capacitor）",
+  "description": "Pixuli 主应用 — Web + Desktop（Electron）+ Android（Capacitor）",
   "main": "dist-electron/main/index.js",
   "homepage": "./",
   "scripts": {
@@ -74,7 +74,6 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.14",
     "electron": "^33.4.11",
@@ -87,7 +86,6 @@
     "typescript": "^5.0.0",
     "vite": "^5.0.0",
     "vite-plugin-electron": "^0.29.0",
-    "vite-plugin-electron-renderer": "^0.14.6",
-    "vite-plugin-pwa": "^1.1.0"
+    "vite-plugin-electron-renderer": "^0.14.6"
   }
 }
