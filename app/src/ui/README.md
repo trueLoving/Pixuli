@@ -13,7 +13,7 @@
 | 资源库工作区 / 上传 / EmptyState / SearchContext | `features/library`（`LibraryWorkbench`）     |
 | 编辑 / 预览 Modal                                | `features/inspector`                         |
 | GitHub/Gitee 配置、版本信息、源管理 hooks        | `features/settings`                          |
-| 图片处理引擎 `imageProcessor`                    | `features/tools`                             |
+| 图片处理（`kind.process`）                       | `@pixuli/kind-image`                         |
 | 工作区 / folderTree                              | `features/workspace`                         |
 | 启动 splash                                      | `boot/loading`（文案来自 `i18n/brand.json`） |
 | 侧栏呈现 / 容器                                  | `layouts/sidebar` · `layouts/AppSidebar`     |

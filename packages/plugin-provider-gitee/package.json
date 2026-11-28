@@ -9,6 +9,7 @@
     "./types": "./src/types.ts",
     "./register": "./src/register.ts",
     "./manifest": "./src/manifest.ts",
+    "./runtime": "./src/runtimePlugin.ts",
     "./ui": "./src/ui/index.ts"
   },
   "scripts": {

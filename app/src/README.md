@@ -14,7 +14,6 @@ L3  layouts/ + platforms/ + boot/ + router/   壳层与路由
 | 路径                     | 职责                                                                             |
 | ------------------------ | -------------------------------------------------------------------------------- |
 | `features/library`       | 资源库 SSOT：`LibraryRoute`、`useLibraryRoute`、`LibraryWorkbench`、`imageStore` |
-| `features/tools`         | 图片处理引擎：`imageProcessor`（Canvas）                                         |
 | `features/settings`      | 设置、源管理 hooks、配置 Modal、`sourceStore`                                    |
 | `features/workspace`     | 本地工作区、folderTree、`workspaceStore`                                         |
 | `features/operation-log` | 操作日志 UI + store + service（域内聚）                                          |

@@ -14,11 +14,13 @@ P7 后**不再**提供图片 Host 代理；预览走本地工作区，公网分�
 
 ## 导出
 
-| 路径                              | 内容                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `@pixuli/provider-gitee`          | `GiteeStorageProvider`、`GiteeStorageService`（兼容层）、`giteeManifest` |
-| `@pixuli/provider-gitee/register` | `registerGiteeProvider(registry)`                                        |
-| `@pixuli/provider-gitee/manifest` | `giteeManifest`                                                          |
+| 路径                              | 内容                                                                                                 |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `@pixuli/provider-gitee`          | `GiteeStorageProvider`、`GiteeStorageService`（兼容层）、`giteeManifest`、`createGiteeRuntimePlugin` |
+| `@pixuli/provider-gitee/register` | `registerGiteeProvider(registry)`                                                                    |
+| `@pixuli/provider-gitee/manifest` | `giteeManifest`                                                                                      |
+| `@pixuli/provider-gitee/runtime`  | `createGiteeRuntimePlugin()`                                                                         |
+| `@pixuli/provider-gitee/ui`       | 连接表单 / 源图标贡献                                                                                |
 
 ## 注册到 Registry
 
