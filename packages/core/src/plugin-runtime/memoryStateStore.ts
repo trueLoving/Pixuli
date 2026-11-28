@@ -15,4 +15,8 @@ export class MemoryPluginStateStore implements PluginStateStore {
   set(record: PluginStateRecord): void {
     this.records.set(record.id, { ...record });
   }
+
+  delete(id: string): void {
+    this.records.delete(id);
+  }
 }

@@ -54,6 +54,25 @@ export class DefaultPluginRuntime implements PluginRuntime {
     this.registerFactory(withOrigin(factory, 'external'), 'external');
   }
 
+  async unregisterExternal(id: string): Promise<void> {
+    const manifest = this.manifests.get(id);
+    if (!manifest) {
+      throw new Error(`Unknown plugin: ${id}`);
+    }
+    if (manifest.origin !== 'external') {
+      throw new Error(`Cannot unregister builtin plugin: ${id}`);
+    }
+    await this.unload(id);
+    this.factories.delete(id);
+    this.manifests.delete(id);
+    this.loaded.delete(id);
+    const orderIndex = this.order.indexOf(id);
+    if (orderIndex >= 0) {
+      this.order.splice(orderIndex, 1);
+    }
+    await this.store.delete(id);
+  }
+
   private registerFactory(
     factory: RuntimePluginFactory,
     origin: PluginOrigin,
@@ -204,6 +223,10 @@ export class DefaultPluginRuntime implements PluginRuntime {
 
   getLoadedIds(): string[] {
     return [...this.loaded.keys()];
+  }
+
+  getManifest(id: string): RuntimePlugin['manifest'] | undefined {
+    return this.manifests.get(id);
   }
 }
 

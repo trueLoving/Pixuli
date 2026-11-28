@@ -1,0 +1,17 @@
+{
+  "name": "@pixuli/example-kind-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pixuli 外部 Kind 示例插件（同一份产物同时支持 Desktop / Mobile 离线安装）",
+  "license": "MIT",
+  "files": ["plugin", "README.md"],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@pixuli/core": "workspace:*",
+    "vitest": "^2.1.8"
+  }
+}

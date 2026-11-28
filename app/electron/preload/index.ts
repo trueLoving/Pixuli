@@ -65,6 +65,12 @@ contextBridge.exposeInMainWorld('pixuliDeepLink', {
 contextBridge.exposeInMainWorld('pluginsAPI', {
   getRoot: () => ipcRenderer.invoke('plugins:getRoot'),
   discover: () => ipcRenderer.invoke('plugins:discover'),
+  readText: (relativePath: string) =>
+    ipcRenderer.invoke('plugins:readText', relativePath),
+  installFromDirectory: () =>
+    ipcRenderer.invoke('plugins:installFromDirectory'),
+  uninstall: (pluginId: string) =>
+    ipcRenderer.invoke('plugins:uninstall', pluginId),
 });
 
 loading();

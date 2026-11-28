@@ -4,6 +4,7 @@ export type SettingsSection =
   | 'appearance'
   | 'version'
   | 'userConfig'
+  | 'plugins'
   | 'sync'
   | 'checkpoint'
   | 'lanShare';

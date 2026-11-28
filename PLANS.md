@@ -17,13 +17,13 @@ core/provider ↛ UI。
 
 ## 当前 OPEN（远程）
 
-| Issue                                                   | 标题                          | 备注                                                                                                             |
-| ------------------------------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| [#126](https://github.com/trueLoving/Pixuli/issues/126) | 插件体系重设计（Obsidian 式） | P1；Builtin + Desktop/Mobile Loader PoC 已落地；用户安装仅 Desktop+Mobile（Web 禁止，D2.9）；商店 / 管理 UI 未做 |
-| [#127](https://github.com/trueLoving/Pixuli/issues/127) | 集成测试体系                  | P2；基线稳后薄做                                                                                                 |
-| [#138](https://github.com/trueLoving/Pixuli/issues/138) | 文档中/英策略                 | P2；本次 docs 简化未做英译                                                                                       |
-| [#88](https://github.com/trueLoving/Pixuli/issues/88)   | Desktop 离线同步队列          | P2                                                                                                               |
-| [#89](https://github.com/trueLoving/Pixuli/issues/89)   | Desktop 自动更新              | P2                                                                                                               |
+| Issue                                                   | 标题                          | 备注                                                                                                                            |
+| ------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [#126](https://github.com/trueLoving/Pixuli/issues/126) | 插件体系重设计（Obsidian 式） | P1；Builtin + Desktop/Mobile Loader PoC；设置内插件管理（启停 + Desk/Mobile 离线安装）；商店 / 签名未做；Web 禁止第三方（D2.9） |
+| [#127](https://github.com/trueLoving/Pixuli/issues/127) | 集成测试体系                  | P2；基线稳后薄做                                                                                                                |
+| [#138](https://github.com/trueLoving/Pixuli/issues/138) | 文档中/英策略                 | P2；本次 docs 简化未做英译                                                                                                      |
+| [#88](https://github.com/trueLoving/Pixuli/issues/88)   | Desktop 离线同步队列          | P2                                                                                                                              |
+| [#89](https://github.com/trueLoving/Pixuli/issues/89)   | Desktop 自动更新              | P2                                                                                                                              |
 
 已关近期主路径相关：Sprint
 A～D（#241～#245、#132）、资源库文件夹浏览与处理弹窗等（见 Releases

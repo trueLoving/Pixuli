@@ -9,6 +9,7 @@ export default defineWorkspace([
   './packages/plugin-kind-text/vitest.config.ts',
   './packages/plugin-kind-video/vitest.config.ts',
   './packages/plugin-kind-image/vitest.config.ts',
+  './examples/plugin-example-kind/vitest.config.ts',
   // app - jsdom 环境（含内联 UI）
   './app/vitest.config.ts',
   // 根目录测试 - node 环境（如果有）

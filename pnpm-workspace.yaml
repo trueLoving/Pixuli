@@ -1,6 +1,7 @@
 packages:
   - app
   - packages/*
+  - examples/*
   - docs
   - website
 

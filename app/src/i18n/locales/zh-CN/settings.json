@@ -203,6 +203,28 @@
     "keyboardHint": "查看当前支持的快捷键。后续将支持自定义绑定。",
     "keyboardViewShortcuts": "查看快捷键",
     "menuVersion": "版本信息",
-    "menuUserConfig": "个人配置备份"
+    "menuUserConfig": "个人配置备份",
+    "menuPlugins": "插件",
+    "plugins": {
+      "title": "插件管理",
+      "hintWeb": "Web 端仅可启用或关闭内置插件；不支持安装第三方插件。",
+      "hintDesktopMobile": "可启用或关闭内置与已安装插件；支持从本机目录离线安装与卸载第三方插件。",
+      "installHint": "选择含 manifest.json 与入口文件的插件文件夹（离线安装，无商店）。",
+      "installFromFolder": "从文件夹安装",
+      "installing": "正在安装…",
+      "installSuccess": "已安装插件 {id}",
+      "installFailed": "安装失败：{error}",
+      "uninstall": "卸载",
+      "uninstallConfirm": "确定卸载「{name}」？将删除本机插件文件，且不可恢复。",
+      "uninstallSuccess": "已卸载「{name}」",
+      "uninstallFailed": "卸载失败：{error}",
+      "enabledToast": "已启用「{name}」",
+      "disabledToast": "已关闭「{name}」",
+      "toggleFailed": "切换失败：{error}",
+      "toggleLabel": "启用 {name}",
+      "empty": "暂无插件",
+      "originBuiltin": "内置",
+      "originExternal": "已安装"
+    }
   }
 }

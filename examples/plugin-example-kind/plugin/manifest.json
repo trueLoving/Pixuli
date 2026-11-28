@@ -1,6 +1,6 @@
 {
-  "id": "ext.sample-kind",
-  "name": "Sample Kind",
+  "id": "ext.example-kind",
+  "name": "Example Kind",
   "version": "0.1.0",
   "main": "main.mjs",
   "capabilities": ["kind"]

@@ -61,4 +61,9 @@ export class LocalStoragePluginStateStore implements PluginStateStore {
     this.records.set(record.id, { ...record });
     writeAll(this.key, this.records);
   }
+
+  delete(id: string): void {
+    if (!this.records.delete(id)) return;
+    writeAll(this.key, this.records);
+  }
 }

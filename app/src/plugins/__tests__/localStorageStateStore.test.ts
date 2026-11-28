@@ -29,4 +29,19 @@ describe('LocalStoragePluginStateStore', () => {
       version: '0.1.0',
     });
   });
+
+  it('delete removes persisted records', () => {
+    const store = new LocalStoragePluginStateStore();
+    store.set({
+      id: 'ext.gone',
+      enabled: true,
+      origin: 'external',
+      version: '0.1.0',
+    });
+    store.delete('ext.gone');
+    expect(store.get('ext.gone')).toBeUndefined();
+
+    const reloaded = new LocalStoragePluginStateStore();
+    expect(reloaded.get('ext.gone')).toBeUndefined();
+  });
 });

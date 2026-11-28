@@ -203,6 +203,28 @@
     "keyboardHint": "View currently supported shortcuts. Custom bindings will come later.",
     "keyboardViewShortcuts": "View shortcuts",
     "menuVersion": "Version",
-    "menuUserConfig": "Config backup"
+    "menuUserConfig": "Config backup",
+    "menuPlugins": "Plugins",
+    "plugins": {
+      "title": "Plugins",
+      "hintWeb": "On Web you can only enable or disable built-in plugins. Installing third-party plugins is not supported.",
+      "hintDesktopMobile": "Enable or disable built-in and installed plugins. Offline install and uninstall of third-party plugins are supported.",
+      "installHint": "Choose a plugin folder that contains manifest.json and the entry file (offline install; no store).",
+      "installFromFolder": "Install from folder",
+      "installing": "Installing…",
+      "installSuccess": "Installed plugin {id}",
+      "installFailed": "Install failed: {error}",
+      "uninstall": "Uninstall",
+      "uninstallConfirm": "Uninstall “{name}”? Plugin files on this device will be deleted permanently.",
+      "uninstallSuccess": "Uninstalled “{name}”",
+      "uninstallFailed": "Uninstall failed: {error}",
+      "enabledToast": "Enabled “{name}”",
+      "disabledToast": "Disabled “{name}”",
+      "toggleFailed": "Could not toggle: {error}",
+      "toggleLabel": "Enable {name}",
+      "empty": "No plugins",
+      "originBuiltin": "Built-in",
+      "originExternal": "Installed"
+    }
   }
 }
